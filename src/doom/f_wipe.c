@@ -38,29 +38,6 @@ static pixel_t*	wipe_scr_start;
 static pixel_t*	wipe_scr_end;
 static pixel_t*	wipe_scr;
 
-
-void
-wipe_shittyColMajorXform
-( dpixel_t*	array,
-  int		width,
-  int		height )
-{
-    int		x;
-    int		y;
-    dpixel_t*	dest;
-
-    dest = (dpixel_t*) Z_Malloc(width*height*sizeof(*dest), PU_STATIC, 0);
-
-    for(y=0;y<height;y++)
-	for(x=0;x<width;x++)
-	    dest[x*height+y] = array[y*width+x];
-
-    memcpy(array, dest, width*height*sizeof(*dest));
-
-    Z_Free(dest);
-
-}
-
 int
 wipe_initColorXForm
 ( int	width,
@@ -128,6 +105,8 @@ wipe_exitColorXForm
 
 
 static int*	y;
+#define WIPECOLUMNS 160
+#define WIPEROWS 200
 
 int
 wipe_initMelt
@@ -136,25 +115,20 @@ wipe_initMelt
   int	ticks )
 {
     int i, r;
-    
+
     // copy start screen to main screen
     memcpy(wipe_scr, wipe_scr_start, width*height*sizeof(*wipe_scr));
-    
-    // makes this wipe faster (in theory)
-    // to have stuff in column-major format
-    wipe_shittyColMajorXform((dpixel_t*)wipe_scr_start, width/2, height);
-    wipe_shittyColMajorXform((dpixel_t*)wipe_scr_end, width/2, height);
-    
+
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
-    y = (int *) Z_Malloc(width*sizeof(int), PU_STATIC, 0);
-    y[0] = -(M_Random()%16);
-    for (i=1;i<width;i++)
+    y = (int *) Z_Malloc(WIPECOLUMNS*sizeof(int), PU_STATIC, 0);
+    y[0] = -(M_Random() % 16);
+    for (i=1;i<WIPECOLUMNS;i++)
     {
-	r = (M_Random()%3) - 1;
-	y[i] = y[i-1] + r;
-	if (y[i] > 0) y[i] = 0;
-	else if (y[i] == -16) y[i] = -15;
+		r = ( M_Random() % 3) - 1;
+		y[i] = y[i-1] + r;
+		if (y[i] > 0) y[i] = 0;
+		else if (y[i] <= -16) y[i] = -15;
     }
 
     return 0;
@@ -166,49 +140,71 @@ wipe_doMelt
   int	height,
   int	ticks )
 {
-    int		i;
+    int		col;
     int		j;
     int		dy;
-    int		idx;
-    
-    dpixel_t*	s;
-    dpixel_t*	d;
+
+    pixel_t*	s;
+    pixel_t*	d;
     boolean	done = true;
 
-    width/=2;
+	// Scale up and then down to handle arbitrary dimensions with integer math
+	int vertblocksize = height * 100 / WIPEROWS;
+	int horizblocksize = width * 100 / WIPECOLUMNS;
+	int currcol;
+	int currcolend;
+	int currrow;
+	int dytranslated;
 
     while (ticks--)
     {
-	for (i=0;i<width;i++)
-	{
-	    if (y[i]<0)
-	    {
-		y[i]++; done = false;
-	    }
-	    else if (y[i] < height)
-	    {
-		dy = (y[i] < 16) ? y[i]+1 : 8;
-		if (y[i]+dy >= height) dy = height - y[i];
-		s = &((dpixel_t *)wipe_scr_end)[i*height+y[i]];
-		d = &((dpixel_t *)wipe_scr)[y[i]*width+i];
-		idx = 0;
-		for (j=dy;j;j--)
+		for (col=0;col<WIPECOLUMNS;col++)
 		{
-		    d[idx] = *(s++);
-		    idx += width;
+			if (y[col]<0)
+			{
+				y[col]++;
+				done = false;
+			}
+			else if (y[col] < WIPEROWS)
+			{
+				dy = (y[col] < 16) ? y[col] + 1 : 8;
+				if (y[col]+dy >= WIPEROWS) dy = WIPEROWS - y[col];
+
+				currrow = y[col] * vertblocksize / 100;
+				dytranslated = dy * vertblocksize / 100;
+
+				currcol = col * horizblocksize / 100;
+				currcolend = ( col + 1 ) * horizblocksize / 100;
+
+				for(; currcol < currcolend; ++currcol)
+				{
+					s = &((pixel_t *)wipe_scr_end)[currcol*height+currrow];
+					d = &((pixel_t *)wipe_scr)[currcol*height+currrow];
+
+					for (j=dytranslated;j;j--)
+					{
+						*d++ = *(s++);
+					}
+				}
+				y[col] += dy;
+				currrow = y[col] * vertblocksize / 100;
+
+				currcol = col * horizblocksize / 100;
+				currcolend = ( col + 1 ) * horizblocksize / 100;
+
+				for(; currcol < currcolend; ++currcol)
+				{
+					s = &((pixel_t *)wipe_scr_start)[currcol*height];
+					d = &((pixel_t *)wipe_scr)[currcol*height+currrow];
+
+					for (j=height-currrow;j;j--)
+					{
+						*(d++) = *(s++);
+					}
+				}
+				done = false;
+			}
 		}
-		y[i] += dy;
-		s = &((dpixel_t *)wipe_scr_start)[i*height];
-		d = &((dpixel_t *)wipe_scr)[y[i]*width+i];
-		idx = 0;
-		for (j=height-y[i];j;j--)
-		{
-		    d[idx] = *(s++);
-		    idx += width;
-		}
-		done = false;
-	    }
-	}
     }
 
     return done;
