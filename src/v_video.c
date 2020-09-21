@@ -84,6 +84,7 @@ void V_MarkRect(int x, int y, int width, int height)
 //
 // V_CopyRect 
 // 
+// Used in status bar in Doom and Strife. Needs fixing.
 void V_CopyRect(int srcx, int srcy, pixel_t *source,
                 int width, int height,
                 int destx, int desty)
@@ -107,14 +108,14 @@ void V_CopyRect(int srcx, int srcy, pixel_t *source,
 
     V_MarkRect(destx, desty, width, height); 
  
-    src = source + SCREENWIDTH * srcy + srcx; 
-    dest = dest_screen + SCREENWIDTH * desty + destx; 
+    src = source + SCREENHEIGHT * srcx + srcy; 
+    dest = dest_screen + SCREENHEIGHT * destx + desty; 
 
     for ( ; height>0 ; height--) 
     { 
         memcpy(dest, src, width * sizeof(*dest));
-        src += SCREENWIDTH; 
-        dest += SCREENWIDTH; 
+        src += SCREENHEIGHT; 
+        dest += SCREENHEIGHT; 
     } 
 } 
  
@@ -171,11 +172,11 @@ void V_DrawPatch(int x, int y, patch_t *patch)
     V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
 
     col = 0;
-    desttop = dest_screen + y * SCREENWIDTH + x;
+    desttop = dest_screen + x * SCREENHEIGHT + y;
 
     w = SHORT(patch->width);
 
-    for ( ; col<w ; x++, col++, desttop++)
+    for ( ; col<w ; x++, col++)
     {
         column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 
@@ -183,16 +184,17 @@ void V_DrawPatch(int x, int y, patch_t *patch)
         while (column->topdelta != 0xff)
         {
             source = (byte *)column + 3;
-            dest = desttop + column->topdelta*SCREENWIDTH;
+            dest = desttop + column->topdelta;
             count = column->length;
 
             while (count--)
             {
-                *dest = *source++;
-                dest += SCREENWIDTH;
+                *dest++ = *source++;
             }
             column = (column_t *)((byte *)column + column->length + 4);
         }
+
+		desttop += SCREENHEIGHT;
     }
 }
 
@@ -202,6 +204,7 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 // Flips horizontally, e.g. to mirror face.
 //
 
+// Used in Doom 2 finale. Nowhere else
 void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 {
     int count;
@@ -235,11 +238,11 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
     V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height));
 
     col = 0;
-    desttop = dest_screen + y * SCREENWIDTH + x;
+    desttop = dest_screen + x * SCREENHEIGHT + y;
 
     w = SHORT(patch->width);
 
-    for ( ; col<w ; x++, col++, desttop++)
+    for ( ; col<w ; x++, col++)
     {
         column = (column_t *)((byte *)patch + LONG(patch->columnofs[w-1-col]));
 
@@ -247,16 +250,17 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
         while (column->topdelta != 0xff )
         {
             source = (byte *)column + 3;
-            dest = desttop + column->topdelta*SCREENWIDTH;
+            dest = desttop + column->topdelta;
             count = column->length;
 
             while (count--)
             {
-                *dest = *source++;
-                dest += SCREENWIDTH;
+                *dest++ = *source++;
             }
             column = (column_t *)((byte *)column + column->length + 4);
         }
+
+		desttop += SCREENHEIGHT;
     }
 }
 
@@ -278,8 +282,10 @@ void V_DrawPatchDirect(int x, int y, patch_t *patch)
 // Masks a column based translucent masked pic to the screen.
 //
 
+// Used in Heretic and Hexen
 void V_DrawTLPatch(int x, int y, patch_t * patch)
 {
+#if 0
     int count, col;
     column_t *column;
     pixel_t *desttop, *dest;
@@ -321,6 +327,7 @@ void V_DrawTLPatch(int x, int y, patch_t * patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
     }
+#endif
 }
 
 //
@@ -331,6 +338,7 @@ void V_DrawTLPatch(int x, int y, patch_t * patch)
 
 void V_DrawXlaPatch(int x, int y, patch_t * patch)
 {
+#if 0
     int count, col;
     column_t *column;
     pixel_t *desttop, *dest;
@@ -371,6 +379,7 @@ void V_DrawXlaPatch(int x, int y, patch_t * patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
     }
+#endif
 }
 
 //
@@ -379,8 +388,10 @@ void V_DrawXlaPatch(int x, int y, patch_t * patch)
 // Masks a column based translucent masked pic to the screen.
 //
 
+// Used in Hexen
 void V_DrawAltTLPatch(int x, int y, patch_t * patch)
 {
+#if 0
     int count, col;
     column_t *column;
     pixel_t *desttop, *dest;
@@ -422,6 +433,7 @@ void V_DrawAltTLPatch(int x, int y, patch_t * patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
     }
+#endif
 }
 
 //
@@ -430,8 +442,10 @@ void V_DrawAltTLPatch(int x, int y, patch_t * patch)
 // Masks a column based masked pic to the screen.
 //
 
+// Used in Heretic and Hexen
 void V_DrawShadowedPatch(int x, int y, patch_t *patch)
 {
+#if 0
     int count, col;
     column_t *column;
     pixel_t *desttop, *dest;
@@ -479,6 +493,7 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
     }
+#endif
 }
 
 //
@@ -508,6 +523,9 @@ void V_LoadXlaTable(void)
 
 void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
 { 
+	// TODO: Only the screen wipe calls this function in Doom.
+	// Strife uses it. May explode for strife.
+
     pixel_t *dest;
  
 #ifdef RANGECHECK 
@@ -522,18 +540,19 @@ void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
  
     V_MarkRect (x, y, width, height); 
  
-    dest = dest_screen + y * SCREENWIDTH + x; 
+    dest = dest_screen + x * SCREENHEIGHT + y; 
 
     while (height--) 
     { 
-	memcpy (dest, src, width * sizeof(*dest));
-	src += width; 
-	dest += SCREENWIDTH; 
+		memcpy (dest, src, width * sizeof(*dest));
+		src += height; 
+		dest += SCREENHEIGHT; 
     } 
 } 
 
 void V_DrawFilledBox(int x, int y, int w, int h, int c)
 {
+#if 0
     pixel_t *buf, *buf1;
     int x1, y1;
 
@@ -550,33 +569,38 @@ void V_DrawFilledBox(int x, int y, int w, int h, int c)
 
         buf += SCREENWIDTH;
     }
+#endif
 }
 
 void V_DrawHorizLine(int x, int y, int w, int c)
 {
+#if 0
     pixel_t *buf;
     int x1;
 
-    buf = I_VideoBuffer + SCREENWIDTH * y + x;
+    buf = I_VideoBuffer + SCREENHEIGHT * x + y;
 
     for (x1 = 0; x1 < w; ++x1)
     {
-        *buf++ = c;
+        *buf = c;
+		buf += SCREENHEIGHT;
     }
+#endif
 }
 
 void V_DrawVertLine(int x, int y, int h, int c)
 {
+#if 0
     pixel_t *buf;
     int y1;
 
-    buf = I_VideoBuffer + SCREENWIDTH * y + x;
+    buf = I_VideoBuffer + SCREENHEIGHT * x + y;
 
     for (y1 = 0; y1 < h; ++y1)
     {
-        *buf = c;
-        buf += SCREENWIDTH;
+        *buf++ = c;
     }
+#endif
 }
 
 void V_DrawBox(int x, int y, int w, int h, int c)
@@ -592,9 +616,12 @@ void V_DrawBox(int x, int y, int w, int h, int c)
 // to the screen)
 //
  
+// Used in Heretic and Hexen. It's not a raw screen now innit?
 void V_DrawRawScreen(pixel_t *raw)
 {
+#if 0
     memcpy(dest_screen, raw, SCREENWIDTH * SCREENHEIGHT * sizeof(*dest_screen));
+#endif
 }
 
 //
