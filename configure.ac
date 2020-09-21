@@ -1,13 +1,13 @@
-AC_INIT(Chocolate Doom, 3.0.0,
-        chocolate-doom-dev-list@chocolate-doom.org, chocolate-doom)
+AC_INIT(Rum and Raisin Doom, 0.1.0,
+        chocolate-doom-dev-list@chocolate-doom.org, rum-and-raisin-doom)
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
-PACKAGE_SHORTDESC="Conservative source port"
+PACKAGE_SHORTDESC="Fork of Chocolate Doom focusing on renderer optimisations"
 PACKAGE_COPYRIGHT="Copyright (C) 1993-2020"
 PACKAGE_LICENSE="GNU General Public License, version 2"
-PACKAGE_MAINTAINER="Simon Howard"
+PACKAGE_MAINTAINER="Ethan Watson"
 PACKAGE_URL="https://www.chocolate-doom.org/"
-PACKAGE_RDNS="org.chocolate_doom"
+PACKAGE_RDNS="org.rum_and_raisin_doom"
 PACKAGE_BUGREPORT="https://github.com/chocolate-doom/chocolate-doom/issues"
 
 AC_CONFIG_AUX_DIR(autotools)
@@ -163,7 +163,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 WINDOWS_RC_VERSION=`echo $PACKAGE_VERSION | sed 's/-.*//; s/\./, /g; s/$/, 0/'`
 
 dnl Without a hyphen. This is used for the bash-completion scripts.
-PROGRAM_SPREFIX=$(echo $PACKAGE_SHORTNAME | tr A-Z a-z)
+PROGRAM_SPREFIX=$(echo $PACKAGE_SHORTNAME | tr A-Z a-z | tr " " -)
 
 dnl With a hyphen, used almost everywhere else.
 PROGRAM_PREFIX=${PROGRAM_SPREFIX}-
