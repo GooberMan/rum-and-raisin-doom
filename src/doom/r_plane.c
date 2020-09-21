@@ -42,7 +42,7 @@ planefunction_t		ceilingfunc;
 //
 
 // Here comes the obnoxious "visplane".
-#define MAXVISPLANES	128
+#define MAXVISPLANES	512
 visplane_t		visplanes[MAXVISPLANES];
 visplane_t*		lastvisplane;
 visplane_t*		floorplane;
@@ -246,7 +246,7 @@ R_FindPlane
     check->minx = SCREENWIDTH;
     check->maxx = -1;
     
-    memset (check->top,0xff,sizeof(check->top));
+    memset (check->top,VPINDEX_INVALID,sizeof(check->top));
 		
     return check;
 }
@@ -290,7 +290,7 @@ R_CheckPlane
     }
 
     for (x=intrl ; x<= intrh ; x++)
-	if (pl->top[x] != 0xff)
+	if (pl->top[x] != VPINDEX_INVALID)
 	    break;
 
     if (x > intrh)
@@ -314,7 +314,7 @@ R_CheckPlane
     pl->minx = start;
     pl->maxx = stop;
 
-    memset (pl->top,0xff,sizeof(pl->top));
+    memset (pl->top,VPINDEX_INVALID,sizeof(pl->top));
 		
     return pl;
 }
@@ -431,8 +431,8 @@ void R_DrawPlanes (void)
 
 	planezlight = zlight[light];
 
-	pl->top[pl->maxx+1] = 0xff;
-	pl->top[pl->minx-1] = 0xff;
+	pl->top[pl->maxx+1] = VPINDEX_INVALID;
+	pl->top[pl->minx-1] = VPINDEX_INVALID;
 		
 	stop = pl->maxx + 1;
 

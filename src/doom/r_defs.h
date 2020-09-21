@@ -416,6 +416,8 @@ typedef struct
 } spritedef_t;
 
 
+typedef uint16_t vpindex_t;
+#define VPINDEX_INVALID ( ~(vpindex_t)0 )
 
 //
 // Now what is a visplane, anyway?
@@ -430,15 +432,15 @@ typedef struct
   
   // leave pads for [minx-1]/[maxx+1]
   
-  byte		pad1;
+  vpindex_t		pad1;
   // Here lies the rub for all
   //  dynamic resize/change of resolution.
-  byte		top[SCREENWIDTH];
-  byte		pad2;
-  byte		pad3;
+  vpindex_t		top[SCREENWIDTH];
+  vpindex_t		pad2;
+  vpindex_t		pad3;
   // See above.
-  byte		bottom[SCREENWIDTH];
-  byte		pad4;
+  vpindex_t		bottom[SCREENWIDTH];
+  vpindex_t		pad4;
 
 } visplane_t;
 
