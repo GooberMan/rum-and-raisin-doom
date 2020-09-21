@@ -74,8 +74,8 @@ static SDL_Texture *texture_upscaled = NULL;
 static SDL_Rect blit_rect = {
     0,
     0,
-    SCREENWIDTH,
-    SCREENHEIGHT
+    SCREENHEIGHT,
+    SCREENWIDTH
 };
 
 static uint32_t pixel_format;
@@ -677,8 +677,8 @@ static void CreateUpscaledTexture(boolean force)
     new_texture = SDL_CreateTexture(renderer,
                                 pixel_format,
                                 SDL_TEXTUREACCESS_TARGET,
-                                w_upscale*SCREENWIDTH,
-                                h_upscale*SCREENHEIGHT);
+                                h_upscale*SCREENHEIGHT,
+                                w_upscale*SCREENWIDTH);
 
     old_texture = texture_upscaled;
     texture_upscaled = new_texture;
@@ -697,6 +697,13 @@ void I_FinishUpdate (void)
     static int lasttic;
     int tics;
     int i;
+
+	SDL_Rect Target;
+	int render_width;
+	int render_height;
+	float scalefactor = 1.f;
+	float scalexfactor = 8.f;
+	float scaleyfactor = 6.f;
 
     if (!initialized)
         return;
@@ -790,13 +797,33 @@ void I_FinishUpdate (void)
     // Render this intermediate texture into the upscaled texture
     // using "nearest" integer scaling.
 
-    SDL_SetRenderTarget(renderer, texture_upscaled);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_SetRenderTarget(renderer, texture_upscaled);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
 
     // Finally, render this upscaled texture to screen using linear scaling.
 
-    SDL_SetRenderTarget(renderer, NULL);
-    SDL_RenderCopy(renderer, texture_upscaled, NULL, NULL);
+	SDL_SetRenderTarget(renderer, NULL);
+
+	SDL_GetRendererOutputSize( renderer, &render_width, &render_height );
+
+	if( SCREENWIDTH < window_width )
+	{
+		//scalefactor = (float)SCREENWIDTH / (float)window_width;
+	}
+
+	if( !aspect_ratio_correct )
+	{
+		// Not working yet, probably needs different calculations...
+		scaleyfactor = 5.f;
+		scalefactor *= 1.2f;
+	}
+
+	Target.x = actualheight / ( scaleyfactor / scalefactor );
+	Target.w = actualheight * scalefactor;
+	Target.y = -SCREENWIDTH / ( scalexfactor / scalefactor );
+	Target.h = SCREENWIDTH * scalefactor;
+
+	SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 
     // Draw!
 
@@ -1160,7 +1187,7 @@ static void SetVideoMode(void)
 
     // In windowed mode, the window can be resized while the game is
     // running.
-    window_flags = SDL_WINDOW_RESIZABLE;
+    window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL;
 
     // Set the highdpi flag - this makes a big difference on Macs with
     // retina displays, especially when using small window sizes.
@@ -1307,7 +1334,7 @@ static void SetVideoMode(void)
     if (screenbuffer == NULL)
     {
         screenbuffer = SDL_CreateRGBSurface(0,
-                                            SCREENWIDTH, SCREENHEIGHT, 8,
+                                            SCREENHEIGHT, SCREENWIDTH, 8,
                                             0, 0, 0, 0);
         SDL_FillRect(screenbuffer, NULL, 0);
     }
@@ -1326,7 +1353,7 @@ static void SetVideoMode(void)
         SDL_PixelFormatEnumToMasks(pixel_format, &bpp,
                                    &rmask, &gmask, &bmask, &amask);
         argbbuffer = SDL_CreateRGBSurface(0,
-                                          SCREENWIDTH, SCREENHEIGHT, bpp,
+                                          SCREENHEIGHT, SCREENWIDTH, bpp,
                                           rmask, gmask, bmask, amask);
         SDL_FillRect(argbbuffer, NULL, 0);
     }
@@ -1349,7 +1376,7 @@ static void SetVideoMode(void)
     texture = SDL_CreateTexture(renderer,
                                 pixel_format,
                                 SDL_TEXTUREACCESS_STREAMING,
-                                SCREENWIDTH, SCREENHEIGHT);
+                                SCREENHEIGHT, SCREENWIDTH);
 
     // Initially create the upscaled texture for rendering to screen
 
