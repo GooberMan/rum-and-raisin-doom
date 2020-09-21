@@ -40,6 +40,12 @@ extern byte*		dc_source;
 void 	R_DrawColumn (void);
 void 	R_DrawColumnLow (void);
 
+// Rum and raisin extensions.
+// Needs a whole overhaul of how we define output buffers.
+// For now, let's just SIMD output to the right location.
+
+void    R_DrawColumnAVXTransposed (void);
+
 // The Spectre/Invisibility effect.
 void 	R_DrawFuzzColumn (void);
 void 	R_DrawFuzzColumnLow (void);

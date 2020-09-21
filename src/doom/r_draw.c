@@ -38,8 +38,9 @@
 
 
 // ?
-#define MAXWIDTH			1120
-#define MAXHEIGHT			832
+// This does precisely nothing but hard limit what you can do with a given executable
+#define MAXWIDTH			(SCREENWIDTH*2)
+#define MAXHEIGHT			(SCREENHEIGHT*2)
 
 // status bar height at bottom of screen
 #define SBARHEIGHT		32
@@ -60,8 +61,8 @@ int		scaledviewwidth;
 int		viewheight;
 int		viewwindowx;
 int		viewwindowy; 
-pixel_t*		ylookup[MAXHEIGHT];
-int		columnofs[MAXWIDTH]; 
+pixel_t*		xlookup[MAXHEIGHT];
+int		rowofs[MAXWIDTH]; 
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -122,7 +123,7 @@ void R_DrawColumn (void)
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = ylookup[dc_yl] + columnofs[dc_x];  
+    dest = xlookup[dc_x] + rowofs[dc_yl];  
 
     // Determine scaling,
     //  which is the only mapping to be done.
@@ -134,12 +135,12 @@ void R_DrawColumn (void)
     // This is as fast as it gets.
     do 
     {
-	// Re-map color indices from wall texture column
-	//  using a lighting/special effects LUT.
-	*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
-	
-	dest += SCREENWIDTH; 
-	frac += fracstep;
+		// Re-map color indices from wall texture column
+		//  using a lighting/special effects LUT.
+		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+		
+		dest += 1; 
+		frac += fracstep;
 	
     } while (count--); 
 } 
@@ -207,6 +208,7 @@ void R_DrawColumn (void)
 
 void R_DrawColumnLow (void) 
 { 
+#if 0
     int			count; 
     pixel_t*		dest;
     pixel_t*		dest2;
@@ -248,14 +250,72 @@ void R_DrawColumnLow (void)
 	frac += fracstep; 
 
     } while (count--);
+#endif
 }
 
+// Rum and raisin extensions
+#include <nmmintrin.h>
+
+void R_DrawColumnAVXTransposed( void )
+{
+#if 0
+	int			count; 
+	pixel_t*	dest;
+	fixed_t		frac;
+	fixed_t		fracstep;	 
+
+	count = dc_yh - dc_yl; 
+
+	// Zero length, column does not exceed a pixel.
+	if (count < 0) 
+	return; 
+
+	// dc_x = draw column x
+	// yl = top row
+	// yh = bottom row
+					
+#ifdef RANGECHECK 
+	if ((unsigned)dc_x >= SCREENWIDTH
+		|| dc_yl < 0
+		|| dc_yh >= SCREENHEIGHT)
+	{
+		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
+	}
+#endif 
+
+	// Framebuffer destination address.
+	// Use ylookup LUT to avoid multiply with ScreenWidth.
+	// Use columnofs LUT for subwindows? 
+	dest = ylookup[dc_yl] + columnofs[dc_x];  
+
+	// Determine scaling,
+	//  which is the only mapping to be done.
+	fracstep = dc_iscale; 
+	frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+
+	// Inner loop that does the actual texture mapping,
+	//  e.g. a DDA-lile scaling.
+	// This is as fast as it gets.
+	do 
+	{
+		// Re-map color indices from wall texture column
+		//  using a lighting/special effects LUT.
+		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+
+		dest += SCREENWIDTH; 
+		frac += fracstep;
+
+	} while (count--); 
+#endif
+}
+
+// End the rumbo raisin
 
 //
 // Spectre/Invisibility.
 //
 #define FUZZTABLE		50 
-#define FUZZOFF	(SCREENWIDTH)
+#define FUZZOFF	(SCREENHEIGHT)
 
 
 int	fuzzoffset[FUZZTABLE] =
@@ -283,24 +343,21 @@ int	fuzzpos = 0;
 void R_DrawFuzzColumn (void) 
 { 
     int			count; 
-    pixel_t*		dest;
+    pixel_t*	dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
 
-    // Adjust borders. Low... 
-    if (!dc_yl) 
-	dc_yl = 1;
-
-    // .. and high.
-    if (dc_yh == viewheight-1) 
-	dc_yh = viewheight - 2; 
-		 
     count = dc_yh - dc_yl; 
 
     // Zero length.
     if (count < 0) 
 	return; 
 
+	// One interesting side effect of transposing the buffer:
+	// It's now the left and right edges of the screen that we need to not sample
+	if (!dc_x || dc_x == viewwidth-1)
+		return;
+		 
 #ifdef RANGECHECK 
     if ((unsigned)dc_x >= SCREENWIDTH
 	|| dc_yl < 0 || dc_yh >= SCREENHEIGHT)
@@ -310,7 +367,7 @@ void R_DrawFuzzColumn (void)
     }
 #endif
     
-    dest = ylookup[dc_yl] + columnofs[dc_x];
+    dest = xlookup[dc_x] + rowofs[dc_yl];  
 
     // Looks familiar.
     fracstep = dc_iscale; 
@@ -331,7 +388,7 @@ void R_DrawFuzzColumn (void)
 	if (++fuzzpos == FUZZTABLE) 
 	    fuzzpos = 0;
 	
-	dest += SCREENWIDTH;
+	dest += 1;
 
 	frac += fracstep; 
     } while (count--); 
@@ -341,6 +398,7 @@ void R_DrawFuzzColumn (void)
  
 void R_DrawFuzzColumnLow (void) 
 { 
+#if 0
     int			count; 
     pixel_t*		dest;
     pixel_t*		dest2;
@@ -403,6 +461,7 @@ void R_DrawFuzzColumnLow (void)
 
 	frac += fracstep; 
     } while (count--); 
+#endif
 } 
  
   
@@ -423,6 +482,7 @@ byte*	translationtables;
 
 void R_DrawTranslatedColumn (void) 
 { 
+#if 0
     int			count; 
     pixel_t*		dest;
     fixed_t		frac;
@@ -463,10 +523,12 @@ void R_DrawTranslatedColumn (void)
 	
 	frac += fracstep; 
     } while (count--); 
+#endif
 } 
 
 void R_DrawTranslatedColumnLow (void) 
 { 
+#if 0
     int			count; 
     pixel_t*		dest;
     pixel_t*		dest2;
@@ -515,6 +577,7 @@ void R_DrawTranslatedColumnLow (void)
 	
 	frac += fracstep; 
     } while (count--); 
+#endif
 } 
 
 
@@ -617,7 +680,7 @@ void R_DrawSpan (void)
     step = ((ds_xstep << 10) & 0xffff0000)
          | ((ds_ystep >> 6)  & 0x0000ffff);
 
-    dest = ylookup[ds_y] + columnofs[ds_x1];
+    dest = xlookup[ds_x1] + rowofs[ds_y];
 
     // We do not check for zero spans here?
     count = ds_x2 - ds_x1;
@@ -631,7 +694,8 @@ void R_DrawSpan (void)
 
 	// Lookup pixel from flat texture tile,
 	//  re-index using light/colormap.
-	*dest++ = ds_colormap[ds_source[spot]];
+	*dest = ds_colormap[ds_source[spot]];
+	dest += SCREENHEIGHT;
 
         position += step;
 
@@ -718,6 +782,7 @@ void R_DrawSpan (void)
 //
 void R_DrawSpanLow (void)
 {
+#if 0
     unsigned int position, step;
     unsigned int xtemp, ytemp;
     pixel_t *dest;
@@ -764,6 +829,7 @@ void R_DrawSpanLow (void)
 	position += step;
 
     } while (count--);
+#endif	
 }
 
 //
@@ -784,20 +850,19 @@ R_InitBuffer
     //  e.g. smaller view windows
     //  with border and/or status bar.
     viewwindowx = (SCREENWIDTH-width) >> 1; 
-
-    // Column offset. For windows.
-    for (i=0 ; i<width ; i++) 
-	columnofs[i] = viewwindowx + i;
-
     // Samw with base row offset.
     if (width == SCREENWIDTH) 
-	viewwindowy = 0; 
+		viewwindowy = 0;
     else 
-	viewwindowy = (SCREENHEIGHT-SBARHEIGHT-height) >> 1; 
+		viewwindowy = (SCREENHEIGHT-SBARHEIGHT-height) >> 1;
 
-    // Preclaculate all row offsets.
-    for (i=0 ; i<height ; i++) 
-	ylookup[i] = I_VideoBuffer + (i+viewwindowy)*SCREENWIDTH; 
+    // Preclaculate all column offsets.
+    for (i=0 ; i<width ; i++) 
+		xlookup[i] = I_VideoBuffer + (i+viewwindowx)*SCREENHEIGHT; 
+
+    // Row offset. For windows.
+    for (i=0 ; i<height ; i++)
+		rowofs[i] = viewwindowy + i;
 } 
  
  
@@ -811,6 +876,7 @@ R_InitBuffer
 //
 void R_FillBackScreen (void) 
 { 
+#if 0
     byte*	src;
     pixel_t*	dest;
     int		x;
@@ -855,20 +921,22 @@ void R_FillBackScreen (void)
     src = W_CacheLumpName(name, PU_CACHE); 
     dest = background_buffer;
 	 
+#if 0
     for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
     { 
-	for (x=0 ; x<SCREENWIDTH/64 ; x++) 
-	{ 
-	    memcpy (dest, src+((y&63)<<6), 64); 
-	    dest += 64; 
-	} 
+		for (x=0 ; x<SCREENWIDTH/64 ; x++) 
+		{ 
+		    memcpy (dest, src+((y&63)<<6), 64); 
+		    dest += 64; 
+		} 
 
-	if (SCREENWIDTH&63) 
-	{ 
-	    memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63); 
-	    dest += (SCREENWIDTH&63); 
-	} 
+		if (SCREENWIDTH&63) 
+		{ 
+		    memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63); 
+		    dest += (SCREENWIDTH&63); 
+		} 
     } 
+#endif
      
     // Draw screen and bezel; this is done to a separate screen buffer.
 
@@ -909,6 +977,7 @@ void R_FillBackScreen (void)
                 W_CacheLumpName(DEH_String("brdr_br"),PU_CACHE));
 
     V_RestoreBuffer();
+#endif
 } 
  
 
@@ -920,6 +989,7 @@ R_VideoErase
 ( unsigned	ofs,
   int		count ) 
 { 
+#if 0
   // LFB copy.
   // This might not be a good idea if memcpy
   //  is not optiomal, e.g. byte by byte on
@@ -930,6 +1000,7 @@ R_VideoErase
     {
         memcpy(I_VideoBuffer + ofs, background_buffer + ofs, count * sizeof(*I_VideoBuffer));
     }
+#endif
 } 
 
 
@@ -940,6 +1011,7 @@ R_VideoErase
 //
 void R_DrawViewBorder (void) 
 { 
+#if 0
     int		top;
     int		side;
     int		ofs;
@@ -970,6 +1042,7 @@ void R_DrawViewBorder (void)
 
     // ? 
     V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
+#endif
 } 
  
  
