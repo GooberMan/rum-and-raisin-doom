@@ -35,6 +35,8 @@
 #include "r_local.h"
 #include "r_sky.h"
 
+// Need ST_HEIGHT
+#include "st_stuff.h"
 
 
 
@@ -660,7 +662,6 @@ R_SetViewSize
     setdetail = detail;
 }
 
-
 //
 // R_ExecuteSetViewSize
 //
@@ -682,8 +683,8 @@ void R_ExecuteSetViewSize (void)
     }
     else
     {
-	scaledviewwidth = setblocks*32;
-	viewheight = (setblocks*168/10)&~7;
+	scaledviewwidth = setblocks*SCREENWIDTH/10;
+	viewheight = (setblocks*(SCREENHEIGHT-ST_HEIGHT)/10)&~7;
     }
     
     detailshift = setdetail;
