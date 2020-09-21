@@ -23,13 +23,13 @@
 #include "doomtype.h"
 
 // Screen width and height.
+// Every compiler will do literal calculations at compile time these days, so let's be always correct about it.
+// Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
+// and SCREENHEIGHT_4_3 to be 4:3 correct.
 
-#define SCREENWIDTH  320
-#define SCREENHEIGHT 200
-
-// Screen height used when aspect_ratio_correct=true.
-
-#define SCREENHEIGHT_4_3 240
+#define SCREENWIDTH  1280
+#define SCREENHEIGHT ( SCREENWIDTH * 6250 / 10000 )
+#define SCREENHEIGHT_4_3 ( SCREENWIDTH * 7500 / 10000 )
 
 typedef boolean (*grabmouse_callback_t)(void);
 
