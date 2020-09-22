@@ -225,7 +225,11 @@ boolean D_Display (void)
 	if (!gametic)
 	    break;
 	if (automapactive)
+	{
 	    AM_Drawer ();
+		// Slight hack to get around the fact that we memset everything now for the automap
+		redrawsbar = true;
+	}
 	if (wipe || (viewheight != SCREENHEIGHT && fullscreen))
 	    redrawsbar = true;
 	if (inhelpscreensstate && !inhelpscreens)
@@ -308,12 +312,12 @@ boolean D_Display (void)
     // menus go directly to the screen
     M_Drawer ();          // menu is drawn even on top of everything
 
+    NetUpdate ();         // send out any new accumulation
+
 	end = I_GetTimeUS();
 	total = end - start;
 
 	I_LogPerfFrame( total, framereason );
-
-    NetUpdate ();         // send out any new accumulation
 
     return wipe;
 }
