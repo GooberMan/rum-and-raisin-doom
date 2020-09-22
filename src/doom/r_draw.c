@@ -33,6 +33,8 @@
 // Needs access to LFB (guess what).
 #include "v_video.h"
 
+#include "st_stuff.h"
+
 // State.
 #include "doomstat.h"
 
@@ -43,7 +45,7 @@
 #define MAXHEIGHT			(SCREENHEIGHT*2)
 
 // status bar height at bottom of screen
-#define SBARHEIGHT		32
+#define SBARHEIGHT		ST_HEIGHT
 
 //
 // All drawing to the view buffer is accomplished in this file.
