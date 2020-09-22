@@ -329,8 +329,14 @@ int	fuzzoffset[FUZZTABLE] =
     FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF 
 }; 
 
-int	fuzzpos = 0; 
+#define FUZZ_FRACBASEX 320
+#define FUZZ_FRACBASEY 200
 
+fixed_t	fuzzpos = 0;
+fixed_t fuzzstepx = (fixed_t)( ((int64_t)FUZZ_FRACBASEX << FRACBITS) / SCREENWIDTH );
+fixed_t fuzzstepy = (fixed_t)( ((int64_t)FUZZ_FRACBASEY << FRACBITS) / SCREENHEIGHT );
+
+#define FIXED_FUZZTABLE ( 50 << FRACBITS )
 
 //
 // Framebuffer postprocessing.
@@ -343,6 +349,7 @@ int	fuzzpos = 0;
 void R_DrawFuzzColumn (void) 
 { 
     int			count; 
+	int			thisfuzzpos;
     pixel_t*	dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
@@ -350,8 +357,8 @@ void R_DrawFuzzColumn (void)
     count = dc_yh - dc_yl; 
 
     // Zero length.
-    if (count < 0) 
-	return; 
+    if (count < 0)
+		return;
 
 	// One interesting side effect of transposing the buffer:
 	// It's now the left and right edges of the screen that we need to not sample
@@ -378,19 +385,21 @@ void R_DrawFuzzColumn (void)
     //  brighter than average).
     do 
     {
-	// Lookup framebuffer, and retrieve
-	//  a pixel that is either one column
-	//  left or right of the current one.
-	// Add index from colormap to index.
-	*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]]; 
+		thisfuzzpos = fuzzpos >> FRACBITS;
+		// Lookup framebuffer, and retrieve
+		//  a pixel that is either one column
+		//  left or right of the current one.
+		// Add index from colormap to index.
+		*dest = colormaps[6*256+dest[fuzzoffset[thisfuzzpos]]]; 
 
-	// Clamp table lookup index.
-	if (++fuzzpos == FUZZTABLE) 
-	    fuzzpos = 0;
+		// Clamp table lookup index.
+		fuzzpos += fuzzstepy;
+		if (fuzzpos >= FIXED_FUZZTABLE)
+		    fuzzpos = 0;
 	
-	dest += 1;
+		dest += 1;
 
-	frac += fracstep; 
+		frac += fracstep; 
     } while (count--); 
 } 
 
