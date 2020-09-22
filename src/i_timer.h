@@ -29,6 +29,9 @@ int I_GetTime (void);
 // returns current time in ms
 int I_GetTimeMS (void);
 
+// returns current time in microseconds
+uint64_t I_GetTimeUS (void);
+
 // Pause for a specified number of ms
 void I_Sleep(int ms);
 
@@ -37,6 +40,11 @@ void I_InitTimer(void);
 
 // Wait for vertical retrace or pause a bit.
 void I_WaitVBL(int count);
+
+void I_InitPerfFrames( uint64_t count );
+
+// If -perf is specified on command line, this will fill that buffer
+void I_LogPerfFrame( uint64_t microseconds, const char* description );
 
 #endif
 

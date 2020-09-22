@@ -168,6 +168,14 @@ extern  boolean setsizeneeded;
 extern  int             showMessages;
 void R_ExecuteSetViewSize (void);
 
+const char* reasons[] =
+{
+    "level",
+    "intermission",
+    "finale",
+    "demo",
+};
+
 boolean D_Display (void)
 {
     static  boolean		viewactivestate = false;
@@ -179,6 +187,14 @@ boolean D_Display (void)
     int				y;
     boolean			wipe;
     boolean			redrawsbar;
+
+	const char* framereason = reasons[ gamestate ];
+
+	uint64_t start;
+	uint64_t end;
+	uint64_t total;
+
+	start = I_GetTimeUS();
 		
     redrawsbar = false;
     
@@ -291,6 +307,12 @@ boolean D_Display (void)
 
     // menus go directly to the screen
     M_Drawer ();          // menu is drawn even on top of everything
+
+	end = I_GetTimeUS();
+	total = end - start;
+
+	I_LogPerfFrame( total, framereason );
+
     NetUpdate ();         // send out any new accumulation
 
     return wipe;
@@ -418,6 +440,10 @@ void D_RunFrame()
     static int wipestart;
     static boolean wipe;
 
+	uint64_t start;
+	uint64_t end;
+	uint64_t total;
+
     if (wipe)
     {
         do
@@ -427,12 +453,22 @@ void D_RunFrame()
             I_Sleep(1);
         } while (tics <= 0);
 
+
+		start = I_GetTimeUS();
+
         wipestart = nowtime;
         wipe = !wipe_ScreenWipe(wipe_Melt
                                , 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
         I_UpdateNoBlit ();
         M_Drawer ();                            // menu is drawn even on top of wipes
+
+		end = I_GetTimeUS();
+		total = end - start;
+
+		I_LogPerfFrame( total, "wipe" );
+
         I_FinishUpdate ();                      // page flip or blit buffer
+
         return;
     }
 
@@ -1676,6 +1712,14 @@ void D_DoomMain (void)
 
         printf("  loaded %i DEHACKED lumps from PWAD files.\n", loaded);
     }
+
+	p = M_CheckParmWithArgs( "-perf", 1 );
+	if( p )
+	{
+		int count;
+		M_StrToInt( myargv[p + 1], &count );
+		I_InitPerfFrames( count );
+	}
 
     // Set the gamedescription string. This is only possible now that
     // we've finished loading Dehacked patches.
