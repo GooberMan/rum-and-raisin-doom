@@ -32,7 +32,13 @@
 #include "r_local.h"
 #include "r_sky.h"
 
-
+// Rum and raisin extensions
+#if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
+#define PREFETCH_X86 1
+#include <nmmintrin.h>
+#else
+#define PREFETCH_X86 0
+#endif
 
 planefunction_t		floorfunc;
 planefunction_t		ceilingfunc;
@@ -161,6 +167,17 @@ R_MapPlane
 
 	ds_colormap = planezlight[index];
     }
+
+#if PREFETCH_X86
+	// Get in mah L1 cache
+	int currline = 0;
+	byte* currsource = ds_colormap;
+	for( currline = 0; currline < 4; ++currline )
+	{
+		_mm_prefetch( currsource, _MM_HINT_T0 );
+		currsource += 64;
+	}
+#endif // PREFETCH_X86
 	
     ds_y = y;
     ds_x1 = x1;
@@ -354,8 +371,6 @@ R_MakeSpans
     }
 }
 
-
-
 //
 // R_DrawPlanes
 // At the end of each frame.
@@ -385,64 +400,75 @@ void R_DrawPlanes (void)
 
     for (pl = visplanes ; pl < lastvisplane ; pl++)
     {
-	if (pl->minx > pl->maxx)
-	    continue;
+		if (pl->minx > pl->maxx)
+			continue;
 
 	
-	// sky flat
-	if (pl->picnum == skyflatnum)
-	{
-	    dc_iscale = pspriteiscale>>detailshift;
-	    
-	    // Sky is allways drawn full bright,
-	    //  i.e. colormaps[0] is used.
-	    // Because of this hack, sky is not affected
-	    //  by INVUL inverse mapping.
-	    dc_colormap = colormaps;
-	    dc_texturemid = skytexturemid;
-	    for (x=pl->minx ; x <= pl->maxx ; x++)
-	    {
-		dc_yl = pl->top[x];
-		dc_yh = pl->bottom[x];
-
-		if (dc_yl <= dc_yh)
+		// sky flat
+		if (pl->picnum == skyflatnum)
 		{
-		    angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
-		    dc_x = x;
-		    dc_source = R_GetColumn(skytexture, angle);
-		    colfunc ();
+			dc_iscale = pspriteiscale>>detailshift;
+	    
+			// Sky is allways drawn full bright,
+			//  i.e. colormaps[0] is used.
+			// Because of this hack, sky is not affected
+			//  by INVUL inverse mapping.
+			dc_colormap = colormaps;
+			dc_texturemid = skytexturemid;
+			for (x=pl->minx ; x <= pl->maxx ; x++)
+			{
+				dc_yl = pl->top[x];
+				dc_yh = pl->bottom[x];
+
+				if (dc_yl <= dc_yh)
+				{
+					angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
+					dc_x = x;
+					dc_source = R_GetColumn(skytexture, angle);
+					colfunc ();
+				}
+			}
+			continue;
 		}
-	    }
-	    continue;
-	}
 	
-	// regular flat
-        lumpnum = firstflat + flattranslation[pl->picnum];
-	ds_source = W_CacheLumpNum(lumpnum, PU_STATIC);
+		// regular flat
+		lumpnum = firstflat + flattranslation[pl->picnum];
+		ds_source = W_CacheLumpNum(lumpnum, PU_STATIC);
+
+#if PREFETCH_X86
+		// Get in mah L1 cache
+		int currline = 0;
+		byte* currsource = ds_source;
+		for( currline = 0; currline < 64; ++currline )
+		{
+			_mm_prefetch( currsource, _MM_HINT_T0 );
+			currsource += 64;
+		}
+#endif // PREFETCH_X86
 	
-	planeheight = abs(pl->height-viewz);
-	light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
+		planeheight = abs(pl->height-viewz);
+		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-	if (light >= LIGHTLEVELS)
-	    light = LIGHTLEVELS-1;
+		if (light >= LIGHTLEVELS)
+			light = LIGHTLEVELS-1;
 
-	if (light < 0)
-	    light = 0;
+		if (light < 0)
+			light = 0;
 
-	planezlight = zlight[light];
+		planezlight = zlight[light];
 
-	pl->top[pl->maxx+1] = VPINDEX_INVALID;
-	pl->top[pl->minx-1] = VPINDEX_INVALID;
+		pl->top[pl->maxx+1] = VPINDEX_INVALID;
+		pl->top[pl->minx-1] = VPINDEX_INVALID;
 		
-	stop = pl->maxx + 1;
+		stop = pl->maxx + 1;
 
-	for (x=pl->minx ; x<= stop ; x++)
-	{
-	    R_MakeSpans(x,pl->top[x-1],
-			pl->bottom[x-1],
-			pl->top[x],
-			pl->bottom[x]);
-	}
+		for (x=pl->minx ; x<= stop ; x++)
+		{
+			R_MakeSpans(x,pl->top[x-1],
+				pl->bottom[x-1],
+				pl->top[x],
+				pl->bottom[x]);
+		}
 	
         W_ReleaseLumpNum(lumpnum);
     }
