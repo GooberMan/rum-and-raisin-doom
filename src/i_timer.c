@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 typedef struct
 {
@@ -124,6 +125,7 @@ void I_InitPerfFrames( uint64_t count )
 void I_LogPerfFrame( uint64_t microseconds, const char* reason )
 {
 	uint64_t thisperf;
+	FILE* of;
 
 	if( numperfframes > 0 )
 	{
@@ -132,9 +134,13 @@ void I_LogPerfFrame( uint64_t microseconds, const char* reason )
 
 		if( ++currperfframe >= numperfframes )
 		{
-			// TODO: dump to file and exit
+			time_t currtime = time( NULL );
+			struct tm* local = localtime( &currtime );
 
-			FILE* of = fopen( "perfframe.csv", "w" );
+			char filename[ 512 ];
+			sprintf( filename, "%d%02d%02d_%02d.%02d.%02d_perfframe.csv", 1900 + local->tm_year, local->tm_mon + 1, local->tm_mday, local->tm_hour, local->tm_min, local->tm_sec );
+
+			of = fopen( filename, "w" );
 			if( of != NULL )
 			{
 				fprintf( of, "frame,microseconds,description\n" );
