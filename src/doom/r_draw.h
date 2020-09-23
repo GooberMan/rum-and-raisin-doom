@@ -21,7 +21,8 @@
 #define __R_DRAW__
 
 
-
+#define DOFLATPRECACHE 1
+#define ADJUSTED_FUZZ 0
 
 extern lighttable_t*	dc_colormap;
 extern int		dc_x;
@@ -47,7 +48,6 @@ void 	R_DrawColumnLow (void);
 void    R_DrawColumnAVXTransposed (void);
 
 // The Spectre/Invisibility effect.
-#define ADJUSTED_FUZZ 0
 void	R_CacheFuzzColumn (void);
 void 	R_DrawFuzzColumn (void);
 void 	R_DrawFuzzColumnLow (void);
@@ -80,6 +80,9 @@ extern byte*		ds_source;
 extern byte*		translationtables;
 extern byte*		dc_translation;
 
+#if DOFLATPRECACHE
+extern byte** precachedflats;
+#endif //DOFLATPRECACHE
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.

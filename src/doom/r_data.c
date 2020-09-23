@@ -35,6 +35,10 @@
 #include "doomstat.h"
 #include "r_sky.h"
 
+#if DOFLATPRECACHE
+// NEEEEEEED ANIMATION DATA
+#include "p_spec.h"
+#endif // DOFLATPRECACHE
 
 #include "r_data.h"
 
@@ -797,6 +801,11 @@ int		flatmemory;
 int		texturememory;
 int		spritememory;
 
+#if DOFLATPRECACHE
+byte** precachedflats;
+#define FLATCOLORMAPS ( NUMCOLORMAPS + 1 )
+#endif // DOFLATPRECACHE
+
 void R_PrecacheLevel (void)
 {
     char*		flatpresent;
@@ -807,10 +816,19 @@ void R_PrecacheLevel (void)
     int			j;
     int			k;
     int			lump;
-    
+
     texture_t*		texture;
     thinker_t*		th;
     spriteframe_t*	sf;
+
+	byte*			baseflatdata;
+	byte*			outputflatdata;
+	int				currmapindex;
+	lighttable_t*	currmap;
+	int				currflatbyte;
+
+	int32_t			animlength;
+	int32_t			thisanim;
 
     if (demoplayback)
 	return;
@@ -819,22 +837,54 @@ void R_PrecacheLevel (void)
     flatpresent = Z_Malloc(numflats, PU_STATIC, NULL);
     memset (flatpresent,0,numflats);	
 
+#if DOFLATPRECACHE
+	// This needs to be static, and allocated elsewhere
+	precachedflats = Z_Malloc( numflats * sizeof(byte*), PU_LEVEL, NULL );
+	memset( precachedflats, 0, numflats * sizeof(byte*) );
+#endif // DOFLATPRECACHE
+
     for (i=0 ; i<numsectors ; i++)
     {
-	flatpresent[sectors[i].floorpic] = 1;
-	flatpresent[sectors[i].ceilingpic] = 1;
+		flatpresent[sectors[i].floorpic] = 1;
+		flatpresent[sectors[i].ceilingpic] = 1;
+
+		animlength = sectors[i].floorpic - P_GetPicAnimLength( false, sectors[i].floorpic );
+		for( thisanim = sectors[i].floorpic; thisanim > animlength; --thisanim )
+		{
+			flatpresent[ thisanim ] = 1;
+		}
+
+		animlength = sectors[i].ceilingpic - P_GetPicAnimLength( false, sectors[i].ceilingpic );
+		for( thisanim = sectors[i].ceilingpic; thisanim > animlength; --thisanim )
+		{
+			flatpresent[ thisanim ] = 1;
+		}
     }
 	
     flatmemory = 0;
 
     for (i=0 ; i<numflats ; i++)
     {
-	if (flatpresent[i])
-	{
-	    lump = firstflat + i;
-	    flatmemory += lumpinfo[lump]->size;
-	    W_CacheLumpNum(lump, PU_CACHE);
-	}
+		if (flatpresent[i])
+		{
+			lump = firstflat + i;
+			flatmemory += lumpinfo[lump]->size;
+			baseflatdata = (byte*)W_CacheLumpNum(lump, PU_CACHE);
+
+#if DOFLATPRECACHE
+			precachedflats[i] = outputflatdata = Z_Malloc(lumpinfo[lump]->size * FLATCOLORMAPS, PU_LEVEL, NULL );
+
+			for( currmapindex = 0; currmapindex < FLATCOLORMAPS; ++currmapindex )
+			{
+				currmap = colormaps + currmapindex * 256;
+				for( currflatbyte = 0; currflatbyte < lumpinfo[lump]->size; ++currflatbyte)
+				{
+					*outputflatdata = currmap[ baseflatdata[ currflatbyte ] ];
+					++outputflatdata;
+				}
+			}
+#endif // DOFLATPRECACHE
+		}
     }
 
     Z_Free(flatpresent);

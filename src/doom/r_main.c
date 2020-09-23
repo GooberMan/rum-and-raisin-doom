@@ -102,6 +102,7 @@ angle_t			xtoviewangle[SCREENWIDTH+1];
 lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
 lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
+int32_t				zlightindex[LIGHTLEVELS][MAXLIGHTZ];
 
 // bumped light from gun blasts
 int			extralight;			
@@ -634,7 +635,11 @@ void R_InitLightTables (void)
 	    if (level >= NUMCOLORMAPS)
 		level = NUMCOLORMAPS-1;
 
+#if DOFLATPRECACHE
+		zlightindex[i][j] = level;
+#else
 	    zlight[i][j] = colormaps + level*256;
+#endif
 	}
     }
 }

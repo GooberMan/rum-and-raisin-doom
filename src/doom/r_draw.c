@@ -730,11 +730,16 @@ void R_DrawSpan (void)
         spot = xtemp | ytemp;
 
 	// Lookup pixel from flat texture tile,
-	//  re-index using light/colormap.
-	*dest = ds_colormap[ds_source[spot]];
-	dest += SCREENHEIGHT;
+#if DOFLATPRECACHE
+		*dest = ds_source[spot];
+		//*dest = 0xbc;
+#else // !DOFLATPRECACHE
+		//  re-index using light/colormap.
+		*dest = ds_colormap[ds_source[spot]];
+#endif // DOFLATPRECACHE
+		dest += SCREENHEIGHT;
 
-        position += step;
+		position += step;
 
     } while (count--);
 }

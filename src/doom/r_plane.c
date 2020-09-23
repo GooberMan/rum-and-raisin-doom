@@ -79,6 +79,7 @@ int			spanstop[SCREENHEIGHT];
 // texture mapping
 //
 lighttable_t**		planezlight;
+int32_t			planezlightindex;
 fixed_t			planeheight;
 
 fixed_t			yslope[SCREENHEIGHT];
@@ -126,6 +127,7 @@ R_MapPlane
     fixed_t	distance;
     fixed_t	length;
     unsigned	index;
+	byte* originalsource = ds_source;
 	
 #ifdef RANGECHECK
     if (x2 < x1
@@ -156,6 +158,23 @@ R_MapPlane
     ds_xfrac = viewx + FixedMul(finecosine[angle], length);
     ds_yfrac = -viewy - FixedMul(finesine[angle], length);
 
+#if DOFLATPRECACHE
+	if( fixedcolormap )
+	{
+		// TODO: This should be a real define somewhere
+		ds_source += ( 4096 * NUMCOLORMAPS );
+	}
+	else
+	{
+		index = distance >> LIGHTZSHIFT;
+		if (index >= MAXLIGHTZ )
+			index = MAXLIGHTZ-1;
+
+		index = zlightindex[planezlightindex][index];
+
+		ds_source += ( 4096 * index );
+	}
+#else // !DOFLATPRECACHE
     if (fixedcolormap)
 	ds_colormap = fixedcolormap;
     else
@@ -167,7 +186,6 @@ R_MapPlane
 
 	ds_colormap = planezlight[index];
     }
-
 #if PREFETCH_X86
 	// Get in mah L1 cache
 	int currline = 0;
@@ -178,13 +196,16 @@ R_MapPlane
 		currsource += 64;
 	}
 #endif // PREFETCH_X86
-	
+
+#endif // DOFLATPRECACHE
     ds_y = y;
     ds_x1 = x1;
     ds_x2 = x2;
 
     // high or low detail
     spanfunc ();	
+
+	ds_source = originalsource;
 }
 
 
@@ -432,8 +453,13 @@ void R_DrawPlanes (void)
 		}
 	
 		// regular flat
+#if DOFLATPRECACHE
+		lumpnum = flattranslation[pl->picnum];
+		ds_source = precachedflats[ lumpnum ];
+#else // !DOFLATPRECACHE
 		lumpnum = firstflat + flattranslation[pl->picnum];
 		ds_source = W_CacheLumpNum(lumpnum, PU_STATIC);
+#endif // DOFLATPRECACHE
 
 #if PREFETCH_X86
 		// Get in mah L1 cache
@@ -455,7 +481,11 @@ void R_DrawPlanes (void)
 		if (light < 0)
 			light = 0;
 
+#if DOFLATPRECACHE
+		planezlightindex = light;
+#else // !DOFLATPRECACHE
 		planezlight = zlight[light];
+#endif // DOFLATPRECACHE
 
 		pl->top[pl->maxx+1] = VPINDEX_INVALID;
 		pl->top[pl->minx-1] = VPINDEX_INVALID;
@@ -470,6 +500,8 @@ void R_DrawPlanes (void)
 				pl->bottom[x]);
 		}
 	
+#if !DOFLATPRECACHE
         W_ReleaseLumpNum(lumpnum);
+#endif // !DOFLATPRECACHE
     }
 }
