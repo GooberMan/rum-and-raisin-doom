@@ -331,14 +331,19 @@ int	fuzzoffset[FUZZTABLE] =
     FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF 
 }; 
 
+#if ADJUSTED_FUZZ
 #define FUZZ_FRACBASEX 320
 #define FUZZ_FRACBASEY 200
 
 fixed_t	fuzzpos = 0;
+fixed_t cachedfuzzpos = 0;
 fixed_t fuzzstepx = (fixed_t)( ((int64_t)FUZZ_FRACBASEX << FRACBITS) / SCREENWIDTH );
 fixed_t fuzzstepy = (fixed_t)( ((int64_t)FUZZ_FRACBASEY << FRACBITS) / SCREENHEIGHT );
 
 #define FIXED_FUZZTABLE ( 50 << FRACBITS )
+#else // !ADJUSTED_FUZZ
+int fuzzpos = 0;
+#endif // ADJUSTED_FUZZ
 
 //
 // Framebuffer postprocessing.
@@ -348,14 +353,28 @@ fixed_t fuzzstepy = (fixed_t)( ((int64_t)FUZZ_FRACBASEY << FRACBITS) / SCREENHEI
 //  could create the SHADOW effect,
 //  i.e. spectres and invisible players.
 //
+void R_CacheFuzzColumn (void)
+{
+#if ADJUSTED_FUZZ
+	cachedfuzzpos = fuzzpos;
+#endif // ADJUSTED_FUZZ
+}
+
 void R_DrawFuzzColumn (void) 
 { 
-    int			count; 
+#if ADJUSTED_FUZZ
 	int			thisfuzzpos;
+#else
+	#define thisfuzzpos fuzzpos
+#endif // ADJUSTED_FUZZ
+    int			count; 
     pixel_t*	dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
 
+#if ADJUSTED_FUZZ
+	fuzzpos = cachedfuzzpos;
+#endif // ADJUSTED_FUZZ
     count = dc_yh - dc_yl; 
 
     // Zero length.
@@ -387,17 +406,24 @@ void R_DrawFuzzColumn (void)
     //  brighter than average).
     do 
     {
+#if ADJUSTED_FUZZ
 		thisfuzzpos = fuzzpos >> FRACBITS;
+#endif // ADJUSTED_FUZZ
 		// Lookup framebuffer, and retrieve
 		//  a pixel that is either one column
 		//  left or right of the current one.
 		// Add index from colormap to index.
 		*dest = colormaps[6*256+dest[fuzzoffset[thisfuzzpos]]]; 
 
+#if ADJUSTED_FUZZ
 		// Clamp table lookup index.
 		fuzzpos += fuzzstepy;
 		if (fuzzpos >= FIXED_FUZZTABLE)
 		    fuzzpos = 0;
+#else
+		if( ++fuzzpos == FUZZTABLE )
+			fuzzpos = 0;
+#endif
 	
 		dest += 1;
 

@@ -47,6 +47,8 @@ void 	R_DrawColumnLow (void);
 void    R_DrawColumnAVXTransposed (void);
 
 // The Spectre/Invisibility effect.
+#define ADJUSTED_FUZZ 0
+void	R_CacheFuzzColumn (void);
 void 	R_DrawFuzzColumn (void);
 void 	R_DrawFuzzColumnLow (void);
 
