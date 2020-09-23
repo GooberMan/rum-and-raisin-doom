@@ -36,7 +36,8 @@
 //  because it will get overwritten automatically if needed.
 // 
  
-#define MEM_ALIGN sizeof(void *)
+// Need things to be 16 by default for SIMD purposes...
+#define MEM_ALIGN 16
 #define ZONEID	0x1d4a11
 
 typedef struct memblock_s
