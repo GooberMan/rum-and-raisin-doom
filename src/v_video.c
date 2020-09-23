@@ -141,13 +141,22 @@ void V_SetPatchClipCallback(vpatchclipfunc_t func)
 
 void V_DrawPatch(int x, int y, patch_t *patch)
 { 
-    int count;
-    int col;
+	int col;
     column_t *column;
     pixel_t *desttop;
     pixel_t *dest;
     byte *source;
-    int w;
+
+	fixed_t virtualx;
+	fixed_t virtualy;
+	int32_t virtualwritex;
+	int32_t virtualwritey;
+	fixed_t virtualwidth;
+	fixed_t virtualheight;
+
+	fixed_t virtualcol;
+	fixed_t virtualrow;
+	fixed_t virtualpatchheight;
 
     y -= SHORT(patch->topoffset);
     x -= SHORT(patch->leftoffset);
@@ -161,9 +170,9 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 
 #ifdef RANGECHECK
     if (x < 0
-     || x + SHORT(patch->width) > SCREENWIDTH
+     || x + SHORT(patch->width) > V_VIRTUALWIDTH
      || y < 0
-     || y + SHORT(patch->height) > SCREENHEIGHT)
+     || y + SHORT(patch->height) > V_VIRTUALHEIGHT)
     {
         I_Error("Bad V_DrawPatch");
     }
@@ -171,31 +180,52 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 
     V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
 
-    col = 0;
-    desttop = dest_screen + x * SCREENHEIGHT + y;
+	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
+	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
+	virtualwidth = SHORT( patch->width ) << FRACBITS;
+	virtualheight = SHORT( patch->height ) << FRACBITS;
 
-    w = SHORT(patch->width);
+    virtualcol = 0;
+    desttop = dest_screen + ( virtualx >> FRACBITS ) * SCREENHEIGHT + ( virtualy >> FRACBITS );
 
-    for ( ; col<w ; x++, col++)
+	virtualwritex = virtualx >> FRACBITS;
+	virtualwritey = virtualy >> FRACBITS;
+
+    for ( ; virtualcol < virtualwidth && virtualwritex < SCREENWIDTH; )
     {
+
+		col = virtualcol >> FRACBITS;
         column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 
         // step through the posts in a column
         while (column->topdelta != 0xff)
         {
             source = (byte *)column + 3;
-            dest = desttop + column->topdelta;
-            count = column->length;
+			fixed_t delta = FixedMul( column->topdelta << FRACBITS, V_HEIGHTMULTIPLIER );
+            dest = desttop + ( delta >> FRACBITS );
 
-            while (count--)
+			virtualrow = 0;
+            virtualpatchheight = column->length << FRACBITS;
+
+            while ( virtualpatchheight > 0 && virtualwritey < SCREENHEIGHT )
             {
-                *dest++ = *source++;
+                *dest++ = *source;
+				virtualrow += V_HEIGHTSTEP;
+				virtualpatchheight -= V_HEIGHTSTEP;
+				++virtualwritey;
+				source += ( virtualrow >> FRACBITS );
+				virtualrow &= ( FRACUNIT - 1 );
             }
             column = (column_t *)((byte *)column + column->length + 4);
         }
 
 		desttop += SCREENHEIGHT;
+		virtualcol += V_WIDTHSTEP;
+		++virtualwritex;
+		virtualwritey = virtualy >> FRACBITS;
     }
+
+	virtualcol = 0;
 }
 
 //
