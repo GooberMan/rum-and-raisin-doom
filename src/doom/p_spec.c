@@ -185,6 +185,20 @@ void P_InitPicAnims (void)
 	
 }
 
+int32_t P_GetPicAnimLength( boolean istexture, int32_t start )
+{
+	int32_t thisanim;
+
+	for( thisanim = 0; animdefs[ thisanim ].istexture != -1; ++thisanim )
+	{
+		if( anims[ thisanim ].istexture == istexture && anims[ thisanim ].picnum == start )
+		{
+			return anims[ thisanim ].numpics;
+		}
+	}
+
+	return -1;
+}
 
 
 //
