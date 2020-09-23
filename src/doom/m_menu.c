@@ -1950,7 +1950,7 @@ void M_Drawer (void)
     if (messageToPrint)
     {
 	start = 0;
-	y = SCREENHEIGHT/2 - M_StringHeight(messageString) / 2;
+	y = V_VIRTUALHEIGHT/2 - M_StringHeight(messageString) / 2;
 	while (messageString[start] != '\0')
 	{
 	    boolean foundnewline = false;
@@ -1978,7 +1978,7 @@ void M_Drawer (void)
                 start += strlen(string);
             }
 
-	    x = SCREENWIDTH/2 - M_StringWidth(string) / 2;
+	    x = V_VIRTUALWIDTH/2 - M_StringWidth(string) / 2;
 	    M_WriteText(x, y, string);
 	    y += SHORT(hu_font[0]->height);
 	}

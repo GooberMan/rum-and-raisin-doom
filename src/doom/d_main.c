@@ -338,8 +338,8 @@ static void EnableLoadingDisk(void)
         }
 
         V_EnableLoadingDisk(disk_lump_name,
-                            SCREENWIDTH - LOADING_DISK_W,
-                            SCREENHEIGHT - LOADING_DISK_H);
+                            V_VIRTUALWIDTH - LOADING_DISK_W,
+                            V_VIRTUALHEIGHT - LOADING_DISK_H);
     }
 }
 
