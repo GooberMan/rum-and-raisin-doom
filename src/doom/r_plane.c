@@ -159,10 +159,10 @@ R_MapPlane
     ds_yfrac = -viewy - FixedMul(finesine[angle], length);
 
 #if DOFLATPRECACHE
-	if( fixedcolormap )
+	if( fixedcolormapindex )
 	{
 		// TODO: This should be a real define somewhere
-		ds_source += ( 4096 * NUMCOLORMAPS );
+		ds_source += ( 4096 * fixedcolormapindex );
 	}
 	else
 	{

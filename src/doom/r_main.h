@@ -73,7 +73,7 @@ extern int32_t			zlightindex[LIGHTLEVELS][MAXLIGHTZ];
 
 extern int		extralight;
 extern lighttable_t*	fixedcolormap;
-
+extern int32_t			fixedcolormapindex;
 
 // Number of diminishing brightness levels.
 // There a 0-31, i.e. 32 LUT in the COLORMAP lump.

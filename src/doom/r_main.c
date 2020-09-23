@@ -44,8 +44,6 @@
 // Fineangles in the SCREENWIDTH wide window.
 #define FIELDOFVIEW		2048	
 
-
-
 int			viewangleoffset;
 
 // increment every time a check is made
@@ -53,6 +51,7 @@ int			validcount = 1;
 
 
 lighttable_t*		fixedcolormap;
+int32_t				fixedcolormapindex;
 extern lighttable_t**	walllights;
 
 int			centerx;
@@ -627,6 +626,7 @@ void R_InitLightTables (void)
 	{
 	    scale = FixedDiv ((SCREENWIDTH/2*FRACUNIT), (j+1)<<LIGHTZSHIFT);
 	    scale >>= LIGHTSCALESHIFT;
+
 	    level = startmap - scale/DISTMAP;
 	    
 	    if (level < 0)
@@ -750,7 +750,7 @@ void R_ExecuteSetViewSize (void)
 	for (j=0 ; j<MAXLIGHTSCALE ; j++)
 	{
 	    level = startmap - j*SCREENWIDTH/(viewwidth<<detailshift)/DISTMAP;
-	    
+
 	    if (level < 0)
 		level = 0;
 
@@ -843,6 +843,7 @@ void R_SetupFrame (player_t* player)
 	
     sscount = 0;
 	
+	fixedcolormapindex = player->fixedcolormap;
     if (player->fixedcolormap)
     {
 	fixedcolormap =
