@@ -2167,6 +2167,8 @@ static const char *DemoVersionDescription(int version)
     }
 }
 
+#define PLAYDEMOCACHE true
+
 void G_DoPlayDemo (void)
 {
     skill_t skill;
@@ -2244,7 +2246,7 @@ void G_DoPlayDemo (void)
     }
 
     // don't spend a lot of time in loadlevel 
-    precache = false;
+    precache = PLAYDEMOCACHE;
     G_InitNew (skill, episode, map); 
     precache = true; 
     starttime = I_GetTime (); 
