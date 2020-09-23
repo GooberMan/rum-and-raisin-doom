@@ -724,8 +724,8 @@ void R_ExecuteSetViewSize (void)
     R_InitTextureMapping ();
     
     // psprite scales
-    pspritescale = FRACUNIT*viewwidth/SCREENWIDTH;
-    pspriteiscale = FRACUNIT*SCREENWIDTH/viewwidth;
+    pspritescale = FixedMul( FRACUNIT*viewwidth/SCREENWIDTH, V_WIDTHMULTIPLIER );
+    pspriteiscale = FixedDiv( FRACUNIT*SCREENWIDTH/viewwidth, V_WIDTHMULTIPLIER );
     
     // thing clipping
     for (i=0 ; i<viewwidth ; i++)
