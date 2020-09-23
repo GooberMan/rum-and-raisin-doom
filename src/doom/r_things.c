@@ -600,6 +600,9 @@ void R_ProjectSprite (mobj_t* thing)
     {
 	// diminished light
 	index = xscale>>(LIGHTSCALESHIFT-detailshift);
+#if SCREENWIDTH != 320
+	index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+#endif // SCREENWIDTH != 320
 
 	if (index >= MAXLIGHTSCALE) 
 	    index = MAXLIGHTSCALE-1;

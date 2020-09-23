@@ -160,6 +160,9 @@ R_RenderMaskedSegRange
 	    if (!fixedcolormap)
 	    {
 		index = spryscale>>LIGHTSCALESHIFT;
+#if SCREENWIDTH != 320
+		index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+#endif // SCREENWIDTH != 320
 
 		if (index >=  MAXLIGHTSCALE )
 		    index = MAXLIGHTSCALE-1;
@@ -258,6 +261,10 @@ void R_RenderSegLoop (void)
 	    texturecolumn >>= FRACBITS;
 	    // calculate lighting
 	    index = rw_scale>>LIGHTSCALESHIFT;
+
+#if SCREENWIDTH != 320
+		index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+#endif // SCREENWIDTH != 320
 
 	    if (index >=  MAXLIGHTSCALE )
 		index = MAXLIGHTSCALE-1;

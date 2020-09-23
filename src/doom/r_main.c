@@ -626,6 +626,9 @@ void R_InitLightTables (void)
 	{
 	    scale = FixedDiv ((SCREENWIDTH/2*FRACUNIT), (j+1)<<LIGHTZSHIFT);
 	    scale >>= LIGHTSCALESHIFT;
+#if SCREENWIDTH != 320
+		scale = FixedDiv( scale << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+#endif // SCREENWIDTH != 320
 
 	    level = startmap - scale/DISTMAP;
 	    
