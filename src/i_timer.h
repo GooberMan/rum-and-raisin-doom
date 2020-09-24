@@ -20,6 +20,8 @@
 #ifndef __I_TIMER__
 #define __I_TIMER__
 
+#include "doomtype.h"
+
 #define TICRATE 35
 
 // Called by D_DoomLoop,
@@ -42,6 +44,8 @@ void I_InitTimer(void);
 void I_WaitVBL(int count);
 
 void I_InitPerfFrames( uint64_t count );
+
+boolean I_IsPerfFramesRunning(void);
 
 // If -perf is specified on command line, this will fill that buffer
 void I_LogPerfFrame( uint64_t microseconds, const char* description );

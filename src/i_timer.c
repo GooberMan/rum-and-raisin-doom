@@ -122,6 +122,11 @@ void I_InitPerfFrames( uint64_t count )
 	}
 }
 
+boolean I_IsPerfFramesRunning(void)
+{
+	return numperfframes > 0;
+}
+
 void I_LogPerfFrame( uint64_t microseconds, const char* reason )
 {
 	uint64_t thisperf;
