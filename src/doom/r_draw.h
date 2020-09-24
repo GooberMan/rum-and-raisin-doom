@@ -58,10 +58,7 @@ void 	R_DrawFuzzColumnLow (void);
 void	R_DrawTranslatedColumn (void);
 void	R_DrawTranslatedColumnLow (void);
 
-void
-R_VideoErase
-( unsigned	ofs,
-  int		count );
+void	R_VideoEraseRegion( int x, int y, int width, int height );
 
 extern int		ds_y;
 extern int		ds_x1;

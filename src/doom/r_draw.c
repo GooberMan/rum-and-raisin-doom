@@ -75,7 +75,7 @@ byte		translations[3][256];
 // Backing buffer containing the bezel drawn around the screen and 
 // surrounding background.
 
-static pixel_t *background_buffer = NULL;
+static vbuffer_t background_data;
 
 
 //
@@ -94,6 +94,7 @@ byte*			dc_source;
 
 // just for profiling 
 int			dccount;
+
 
 //
 // A column is a vertical slice/span from a wall texture that,
@@ -905,6 +906,9 @@ R_InitBuffer
     // Row offset. For windows.
     for (i=0 ; i<height ; i++)
 		rowofs[i] = viewwindowy + i;
+
+	background_data.width = background_data.height = 0;
+	background_data.data = NULL;
 } 
  
  
@@ -916,11 +920,16 @@ R_InitBuffer
 //  for variable screen sizes
 // Also draws a beveled edge.
 //
+#define F_MIN( x, y ) ( x < y ? x : y )
+#define F_MAX( x, y ) ( x > y ? x : y )
+
 void R_FillBackScreen (void) 
 { 
-#if 0
-    byte*	src;
-    pixel_t*	dest;
+	vbuffer_t src;
+	vbuffer_t inflated;
+	int32_t width;
+	int32_t height;
+
     int		x;
     int		y; 
     patch_t*	patch;
@@ -938,10 +947,10 @@ void R_FillBackScreen (void)
 
     if (scaledviewwidth == SCREENWIDTH)
     {
-        if (background_buffer != NULL)
+        if (background_data.data != NULL)
         {
-            Z_Free(background_buffer);
-            background_buffer = NULL;
+            Z_Free(background_data.data);
+            background_data.data = NULL;
         }
 
 	return;
@@ -949,102 +958,111 @@ void R_FillBackScreen (void)
 
     // Allocate the background buffer if necessary
 	
-    if (background_buffer == NULL)
+    if (background_data.data == NULL)
     {
-        background_buffer = Z_Malloc(SCREENWIDTH * (SCREENHEIGHT - SBARHEIGHT) * sizeof(*background_buffer),
+        background_data.data = Z_Malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(*background_data.data),
                                      PU_STATIC, NULL);
+		background_data.width = SCREENWIDTH;
+		background_data.height = SCREENHEIGHT;
     }
 
     if (gamemode == commercial)
 	name = name2;
     else
 	name = name1;
-    
-    src = W_CacheLumpName(name, PU_CACHE); 
-    dest = background_buffer;
-	 
+
+	V_UseBuffer( &background_data );
+
 #if 0
-    for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
-    { 
-		for (x=0 ; x<SCREENWIDTH/64 ; x++) 
-		{ 
-		    memcpy (dest, src+((y&63)<<6), 64); 
-		    dest += 64; 
-		} 
+	src.data = W_CacheLumpName( name, PU_LEVEL );
+	src.width = src.height = 64;
 
-		if (SCREENWIDTH&63) 
-		{ 
-		    memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63); 
-		    dest += (SCREENWIDTH&63); 
-		} 
-    } 
-#endif
-     
-    // Draw screen and bezel; this is done to a separate screen buffer.
+	V_InflateAndTransposeBuffer( &src, &inflated, PU_CACHE );
 
-    V_UseBuffer(background_buffer);
+	for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
+	{
+		width = F_MIN( V_VIRTUALWIDTH - x, 64 );
 
-    patch = W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
+		for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
+		{
+			height = F_MIN( V_VIRTUALHEIGHT - y, 64 );
 
-    for (x=0 ; x<scaledviewwidth ; x+=8)
-	V_DrawPatch(viewwindowx+x, viewwindowy-8, patch);
-    patch = W_CacheLumpName(DEH_String("brdr_b"),PU_CACHE);
+			V_CopyRect( 0, 0, &inflated, width, height, x, y );
+		}
+	}
 
-    for (x=0 ; x<scaledviewwidth ; x+=8)
-	V_DrawPatch(viewwindowx+x, viewwindowy+viewheight, patch);
-    patch = W_CacheLumpName(DEH_String("brdr_l"),PU_CACHE);
+	// Draw screen and bezel; this is done to a separate screen buffer.
 
-    for (y=0 ; y<viewheight ; y+=8)
-	V_DrawPatch(viewwindowx-8, viewwindowy+y, patch);
-    patch = W_CacheLumpName(DEH_String("brdr_r"),PU_CACHE);
+	patch = W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
+	for (x=0 ; x < ( FixedDiv( scaledviewwidth << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT ); x+=8)
+		V_DrawPatch( FixedDiv( ( viewwindowx+x ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT, FixedDiv( ( viewwindowy-8 ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
 
-    for (y=0 ; y<viewheight ; y+=8)
-	V_DrawPatch(viewwindowx+scaledviewwidth, viewwindowy+y, patch);
+	patch = W_CacheLumpName(DEH_String("brdr_b"),PU_CACHE);
+	for (x=0 ; x < ( FixedDiv( scaledviewwidth << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT ); x+=8)
+		V_DrawPatch( FixedDiv( ( viewwindowx+x ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,  FixedDiv( ( viewwindowy+viewheight ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
+
+	patch = W_CacheLumpName(DEH_String("brdr_l"),PU_CACHE);
+	for (y=0 ; y < ( FixedDiv( viewheight << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT ); y+=8)
+		V_DrawPatch( FixedDiv( ( viewwindowx-8 ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,  FixedDiv( ( viewwindowy+y ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
+
+	patch = W_CacheLumpName(DEH_String("brdr_r"),PU_CACHE);
+	for (y=0 ; y < ( FixedDiv( viewheight << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT ); y+=8)
+		V_DrawPatch( FixedDiv( ( viewwindowx+scaledviewwidth ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,  FixedDiv( ( viewwindowy+y ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
 
     // Draw beveled edge. 
-    V_DrawPatch(viewwindowx-8,
-                viewwindowy-8,
+    V_DrawPatch( FixedDiv( ( viewwindowx-8 ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
+                 FixedDiv( ( viewwindowy-8 ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
                 W_CacheLumpName(DEH_String("brdr_tl"),PU_CACHE));
     
-    V_DrawPatch(viewwindowx+scaledviewwidth,
-                viewwindowy-8,
+    V_DrawPatch( FixedDiv( ( viewwindowx+scaledviewwidth ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
+                 FixedDiv( ( viewwindowy-8 ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
                 W_CacheLumpName(DEH_String("brdr_tr"),PU_CACHE));
     
-    V_DrawPatch(viewwindowx-8,
-                viewwindowy+viewheight,
+    V_DrawPatch( FixedDiv( ( viewwindowx-8 ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
+                 FixedDiv( ( viewwindowy+viewheight ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
                 W_CacheLumpName(DEH_String("brdr_bl"),PU_CACHE));
     
-    V_DrawPatch(viewwindowx+scaledviewwidth,
-                viewwindowy+viewheight,
+    V_DrawPatch( FixedDiv( ( viewwindowx+scaledviewwidth ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
+                 FixedDiv( ( viewwindowy+viewheight ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
                 W_CacheLumpName(DEH_String("brdr_br"),PU_CACHE));
 
-    V_RestoreBuffer();
+#else
+	const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
+	patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_CACHE );
+	V_DrawPatch( 0, 0, interpic );
 #endif
+
+    V_RestoreBuffer();
 } 
  
 
 //
 // Copy a screen buffer.
 //
-void
-R_VideoErase
-( unsigned	ofs,
-  int		count ) 
+static void R_VideoErase( unsigned ofs, int count ) 
 { 
-#if 0
   // LFB copy.
   // This might not be a good idea if memcpy
   //  is not optiomal, e.g. byte by byte on
   //  a 32bit CPU, as GNU GCC/Linux libc did
   //  at one point.
-
-    if (background_buffer != NULL)
+    if (background_data.data != NULL)
     {
-        memcpy(I_VideoBuffer + ofs, background_buffer + ofs, count * sizeof(*I_VideoBuffer));
+        memcpy(I_VideoBuffer + ofs, background_data.data + ofs, count * sizeof(*I_VideoBuffer));
     }
-#endif
 } 
 
+void R_VideoEraseRegion( int x, int y, int width, int height )
+{
+	int col = 0;
+	int ofs = ( x * SCREENHEIGHT ) + y;
+
+	for( ; col < width; ++col )
+	{
+		R_VideoErase( ofs, height );
+		ofs += SCREENHEIGHT;
+	}
+}
 
 //
 // R_DrawViewBorder
@@ -1053,7 +1071,6 @@ R_VideoErase
 //
 void R_DrawViewBorder (void) 
 { 
-#if 0
     int		top;
     int		side;
     int		ofs;
@@ -1062,29 +1079,30 @@ void R_DrawViewBorder (void)
     if (scaledviewwidth == SCREENWIDTH) 
 	return; 
   
-    top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)/2; 
-    side = (SCREENWIDTH-scaledviewwidth)/2; 
- 
-    // copy top and one line of left side 
-    R_VideoErase (0, top*SCREENWIDTH+side); 
- 
-    // copy one line of right side and bottom 
-    ofs = (viewheight+top)*SCREENWIDTH-side; 
-    R_VideoErase (ofs, top*SCREENWIDTH+side); 
- 
-    // copy sides using wraparound 
-    ofs = top*SCREENWIDTH + SCREENWIDTH-side; 
-    side <<= 1;
-    
-    for (i=1 ; i<viewheight ; i++) 
-    { 
-	R_VideoErase (ofs, side); 
-	ofs += SCREENWIDTH; 
-    } 
+    top = (SCREENHEIGHT-SBARHEIGHT-viewheight)/2;
+    side = (SCREENWIDTH-scaledviewwidth)/2;
 
-    // ? 
+	ofs = 0;
+	for( i = 0; i < side; ++i )
+	{
+		R_VideoErase( ofs, SCREENHEIGHT - SBARHEIGHT );
+		ofs += SCREENHEIGHT;
+	}
+
+	for( i = side; i < SCREENWIDTH - side; ++i )
+	{
+		R_VideoErase( ofs, top );
+		R_VideoErase( ofs + SCREENHEIGHT - SBARHEIGHT - top, top );
+		ofs += SCREENHEIGHT;
+	}
+
+	for( i = SCREENWIDTH - side; i < SCREENWIDTH; ++i )
+	{
+		R_VideoErase( ofs, SCREENHEIGHT - SBARHEIGHT );
+		ofs += SCREENHEIGHT;
+	}
+
     V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
-#endif
 } 
  
  
