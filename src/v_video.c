@@ -85,7 +85,6 @@ void V_MarkRect(int x, int y, int width, int height)
 //
 // V_CopyRect 
 // 
-// Used in status bar in Doom and Strife. Needs fixing.
 void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
                 int width, int height,
                 int destx, int desty)
@@ -132,7 +131,46 @@ void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
 		src += source->height; 
 		dest += dest_buffer->height; 
 	} 
-} 
+}
+
+//
+// V_CopyRect 
+// 
+// Inflates source buffer to virtual screen space, and transposes it for efficient memcpy
+// operations. Written for 64x64 flats, should handle a linear byte array of any dimensions
+//
+void V_InflateAndTransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone )
+{
+	byte* dest;
+	fixed_t virtualcol;
+	fixed_t virtualrow;
+
+	fixed_t sourcewidth_fixed = source->width << FRACBITS;
+	fixed_t sourceheight_fixed = source->width << FRACBITS;
+	fixed_t inflatedwidth_fixed = FixedMul( sourcewidth_fixed, V_WIDTHMULTIPLIER );
+	fixed_t inflatedheight_fixed = FixedMul( sourceheight_fixed, V_WIDTHMULTIPLIER );
+
+	int32_t inflatedwidth = inflatedwidth_fixed >> FRACBITS;
+	int32_t inflatedheight = inflatedwidth_fixed >> FRACBITS;
+
+	int sample;
+
+	output->width = inflatedwidth;
+	output->height = inflatedheight;
+
+	dest = output->data = Z_Malloc( inflatedwidth * inflatedheight, outputmemzone, &output->data );
+
+	for(virtualcol=0; virtualcol < sourcewidth_fixed; virtualcol += V_WIDTHSTEP )
+	{
+		for(virtualrow=0; virtualrow < sourceheight_fixed; virtualrow += V_WIDTHSTEP )
+		{
+			sample = ( virtualrow >> FRACBITS ) * 64 + ( virtualcol >> FRACBITS );
+
+			*dest = source->data[ sample ];
+			++dest;
+		}
+	}
+}
  
 //
 // V_SetPatchClipCallback
@@ -153,12 +191,15 @@ void V_SetPatchClipCallback(vpatchclipfunc_t func)
 // V_DrawPatch
 // Masks a column based masked pic to the screen. 
 //
-
 void V_DrawPatch(int x, int y, patch_t *patch)
 { 
 	V_DrawPatchClipped(x, y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
 }
 
+//
+// V_DrawPatchClipped
+// Only want part of a patch? This is your function. As you'll notice, V_DrawPatch wraps in to this.
+//
 void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight)
 {
 	int col;
@@ -316,6 +357,19 @@ void V_DrawPatchDirect(int x, int y, patch_t *patch)
 {
     V_DrawPatch(x, y, patch); 
 } 
+
+//
+// V_EraseRegion
+// Devirtualises screen coordinates and calls in to R_VideoEraseRegion
+void V_EraseRegion(int x, int y, int width, int height)
+{
+	fixed_t virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
+	fixed_t virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
+	fixed_t virtualwidth = FixedMul( width << FRACBITS, V_WIDTHMULTIPLIER );
+	fixed_t virtualheight = FixedMul( height << FRACBITS, V_HEIGHTMULTIPLIER );
+
+	R_VideoEraseRegion( virtualx >> FRACBITS, virtualy >> FRACBITS, virtualwidth >> FRACBITS, virtualheight >> FRACBITS );
+}
 
 //
 // V_DrawTLPatch

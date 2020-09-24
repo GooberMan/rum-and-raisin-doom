@@ -108,41 +108,13 @@ void	F_CastDrawer (void);
 #define F_MIN( x, y ) ( x < y ? x : y )
 #define F_MAX( x, y ) ( x > y ? x : y )
 
-#define FLATSIZE 64
-#define FLATSIZE_FIXED ( FLATSIZE << FRACBITS )
-#define INFLATEDFLATSIZE_FIXED ( ( (int64_t)( 64 << FRACBITS ) * (int64_t)V_WIDTHMULTIPLIER ) >> FRACBITS )
-#define INFLATEDFLATSIZE ( INFLATEDFLATSIZE_FIXED >> FRACBITS )
-
-static void F_InflateAndTransposeFlat( byte* source )
-{
-	fixed_t virtualcol;
-	fixed_t virtualrow;
-	byte* dest;
-
-	int sample;
-
-	finaleflatdata.width = finaleflatdata.height = INFLATEDFLATSIZE;
-	dest = finaleflatdata.data = Z_Malloc( INFLATEDFLATSIZE * INFLATEDFLATSIZE, PU_LEVEL, NULL );
-
-	for(virtualcol=0; virtualcol < FLATSIZE_FIXED; virtualcol += V_WIDTHSTEP )
-	{
-		for(virtualrow=0; virtualrow < FLATSIZE_FIXED; virtualrow += V_WIDTHSTEP )
-		{
-			sample = ( virtualrow >> FRACBITS ) * 64 + ( virtualcol >> FRACBITS );
-
-			*dest = source[ sample ];
-			++dest;
-		}
-	}
-}
-
 //
 // F_StartFinale
 //
 void F_StartFinale (void)
 {
     size_t i;
-	byte* src;
+	vbuffer_t src;
 
     gameaction = ga_nothing;
     gamestate = GS_FINALE;
@@ -189,8 +161,10 @@ void F_StartFinale (void)
     finalecount = 0;
 
 	// erase the entire screen to a tiled background
-	src = W_CacheLumpName ( finaleflat , PU_CACHE );
-	F_InflateAndTransposeFlat( src );
+	src.data = W_CacheLumpName ( finaleflat , PU_LEVEL );
+	src.width = src.height = 64;
+
+	V_InflateAndTransposeBuffer( &src, &finaleflatdata, PU_LEVEL );
 }
 
 

@@ -62,6 +62,8 @@ void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
                 int width, int height,
                 int destx, int desty);
 
+void V_InflateAndTransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone );
+
 void V_DrawPatch(int x, int y, patch_t *patch);
 void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight);
 void V_DrawPatchFlipped(int x, int y, patch_t *patch);
@@ -70,6 +72,8 @@ void V_DrawAltTLPatch(int x, int y, patch_t * patch);
 void V_DrawShadowedPatch(int x, int y, patch_t *patch);
 void V_DrawXlaPatch(int x, int y, patch_t * patch);     // villsa [STRIFE]
 void V_DrawPatchDirect(int x, int y, patch_t *patch);
+
+void V_EraseRegion(int x, int y, int width, int height);
 
 // Draw a linear block of pixels into the view buffer.
 
