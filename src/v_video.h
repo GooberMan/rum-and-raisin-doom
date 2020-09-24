@@ -44,17 +44,26 @@ extern byte *tinttable;
 typedef boolean (*vpatchclipfunc_t)(patch_t *, int, int);
 void V_SetPatchClipCallback(vpatchclipfunc_t func);
 
+// TODO: Should align 16
+typedef struct vbuffer_s
+{
+	pixel_t*	data;
+	int32_t		width;
+	int32_t		height;
+} vbuffer_t;
+
 
 // Allocates buffer screens, call before R_Init.
 void V_Init (void);
 
 // Draw a block from the specified source screen to the screen.
 
-void V_CopyRect(int srcx, int srcy, pixel_t *source,
+void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
                 int width, int height,
                 int destx, int desty);
 
 void V_DrawPatch(int x, int y, patch_t *patch);
+void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight);
 void V_DrawPatchFlipped(int x, int y, patch_t *patch);
 void V_DrawTLPatch(int x, int y, patch_t *patch);
 void V_DrawAltTLPatch(int x, int y, patch_t * patch);
@@ -79,7 +88,7 @@ void V_DrawRawScreen(pixel_t *raw);
 
 // Temporarily switch to using a different buffer to draw graphics, etc.
 
-void V_UseBuffer(pixel_t *buffer);
+void V_UseBuffer(vbuffer_t *buffer);
 
 // Return to using the normal screen buffer to draw graphics.
 

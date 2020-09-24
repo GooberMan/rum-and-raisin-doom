@@ -57,7 +57,8 @@ byte *xlatab = NULL;
 
 // The screen buffer that the v_video.c code draws to.
 
-static pixel_t *dest_screen = NULL;
+static vbuffer_t default_buffer;
+static vbuffer_t* dest_buffer;
 
 int dirtybox[4]; 
 
@@ -73,7 +74,7 @@ void V_MarkRect(int x, int y, int width, int height)
     // If we are temporarily using an alternate screen, do not 
     // affect the update box.
 
-    if (dest_screen == I_VideoBuffer)
+    if (dest_buffer == &default_buffer)
     {
         M_AddToBox (dirtybox, x, y); 
         M_AddToBox (dirtybox, x + width-1, y + height-1); 
@@ -85,38 +86,52 @@ void V_MarkRect(int x, int y, int width, int height)
 // V_CopyRect 
 // 
 // Used in status bar in Doom and Strife. Needs fixing.
-void V_CopyRect(int srcx, int srcy, pixel_t *source,
+void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
                 int width, int height,
                 int destx, int desty)
 { 
     pixel_t *src;
     pixel_t *dest;
+
+	int adjustedsrcx;
+	int adjustedsrcy;
+	int adjustedsrcwidth;
+	int adjustedsrcheight;
+	int adjusteddestx;
+	int adjusteddesty;
  
 #ifdef RANGECHECK 
     if (srcx < 0
-     || srcx + width > SCREENWIDTH
+     || srcx + width > V_VIRTUALWIDTH
      || srcy < 0
-     || srcy + height > SCREENHEIGHT 
+     || srcy + height > V_VIRTUALHEIGHT 
      || destx < 0
-     || destx + width > SCREENWIDTH
+     || destx + width > V_VIRTUALWIDTH
      || desty < 0
-     || desty + height > SCREENHEIGHT)
+     || desty + height > V_VIRTUALHEIGHT)
     {
         I_Error ("Bad V_CopyRect");
     }
 #endif 
 
-    V_MarkRect(destx, desty, width, height); 
- 
-    src = source + SCREENHEIGHT * srcx + srcy; 
-    dest = dest_screen + SCREENHEIGHT * destx + desty; 
+    V_MarkRect(destx, desty, width, height);
 
-    for ( ; height>0 ; height--) 
-    { 
-        memcpy(dest, src, width * sizeof(*dest));
-        src += SCREENHEIGHT; 
-        dest += SCREENHEIGHT; 
-    } 
+	adjustedsrcx = FixedMul( srcx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
+	adjustedsrcy = FixedMul( srcy << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+	adjustedsrcwidth = FixedMul( width << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
+	adjustedsrcheight = FixedMul( height << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+	adjusteddestx = FixedMul( destx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
+	adjusteddesty = FixedMul( desty << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+
+	src = source->data + source->height * adjustedsrcx + adjustedsrcy;
+	dest = dest_buffer->data + dest_buffer->height * adjusteddestx + adjusteddesty; 
+ 
+	for ( ; adjustedsrcwidth>0 ; adjustedsrcwidth--) 
+	{ 
+		memcpy(dest, src, adjustedsrcheight * sizeof(*dest));
+		src += source->height; 
+		dest += dest_buffer->height; 
+	} 
 } 
  
 //
@@ -141,6 +156,11 @@ void V_SetPatchClipCallback(vpatchclipfunc_t func)
 
 void V_DrawPatch(int x, int y, patch_t *patch)
 { 
+	V_DrawPatchClipped(x, y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
+}
+
+void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight)
+{
 	int col;
     column_t *column;
     pixel_t *desttop;
@@ -149,10 +169,7 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 
 	fixed_t virtualx;
 	fixed_t virtualy;
-	int32_t virtualwritex;
-	int32_t virtualwritey;
 	fixed_t virtualwidth;
-	fixed_t virtualheight;
 
 	fixed_t virtualcol;
 	fixed_t virtualrow;
@@ -170,32 +187,29 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 
 #ifdef RANGECHECK
     if (x < 0
-     || x + SHORT(patch->width) > V_VIRTUALWIDTH
+     || x + clippedwidth > V_VIRTUALWIDTH
      || y < 0
-     || y + SHORT(patch->height) > V_VIRTUALHEIGHT)
+     || y + clippedheight > V_VIRTUALHEIGHT
+     || clippedy > 0)
     {
         I_Error("Bad V_DrawPatch");
     }
 #endif
 
-    V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
+    V_MarkRect(x, y, clippedwidth, clippedheight);
 
 	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
 	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
-	virtualwidth = SHORT( patch->width ) << FRACBITS;
-	virtualheight = SHORT( patch->height ) << FRACBITS;
+	virtualwidth = clippedwidth << FRACBITS;
 
     virtualcol = 0;
-    desttop = dest_screen + ( virtualx >> FRACBITS ) * SCREENHEIGHT + ( virtualy >> FRACBITS );
+    desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->height + ( virtualy >> FRACBITS );
 
-	virtualwritex = virtualx >> FRACBITS;
-	virtualwritey = virtualy >> FRACBITS;
-
-    for ( ; virtualcol < virtualwidth && virtualwritex < SCREENWIDTH; )
+    for ( ; virtualcol < virtualwidth; )
     {
 
 		col = virtualcol >> FRACBITS;
-        column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
+        column = (column_t *)((byte *)patch + LONG(patch->columnofs[clippedx + col]));
 
         // step through the posts in a column
         while (column->topdelta != 0xff)
@@ -207,22 +221,19 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 			virtualrow = 0;
             virtualpatchheight = column->length << FRACBITS;
 
-            while ( virtualpatchheight > 0 && virtualwritey < SCREENHEIGHT )
+            while ( virtualpatchheight > 0 )
             {
                 *dest++ = *source;
 				virtualrow += V_HEIGHTSTEP;
 				virtualpatchheight -= V_HEIGHTSTEP;
-				++virtualwritey;
 				source += ( virtualrow >> FRACBITS );
 				virtualrow &= ( FRACUNIT - 1 );
             }
             column = (column_t *)((byte *)column + column->length + 4);
         }
 
-		desttop += SCREENHEIGHT;
+		desttop += dest_buffer->height;
 		virtualcol += V_WIDTHSTEP;
-		++virtualwritex;
-		virtualwritey = virtualy >> FRACBITS;
     }
 
 	virtualcol = 0;
@@ -268,7 +279,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
     V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height));
 
     col = 0;
-    desttop = dest_screen + x * SCREENHEIGHT + y;
+    desttop = dest_buffer->data + x * dest_buffer->height + y;
 
     w = SHORT(patch->width);
 
@@ -290,7 +301,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
             column = (column_t *)((byte *)column + column->length + 4);
         }
 
-		desttop += SCREENHEIGHT;
+		desttop += dest_buffer->height;
     }
 }
 
@@ -570,13 +581,13 @@ void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
  
     V_MarkRect (x, y, width, height); 
  
-    dest = dest_screen + x * SCREENHEIGHT + y; 
+    dest = dest_buffer->data + x * dest_buffer->height + y; 
 
     while (height--) 
     { 
 		memcpy (dest, src, width * sizeof(*dest));
 		src += height; 
-		dest += SCREENHEIGHT; 
+		dest += dest_buffer->height; 
     } 
 } 
 
@@ -659,23 +670,27 @@ void V_DrawRawScreen(pixel_t *raw)
 // 
 void V_Init (void) 
 { 
-    // no-op!
-    // There used to be separate screens that could be drawn to; these are
-    // now handled in the upper layers.
+	default_buffer.width = SCREENWIDTH;
+	default_buffer.height = SCREENHEIGHT;
+	default_buffer.data = I_VideoBuffer;
+
+	dest_buffer = &default_buffer;
 }
 
 // Set the buffer that the code draws to.
 
-void V_UseBuffer(pixel_t *buffer)
+void V_UseBuffer(vbuffer_t *buffer)
 {
-    dest_screen = buffer;
+    dest_buffer = buffer;
 }
 
 // Restore screen buffer to the i_video screen buffer.
 
 void V_RestoreBuffer(void)
 {
-    dest_screen = I_VideoBuffer;
+	dest_buffer = &default_buffer;
+	// HACK: V_Init doesn't have valid I_VideoBuffer pointer :-(
+	default_buffer.data = I_VideoBuffer;
 }
 
 //
