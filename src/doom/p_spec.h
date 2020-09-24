@@ -39,6 +39,7 @@ extern	int	levelTimeCount;
 void    P_InitPicAnims (void);
 
 // will return -1 if this is not the start of an animation
+int32_t P_GetPicAnimStart( boolean istexture, int32_t animframe );
 int32_t P_GetPicAnimLength( boolean istexture, int32_t start );
 
 // at map load

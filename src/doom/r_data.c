@@ -827,7 +827,8 @@ void R_PrecacheLevel (void)
 	lighttable_t*	currmap;
 	int				currflatbyte;
 
-	int32_t			animlength;
+	int32_t			animstart;
+	int32_t			animend;
 	int32_t			thisanim;
 
     if (demoplayback)
@@ -848,16 +849,24 @@ void R_PrecacheLevel (void)
 		flatpresent[sectors[i].floorpic] = 1;
 		flatpresent[sectors[i].ceilingpic] = 1;
 
-		animlength = sectors[i].floorpic - P_GetPicAnimLength( false, sectors[i].floorpic );
-		for( thisanim = sectors[i].floorpic; thisanim > animlength; --thisanim )
+		animstart = P_GetPicAnimStart( false, sectors[i].floorpic );
+		if( animstart >= 0 )
 		{
-			flatpresent[ thisanim ] = 1;
+			animend = animstart + P_GetPicAnimLength( false, animstart );
+			for( thisanim = animstart; thisanim < animend; ++thisanim )
+			{
+				flatpresent[ thisanim ] = 1;
+			}
 		}
 
-		animlength = sectors[i].ceilingpic - P_GetPicAnimLength( false, sectors[i].ceilingpic );
-		for( thisanim = sectors[i].ceilingpic; thisanim > animlength; --thisanim )
+		animstart = P_GetPicAnimStart( false, sectors[i].ceilingpic );
+		if( animstart >= 0 )
 		{
-			flatpresent[ thisanim ] = 1;
+			animend = animstart + P_GetPicAnimLength( false, animstart );
+			for( thisanim = animstart; thisanim < animend; ++thisanim )
+			{
+				flatpresent[ thisanim ] = 1;
+			}
 		}
     }
 	

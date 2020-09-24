@@ -185,13 +185,28 @@ void P_InitPicAnims (void)
 	
 }
 
+int32_t P_GetPicAnimStart( boolean istexture, int32_t animframe )
+{
+	int32_t thisanim;
+
+ 	for( thisanim = 0; animdefs[ thisanim ].istexture != -1; ++thisanim )
+	{
+		if( anims[ thisanim ].istexture == istexture && animframe >= anims[ thisanim ].basepic &&  animframe < anims[ thisanim ].basepic + anims[ thisanim ].numpics )
+		{
+			return anims[ thisanim ].basepic;
+		}
+	}
+
+	return -1;
+}
+
 int32_t P_GetPicAnimLength( boolean istexture, int32_t start )
 {
 	int32_t thisanim;
 
-	for( thisanim = 0; animdefs[ thisanim ].istexture != -1; ++thisanim )
+ 	for( thisanim = 0; animdefs[ thisanim ].istexture != -1; ++thisanim )
 	{
-		if( anims[ thisanim ].istexture == istexture && anims[ thisanim ].picnum == start )
+		if( anims[ thisanim ].istexture == istexture && start == anims[ thisanim ].basepic )
 		{
 			return anims[ thisanim ].numpics;
 		}
