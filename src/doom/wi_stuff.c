@@ -124,7 +124,7 @@ typedef struct
 
 //
 // Animation.
-// There is another anim_t used in p_spec.
+// Used to be anim_t but that conflicted with the one in p_spec in Visual Studio.
 //
 typedef struct
 {
@@ -166,7 +166,7 @@ typedef struct
     // used by RANDOM and LEVEL when animating
     int		state;  
 
-} anim_t;
+} interanim_t;
 
 
 static point_t lnodes[NUMEPISODES][NUMMAPS] =
@@ -224,7 +224,7 @@ static point_t lnodes[NUMEPISODES][NUMMAPS] =
      0, { NULL, NULL, NULL }, 0, 0, 0, 0 }
 
 
-static anim_t epsd0animinfo[] =
+static interanim_t epsd0animinfo[] =
 {
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 224, 104, 0),
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 184, 160, 0),
@@ -238,7 +238,7 @@ static anim_t epsd0animinfo[] =
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 64, 24, 0),
 };
 
-static anim_t epsd1animinfo[] =
+static interanim_t epsd1animinfo[] =
 {
     ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 1),
     ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 2),
@@ -251,7 +251,7 @@ static anim_t epsd1animinfo[] =
     ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 8),
 };
 
-static anim_t epsd2animinfo[] =
+static interanim_t epsd2animinfo[] =
 {
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 104, 168, 0),
     ANIM(ANIM_ALWAYS, TICRATE/3, 3, 40, 136, 0),
@@ -268,7 +268,7 @@ static int NUMANIMS[NUMEPISODES] =
     arrlen(epsd2animinfo),
 };
 
-static anim_t *anims[NUMEPISODES] =
+static interanim_t *anims[NUMEPISODES] =
 {
     epsd0animinfo,
     epsd1animinfo,
@@ -520,7 +520,7 @@ WI_drawOnLnode
 void WI_initAnimatedBack(void)
 {
     int		i;
-    anim_t*	a;
+    interanim_t*	a;
 
     if (gamemode == commercial)
 	return;
@@ -549,7 +549,7 @@ void WI_initAnimatedBack(void)
 void WI_updateAnimatedBack(void)
 {
     int		i;
-    anim_t*	a;
+    interanim_t*	a;
 
     if (gamemode == commercial)
 	return;
@@ -600,7 +600,7 @@ void WI_updateAnimatedBack(void)
 void WI_drawAnimatedBack(void)
 {
     int			i;
-    anim_t*		a;
+    interanim_t*		a;
 
     if (gamemode == commercial)
 	return;
@@ -1556,7 +1556,7 @@ static void WI_loadUnloadData(load_callback_t callback)
 {
     int i, j;
     char name[9];
-    anim_t *a;
+    interanim_t *a;
 
     if (gamemode == commercial)
     {
