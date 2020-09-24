@@ -729,8 +729,11 @@ void TryRunTics (void)
         }
     }
 
+	if( I_IsPerfFramesRunning() )
+		counts = 1;
+
     if (counts < 1)
-	counts = 1;
+		counts = 1;
 
     // wait for new tics if needed
     while (!PlayersInGame() || lowtic < gametic/ticdup + counts)

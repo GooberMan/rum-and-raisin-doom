@@ -457,6 +457,10 @@ void D_RunFrame()
             I_Sleep(1);
         } while (tics <= 0);
 
+		if( I_IsPerfFramesRunning() )
+		{
+			tics = 1;
+		}
 
 		start = I_GetTimeUS();
 
