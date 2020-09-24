@@ -201,7 +201,7 @@ static int 	leveljuststarted = 1; 	// kluge until AM_LevelInit() is called
 
 boolean    	automapactive = false;
 static int 	finit_width = SCREENWIDTH;
-static int 	finit_height = SCREENHEIGHT - ST_HEIGHT;
+static int 	finit_height = SCREENHEIGHT - ST_BUFFERHEIGHT;
 
 // location of window on screen
 static int 	f_x;
@@ -1354,7 +1354,7 @@ void AM_drawMarks(void)
 
 void AM_drawCrosshair(int color)
 {
-    fb[(f_w*(f_h+1))/2] = color; // single point for now
+    fb[(SCREENHEIGHT*(f_w>>1) + (f_h>>1))] = color; // single point for now
 
 }
 
