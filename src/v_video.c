@@ -66,6 +66,9 @@ int dirtybox[4];
 // This is needed for Chocolate Strife, which clips patches to the screen.
 static vpatchclipfunc_t patchclip_callback = NULL;
 
+// TODO: I guess this will break for non-Doom?
+void R_VideoEraseRegion( int x, int y, int width, int height );
+
 //
 // V_MarkRect 
 // 
@@ -289,16 +292,24 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 // Used in Doom 2 finale. Nowhere else
 void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 {
-    int count;
-    int col; 
-    column_t *column; 
+	int col;
+    column_t *column;
     pixel_t *desttop;
     pixel_t *dest;
-    byte *source; 
-    int w; 
- 
-    y -= SHORT(patch->topoffset); 
-    x -= SHORT(patch->leftoffset); 
+    byte *source;
+
+	fixed_t virtualx;
+	fixed_t virtualy;
+	fixed_t virtualwidth;
+
+	fixed_t virtualcol;
+	fixed_t virtualrow;
+	fixed_t virtualpatchheight;
+
+	int w = SHORT(patch->width);
+
+    y -= SHORT(patch->topoffset);
+    x -= SHORT(patch->leftoffset);
 
     // haleyjd 08/28/10: Strife needs silent error checking here.
     if(patchclip_callback)
@@ -317,33 +328,47 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
     }
 #endif
 
-    V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height));
+    V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
 
-    col = 0;
-    desttop = dest_buffer->data + x * dest_buffer->height + y;
+	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
+	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
+	virtualwidth = SHORT(patch->width) << FRACBITS;
 
-    w = SHORT(patch->width);
+    virtualcol = 0;
+    desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->height + ( virtualy >> FRACBITS );
 
-    for ( ; col<w ; x++, col++)
+    for ( ; virtualcol < virtualwidth; )
     {
+
+		col = virtualcol >> FRACBITS;
         column = (column_t *)((byte *)patch + LONG(patch->columnofs[w-1-col]));
 
         // step through the posts in a column
-        while (column->topdelta != 0xff )
+        while (column->topdelta != 0xff)
         {
             source = (byte *)column + 3;
-            dest = desttop + column->topdelta;
-            count = column->length;
+			fixed_t delta = FixedMul( column->topdelta << FRACBITS, V_HEIGHTMULTIPLIER );
+            dest = desttop + ( delta >> FRACBITS );
 
-            while (count--)
+			virtualrow = 0;
+            virtualpatchheight = column->length << FRACBITS;
+
+            while ( virtualpatchheight > 0 )
             {
-                *dest++ = *source++;
+                *dest++ = *source;
+				virtualrow += V_HEIGHTSTEP;
+				virtualpatchheight -= V_HEIGHTSTEP;
+				source += ( virtualrow >> FRACBITS );
+				virtualrow &= ( FRACUNIT - 1 );
             }
             column = (column_t *)((byte *)column + column->length + 4);
         }
 
 		desttop += dest_buffer->height;
+		virtualcol += V_WIDTHSTEP;
     }
+
+	virtualcol = 0;
 }
 
 
