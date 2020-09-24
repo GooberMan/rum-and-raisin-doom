@@ -520,7 +520,6 @@ byte*	translationtables;
 
 void R_DrawTranslatedColumn (void) 
 { 
-#if 0
     int			count; 
     pixel_t*		dest;
     fixed_t		frac;
@@ -541,8 +540,7 @@ void R_DrawTranslatedColumn (void)
     
 #endif 
 
-
-    dest = ylookup[dc_yl] + columnofs[dc_x]; 
+    dest = xlookup[dc_x] + rowofs[dc_yl];  
 
     // Looks familiar.
     fracstep = dc_iscale; 
@@ -551,17 +549,15 @@ void R_DrawTranslatedColumn (void)
     // Here we do an additional index re-mapping.
     do 
     {
-	// Translation tables are used
-	//  to map certain colorramps to other ones,
-	//  used with PLAY sprites.
-	// Thus the "green" ramp of the player 0 sprite
-	//  is mapped to gray, red, black/indigo. 
-	*dest = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-	dest += SCREENWIDTH;
+		// Translation tables are used
+		//  to map certain colorramps to other ones,
+		//  used with PLAY sprites.
+		// Thus the "green" ramp of the player 0 sprite
+		//  is mapped to gray, red, black/indigo. 
+		*dest++ = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
 	
-	frac += fracstep; 
+		frac += fracstep; 
     } while (count--); 
-#endif
 } 
 
 void R_DrawTranslatedColumnLow (void) 
