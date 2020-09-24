@@ -255,13 +255,13 @@
 #define ST_OUTHEIGHT		1
 
 #define ST_MAPTITLEX \
-    (SCREENWIDTH - ST_MAPWIDTH * ST_CHATFONTWIDTH)
+    (V_VIRTUALWIDTH - ST_MAPWIDTH * ST_CHATFONTWIDTH)
 
 #define ST_MAPTITLEY		0
 #define ST_MAPHEIGHT		1
 
 // graphics are drawn to a backing screen and blitted to the real screen
-pixel_t			*st_backing_screen;
+vbuffer_t			st_backing_buffer;
 	    
 // main player in game
 static player_t*	plyr; 
@@ -419,25 +419,23 @@ void ST_Stop(void);
 
 void ST_refreshBackground(void)
 {
+	if (st_statusbaron)
+	{
+		V_UseBuffer(&st_backing_buffer);
 
-    if (st_statusbaron)
-    {
-        V_UseBuffer(st_backing_screen);
+		V_DrawPatch(ST_X, 0, sbar);
 
-	V_DrawPatch(ST_X, 0, sbar);
+		// draw right side of bar if needed (Doom 1.0)
+		if (sbarr)
+			V_DrawPatch(ST_ARMSBGX, 0, sbarr);
 
-	// draw right side of bar if needed (Doom 1.0)
-	if (sbarr)
-	    V_DrawPatch(ST_ARMSBGX, 0, sbarr);
+		if (netgame)
+			V_DrawPatch(ST_FX, 0, faceback);
 
-	if (netgame)
-	    V_DrawPatch(ST_FX, 0, faceback);
+		V_RestoreBuffer();
 
-        V_RestoreBuffer();
-
-	V_CopyRect(ST_X, 0, st_backing_screen, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
-    }
-
+		V_CopyRect(ST_X, 0, &st_backing_buffer, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
+	}
 }
 
 
@@ -1087,12 +1085,10 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
     // Do red-/gold-shifts from damage/items
     ST_doPaletteStuff();
 
-#if 0
     // If just after ST_Start(), refresh all
     if (st_firsttime) ST_doRefresh();
     // Otherwise, update as little as possible
     else ST_diffDraw();
-#endif
 
 }
 
@@ -1449,6 +1445,9 @@ void ST_Stop (void)
 void ST_Init (void)
 {
     ST_loadData();
-    st_backing_screen = (pixel_t *) Z_Malloc(ST_WIDTH * ST_HEIGHT * sizeof(*st_backing_screen), PU_STATIC, 0);
+
+	st_backing_buffer.width = ST_BUFFERWIDTH;
+	st_backing_buffer.height = ST_BUFFERHEIGHT;
+    st_backing_buffer.data = (pixel_t *) Z_Malloc(ST_BUFFERWIDTH * ST_BUFFERHEIGHT * sizeof(*st_backing_buffer.data), PU_STATIC, 0);
 }
 

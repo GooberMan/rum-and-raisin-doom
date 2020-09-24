@@ -24,13 +24,16 @@
 #include "doomtype.h"
 #include "d_event.h"
 #include "m_cheat.h"
+#include "v_video.h"
 
 // Size of statusbar.
 // Now sensitive for scaling.
 #define ST_HEIGHT	32
-#define ST_WIDTH	SCREENWIDTH
-#define ST_Y		(SCREENHEIGHT - ST_HEIGHT)
+#define ST_WIDTH	V_VIRTUALWIDTH
+#define ST_Y		(V_VIRTUALHEIGHT - ST_HEIGHT)
 
+#define ST_BUFFERWIDTH ( ( ( (int64_t)( ST_WIDTH << FRACBITS ) * (int64_t)V_WIDTHMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
+#define ST_BUFFERHEIGHT ( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 
 //
 // STATUS BAR
@@ -73,7 +76,7 @@ typedef enum
 
 
 
-extern pixel_t *st_backing_screen;
+extern vbuffer_t st_backing_buffer;
 extern cheatseq_t cheat_mus;
 extern cheatseq_t cheat_god;
 extern cheatseq_t cheat_ammo;
