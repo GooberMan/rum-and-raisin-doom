@@ -44,9 +44,16 @@ int			skytexturemid;
 // R_InitSkyMap
 // Called whenever the view size changes.
 //
+
+// Used to do SCREENHEIGHT/2 to get the mid point for sky rendering
+// Turns out 100 is the magic number for any screen resolution
+// Makes sense really, it is meant to be sky texture relative not screen relative
+// So let's leave the ratio here to support arbitrary sky heights later
+#define SKYHEIGHT 128
+#define SKYMID ( SKYHEIGHT * 781250 / 1000000 )
 void R_InitSkyMap (void)
 {
   // skyflatnum = R_FlatNumForName ( SKYFLATNAME );
-    skytexturemid = SCREENHEIGHT/2*FRACUNIT;
+    skytexturemid = 100*FRACUNIT;
 }
 
