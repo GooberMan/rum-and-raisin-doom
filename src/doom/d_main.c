@@ -303,8 +303,8 @@ boolean D_Display (void)
 	if (automapactive)
 	    y = 4;
 	else
-	    y = viewwindowy+4;
-	V_DrawPatchDirect(viewwindowx + (scaledviewwidth - 68) / 2, y,
+	    y = FixedDiv( viewwindowy, V_HEIGHTMULTIPLIER ) + 4;
+		V_DrawPatchDirect( FixedDiv( viewwindowx, V_WIDTHMULTIPLIER ) + ( FixedDiv( scaledviewwidth, V_WIDTHMULTIPLIER ) - 68) / 2, y,
                           W_CacheLumpName (DEH_String("M_PAUSE"), PU_CACHE));
     }
 

@@ -138,7 +138,10 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 {
     int			lh;
     int			y;
-    int			yoffset;
+
+    int			viewx = FixedDiv( viewwindowx, V_WIDTHMULTIPLIER );
+	int			viewy = FixedDiv( viewwindowy, V_HEIGHTMULTIPLIER );
+	int			viewh = FixedDiv( viewheight, V_HEIGHTMULTIPLIER );
 
     // Only erases when NOT in automap and the screen is reduced,
     // and the text must either need updating or refreshing
@@ -148,15 +151,14 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 	viewwindowx && l->needsupdate)
     {
 	lh = SHORT(l->f[0]->height) + 1;
-	for (y=l->y,yoffset=y*V_VIRTUALWIDTH ; y<l->y+lh ; y++,yoffset+=V_VIRTUALWIDTH)
+	for ( y=l->y; y< l->y + lh; y++ )
 	{
-	    if (y < viewwindowy || y >= viewwindowy + viewheight)
-		R_VideoErase(yoffset, V_VIRTUALWIDTH); // erase entire line
+	    if (y < viewy || y >= viewy + viewh)
+			V_EraseRegion(0, y, V_VIRTUALWIDTH, 1); // erase entire line
 	    else
 	    {
-		R_VideoErase(yoffset, viewwindowx); // erase left border
-		R_VideoErase(yoffset + viewwindowx + viewwidth, viewwindowx);
-		// erase right border
+			V_EraseRegion(0, y, viewx, 1); // erase left border
+			V_EraseRegion(V_VIRTUALWIDTH - viewx, y, viewx, 1); // erase right border
 	    }
 	}
     }
