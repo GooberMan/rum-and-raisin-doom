@@ -98,10 +98,43 @@ static textscreen_t textscreens[] =
 const char *finaletext;
 const char *finaleflat;
 
+static vbuffer_t finaleflatdata;
+
 void	F_StartCast (void);
 void	F_CastTicker (void);
 boolean F_CastResponder (event_t *ev);
 void	F_CastDrawer (void);
+
+#define F_MIN( x, y ) ( x < y ? x : y )
+#define F_MAX( x, y ) ( x > y ? x : y )
+
+#define FLATSIZE 64
+#define FLATSIZE_FIXED ( FLATSIZE << FRACBITS )
+#define INFLATEDFLATSIZE_FIXED ( ( (int64_t)( 64 << FRACBITS ) * (int64_t)V_WIDTHMULTIPLIER ) >> FRACBITS )
+#define INFLATEDFLATSIZE ( INFLATEDFLATSIZE_FIXED >> FRACBITS )
+
+static void F_InflateAndTransposeFlat( byte* source )
+{
+	fixed_t virtualcol;
+	fixed_t virtualrow;
+	byte* dest;
+
+	int sample;
+
+	finaleflatdata.width = finaleflatdata.height = INFLATEDFLATSIZE;
+	dest = finaleflatdata.data = Z_Malloc( INFLATEDFLATSIZE * INFLATEDFLATSIZE, PU_LEVEL, NULL );
+
+	for(virtualcol=0; virtualcol < FLATSIZE_FIXED; virtualcol += V_WIDTHSTEP )
+	{
+		for(virtualrow=0; virtualrow < FLATSIZE_FIXED; virtualrow += V_WIDTHSTEP )
+		{
+			sample = ( virtualrow >> FRACBITS ) * 64 + ( virtualcol >> FRACBITS );
+
+			*dest = source[ sample ];
+			++dest;
+		}
+	}
+}
 
 //
 // F_StartFinale
@@ -109,6 +142,7 @@ void	F_CastDrawer (void);
 void F_StartFinale (void)
 {
     size_t i;
+	byte* src;
 
     gameaction = ga_nothing;
     gamestate = GS_FINALE;
@@ -153,7 +187,10 @@ void F_StartFinale (void)
     
     finalestage = F_STAGE_TEXT;
     finalecount = 0;
-	
+
+	// erase the entire screen to a tiled background
+	src = W_CacheLumpName ( finaleflat , PU_CACHE );
+	F_InflateAndTransposeFlat( src );
 }
 
 
@@ -224,38 +261,31 @@ void F_Ticker (void)
 #include "hu_stuff.h"
 extern	patch_t *hu_font[HU_FONTSIZE];
 
-
 void F_TextWrite (void)
 {
-    byte*	src;
-    pixel_t*	dest;
-    
     int		x,y,w;
     signed int	count;
     const char *ch;
     int		c;
     int		cx;
     int		cy;
+
+	int32_t width;
+	int32_t height;
     
-    // erase the entire screen to a tiled background
-    src = W_CacheLumpName ( finaleflat , PU_CACHE);
-    dest = I_VideoBuffer;
-	
-    for (y=0 ; y<SCREENHEIGHT ; y++)
-    {
-	for (x=0 ; x<SCREENWIDTH/64 ; x++)
+	for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
 	{
-	    memcpy (dest, src+((y&63)<<6), 64);
-	    dest += 64;
-	}
-	if (SCREENWIDTH&63)
-	{
-	    memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63);
-	    dest += (SCREENWIDTH&63);
-	}
+		width = F_MIN( V_VIRTUALWIDTH - x, 64 );
+
+		for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
+		{
+			height = F_MIN( V_VIRTUALHEIGHT - y, 64 );
+
+			V_CopyRect( 0, 0, &finaleflatdata, width, height, x, y );
+		}
     }
 
-    V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
+    V_MarkRect (0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT);
     
     // draw some of the text onto the screen
     cx = 10;
@@ -285,7 +315,7 @@ void F_TextWrite (void)
 	}
 		
 	w = SHORT (hu_font[c]->width);
-	if (cx+w > SCREENWIDTH)
+	if (cx+w > V_VIRTUALWIDTH)
 	    break;
 	V_DrawPatch(cx, cy, hu_font[c]);
 	cx+=w;
@@ -513,7 +543,7 @@ void F_CastPrint (const char *text)
     }
     
     // draw it
-    cx = SCREENWIDTH/2-width/2;
+    cx = V_VIRTUALWIDTH/2-width/2;
     ch = text;
     while (ch)
     {
@@ -560,44 +590,9 @@ void F_CastDrawer (void)
 			
     patch = W_CacheLumpNum (lump+firstspritelump, PU_CACHE);
     if (flip)
-	V_DrawPatchFlipped(SCREENWIDTH/2, 170, patch);
+	V_DrawPatchFlipped(V_VIRTUALWIDTH/2, 170, patch);
     else
-	V_DrawPatch(SCREENWIDTH/2, 170, patch);
-}
-
-
-//
-// F_DrawPatchCol
-//
-void
-F_DrawPatchCol
-( int		x,
-  patch_t*	patch,
-  int		col )
-{
-    column_t*	column;
-    byte*	source;
-    pixel_t*	dest;
-    pixel_t*	desttop;
-    int		count;
-	
-    column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
-    desttop = I_VideoBuffer + x;
-
-    // step through the posts in a column
-    while (column->topdelta != 0xff )
-    {
-	source = (byte *)column + 3;
-	dest = desttop + column->topdelta*SCREENWIDTH;
-	count = column->length;
-		
-	while (count--)
-	{
-	    *dest = *source++;
-	    dest += SCREENWIDTH;
-	}
-	column = (column_t *)(  (byte *)column + column->length + 4 );
-    }
+	V_DrawPatch(V_VIRTUALWIDTH/2, 170, patch);
 }
 
 
@@ -607,7 +602,6 @@ F_DrawPatchCol
 void F_BunnyScroll (void)
 {
     signed int  scrolled;
-    int		x;
     patch_t*	p1;
     patch_t*	p2;
     char	name[10];
@@ -617,28 +611,25 @@ void F_BunnyScroll (void)
     p1 = W_CacheLumpName (DEH_String("PFUB2"), PU_LEVEL);
     p2 = W_CacheLumpName (DEH_String("PFUB1"), PU_LEVEL);
 
-    V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
+    V_MarkRect (0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT);
 	
-    scrolled = (SCREENWIDTH - ((signed int) finalecount-230)/2);
-    if (scrolled > SCREENWIDTH)
-	scrolled = SCREENWIDTH;
+    scrolled = (V_VIRTUALWIDTH - ((signed int) finalecount-230)/2);
+    if (scrolled > V_VIRTUALWIDTH)
+		scrolled = V_VIRTUALWIDTH;
     if (scrolled < 0)
-	scrolled = 0;
+		scrolled = 0;
 		
-    for ( x=0 ; x<SCREENWIDTH ; x++)
-    {
-	if (x+scrolled < SCREENWIDTH)
-	    F_DrawPatchCol (x, p1, x+scrolled);
-	else
-	    F_DrawPatchCol (x, p2, x+scrolled - SCREENWIDTH);		
-    }
+	if( scrolled < V_VIRTUALWIDTH )
+		V_DrawPatchClipped( 0, 0, p1, scrolled, 0, V_VIRTUALWIDTH - scrolled, V_VIRTUALHEIGHT );
+	if( scrolled > 0 )
+		V_DrawPatchClipped( V_VIRTUALWIDTH - scrolled, 0, p2, 0, 0, V_VIRTUALWIDTH - ( V_VIRTUALWIDTH - scrolled ), V_VIRTUALHEIGHT );
 	
     if (finalecount < 1130)
 	return;
     if (finalecount < 1180)
     {
-        V_DrawPatch((SCREENWIDTH - 13 * 8) / 2,
-                    (SCREENHEIGHT - 8 * 8) / 2, 
+        V_DrawPatch((V_VIRTUALWIDTH - 13 * 8) / 2,
+                    (V_VIRTUALHEIGHT - 8 * 8) / 2, 
                     W_CacheLumpName(DEH_String("END0"), PU_CACHE));
 	laststage = 0;
 	return;
@@ -654,8 +645,8 @@ void F_BunnyScroll (void)
     }
 	
     DEH_snprintf(name, 10, "END%i", stage);
-    V_DrawPatch((SCREENWIDTH - 13 * 8) / 2, 
-                (SCREENHEIGHT - 8 * 8) / 2, 
+    V_DrawPatch((V_VIRTUALWIDTH - 13 * 8) / 2, 
+                (V_VIRTUALHEIGHT - 8 * 8) / 2, 
                 W_CacheLumpName (name,PU_CACHE));
 }
 
