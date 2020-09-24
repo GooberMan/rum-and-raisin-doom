@@ -45,7 +45,7 @@
 #define MAXHEIGHT			(SCREENHEIGHT*2)
 
 // status bar height at bottom of screen
-#define SBARHEIGHT		ST_HEIGHT
+#define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 
 //
 // All drawing to the view buffer is accomplished in this file.

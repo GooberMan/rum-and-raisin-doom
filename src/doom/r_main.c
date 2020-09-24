@@ -38,6 +38,8 @@
 // Need ST_HEIGHT
 #include "st_stuff.h"
 
+#define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
+
 
 
 
@@ -692,7 +694,7 @@ void R_ExecuteSetViewSize (void)
     else
     {
 	scaledviewwidth = setblocks*SCREENWIDTH/10;
-	viewheight = (setblocks*(SCREENHEIGHT-ST_HEIGHT)/10)&~7;
+	viewheight = (setblocks*(SCREENHEIGHT-SBARHEIGHT)/10)&~7;
     }
     
     detailshift = setdetail;
