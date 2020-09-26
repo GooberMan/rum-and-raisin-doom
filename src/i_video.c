@@ -49,6 +49,8 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
+#define MATCH_WINDOW_TO_BACKBUFFER 0
+
 // These are (1) the window (or the full screen) that our game is rendered to
 // and (2) the renderer that scales the texture (see below) into this window.
 
@@ -298,6 +300,9 @@ void I_StartFrame (void)
 // ratio consistent with the aspect_ratio_correct variable.
 static void AdjustWindowSize(void)
 {
+	// I want to test high resolutions without breaking window size
+	// Fix this right up later
+#if MATCH_WINDOW_TO_BACKBUFFER
     if (aspect_ratio_correct || integer_scaling)
     {
         if (window_width * actualheight <= window_height * SCREENWIDTH)
@@ -311,6 +316,7 @@ static void AdjustWindowSize(void)
             window_width = window_height * SCREENWIDTH / actualheight;
         }
     }
+#endif
 }
 
 static void HandleWindowEvent(SDL_WindowEvent *event)
@@ -1244,7 +1250,9 @@ static void SetVideoMode(void)
 
         pixel_format = SDL_GetWindowPixelFormat(screen);
 
+#if MATCH_WINDOW_TO_BACKBUFFER
         SDL_SetWindowMinimumSize(screen, SCREENWIDTH, actualheight);
+#endif // MATCH_WINDOW_TO_BACKBUFFER
 
         I_InitWindowTitle();
         I_InitWindowIcon();
