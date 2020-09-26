@@ -32,8 +32,9 @@
 
 // Needs access to LFB (guess what).
 #include "v_video.h"
-
 #include "st_stuff.h"
+#include "i_swap.h"
+#include "r_state.h"
 
 // State.
 #include "doomstat.h"
@@ -95,6 +96,14 @@ byte*			dc_source;
 // just for profiling 
 int			dccount;
 
+// Rum and raisin extensions
+#if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
+	#define COLUMN_AVX 0
+	#include <nmmintrin.h>
+#else
+	#define COLUMN_AVX 0
+#endif
+
 
 //
 // A column is a vertical slice/span from a wall texture that,
@@ -109,6 +118,10 @@ void R_DrawColumn (void)
     pixel_t*		dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
+
+#if COLUMN_AVX
+	int algoselect;
+#endif // COLUMN_AVX
  
     count = dc_yh - dc_yl; 
 
@@ -122,6 +135,19 @@ void R_DrawColumn (void)
 	|| dc_yh >= SCREENHEIGHT) 
 	I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
 #endif 
+	
+#if COLUMN_AVX
+	 algoselect = ( dc_iscale ) >> 12;
+
+	switch( algoselect )
+	{
+	case 0:
+	case 1:
+		// full 16 byte deflate minimum
+	default:
+	break;
+	}
+#endif
 
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
@@ -256,63 +282,6 @@ void R_DrawColumnLow (void)
 #endif
 }
 
-// Rum and raisin extensions
-#include <nmmintrin.h>
-
-void R_DrawColumnAVXTransposed( void )
-{
-#if 0
-	int			count; 
-	pixel_t*	dest;
-	fixed_t		frac;
-	fixed_t		fracstep;	 
-
-	count = dc_yh - dc_yl; 
-
-	// Zero length, column does not exceed a pixel.
-	if (count < 0) 
-	return; 
-
-	// dc_x = draw column x
-	// yl = top row
-	// yh = bottom row
-					
-#ifdef RANGECHECK 
-	if ((unsigned)dc_x >= SCREENWIDTH
-		|| dc_yl < 0
-		|| dc_yh >= SCREENHEIGHT)
-	{
-		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
-	}
-#endif 
-
-	// Framebuffer destination address.
-	// Use ylookup LUT to avoid multiply with ScreenWidth.
-	// Use columnofs LUT for subwindows? 
-	dest = ylookup[dc_yl] + columnofs[dc_x];  
-
-	// Determine scaling,
-	//  which is the only mapping to be done.
-	fracstep = dc_iscale; 
-	frac = dc_texturemid + (dc_yl-centery)*fracstep; 
-
-	// Inner loop that does the actual texture mapping,
-	//  e.g. a DDA-lile scaling.
-	// This is as fast as it gets.
-	do 
-	{
-		// Re-map color indices from wall texture column
-		//  using a lighting/special effects LUT.
-		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
-
-		dest += SCREENWIDTH; 
-		frac += fracstep;
-
-	} while (count--); 
-#endif
-}
-
-// End the rumbo raisin
 
 //
 // Spectre/Invisibility.
@@ -908,7 +877,30 @@ R_InitBuffer
 } 
  
  
+static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtualwidth, int32_t virtualheight, lighttable_t* colormap )
+{
+	extern vbuffer_t* dest_buffer;
 
+	int32_t numcols = FixedMul( virtualwidth << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
+	int32_t numrows;
+
+	byte* outputbase = dest_buffer->data + ( FixedMul( virtualx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) * dest_buffer->height
+										+ ( FixedMul( virtualy << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS );
+	byte* output;
+
+	for( ; numcols > 0; --numcols )
+	{
+		output = outputbase;
+		numrows = FixedMul( virtualheight << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+
+		for( ; numrows > 0; --numrows )
+		{
+			*output = colormap[ *output ];
+			++output;
+		}
+		outputbase += dest_buffer->height;
+	}
+}
 
 //
 // R_FillBackScreen
@@ -916,8 +908,8 @@ R_InitBuffer
 //  for variable screen sizes
 // Also draws a beveled edge.
 //
-#define F_MIN( x, y ) ( x < y ? x : y )
-#define F_MAX( x, y ) ( x > y ? x : y )
+#define F_MIN( x, y ) ( ( x ) < ( y ) ? ( x ) : ( y ) )
+#define F_MAX( x, y ) ( ( x ) > ( y ) ? ( x ) : ( y ) )
 
 void R_FillBackScreen (void) 
 { 
@@ -926,9 +918,17 @@ void R_FillBackScreen (void)
 	int32_t width;
 	int32_t height;
 
+	int32_t viewx = FixedDiv( viewwindowx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
+	int32_t viewy = FixedDiv( viewwindowy << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+	int32_t vieww = FixedDiv( scaledviewwidth << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
+	int32_t viewh = FixedDiv( viewheight << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+
     int		x;
     int		y; 
     patch_t*	patch;
+
+	extern int border_style;
+	extern int border_bezel_style;
 
     // DOOM border patch.
     const char *name1 = DEH_String("FLOOR7_2");
@@ -963,70 +963,90 @@ void R_FillBackScreen (void)
     }
 
     if (gamemode == commercial)
-	name = name2;
+	{
+		name = name2;
+	}
     else
-	name = name1;
+	{
+		name = name1;
+	}
 
 	V_UseBuffer( &background_data );
 
-#if 0
-	src.data = W_CacheLumpName( name, PU_LEVEL );
-	src.width = src.height = 64;
-
-	V_InflateAndTransposeBuffer( &src, &inflated, PU_CACHE );
-
-	for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
+	if( border_style == 0 )
 	{
-		width = F_MIN( V_VIRTUALWIDTH - x, 64 );
+		src.data = W_CacheLumpName( name, PU_LEVEL );
+		src.width = src.height = 64;
 
-		for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
+		V_InflateAndTransposeBuffer( &src, &inflated, PU_CACHE );
+
+		for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
 		{
-			height = F_MIN( V_VIRTUALHEIGHT - y, 64 );
+			width = F_MIN( V_VIRTUALWIDTH - x, 64 );
 
-			V_CopyRect( 0, 0, &inflated, width, height, x, y );
+			for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
+			{
+				height = F_MIN( V_VIRTUALHEIGHT - y, 64 );
+
+				V_CopyRect( 0, 0, &inflated, width, height, x, y );
+			}
 		}
 	}
+	else
+	{
+		const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
+		patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_CACHE );
+		V_DrawPatch( 0, 0, interpic );
+	}
 
-	// Draw screen and bezel; this is done to a separate screen buffer.
+	if( border_bezel_style == 0 )
+	{
+		// Draw screen and bezel; this is done to a separate screen buffer.
+		patch = W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
+		for (x=0 ; x < vieww; x+=8)
+			V_DrawPatch( viewx + x, viewy - 8, patch);
 
-	patch = W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
-	for (x=0 ; x < ( FixedDiv( scaledviewwidth << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT ); x+=8)
-		V_DrawPatch( FixedDiv( ( viewwindowx+x ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT, FixedDiv( ( viewwindowy-8 ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
+		patch = W_CacheLumpName(DEH_String("brdr_b"),PU_CACHE);
+		for (x=0 ; x < vieww; x+=8)
+			V_DrawPatch( viewx + x, viewy + viewh, patch);
 
-	patch = W_CacheLumpName(DEH_String("brdr_b"),PU_CACHE);
-	for (x=0 ; x < ( FixedDiv( scaledviewwidth << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT ); x+=8)
-		V_DrawPatch( FixedDiv( ( viewwindowx+x ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,  FixedDiv( ( viewwindowy+viewheight ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
+		patch = W_CacheLumpName(DEH_String("brdr_l"),PU_CACHE);
+		for (y=0 ; y < viewh; y+=8)
+			V_DrawPatchClipped( viewx - 8, viewy + y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
 
-	patch = W_CacheLumpName(DEH_String("brdr_l"),PU_CACHE);
-	for (y=0 ; y < ( FixedDiv( viewheight << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT ); y+=8)
-		V_DrawPatch( FixedDiv( ( viewwindowx-8 ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,  FixedDiv( ( viewwindowy+y ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
+		patch = W_CacheLumpName(DEH_String("brdr_r"),PU_CACHE);
+		for (y=0 ; y < viewh; y+=8)
+			V_DrawPatchClipped( viewx + vieww, viewy + y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
 
-	patch = W_CacheLumpName(DEH_String("brdr_r"),PU_CACHE);
-	for (y=0 ; y < ( FixedDiv( viewheight << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT ); y+=8)
-		V_DrawPatch( FixedDiv( ( viewwindowx+scaledviewwidth ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,  FixedDiv( ( viewwindowy+y ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT, patch);
-
-    // Draw beveled edge. 
-    V_DrawPatch( FixedDiv( ( viewwindowx-8 ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
-                 FixedDiv( ( viewwindowy-8 ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
-                W_CacheLumpName(DEH_String("brdr_tl"),PU_CACHE));
+		// Draw beveled edge. 
+		V_DrawPatch( viewx - 8,
+					 viewy - 8,
+					W_CacheLumpName(DEH_String("brdr_tl"),PU_CACHE));
     
-    V_DrawPatch( FixedDiv( ( viewwindowx+scaledviewwidth ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
-                 FixedDiv( ( viewwindowy-8 ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
-                W_CacheLumpName(DEH_String("brdr_tr"),PU_CACHE));
+		V_DrawPatch( viewx + vieww,
+					 viewy - 8,
+					W_CacheLumpName(DEH_String("brdr_tr"),PU_CACHE));
     
-    V_DrawPatch( FixedDiv( ( viewwindowx-8 ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
-                 FixedDiv( ( viewwindowy+viewheight ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
-                W_CacheLumpName(DEH_String("brdr_bl"),PU_CACHE));
+		V_DrawPatch( viewx - 8,
+					 viewy + viewh,
+					W_CacheLumpName(DEH_String("brdr_bl"),PU_CACHE));
     
-    V_DrawPatch( FixedDiv( ( viewwindowx+scaledviewwidth ) << FRACUNIT, V_WIDTHMULTIPLIER ) >> FRACUNIT,
-                 FixedDiv( ( viewwindowy+viewheight ) << FRACUNIT, V_HEIGHTMULTIPLIER ) >> FRACUNIT,
-                W_CacheLumpName(DEH_String("brdr_br"),PU_CACHE));
-
-#else
-	const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
-	patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_CACHE );
-	V_DrawPatch( 0, 0, interpic );
-#endif
+		V_DrawPatch( viewx + vieww,
+					 viewy + viewh,
+					W_CacheLumpName(DEH_String("brdr_br"),PU_CACHE));
+	}
+	else
+	{
+		// I cannot get this looking right at the moment. Le sigh.
+		R_RemapBackBuffer( viewx - 8, viewy - 8, vieww + 16, viewh + 16, colormaps + 2 * 256 );
+		R_RemapBackBuffer( viewx - 7, viewy - 7, vieww + 14, viewh + 14, colormaps + 4 * 256 );
+		R_RemapBackBuffer( viewx - 6, viewy - 6, vieww + 12, viewh + 12, colormaps + 6 * 256 );
+		R_RemapBackBuffer( viewx - 5, viewy - 5, vieww + 10, viewh + 10, colormaps + 7 * 256 );
+		R_RemapBackBuffer( viewx - 4, viewy - 4, vieww + 8, viewh + 8, colormaps + 8 * 256 );
+		R_RemapBackBuffer( viewx - 3, viewy - 3, vieww + 6, viewh + 6, colormaps + 9 * 256 );
+		R_RemapBackBuffer( viewx - 2, viewy - 2, vieww + 4, viewh + 4, colormaps + 10 * 256 );
+		R_RemapBackBuffer( viewx - 1, viewy - 1, vieww + 2, viewh + 2, colormaps + 11 * 256 );
+	}
 
     V_RestoreBuffer();
 } 
