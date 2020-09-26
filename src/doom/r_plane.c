@@ -404,6 +404,12 @@ void R_DrawPlanes (void)
     int			stop;
     int			angle;
     int                 lumpnum;
+
+#if PREFETCH_X86
+	// Get in mah L1 cache
+	int currline;
+	byte* currsource;
+#endif // PREFETCH_X86
 				
 #ifdef RANGECHECK
     if (ds_p - drawsegs > MAXDRAWSEGS)
@@ -463,8 +469,8 @@ void R_DrawPlanes (void)
 
 #if PREFETCH_X86
 		// Get in mah L1 cache
-		int currline = 0;
-		byte* currsource = ds_source;
+		currline = 0;
+		currsource = ds_source;
 		for( currline = 0; currline < 64; ++currline )
 		{
 			_mm_prefetch( currsource, _MM_HINT_T0 );
