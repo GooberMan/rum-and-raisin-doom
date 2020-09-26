@@ -271,6 +271,7 @@ void R_RenderSegLoop (void)
 
 	    dc_colormap = walllights[index];
 	    dc_x = rw_x;
+		dc_scale = rw_scale;
 	    dc_iscale = 0xffffffffu / (unsigned)rw_scale;
 	}
         else

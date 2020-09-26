@@ -48,7 +48,6 @@ planefunction_t		ceilingfunc;
 //
 
 // Here comes the obnoxious "visplane".
-#define MAXVISPLANES	512
 visplane_t		visplanes[MAXVISPLANES];
 visplane_t*		lastvisplane;
 visplane_t*		floorplane;
@@ -435,6 +434,7 @@ void R_DrawPlanes (void)
 		if (pl->picnum == skyflatnum)
 		{
 			dc_iscale = pspriteiscale>>detailshift;
+			dc_scale = pspritescale>>detailshift;
 	    
 			// Sky is allways drawn full bright,
 			//  i.e. colormaps[0] is used.

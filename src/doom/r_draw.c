@@ -87,7 +87,8 @@ lighttable_t*		dc_colormap;
 int			dc_x; 
 int			dc_yl; 
 int			dc_yh; 
-fixed_t			dc_iscale; 
+fixed_t			dc_iscale;
+fixed_t			dc_scale;
 fixed_t			dc_texturemid;
 
 // first pixel in a column (possibly virtual) 
@@ -104,6 +105,8 @@ int			dccount;
 	#define COLUMN_AVX 0
 #endif
 
+#define F_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
+#define F_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
 
 //
 // A column is a vertical slice/span from a wall texture that,
@@ -137,16 +140,8 @@ void R_DrawColumn (void)
 #endif 
 	
 #if COLUMN_AVX
-	 algoselect = ( dc_iscale ) >> 12;
-
-	switch( algoselect )
-	{
-	case 0:
-	case 1:
-		// full 16 byte deflate minimum
-	default:
-	break;
-	}
+	// This should be further down the stack, select d_drawcolumn function based off number of pixels that need to be read for each 16 byte chunk
+	algoselect = F_MIN( ( dc_scale ) >> 12, 16 ) >> 1;
 #endif
 
     // Framebuffer destination address.
@@ -873,6 +868,11 @@ R_InitBuffer
 		rowofs[i] = viewwindowy + i;
 
 	background_data.width = background_data.height = 0;
+	if (background_data.data != NULL)
+	{
+		Z_Free(background_data.data);
+	}
+
 	background_data.data = NULL;
 } 
  
@@ -908,8 +908,6 @@ static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtu
 //  for variable screen sizes
 // Also draws a beveled edge.
 //
-#define F_MIN( x, y ) ( ( x ) < ( y ) ? ( x ) : ( y ) )
-#define F_MAX( x, y ) ( ( x ) > ( y ) ? ( x ) : ( y ) )
 
 void R_FillBackScreen (void) 
 { 
