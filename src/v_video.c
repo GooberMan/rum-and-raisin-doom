@@ -58,7 +58,7 @@ byte *xlatab = NULL;
 // The screen buffer that the v_video.c code draws to.
 
 static vbuffer_t default_buffer;
-static vbuffer_t* dest_buffer;
+vbuffer_t* dest_buffer;
 
 int dirtybox[4]; 
 
@@ -151,7 +151,6 @@ void V_InflateAndTransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outp
 	fixed_t sourcewidth_fixed = source->width << FRACBITS;
 	fixed_t sourceheight_fixed = source->width << FRACBITS;
 	fixed_t inflatedwidth_fixed = FixedMul( sourcewidth_fixed, V_WIDTHMULTIPLIER );
-	fixed_t inflatedheight_fixed = FixedMul( sourceheight_fixed, V_WIDTHMULTIPLIER );
 
 	int32_t inflatedwidth = inflatedwidth_fixed >> FRACBITS;
 	int32_t inflatedheight = inflatedwidth_fixed >> FRACBITS;
@@ -199,6 +198,9 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 	V_DrawPatchClipped(x, y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
 }
 
+#define F_MIN( x, y ) ( ( x ) < ( y ) ? ( x ) : ( y ) )
+#define F_MAX( x, y ) ( ( x ) > ( y ) ? ( x ) : ( y ) )
+
 //
 // V_DrawPatchClipped
 // Only want part of a patch? This is your function. As you'll notice, V_DrawPatch wraps in to this.
@@ -218,6 +220,8 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	fixed_t virtualcol;
 	fixed_t virtualrow;
 	fixed_t virtualpatchheight;
+
+	fixed_t delta;
 
     y -= SHORT(patch->topoffset);
     x -= SHORT(patch->leftoffset);
@@ -259,11 +263,11 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
         while (column->topdelta != 0xff)
         {
             source = (byte *)column + 3;
-			fixed_t delta = FixedMul( column->topdelta << FRACBITS, V_HEIGHTMULTIPLIER );
+			delta = FixedMul( column->topdelta << FRACBITS, V_HEIGHTMULTIPLIER );
             dest = desttop + ( delta >> FRACBITS );
 
 			virtualrow = 0;
-            virtualpatchheight = column->length << FRACBITS;
+            virtualpatchheight = ( column->length << FRACBITS );
 
             while ( virtualpatchheight > 0 )
             {
@@ -306,6 +310,8 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 	fixed_t virtualrow;
 	fixed_t virtualpatchheight;
 
+	fixed_t delta;
+
 	int w = SHORT(patch->width);
 
     y -= SHORT(patch->topoffset);
@@ -347,7 +353,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
         while (column->topdelta != 0xff)
         {
             source = (byte *)column + 3;
-			fixed_t delta = FixedMul( column->topdelta << FRACBITS, V_HEIGHTMULTIPLIER );
+			delta = FixedMul( column->topdelta << FRACBITS, V_HEIGHTMULTIPLIER );
             dest = desttop + ( delta >> FRACBITS );
 
 			virtualrow = 0;
