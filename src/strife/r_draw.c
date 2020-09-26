@@ -966,3 +966,7 @@ void R_DrawViewBorder (void)
 } 
  
  
+// I'll get to you later
+void R_VideoEraseRegion( int x, int y, int width, int height )
+{
+}

@@ -488,3 +488,8 @@ void R_DrawTopBorder(void)
                     W_CacheLumpName(DEH_String("bordtr"), PU_CACHE));
     }
 }
+
+// I'll get to you later
+void R_VideoEraseRegion( int x, int y, int width, int height )
+{
+}
