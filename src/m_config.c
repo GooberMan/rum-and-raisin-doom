@@ -829,6 +829,18 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(png_screenshots),
 
     //!
+    // 0 = original, 1 = INTERPIC
+    //
+
+    CONFIG_VARIABLE_INT(border_style),
+
+    //!
+    // 0 = original, 1 = dithered
+    //
+
+    CONFIG_VARIABLE_INT(border_bezel_style),
+
+    //!
     // Sound output sample rate, in Hz.  Typical values to use are
     // 11025, 22050, 44100 and 48000.
     //

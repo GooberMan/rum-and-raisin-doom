@@ -98,6 +98,12 @@ int usemouse = 1;
 
 int png_screenshots = 0;
 
+// 0 = original, 1 = INTERPIC
+int border_style = 0;
+
+// 0 = original, 1 = dithered
+int border_bezel_style = 0;
+
 // SDL video driver name
 
 char *video_driver = "";
@@ -1503,4 +1509,6 @@ void I_BindVideoVariables(void)
     M_BindStringVariable("window_position",        &window_position);
     M_BindIntVariable("usegamma",                  &usegamma);
     M_BindIntVariable("png_screenshots",           &png_screenshots);
+    M_BindIntVariable("border_style",              &border_style);
+    M_BindIntVariable("border_bezel_style",        &border_bezel_style);
 }

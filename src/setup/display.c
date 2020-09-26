@@ -60,6 +60,8 @@ static window_size_t window_sizes_scaled[] =
     { 1280, 960 },
     { 1600, 1200 },
     { 1920, 1440 },
+    { 2560, 1920 },
+    { 3840, 2880 },
     { 0, 0},
 };
 
@@ -75,6 +77,8 @@ static int window_width = 800, window_height = 600;
 static int startup_delay = 1000;
 static int max_scaling_buffer_pixels = 16000000;
 static int usegamma = 0;
+static int border_style = 0;
+static int border_bezel_style = 0;
 
 int graphical_startup = 1;
 int show_endoom = 1;
@@ -186,6 +190,7 @@ static void AdvancedDisplayConfig(TXT_UNCAST_ARG(widget),
     TXT_CAST_ARG(txt_table_t, sizes_table);
     txt_window_t *window;
     txt_checkbox_t *ar_checkbox;
+	txt_table_t* bs_table;
 
     window = TXT_NewWindow("Advanced display options");
 
@@ -208,6 +213,20 @@ static void AdvancedDisplayConfig(TXT_UNCAST_ARG(widget),
                         &png_screenshots),
 #endif
         NULL);
+
+	TXT_AddWidget( window, TXT_NewSeparator( "Border style" ) );
+	bs_table = TXT_NewTable( 2 );
+	TXT_SetColumnWidths( bs_table, 21, 21 );
+	TXT_AddWidget( bs_table, TXT_NewRadioButton( "Original", &border_style, 0 ) );
+	TXT_AddWidget( bs_table, TXT_NewRadioButton( "INTERPIC", &border_style, 1 ) );
+	TXT_AddWidget( window, bs_table );
+
+	TXT_AddWidget( window, TXT_NewSeparator( "Bezel style" ) );
+	bs_table = TXT_NewTable( 2 );
+	TXT_SetColumnWidths( bs_table, 21, 21 );
+	TXT_AddWidget( bs_table, TXT_NewRadioButton( "Original", &border_bezel_style, 0 ) );
+	TXT_AddWidget( bs_table, TXT_NewRadioButton( "Dithered", &border_bezel_style, 1 ) );
+	TXT_AddWidget( window, bs_table );
 
     TXT_SignalConnect(ar_checkbox, "changed", GenerateSizesTable, sizes_table);
 }
@@ -266,6 +285,8 @@ void BindDisplayVariables(void)
     M_BindIntVariable("vga_porch_flash",           &vga_porch_flash);
     M_BindIntVariable("force_software_renderer",   &force_software_renderer);
     M_BindIntVariable("max_scaling_buffer_pixels", &max_scaling_buffer_pixels);
+    M_BindIntVariable("border_style",              &border_style);
+    M_BindIntVariable("border_bezel_style",        &border_bezel_style);
 
     if (gamemission == doom || gamemission == heretic
      || gamemission == strife)
