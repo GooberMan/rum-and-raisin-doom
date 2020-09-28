@@ -54,6 +54,21 @@ void 	R_DrawColumnLow (void);
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 void R_DrawColumn_OneSample (void);
+void R_DrawColumn_TwoSamples (void);
+void R_DrawColumn_ThreeSamples (void);
+void R_DrawColumn_FourSamples (void);
+void R_DrawColumn_FiveSamples (void);
+void R_DrawColumn_SixSamples (void);
+void R_DrawColumn_SevenSamples (void);
+void R_DrawColumn_EightSamples (void);
+void R_DrawColumn_NineSamples (void);
+void R_DrawColumn_TenSamples (void);
+void R_DrawColumn_ElevenSamples (void);
+void R_DrawColumn_TwelveSamples (void);
+void R_DrawColumn_ThirteenSamples (void);
+void R_DrawColumn_FourteenSamples (void);
+void R_DrawColumn_FifteenSamples (void);
+void R_DrawColumn_SixteenSamples (void);
 #endif
 
 

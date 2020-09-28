@@ -159,6 +159,1009 @@ void R_DrawColumn_OneSample( void )
 		++simddest;
 	} while( curr < dc_yh );
 }
+
+void R_DrawColumn_TwoSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale << 2; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_ThreeSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 5;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 6;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep * 5;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_FourSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale << 2; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_FiveSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 3;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 3;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 3;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 4;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep * 3;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_SixSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 3;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 3;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 3;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep * 3;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_SevenSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 3;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep * 2;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_EightSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale << 1; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_NineSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep * 2;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_TenSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_ElevenSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_TwelveSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_ThirteenSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_FourteenSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_FifteenSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep * 2;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+
+void R_DrawColumn_SixteenSamples( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+	byte sample;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
+		frac += fracstep;
+
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
 #endif // COLUMN_AVX
 
 //
