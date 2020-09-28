@@ -91,9 +91,17 @@ extern	int		detailshift;
 // Function pointers to switch refresh/drawing functions.
 // Used to select shadow mode etc.
 //
-extern void		(*colfunc) (void);
+typedef void (*colfunc_t)( void );
+#define COLFUNC_PIXELEXPANDERS 16
+#define COLFUNC_FUZZINDEX 16
+#define COLFUNC_TRANSLATEINDEX 17
+#define COLFUNC_NUM 18
+#define COLFUNC_COUNT ( COLFUNC_NUM * 2 )
+
+extern colfunc_t colfuncs[ COLFUNC_COUNT ];
+extern colfunc_t colfunc;
+
 extern void		(*transcolfunc) (void);
-extern void		(*basecolfunc) (void);
 extern void		(*fuzzcolfunc) (void);
 // No shadow effects on floors.
 extern void		(*spanfunc) (void);

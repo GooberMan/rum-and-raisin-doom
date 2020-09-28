@@ -45,8 +45,17 @@ void 	R_DrawColumnLow (void);
 // Rum and raisin extensions.
 // Needs a whole overhaul of how we define output buffers.
 // For now, let's just SIMD output to the right location.
+#if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
+	#define R_DRAWCOLUMN_SIMDOPTIMISED 1
+	#define R_DRAWCOLUMN_DEBUGDISTANCES 0
+#else
+	#define R_DRAWCOLUMN_SIMDOPTIMISED 0
+#endif
 
-void    R_DrawColumnAVXTransposed (void);
+#if R_DRAWCOLUMN_SIMDOPTIMISED
+void R_DrawColumn_OneSample (void);
+#endif
+
 
 // The Spectre/Invisibility effect.
 void	R_CacheFuzzColumn (void);

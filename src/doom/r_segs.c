@@ -32,6 +32,8 @@
 #include "r_local.h"
 #include "r_sky.h"
 
+#define F_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
+#define F_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -87,6 +89,31 @@ lighttable_t**	walllights;
 
 short*		maskedtexturecol;
 
+// Debugging - replace lightmap with index indicating texture reads per 16-byte block
+extern byte detailmaps[16][256];
+
+#ifdef RANGECHECK
+void R_RangeCheckNamed( const char* func )
+{
+	if( dc_yl != dc_yh )
+	{
+		if ((unsigned)dc_x >= SCREENWIDTH
+			|| dc_yl < 0
+			|| dc_yh >= SCREENHEIGHT) 
+		{
+			I_Error ("%s: %i to %i at %i", func, dc_yl, dc_yh, dc_x);
+		}
+	}
+}
+
+#define R_RangeCheck() R_RangeCheckNamed( __FUNCTION__ )
+
+#else // !RANGECHECK
+
+#define R_RangeCheckNamed( func )
+#define R_RangeCheck()
+
+#endif // RANGECHECK
 
 
 //
@@ -102,6 +129,7 @@ R_RenderMaskedSegRange
     column_t*	col;
     int		lightnum;
     int		texnum;
+	colfunc_t restorefunc = colfunc;
     
     // Calculate light table.
     // Use different light tables
@@ -171,7 +199,10 @@ R_RenderMaskedSegRange
 	    }
 			
 	    sprtopscreen = centeryfrac - FixedMul(dc_texturemid, spryscale);
+		dc_scale = spryscale;
 	    dc_iscale = 0xffffffffu / (unsigned)spryscale;
+
+		colfunc = colfuncs[ F_MIN( ( dc_iscale >> 12 ), 15 ) ];
 	    
 	    // draw the texture
 	    col = (column_t *)( 
@@ -179,8 +210,11 @@ R_RenderMaskedSegRange
 			
 	    R_DrawMaskedColumn (col);
 	    maskedtexturecol[dc_x] = SHRT_MAX;
+
+		colfunc = restorefunc;
 	}
 	spryscale += rw_scalestep;
+
     }
 	
 }
@@ -199,6 +233,8 @@ R_RenderMaskedSegRange
 #define HEIGHTBITS		12
 #define HEIGHTUNIT		(1<<HEIGHTBITS)
 
+extern byte detailmaps[16][256];
+
 void R_RenderSegLoop (void)
 {
     angle_t		angle;
@@ -209,6 +245,11 @@ void R_RenderSegLoop (void)
     fixed_t		texturecolumn;
     int			top;
     int			bottom;
+
+	colfunc_t restorefunc = colfunc;
+#if R_DRAWCOLUMN_DEBUGDISTANCES
+	byte* restorelightmap;
+#endif // R_DRAWCOLUMN_DEBUGDISTANCES
 
     for ( ; rw_x < rw_stopx ; rw_x++)
     {
@@ -280,6 +321,14 @@ void R_RenderSegLoop (void)
 
             texturecolumn = 0;
         }
+
+#if R_DRAWCOLUMN_DEBUGDISTANCES
+	colfunc = colfuncs[ 15 ];
+	restorelightmap = dc_colormap;
+	dc_colormap = detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ];
+#else
+	colfunc = colfuncs[ F_MIN( ( dc_iscale >> 12 ), 15 ) ];
+#endif
 	
 	// draw the wall tiers
 	if (midtexture)
@@ -289,7 +338,8 @@ void R_RenderSegLoop (void)
 	    dc_yh = yh;
 	    dc_texturemid = rw_midtexturemid;
 	    dc_source = R_GetColumn(midtexture,texturecolumn);
-	    colfunc ();
+		R_RangeCheck();
+	    if( dc_yh > dc_yl ) colfunc ();
 	    ceilingclip[rw_x] = viewheight;
 	    floorclip[rw_x] = -1;
 	}
@@ -311,7 +361,8 @@ void R_RenderSegLoop (void)
 		    dc_yh = mid;
 		    dc_texturemid = rw_toptexturemid;
 		    dc_source = R_GetColumn(toptexture,texturecolumn);
-		    colfunc ();
+			R_RangeCheck();
+		    if( dc_yh > dc_yl ) colfunc ();
 		    ceilingclip[rw_x] = mid;
 		}
 		else
@@ -341,7 +392,8 @@ void R_RenderSegLoop (void)
 		    dc_texturemid = rw_bottomtexturemid;
 		    dc_source = R_GetColumn(bottomtexture,
 					    texturecolumn);
-		    colfunc ();
+			R_RangeCheck();
+		    if( dc_yh > dc_yl ) colfunc ();
 		    floorclip[rw_x] = mid;
 		}
 		else
@@ -365,6 +417,11 @@ void R_RenderSegLoop (void)
 	rw_scale += rw_scalestep;
 	topfrac += topstep;
 	bottomfrac += bottomstep;
+
+	colfunc = restorefunc;
+#if R_DRAWCOLUMN_DEBUGDISTANCES
+	dc_colormap = restorelightmap;
+#endif // R_DRAWCOLUMN_DEBUGDISTANCES
     }
 }
 

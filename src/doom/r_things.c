@@ -363,7 +363,7 @@ void R_DrawMaskedColumn (column_t* column)
 	if (dc_yl <= mceilingclip[dc_x])
 	    dc_yl = mceilingclip[dc_x]+1;
 
-	if (dc_yl <= dc_yh)
+	if (dc_yl < dc_yh)
 	{
 	    dc_source = (byte *)column + 3;
 	    dc_texturemid = basetexturemid - (column->topdelta<<FRACBITS);
@@ -397,7 +397,7 @@ R_DrawVisSprite
 	int			fuzzcolumn;
     fixed_t		frac;
     patch_t*		patch;
-	
+	colfunc_t	restorecol = colfunc;
 	
     patch = W_CacheLumpNum (vis->patch+firstspritelump, PU_CACHE);
 
@@ -444,7 +444,7 @@ R_DrawVisSprite
 		R_DrawMaskedColumn (column);
     }
 
-    colfunc = basecolfunc;
+    colfunc = restorecol;
 }
 
 

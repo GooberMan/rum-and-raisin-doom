@@ -27,13 +27,14 @@
 // Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
 // and SCREENHEIGHT_4_3 to be 4:3 correct.
 
-#define SCREENWIDTH  1280
+#define SCREENWIDTH  2560
 #define SCREENHEIGHT ( SCREENWIDTH * 6250 / 10000 )
 #define SCREENHEIGHT_4_3 ( SCREENWIDTH * 7500 / 10000 )
 
 #define V_VIRTUALWIDTH 320
 #define V_VIRTUALHEIGHT 200
 
+// TODO: We need to redo this to be pure integer math. Fixed/float results in inaccuracies at different resolutions :-(
 #define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / SCREENWIDTH )
 #define V_WIDTHMULTIPLIER ( ( SCREENWIDTH << FRACBITS ) / V_VIRTUALWIDTH )
 

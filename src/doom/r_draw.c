@@ -42,8 +42,8 @@
 
 // ?
 // This does precisely nothing but hard limit what you can do with a given executable
-#define MAXWIDTH			(SCREENWIDTH*2)
-#define MAXHEIGHT			(SCREENHEIGHT*2)
+#define MAXWIDTH			(SCREENWIDTH + SCREENWIDTH >> 1)
+#define MAXHEIGHT			(SCREENHEIGHT + SCREENHEIGHT >> 1)
 
 // status bar height at bottom of screen
 #define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
@@ -64,8 +64,8 @@ int		scaledviewwidth;
 int		viewheight;
 int		viewwindowx;
 int		viewwindowy; 
-pixel_t*		xlookup[MAXHEIGHT];
-int		rowofs[MAXWIDTH]; 
+pixel_t*		xlookup[MAXWIDTH];
+int		rowofs[MAXHEIGHT]; 
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -98,8 +98,8 @@ byte*			dc_source;
 int			dccount;
 
 // Rum and raisin extensions
-#if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
-	#define COLUMN_AVX 0
+#if R_DRAWCOLUMN_SIMDOPTIMISED && ( defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 ) )
+	#define COLUMN_AVX 1
 	#include <nmmintrin.h>
 #else
 	#define COLUMN_AVX 0
@@ -107,6 +107,59 @@ int			dccount;
 
 #define F_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
 #define F_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
+#define F_BITMASK( numbits ) ( ~( ~0u << numbits ) )
+#define F_BITMASK64( numbits ) ( ~( ~0ull << numbits ) )
+
+#if R_DRAWCOLUMN_SIMDOPTIMISED
+void R_DrawColumn_OneSample( void )
+{
+	int32_t curr;
+	size_t	basedest;
+	size_t	overlap;
+	__m128i* simddest;
+	fixed_t frac;
+	fixed_t fracstep;
+
+	__m128i prevsample;
+	__m128i currsample;
+	__m128i writesample;
+	__m128i selectmask;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	overlap		= basedest % sizeof( __m128i );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	overlap <<= 3;
+
+	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+
+	fracstep	= dc_iscale << 4; 
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_setzero_si128();
+		selectmask = fullmask;
+
+		frac += fracstep;
+		_mm_store_si128( simddest, writesample );
+		//prevsample = currsample;
+		curr += 16;
+		++simddest;
+	} while( curr < dc_yh );
+}
+#endif // COLUMN_AVX
 
 //
 // A column is a vertical slice/span from a wall texture that,
@@ -128,20 +181,9 @@ void R_DrawColumn (void)
  
     count = dc_yh - dc_yl; 
 
-    // Zero length, column does not exceed a pixel.
-    if (count < 0) 
-	return; 
-				 
-#ifdef RANGECHECK 
-    if ((unsigned)dc_x >= SCREENWIDTH
-	|| dc_yl < 0
-	|| dc_yh >= SCREENHEIGHT) 
-	I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
-#endif 
-	
 #if COLUMN_AVX
 	// This should be further down the stack, select d_drawcolumn function based off number of pixels that need to be read for each 16 byte chunk
-	algoselect = F_MIN( ( dc_scale ) >> 12, 16 ) >> 1;
+	algoselect = F_MIN( ( dc_scale ) >> 12, 16 );
 #endif
 
     // Framebuffer destination address.
@@ -170,111 +212,50 @@ void R_DrawColumn (void)
 } 
 
 
-
-// UNUSED.
-// Loop unrolled.
-#if 0
-void R_DrawColumn (void) 
-{ 
-    int			count; 
-    byte*		source;
-    byte*		dest;
-    byte*		colormap;
-    
-    unsigned		frac;
-    unsigned		fracstep;
-    unsigned		fracstep2;
-    unsigned		fracstep3;
-    unsigned		fracstep4;	 
- 
-    count = dc_yh - dc_yl + 1; 
-
-    source = dc_source;
-    colormap = dc_colormap;		 
-    dest = ylookup[dc_yl] + columnofs[dc_x];  
-	 
-    fracstep = dc_iscale<<9; 
-    frac = (dc_texturemid + (dc_yl-centery)*dc_iscale)<<9; 
- 
-    fracstep2 = fracstep+fracstep;
-    fracstep3 = fracstep2+fracstep;
-    fracstep4 = fracstep3+fracstep;
-	
-    while (count >= 8) 
-    { 
-	dest[0] = colormap[source[frac>>25]]; 
-	dest[SCREENWIDTH] = colormap[source[(frac+fracstep)>>25]]; 
-	dest[SCREENWIDTH*2] = colormap[source[(frac+fracstep2)>>25]]; 
-	dest[SCREENWIDTH*3] = colormap[source[(frac+fracstep3)>>25]];
-	
-	frac += fracstep4; 
-
-	dest[SCREENWIDTH*4] = colormap[source[frac>>25]]; 
-	dest[SCREENWIDTH*5] = colormap[source[(frac+fracstep)>>25]]; 
-	dest[SCREENWIDTH*6] = colormap[source[(frac+fracstep2)>>25]]; 
-	dest[SCREENWIDTH*7] = colormap[source[(frac+fracstep3)>>25]]; 
-
-	frac += fracstep4; 
-	dest += SCREENWIDTH*8; 
-	count -= 8;
-    } 
-	
-    while (count > 0)
-    { 
-	*dest = colormap[source[frac>>25]]; 
-	dest += SCREENWIDTH; 
-	frac += fracstep; 
-	count--;
-    } 
-}
-#endif
-
-
 void R_DrawColumnLow (void) 
 { 
-#if 0
     int			count; 
-    pixel_t*		dest;
-    pixel_t*		dest2;
+    pixel_t*	dest;
+    pixel_t*	dest2;
     fixed_t		frac;
-    fixed_t		fracstep;	 
-    int                 x;
+    fixed_t		fracstep;
+	byte sample;
+
+#if COLUMN_AVX
+	int algoselect;
+#endif // COLUMN_AVX
  
     count = dc_yh - dc_yl; 
 
-    // Zero length.
-    if (count < 0) 
-	return; 
-				 
-#ifdef RANGECHECK 
-    if ((unsigned)dc_x >= SCREENWIDTH
-	|| dc_yl < 0
-	|| dc_yh >= SCREENHEIGHT)
-    {
-	
-	I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
-    }
-    //	dccount++; 
-#endif 
-    // Blocky mode, need to multiply by 2.
-    x = dc_x << 1;
-    
-    dest = ylookup[dc_yl] + columnofs[x];
-    dest2 = ylookup[dc_yl] + columnofs[x+1];
-    
+#if COLUMN_AVX
+	// This should be further down the stack, select d_drawcolumn function based off number of pixels that need to be read for each 16 byte chunk
+	algoselect = F_MIN( ( dc_scale ) >> 12, 16 ) >> 1;
+#endif
+
+    // Framebuffer destination address.
+    // Use ylookup LUT to avoid multiply with ScreenWidth.
+    // Use columnofs LUT for subwindows? 
+    dest = xlookup[ dc_x * 2 ] + rowofs[dc_yl];  
+    dest2 = xlookup[ dc_x * 2 + 1 ] + rowofs[dc_yl];  
+
+    // Determine scaling,
+    //  which is the only mapping to be done.
     fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep;
-    
+    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+
+    // Inner loop that does the actual texture mapping,
+    //  e.g. a DDA-lile scaling.
+    // This is as fast as it gets.
     do 
     {
-	// Hack. Does not work corretly.
-	*dest2 = *dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
-	dest += SCREENWIDTH;
-	dest2 += SCREENWIDTH;
-	frac += fracstep; 
-
-    } while (count--);
-#endif
+		// Re-map color indices from wall texture column
+		//  using a lighting/special effects LUT.
+		sample = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+		*dest++ = sample; 
+		*dest2++ = sample; 
+		frac += fracstep;
+	
+    } while (count--); 
 }
 
 
@@ -342,24 +323,11 @@ void R_DrawFuzzColumn (void)
 #endif // ADJUSTED_FUZZ
     count = dc_yh - dc_yl; 
 
-    // Zero length.
-    if (count < 0)
-		return;
-
 	// One interesting side effect of transposing the buffer:
 	// It's now the left and right edges of the screen that we need to not sample
 	if (!dc_x || dc_x == viewwidth-1)
 		return;
 		 
-#ifdef RANGECHECK 
-    if ((unsigned)dc_x >= SCREENWIDTH
-	|| dc_yl < 0 || dc_yh >= SCREENHEIGHT)
-    {
-	I_Error ("R_DrawFuzzColumn: %i to %i at %i",
-		 dc_yl, dc_yh, dc_x);
-    }
-#endif
-    
     dest = xlookup[dc_x] + rowofs[dc_yl];  
 
     // Looks familiar.
@@ -418,22 +386,9 @@ void R_DrawFuzzColumnLow (void)
 		 
     count = dc_yh - dc_yl; 
 
-    // Zero length.
-    if (count < 0) 
-	return; 
-
     // low detail mode, need to multiply by 2
     
     x = dc_x << 1;
-    
-#ifdef RANGECHECK 
-    if ((unsigned)x >= SCREENWIDTH
-	|| dc_yl < 0 || dc_yh >= SCREENHEIGHT)
-    {
-	I_Error ("R_DrawFuzzColumn: %i to %i at %i",
-		 dc_yl, dc_yh, dc_x);
-    }
-#endif
     
     dest = ylookup[dc_yl] + columnofs[x];
     dest2 = ylookup[dc_yl] + columnofs[x+1];
@@ -490,19 +445,6 @@ void R_DrawTranslatedColumn (void)
     fixed_t		fracstep;	 
  
     count = dc_yh - dc_yl; 
-    if (count < 0) 
-	return; 
-				 
-#ifdef RANGECHECK 
-    if ((unsigned)dc_x >= SCREENWIDTH
-	|| dc_yl < 0
-	|| dc_yh >= SCREENHEIGHT)
-    {
-	I_Error ( "R_DrawColumn: %i to %i at %i",
-		  dc_yl, dc_yh, dc_x);
-    }
-    
-#endif 
 
     dest = xlookup[dc_x] + rowofs[dc_yl];  
 
@@ -535,24 +477,10 @@ void R_DrawTranslatedColumnLow (void)
     int                 x;
  
     count = dc_yh - dc_yl; 
-    if (count < 0) 
-	return; 
 
     // low detail, need to scale by 2
     x = dc_x << 1;
 				 
-#ifdef RANGECHECK 
-    if ((unsigned)x >= SCREENWIDTH
-	|| dc_yl < 0
-	|| dc_yh >= SCREENHEIGHT)
-    {
-	I_Error ( "R_DrawColumn: %i to %i at %i",
-		  dc_yl, dc_yh, x);
-    }
-    
-#endif 
-
-
     dest = ylookup[dc_yl] + columnofs[x]; 
     dest2 = ylookup[dc_yl] + columnofs[x+1]; 
 

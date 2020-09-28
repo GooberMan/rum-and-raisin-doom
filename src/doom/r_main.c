@@ -110,8 +110,9 @@ int			extralight;
 
 
 
-void (*colfunc) (void);
-void (*basecolfunc) (void);
+colfunc_t colfuncs[ COLFUNC_COUNT ];
+colfunc_t colfunc;
+
 void (*fuzzcolfunc) (void);
 void (*transcolfunc) (void);
 void (*spanfunc) (void);
@@ -649,6 +650,60 @@ void R_InitLightTables (void)
     }
 }
 
+byte detailmaps[16][256];
+
+void R_InitColFuncs( void )
+{
+#if R_DRAWCOLUMN_SIMDOPTIMISED
+	colfuncs[ 0 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 1 ] = &R_DrawColumn;
+	colfuncs[ 2 ] = &R_DrawColumn;
+	colfuncs[ 3 ] = &R_DrawColumn;
+	colfuncs[ 4 ] = &R_DrawColumn;
+	colfuncs[ 5 ] = &R_DrawColumn;
+	colfuncs[ 6 ] = &R_DrawColumn;
+	colfuncs[ 7 ] = &R_DrawColumn;
+	colfuncs[ 8 ] = &R_DrawColumn;
+	colfuncs[ 9 ] = &R_DrawColumn;
+	colfuncs[ 10 ] = &R_DrawColumn;
+	colfuncs[ 11 ] = &R_DrawColumn;
+	colfuncs[ 12 ] = &R_DrawColumn;
+	colfuncs[ 13 ] = &R_DrawColumn;
+	colfuncs[ 14 ] = &R_DrawColumn;
+	colfuncs[ 15 ] = &R_DrawColumn;
+#endif //R_DRAWCOLUMN_SIMDOPTIMISED
+
+	int32_t currexpand = COLFUNC_PIXELEXPANDERS;
+
+	while( currexpand > 0 )
+	{
+		--currexpand;
+#if !R_DRAWCOLUMN_SIMDOPTIMISED
+		colfuncs[ currexpand ] = &R_DrawColumn;
+#endif // R_DRAWCOLUMN_SIMDOPTIMISED
+		colfuncs[ COLFUNC_NUM + currexpand ] = &R_DrawColumnLow;
+	}
+
+	memset( detailmaps[ 0 ], 247, 256 );
+	memset( detailmaps[ 1 ], 110, 256 );
+	memset( detailmaps[ 2 ], 108, 256 );
+	memset( detailmaps[ 3 ], 106, 256 );
+	memset( detailmaps[ 4 ], 104, 256 );
+	memset( detailmaps[ 5 ], 102, 256 );
+	memset( detailmaps[ 6 ], 100, 256 );
+	memset( detailmaps[ 7 ], 98, 256 );
+	memset( detailmaps[ 8 ], 96, 256 );
+	memset( detailmaps[ 9 ], 94, 256 );
+	memset( detailmaps[ 10 ], 92, 256 );
+	memset( detailmaps[ 11 ], 90, 256 );
+	memset( detailmaps[ 12 ], 88, 256 );
+	memset( detailmaps[ 13 ], 86, 256 );
+	memset( detailmaps[ 14 ], 84, 256 );
+	memset( detailmaps[ 15 ], 82, 256 );
+
+	colfuncs[ COLFUNC_FUZZINDEX ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZINDEX ] = &R_DrawFuzzColumn;
+	colfuncs[ COLFUNC_TRANSLATEINDEX ] = colfuncs[ COLFUNC_NUM + COLFUNC_TRANSLATEINDEX ] = &R_DrawTranslatedColumn;
+}
 
 
 //
@@ -672,6 +727,17 @@ R_SetViewSize
     setdetail = detail;
 }
 
+typedef enum detail_e
+{
+	DT_NATIVE,
+	DT_CRISPY,
+	DT_ORIGINALHIGH,
+	DT_ORIGINALLOW,
+	DT_VIRTUAL,
+
+	DT_COUNT
+} detail_t;
+
 //
 // R_ExecuteSetViewSize
 //
@@ -683,10 +749,43 @@ void R_ExecuteSetViewSize (void)
     int		j;
     int		level;
     int		startmap; 	
+	int		colfuncbase;
 
     setsizeneeded = false;
 
-    if (setblocks == 11)
+	//switch( setdetail )
+	//{
+	//case DT_NATIVE:
+	//case DT_VIRTUAL:
+	//	scaledviewwidth = SCREENWIDTH;
+	//	viewheight = SCREENHEIGHT;
+	//	detailshift = 0;
+	//	break;
+	//case DT_CRISPY:
+	//	scaledviewwidth = 640;
+	//	viewheight = 400;
+	//	detailshift = 0;
+	//case DT_ORIGINALHIGH:
+	//	scaledviewwidth = 320;
+	//	viewheight = 200;
+	//	detailshift = 1;
+	//	break;
+	//case DT_ORIGINALLOW:
+	//	scaledviewwidth = 160;
+	//	viewheight = 200;
+	//	detailshift = 1;
+	//	break;
+	//}
+	//
+    //viewwidth = scaledviewwidth>>detailshift;
+	//
+    //if (setblocks < 11)
+    //{
+	//	scaledviewwidth = setblocks*viewwidth/10;
+	//	viewheight = (setblocks*(SCREENHEIGHT-SBARHEIGHT)/10)&~7;
+    //}
+
+   if (setblocks == 11)
     {
 	scaledviewwidth = SCREENWIDTH;
 	viewheight = SCREENHEIGHT;
@@ -699,26 +798,25 @@ void R_ExecuteSetViewSize (void)
     
     detailshift = setdetail;
     viewwidth = scaledviewwidth>>detailshift;
-	
+    
     centery = viewheight/2;
     centerx = viewwidth/2;
     centerxfrac = centerx<<FRACBITS;
     centeryfrac = centery<<FRACBITS;
     projection = centerxfrac;
 
+	colfuncbase = COLFUNC_NUM * ( detailshift );
+	colfunc = colfuncs[ colfuncbase + 15 ];
+	fuzzcolfunc = colfuncs[ colfuncbase + COLFUNC_FUZZINDEX ];
+	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
+
     if (!detailshift)
     {
-	colfunc = basecolfunc = R_DrawColumn;
-	fuzzcolfunc = R_DrawFuzzColumn;
-	transcolfunc = R_DrawTranslatedColumn;
-	spanfunc = R_DrawSpan;
+		spanfunc = R_DrawSpan;
     }
     else
     {
-	colfunc = basecolfunc = R_DrawColumnLow;
-	fuzzcolfunc = R_DrawFuzzColumnLow;
-	transcolfunc = R_DrawTranslatedColumnLow;
-	spanfunc = R_DrawSpanLow;
+		spanfunc = R_DrawSpanLow;
     }
 
     R_InitBuffer (scaledviewwidth, viewheight);
@@ -777,6 +875,8 @@ void R_ExecuteSetViewSize (void)
 
 void R_Init (void)
 {
+	R_InitColFuncs();
+
     R_InitData ();
     printf (".");
     R_InitPointToAngle ();
