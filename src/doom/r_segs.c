@@ -342,7 +342,7 @@ void R_RenderSegLoop (void)
 	    dc_yl = yl;
 	    dc_yh = yh;
 	    dc_texturemid = rw_midtexturemid;
-	    dc_source = R_GetColumn(midtexture,texturecolumn,colormapindex);
+	    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(midtexture,texturecolumn,colormapindex);
 		R_RangeCheck();
 	    if( dc_yh > dc_yl ) colfunc ();
 	    ceilingclip[rw_x] = viewheight;
@@ -365,7 +365,7 @@ void R_RenderSegLoop (void)
 		    dc_yl = yl;
 		    dc_yh = mid;
 		    dc_texturemid = rw_toptexturemid;
-		    dc_source = R_GetColumn(toptexture,texturecolumn,colormapindex);
+		    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(toptexture,texturecolumn,colormapindex);
 			R_RangeCheck();
 		    if( dc_yh > dc_yl ) colfunc ();
 		    ceilingclip[rw_x] = mid;
@@ -395,7 +395,7 @@ void R_RenderSegLoop (void)
 		    dc_yl = mid;
 		    dc_yh = yh;
 		    dc_texturemid = rw_bottomtexturemid;
-		    dc_source = R_GetColumn(bottomtexture,texturecolumn,colormapindex);
+		    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(bottomtexture,texturecolumn,colormapindex);
 			R_RangeCheck();
 		    if( dc_yh > dc_yl ) colfunc ();
 		    floorclip[rw_x] = mid;
