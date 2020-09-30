@@ -55,6 +55,7 @@ int			validcount = 1;
 lighttable_t*		fixedcolormap;
 int32_t				fixedcolormapindex;
 extern lighttable_t**	walllights;
+extern int32_t			walllightsindex;
 
 int			centerx;
 int			centery;
@@ -102,6 +103,7 @@ angle_t			xtoviewangle[SCREENWIDTH+1];
 
 lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
+int32_t				scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
 int32_t				zlightindex[LIGHTLEVELS][MAXLIGHTZ];
 
@@ -614,45 +616,42 @@ void R_InitTextureMapping (void)
 
 void R_InitLightTables (void)
 {
-    int		i;
-    int		j;
-    int		level;
-    int		startmap; 	
-    int		scale;
+	int		i;
+	int		j;
+	int		level;
+	int		startmap; 	
+	int		scale;
     
-    // Calculate the light levels to use
-    //  for each level / distance combination.
-    for (i=0 ; i< LIGHTLEVELS ; i++)
-    {
-	startmap = ((LIGHTLEVELS-1-i)*2)*NUMCOLORMAPS/LIGHTLEVELS;
-	for (j=0 ; j<MAXLIGHTZ ; j++)
+	// Calculate the light levels to use
+	//  for each level / distance combination.
+	for (i=0 ; i< LIGHTLEVELS ; i++)
 	{
-	    scale = FixedDiv ((SCREENWIDTH/2*FRACUNIT), (j+1)<<LIGHTZSHIFT);
-	    scale >>= LIGHTSCALESHIFT;
+		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
+		for (j=0 ; j<MAXLIGHTZ ; j++)
+		{
+			scale = FixedDiv ((SCREENWIDTH/2*FRACUNIT), (j+1)<<LIGHTZSHIFT);
+			scale >>= LIGHTSCALESHIFT;
 #if SCREENWIDTH != 320
-		scale = FixedDiv( scale << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+			scale = FixedDiv( scale << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
 #endif // SCREENWIDTH != 320
 
-	    level = startmap - scale/DISTMAP;
-	    
-	    if (level < 0)
-		level = 0;
+			level = startmap - scale/DISTMAP;
 
-	    if (level >= NUMCOLORMAPS)
-		level = NUMCOLORMAPS-1;
+			if (level < 0)
+				level = 0;
 
-#if DOFLATPRECACHE
-		zlightindex[i][j] = level;
-#else
-	    zlight[i][j] = colormaps + level*256;
-#endif
+			if (level >= NUMLIGHTCOLORMAPS)
+				level = NUMLIGHTCOLORMAPS-1;
+
+			zlightindex[i][j] = level;
+			zlight[i][j] = colormaps + level*256;
+		}
 	}
-    }
 }
 
 byte detailmaps[16][256];
 
-#define HAX 1
+#define HAX 0
 void R_InitColFuncs( void )
 {
 #if R_DRAWCOLUMN_SIMDOPTIMISED
@@ -869,7 +868,7 @@ void R_ExecuteSetViewSize (void)
     //  for each level / scale combination.
     for (i=0 ; i< LIGHTLEVELS ; i++)
     {
-	startmap = ((LIGHTLEVELS-1-i)*2)*NUMCOLORMAPS/LIGHTLEVELS;
+	startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
 	for (j=0 ; j<MAXLIGHTSCALE ; j++)
 	{
 	    level = startmap - j*SCREENWIDTH/(viewwidth<<detailshift)/DISTMAP;
@@ -877,10 +876,11 @@ void R_ExecuteSetViewSize (void)
 	    if (level < 0)
 		level = 0;
 
-	    if (level >= NUMCOLORMAPS)
-		level = NUMCOLORMAPS-1;
+	    if (level >= NUMLIGHTCOLORMAPS)
+		level = NUMLIGHTCOLORMAPS-1;
 
 	    scalelight[i][j] = colormaps + level*256;
+		scalelightindex[i][j] = level;
 	}
     }
 }
@@ -953,38 +953,41 @@ R_PointInSubsector
 //
 void R_SetupFrame (player_t* player)
 {		
-    int		i;
+	int		i;
     
-    viewplayer = player;
-    viewx = player->mo->x;
-    viewy = player->mo->y;
-    viewangle = player->mo->angle + viewangleoffset;
-    extralight = player->extralight;
+	viewplayer = player;
+	viewx = player->mo->x;
+	viewy = player->mo->y;
+	viewangle = player->mo->angle + viewangleoffset;
+	extralight = player->extralight;
 
-    viewz = player->viewz;
+	viewz = player->viewz;
     
-    viewsin = finesine[viewangle>>ANGLETOFINESHIFT];
-    viewcos = finecosine[viewangle>>ANGLETOFINESHIFT];
+	viewsin = finesine[viewangle>>ANGLETOFINESHIFT];
+	viewcos = finecosine[viewangle>>ANGLETOFINESHIFT];
 	
-    sscount = 0;
+	sscount = 0;
 	
 	fixedcolormapindex = player->fixedcolormap;
-    if (player->fixedcolormap)
-    {
-	fixedcolormap =
-	    colormaps
-	    + player->fixedcolormap*256;
+	if (player->fixedcolormap)
+	{
+		fixedcolormap =
+			colormaps
+			+ player->fixedcolormap*256;
 	
-	walllights = scalelightfixed;
+		walllights = scalelightfixed;
+		walllightsindex = fixedcolormapindex;
 
-	for (i=0 ; i<MAXLIGHTSCALE ; i++)
-	    scalelightfixed[i] = fixedcolormap;
-    }
-    else
-	fixedcolormap = 0;
+		for (i=0 ; i<MAXLIGHTSCALE ; i++)
+			scalelightfixed[i] = fixedcolormap;
+	}
+	else
+	{
+		fixedcolormap = 0;
+	}
 		
-    framecount++;
-    validcount++;
+	framecount++;
+	validcount++;
 }
 
 

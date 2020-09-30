@@ -26,10 +26,10 @@
 
 
 // Retrieve column data for span blitting.
-byte*
-R_GetColumn
-( int		tex,
-  int		col );
+byte* R_GetColumn ( int32_t tex, int32_t col, int32_t colormapindex );
+
+// A raw column is a non-composited column as you'd find in your WAD
+byte* R_GetRawColumn ( int32_t tex, int32_t col );
 
 
 // I/O, setting up the stuff.

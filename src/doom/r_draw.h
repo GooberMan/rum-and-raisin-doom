@@ -21,7 +21,6 @@
 #define __R_DRAW__
 
 
-#define DOFLATPRECACHE 1
 #define ADJUSTED_FUZZ 0
 
 extern lighttable_t*	dc_colormap;
@@ -40,13 +39,14 @@ extern byte*		dc_source;
 // Hook in assembler or system specific BLT
 //  here.
 void 	R_DrawColumn (void);
+void 	R_DrawColumn_Untranslated (void);
 void 	R_DrawColumnLow (void);
 
 // Rum and raisin extensions.
 // Needs a whole overhaul of how we define output buffers.
 // For now, let's just SIMD output to the right location.
 #if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
-	#define R_DRAWCOLUMN_SIMDOPTIMISED 1
+	#define R_DRAWCOLUMN_SIMDOPTIMISED 0
 	#define R_DRAWCOLUMN_DEBUGDISTANCES 0
 #else
 	#define R_DRAWCOLUMN_SIMDOPTIMISED 0
@@ -102,9 +102,7 @@ extern byte*		ds_source;
 extern byte*		translationtables;
 extern byte*		dc_translation;
 
-#if DOFLATPRECACHE
 extern byte** precachedflats;
-#endif //DOFLATPRECACHE
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.

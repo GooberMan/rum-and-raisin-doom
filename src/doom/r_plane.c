@@ -157,7 +157,6 @@ R_MapPlane
     ds_xfrac = viewx + FixedMul(finecosine[angle], length);
     ds_yfrac = -viewy - FixedMul(finesine[angle], length);
 
-#if DOFLATPRECACHE
 	if( fixedcolormapindex )
 	{
 		// TODO: This should be a real define somewhere
@@ -173,30 +172,7 @@ R_MapPlane
 
 		ds_source += ( 4096 * index );
 	}
-#else // !DOFLATPRECACHE
-    if (fixedcolormap)
-	ds_colormap = fixedcolormap;
-    else
-    {
-	index = distance >> LIGHTZSHIFT;
-	
-	if (index >= MAXLIGHTZ )
-	    index = MAXLIGHTZ-1;
 
-	ds_colormap = planezlight[index];
-    }
-#if PREFETCH_X86
-	// Get in mah L1 cache
-	int currline = 0;
-	byte* currsource = ds_colormap;
-	for( currline = 0; currline < 4; ++currline )
-	{
-		_mm_prefetch( currsource, _MM_HINT_T0 );
-		currsource += 64;
-	}
-#endif // PREFETCH_X86
-
-#endif // DOFLATPRECACHE
     ds_y = y;
     ds_x1 = x1;
     ds_x2 = x2;
@@ -451,7 +427,7 @@ void R_DrawPlanes (void)
 				{
 					angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
 					dc_x = x;
-					dc_source = R_GetColumn(skytexture, angle);
+					dc_source = R_GetColumn(skytexture, angle, 0);
 					colfunc ();
 				}
 			}
@@ -459,13 +435,8 @@ void R_DrawPlanes (void)
 		}
 	
 		// regular flat
-#if DOFLATPRECACHE
 		lumpnum = flattranslation[pl->picnum];
 		ds_source = precachedflats[ lumpnum ];
-#else // !DOFLATPRECACHE
-		lumpnum = firstflat + flattranslation[pl->picnum];
-		ds_source = W_CacheLumpNum(lumpnum, PU_STATIC);
-#endif // DOFLATPRECACHE
 
 #if PREFETCH_X86
 		// Get in mah L1 cache
@@ -487,11 +458,8 @@ void R_DrawPlanes (void)
 		if (light < 0)
 			light = 0;
 
-#if DOFLATPRECACHE
 		planezlightindex = light;
-#else // !DOFLATPRECACHE
 		planezlight = zlight[light];
-#endif // DOFLATPRECACHE
 
 		pl->top[pl->maxx+1] = VPINDEX_INVALID;
 		pl->top[pl->minx-1] = VPINDEX_INVALID;
@@ -506,8 +474,5 @@ void R_DrawPlanes (void)
 				pl->bottom[x]);
 		}
 	
-#if !DOFLATPRECACHE
-        W_ReleaseLumpNum(lumpnum);
-#endif // !DOFLATPRECACHE
-    }
+	}
 }

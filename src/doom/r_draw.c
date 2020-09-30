@@ -125,10 +125,17 @@ void R_DrawColumn_OneSample( void )
 	__m128i writesample;
 	__m128i selectmask;
 
+	__m128i sample_increment;
+
+	__m128i sample_zero_three;
+	__m128i sample_four_seven;
+	__m128i sample_eight_eleven;
+	__m128i sample_twelve_fifteen;
+
 	const __m128i fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest & ( sizeof( __m128i ) - 1 );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -139,7 +146,13 @@ void R_DrawColumn_OneSample( void )
 	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale << 4; 
-	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+	frac		= dc_texturemid + ( dc_yl - centery ) * ( dc_iscale * 7 );
+
+	sample_increment = _mm_set1_epi32( dc_iscale << 6 );
+	sample_zero_three = _mm_set_epi32( frac, frac * 2, frac * 3, frac * 4 );
+	sample_four_seven = _mm_add_epi32( sample_zero_three, sample_increment );
+	sample_eight_eleven = _mm_add_epi32( sample_four_seven, sample_increment );
+	sample_twelve_fifteen = _mm_add_epi32( sample_eight_eleven, sample_increment );
 
 	prevsample = _mm_load_si128( simddest );
 	prevsample = _mm_and_si128( selectmask, prevsample );
@@ -149,12 +162,10 @@ void R_DrawColumn_OneSample( void )
 	{
 		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
-		selectmask = fullmask;
+		prevsample = currsample;
 
 		frac += fracstep;
 		_mm_store_si128( simddest, writesample );
-		//prevsample = currsample;
 		curr += 16;
 		++simddest;
 	} while( curr < dc_yh );
@@ -1178,16 +1189,41 @@ void R_DrawColumn (void)
     fixed_t		frac;
     fixed_t		fracstep;	 
 
-#if COLUMN_AVX
-	int algoselect;
-#endif // COLUMN_AVX
- 
     count = dc_yh - dc_yl; 
 
-#if COLUMN_AVX
-	// This should be further down the stack, select d_drawcolumn function based off number of pixels that need to be read for each 16 byte chunk
-	algoselect = F_MIN( ( dc_scale ) >> 12, 16 );
-#endif
+    // Framebuffer destination address.
+    // Use ylookup LUT to avoid multiply with ScreenWidth.
+    // Use columnofs LUT for subwindows? 
+    dest = xlookup[dc_x] + rowofs[dc_yl];  
+
+    // Determine scaling,
+    //  which is the only mapping to be done.
+    fracstep = dc_iscale; 
+    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+
+    // Inner loop that does the actual texture mapping,
+    //  e.g. a DDA-lile scaling.
+    // This is as fast as it gets.
+    do 
+    {
+		// Re-map color indices from wall texture column
+		//  using a lighting/special effects LUT.
+		*dest = dc_source[(frac>>FRACBITS)&127];
+		
+		dest += 1; 
+		frac += fracstep;
+	
+    } while (count--); 
+} 
+
+void R_DrawColumn_Untranslated (void) 
+{ 
+    int			count; 
+    pixel_t*		dest;
+    fixed_t		frac;
+    fixed_t		fracstep;	 
+
+    count = dc_yh - dc_yl; 
 
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
@@ -1213,7 +1249,6 @@ void R_DrawColumn (void)
 	
     } while (count--); 
 } 
-
 
 void R_DrawColumnLow (void) 
 { 
@@ -1616,24 +1651,18 @@ void R_DrawSpan (void)
 
     do
     {
-	// Calculate current texture index in u,v.
-        ytemp = (position >> 4) & 0x0fc0;
-        xtemp = (position >> 26);
-        spot = xtemp | ytemp;
+		// Calculate current texture index in u,v.
+		ytemp = (position >> 4) & 0x0fc0;
+		xtemp = (position >> 26);
+		spot = xtemp | ytemp;
 
-	// Lookup pixel from flat texture tile,
-#if DOFLATPRECACHE
+		// Lookup pixel from flat texture tile,
 		*dest = ds_source[spot];
-		//*dest = 0xbc;
-#else // !DOFLATPRECACHE
-		//  re-index using light/colormap.
-		*dest = ds_colormap[ds_source[spot]];
-#endif // DOFLATPRECACHE
 		dest += SCREENHEIGHT;
 
 		position += step;
 
-    } while (count--);
+	} while (count--);
 }
 
 

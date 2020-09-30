@@ -623,6 +623,9 @@ void R_AddSprites (sector_t* sec)
     mobj_t*		thing;
     int			lightnum;
 
+	colfunc_t restore = colfunc;
+	colfunc = &R_DrawColumn_Untranslated;
+
     // BSP is traversed by subsector.
     // A sector might have been split into several
     //  subsectors during BSP building.
@@ -645,6 +648,8 @@ void R_AddSprites (sector_t* sec)
     // Handle all things in sector.
     for (thing = sec->thinglist ; thing ; thing = thing->snext)
 	R_ProjectSprite (thing);
+
+	colfunc = restore;
 }
 
 

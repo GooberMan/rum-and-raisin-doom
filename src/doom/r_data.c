@@ -35,10 +35,8 @@
 #include "doomstat.h"
 #include "r_sky.h"
 
-#if DOFLATPRECACHE
 // NEEEEEEED ANIMATION DATA
 #include "p_spec.h"
-#endif // DOFLATPRECACHE
 
 #include "r_data.h"
 
@@ -153,6 +151,7 @@ fixed_t*		textureheight;
 int*			texturecompositesize;
 short**			texturecolumnlump;
 unsigned short**	texturecolumnofs;
+unsigned short**	texturecompositecolumnofs;
 byte**			texturecomposite;
 
 // for global animation
@@ -219,75 +218,83 @@ R_DrawColumnInCache
     }
 }
 
-
-
 //
 // R_GenerateComposite
 // Using the texture definition,
 //  the composite texture is created from the patches,
 //  and each column is cached.
 //
+
+#define COMPOSITE_MULTIPLIER ( NUMCOLORMAPS )
+#define COMPOSITE_ZONE ( PU_LEVEL )
+
 void R_GenerateComposite (int texnum)
 {
-    byte*		block;
-    texture_t*		texture;
-    texpatch_t*		patch;	
-    patch_t*		realpatch;
-    int			x;
-    int			x1;
-    int			x2;
-    int			i;
-    column_t*		patchcol;
-    short*		collump;
-    unsigned short*	colofs;
+	byte*				block;
+	byte*				source;
+	byte*				target;
+	texture_t*			texture;
+	texpatch_t*			patch;	
+	patch_t*			realpatch;
+	lighttable_t*		currmap;
+	int32_t				x;
+	int32_t				x1;
+	int32_t				x2;
+	int32_t				index;
+	column_t*			patchcol;
+	int16_t*			collump;
+	uint16_t*			colofs;
 	
-    texture = textures[texnum];
+	texture = textures[texnum];
 
-    block = Z_Malloc (texturecompositesize[texnum],
-		      PU_STATIC, 
-		      &texturecomposite[texnum]);	
+	block = Z_Malloc (texturecompositesize[texnum] * COMPOSITE_MULTIPLIER,
+						COMPOSITE_ZONE, 
+						&texturecomposite[texnum]);	
 
     collump = texturecolumnlump[texnum];
-    colofs = texturecolumnofs[texnum];
+    colofs = texturecompositecolumnofs[texnum];
     
     // Composite the columns together.
     patch = texture->patches;
 		
-    for (i=0 , patch = texture->patches;
-	 i<texture->patchcount;
-	 i++, patch++)
+    for (index=0; index<texture->patchcount; index++, patch++)
     {
-	realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
-	x1 = patch->originx;
-	x2 = x1 + SHORT(realpatch->width);
+		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+		x1 = patch->originx;
+		x2 = x1 + SHORT(realpatch->width);
 
-	if (x1<0)
-	    x = 0;
-	else
-	    x = x1;
+		if (x1<0)
+			x = 0;
+		else
+			x = x1;
 	
-	if (x2 > texture->width)
-	    x2 = texture->width;
+		if (x2 > texture->width)
+			x2 = texture->width;
 
-	for ( ; x<x2 ; x++)
-	{
-	    // Column does not have multiple patches?
-	    if (collump[x] >= 0)
-		continue;
-	    
-	    patchcol = (column_t *)((byte *)realpatch
-				    + LONG(realpatch->columnofs[x-x1]));
-	    R_DrawColumnInCache (patchcol,
-				 block + colofs[x],
-				 patch->originy,
-				 texture->height);
-	}
+		for ( ; x<x2 ; x++)
+		{
+			patchcol = (column_t *)((byte *)realpatch
+						+ LONG(realpatch->columnofs[x-x1]));
+			R_DrawColumnInCache (patchcol,
+					 block + colofs[x],
+					 patch->originy,
+					 texture->height);
+		}
 						
     }
 
-    // Now that the texture has been built in column cache,
-    //  it is purgable from zone memory.
-    Z_ChangeTag (block, PU_CACHE);
+	for( index = 1; index < NUMCOLORMAPS; ++index )
+	{
+		currmap = colormaps + index * 256;
+
+		source = block;
+		target = block + texturecompositesize[ texnum ] * index;
+
+		while( source < block + texturecompositesize[ texnum ] )
+		{
+			*target++ = currmap[ *source++ ];
+		}
+	}
 }
 
 
@@ -329,49 +336,46 @@ void R_GenerateLookup (int texnum)
 	 i<texture->patchcount;
 	 i++, patch++)
     {
-	realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
-	x1 = patch->originx;
-	x2 = x1 + SHORT(realpatch->width);
+		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+		x1 = patch->originx;
+		x2 = x1 + SHORT(realpatch->width);
 	
-	if (x1 < 0)
-	    x = 0;
-	else
-	    x = x1;
+		if (x1 < 0)
+			x = 0;
+		else
+			x = x1;
 
-	if (x2 > texture->width)
-	    x2 = texture->width;
-	for ( ; x<x2 ; x++)
-	{
-	    patchcount[x]++;
-	    collump[x] = patch->patch;
-	    colofs[x] = LONG(realpatch->columnofs[x-x1])+3;
+		if (x2 > texture->width)
+			x2 = texture->width;
+		for ( ; x<x2 ; x++)
+		{
+			patchcount[x]++;
+			collump[x] = patch->patch;
+			colofs[x] = LONG(realpatch->columnofs[x-x1])+3;
+		}
 	}
-    }
 	
-    for (x=0 ; x<texture->width ; x++)
-    {
-	if (!patchcount[x])
+	colofs = texturecompositecolumnofs[texnum];
+
+	for (x=0 ; x<texture->width ; x++)
 	{
-	    printf ("R_GenerateLookup: column without a patch (%s)\n",
-		    texture->name);
-	    return;
-	}
-	// I_Error ("R_GenerateLookup: column without a patch");
+		if (!patchcount[x])
+		{
+			printf ("R_GenerateLookup: column without a patch (%s)\n",
+				texture->name);
+			return;
+		}
+		// I_Error ("R_GenerateLookup: column without a patch");
 	
-	if (patchcount[x] > 1)
-	{
-	    // Use the cached block.
-	    collump[x] = -1;	
-	    colofs[x] = texturecompositesize[texnum];
+		colofs[x] = texturecompositesize[texnum];
 	    
-	    if (texturecompositesize[texnum] > 0x10000-texture->height)
-	    {
+		if (texturecompositesize[texnum] > 0x10000-texture->height)
+		{
 		I_Error ("R_GenerateLookup: texture %i is >64k",
-			 texnum);
-	    }
+				texnum);
+		}
 	    
-	    texturecompositesize[texnum] += texture->height;
-	}
+		texturecompositesize[texnum] += texture->height;
     }
 
     Z_Free(patchcount);
@@ -383,25 +387,37 @@ void R_GenerateLookup (int texnum)
 //
 // R_GetColumn
 //
-byte*
-R_GetColumn
-( int		tex,
-  int		col )
+byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
 {
     int		lump;
     int		ofs;
 	
     col &= texturewidthmask[tex];
-    lump = texturecolumnlump[tex][col];
-    ofs = texturecolumnofs[tex][col];
-    
-    if (lump > 0)
-	return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
+    ofs = texturecompositesize[tex] * colormapindex + texturecompositecolumnofs[tex][col];
 
-    if (!texturecomposite[tex])
-	R_GenerateComposite (tex);
+    if ( !texturecomposite[tex] )
+	{
+		R_GenerateComposite (tex);
+	}
 
     return texturecomposite[tex] + ofs;
+}
+
+byte* R_GetRawColumn( int32_t tex, int32_t col )
+{
+    int		lump;
+    int		ofs;
+	
+    col &= texturewidthmask[ tex];
+    ofs = texturecolumnofs[tex][col];
+    lump = texturecolumnlump[tex][col];
+    
+    if (lump > 0)
+	{
+		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
+	}
+
+	return R_GetColumn( tex, col, 0 );
 }
 
 
@@ -528,6 +544,7 @@ void R_InitTextures (void)
     texturecolumnofs = Z_Malloc (numtextures * sizeof(*texturecolumnofs), PU_STATIC, 0);
     texturecomposite = Z_Malloc (numtextures * sizeof(*texturecomposite), PU_STATIC, 0);
     texturecompositesize = Z_Malloc (numtextures * sizeof(*texturecompositesize), PU_STATIC, 0);
+	texturecompositecolumnofs = Z_Malloc (numtextures * sizeof(*texturecompositecolumnofs), PU_STATIC, 0);
     texturewidthmask = Z_Malloc (numtextures * sizeof(*texturewidthmask), PU_STATIC, 0);
     textureheight = Z_Malloc (numtextures * sizeof(*textureheight), PU_STATIC, 0);
 
@@ -598,6 +615,7 @@ void R_InitTextures (void)
 	}		
 	texturecolumnlump[i] = Z_Malloc (texture->width*sizeof(**texturecolumnlump), PU_STATIC,0);
 	texturecolumnofs[i] = Z_Malloc (texture->width*sizeof(**texturecolumnofs), PU_STATIC,0);
+	texturecompositecolumnofs[i] = Z_Malloc (texture->width*sizeof(**texturecompositecolumnofs), PU_STATIC,0);
 
 	j = 1;
 	while (j*2 <= texture->width)
@@ -801,10 +819,7 @@ int		flatmemory;
 int		texturememory;
 int		spritememory;
 
-#if DOFLATPRECACHE
 byte** precachedflats;
-#define FLATCOLORMAPS ( NUMCOLORMAPS + 1 )
-#endif // DOFLATPRECACHE
 
 void R_PrecacheLevel (void)
 {
@@ -838,11 +853,9 @@ void R_PrecacheLevel (void)
     flatpresent = Z_Malloc(numflats, PU_STATIC, NULL);
     memset (flatpresent,0,numflats);	
 
-#if DOFLATPRECACHE
 	// This needs to be static, and allocated elsewhere
 	precachedflats = Z_Malloc( numflats * sizeof(byte*), PU_LEVEL, NULL );
 	memset( precachedflats, 0, numflats * sizeof(byte*) );
-#endif // DOFLATPRECACHE
 
     for (i=0 ; i<numsectors ; i++)
     {
@@ -880,10 +893,9 @@ void R_PrecacheLevel (void)
 			flatmemory += lumpinfo[lump]->size;
 			baseflatdata = (byte*)W_CacheLumpNum(lump, PU_CACHE);
 
-#if DOFLATPRECACHE
-			precachedflats[i] = outputflatdata = Z_Malloc(lumpinfo[lump]->size * FLATCOLORMAPS, PU_LEVEL, NULL );
+			precachedflats[i] = outputflatdata = Z_Malloc(lumpinfo[lump]->size * NUMCOLORMAPS, PU_LEVEL, NULL );
 
-			for( currmapindex = 0; currmapindex < FLATCOLORMAPS; ++currmapindex )
+			for( currmapindex = 0; currmapindex < NUMCOLORMAPS; ++currmapindex )
 			{
 				currmap = colormaps + currmapindex * 256;
 				for( currflatbyte = 0; currflatbyte < lumpinfo[lump]->size; ++currflatbyte)
@@ -892,7 +904,6 @@ void R_PrecacheLevel (void)
 					++outputflatdata;
 				}
 			}
-#endif // DOFLATPRECACHE
 		}
     }
 
