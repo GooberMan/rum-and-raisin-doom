@@ -45,7 +45,7 @@
 #define	LIGHTSCALESHIFT		12
 #define	MAXLIGHTZ			128
 #define	LIGHTZSHIFT			20
-#define	NUMCOLORMAPS		32      // number of diminishing
+#define	NUMLIGHTCOLORMAPS		32      // number of diminishing
 #define	INVERSECOLORMAP		32
 
 /*
