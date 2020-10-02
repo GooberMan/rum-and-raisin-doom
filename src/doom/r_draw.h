@@ -53,6 +53,8 @@ void 	R_DrawColumnLow (void);
 #endif
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
+void R_DrawColumn_NaiveSIMD (void);
+
 void R_DrawColumn_OneSample (void);
 void R_DrawColumn_TwoSamples (void);
 void R_DrawColumn_ThreeSamples (void);

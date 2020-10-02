@@ -120,6 +120,7 @@ int			dccount;
 						_mm_or_si128(	_mm_srl_epi32( _mm_and_si128( sample_2_6_10_14, fixedmask ), fixedshiftoneplace ), \
 										_mm_srl_epi32( _mm_and_si128( sample_3_7_11_15, fixedmask ), fixedshifttwoplaces ) ) ) )
 
+// Introduce another branch in this function, and I will find you
 void R_DrawColumn_OneSample( void )
 {
 	int32_t		curr;
@@ -146,7 +147,7 @@ void R_DrawColumn_OneSample( void )
 	__m128i		sample_combined;
 
 	const __m128i fullmask = _mm_set1_epi8( 0xFF );
-	const __m128i fixedmask = _mm_set1_epi32( ~( F_BITMASK( FRACBITS ) ) );
+	const __m128i fixedmask = _mm_set1_epi32( 0x7F0000 );
 	const __m128i fixedshiftoneplace = _mm_set1_epi64x( FRACBITS >> 1 );
 	const __m128i fixedshifttwoplaces = _mm_set1_epi64x( FRACBITS );
 
@@ -183,7 +184,7 @@ void R_DrawColumn_OneSample( void )
 
 	do
 	{
-		currsample = _mm_set1_epi8( dc_source[ sample_combined.m128i_i8[ 0 ] ] );
+		currsample = _mm_set1_epi8( dc_source[ sample_combined.m128i_i8[ 2 ] ] );
 		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
 		prevsample = _mm_and_si128( currsample, _mm_xor_si128( selectmask, fullmask ) );
 		selectmask = fullmask;
@@ -196,7 +197,97 @@ void R_DrawColumn_OneSample( void )
 		sample_combined = COMBINE_PLZ;
 
 		_mm_store_si128( simddest, writesample );
-		frac += fracstep;
+		++simddest;
+	} while( simddest < enddest );
+}
+
+// This function proves that reads are in fact the bottleneck
+void R_DrawColumn_NaiveSIMD( void )
+{
+	int32_t		curr;
+	size_t		basedest;
+	size_t		enddest;
+	ptrdiff_t	overlap;
+	__m128i*	simddest;
+	fixed_t		frac;
+	fixed_t		fracbase;
+	fixed_t		fracstep;
+
+	__m128i		prevsample;
+	__m128i		currsample;
+	__m128i		writesample;
+	__m128i		selectmask;
+
+	__m128i		sample_increment;
+
+	__m128i		sample_0_1_2_3;
+	__m128i		sample_4_5_6_7;
+	__m128i		sample_8_9_10_11;
+	__m128i		sample_12_13_14_15;
+
+	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+
+	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	enddest		= basedest + (dc_yh - dc_yl);
+	overlap		= basedest & ( sizeof( __m128i ) - 1 );
+
+	// HACK FOR NOW
+	simddest	= basedest - overlap;
+	curr		= dc_yl - overlap;
+
+	fracstep	= dc_iscale << 4;
+	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+
+	fracbase	= frac - dc_iscale * overlap;
+
+	overlap <<= 3;
+
+	// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
+	selectmask = _mm_set_epi64x( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+	//selectmask = _mm_set_epi64x( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
+
+	sample_increment = _mm_set1_epi32( dc_iscale * 4 );
+	sample_0_1_2_3 = _mm_set_epi32( fracbase, fracbase + dc_iscale, fracbase + dc_iscale * 2, fracbase + dc_iscale * 3 );
+	sample_4_5_6_7 = _mm_add_epi32( sample_0_1_2_3, sample_increment );
+	sample_8_9_10_11 = _mm_add_epi32( sample_4_5_6_7, sample_increment );
+	sample_12_13_14_15 = _mm_add_epi32( sample_8_9_10_11, sample_increment );
+	sample_increment = _mm_set1_epi32( fracstep );
+
+	prevsample = _mm_load_si128( simddest );
+	prevsample = _mm_and_si128( selectmask, prevsample );
+	selectmask = _mm_xor_si128( selectmask, fullmask );
+
+	do
+	{
+		currsample = _mm_set_epi8( dc_source[ sample_12_13_14_15.m128i_i8[ 2 ] ]
+								,  dc_source[ sample_12_13_14_15.m128i_i8[ 6 ] ]
+								,  dc_source[ sample_12_13_14_15.m128i_i8[ 10 ] ]
+								,  dc_source[ sample_12_13_14_15.m128i_i8[ 14 ] ]
+								,  dc_source[ sample_8_9_10_11.m128i_i8[ 2 ] ]
+								,  dc_source[ sample_8_9_10_11.m128i_i8[ 6 ] ]
+								,  dc_source[ sample_8_9_10_11.m128i_i8[ 10 ] ]
+								,  dc_source[ sample_8_9_10_11.m128i_i8[ 14 ] ]
+								,  dc_source[ sample_4_5_6_7.m128i_i8[ 2 ] ]
+								,  dc_source[ sample_4_5_6_7.m128i_i8[ 6 ] ]
+								,  dc_source[ sample_4_5_6_7.m128i_i8[ 10 ] ]
+								,  dc_source[ sample_4_5_6_7.m128i_i8[ 14 ] ]
+								,  dc_source[ sample_0_1_2_3.m128i_i8[ 2 ] ]
+								,  dc_source[ sample_0_1_2_3.m128i_i8[ 6 ] ]
+								,  dc_source[ sample_0_1_2_3.m128i_i8[ 10 ] ]
+								,  dc_source[ sample_0_1_2_3.m128i_i8[ 14 ] ]
+		);
+
+		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		prevsample = _mm_and_si128( currsample, _mm_xor_si128( selectmask, fullmask ) );
+		selectmask = fullmask;
+
+		sample_0_1_2_3 = _mm_add_epi32( sample_0_1_2_3, sample_increment );
+		sample_4_5_6_7 = _mm_add_epi32( sample_4_5_6_7, sample_increment );
+		sample_8_9_10_11 = _mm_add_epi32( sample_8_9_10_11, sample_increment );
+		sample_12_13_14_15 = _mm_add_epi32( sample_12_13_14_15, sample_increment );
+
+		_mm_store_si128( simddest, writesample );
+
 		++simddest;
 	} while( simddest < enddest );
 }
