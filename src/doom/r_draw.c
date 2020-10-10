@@ -1,6 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -100,9 +101,11 @@ int			dccount;
 // Rum and raisin extensions
 #if R_DRAWCOLUMN_SIMDOPTIMISED && ( defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 ) )
 	#define COLUMN_AVX 1
+	#define COLUMN_NEON 0
 	#include <nmmintrin.h>
 #else
 	#define COLUMN_AVX 0
+	#define COLUMN_NEON 0
 #endif
 
 #define F_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
@@ -111,14 +114,6 @@ int			dccount;
 #define F_BITMASK64( numbits ) ( ~( ~0ll << numbits ) )
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
-
-// This looks like an awful mess
-// I don't like it
-// But whatever I use it everywhere
-#define COMBINE_PLZ		_mm_or_si128(	_mm_sll_epi32( _mm_and_si128( sample_0_4_8_12, fixedmask ), fixedshiftoneplace ), \
-						_mm_or_si128(	_mm_and_si128( sample_1_5_9_13, fixedmask ), \
-						_mm_or_si128(	_mm_srl_epi32( _mm_and_si128( sample_2_6_10_14, fixedmask ), fixedshiftoneplace ), \
-										_mm_srl_epi32( _mm_and_si128( sample_3_7_11_15, fixedmask ), fixedshifttwoplaces ) ) ) )
 
 // Introduce another branch in this function, and I will find you
 void R_DrawColumn_OneSample( void )
@@ -137,19 +132,7 @@ void R_DrawColumn_OneSample( void )
 	__m128i		writesample;
 	__m128i		selectmask;
 
-	__m128i		sample_increment;
-
-	__m128i		sample_0_4_8_12;
-	__m128i		sample_1_5_9_13;
-	__m128i		sample_2_6_10_14;
-	__m128i		sample_3_7_11_15;
-
-	__m128i		sample_combined;
-
 	const __m128i fullmask = _mm_set1_epi8( 0xFF );
-	const __m128i fixedmask = _mm_set1_epi32( 0x7F0000 );
-	const __m128i fixedshiftoneplace = _mm_set1_epi64x( FRACBITS >> 1 );
-	const __m128i fixedshifttwoplaces = _mm_set1_epi64x( FRACBITS );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
@@ -164,37 +147,46 @@ void R_DrawColumn_OneSample( void )
 
 	fracbase	= frac - dc_iscale * overlap;
 
-	overlap <<= 3;
+	if( overlap != 0 )
+	{
+		overlap <<= 3;
 
-	// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
-	selectmask = _mm_set_epi64x( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
-	//selectmask = _mm_set_epi64x( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
+		// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
+		selectmask = _mm_set_epi64x( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+		//selectmask = _mm_set_epi64x( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
 
-	sample_increment = _mm_set1_epi32( dc_iscale * 4 );
-	sample_0_4_8_12 = _mm_set_epi32( fracbase, fracbase + dc_iscale * 4, fracbase + dc_iscale * 8, fracbase + dc_iscale * 12 );
-	sample_1_5_9_13 = _mm_add_epi32( sample_0_4_8_12, sample_increment );
-	sample_2_6_10_14 = _mm_add_epi32( sample_1_5_9_13, sample_increment );
-	sample_3_7_11_15 = _mm_add_epi32( sample_2_6_10_14, sample_increment );
-	sample_increment = _mm_set1_epi32( fracstep );
-	sample_combined = COMBINE_PLZ;
+		prevsample = _mm_load_si128( simddest );
+		prevsample = _mm_and_si128( selectmask, prevsample );
+		selectmask = _mm_xor_si128( selectmask, fullmask );
+		// TODO: Sample the first pixel, mix in to prevsample, and prime a select mask based on when the next sample occurs...
+		currsample = _mm_set1_epi8( dc_source[ ( frac >> FRACBITS ) & 127 ] );
+		prevsample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+		// frac should advance to last output pixel in 16-byte block at this point
+		frac		= fracbase + dc_iscale * 15;
+		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
+		selectmask	= _mm_set_epi64x( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+		prevsample = _mm_and_si128( selectmask, prevsample );
+		selectmask = _mm_xor_si128( selectmask, fullmask );
+	}
+	else
+	{
+		selectmask = fullmask;
+		prevsample = _mm_setzero_si128();
+	}
+
+	// frac should advance to last output pixel in 16-byte block at this point
+	frac		= fracbase + dc_iscale * 15;
 
 	do
 	{
-		currsample = _mm_set1_epi8( dc_source[ sample_combined.m128i_i8[ 2 ] ] );
+		currsample = _mm_set1_epi8( dc_source[ ( frac >> FRACBITS ) & 127 ] );
 		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+
+		frac		+= fracstep;
+		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
+		selectmask	= _mm_set_epi64x( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << ( overlap & 63 ) ) );
 		prevsample = _mm_and_si128( currsample, _mm_xor_si128( selectmask, fullmask ) );
-		selectmask = fullmask;
-
-		sample_0_4_8_12 = _mm_add_epi32( sample_0_4_8_12, sample_increment );
-		sample_1_5_9_13 = _mm_add_epi32( sample_1_5_9_13, sample_increment );
-		sample_2_6_10_14 = _mm_add_epi32( sample_2_6_10_14, sample_increment );
-		sample_3_7_11_15 = _mm_add_epi32( sample_3_7_11_15, sample_increment );
-
-		sample_combined = COMBINE_PLZ;
 
 		_mm_store_si128( simddest, writesample );
 		++simddest;
