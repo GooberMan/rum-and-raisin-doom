@@ -365,16 +365,9 @@ void R_GenerateLookup (int texnum)
 				texture->name);
 			return;
 		}
-		// I_Error ("R_GenerateLookup: column without a patch");
 	
+		// Pre-caching textures breaks on TNT and PLUTONIA with a 64KB limit. Them sky textures are chonkers.
 		colofs[x] = texturecompositesize[texnum];
-	    
-		if (texturecompositesize[texnum] > 0x10000-texture->height)
-		{
-		I_Error ("R_GenerateLookup: texture %i is >64k",
-				texnum);
-		}
-	    
 		texturecompositesize[texnum] += texture->height;
     }
 
