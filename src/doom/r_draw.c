@@ -193,6 +193,7 @@ void R_DrawColumn_OneSample( void )
 	} while( simddest < enddest );
 }
 
+#if 0
 // This function proves that reads are in fact the bottleneck
 void R_DrawColumn_NaiveSIMD( void )
 {
@@ -283,6 +284,7 @@ void R_DrawColumn_NaiveSIMD( void )
 		++simddest;
 	} while( simddest < enddest );
 }
+#endif // 0
 
 void R_DrawColumn_TwoSamples( void )
 {

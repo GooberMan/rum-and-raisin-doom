@@ -53,7 +53,10 @@ void 	R_DrawColumnLow (void);
 #define R_DRAWCOLUMN_DEBUGDISTANCES 0
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
+
+#if 0
 void R_DrawColumn_NaiveSIMD (void);
+#endif // 0
 
 void R_DrawColumn_OneSample (void);
 void R_DrawColumn_TwoSamples (void);
