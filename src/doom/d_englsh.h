@@ -64,6 +64,11 @@
 
 #define DETAILHI	"High detail"
 #define DETAILLO	"Low detail"
+#define DETAILNATIVE "Native resolution"
+#define DETAILCRISPY "Crispy resolution"
+#define DETAILVIRTUAL "Virtualised resolution"
+#define DETAILORIGINALHIGH "Original high detail"
+#define DETAILORIGINALLOW "Original low detail"
 #define GAMMALVL0	"Gamma correction OFF"
 #define GAMMALVL1	"Gamma correction level 1"
 #define GAMMALVL2	"Gamma correction level 2"
