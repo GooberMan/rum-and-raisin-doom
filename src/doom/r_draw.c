@@ -190,7 +190,7 @@ void R_DrawColumn_OneSample( void )
 
 		_mm_store_si128( simddest, writesample );
 		++simddest;
-	} while( simddest < enddest );
+	} while( simddest <= enddest );
 }
 
 #if 0
