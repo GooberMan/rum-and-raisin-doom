@@ -47,10 +47,10 @@ void 	R_DrawColumnLow (void);
 // For now, let's just SIMD output to the right location.
 #if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
 	#define R_DRAWCOLUMN_SIMDOPTIMISED 1
-	#define R_DRAWCOLUMN_DEBUGDISTANCES 0
 #else
 	#define R_DRAWCOLUMN_SIMDOPTIMISED 0
 #endif
+#define R_DRAWCOLUMN_DEBUGDISTANCES 0
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 void R_DrawColumn_NaiveSIMD (void);
