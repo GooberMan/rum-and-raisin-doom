@@ -176,6 +176,19 @@ const char* reasons[] =
     "demo",
 };
 
+const byte whacky_void_indices[] =
+{
+	251,
+	249,
+	118,
+	200,
+};
+const int32_t num_whacky_void_indices = sizeof( whacky_void_indices ) / sizeof( *whacky_void_indices );
+const uint64_t whacky_void_microseconds = 1200000;
+
+boolean			whacky_void;
+boolean			black_void;
+
 boolean D_Display (void)
 {
     static  boolean		viewactivestate = false;
@@ -195,6 +208,15 @@ boolean D_Display (void)
 	uint64_t total;
 
 	start = I_GetTimeUS();
+
+	if( black_void )
+	{
+		memset( I_VideoBuffer, 0, SCREENHEIGHT * SCREENWIDTH );
+	}
+	else if( whacky_void )
+	{
+		memset( I_VideoBuffer, whacky_void_indices[ ( start % whacky_void_microseconds ) / ( whacky_void_microseconds / num_whacky_void_indices ) ], SCREENHEIGHT * SCREENWIDTH );
+	}
 		
     redrawsbar = false;
     
@@ -1728,6 +1750,9 @@ void D_DoomMain (void)
 		M_StrToInt( myargv[p + 1], &count );
 		I_InitPerfFrames( count );
 	}
+
+	black_void = M_ParmExists( "-blackvoid" );
+	whacky_void = M_ParmExists( "-whackyvoid" );
 
     // Set the gamedescription string. This is only possible now that
     // we've finished loading Dehacked patches.
