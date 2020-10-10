@@ -103,6 +103,14 @@ int			dccount;
 	#define COLUMN_AVX 1
 	#define COLUMN_NEON 0
 	#include <nmmintrin.h>
+
+	typedef __m128i simd_int8_t;
+#elif R_DRAWCOLUMN_SIMDOPTIMISED && ( defined( __ARM_NEON__ ) || defined( __ARM_NEON ) )
+	#define COLUMN_AVX 0
+	#define COLUMN_NEON 1
+	#include <arm_neon.h>
+
+	typedef int8x16_t simd_int8_t;
 #else
 	#define COLUMN_AVX 0
 	#define COLUMN_NEON 0
@@ -122,21 +130,21 @@ void R_DrawColumn_OneSample( void )
 	size_t		basedest;
 	size_t		enddest;
 	ptrdiff_t	overlap;
-	__m128i*	simddest;
+	simd_int8_t*	simddest;
 	fixed_t		frac;
 	fixed_t		fracbase;
 	fixed_t		fracstep;
 
-	__m128i		prevsample;
-	__m128i		currsample;
-	__m128i		writesample;
-	__m128i		selectmask;
+	simd_int8_t		prevsample;
+	simd_int8_t		currsample;
+	simd_int8_t		writesample;
+	simd_int8_t		selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
-	overlap		= basedest & ( sizeof( __m128i ) - 1 );
+	overlap		= basedest & ( sizeof( simd_int8_t ) - 1 );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -201,28 +209,28 @@ void R_DrawColumn_NaiveSIMD( void )
 	size_t		basedest;
 	size_t		enddest;
 	ptrdiff_t	overlap;
-	__m128i*	simddest;
+	simd_int8_t*	simddest;
 	fixed_t		frac;
 	fixed_t		fracbase;
 	fixed_t		fracstep;
 
-	__m128i		prevsample;
-	__m128i		currsample;
-	__m128i		writesample;
-	__m128i		selectmask;
+	simd_int8_t		prevsample;
+	simd_int8_t		currsample;
+	simd_int8_t		writesample;
+	simd_int8_t		selectmask;
 
-	__m128i		sample_increment;
+	simd_int8_t		sample_increment;
 
-	__m128i		sample_0_1_2_3;
-	__m128i		sample_4_5_6_7;
-	__m128i		sample_8_9_10_11;
-	__m128i		sample_12_13_14_15;
+	simd_int8_t		sample_0_1_2_3;
+	simd_int8_t		sample_4_5_6_7;
+	simd_int8_t		sample_8_9_10_11;
+	simd_int8_t		sample_12_13_14_15;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
-	overlap		= basedest & ( sizeof( __m128i ) - 1 );
+	overlap		= basedest & ( sizeof( simd_int8_t ) - 1 );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -291,20 +299,20 @@ void R_DrawColumn_TwoSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -344,20 +352,20 @@ void R_DrawColumn_ThreeSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -399,20 +407,20 @@ void R_DrawColumn_FourSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -454,20 +462,20 @@ void R_DrawColumn_FiveSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -513,20 +521,20 @@ void R_DrawColumn_SixSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -574,20 +582,20 @@ void R_DrawColumn_SevenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -637,20 +645,20 @@ void R_DrawColumn_EightSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -702,20 +710,20 @@ void R_DrawColumn_NineSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -769,20 +777,20 @@ void R_DrawColumn_TenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -838,20 +846,20 @@ void R_DrawColumn_ElevenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -909,20 +917,20 @@ void R_DrawColumn_TwelveSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -982,20 +990,20 @@ void R_DrawColumn_ThirteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -1057,20 +1065,20 @@ void R_DrawColumn_FourteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -1134,20 +1142,20 @@ void R_DrawColumn_FifteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -1213,20 +1221,20 @@ void R_DrawColumn_SixteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	__m128i* simddest;
+	simd_int8_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	__m128i prevsample;
-	__m128i currsample;
-	__m128i writesample;
-	__m128i selectmask;
+	simd_int8_t prevsample;
+	simd_int8_t currsample;
+	simd_int8_t writesample;
+	simd_int8_t selectmask;
 
-	const __m128i fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( __m128i );
+	overlap		= basedest % sizeof( simd_int8_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
