@@ -658,21 +658,21 @@ void R_InitColFuncs( void )
 	colfuncs[ 0 ] = &R_DrawColumn_OneSample;
 
 #if HAX
-	colfuncs[ 1 ] = &R_DrawColumn_TwoSamples;
-	colfuncs[ 2 ] = &R_DrawColumn_ThreeSamples;
-	colfuncs[ 3 ] = &R_DrawColumn_FourSamples;
-	colfuncs[ 4 ] = &R_DrawColumn_FiveSamples;
-	colfuncs[ 5 ] = &R_DrawColumn_SixSamples;
-	colfuncs[ 6 ] = &R_DrawColumn_SevenSamples;
-	colfuncs[ 7 ] = &R_DrawColumn_EightSamples;
-	colfuncs[ 8 ] = &R_DrawColumn_NineSamples;
-	colfuncs[ 9 ] = &R_DrawColumn_TenSamples;
-	colfuncs[ 10 ] = &R_DrawColumn_ElevenSamples;
-	colfuncs[ 11 ] = &R_DrawColumn_TwelveSamples;
-	colfuncs[ 12 ] = &R_DrawColumn_ThirteenSamples;
-	colfuncs[ 13 ] = &R_DrawColumn_FourteenSamples;
-	colfuncs[ 14 ] = &R_DrawColumn_FifteenSamples;
-	colfuncs[ 15 ] = &R_DrawColumn_SixteenSamples;
+	colfuncs[ 1 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 2 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 3 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 4 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 5 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 6 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 7 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 8 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 9 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 10 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 11 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 12 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 13 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 14 ] = &R_DrawColumn_OneSample;
+	colfuncs[ 15 ] = &R_DrawColumn;
 #else //!HAX
 	colfuncs[ 1 ] = &R_DrawColumn;
 	colfuncs[ 2 ] = &R_DrawColumn;
