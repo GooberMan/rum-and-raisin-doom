@@ -106,37 +106,50 @@ byte*			dc_source;
 	#include <nmmintrin.h>
 
 	typedef __m128i simd_int8x16_t;
+	typedef __m128i simd_int64x2_t;
 
 	#define _load_int8x16 			_mm_load_si128
 	#define _set_int64x2 			_mm_set_epi64x
-	#define _set_int8_all 			_mm_set1_epi8
+	#define _set1_int8x16 			_mm_set1_epi8
 	#define _and_int8x16			_mm_and_si128
 	#define _xor_int8x16			_mm_xor_si128
 	#define _or_int8x16				_mm_or_si128
 	#define _zero_int8x16			_mm_setzero_si128
 	#define _store_int8x16			_mm_store_si128
+
+	#define _set1_int64x2			_mm_set1_epi64x
+	#define _add_int64x2			_mm_add_epi64
+	#define _sub_int64x2			_mm_sub_epi64
+	#define _and_int64x2			_mm_and_si128
+	#define _shiftright_int64x2		_mm_srli_epi64
+	// This is outright broken... But there is no epi64 versions until AVX-512. Really, Intel. Really.
+	#define _min_int64x2			_mm_min_epi32
+	#define _max_int64x2			_mm_max_epi32
+	#define _min_uint64x2			_mm_min_epu32
+	#define _max_uint64x2			_mm_max_epu32
 #elif R_SIMD_TYPE( NEON )
 	#define COLUMN_AVX 0
 	#define COLUMN_NEON 1
 	#include <arm_neon.h>
 
 	typedef int8x16_t simd_int8x16_t;
+	typedef int32x4_t simd_int32x4_t;
 
-	int8x16_t construct( int64_t a, int64_t b )
+	inline int8x16_t construct( int64_t a, int64_t b )
 	{
 		int64x2_t temp = { ( a ), ( b ) };
 		return vreinterpretq_s8_s64( temp );
 	}
 
-	const int8x16_t zero_int8x16 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	const int8x16_t zero_int8x16_v = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	#define _load_int8x16 			vld1q_s8
 	#define _set_int64x2( a, b )	construct( a, b )
-	#define _set_int8_all 			vdupq_n_s8
+	#define _set1_int8x16 			vdupq_n_s8
 	#define _and_int8x16			vandq_s8
 	#define _xor_int8x16			veorq_s8
 	#define _or_int8x16				vorrq_s8
-	#define _zero_int8x16()			zero_int8x16
+	#define _zero_int8x16()			zero_int8x16_v
 	#define _store_int8x16			vst1q_s8
 #else
 	#define COLUMN_AVX 0
@@ -153,21 +166,38 @@ byte*			dc_source;
 // Introduce another branch in this function, and I will find you
 void R_DrawColumn_OneSample( void )
 {
-	int32_t		curr;
-	size_t		basedest;
-	size_t		enddest;
-	ptrdiff_t	overlap;
-	simd_int8x16_t*	simddest;
-	fixed_t		frac;
-	fixed_t		fracbase;
-	fixed_t		fracstep;
+	int32_t				curr;
+	size_t				basedest;
+	size_t				enddest;
+	ptrdiff_t			overlap;
+	simd_int8x16_t*		simddest;
+	fixed_t				frac;
+	fixed_t				fracbase;
+	fixed_t				fracstep;
 
 	simd_int8x16_t		prevsample;
 	simd_int8x16_t		currsample;
 	simd_int8x16_t		writesample;
 	simd_int8x16_t		selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	simd_int64x2_t		simdfrac;
+	simd_int64x2_t		simdfracstep;
+	simd_int64x2_t		simdoverlap;
+	simd_int64x2_t		simdmin;
+	simd_int64x2_t		simdmax;
+	simd_int64x2_t		selectmin;
+	simd_int64x2_t		selectmax;
+
+
+
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
+	const simd_int64x2_t onetwentyeight = _set1_int64x2( 128 );
+	const simd_int64x2_t sixtyfour = _set1_int64x2( 64 );
+	const simd_int64x2_t overlapmask = _set1_int64x2( 0xF000 );
+	const simd_int64x2_t sub64 = _set_int64x2( 64, 0 );
+	const simd_int64x2_t minchannel = _set_int64x2( 64, 128 );
+	const simd_int64x2_t maxchannel = _set_int64x2( 0, 128 );
+	const simd_int64x2_t one64 = _set1_int64x2( 1 );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
@@ -194,11 +224,12 @@ void R_DrawColumn_OneSample( void )
 		prevsample = _and_int8x16( selectmask, prevsample );
 		selectmask = _xor_int8x16( selectmask, fullmask );
 		// TODO: Sample the first pixel, mix in to prevsample, and prime a select mask based on when the next sample occurs...
-		currsample = _set_int8_all( dc_source[ ( frac >> FRACBITS ) & 127 ] );
+		currsample = _set1_int8x16( dc_source[ ( frac >> FRACBITS ) & 127 ] );
 		prevsample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		// frac should advance to last output pixel in 16-byte block at this point
 		frac		= fracbase + dc_iscale * 15;
+		// This is the integer way of doing it. It's awful.
 		overlap		= ( 128 - ( ( frac & 0xF000 ) >> 9 ) );
 		selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << F_MIN( overlap, 64 ) ) );
 		prevsample = _and_int8x16( _xor_int8x16( selectmask, fullmask ), prevsample );
@@ -212,18 +243,38 @@ void R_DrawColumn_OneSample( void )
 	// frac should advance to last output pixel in 16-byte block at this point
 	frac		= fracbase + dc_iscale * 15;
 
+	simdfrac		= _set1_int64x2( frac );
+	simdfracstep	= _set1_int64x2( fracstep );
+	simdoverlap		= _set1_int64x2( ( 128 - ( ( frac & 0xF000 ) >> 9 ) ) );
+
 	do
 	{
-		currsample = _set_int8_all( dc_source[ ( frac >> FRACBITS ) & 127 ] );
+		currsample = _set1_int8x16( dc_source[ ( frac >> FRACBITS ) & 127 ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		frac		+= fracstep;
-		overlap		= ( 128 - ( ( frac & 0xF000 ) >> 9 ) );
-		selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << F_MIN( overlap , 64 ) ) );
-		prevsample	= _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
+
+		// Equivalent of:
+		// overlap		= ( 128 - ( ( frac & 0xF000 ) >> 9 ) );
+		// selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << F_MIN( overlap, 64 ) ) );
+		// Still performing way too slow. Probably the min and max calls
+		// There has to be an easier way to convert a value from 0-15 in to a 128 bit mask...
+
+		simdfrac	= _add_int64x2( simdfrac, simdfracstep );
+		simdoverlap	= _sub_int64x2( onetwentyeight, _shiftright_int64x2( _and_int64x2( simdfrac, overlapmask ), 9 ) );
+		simdoverlap	= _sub_int64x2( simdoverlap, sub64 );
+		simdmin		= _min_int64x2( simdoverlap, minchannel );
+		simdmax		= _max_int64x2( simdoverlap, maxchannel );
+		simdmax		= _mm_castpd_si128( _mm_shuffle_pd( _mm_castsi128_pd( simdmax ), _mm_castsi128_pd( simdmax ), 0x03 ) );
+		selectmin	= _mm_sll_epi64( fullmask, simdmin );
+		selectmax	= _mm_sll_epi64( fullmask, simdmax );
+		selectmask	= _mm_castpd_si128( _mm_shuffle_pd( _mm_castsi128_pd( selectmin ), _mm_castsi128_pd( selectmax ), 0x03 ) );
 
 		_store_int8x16( simddest, writesample );
 		++simddest;
+
+		prevsample	= _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
+
 	} while( simddest <= enddest );
 }
 
@@ -252,7 +303,7 @@ void R_DrawColumn_NaiveSIMD( void )
 	simd_int8x16_t		sample_8_9_10_11;
 	simd_int8x16_t		sample_12_13_14_15;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
@@ -335,7 +386,7 @@ void R_DrawColumn_TwoSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -360,7 +411,7 @@ void R_DrawColumn_TwoSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -388,7 +439,7 @@ void R_DrawColumn_ThreeSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -415,7 +466,7 @@ void R_DrawColumn_ThreeSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 6;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -443,7 +494,7 @@ void R_DrawColumn_FourSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -470,7 +521,7 @@ void R_DrawColumn_FourSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -498,7 +549,7 @@ void R_DrawColumn_FiveSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -529,7 +580,7 @@ void R_DrawColumn_FiveSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 4;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -557,7 +608,7 @@ void R_DrawColumn_SixSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -590,7 +641,7 @@ void R_DrawColumn_SixSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 3;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -618,7 +669,7 @@ void R_DrawColumn_SevenSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -653,7 +704,7 @@ void R_DrawColumn_SevenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 2;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -681,7 +732,7 @@ void R_DrawColumn_EightSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -718,7 +769,7 @@ void R_DrawColumn_EightSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -746,7 +797,7 @@ void R_DrawColumn_NineSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -785,7 +836,7 @@ void R_DrawColumn_NineSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 2;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -813,7 +864,7 @@ void R_DrawColumn_TenSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -854,7 +905,7 @@ void R_DrawColumn_TenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 2;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -882,7 +933,7 @@ void R_DrawColumn_ElevenSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -925,7 +976,7 @@ void R_DrawColumn_ElevenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -953,7 +1004,7 @@ void R_DrawColumn_TwelveSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -998,7 +1049,7 @@ void R_DrawColumn_TwelveSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -1026,7 +1077,7 @@ void R_DrawColumn_ThirteenSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -1073,7 +1124,7 @@ void R_DrawColumn_ThirteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -1101,7 +1152,7 @@ void R_DrawColumn_FourteenSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -1150,7 +1201,7 @@ void R_DrawColumn_FourteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -1178,7 +1229,7 @@ void R_DrawColumn_FifteenSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -1229,7 +1280,7 @@ void R_DrawColumn_FifteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
@@ -1257,7 +1308,7 @@ void R_DrawColumn_SixteenSamples( void )
 	simd_int8x16_t writesample;
 	simd_int8x16_t selectmask;
 
-	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
@@ -1310,7 +1361,7 @@ void R_DrawColumn_SixteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		currsample = _set1_int8x16( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 		prevsample = _zero_int8x16();
 		selectmask = fullmask;
