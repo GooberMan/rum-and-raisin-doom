@@ -128,11 +128,7 @@ byte*			dc_source;
 		return vreinterpretq_s8_s64( temp );
 	}
 
-	int8x16_t zero_int8x16()
-	{
-		int8x16_t temp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		return temp;
-	}
+	const int8x16_t zero_int8x16 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	#define _load_int8x16 			vld1q_s8
 	#define _set_int64x2( a, b )	construct( a, b )
@@ -140,7 +136,7 @@ byte*			dc_source;
 	#define _and_int8x16			vandq_s8
 	#define _xor_int8x16			veorq_s8
 	#define _or_int8x16				vorrq_s8
-	#define _zero_int8x16			zero_int8x16
+	#define _zero_int8x16()			zero_int8x16
 	#define _store_int8x16			vst1q_s8
 #else
 	#define COLUMN_AVX 0
@@ -203,10 +199,9 @@ void R_DrawColumn_OneSample( void )
 
 		// frac should advance to last output pixel in 16-byte block at this point
 		frac		= fracbase + dc_iscale * 15;
-		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
-		selectmask	= _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << F_MIN( overlap, 64 ) ) );
-		prevsample = _and_int8x16( selectmask, prevsample );
-		selectmask = _xor_int8x16( selectmask, fullmask );
+		overlap		= ( 128 - ( ( frac & 0xF000 ) >> 9 ) );
+		selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << F_MIN( overlap, 64 ) ) );
+		prevsample = _and_int8x16( _xor_int8x16( selectmask, fullmask ), prevsample );
 	}
 	else
 	{
@@ -223,7 +218,7 @@ void R_DrawColumn_OneSample( void )
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		frac		+= fracstep;
-		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
+		overlap		= ( 128 - ( ( frac & 0xF000 ) >> 9 ) );
 		selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << F_MIN( overlap , 64 ) ) );
 		prevsample	= _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
 
