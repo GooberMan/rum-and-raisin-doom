@@ -61,7 +61,7 @@ void 	R_DrawColumnLow (void);
 	#define R_SIMD R_SIMD_NONE
 #endif
 
-#define R_SIMD_TYPE( x ) ( R_SIMD == ( R_SIMD_ ## x ) )
+#define R_SIMD_TYPE( x ) ( R_DRAWCOLUMN_SIMDOPTIMISED && R_SIMD == ( R_SIMD_ ## x ) )
 
 #define R_DRAWCOLUMN_DEBUGDISTANCES 0
 
