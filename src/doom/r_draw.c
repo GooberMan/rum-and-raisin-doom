@@ -191,7 +191,7 @@ void R_DrawColumn_OneSample( void )
 		overlap <<= 3;
 
 		// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
-		selectmask = _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+		selectmask = _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << F_MIN( overlap, 64 ) ) );
 		//selectmask = _store_int8x16( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
 
 		prevsample = _load_int8x16( simddest );
@@ -204,7 +204,7 @@ void R_DrawColumn_OneSample( void )
 		// frac should advance to last output pixel in 16-byte block at this point
 		frac		= fracbase + dc_iscale * 15;
 		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
-		selectmask	= _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+		selectmask	= _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << F_MIN( overlap, 64 ) ) );
 		prevsample = _and_int8x16( selectmask, prevsample );
 		selectmask = _xor_int8x16( selectmask, fullmask );
 	}
@@ -224,8 +224,8 @@ void R_DrawColumn_OneSample( void )
 
 		frac		+= fracstep;
 		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
-		selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << ( overlap & 63 ) ) );
-		prevsample = _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
+		selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << F_MIN( overlap , 64 ) ) );
+		prevsample	= _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
 
 		_store_int8x16( simddest, writesample );
 		++simddest;
@@ -1413,17 +1413,6 @@ void R_DrawColumnLow (void)
     fixed_t		fracstep;
 	byte sample;
 
-#if COLUMN_AVX
-	int algoselect;
-#endif // COLUMN_AVX
- 
-    count = dc_yh - dc_yl; 
-
-#if COLUMN_AVX
-	// This should be further down the stack, select d_drawcolumn function based off number of pixels that need to be read for each 16 byte chunk
-	algoselect = F_MIN( ( dc_scale ) >> 12, 16 ) >> 1;
-#endif
-
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
@@ -1818,81 +1807,6 @@ void R_DrawSpan (void)
 
 	} while (count--);
 }
-
-
-
-// UNUSED.
-// Loop unrolled by 4.
-#if 0
-void R_DrawSpan (void) 
-{ 
-    unsigned	position, step;
-
-    byte*	source;
-    byte*	colormap;
-    pixel_t*	dest;
-    
-    unsigned	count;
-    usingned	spot; 
-    unsigned	value;
-    unsigned	temp;
-    unsigned	xtemp;
-    unsigned	ytemp;
-		
-    position = ((ds_xfrac<<10)&0xffff0000) | ((ds_yfrac>>6)&0xffff);
-    step = ((ds_xstep<<10)&0xffff0000) | ((ds_ystep>>6)&0xffff);
-		
-    source = ds_source;
-    colormap = ds_colormap;
-    dest = ylookup[ds_y] + columnofs[ds_x1];	 
-    count = ds_x2 - ds_x1 + 1; 
-	
-    while (count >= 4) 
-    { 
-	ytemp = position>>4;
-	ytemp = ytemp & 4032;
-	xtemp = position>>26;
-	spot = xtemp | ytemp;
-	position += step;
-	dest[0] = colormap[source[spot]]; 
-
-	ytemp = position>>4;
-	ytemp = ytemp & 4032;
-	xtemp = position>>26;
-	spot = xtemp | ytemp;
-	position += step;
-	dest[1] = colormap[source[spot]];
-	
-	ytemp = position>>4;
-	ytemp = ytemp & 4032;
-	xtemp = position>>26;
-	spot = xtemp | ytemp;
-	position += step;
-	dest[2] = colormap[source[spot]];
-	
-	ytemp = position>>4;
-	ytemp = ytemp & 4032;
-	xtemp = position>>26;
-	spot = xtemp | ytemp;
-	position += step;
-	dest[3] = colormap[source[spot]]; 
-		
-	count -= 4;
-	dest += 4;
-    } 
-    while (count > 0) 
-    { 
-	ytemp = position>>4;
-	ytemp = ytemp & 4032;
-	xtemp = position>>26;
-	spot = xtemp | ytemp;
-	position += step;
-	*dest++ = colormap[source[spot]]; 
-	count--;
-    } 
-} 
-#endif
-
 
 //
 // Again..
