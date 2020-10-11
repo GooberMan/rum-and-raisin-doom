@@ -115,7 +115,7 @@ byte*			dc_source;
 	#define _or_int8x16				_mm_or_si128
 	#define _zero_int8x16			_mm_setzero_si128
 	#define _store_int8x16			_mm_store_si128
-#elif R_SIMD == R_SIMD_NEON
+#elif R_SIMD_TYPE( NEON )
 	#define COLUMN_AVX 0
 	#define COLUMN_NEON 1
 	#include <arm_neon.h>
