@@ -95,22 +95,53 @@ fixed_t			dc_texturemid;
 // first pixel in a column (possibly virtual) 
 byte*			dc_source;		
 
-// just for profiling 
-int			dccount;
-
 // Rum and raisin extensions
-#if R_DRAWCOLUMN_SIMDOPTIMISED && ( defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 ) )
+// Note that int8x16_t is sensible... But I'd rather undefined platforms
+// typedef in to simd_int8x16_t than have random platforms assuming that
+// they're correct. Old instructions sets like Altivec won't come back,
+// but future compatibility will benefit from this decision.
+#if R_SIMD_TYPE( AVX )
 	#define COLUMN_AVX 1
 	#define COLUMN_NEON 0
 	#include <nmmintrin.h>
 
-	typedef __m128i simd_int8_t;
-#elif R_DRAWCOLUMN_SIMDOPTIMISED && ( defined( __ARM_NEON__ ) || defined( __ARM_NEON ) )
+	typedef __m128i simd_int8x16_t;
+
+	#define _load_int8x16 			_mm_load_si128
+	#define _set_int64x2 			_mm_set_epi64x
+	#define _set_int8_all 			_mm_set1_epi8
+	#define _and_int8x16			_mm_and_si128
+	#define _xor_int8x16			_mm_xor_si128
+	#define _or_int8x16				_mm_or_si128
+	#define _zero_int8x16			_mm_setzero_si128
+	#define _store_int8x16			_mm_store_si128
+#elif R_SIMD == R_SIMD_NEON
 	#define COLUMN_AVX 0
 	#define COLUMN_NEON 1
 	#include <arm_neon.h>
 
-	typedef int8x16_t simd_int8_t;
+	typedef int8x16_t simd_int8x16_t;
+
+	int8x16_t construct( int64_t a, int64_t b )
+	{
+		int64x2_t temp = { ( a ), ( b ) };
+		return vreinterpretq_s8_s64( temp );
+	}
+
+	int8x16_t zero_int8x16()
+	{
+		int8x16_t temp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		return temp;
+	}
+
+	#define _load_int8x16 			vld1q_s8
+	#define _set_int64x2( a, b )	construct( a, b )
+	#define _set_int8_all 			vdupq_n_s8
+	#define _and_int8x16			vandq_s8
+	#define _xor_int8x16			veorq_s8
+	#define _or_int8x16				vorrq_s8
+	#define _zero_int8x16			zero_int8x16
+	#define _store_int8x16			vst1q_s8
 #else
 	#define COLUMN_AVX 0
 	#define COLUMN_NEON 0
@@ -130,21 +161,21 @@ void R_DrawColumn_OneSample( void )
 	size_t		basedest;
 	size_t		enddest;
 	ptrdiff_t	overlap;
-	simd_int8_t*	simddest;
+	simd_int8x16_t*	simddest;
 	fixed_t		frac;
 	fixed_t		fracbase;
 	fixed_t		fracstep;
 
-	simd_int8_t		prevsample;
-	simd_int8_t		currsample;
-	simd_int8_t		writesample;
-	simd_int8_t		selectmask;
+	simd_int8x16_t		prevsample;
+	simd_int8x16_t		currsample;
+	simd_int8x16_t		writesample;
+	simd_int8x16_t		selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
-	overlap		= basedest & ( sizeof( simd_int8_t ) - 1 );
+	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -160,27 +191,27 @@ void R_DrawColumn_OneSample( void )
 		overlap <<= 3;
 
 		// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
-		selectmask = _mm_set_epi64x( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
-		//selectmask = _mm_set_epi64x( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
+		selectmask = _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+		//selectmask = _store_int8x16( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
 
-		prevsample = _mm_load_si128( simddest );
-		prevsample = _mm_and_si128( selectmask, prevsample );
-		selectmask = _mm_xor_si128( selectmask, fullmask );
+		prevsample = _load_int8x16( simddest );
+		prevsample = _and_int8x16( selectmask, prevsample );
+		selectmask = _xor_int8x16( selectmask, fullmask );
 		// TODO: Sample the first pixel, mix in to prevsample, and prime a select mask based on when the next sample occurs...
-		currsample = _mm_set1_epi8( dc_source[ ( frac >> FRACBITS ) & 127 ] );
-		prevsample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		currsample = _set_int8_all( dc_source[ ( frac >> FRACBITS ) & 127 ] );
+		prevsample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		// frac should advance to last output pixel in 16-byte block at this point
 		frac		= fracbase + dc_iscale * 15;
 		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
-		selectmask	= _mm_set_epi64x( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
-		prevsample = _mm_and_si128( selectmask, prevsample );
-		selectmask = _mm_xor_si128( selectmask, fullmask );
+		selectmask	= _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+		prevsample = _and_int8x16( selectmask, prevsample );
+		selectmask = _xor_int8x16( selectmask, fullmask );
 	}
 	else
 	{
 		selectmask = fullmask;
-		prevsample = _mm_setzero_si128();
+		prevsample = _zero_int8x16();
 	}
 
 	// frac should advance to last output pixel in 16-byte block at this point
@@ -188,15 +219,15 @@ void R_DrawColumn_OneSample( void )
 
 	do
 	{
-		currsample = _mm_set1_epi8( dc_source[ ( frac >> FRACBITS ) & 127 ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
+		currsample = _set_int8_all( dc_source[ ( frac >> FRACBITS ) & 127 ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		frac		+= fracstep;
 		overlap		= ( 15 - ( ( frac & 0xF000 ) >> 12 ) ) << 3;
-		selectmask	= _mm_set_epi64x( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << ( overlap & 63 ) ) );
-		prevsample = _mm_and_si128( currsample, _mm_xor_si128( selectmask, fullmask ) );
+		selectmask	= _set_int64x2( ( ~0ll << F_MAX( overlap - 64, 0 ) ), ( ~0ll << ( overlap & 63 ) ) );
+		prevsample = _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
 
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		++simddest;
 	} while( simddest <= enddest );
 }
@@ -209,28 +240,28 @@ void R_DrawColumn_NaiveSIMD( void )
 	size_t		basedest;
 	size_t		enddest;
 	ptrdiff_t	overlap;
-	simd_int8_t*	simddest;
+	simd_int8x16_t*	simddest;
 	fixed_t		frac;
 	fixed_t		fracbase;
 	fixed_t		fracstep;
 
-	simd_int8_t		prevsample;
-	simd_int8_t		currsample;
-	simd_int8_t		writesample;
-	simd_int8_t		selectmask;
+	simd_int8x16_t		prevsample;
+	simd_int8x16_t		currsample;
+	simd_int8x16_t		writesample;
+	simd_int8x16_t		selectmask;
 
-	simd_int8_t		sample_increment;
+	simd_int8x16_t		sample_increment;
 
-	simd_int8_t		sample_0_1_2_3;
-	simd_int8_t		sample_4_5_6_7;
-	simd_int8_t		sample_8_9_10_11;
-	simd_int8_t		sample_12_13_14_15;
+	simd_int8x16_t		sample_0_1_2_3;
+	simd_int8x16_t		sample_4_5_6_7;
+	simd_int8x16_t		sample_8_9_10_11;
+	simd_int8x16_t		sample_12_13_14_15;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
-	overlap		= basedest & ( sizeof( simd_int8_t ) - 1 );
+	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -244,8 +275,8 @@ void R_DrawColumn_NaiveSIMD( void )
 	overlap <<= 3;
 
 	// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
-	selectmask = _mm_set_epi64x( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
-	//selectmask = _mm_set_epi64x( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
+	selectmask = _store_int8x16( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+	//selectmask = _store_int8x16( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
 
 	sample_increment = _mm_set1_epi32( dc_iscale * 4 );
 	sample_0_1_2_3 = _mm_set_epi32( fracbase, fracbase + dc_iscale, fracbase + dc_iscale * 2, fracbase + dc_iscale * 3 );
@@ -254,9 +285,9 @@ void R_DrawColumn_NaiveSIMD( void )
 	sample_12_13_14_15 = _mm_add_epi32( sample_8_9_10_11, sample_increment );
 	sample_increment = _mm_set1_epi32( fracstep );
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -278,8 +309,8 @@ void R_DrawColumn_NaiveSIMD( void )
 								,  dc_source[ sample_0_1_2_3.m128i_i8[ 14 ] ]
 		);
 
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_and_si128( currsample, _mm_xor_si128( selectmask, fullmask ) );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
 		selectmask = fullmask;
 
 		sample_0_1_2_3 = _mm_add_epi32( sample_0_1_2_3, sample_increment );
@@ -287,7 +318,7 @@ void R_DrawColumn_NaiveSIMD( void )
 		sample_8_9_10_11 = _mm_add_epi32( sample_8_9_10_11, sample_increment );
 		sample_12_13_14_15 = _mm_add_epi32( sample_12_13_14_15, sample_increment );
 
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 
 		++simddest;
 	} while( simddest < enddest );
@@ -299,20 +330,20 @@ void R_DrawColumn_TwoSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -320,27 +351,27 @@ void R_DrawColumn_TwoSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale << 2; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -352,20 +383,20 @@ void R_DrawColumn_ThreeSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -373,14 +404,14 @@ void R_DrawColumn_ThreeSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -389,13 +420,13 @@ void R_DrawColumn_ThreeSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 6;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep * 5;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -407,20 +438,20 @@ void R_DrawColumn_FourSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -428,14 +459,14 @@ void R_DrawColumn_FourSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale << 2; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -444,13 +475,13 @@ void R_DrawColumn_FourSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -462,20 +493,20 @@ void R_DrawColumn_FiveSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -483,14 +514,14 @@ void R_DrawColumn_FiveSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -503,13 +534,13 @@ void R_DrawColumn_FiveSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 4;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep * 3;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -521,20 +552,20 @@ void R_DrawColumn_SixSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -542,14 +573,14 @@ void R_DrawColumn_SixSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -564,13 +595,13 @@ void R_DrawColumn_SixSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 3;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep * 3;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -582,20 +613,20 @@ void R_DrawColumn_SevenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -603,14 +634,14 @@ void R_DrawColumn_SevenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -627,13 +658,13 @@ void R_DrawColumn_SevenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 2;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep * 2;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -645,20 +676,20 @@ void R_DrawColumn_EightSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -666,14 +697,14 @@ void R_DrawColumn_EightSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale << 1; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -692,13 +723,13 @@ void R_DrawColumn_EightSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -710,20 +741,20 @@ void R_DrawColumn_NineSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -731,14 +762,14 @@ void R_DrawColumn_NineSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -759,13 +790,13 @@ void R_DrawColumn_NineSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 2;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep * 2;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -777,20 +808,20 @@ void R_DrawColumn_TenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -798,14 +829,14 @@ void R_DrawColumn_TenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -828,13 +859,13 @@ void R_DrawColumn_TenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep * 2;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -846,20 +877,20 @@ void R_DrawColumn_ElevenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -867,14 +898,14 @@ void R_DrawColumn_ElevenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -899,13 +930,13 @@ void R_DrawColumn_ElevenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -917,20 +948,20 @@ void R_DrawColumn_TwelveSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -938,14 +969,14 @@ void R_DrawColumn_TwelveSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -972,13 +1003,13 @@ void R_DrawColumn_TwelveSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -990,20 +1021,20 @@ void R_DrawColumn_ThirteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -1011,14 +1042,14 @@ void R_DrawColumn_ThirteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -1047,13 +1078,13 @@ void R_DrawColumn_ThirteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -1065,20 +1096,20 @@ void R_DrawColumn_FourteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -1086,14 +1117,14 @@ void R_DrawColumn_FourteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -1124,13 +1155,13 @@ void R_DrawColumn_FourteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -1142,20 +1173,20 @@ void R_DrawColumn_FifteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -1163,14 +1194,14 @@ void R_DrawColumn_FifteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -1203,13 +1234,13 @@ void R_DrawColumn_FifteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;
@@ -1221,20 +1252,20 @@ void R_DrawColumn_SixteenSamples( void )
 	int32_t curr;
 	size_t	basedest;
 	size_t	overlap;
-	simd_int8_t* simddest;
+	simd_int8x16_t* simddest;
 	fixed_t frac;
 	fixed_t fracstep;
 	byte sample;
 
-	simd_int8_t prevsample;
-	simd_int8_t currsample;
-	simd_int8_t writesample;
-	simd_int8_t selectmask;
+	simd_int8x16_t prevsample;
+	simd_int8x16_t currsample;
+	simd_int8x16_t writesample;
+	simd_int8x16_t selectmask;
 
-	const simd_int8_t fullmask = _mm_set1_epi8( 0xFF );
+	const simd_int8x16_t fullmask = _set_int8_all( 0xFF );
 
 	basedest	= xlookup[dc_x] + rowofs[dc_yl];
-	overlap		= basedest % sizeof( simd_int8_t );
+	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
@@ -1242,14 +1273,14 @@ void R_DrawColumn_SixteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _mm_set_epi64x( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
 
-	prevsample = _mm_load_si128( simddest );
-	prevsample = _mm_and_si128( selectmask, prevsample );
-	selectmask = _mm_xor_si128( selectmask, fullmask );
+	prevsample = _load_int8x16( simddest );
+	prevsample = _and_int8x16( selectmask, prevsample );
+	selectmask = _xor_int8x16( selectmask, fullmask );
 
 	do
 	{
@@ -1284,13 +1315,13 @@ void R_DrawColumn_SixteenSamples( void )
 		sample = dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ];
 		frac += fracstep;
 
-		currsample = _mm_set1_epi8( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
-		writesample = _mm_or_si128( prevsample, _mm_and_si128( currsample, selectmask ) );
-		prevsample = _mm_setzero_si128();
+		currsample = _set_int8_all( dc_colormap[ dc_source[ ( frac >> FRACBITS ) & 127 ] ] );
+		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
+		prevsample = _zero_int8x16();
 		selectmask = fullmask;
 
 		frac += fracstep;
-		_mm_store_si128( simddest, writesample );
+		_store_int8x16( simddest, writesample );
 		//prevsample = currsample;
 		curr += 16;
 		++simddest;

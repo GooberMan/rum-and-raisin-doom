@@ -45,11 +45,24 @@ void 	R_DrawColumnLow (void);
 // Rum and raisin extensions.
 // Needs a whole overhaul of how we define output buffers.
 // For now, let's just SIMD output to the right location.
+
+#define R_SIMD_NONE 0
+#define R_SIMD_AVX 1
+#define R_SIMD_NEON 2
+
 #if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
 	#define R_DRAWCOLUMN_SIMDOPTIMISED 1
+	#define R_SIMD ( R_DRAWCOLUMN_SIMDOPTIMISED ? R_SIMD_AVX | R_SIMD_NONE )
+#elif defined( __ARM_NEON__ ) || defined( __ARM_NEON )
+	#define R_DRAWCOLUMN_SIMDOPTIMISED 1
+	#define R_SIMD R_SIMD_NEON
 #else
 	#define R_DRAWCOLUMN_SIMDOPTIMISED 0
+	#define R_SIMD R_SIMD_NONE
 #endif
+
+#define R_SIMD_TYPE( x ) ( R_SIMD == R_SIMD_ ## x )
+
 #define R_DRAWCOLUMN_DEBUGDISTANCES 0
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
