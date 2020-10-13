@@ -198,9 +198,6 @@ void V_DrawPatch(int x, int y, patch_t *patch)
 	V_DrawPatchClipped(x, y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
 }
 
-#define F_MIN( x, y ) ( ( x ) < ( y ) ? ( x ) : ( y ) )
-#define F_MAX( x, y ) ( ( x ) > ( y ) ? ( x ) : ( y ) )
-
 //
 // V_DrawPatchClipped
 // Only want part of a patch? This is your function. As you'll notice, V_DrawPatch wraps in to this.
