@@ -38,7 +38,40 @@
 // which is looked up in the tantoangle[] table.  The +1 size is to handle
 // the case when x==y without additional checking.
 
-int SlopeDiv(unsigned int num, unsigned int den)
+#if RENDERQUALITYSHIFT > 0
+	fixed_t renderfinesine[ RENDERFINESINECOUNT ];
+	fixed_t *renderfinecosine = &renderfinesine[ RENDERFINEANGLES / 4 ];
+	fixed_t renderfinetangent[ RENDERFINETANGENTCOUNT ];
+#endif // RENDERQUALITYSHIFT > 0
+
+#if RENDERSLOPEQUALITYSHIFT > 0
+	angle_t rendertantoangle[ RENDERTANTOANGLECOUNT ];
+#endif // RENDERSLOPEQUALITYSHIFT > 0
+
+int SlopeDiv_Render(unsigned int num, unsigned int den)
+{
+    unsigned ans;
+    
+    if (den < 512)
+    {
+        return RENDERSLOPERANGE;
+    }
+    else
+    {
+        ans = ( num << 3 ) / ( den >> (8 + RENDERSLOPEQUALITYSHIFT ) );
+
+        if (ans <= RENDERSLOPERANGE)
+        {
+            return ans;
+        }
+        else
+        {
+            return RENDERSLOPERANGE;
+        }
+    }
+}
+
+int SlopeDiv_Playsim(unsigned int num, unsigned int den)
 {
     unsigned ans;
     
@@ -48,7 +81,7 @@ int SlopeDiv(unsigned int num, unsigned int den)
     }
     else
     {
-        ans = (num << 3) / (den >> 8);
+        ans = ( num << 3 ) / ( den >> 8 );
 
         if (ans <= SLOPERANGE)
         {
@@ -61,7 +94,7 @@ int SlopeDiv(unsigned int num, unsigned int den)
     }
 }
 
-const fixed_t finetangent[4096] =
+const fixed_t finetangent[ FINETANGENTCOUNT ] =
 {
     -170910304,-56965752,-34178904,-24413316,-18988036,-15535599,-13145455,-11392683,
     -10052327,-8994149,-8137527,-7429880,-6835455,-6329090,-5892567,-5512368,
@@ -577,8 +610,7 @@ const fixed_t finetangent[4096] =
     11392683,13145455,15535599,18988036,24413316,34178904,56965752,170910304
 };
 
-
-const fixed_t finesine[10240] =
+const fixed_t finesine[ FINESINECOUNT ] =
 {
     25,75,125,175,226,276,326,376,
     427,477,527,578,628,678,728,779,
