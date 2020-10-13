@@ -32,8 +32,7 @@
 #include "r_local.h"
 #include "r_sky.h"
 
-#define F_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
-#define F_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
+#include "m_misc.h"
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -205,7 +204,8 @@ R_RenderMaskedSegRange
 		dc_scale = spryscale;
 	    dc_iscale = 0xffffffffu / (unsigned)spryscale;
 
-		colfunc = &R_DrawColumn_Untranslated; // colfuncs[ F_MIN( ( dc_iscale >> 12 ), 15 ) ];
+		// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
+		colfunc = &R_DrawColumn_Untranslated; // colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
 	    
 	    // draw the texture
 	    col = (column_t *)( 
@@ -330,9 +330,9 @@ void R_RenderSegLoop (void)
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 	colfunc = colfuncs[ 15 ];
 	restorelightmap = dc_colormap;
-	dc_colormap = detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ];
+	dc_colormap = detailmaps[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
 #else
-	colfunc = colfuncs[ F_MIN( ( dc_iscale >> 12 ), 15 ) ];
+	colfunc = colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
 #endif
 	
 	// draw the wall tiers
@@ -342,7 +342,7 @@ void R_RenderSegLoop (void)
 	    dc_yl = yl;
 	    dc_yh = yh;
 	    dc_texturemid = rw_midtexturemid;
-	    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(midtexture,texturecolumn,colormapindex);
+	    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(midtexture,texturecolumn,colormapindex);
 		R_RangeCheck();
 	    colfunc ();
 	    ceilingclip[rw_x] = viewheight;
@@ -365,7 +365,7 @@ void R_RenderSegLoop (void)
 		    dc_yl = yl;
 		    dc_yh = mid;
 		    dc_texturemid = rw_toptexturemid;
-		    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(toptexture,texturecolumn,colormapindex);
+		    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(toptexture,texturecolumn,colormapindex);
 			R_RangeCheck();
 		    colfunc ();
 		    ceilingclip[rw_x] = mid;
@@ -395,7 +395,7 @@ void R_RenderSegLoop (void)
 		    dc_yl = mid;
 		    dc_yh = yh;
 		    dc_texturemid = rw_bottomtexturemid;
-		    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ F_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(bottomtexture,texturecolumn,colormapindex);
+		    dc_source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( dc_iscale >> 12 ), 15 ) ] : R_GetColumn(bottomtexture,texturecolumn,colormapindex);
 			R_RangeCheck();
 		    colfunc ();
 		    floorclip[rw_x] = mid;
@@ -473,6 +473,7 @@ R_StoreWallRange
     distangle = ANG90 - offsetangle;
     hyp = R_PointToDist (curline->v1->x, curline->v1->y);
     sineval = finesine[distangle>>ANGLETOFINESHIFT];
+	// If this value blows out, renderer go boom. Need to increase resolution of this thing
     rw_distance = FixedMul (hyp, sineval);
 		
 	

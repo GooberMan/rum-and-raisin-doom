@@ -39,7 +39,7 @@
 
 // State.
 #include "doomstat.h"
-
+#include "m_misc.h"
 
 // ?
 // This does precisely nothing but hard limit what you can do with a given executable
@@ -151,10 +151,6 @@ byte*			dc_source;
 	#define COLUMN_NEON 0
 #endif
 
-#define F_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
-#define F_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
-#define F_BITMASK( numbits ) ( ~( ~0 << numbits ) )
-#define F_BITMASK64( numbits ) ( ~( ~0ll << numbits ) )
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 
@@ -229,7 +225,7 @@ void R_DrawColumn_OneSample( void )
 	if( overlap != 0 )
 	{
 		overlap <<= 3;
-		selectmask = _set_int64x2( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << F_MIN( overlap, 64 ) ) );
+		selectmask = _set_int64x2( ~( ~0ll << M_MAX( overlap - 64, 0 ) ), ~( ~0ll << M_MIN( overlap, 64 ) ) );
 
 		// Sample the backbuffer so we can blend...
 		prevsample = _load_int8x16( simddest );
@@ -310,8 +306,8 @@ void R_DrawColumn_NaiveSIMD( void )
 	overlap <<= 3;
 
 	// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
-	selectmask = _store_int8x16( ~( ~0ll << F_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
-	//selectmask = _store_int8x16( F_BITMASK64( F_MAX( overlap - 64, 0 ) ), F_BITMASK64( overlap & 63 ) );
+	selectmask = _store_int8x16( ~( ~0ll << M_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
+	//selectmask = _store_int8x16( M_BITMASK64( M_MAX( overlap - 64, 0 ) ), M_BITMASK64( overlap & 63 ) );
 
 	sample_increment = _mm_set1_epi32( dc_iscale * 4 );
 	sample_0_1_2_3 = _mm_set_epi32( fracbase, fracbase + dc_iscale, fracbase + dc_iscale * 2, fracbase + dc_iscale * 3 );
@@ -386,7 +382,7 @@ void R_DrawColumn_TwoSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale << 2; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -439,7 +435,7 @@ void R_DrawColumn_ThreeSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -494,7 +490,7 @@ void R_DrawColumn_FourSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale << 2; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -549,7 +545,7 @@ void R_DrawColumn_FiveSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -608,7 +604,7 @@ void R_DrawColumn_SixSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -669,7 +665,7 @@ void R_DrawColumn_SevenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -732,7 +728,7 @@ void R_DrawColumn_EightSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale << 1; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -797,7 +793,7 @@ void R_DrawColumn_NineSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -864,7 +860,7 @@ void R_DrawColumn_TenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -933,7 +929,7 @@ void R_DrawColumn_ElevenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -1004,7 +1000,7 @@ void R_DrawColumn_TwelveSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -1077,7 +1073,7 @@ void R_DrawColumn_ThirteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -1152,7 +1148,7 @@ void R_DrawColumn_FourteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -1229,7 +1225,7 @@ void R_DrawColumn_FifteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -1308,7 +1304,7 @@ void R_DrawColumn_SixteenSamples( void )
 
 	overlap <<= 3;
 
-	selectmask = _set_int64x2( F_BITMASK64( overlap - 64 ), F_BITMASK64( overlap & 63ull ) );
+	selectmask = _set_int64x2( M_BITMASK64( overlap - 64 ), M_BITMASK64( overlap & 63ull ) );
 
 	fracstep	= dc_iscale; 
 	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
@@ -2043,11 +2039,11 @@ void R_FillBackScreen (void)
 
 		for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
 		{
-			width = F_MIN( V_VIRTUALWIDTH - x, 64 );
+			width = M_MIN( V_VIRTUALWIDTH - x, 64 );
 
 			for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
 			{
-				height = F_MIN( V_VIRTUALHEIGHT - y, 64 );
+				height = M_MIN( V_VIRTUALHEIGHT - y, 64 );
 
 				V_CopyRect( 0, 0, &inflated, width, height, x, y );
 			}

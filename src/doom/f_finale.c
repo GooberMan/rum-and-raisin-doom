@@ -37,6 +37,7 @@
 
 #include "doomstat.h"
 #include "r_state.h"
+#include "m_misc.h"
 
 typedef enum
 {
@@ -104,9 +105,6 @@ void	F_StartCast (void);
 void	F_CastTicker (void);
 boolean F_CastResponder (event_t *ev);
 void	F_CastDrawer (void);
-
-#define F_MIN( x, y ) ( x < y ? x : y )
-#define F_MAX( x, y ) ( x > y ? x : y )
 
 //
 // F_StartFinale
@@ -249,11 +247,11 @@ void F_TextWrite (void)
     
 	for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
 	{
-		width = F_MIN( V_VIRTUALWIDTH - x, 64 );
+		width = M_MIN( V_VIRTUALWIDTH - x, 64 );
 
 		for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
 		{
-			height = F_MIN( V_VIRTUALHEIGHT - y, 64 );
+			height = M_MIN( V_VIRTUALHEIGHT - y, 64 );
 
 			V_CopyRect( 0, 0, &finaleflatdata, width, height, x, y );
 		}
