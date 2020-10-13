@@ -25,6 +25,11 @@
 
 #include "doomtype.h"
 
+#define M_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
+#define M_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
+#define M_BITMASK( numbits ) ( ~( ~0 << numbits ) )
+#define M_BITMASK64( numbits ) ( ~( ~0ll << numbits ) )
+
 boolean M_WriteFile(const char *name, const void *source, int length);
 int M_ReadFile(const char *name, byte **buffer);
 void M_MakeDirectory(const char *dir);
