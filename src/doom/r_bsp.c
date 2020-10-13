@@ -32,6 +32,7 @@
 // State.
 #include "doomstat.h"
 #include "r_state.h"
+#include "m_misc.h"
 
 //#include "r_local.h"
 
@@ -65,32 +66,9 @@ void R_ClearDrawSegs (void)
 
 
 
-//
-// ClipWallSegment
-// Clips the given range of columns
-// and includes it in the new clip list.
-//
-typedef	struct
-{
-    int	first;
-    int last;
-    
-} cliprange_t;
-
-// We must expand MAXSEGS to the theoretical limit of the number of solidsegs
-// that can be generated in a scene by the DOOM engine. This was determined by
-// Lee Killough during BOOM development to be a function of the screensize.
-// The simplest thing we can do, other than fix this bug, is to let the game
-// render overage and then bomb out by detecting the overflow after the 
-// fact. -haleyjd
-//#define MAXSEGS 32
-#define MAXSEGS (SCREENWIDTH / 2 + 1)
-
 // newend is one past the last valid seg
 cliprange_t*	newend;
 cliprange_t	solidsegs[MAXSEGS];
-
-
 
 
 //
@@ -236,7 +214,8 @@ R_ClipPassWallSegment
     R_StoreWallRange (start->last + 1, last);
 }
 
-
+#define BSP_MIN 0
+#define BSP_MAX viewwidth
 
 //
 // R_ClearClipSegs
@@ -244,8 +223,8 @@ R_ClipPassWallSegment
 void R_ClearClipSegs (void)
 {
     solidsegs[0].first = -0x7fffffff;
-    solidsegs[0].last = -1;
-    solidsegs[1].first = viewwidth;
+    solidsegs[0].last = BSP_MIN - 1;
+    solidsegs[1].first = BSP_MAX;
     solidsegs[1].last = 0x7fffffff;
     newend = solidsegs+2;
 }
@@ -255,6 +234,7 @@ void R_ClearClipSegs (void)
 // Clips the given segment
 // and adds any visible pieces to the line list.
 //
+
 void R_AddLine (seg_t*	line)
 {
     int			x1;
@@ -309,8 +289,8 @@ void R_AddLine (seg_t*	line)
     // but not necessarily visible.
     angle1 = (angle1+ANG90)>>ANGLETOFINESHIFT;
     angle2 = (angle2+ANG90)>>ANGLETOFINESHIFT;
-    x1 = viewangletox[angle1];
-    x2 = viewangletox[angle2];
+    x1 = viewangletox[angle1]; // M_MIN( BSP_MAX, M_MAX( BSP_MIN, viewangletox[angle1] ) );
+    x2 = viewangletox[angle2]; // M_MIN( BSP_MAX, M_MAX( BSP_MIN, viewangletox[angle2] ) );
 
     // Does not cross a pixel?
     if (x1 == x2)

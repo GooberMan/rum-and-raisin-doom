@@ -39,8 +39,6 @@
 #include "v_patch.h"
 
 
-
-
 // Silhouette, needed for clipping Segs (mainly)
 // and sprites representing things.
 #define SIL_NONE		0
@@ -51,8 +49,14 @@
 #define MAXVISPLANES	512
 #define MAXDRAWSEGS		( MAXVISPLANES << 2 )
 
-
-
+// We must expand MAXSEGS to the theoretical limit of the number of solidsegs
+// that can be generated in a scene by the DOOM engine. This was determined by
+// Lee Killough during BOOM development to be a function of the screensize.
+// The simplest thing we can do, other than fix this bug, is to let the game
+// render overage and then bomb out by detecting the overflow after the 
+// fact. -haleyjd
+//#define MAXSEGS 32
+#define MAXSEGS			(SCREENWIDTH / 2 + 1)
 
 
 //
@@ -445,7 +449,42 @@ typedef struct
 
 } visplane_t;
 
+//
+// ClipWallSegment
+// Clips the given range of columns
+// and includes it in the new clip list.
+//
+typedef	struct
+{
+    int	first;
+    int last;
+    
+} cliprange_t;
 
 
+//
+// Render context is required for threaded rendering.
+// So everything "global" goes in here. Everything.
+//
+
+typedef struct rendercontext_s
+{
+	int32_t			mincolumn;
+	int32_t			maxcolumn;
+
+	seg_t*			curline;
+	side_t*			sidedef;
+	line_t*			linedef;
+	sector_t*		frontsector;
+	sector_t*		backsector;
+
+	drawseg_t		drawsegs[MAXDRAWSEGS];
+	drawseg_t*		ds_p;
+
+	// newend is one past the last valid seg
+	cliprange_t*	newend;
+	cliprange_t		solidsegs[MAXSEGS];
+
+} rendercontext_t;
 
 #endif
