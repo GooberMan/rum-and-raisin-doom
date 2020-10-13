@@ -38,13 +38,17 @@
 // Need ST_HEIGHT
 #include "st_stuff.h"
 
+#include "tables.h"
+
 #define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 
 
 
 
 // Fineangles in the SCREENWIDTH wide window.
-#define FIELDOFVIEW		2048	
+// If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
+#define FIELDOFVIEW				( FINEANGLES >> 2 )	
+#define RENDERFIELDOFVIEW		( RENDERFINEANGLES >> 2 )	
 
 int			viewangleoffset;
 
@@ -94,7 +98,9 @@ angle_t			clipangle;
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
-int			viewangletox[FINEANGLES/2];
+
+// TODO: Convert everything to RENDERFINEANGLES
+int			viewangletox[RENDERFINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
@@ -300,12 +306,12 @@ R_PointToAngle
 	    if (x>y)
 	    {
 		// octant 0
-		return tantoangle[ SlopeDiv(y,x)];
+		return rendertantoangle[ SlopeDiv_Render(y,x) ];
 	    }
 	    else
 	    {
 		// octant 1
-		return ANG90-1-tantoangle[ SlopeDiv(x,y)];
+		return ANG90-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
 	    }
 	}
 	else
@@ -316,12 +322,12 @@ R_PointToAngle
 	    if (x>y)
 	    {
 		// octant 8
-		return -tantoangle[SlopeDiv(y,x)];
+		return -rendertantoangle[ SlopeDiv_Render(y,x) ];
 	    }
 	    else
 	    {
 		// octant 7
-		return ANG270+tantoangle[ SlopeDiv(x,y)];
+		return ANG270+rendertantoangle[ SlopeDiv_Render(x,y) ];
 	    }
 	}
     }
@@ -336,12 +342,12 @@ R_PointToAngle
 	    if (x>y)
 	    {
 		// octant 3
-		return ANG180-1-tantoangle[ SlopeDiv(y,x)];
+		return ANG180-1-rendertantoangle[ SlopeDiv_Render(y,x) ];
 	    }
 	    else
 	    {
 		// octant 2
-		return ANG90+ tantoangle[ SlopeDiv(x,y)];
+		return ANG90+ rendertantoangle[ SlopeDiv_Render(x,y) ];
 	    }
 	}
 	else
@@ -352,19 +358,19 @@ R_PointToAngle
 	    if (x>y)
 	    {
 		// octant 4
-		return ANG180+tantoangle[ SlopeDiv(y,x)];
+		return ANG180+rendertantoangle[ SlopeDiv_Render(y,x) ];
 	    }
 	    else
 	    {
 		 // octant 5
-		return ANG270-1-tantoangle[ SlopeDiv(x,y)];
+		return ANG270-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
 	    }
 	}
     }
     return 0;
 }
 
-
+// Called by playsim. Let's bring it back to normal tantoangle
 angle_t
 R_PointToAngle2
 ( fixed_t	x1,
@@ -372,10 +378,84 @@ R_PointToAngle2
   fixed_t	x2,
   fixed_t	y2 )
 {	
-    viewx = x1;
-    viewy = y1;
+    int32_t x = x2 - x1;
+    int32_t y = y2 - y1;
     
-    return R_PointToAngle (x2, y2);
+    if ( (!x) && (!y) )
+		return 0;
+
+    if (x>= 0)
+    {
+		// x >=0
+		if (y>= 0)
+		{
+			// y>= 0
+
+			if (x>y)
+			{
+				// octant 0
+				return tantoangle[ SlopeDiv_Playsim(y,x)];
+			}
+			else
+			{
+				// octant 1
+				return ANG90-1-tantoangle[ SlopeDiv_Playsim(x,y)];
+			}
+		}
+		else
+		{
+			// y<0
+			y = -y;
+
+			if (x>y)
+			{
+				// octant 8
+				return -tantoangle[SlopeDiv_Playsim(y,x)];
+			}
+			else
+			{
+				// octant 7
+				return ANG270+tantoangle[ SlopeDiv_Playsim(x,y)];
+			}
+		}
+	}
+	else
+	{
+		// x<0
+		x = -x;
+
+		if (y>= 0)
+		{
+			// y>= 0
+			if (x>y)
+			{
+				// octant 3
+				return ANG180-1-tantoangle[ SlopeDiv_Playsim(y,x)];
+			}
+			else
+			{
+				// octant 2
+				return ANG90+ tantoangle[ SlopeDiv_Playsim(x,y)];
+			}
+		}
+		else
+		{
+			// y<0
+			y = -y;
+
+			if (x>y)
+			{
+				// octant 4
+				return ANG180+tantoangle[ SlopeDiv_Playsim(y,x)];
+			}
+			else
+			{
+				 // octant 5
+				return ANG270-1-tantoangle[ SlopeDiv_Playsim(x,y)];
+			}
+		}
+	}
+	return 0;
 }
 
 
@@ -412,10 +492,10 @@ R_PointToDist
 	frac = 0;
     }
 	
-    angle = (tantoangle[frac>>DBITS]+ANG90) >> ANGLETOFINESHIFT;
+    angle = (rendertantoangle[frac>>RENDERDBITS]+ANG90) >> RENDERANGLETOFINESHIFT;
 
     // use as cosine
-    dist = FixedDiv (dx, finesine[angle] );	
+    dist = FixedDiv (dx, renderfinesine[angle] );	
 	
     return dist;
 }
@@ -429,19 +509,19 @@ R_PointToDist
 void R_InitPointToAngle (void)
 {
     // UNUSED - now getting from tables.c
-#if 0
-    int	i;
-    long	t;
-    float	f;
-//
-// slope (tangent) to angle lookup
-//
-    for (i=0 ; i<=SLOPERANGE ; i++)
-    {
-	f = atan( (float)i/SLOPERANGE )/(3.141592657*2);
-	t = 0xffffffff*f;
-	tantoangle[i] = t;
-    }
+#if RENDERSLOPEQUALITYSHIFT > 0
+	int32_t		i;
+	angle_t		t;
+	float_t		f;
+	//
+	// slope (tangent) to angle lookup
+	//
+	for (i=0 ; i<=RENDERSLOPERANGE ; i++)
+	{
+		f = atan( (float)i/RENDERSLOPERANGE )/(3.141592657*2);
+		t = 0xffffffff*f;
+		rendertantoangle[i] = t;
+	}
 #endif
 }
 
@@ -453,53 +533,42 @@ void R_InitPointToAngle (void)
 //  at the given angle.
 // rw_distance must be calculated first.
 //
+
+// This is not good enough to fix wobbly walls. Magnification of the wall seems to be the real issue.
+// This does help significantly. 1024 will break The Chasm, 512 doesn't. So this will do for now.
+#define MAXSCALE 512
+#define MAXSCALE_FIXED ( MAXSCALE << FRACBITS )
+
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 {
     fixed_t		scale;
     angle_t		anglea;
     angle_t		angleb;
-    int			sinea;
-    int			sineb;
+    int32_t		sinea;
+    int32_t		sineb;
     fixed_t		num;
-    int			den;
+    int32_t		den;
 
-    // UNUSED
-#if 0
-{
-    fixed_t		dist;
-    fixed_t		z;
-    fixed_t		sinv;
-    fixed_t		cosv;
-	
-    sinv = finesine[(visangle-rw_normalangle)>>ANGLETOFINESHIFT];	
-    dist = FixedDiv (rw_distance, sinv);
-    cosv = finecosine[(viewangle-visangle)>>ANGLETOFINESHIFT];
-    z = abs(FixedMul (dist, cosv));
-    scale = FixedDiv(projection, z);
-    return scale;
-}
-#endif
+	scale = MAXSCALE_FIXED;
 
     anglea = ANG90 + (visangle-viewangle);
     angleb = ANG90 + (visangle-rw_normalangle);
 
     // both sines are allways positive
-    sinea = finesine[anglea>>ANGLETOFINESHIFT];	
-    sineb = finesine[angleb>>ANGLETOFINESHIFT];
+    sinea = renderfinesine[anglea>>RENDERANGLETOFINESHIFT];
+    sineb = renderfinesine[angleb>>RENDERANGLETOFINESHIFT];
     num = FixedMul(projection,sineb)<<detailshift;
     den = FixedMul(rw_distance,sinea);
 
-    if (den > num>>FRACBITS)
+    if (den >= 0 && den > num>>FRACBITS)
     {
-	scale = FixedDiv (num, den);
+		scale = FixedDiv (num, den);
 
-	if (scale > 64*FRACUNIT)
-	    scale = 64*FRACUNIT;
-	else if (scale < 256)
-	    scale = 256;
+		if (scale > MAXSCALE_FIXED)
+			scale = MAXSCALE_FIXED;
+		else if (scale < 256)
+			scale = 256;
     }
-    else
-	scale = 64*FRACUNIT;
 	
     return scale;
 }
@@ -509,34 +578,34 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 //
 // R_InitTables
 //
+#define PI acos(-1.0)
+
 void R_InitTables (void)
 {
-    // UNUSED: now getting from tables.c
-#if 0
-    int		i;
-    float	a;
-    float	fv;
-    int		t;
+#if RENDERQUALITYSHIFT > 0
+    int32_t		i;
+    float_t		a;
+    float_t		fv;
+    int32_t		t;
     
     // viewangle tangent table
-    for (i=0 ; i<FINEANGLES/2 ; i++)
+    for (i=0 ; i< RENDERFINETANGENTCOUNT ; i++)
     {
-	a = (i-FINEANGLES/4+0.5)*PI*2/FINEANGLES;
-	fv = FRACUNIT*tan (a);
-	t = fv;
-	finetangent[i] = t;
+		a = (i-RENDERFINEANGLES/4+0.5)*PI*2/RENDERFINEANGLES;
+		fv = FRACUNIT*tan (a);
+		t = fv;
+		renderfinetangent[i] = t;
     }
     
     // finesine table
-    for (i=0 ; i<5*FINEANGLES/4 ; i++)
+    for (i=0 ; i < RENDERFINESINECOUNT ; i++)
     {
-	// OPTIMIZE: mirror...
-	a = (i+0.5)*PI*2/FINEANGLES;
-	t = FRACUNIT*sin (a);
-	finesine[i] = t;
+		// OPTIMIZE: mirror...
+		a = (i+0.5)*PI*2/RENDERFINEANGLES;
+		t = FRACUNIT*sin (a);
+		renderfinesine[i] = t;
     }
-#endif
-
+#endif // RENDERQUALITYSHIFT > 0
 }
 
 
@@ -562,21 +631,21 @@ void R_InitTextureMapping (void)
 	
     for (i=0 ; i<FINEANGLES/2 ; i++)
     {
-	if (finetangent[i] > FRACUNIT*2)
-	    t = -1;
-	else if (finetangent[i] < -FRACUNIT*2)
-	    t = viewwidth+1;
-	else
-	{
-	    t = FixedMul (finetangent[i], focallength);
-	    t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
+		if (finetangent[i] > FRACUNIT*2)
+			t = -1;
+		else if (finetangent[i] < -FRACUNIT*2)
+			t = viewwidth+1;
+		else
+		{
+			t = FixedMul (finetangent[i], focallength);
+			t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
 
-	    if (t < -1)
-		t = -1;
-	    else if (t>viewwidth+1)
-		t = viewwidth+1;
-	}
-	viewangletox[i] = t;
+			if (t < -1)
+			t = -1;
+			else if (t>viewwidth+1)
+			t = viewwidth+1;
+		}
+		viewangletox[i] = t;
     }
     
     // Scan viewangletox[] to generate xtoviewangle[]:
@@ -589,20 +658,21 @@ void R_InitTextureMapping (void)
 	    i++;
 	xtoviewangle[x] = (i<<ANGLETOFINESHIFT)-ANG90;
     }
-    
+
     // Take out the fencepost cases from viewangletox.
     for (i=0 ; i<FINEANGLES/2 ; i++)
     {
-	t = FixedMul (finetangent[i], focallength);
-	t = centerx - t;
+		// What? This code does nothing
+		//t = FixedMul (finetangent[i], focallength);
+		//t = centerx - t;
 	
-	if (viewangletox[i] == -1)
-	    viewangletox[i] = 0;
-	else if (viewangletox[i] == viewwidth+1)
-	    viewangletox[i]  = viewwidth;
-    }
+		if (viewangletox[i] == -1)
+			viewangletox[i] = 0;
+		else if (viewangletox[i] == viewwidth+1)
+			viewangletox[i]  = viewwidth;
+	}
 	
-    clipangle = xtoviewangle[0];
+	clipangle = xtoviewangle[0];
 }
 
 
@@ -860,7 +930,7 @@ void R_ExecuteSetViewSize (void)
 	
     for (i=0 ; i<viewwidth ; i++)
     {
-	cosadj = abs(finecosine[xtoviewangle[i]>>ANGLETOFINESHIFT]);
+	cosadj = abs(renderfinecosine[xtoviewangle[i]>>RENDERANGLETOFINESHIFT]);
 	distscale[i] = FixedDiv (FRACUNIT,cosadj);
     }
     
@@ -963,8 +1033,8 @@ void R_SetupFrame (player_t* player)
 
 	viewz = player->viewz;
     
-	viewsin = finesine[viewangle>>ANGLETOFINESHIFT];
-	viewcos = finecosine[viewangle>>ANGLETOFINESHIFT];
+	viewsin = renderfinesine[viewangle>>RENDERANGLETOFINESHIFT];
+	viewcos = renderfinecosine[viewangle>>RENDERANGLETOFINESHIFT];
 	
 	sscount = 0;
 	
