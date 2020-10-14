@@ -92,7 +92,7 @@
 #define INITSCALEMTOF (.2*FRACUNIT)
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
-#define F_PANINC	4
+#define F_PANINC	( 4 * SCREENWIDTH / 320 )
 // how much zoom-in per tic
 // goes to 2x in 1 second
 #define M_ZOOMIN        ((int) (1.02*FRACUNIT))
