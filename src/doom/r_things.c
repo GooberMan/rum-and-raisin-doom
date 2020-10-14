@@ -72,8 +72,8 @@ lighttable_t**	spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
-short		negonearray[SCREENWIDTH];
-short		screenheightarray[SCREENWIDTH];
+vertclip_t	negonearray[SCREENWIDTH];
+vertclip_t	screenheightarray[SCREENWIDTH];
 
 
 //
@@ -290,11 +290,11 @@ int		newvissprite;
 //
 void R_InitSprites(const char **namelist)
 {
-    int		i;
+    vertclip_t		i;
 	
     for (i=0 ; i<SCREENWIDTH ; i++)
     {
-	negonearray[i] = -1;
+		negonearray[i] = -1;
     }
 	
     R_InitSpriteDefs (namelist);
@@ -334,8 +334,8 @@ vissprite_t* R_NewVisSprite (void)
 // Masked means: partly transparent, i.e. stored
 //  in posts/runs of opaque pixels.
 //
-short*		mfloorclip;
-short*		mceilingclip;
+vertclip_t*		mfloorclip;
+vertclip_t*		mceilingclip;
 
 fixed_t		spryscale;
 fixed_t		sprtopscreen;
@@ -856,14 +856,14 @@ void R_SortVisSprites (void)
 void R_DrawSprite (vissprite_t* spr)
 {
     drawseg_t*		ds;
-    short		clipbot[SCREENWIDTH];
-    short		cliptop[SCREENWIDTH];
-    int			x;
-    int			r1;
-    int			r2;
-    fixed_t		scale;
-    fixed_t		lowscale;
-    int			silhouette;
+    vertclip_t		clipbot[SCREENWIDTH];
+    vertclip_t		cliptop[SCREENWIDTH];
+    int				x;
+    int				r1;
+    int				r2;
+    fixed_t			scale;
+    fixed_t			lowscale;
+    int				silhouette;
 		
     for (x = spr->x1 ; x<=spr->x2 ; x++)
 	clipbot[x] = cliptop[x] = -2;

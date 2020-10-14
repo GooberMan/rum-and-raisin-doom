@@ -20,7 +20,9 @@
 #ifndef __R_THINGS__
 #define __R_THINGS__
 
-
+// For vertclip_t
+// Remove when you've made a render context
+#include "r_defs.h"
 
 #define MAXVISSPRITES  	128
 
@@ -30,12 +32,12 @@ extern vissprite_t	vsprsortedhead;
 
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
-extern short		negonearray[SCREENWIDTH];
-extern short		screenheightarray[SCREENWIDTH];
+extern vertclip_t	negonearray[SCREENWIDTH];
+extern vertclip_t	screenheightarray[SCREENWIDTH];
 
 // vars for R_DrawMaskedColumn
-extern short*		mfloorclip;
-extern short*		mceilingclip;
+extern vertclip_t*	mfloorclip;
+extern vertclip_t*	mceilingclip;
 extern fixed_t		spryscale;
 extern fixed_t		sprtopscreen;
 

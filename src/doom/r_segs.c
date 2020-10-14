@@ -87,7 +87,7 @@ fixed_t		bottomstep;
 lighttable_t**		walllights;
 int32_t				walllightsindex;
 
-short*		maskedtexturecol;
+vertclip_t*		maskedtexturecol;
 
 // Debugging - replace lightmap with index indicating texture reads per 16-byte block
 extern byte detailmaps[16][256];
@@ -185,7 +185,7 @@ R_RenderMaskedSegRange
     for (dc_x = x1 ; dc_x <= x2 ; dc_x++)
     {
 	// calculate lighting
-	if (maskedtexturecol[dc_x] != SHRT_MAX)
+	if (maskedtexturecol[dc_x] != MASKEDTEXCOL_INVALID)
 	{
 	    if (!fixedcolormap)
 	    {
@@ -212,7 +212,7 @@ R_RenderMaskedSegRange
 		(byte *)R_GetRawColumn(texnum,maskedtexturecol[dc_x]) -3);
 			
 	    R_DrawMaskedColumn (col);
-	    maskedtexturecol[dc_x] = SHRT_MAX;
+	    maskedtexturecol[dc_x] = MASKEDTEXCOL_INVALID;
 
 		colfunc = restorefunc;
 	}
@@ -301,8 +301,8 @@ void R_RenderSegLoop (void)
 		if (segtextured)
 		{
 			// calculate texture offset
-			angle = (rw_centerangle + xtoviewangle[rw_x])>>ANGLETOFINESHIFT;
-			texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
+			angle = (rw_centerangle + xtoviewangle[rw_x])>>RENDERANGLETOFINESHIFT;
+			texturecolumn = rw_offset-FixedMul(renderfinetangent[angle],rw_distance);
 			texturecolumn >>= FRACBITS;
 			// calculate lighting
 			index = rw_scale>>LIGHTSCALESHIFT;

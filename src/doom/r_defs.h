@@ -302,7 +302,7 @@ typedef struct
 // Could even us emore than 32 levels.
 typedef pixel_t		lighttable_t;
 
-
+typedef int32_t		vertclip_t;
 
 
 //
@@ -329,13 +329,15 @@ typedef struct drawseg_s
     
     // Pointers to lists for sprite clipping,
     //  all three adjusted so [x1] is first value.
-    short*		sprtopclip;		
-    short*		sprbottomclip;	
-    short*		maskedtexturecol;
+    vertclip_t*	sprtopclip;		
+    vertclip_t*	sprbottomclip;	
+
+	// TODO: Make this 32-bit
+    vertclip_t*		maskedtexturecol;
     
 } drawseg_t;
 
-
+#define MASKEDTEXCOL_INVALID ( (vertclip_t)0x7FFFFFFF )
 
 // A vissprite_t is a thing
 //  that will be drawn during a refresh.

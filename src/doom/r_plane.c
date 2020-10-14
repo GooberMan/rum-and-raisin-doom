@@ -55,8 +55,8 @@ visplane_t*		ceilingplane;
 
 // ?
 #define MAXOPENINGS	SCREENWIDTH*64
-short			openings[MAXOPENINGS];
-short*			lastopening;
+vertclip_t		openings[MAXOPENINGS];
+vertclip_t*		lastopening;
 
 
 //
@@ -64,8 +64,8 @@ short*			lastopening;
 //  floorclip starts out SCREENHEIGHT
 //  ceilingclip starts out -1
 //
-short			floorclip[SCREENWIDTH];
-short			ceilingclip[SCREENWIDTH];
+vertclip_t			floorclip[SCREENWIDTH];
+vertclip_t			ceilingclip[SCREENWIDTH];
 
 //
 // spanstart holds the start of a plane span
@@ -153,9 +153,9 @@ R_MapPlane
     }
 	
     length = FixedMul (distance,distscale[x1]);
-    angle = (viewangle + xtoviewangle[x1])>>ANGLETOFINESHIFT;
-    ds_xfrac = viewx + FixedMul(finecosine[angle], length);
-    ds_yfrac = -viewy - FixedMul(finesine[angle], length);
+    angle = (viewangle + xtoviewangle[x1])>>RENDERANGLETOFINESHIFT;
+    ds_xfrac = viewx + FixedMul(renderfinecosine[angle], length);
+    ds_yfrac = -viewy - FixedMul(renderfinesine[angle], length);
 
 	if( fixedcolormapindex )
 	{
