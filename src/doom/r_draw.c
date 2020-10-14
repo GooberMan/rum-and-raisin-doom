@@ -85,15 +85,15 @@ static vbuffer_t background_data;
 // Source is the top of the column to scale.
 //
 lighttable_t*		dc_colormap; 
-int			dc_x; 
-int			dc_yl; 
-int			dc_yh; 
-fixed_t			dc_iscale;
-fixed_t			dc_scale;
-fixed_t			dc_texturemid;
+int32_t				dc_x; 
+int32_t				dc_yl; 
+int32_t				dc_yh; 
+fixed_t				dc_iscale;
+fixed_t				dc_scale;
+fixed_t				dc_texturemid;
 
 // first pixel in a column (possibly virtual) 
-byte*			dc_source;		
+byte*				dc_source;		
 
 // Rum and raisin extensions
 // Note that int8x16_t is sensible... But I'd rather undefined platforms

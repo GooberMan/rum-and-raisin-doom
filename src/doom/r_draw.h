@@ -24,15 +24,15 @@
 #define ADJUSTED_FUZZ 0
 
 extern lighttable_t*	dc_colormap;
-extern int		dc_x;
-extern int		dc_yl;
-extern int		dc_yh;
-extern fixed_t		dc_scale;
-extern fixed_t		dc_iscale;
-extern fixed_t		dc_texturemid;
+extern int32_t			dc_x;
+extern int32_t			dc_yl;
+extern int32_t			dc_yh;
+extern fixed_t			dc_scale;
+extern fixed_t			dc_iscale;
+extern fixed_t			dc_texturemid;
 
 // first pixel in a column
-extern byte*		dc_source;		
+extern byte*			dc_source;		
 
 
 // The span blitting interface.

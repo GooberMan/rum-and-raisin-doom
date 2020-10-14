@@ -112,18 +112,17 @@ lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
 int32_t				scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
 int32_t				zlightindex[LIGHTLEVELS][MAXLIGHTZ];
+colfunc_t			colfuncs[ COLFUNC_COUNT ];
 
 // bumped light from gun blasts
-int			extralight;			
+int					extralight;
 
 
+colfunc_t			colfunc;
+colfunc_t			fuzzcolfunc;
+colfunc_t			transcolfunc;
 
-colfunc_t colfuncs[ COLFUNC_COUNT ];
-colfunc_t colfunc;
-
-void (*fuzzcolfunc) (void);
-void (*transcolfunc) (void);
-void (*spanfunc) (void);
+spanfunc_t			spanfunc;
 
 
 

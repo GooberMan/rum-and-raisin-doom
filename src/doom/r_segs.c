@@ -56,8 +56,8 @@ int		rw_angle1;
 //
 // regular wall
 //
-int		rw_x;
-int		rw_stopx;
+int32_t		rw_x;
+int32_t		rw_stopx;
 angle_t		rw_centerangle;
 fixed_t		rw_offset;
 fixed_t		rw_distance;
@@ -67,10 +67,10 @@ fixed_t		rw_midtexturemid;
 fixed_t		rw_toptexturemid;
 fixed_t		rw_bottomtexturemid;
 
-int		worldtop;
-int		worldbottom;
-int		worldhigh;
-int		worldlow;
+int32_t		worldtop;
+int32_t		worldbottom;
+int32_t		worldhigh;
+int32_t		worldlow;
 
 fixed_t		pixhigh;
 fixed_t		pixlow;
@@ -147,7 +147,9 @@ R_RenderMaskedSegRange
     else if (curline->v1->x == curline->v2->x)
 		lightnum++;
 
-    if (lightnum < 0)
+	if( fixedcolormapindex )
+		walllightsindex = fixedcolormapindex;
+    else if (lightnum < 0)
 		walllightsindex = 0;
     else if (lightnum >= LIGHTLEVELS)
 		walllightsindex = LIGHTLEVELS-1;
@@ -315,7 +317,14 @@ void R_RenderSegLoop (void)
 			index = MAXLIGHTSCALE-1;
 
 			dc_colormap = walllights[index];
-			colormapindex = walllightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ walllightsindex ][ index ] : walllightsindex;
+			if( fixedcolormapindex )
+			{
+				colormapindex = fixedcolormapindex;
+			}
+			else
+			{
+				colormapindex = walllightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ walllightsindex ][ index ] : walllightsindex;
+			}
 			dc_x = rw_x;
 			dc_scale = rw_scale;
 			dc_iscale = 0xffffffffu / (unsigned)rw_scale;
@@ -715,7 +724,9 @@ R_StoreWallRange
 			else if (curline->v1->x == curline->v2->x)
 			lightnum++;
 
-			if (lightnum < 0)
+			if( fixedcolormapindex )
+				walllightsindex = fixedcolormapindex;
+			else if (lightnum < 0)
 				walllightsindex = 0;
 			else if (lightnum >= LIGHTLEVELS)
 				walllightsindex = LIGHTLEVELS-1;

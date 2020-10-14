@@ -40,9 +40,6 @@
 #define PREFETCH_X86 0
 #endif
 
-planefunction_t		floorfunc;
-planefunction_t		ceilingfunc;
-
 //
 // opening
 //

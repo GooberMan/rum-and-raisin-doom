@@ -37,6 +37,9 @@
 #include "i_video.h"
 
 #include "v_patch.h"
+// For vbuffer_t
+// Should move it out elsewhere
+#include "v_video.h"
 
 
 // Silhouette, needed for clipping Segs (mainly)
@@ -47,6 +50,7 @@
 #define SIL_BOTH		3
 
 #define MAXVISPLANES	512
+#define MAXOPENINGS		( SCREENWIDTH*64 )
 #define MAXDRAWSEGS		( MAXVISPLANES << 2 )
 
 // We must expand MAXSEGS to the theoretical limit of the number of solidsegs
@@ -57,6 +61,18 @@
 // fact. -haleyjd
 //#define MAXSEGS 32
 #define MAXSEGS			(SCREENWIDTH / 2 + 1)
+
+typedef void (*colfunc_t)( void );
+typedef void (*spanfunc_t)( void );
+typedef void (*planefunction_t)(int top, int bottom);
+
+typedef uint16_t				vpindex_t;
+#define VPINDEX_INVALID			( ~(vpindex_t)0 )
+
+typedef pixel_t					lighttable_t;
+
+typedef int32_t					vertclip_t;
+#define MASKEDTEXCOL_INVALID	( (vertclip_t)0x7FFFFFFF )
 
 
 //
@@ -300,10 +316,6 @@ typedef struct
 //  precalculating 24bpp lightmap/colormap LUT.
 //  from darkening PLAYPAL to all black.
 // Could even us emore than 32 levels.
-typedef pixel_t		lighttable_t;
-
-typedef int32_t		vertclip_t;
-
 
 //
 // ?
@@ -336,8 +348,6 @@ typedef struct drawseg_s
     vertclip_t*		maskedtexturecol;
     
 } drawseg_t;
-
-#define MASKEDTEXCOL_INVALID ( (vertclip_t)0x7FFFFFFF )
 
 // A vissprite_t is a thing
 //  that will be drawn during a refresh.
@@ -378,6 +388,7 @@ typedef struct vissprite_s
     
 } vissprite_t;
 
+#define MAXVISSPRITES  	1024
 
 //	
 // Sprites are patches with a special naming convention
@@ -423,9 +434,6 @@ typedef struct
 } spritedef_t;
 
 
-typedef uint16_t vpindex_t;
-#define VPINDEX_INVALID ( ~(vpindex_t)0 )
-
 //
 // Now what is a visplane, anyway?
 // 
@@ -469,10 +477,30 @@ typedef	struct
 // So everything "global" goes in here. Everything.
 //
 
+typedef struct colcontext_s
+{
+	lighttable_t*	colormap;
+	byte*			source;
+	byte*			translation;
+	int32_t			x;
+	int32_t			yl;
+	int32_t			yh;
+	fixed_t			scale;
+	fixed_t			iscale;
+	fixed_t			texturemid;
+} colcontext_t;
+
 typedef struct rendercontext_s
 {
+	// Setup
+	vbuffer_t		buffer;
+
 	int32_t			mincolumn;
 	int32_t			maxcolumn;
+
+	uint64_t		lasttimetaken;
+
+	// BSP
 
 	seg_t*			curline;
 	side_t*			sidedef;
@@ -483,9 +511,50 @@ typedef struct rendercontext_s
 	drawseg_t		drawsegs[MAXDRAWSEGS];
 	drawseg_t*		ds_p;
 
-	// newend is one past the last valid seg
 	cliprange_t*	newend;
 	cliprange_t		solidsegs[MAXSEGS];
+
+	// Columns
+	colcontext_t	col;
+
+	// Planes
+
+	visplane_t		visplanes[MAXVISPLANES];
+	visplane_t*		lastvisplane;
+	visplane_t*		floorplane;
+	visplane_t*		ceilingplane;
+
+	vertclip_t		openings[MAXOPENINGS];
+	vertclip_t*		lastopening;
+
+	vertclip_t		floorclip[SCREENWIDTH];
+	vertclip_t		ceilingclip[SCREENWIDTH];
+
+	fixed_t			yslope[SCREENHEIGHT];
+	fixed_t			distscale[SCREENWIDTH];
+
+	// Sprites
+
+	vissprite_t		vissprites[MAXVISSPRITES];
+	vissprite_t*	vissprite_p;
+	vissprite_t		vsprsortedhead;
+
+	vertclip_t*		mfloorclip;
+	vertclip_t*		mceilingclip;
+	fixed_t			spryscale;
+	fixed_t			sprtopscreen;
+
+	fixed_t			pspritescale;
+	fixed_t			pspriteiscale;
+
+	// Functions
+
+	colfunc_t		colfunc;
+
+	colfunc_t		fuzzcolfunc;
+	colfunc_t		transcolfunc;
+	
+	spanfunc_t		spanfunc;
 
 } rendercontext_t;
 
