@@ -501,6 +501,7 @@ R_PointToDist
 }
 
 
+#define PI acos(-1.0)
 
 
 //
@@ -518,7 +519,7 @@ void R_InitPointToAngle (void)
 	//
 	for (i=0 ; i<=RENDERSLOPERANGE ; i++)
 	{
-		f = atan( (float)i/RENDERSLOPERANGE )/(3.141592657*2);
+		f = atan( (float)i/RENDERSLOPERANGE )/(PI*2);
 		t = 0xffffffff*f;
 		rendertantoangle[i] = t;
 	}
@@ -534,9 +535,11 @@ void R_InitPointToAngle (void)
 // rw_distance must be calculated first.
 //
 
-// This is not good enough to fix wobbly walls. Magnification of the wall seems to be the real issue.
-// This does help significantly. 1024 will break The Chasm, 512 doesn't. So this will do for now.
-#define MAXSCALE 512
+// R_ScaleFromGlobalAngle is a function of screenwidth
+// Defining the original maximum as a function of your
+// new width is the correct way to go about things.
+// 1/5th of the screenwidth is the way to go.
+#define MAXSCALE ( 64 * ( SCREENWIDTH / 320 ) )
 #define MAXSCALE_FIXED ( MAXSCALE << FRACBITS )
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
@@ -578,7 +581,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 //
 // R_InitTables
 //
-#define PI acos(-1.0)
 
 void R_InitTables (void)
 {
@@ -627,17 +629,17 @@ void R_InitTextureMapping (void)
     // Calc focallength
     //  so FIELDOFVIEW angles covers SCREENWIDTH.
     focallength = FixedDiv (centerxfrac,
-			    finetangent[FINEANGLES/4+FIELDOFVIEW/2] );
+			    renderfinetangent[RENDERFINEANGLES/4+RENDERFIELDOFVIEW/2] );
 	
-    for (i=0 ; i<FINEANGLES/2 ; i++)
+    for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
     {
-		if (finetangent[i] > FRACUNIT*2)
+		if (renderfinetangent[i] > FRACUNIT*2)
 			t = -1;
-		else if (finetangent[i] < -FRACUNIT*2)
+		else if (renderfinetangent[i] < -FRACUNIT*2)
 			t = viewwidth+1;
 		else
 		{
-			t = FixedMul (finetangent[i], focallength);
+			t = FixedMul (renderfinetangent[i], focallength);
 			t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
 
 			if (t < -1)
@@ -656,16 +658,12 @@ void R_InitTextureMapping (void)
 	i = 0;
 	while (viewangletox[i]>x)
 	    i++;
-	xtoviewangle[x] = (i<<ANGLETOFINESHIFT)-ANG90;
+	xtoviewangle[x] = (i<<RENDERANGLETOFINESHIFT)-ANG90;
     }
 
     // Take out the fencepost cases from viewangletox.
     for (i=0 ; i<FINEANGLES/2 ; i++)
     {
-		// What? This code does nothing
-		//t = FixedMul (finetangent[i], focallength);
-		//t = centerx - t;
-	
 		if (viewangletox[i] == -1)
 			viewangletox[i] = 0;
 		else if (viewangletox[i] == viewwidth+1)
