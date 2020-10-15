@@ -36,22 +36,9 @@
 
 // OPTIMIZE: closed two sided lines as single sided
 
-// True if any of the segs textures might be visible.
-boolean		segtextured;	
-
-// False if the back side is the same plane.
-boolean		markfloor;	
-boolean		markceiling;
-
-boolean		maskedtexture;
-int		toptexture;
-int		bottomtexture;
-int		midtexture;
-
-
 angle_t		rw_normalangle;
 // angle to line origin
-int		rw_angle1;	
+int32_t		rw_angle1;	
 
 //
 // regular wall
@@ -65,21 +52,34 @@ fixed_t		rw_midtexturemid;
 fixed_t		rw_toptexturemid;
 fixed_t		rw_bottomtexturemid;
 
-int32_t		worldtop;
-int32_t		worldbottom;
-int32_t		worldhigh;
-int32_t		worldlow;
+typedef struct segloopcontext_s
+{
+	int32_t		startx;
+	int32_t		stopx;
 
-fixed_t		pixhigh;
-fixed_t		pixlow;
-fixed_t		pixhighstep;
-fixed_t		pixlowstep;
+	// True if any of the segs textures might be visible.
+	boolean		segtextured;
 
-fixed_t		topfrac;
-fixed_t		topstep;
+	boolean		maskedtexture;
+	int32_t		toptexture;
+	int32_t		bottomtexture;
+	int32_t		midtexture;
 
-fixed_t		bottomfrac;
-fixed_t		bottomstep;
+	// False if the back side is the same plane.
+	boolean		markfloor;	
+	boolean		markceiling;
+
+	fixed_t		pixhigh;
+	fixed_t		pixlow;
+	fixed_t		pixhighstep;
+	fixed_t		pixlowstep;
+
+	fixed_t		topfrac;
+	fixed_t		topstep;
+
+	fixed_t		bottomfrac;
+	fixed_t		bottomstep;
+} segloopcontext_t;
 
 
 lighttable_t**		walllights;
@@ -240,7 +240,7 @@ void R_RenderMaskedSegRange( drawseg_t*	ds, int x1, int x2 )
 
 extern byte detailmaps[16][256];
 
-void R_RenderSegLoop ( int32_t currx, int32_t stopx )
+void R_RenderSegLoop ( segloopcontext_t* context )
 {
 	angle_t			angle;
 	uint32_t		index;
@@ -251,6 +251,7 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 	fixed_t			texturecolumn;
 	int32_t			top;
 	int32_t			bottom;
+	int32_t			currx = context->startx;
 
 	colcontext_t	wallcontext;
 	extern vbuffer_t* dest_buffer;
@@ -259,10 +260,10 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 
 	wallcontext.output = *dest_buffer;
 
-	for ( ; currx < stopx ; currx++)
+	for ( ; currx < context->stopx ; currx++)
 	{
 		// mark floor / ceiling areas
-		yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
+		yl = (context->topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
 
 		// no space above wall?
 		if (yl < ceilingclip[currx]+1)
@@ -270,7 +271,7 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 			yl = ceilingclip[currx]+1;
 		}
 	
-		if (markceiling)
+		if (context->markceiling)
 		{
 			top = ceilingclip[currx]+1;
 			bottom = yl-1;
@@ -287,14 +288,14 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 			}
 		}
 		
-		yh = bottomfrac>>HEIGHTBITS;
+		yh = context->bottomfrac>>HEIGHTBITS;
 
 		if (yh >= floorclip[currx])
 		{
 			yh = floorclip[currx]-1;
 		}
 
-		if (markfloor)
+		if (context->markfloor)
 		{
 			top = yh+1;
 			bottom = floorclip[currx]-1;
@@ -310,7 +311,7 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 		}
 	
 		// texturecolumn and lighting are independent of wall tiers
-		if (segtextured)
+		if (context->segtextured)
 		{
 			// calculate texture offset
 			angle = (rw_centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
@@ -351,13 +352,13 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 		}
 
 		// draw the wall tiers
-		if (midtexture && yh >= yl)
+		if (context->midtexture && yh >= yl)
 		{
 			// single sided line
 			wallcontext.yl = yl;
 			wallcontext.yh = yh;
 			wallcontext.texturemid = rw_midtexturemid;
-			wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(midtexture,texturecolumn,colormapindex);
+			wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(context->midtexture,texturecolumn,colormapindex);
 			R_RangeCheck();
 			colfunc( &wallcontext );
 			ceilingclip[currx] = viewheight;
@@ -366,11 +367,11 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 		else
 		{
 			// two sided line
-			if (toptexture)
+			if (context->toptexture)
 			{
 				// top wall
-				mid = pixhigh>>HEIGHTBITS;
-				pixhigh += pixhighstep;
+				mid = context->pixhigh>>HEIGHTBITS;
+				context->pixhigh += context->pixhighstep;
 
 				if (mid >= floorclip[currx])
 				{
@@ -382,7 +383,7 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 					wallcontext.yl = yl;
 					wallcontext.yh = mid;
 					wallcontext.texturemid = rw_toptexturemid;
-					wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(toptexture,texturecolumn,colormapindex);
+					wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(context->toptexture,texturecolumn,colormapindex);
 					R_RangeCheck();
 					colfunc( &wallcontext );
 					ceilingclip[currx] = mid;
@@ -395,17 +396,17 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 			else
 			{
 				// no top wall
-				if (markceiling)
+				if (context->markceiling)
 				{
 					ceilingclip[currx] = yl-1;
 				}
 			}
 			
-			if (bottomtexture)
+			if (context->bottomtexture)
 			{
 				// bottom wall
-				mid = (pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
-				pixlow += pixlowstep;
+				mid = (context->pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
+				context->pixlow += context->pixlowstep;
 
 				// no space above wall?
 				if (mid <= ceilingclip[currx])
@@ -416,7 +417,7 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 					wallcontext.yl = mid;
 					wallcontext.yh = yh;
 					wallcontext.texturemid = rw_bottomtexturemid;
-					wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(bottomtexture,texturecolumn,colormapindex);
+					wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(context->bottomtexture,texturecolumn,colormapindex);
 					R_RangeCheck();
 					colfunc( &wallcontext );
 					floorclip[currx] = mid;
@@ -429,13 +430,13 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 			else
 			{
 				// no bottom wall
-				if (markfloor)
+				if (context->markfloor)
 				{
 					floorclip[currx] = yh+1;
 				}
 			}
 			
-			if (maskedtexture)
+			if (context->maskedtexture)
 			{
 				// save texturecol
 				//  for backdrawing of masked mid texture
@@ -444,8 +445,8 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 		}
 		
 		rw_scale += rw_scalestep;
-		topfrac += topstep;
-		bottomfrac += bottomstep;
+		context->topfrac += context->topstep;
+		context->bottomfrac += context->bottomstep;
 
 		colfunc = restorefunc;
 	#if R_DRAWCOLUMN_DEBUGDISTANCES
@@ -454,18 +455,12 @@ void R_RenderSegLoop ( int32_t currx, int32_t stopx )
 	}
 }
 
-
-
-
 //
 // R_StoreWallRange
 // A wall segment will be drawn
 //  between start and stop pixels (inclusive).
 //
-void
-R_StoreWallRange
-( int	start,
-  int	stop )
+void R_StoreWallRange( int start, int stop )
 {
 	fixed_t		hyp;
 	fixed_t		sineval;
@@ -473,12 +468,18 @@ R_StoreWallRange
 	fixed_t		vtop;
 	int32_t		lightnum;
 
-	int32_t		startx;
-	int32_t		stopx;
+	segloopcontext_t loopcontext;
+
+	int32_t		worldtop;
+	int32_t		worldbottom;
+	int32_t		worldhigh;
+	int32_t		worldlow;
 
 	// don't overflow and crash
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
-	return;		
+	{
+		return;
+	}
 		
 #ifdef RANGECHECK
 	if (start >=viewwidth || start > stop)
@@ -502,18 +503,21 @@ R_StoreWallRange
 	// If this value blows out, renderer go boom. Need to increase resolution of this thing
 	rw_distance = FixedMul (hyp, sineval);
 	
-	ds_p->x1 = startx = start;
+	ds_p->x1 = loopcontext.startx = start;
 	ds_p->x2 = stop;
 	ds_p->curline = curline;
-	stopx = stop+1;
+	loopcontext.stopx = stop+1;
 
 	// calculate scale at both ends and step
 	ds_p->scale1 = rw_scale = 
-	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start]);
+	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start], rw_distance);
 
 	if (stop > start )
 	{
-		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop]);
+		// TODO: calculate second distance? Maybe?
+		//rw_distance = FixedMul( R_PointToDist (curline->v2->x, curline->v2->y), sineval );
+
+		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop], rw_distance );
 		ds_p->scalestep = rw_scalestep = 
 			(ds_p->scale2 - rw_scale) / (stop-start);
 	}
@@ -542,15 +546,15 @@ R_StoreWallRange
 	worldtop = frontsector->ceilingheight - viewz;
 	worldbottom = frontsector->floorheight - viewz;
 	
-	midtexture = toptexture = bottomtexture = maskedtexture = 0;
+	loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
 	ds_p->maskedtexturecol = NULL;
 	
 	if (!backsector)
 	{
 		// single sided line
-		midtexture = texturetranslation[sidedef->midtexture];
+		loopcontext.midtexture = texturetranslation[sidedef->midtexture];
 		// a single sided line is terminal, so it must mark ends
-		markfloor = markceiling = true;
+		loopcontext.markfloor = loopcontext.markceiling = true;
 		if (linedef->flags & ML_DONTPEGBOTTOM)
 		{
 			vtop = frontsector->floorheight +
@@ -630,12 +634,12 @@ R_StoreWallRange
 			|| backsector->floorpic != frontsector->floorpic
 			|| backsector->lightlevel != frontsector->lightlevel)
 		{
-			markfloor = true;
+			loopcontext.markfloor = true;
 		}
 		else
 		{
 			// same plane on both sides
-			markfloor = false;
+			loopcontext.markfloor = false;
 		}
 	
 			
@@ -643,26 +647,26 @@ R_StoreWallRange
 			|| backsector->ceilingpic != frontsector->ceilingpic
 			|| backsector->lightlevel != frontsector->lightlevel)
 		{
-			markceiling = true;
+			loopcontext.markceiling = true;
 		}
 		else
 		{
 			// same plane on both sides
-			markceiling = false;
+			loopcontext.markceiling = false;
 		}
 	
 		if (backsector->ceilingheight <= frontsector->floorheight
 			|| backsector->floorheight >= frontsector->ceilingheight)
 		{
 			// closed door
-			markceiling = markfloor = true;
+			loopcontext.markceiling = loopcontext.markfloor = true;
 		}
 	
 
 		if (worldhigh < worldtop)
 		{
 			// top texture
-			toptexture = texturetranslation[sidedef->toptexture];
+			loopcontext.toptexture = texturetranslation[sidedef->toptexture];
 			if (linedef->flags & ML_DONTPEGTOP)
 			{
 			// top of texture at top
@@ -681,7 +685,7 @@ R_StoreWallRange
 		if (worldlow > worldbottom)
 		{
 			// bottom texture
-			bottomtexture = texturetranslation[sidedef->bottomtexture];
+			loopcontext.bottomtexture = texturetranslation[sidedef->bottomtexture];
 
 			if (linedef->flags & ML_DONTPEGBOTTOM )
 			{
@@ -701,24 +705,29 @@ R_StoreWallRange
 		if (sidedef->midtexture)
 		{
 			// masked midtexture
-			maskedtexture = true;
-			ds_p->maskedtexturecol = maskedtexturecol = lastopening - startx;
-			lastopening += stopx - startx;
+			loopcontext.maskedtexture = true;
+			ds_p->maskedtexturecol = maskedtexturecol = lastopening - loopcontext.startx;
+			lastopening += loopcontext.stopx - loopcontext.startx;
 		}
 	}
 
 	// calculate rw_offset (only needed for textured lines)
-	segtextured = midtexture | toptexture | bottomtexture | maskedtexture;
+	loopcontext.segtextured = loopcontext.midtexture | loopcontext.toptexture | loopcontext.bottomtexture | loopcontext.maskedtexture;
 
-	if (segtextured)
+	if (loopcontext.segtextured)
 	{
 		offsetangle = rw_normalangle-rw_angle1;
 	
 		if (offsetangle > ANG180)
-			offsetangle = -offsetangle;
+		{
+			// Performs the negate op on an unsigned type without a warning
+			offsetangle = ( ~offsetangle + 1 );
+		}
 
 		if (offsetangle > ANG90)
+		{
 			offsetangle = ANG90;
+		}
 
 		sineval = finesine[offsetangle >>ANGLETOFINESHIFT];
 		rw_offset = FixedMul (hyp, sineval);
@@ -761,13 +770,13 @@ R_StoreWallRange
 	if (frontsector->floorheight >= viewz)
 	{
 		// above view plane
-		markfloor = false;
+		loopcontext.markfloor = false;
 	}
 
 	if (frontsector->ceilingheight <= viewz && frontsector->ceilingpic != skyflatnum)
 	{
 		// below view plane
-		markceiling = false;
+		loopcontext.markceiling = false;
 	}
 
 
@@ -775,11 +784,11 @@ R_StoreWallRange
 	worldtop >>= 4;
 	worldbottom >>= 4;
 	
-	topstep = -FixedMul (rw_scalestep, worldtop);
-	topfrac = (centeryfrac>>4) - FixedMul (worldtop, rw_scale);
+	loopcontext.topstep = -FixedMul (rw_scalestep, worldtop);
+	loopcontext.topfrac = (centeryfrac>>4) - FixedMul (worldtop, rw_scale);
 
-	bottomstep = -FixedMul (rw_scalestep,worldbottom);
-	bottomfrac = (centeryfrac>>4) - FixedMul (worldbottom, rw_scale);
+	loopcontext.bottomstep = -FixedMul (rw_scalestep,worldbottom);
+	loopcontext.bottomfrac = (centeryfrac>>4) - FixedMul (worldbottom, rw_scale);
 	
 	if (backsector)
 	{	
@@ -788,53 +797,53 @@ R_StoreWallRange
 
 		if (worldhigh < worldtop)
 		{
-			pixhigh = (centeryfrac>>4) - FixedMul (worldhigh, rw_scale);
-			pixhighstep = -FixedMul (rw_scalestep,worldhigh);
+			loopcontext.pixhigh = (centeryfrac>>4) - FixedMul (worldhigh, rw_scale);
+			loopcontext.pixhighstep = -FixedMul (rw_scalestep,worldhigh);
 		}
 	
 		if (worldlow > worldbottom)
 		{
-			pixlow = (centeryfrac>>4) - FixedMul (worldlow, rw_scale);
-			pixlowstep = -FixedMul (rw_scalestep,worldlow);
+			loopcontext.pixlow = (centeryfrac>>4) - FixedMul (worldlow, rw_scale);
+			loopcontext.pixlowstep = -FixedMul (rw_scalestep,worldlow);
 		}
 	}
 
 	// render it
-	if (markceiling)
+	if (loopcontext.markceiling)
 	{
-		ceilingplane = R_CheckPlane (ceilingplane, startx, stopx-1);
+		ceilingplane = R_CheckPlane (ceilingplane, loopcontext.startx, loopcontext.stopx-1);
 	}
 
-	if (markfloor)
+	if (loopcontext.markfloor)
 	{
-		floorplane = R_CheckPlane (floorplane, startx, stopx-1);
+		floorplane = R_CheckPlane (floorplane, loopcontext.startx, loopcontext.stopx-1);
 	}
 
-	R_RenderSegLoop( startx, stopx );
+	R_RenderSegLoop( &loopcontext );
 
 	// save sprite clipping info
-	if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture)
+	if ( ((ds_p->silhouette & SIL_TOP) || loopcontext.maskedtexture)
 		&& !ds_p->sprtopclip)
 	{
-		memcpy (lastopening, ceilingclip+start, sizeof(*lastopening)*(stopx-start));
-		ds_p->sprtopclip = lastopening - start;
-		lastopening += stopx - start;
+		memcpy (lastopening, ceilingclip+loopcontext.startx, sizeof(*lastopening)*(loopcontext.stopx-loopcontext.startx));
+		ds_p->sprtopclip = lastopening - loopcontext.startx;
+		lastopening += loopcontext.stopx - loopcontext.startx;
 	}
 
-	if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture)
+	if ( ((ds_p->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
 		&& !ds_p->sprbottomclip)
 	{
-		memcpy (lastopening, floorclip+start, sizeof(*lastopening)*(stopx-start));
-		ds_p->sprbottomclip = lastopening - start;
-		lastopening += stopx - start;	
+		memcpy (lastopening, floorclip+loopcontext.startx, sizeof(*lastopening)*(loopcontext.stopx-loopcontext.startx));
+		ds_p->sprbottomclip = lastopening - loopcontext.startx;
+		lastopening += loopcontext.stopx - loopcontext.startx;	
 	}
 
-	if (maskedtexture && !(ds_p->silhouette&SIL_TOP))
+	if (loopcontext.maskedtexture && !(ds_p->silhouette&SIL_TOP))
 	{
 		ds_p->silhouette |= SIL_TOP;
 		ds_p->tsilheight = INT_MIN;
 	}
-	if (maskedtexture && !(ds_p->silhouette&SIL_BOTTOM))
+	if (loopcontext.maskedtexture && !(ds_p->silhouette&SIL_BOTTOM))
 	{
 		ds_p->silhouette |= SIL_BOTTOM;
 		ds_p->bsilheight = INT_MAX;

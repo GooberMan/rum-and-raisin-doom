@@ -541,7 +541,7 @@ void R_InitPointToAngle (void)
 #define MAXSCALE ( 64 * ( SCREENWIDTH / 320 ) )
 #define MAXSCALE_FIXED ( MAXSCALE << FRACBITS )
 
-fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
+fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance)
 {
     fixed_t		scale;
     angle_t		anglea;
@@ -560,7 +560,7 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     sinea = renderfinesine[anglea>>RENDERANGLETOFINESHIFT];
     sineb = renderfinesine[angleb>>RENDERANGLETOFINESHIFT];
     num = FixedMul(projection,sineb)<<detailshift;
-    den = FixedMul(rw_distance,sinea);
+    den = FixedMul(distance,sinea);
 
     if (den >= 0 && den > num>>FRACBITS)
     {
