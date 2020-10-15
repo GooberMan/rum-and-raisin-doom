@@ -340,43 +340,43 @@ vertclip_t*		mceilingclip;
 fixed_t		spryscale;
 fixed_t		sprtopscreen;
 
-void R_DrawMaskedColumn (column_t* column)
+void R_DrawMaskedColumn( colcontext_t* context, column_t* column )
 {
-    int		topscreen;
-    int 	bottomscreen;
-    fixed_t	basetexturemid;
+	int		topscreen;
+	int 	bottomscreen;
+	fixed_t	basetexturemid;
 	
-    basetexturemid = dc_texturemid;
+	basetexturemid = context->texturemid;
 	
-    for ( ; column->topdelta != 0xff ; ) 
-    {
-	// calculate unclipped screen coordinates
-	//  for post
-	topscreen = sprtopscreen + spryscale*column->topdelta;
-	bottomscreen = topscreen + spryscale*column->length;
-
-	dc_yl = (topscreen+FRACUNIT-1)>>FRACBITS;
-	dc_yh = (bottomscreen-1)>>FRACBITS;
-		
-	if (dc_yh >= mfloorclip[dc_x])
-	    dc_yh = mfloorclip[dc_x]-1;
-	if (dc_yl <= mceilingclip[dc_x])
-	    dc_yl = mceilingclip[dc_x]+1;
-
-	if (dc_yl < dc_yh)
+	for ( ; column->topdelta != 0xff ; ) 
 	{
-	    dc_source = (byte *)column + 3;
-	    dc_texturemid = basetexturemid - (column->topdelta<<FRACBITS);
-	    // dc_source = (byte *)column + 3 - column->topdelta;
+		// calculate unclipped screen coordinates
+		//  for post
+		topscreen = sprtopscreen + spryscale*column->topdelta;
+		bottomscreen = topscreen + spryscale*column->length;
 
-	    // Drawn by either R_DrawColumn
-	    //  or (SHADOW) R_DrawFuzzColumn.
-	    colfunc ();	
+		context->yl = (topscreen+FRACUNIT-1)>>FRACBITS;
+		context->yh = (bottomscreen-1)>>FRACBITS;
+		
+		if (context->yh >= mfloorclip[context->x])
+			context->yh = mfloorclip[context->x]-1;
+		if (context->yl <= mceilingclip[context->x])
+			context->yl = mceilingclip[context->x]+1;
+
+		if (context->yl < context->yh)
+		{
+			context->source = (byte *)column + 3;
+			context->texturemid = basetexturemid - (column->topdelta<<FRACBITS);
+			// context->source = (byte *)column + 3 - column->topdelta;
+
+			// Drawn by either R_DrawColumn
+			//  or (SHADOW) R_DrawFuzzColumn.
+			colfunc( context );	
+		}
+		column = (column_t *)(  (byte *)column + column->length + 4);
 	}
-	column = (column_t *)(  (byte *)column + column->length + 4);
-    }
 	
-    dc_texturemid = basetexturemid;
+	context->texturemid = basetexturemid;
 }
 
 
@@ -385,45 +385,46 @@ void R_DrawMaskedColumn (column_t* column)
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
-void
-R_DrawVisSprite
-( vissprite_t*		vis,
-  int			x1,
-  int			x2 )
+void R_DrawVisSprite( vissprite_t* vis, int x1, int x2 )
 {
-    column_t*		column;
-    int			texturecolumn;
-	int			prevfuzzcolumn;
-	int			fuzzcolumn;
-    fixed_t		frac;
-    patch_t*		patch;
-	colfunc_t	restorecol = colfunc;
-	
-    patch = W_CacheLumpNum (vis->patch+firstspritelump, PU_CACHE);
+	column_t*			column;
+	int32_t				texturecolumn;
+	int32_t				prevfuzzcolumn;
+	int32_t				fuzzcolumn;
+	fixed_t				frac;
+	patch_t*			patch;
 
-    dc_colormap = vis->colormap;
-    
-    if (!dc_colormap)
-    {
-	// NULL colormap = shadow draw
-	colfunc = fuzzcolfunc;
-    }
-    else if (vis->mobjflags & MF_TRANSLATION)
-    {
-	colfunc = transcolfunc;
-	dc_translation = translationtables - 256 +
-	    ( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
-    }
+	colcontext_t		spritecontext;
+	extern vbuffer_t*	dest_buffer;
+
+	colfunc_t			restorefunc = colfunc;
+
+	patch = W_CacheLumpNum (vis->patch+firstspritelump, PU_CACHE);
+
+	spritecontext.output = *dest_buffer;
+	spritecontext.colormap = vis->colormap;
+
+	if (!spritecontext.colormap)
+	{
+		// NULL colormap = shadow draw
+		colfunc = fuzzcolfunc;
+	}
+	else if (vis->mobjflags & MF_TRANSLATION)
+	{
+		colfunc = transcolfunc;
+		spritecontext.translation = translationtables - 256 +
+			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
+	}
 	
-    dc_iscale = abs(vis->xiscale)>>detailshift;
-    dc_texturemid = vis->texturemid;
-    frac = vis->startfrac;
-    spryscale = vis->scale;
-    sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
+	spritecontext.iscale = abs(vis->xiscale)>>detailshift;
+	spritecontext.texturemid = vis->texturemid;
+	frac = vis->startfrac;
+	spryscale = vis->scale;
+	sprtopscreen = centeryfrac - FixedMul(spritecontext.texturemid,spryscale);
 	
 	prevfuzzcolumn = -1;
-    for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale)
-    {
+	for (spritecontext.x=vis->x1 ; spritecontext.x<=vis->x2 ; spritecontext.x++, frac += vis->xiscale)
+	{
 		texturecolumn = frac>>FRACBITS;
 #ifdef RANGECHECK
 		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
@@ -431,7 +432,7 @@ R_DrawVisSprite
 #endif
 
 #if ADJUSTED_FUZZ
-		fuzzcolumn = ( dc_x * 100 ) / FUZZ_X_RATIO;
+		fuzzcolumn = ( spritecontext.x * 100 ) / FUZZ_X_RATIO;
 		if(prevfuzzcolumn != fuzzcolumn)
 		{
 			R_CacheFuzzColumn();
@@ -439,12 +440,11 @@ R_DrawVisSprite
 		}
 #endif // ADJUSTED_FUZZ
 
-		column = (column_t *) ((byte *)patch +
-					   LONG(patch->columnofs[texturecolumn]));
-		R_DrawMaskedColumn (column);
-    }
+		column = (column_t *)( (byte *)patch + LONG(patch->columnofs[texturecolumn]) );
+		R_DrawMaskedColumn( &spritecontext, column );
+	}
 
-    colfunc = restorecol;
+	colfunc = restorefunc;
 }
 
 

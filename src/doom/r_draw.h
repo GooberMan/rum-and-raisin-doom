@@ -23,24 +23,12 @@
 
 #define ADJUSTED_FUZZ 0
 
-extern lighttable_t*	dc_colormap;
-extern int32_t			dc_x;
-extern int32_t			dc_yl;
-extern int32_t			dc_yh;
-extern fixed_t			dc_scale;
-extern fixed_t			dc_iscale;
-extern fixed_t			dc_texturemid;
-
-// first pixel in a column
-extern byte*			dc_source;		
-
-
 // The span blitting interface.
 // Hook in assembler or system specific BLT
 //  here.
-void 	R_DrawColumn (void);
-void 	R_DrawColumn_Untranslated (void);
-void 	R_DrawColumnLow (void);
+void 	R_DrawColumn ( colcontext_t* context );
+void 	R_DrawColumn_Untranslated ( colcontext_t* context );
+void 	R_DrawColumnLow ( colcontext_t* context );
 
 // Rum and raisin extensions.
 // Needs a whole overhaul of how we define output buffers.
@@ -68,66 +56,50 @@ void 	R_DrawColumnLow (void);
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 
 #if 0
-void R_DrawColumn_NaiveSIMD (void);
+void R_DrawColumn_NaiveSIMD ( colcontext_t* context );
 #endif // 0
 
-void R_DrawColumn_OneSample (void);
-void R_DrawColumn_TwoSamples (void);
-void R_DrawColumn_ThreeSamples (void);
-void R_DrawColumn_FourSamples (void);
-void R_DrawColumn_FiveSamples (void);
-void R_DrawColumn_SixSamples (void);
-void R_DrawColumn_SevenSamples (void);
-void R_DrawColumn_EightSamples (void);
-void R_DrawColumn_NineSamples (void);
-void R_DrawColumn_TenSamples (void);
-void R_DrawColumn_ElevenSamples (void);
-void R_DrawColumn_TwelveSamples (void);
-void R_DrawColumn_ThirteenSamples (void);
-void R_DrawColumn_FourteenSamples (void);
-void R_DrawColumn_FifteenSamples (void);
-void R_DrawColumn_SixteenSamples (void);
+void R_DrawColumn_OneSample ( colcontext_t* context );
+void R_DrawColumn_TwoSamples ( colcontext_t* context );
+void R_DrawColumn_ThreeSamples ( colcontext_t* context );
+void R_DrawColumn_FourSamples ( colcontext_t* context );
+void R_DrawColumn_FiveSamples ( colcontext_t* context );
+void R_DrawColumn_SixSamples ( colcontext_t* context );
+void R_DrawColumn_SevenSamples ( colcontext_t* context );
+void R_DrawColumn_EightSamples ( colcontext_t* context );
+void R_DrawColumn_NineSamples ( colcontext_t* context );
+void R_DrawColumn_TenSamples ( colcontext_t* context );
+void R_DrawColumn_ElevenSamples ( colcontext_t* context );
+void R_DrawColumn_TwelveSamples ( colcontext_t* context );
+void R_DrawColumn_ThirteenSamples ( colcontext_t* context );
+void R_DrawColumn_FourteenSamples ( colcontext_t* context );
+void R_DrawColumn_FifteenSamples ( colcontext_t* context );
+void R_DrawColumn_SixteenSamples ( colcontext_t* context );
 #endif
 
 
 // The Spectre/Invisibility effect.
 void	R_CacheFuzzColumn (void);
-void 	R_DrawFuzzColumn (void);
-void 	R_DrawFuzzColumnLow (void);
+void 	R_DrawFuzzColumn ( colcontext_t* context );
+void 	R_DrawFuzzColumnLow ( colcontext_t* context );
 
 // Draw with color translation tables,
 //  for player sprite rendering,
 //  Green/Red/Blue/Indigo shirts.
-void	R_DrawTranslatedColumn (void);
-void	R_DrawTranslatedColumnLow (void);
+void	R_DrawTranslatedColumn ( colcontext_t* context );
+void	R_DrawTranslatedColumnLow ( colcontext_t* context );
 
 void	R_VideoEraseRegion( int x, int y, int width, int height );
 
-extern int		ds_y;
-extern int		ds_x1;
-extern int		ds_x2;
-
-extern lighttable_t*	ds_colormap;
-
-extern fixed_t		ds_xfrac;
-extern fixed_t		ds_yfrac;
-extern fixed_t		ds_xstep;
-extern fixed_t		ds_ystep;
-
-// start of a 64*64 tile image
-extern byte*		ds_source;		
-
 extern byte*		translationtables;
-extern byte*		dc_translation;
-
-extern byte** precachedflats;
+extern byte**		precachedflats;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
-void 	R_DrawSpan (void);
+void 	R_DrawSpan ( spancontext_t* context );
 
 // Low resolution mode, 160x200?
-void 	R_DrawSpanLow (void);
+void 	R_DrawSpanLow ( spancontext_t* context );
 
 
 void

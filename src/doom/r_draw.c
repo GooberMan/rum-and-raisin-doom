@@ -59,7 +59,6 @@
 //
 
 
-byte*		viewimage; 
 int		viewwidth;
 int		scaledviewwidth;
 int		viewheight;
@@ -79,22 +78,6 @@ byte		translations[3][256];
 // surrounding background.
 
 static vbuffer_t background_data;
-
-
-//
-// R_DrawColumn
-// Source is the top of the column to scale.
-//
-lighttable_t*		dc_colormap; 
-int32_t				dc_x; 
-int32_t				dc_yl; 
-int32_t				dc_yh; 
-fixed_t				dc_iscale;
-fixed_t				dc_scale;
-fixed_t				dc_texturemid;
-
-// first pixel in a column (possibly virtual) 
-byte*				dc_source;		
 
 // Rum and raisin extensions
 // Note that int8x16_t is sensible... But I'd rather undefined platforms
@@ -192,7 +175,7 @@ const simd_int8x16_t MergeLookup[ 32 ] =
 };
 
 // Introduce another branch in this function, and I will find you
-void R_DrawColumn_OneSample( void )
+void R_DrawColumn_OneSample( colcontext_t* context )
 {
 	int32_t				curr;
 	size_t				basedest;
@@ -210,18 +193,18 @@ void R_DrawColumn_OneSample( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
-	enddest		= basedest + (dc_yh - dc_yl);
+	basedest	= context->output.data + xlookup[context->x] + rowofs[context->yl];
+	enddest		= basedest + ( context->yh - context->yl);
 	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
 	// HACK FOR NOW
 	simddest	= basedest - overlap;
-	curr		= dc_yl - overlap;
+	curr		= context->yl - overlap;
 
-	fracstep	= dc_iscale << 4;
-	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
+	fracstep	= context->iscale << 4;
+	frac		= context->texturemid + ( context->yl - centery ) * context->iscale;
 
-	fracbase	= frac - dc_iscale * overlap;
+	fracbase	= frac - context->iscale * overlap;
 
 	if( overlap != 0 )
 	{
@@ -234,23 +217,23 @@ void R_DrawColumn_OneSample( void )
 		selectmask = _xor_int8x16( selectmask, fullmask );
 
 		// ...with the first valid output texel...
-		currsample = _set1_int8x16( dc_source[ ( frac >> FRACBITS ) & 127 ] );
+		currsample = _set1_int8x16( context->source[ ( frac >> FRACBITS ) & 127 ] );
 		prevsample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		// ...then advance to where the algorithm expects to be and continue with the rest
-		frac		= fracbase + dc_iscale * 15;
+		frac		= fracbase + context->iscale * 15;
 		selectmask	= MergeLookup[ ( frac & 0x1F000 ) >> 12 ];
 	}
 	else
 	{
 		selectmask	= fullmask;
 		prevsample	= _zero_int8x16();
-		frac		= fracbase + dc_iscale * 15;
+		frac		= fracbase + context->iscale * 15;
 	}
 
 	do
 	{
-		currsample = _set1_int8x16( dc_source[ ( frac >> FRACBITS ) & 127 ] );
+		currsample = _set1_int8x16( context->source[ ( frac >> FRACBITS ) & 127 ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		frac		+= fracstep;
@@ -291,7 +274,7 @@ void R_DrawColumn_NaiveSIMD( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= context->output.data + xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
 	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
@@ -366,24 +349,24 @@ void R_DrawColumn_NaiveSIMD( void )
 // Thus a special case loop for very fast rendering can
 //  be used. It has also been used with Wolfenstein 3D.
 // 
-void R_DrawColumn (void) 
+void R_DrawColumn ( colcontext_t* context ) 
 { 
     int			count; 
     pixel_t*		dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
 
-    count = dc_yh - dc_yl; 
+    count = context->yh - context->yl; 
 
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
+    dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
 
     // Determine scaling,
     //  which is the only mapping to be done.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+    fracstep = context->iscale; 
+    frac = context->texturemid + (context->yl-centery)*fracstep; 
 
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
@@ -392,7 +375,7 @@ void R_DrawColumn (void)
     {
 		// Re-map color indices from wall texture column
 		//  using a lighting/special effects LUT.
-		*dest = dc_source[(frac>>FRACBITS)&127];
+		*dest = context->source[(frac>>FRACBITS)&127];
 		
 		dest += 1; 
 		frac += fracstep;
@@ -400,24 +383,24 @@ void R_DrawColumn (void)
     } while (count--); 
 } 
 
-void R_DrawColumn_Untranslated (void) 
+void R_DrawColumn_Untranslated ( colcontext_t* context ) 
 { 
     int			count; 
     pixel_t*		dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
 
-    count = dc_yh - dc_yl; 
+    count = context->yh - context->yl; 
 
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
+    dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
 
     // Determine scaling,
     //  which is the only mapping to be done.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+    fracstep = context->iscale; 
+    frac = context->texturemid + (context->yl-centery)*fracstep; 
 
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
@@ -426,7 +409,7 @@ void R_DrawColumn_Untranslated (void)
     {
 		// Re-map color indices from wall texture column
 		//  using a lighting/special effects LUT.
-		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+		*dest = context->colormap[context->source[(frac>>FRACBITS)&127]];
 		
 		dest += 1; 
 		frac += fracstep;
@@ -434,7 +417,7 @@ void R_DrawColumn_Untranslated (void)
     } while (count--); 
 } 
 
-void R_DrawColumnLow (void) 
+void R_DrawColumnLow ( colcontext_t* context ) 
 { 
     int			count; 
     pixel_t*	dest;
@@ -446,13 +429,13 @@ void R_DrawColumnLow (void)
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = I_VideoBuffer + xlookup[ dc_x * 2 ] + rowofs[dc_yl];  
-    dest2 = I_VideoBuffer + xlookup[ dc_x * 2 + 1 ] + rowofs[dc_yl];  
+    dest = context->output.data + xlookup[ context->x * 2 ] + rowofs[context->yl];  
+    dest2 = context->output.data + xlookup[ context->x * 2 + 1 ] + rowofs[context->yl];  
 
     // Determine scaling,
     //  which is the only mapping to be done.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+    fracstep = context->iscale; 
+    frac = context->texturemid + (context->yl-centery)*fracstep; 
 
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
@@ -461,7 +444,7 @@ void R_DrawColumnLow (void)
     {
 		// Re-map color indices from wall texture column
 		//  using a lighting/special effects LUT.
-		sample = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+		sample = context->colormap[context->source[(frac>>FRACBITS)&127]];
 		*dest++ = sample; 
 		*dest2++ = sample; 
 		frac += fracstep;
@@ -517,7 +500,7 @@ void R_CacheFuzzColumn (void)
 #endif // ADJUSTED_FUZZ
 }
 
-void R_DrawFuzzColumn (void) 
+void R_DrawFuzzColumn ( colcontext_t* context ) 
 { 
 #if ADJUSTED_FUZZ
 	int			thisfuzzpos;
@@ -532,18 +515,18 @@ void R_DrawFuzzColumn (void)
 #if ADJUSTED_FUZZ
 	fuzzpos = cachedfuzzpos;
 #endif // ADJUSTED_FUZZ
-    count = dc_yh - dc_yl; 
+    count = context->yh - context->yl; 
 
 	// One interesting side effect of transposing the buffer:
 	// It's now the left and right edges of the screen that we need to not sample
-	if (!dc_x || dc_x == viewwidth-1)
+	if (!context->x || context->x == viewwidth-1)
 		return;
 		 
-    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
+    dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
 
     // Looks familiar.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+    fracstep = context->iscale; 
+    frac = context->texturemid + (context->yl-centery)*fracstep; 
 
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
@@ -577,7 +560,7 @@ void R_DrawFuzzColumn (void)
 
 // low detail mode version
  
-void R_DrawFuzzColumnLow (void) 
+void R_DrawFuzzColumnLow ( colcontext_t* context ) 
 { 
 #if 0
     int			count; 
@@ -645,23 +628,22 @@ void R_DrawFuzzColumnLow (void)
 //  of the BaronOfHell, the HellKnight, uses
 //  identical sprites, kinda brightened up.
 //
-byte*	dc_translation;
 byte*	translationtables;
 
-void R_DrawTranslatedColumn (void) 
+void R_DrawTranslatedColumn ( colcontext_t* context ) 
 { 
     int			count; 
     pixel_t*		dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
  
-    count = dc_yh - dc_yl; 
+    count = context->yh - context->yl; 
 
-    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
+    dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
 
     // Looks familiar.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+    fracstep = context->iscale; 
+    frac = context->texturemid + (context->yl-centery)*fracstep; 
 
     // Here we do an additional index re-mapping.
     do 
@@ -671,13 +653,13 @@ void R_DrawTranslatedColumn (void)
 		//  used with PLAY sprites.
 		// Thus the "green" ramp of the player 0 sprite
 		//  is mapped to gray, red, black/indigo. 
-		*dest++ = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
+		*dest++ = context->colormap[context->translation[context->source[frac>>FRACBITS]]];
 	
 		frac += fracstep; 
     } while (count--); 
 } 
 
-void R_DrawTranslatedColumnLow (void) 
+void R_DrawTranslatedColumnLow ( colcontext_t* context ) 
 { 
 #if 0
     int			count; 
@@ -767,42 +749,30 @@ void R_InitTranslationTables (void)
 // In consequence, flats are not stored by column (like walls),
 //  and the inner loop has to step in texture space u and v.
 //
-int			ds_y; 
-int			ds_x1; 
-int			ds_x2;
-
-lighttable_t*		ds_colormap; 
-
-fixed_t			ds_xfrac; 
-fixed_t			ds_yfrac; 
-fixed_t			ds_xstep; 
-fixed_t			ds_ystep;
-
-// start of a 64*64 tile image 
-byte*			ds_source;	
-
 // just for profiling
 int			dscount;
 
 
 //
 // Draws the actual span.
-void R_DrawSpan (void) 
+void R_DrawSpan ( spancontext_t* context ) 
 { 
-    unsigned int position, step;
-    pixel_t *dest;
-    int count;
-    int spot;
-    unsigned int xtemp, ytemp;
+	uint32_t	position;
+	uint32_t	step;
+	pixel_t		*dest;
+	uint32_t	count;
+	uint32_t	spot;
+	uint32_t	xtemp;
+	uint32_t	ytemp;
 
 #ifdef RANGECHECK
-    if (ds_x2 < ds_x1
-	|| ds_x1<0
-	|| ds_x2>=SCREENWIDTH
-	|| (unsigned)ds_y>SCREENHEIGHT)
+    if (context->x2 < context->x1
+	|| context->x1<0
+	|| context->x2>=SCREENWIDTH
+	|| (unsigned)context->y>SCREENHEIGHT)
     {
 	I_Error( "R_DrawSpan: %i to %i at %i",
-		 ds_x1,ds_x2,ds_y);
+		 context->x1,context->x2,context->y);
     }
 //	dscount++;
 #endif
@@ -812,15 +782,15 @@ void R_DrawSpan (void)
     // each 16-bit part, the top 6 bits are the integer part and the
     // bottom 10 bits are the fractional part of the pixel position.
 
-    position = ((ds_xfrac << 10) & 0xffff0000)
-             | ((ds_yfrac >> 6)  & 0x0000ffff);
-    step = ((ds_xstep << 10) & 0xffff0000)
-         | ((ds_ystep >> 6)  & 0x0000ffff);
+    position = ((context->xfrac << 10) & 0xffff0000)
+             | ((context->yfrac >> 6)  & 0x0000ffff);
+    step = ((context->xstep << 10) & 0xffff0000)
+         | ((context->ystep >> 6)  & 0x0000ffff);
 
-    dest = I_VideoBuffer + xlookup[ds_x1] + rowofs[ds_y];
+    dest = context->output.data + xlookup[context->x1] + rowofs[context->y];
 
     // We do not check for zero spans here?
-    count = ds_x2 - ds_x1;
+    count = context->x2 - context->x1;
 
     do
     {
@@ -830,7 +800,7 @@ void R_DrawSpan (void)
 		spot = xtemp | ytemp;
 
 		// Lookup pixel from flat texture tile,
-		*dest = ds_source[spot];
+		*dest = context->source[spot];
 		dest += SCREENHEIGHT;
 
 		position += step;
@@ -841,7 +811,7 @@ void R_DrawSpan (void)
 //
 // Again..
 //
-void R_DrawSpanLow (void)
+void R_DrawSpanLow ( spancontext_t* context )
 {
 #if 0
     unsigned int position, step;

@@ -32,17 +32,12 @@
 #include "r_local.h"
 #include "r_sky.h"
 
-// Rum and raisin extensions
-#if defined( __i386__ ) || defined( __x86_64__ ) || defined( _M_IX86 ) || defined( _M_X64 )
-#define PREFETCH_X86 1
-#include <nmmintrin.h>
-#else
-#define PREFETCH_X86 0
-#endif
+#include "m_misc.h"
 
 //
 // opening
 //
+// TODO: MOVE TO CONTEXTS
 
 // Here comes the obnoxious "visplane".
 visplane_t		visplanes[MAXVISPLANES];
@@ -51,7 +46,6 @@ visplane_t*		floorplane;
 visplane_t*		ceilingplane;
 
 // ?
-#define MAXOPENINGS	SCREENWIDTH*64
 vertclip_t		openings[MAXOPENINGS];
 vertclip_t*		lastopening;
 
@@ -68,12 +62,13 @@ vertclip_t			ceilingclip[SCREENWIDTH];
 // spanstart holds the start of a plane span
 // initialized to 0 at start
 //
-int			spanstart[SCREENHEIGHT];
-int			spanstop[SCREENHEIGHT];
+int32_t			spanstart[SCREENHEIGHT];
+int32_t			spanstop[SCREENHEIGHT];
 
 //
 // texture mapping
 //
+
 lighttable_t**		planezlight;
 int32_t			planezlightindex;
 fixed_t			planeheight;
@@ -87,7 +82,7 @@ fixed_t			cachedheight[SCREENHEIGHT];
 fixed_t			cacheddistance[SCREENHEIGHT];
 fixed_t			cachedxstep[SCREENHEIGHT];
 fixed_t			cachedystep[SCREENHEIGHT];
-
+// END MOVE TO CONTEXTS
 
 
 //
@@ -113,51 +108,48 @@ void R_InitPlanes (void)
 //
 // BASIC PRIMITIVE
 //
-void
-R_MapPlane
-( int		y,
-  int		x1,
-  int		x2 )
+void R_MapPlane( spancontext_t* context, int y, int x1, int x2 )
 {
-    angle_t	angle;
-    fixed_t	distance;
-    fixed_t	length;
-    unsigned	index;
-	byte* originalsource = ds_source;
+	angle_t		angle;
+	fixed_t		distance;
+	fixed_t		length;
+	uint32_t	index;
+	byte*		originalsource = context->source;
 	
 #ifdef RANGECHECK
-    if (x2 < x1
-     || x1 < 0
-     || x2 >= viewwidth
-     || y > viewheight)
-    {
-	I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
-    }
+	if (x2 < x1
+		|| x1 < 0
+		|| x2 >= viewwidth
+		|| y > viewheight)
+	{
+		I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
+	}
 #endif
 
-    if (planeheight != cachedheight[y])
-    {
-	cachedheight[y] = planeheight;
-	distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
-	ds_xstep = cachedxstep[y] = FixedMul (distance,basexscale);
-	ds_ystep = cachedystep[y] = FixedMul (distance,baseyscale);
-    }
-    else
-    {
-	distance = cacheddistance[y];
-	ds_xstep = cachedxstep[y];
-	ds_ystep = cachedystep[y];
-    }
+	// TODO: planeheight needs to go straight in to the context...
+	if (planeheight != cachedheight[y])
+	{
+		cachedheight[y] = planeheight;
+		distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
+		context->xstep = cachedxstep[y] = FixedMul (distance,basexscale);
+		context->ystep = cachedystep[y] = FixedMul (distance,baseyscale);
+	}
+	else
+	{
+		distance = cacheddistance[y];
+		context->xstep = cachedxstep[y];
+		context->ystep = cachedystep[y];
+	}
 	
-    length = FixedMul (distance,distscale[x1]);
-    angle = (viewangle + xtoviewangle[x1])>>RENDERANGLETOFINESHIFT;
-    ds_xfrac = viewx + FixedMul(renderfinecosine[angle], length);
-    ds_yfrac = -viewy - FixedMul(renderfinesine[angle], length);
+	length = FixedMul (distance,distscale[x1]);
+	angle = (viewangle + xtoviewangle[x1])>>RENDERANGLETOFINESHIFT;
+	context->xfrac = viewx + FixedMul(renderfinecosine[angle], length);
+	context->yfrac = -viewy - FixedMul(renderfinesine[angle], length);
 
 	if( fixedcolormapindex )
 	{
 		// TODO: This should be a real define somewhere
-		ds_source += ( 4096 * fixedcolormapindex );
+		context->source += ( 4096 * fixedcolormapindex );
 	}
 	else
 	{
@@ -167,17 +159,17 @@ R_MapPlane
 
 		index = zlightindex[planezlightindex][index];
 
-		ds_source += ( 4096 * index );
+		context->source += ( 4096 * index );
 	}
 
-    ds_y = y;
-    ds_x1 = x1;
-    ds_x2 = x2;
+    context->y = y;
+    context->x1 = x1;
+    context->x2 = x2;
 
     // high or low detail
-    spanfunc ();	
+    spanfunc( context );	
 
-	ds_source = originalsource;
+	context->source = originalsource;
 }
 
 
@@ -217,6 +209,8 @@ void R_ClearPlanes (void)
 //
 // R_FindPlane
 //
+
+// R&R TODO: Optimize this wow linear search this will ruin lives
 visplane_t*
 R_FindPlane
 ( fixed_t	height,
@@ -333,35 +327,29 @@ R_CheckPlane
 //
 // R_MakeSpans
 //
-void
-R_MakeSpans
-( int		x,
-  int		t1,
-  int		b1,
-  int		t2,
-  int		b2 )
+void R_MakeSpans( spancontext_t* context, int x, int t1, int b1, int t2, int b2 )
 {
-    while (t1 < t2 && t1<=b1)
-    {
-	R_MapPlane (t1,spanstart[t1],x-1);
-	t1++;
-    }
-    while (b1 > b2 && b1>=t1)
-    {
-	R_MapPlane (b1,spanstart[b1],x-1);
-	b1--;
-    }
+	while (t1 < t2 && t1<=b1)
+	{
+		R_MapPlane( context, t1,spanstart[t1],x-1 );
+		t1++;
+	}
+	while (b1 > b2 && b1>=t1)
+	{
+		R_MapPlane( context, b1,spanstart[b1],x-1 );
+		b1--;
+	}
 	
-    while (t2 < t1 && t2<=b2)
-    {
-	spanstart[t2] = x;
-	t2++;
-    }
-    while (b2 > b1 && b2>=t2)
-    {
-	spanstart[b2] = x;
-	b2--;
-    }
+	while (t2 < t1 && t2<=b2)
+	{
+		spanstart[t2] = x;
+		t2++;
+	}
+	while (b2 > b1 && b2>=t2)
+	{
+		spanstart[b2] = x;
+		b2--;
+	}
 }
 
 //
@@ -370,19 +358,33 @@ R_MakeSpans
 //
 void R_DrawPlanes (void)
 {
-    visplane_t*		pl;
-    int			light;
-    int			x;
-    int			stop;
-    int			angle;
-    int                 lumpnum;
+	visplane_t*		pl;
+	int32_t			light;
+	int32_t			x;
+	int32_t			stop;
+	int32_t			angle;
+	int32_t			lumpnum;
 
-#if PREFETCH_X86
-	// Get in mah L1 cache
-	int currline;
-	byte* currsource;
-#endif // PREFETCH_X86
-				
+	spancontext_t	spancontext;
+	colcontext_t	skycontext;
+	extern vbuffer_t* dest_buffer;
+
+	colfunc_t		restore = colfunc;
+
+	colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
+
+	spancontext.output = *dest_buffer;
+
+	// Originally this would setup the column renderer for every instance of a sky found.
+	// But we have our own context for it now. These are constants too, so you could cook
+	// this once and forget all about it.
+	skycontext.iscale = pspriteiscale>>detailshift;
+	skycontext.scale = pspritescale>>detailshift;
+	skycontext.texturemid = skytexturemid;
+
+	// This isn't a constant though...
+	skycontext.output = *dest_buffer;
+
 #ifdef RANGECHECK
     if (ds_p - drawsegs > MAXDRAWSEGS)
 	I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
@@ -401,31 +403,25 @@ void R_DrawPlanes (void)
     {
 		if (pl->minx > pl->maxx)
 			continue;
-
 	
 		// sky flat
 		if (pl->picnum == skyflatnum)
 		{
-			dc_iscale = pspriteiscale>>detailshift;
-			dc_scale = pspritescale>>detailshift;
-	    
-			// Sky is allways drawn full bright,
-			//  i.e. colormaps[0] is used.
-			// Because of this hack, sky is not affected
-			//  by INVUL inverse mapping.
-			dc_colormap = colormaps;
-			dc_texturemid = skytexturemid;
 			for (x=pl->minx ; x <= pl->maxx ; x++)
 			{
-				dc_yl = pl->top[x];
-				dc_yh = pl->bottom[x];
-
-				if (dc_yl <= dc_yh)
+				if (pl->top[x] <= pl->bottom[x])
 				{
+					skycontext.yl = pl->top[x];
+					skycontext.yh = pl->bottom[x];
+					skycontext.x = x;
+
 					angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
-					dc_x = x;
-					dc_source = R_GetColumn(skytexture, angle, 0);
-					colfunc ();
+					// Sky is allways drawn full bright,
+					//  i.e. colormaps[0] is used.
+					// Because of this hack, sky is not affected
+					//  by INVUL inverse mapping.
+					skycontext.source = R_GetColumn(skytexture, angle, 0);
+					colfunc( &skycontext );
 				}
 			}
 			continue;
@@ -433,19 +429,8 @@ void R_DrawPlanes (void)
 	
 		// regular flat
 		lumpnum = flattranslation[pl->picnum];
-		ds_source = precachedflats[ lumpnum ];
+		spancontext.source = precachedflats[ lumpnum ];
 
-#if PREFETCH_X86
-		// Get in mah L1 cache
-		currline = 0;
-		currsource = ds_source;
-		for( currline = 0; currline < 64; ++currline )
-		{
-			_mm_prefetch( currsource, _MM_HINT_T0 );
-			currsource += 64;
-		}
-#endif // PREFETCH_X86
-	
 		planeheight = abs(pl->height-viewz);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
@@ -465,11 +450,10 @@ void R_DrawPlanes (void)
 
 		for (x=pl->minx ; x<= stop ; x++)
 		{
-			R_MakeSpans(x,pl->top[x-1],
-				pl->bottom[x-1],
-				pl->top[x],
-				pl->bottom[x]);
+			R_MakeSpans( &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
 		}
 	
 	}
+
+	colfunc = restore;
 }

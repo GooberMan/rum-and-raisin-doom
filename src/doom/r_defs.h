@@ -62,10 +62,6 @@
 //#define MAXSEGS 32
 #define MAXSEGS			(SCREENWIDTH / 2 + 1)
 
-typedef void (*colfunc_t)( void );
-typedef void (*spanfunc_t)( void );
-typedef void (*planefunction_t)(int top, int bottom);
-
 typedef uint16_t				vpindex_t;
 #define VPINDEX_INVALID			( ~(vpindex_t)0 )
 
@@ -479,9 +475,12 @@ typedef	struct
 
 typedef struct colcontext_s
 {
-	lighttable_t*	colormap;
+	vbuffer_t		output;
 	byte*			source;
+
+	lighttable_t*	colormap;
 	byte*			translation;
+
 	int32_t			x;
 	int32_t			yl;
 	int32_t			yh;
@@ -489,6 +488,26 @@ typedef struct colcontext_s
 	fixed_t			iscale;
 	fixed_t			texturemid;
 } colcontext_t;
+
+typedef struct spancontext_s
+{
+	vbuffer_t		output;
+	byte*			source;
+
+	int32_t			y; 
+	int32_t			x1; 
+	int32_t			x2;
+
+	fixed_t			xfrac; 
+	fixed_t			yfrac; 
+	fixed_t			xstep; 
+	fixed_t			ystep;
+} spancontext_t;
+
+typedef void (*colfunc_t)( colcontext_t* );
+typedef void (*spanfunc_t)( spancontext_t* );
+typedef void (*planefunction_t)(int top, int bottom);
+
 
 typedef struct rendercontext_s
 {
