@@ -65,8 +65,9 @@ int		scaledviewwidth;
 int		viewheight;
 int		viewwindowx;
 int		viewwindowy; 
-pixel_t*		xlookup[MAXWIDTH];
-int		rowofs[MAXHEIGHT]; 
+
+size_t			xlookup[MAXWIDTH];
+size_t			rowofs[MAXHEIGHT]; 
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -209,7 +210,7 @@ void R_DrawColumn_OneSample( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
 	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
@@ -290,7 +291,7 @@ void R_DrawColumn_NaiveSIMD( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	enddest		= basedest + (dc_yh - dc_yl);
 	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
@@ -373,7 +374,7 @@ void R_DrawColumn_TwoSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -426,7 +427,7 @@ void R_DrawColumn_ThreeSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -481,7 +482,7 @@ void R_DrawColumn_FourSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -536,7 +537,7 @@ void R_DrawColumn_FiveSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -595,7 +596,7 @@ void R_DrawColumn_SixSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -656,7 +657,7 @@ void R_DrawColumn_SevenSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -719,7 +720,7 @@ void R_DrawColumn_EightSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -784,7 +785,7 @@ void R_DrawColumn_NineSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -851,7 +852,7 @@ void R_DrawColumn_TenSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -920,7 +921,7 @@ void R_DrawColumn_ElevenSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -991,7 +992,7 @@ void R_DrawColumn_TwelveSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -1064,7 +1065,7 @@ void R_DrawColumn_ThirteenSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -1139,7 +1140,7 @@ void R_DrawColumn_FourteenSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -1216,7 +1217,7 @@ void R_DrawColumn_FifteenSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -1295,7 +1296,7 @@ void R_DrawColumn_SixteenSamples( void )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= xlookup[dc_x] + rowofs[dc_yl];
+	basedest	= I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];
 	overlap		= basedest % sizeof( simd_int8x16_t );
 
 	// HACK FOR NOW
@@ -1379,7 +1380,7 @@ void R_DrawColumn (void)
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = xlookup[dc_x] + rowofs[dc_yl];  
+    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
 
     // Determine scaling,
     //  which is the only mapping to be done.
@@ -1413,7 +1414,7 @@ void R_DrawColumn_Untranslated (void)
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = xlookup[dc_x] + rowofs[dc_yl];  
+    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
 
     // Determine scaling,
     //  which is the only mapping to be done.
@@ -1447,8 +1448,8 @@ void R_DrawColumnLow (void)
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = xlookup[ dc_x * 2 ] + rowofs[dc_yl];  
-    dest2 = xlookup[ dc_x * 2 + 1 ] + rowofs[dc_yl];  
+    dest = I_VideoBuffer + xlookup[ dc_x * 2 ] + rowofs[dc_yl];  
+    dest2 = I_VideoBuffer + xlookup[ dc_x * 2 + 1 ] + rowofs[dc_yl];  
 
     // Determine scaling,
     //  which is the only mapping to be done.
@@ -1540,7 +1541,7 @@ void R_DrawFuzzColumn (void)
 	if (!dc_x || dc_x == viewwidth-1)
 		return;
 		 
-    dest = xlookup[dc_x] + rowofs[dc_yl];  
+    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
 
     // Looks familiar.
     fracstep = dc_iscale; 
@@ -1658,7 +1659,7 @@ void R_DrawTranslatedColumn (void)
  
     count = dc_yh - dc_yl; 
 
-    dest = xlookup[dc_x] + rowofs[dc_yl];  
+    dest = I_VideoBuffer + xlookup[dc_x] + rowofs[dc_yl];  
 
     // Looks familiar.
     fracstep = dc_iscale; 
@@ -1818,7 +1819,7 @@ void R_DrawSpan (void)
     step = ((ds_xstep << 10) & 0xffff0000)
          | ((ds_ystep >> 6)  & 0x0000ffff);
 
-    dest = xlookup[ds_x1] + rowofs[ds_y];
+    dest = I_VideoBuffer + xlookup[ds_x1] + rowofs[ds_y];
 
     // We do not check for zero spans here?
     count = ds_x2 - ds_x1;
@@ -1906,7 +1907,7 @@ R_InitBuffer
 ( int		width,
   int		height ) 
 { 
-    int		i; 
+    size_t	i; 
 
     // Handle resize,
     //  e.g. smaller view windows
@@ -1920,7 +1921,7 @@ R_InitBuffer
 
     // Preclaculate all column offsets.
     for (i=0 ; i<width ; i++) 
-		xlookup[i] = I_VideoBuffer + (i+viewwindowx)*SCREENHEIGHT; 
+		xlookup[i] = (i+viewwindowx)*SCREENHEIGHT; 
 
     // Row offset. For windows.
     for (i=0 ; i<height ; i++)
