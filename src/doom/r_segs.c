@@ -115,7 +115,7 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 //
 // R_RenderMaskedSegRange
 //
-void R_RenderMaskedSegRange( drawseg_t*	ds, int x1, int x2 )
+void R_RenderMaskedSegRange( bspcontext_t* bspcontext, drawseg_t* ds, int x1, int x2 )
 {
 	uint32_t			index;
 	column_t*			col;
@@ -134,16 +134,16 @@ void R_RenderMaskedSegRange( drawseg_t*	ds, int x1, int x2 )
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
-	curline = ds->curline;
-	frontsector = curline->frontsector;
-	backsector = curline->backsector;
-	texnum = texturetranslation[curline->sidedef->midtexture];
+	bspcontext->curline = ds->curline;
+	bspcontext->frontsector = bspcontext->curline->frontsector;
+	bspcontext->backsector = bspcontext->curline->backsector;
+	texnum = texturetranslation[bspcontext->curline->sidedef->midtexture];
 	
-	lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
+	lightnum = (bspcontext->frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-	if (curline->v1->y == curline->v2->y)
+	if (bspcontext->curline->v1->y == bspcontext->curline->v2->y)
 		lightnum--;
-	else if (curline->v1->x == curline->v2->x)
+	else if (bspcontext->curline->v1->x == bspcontext->curline->v2->x)
 		lightnum++;
 
 	if( fixedcolormapindex )
@@ -165,19 +165,21 @@ void R_RenderMaskedSegRange( drawseg_t*	ds, int x1, int x2 )
 	mceilingclip = ds->sprtopclip;
 
 	// find positioning
-	if (curline->linedef->flags & ML_DONTPEGBOTTOM)
+	if (bspcontext->curline->linedef->flags & ML_DONTPEGBOTTOM)
 	{
-		spritecontext.texturemid = frontsector->floorheight > backsector->floorheight
-			? frontsector->floorheight : backsector->floorheight;
+		spritecontext.texturemid = bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight
+									? bspcontext->frontsector->floorheight
+									: bspcontext->backsector->floorheight;
 		spritecontext.texturemid = spritecontext.texturemid + textureheight[texnum] - viewz;
 	}
 	else
 	{
-		spritecontext.texturemid =frontsector->ceilingheight<backsector->ceilingheight
-			? frontsector->ceilingheight : backsector->ceilingheight;
+		spritecontext.texturemid = bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight
+									? bspcontext->frontsector->ceilingheight
+									: bspcontext->backsector->ceilingheight;
 		spritecontext.texturemid = spritecontext.texturemid - viewz;
 	}
-	spritecontext.texturemid += curline->sidedef->rowoffset;
+	spritecontext.texturemid += bspcontext->curline->sidedef->rowoffset;
 
 	if (fixedcolormap)
 	{
@@ -460,7 +462,7 @@ void R_RenderSegLoop ( segloopcontext_t* context )
 // A wall segment will be drawn
 //  between start and stop pixels (inclusive).
 //
-void R_StoreWallRange( int start, int stop )
+void R_StoreWallRange( bspcontext_t* bspcontext, int start, int stop )
 {
 	fixed_t		hyp;
 	fixed_t		sineval;
@@ -476,7 +478,7 @@ void R_StoreWallRange( int start, int stop )
 	int32_t		worldlow;
 
 	// don't overflow and crash
-	if (ds_p == &drawsegs[MAXDRAWSEGS])
+	if ( bspcontext->thisdrawseg == &bspcontext->drawsegs[MAXDRAWSEGS])
 	{
 		return;
 	}
@@ -486,30 +488,30 @@ void R_StoreWallRange( int start, int stop )
 	I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
 #endif
 
-	sidedef = curline->sidedef;
-	linedef = curline->linedef;
+	bspcontext->sidedef = bspcontext->curline->sidedef;
+	bspcontext->linedef = bspcontext->curline->linedef;
 
 	// mark the segment as visible for auto map
-	linedef->flags |= ML_MAPPED;
+	bspcontext->linedef->flags |= ML_MAPPED;
 
 	// calculate rw_distance for scale calculation
-	rw_normalangle = curline->angle + ANG90;
+	rw_normalangle = bspcontext->curline->angle + ANG90;
 	offsetangle = abs((int)rw_normalangle-(int)rw_angle1);
 	offsetangle = M_MIN( offsetangle, ANG90 );
 
 	distangle = ANG90 - offsetangle;
-	hyp = R_PointToDist (curline->v1->x, curline->v1->y);
+	hyp = R_PointToDist (bspcontext->curline->v1->x, bspcontext->curline->v1->y);
 	sineval = renderfinesine[distangle>>RENDERANGLETOFINESHIFT];
 	// If this value blows out, renderer go boom. Need to increase resolution of this thing
 	rw_distance = FixedMul (hyp, sineval);
 	
-	ds_p->x1 = loopcontext.startx = start;
-	ds_p->x2 = stop;
-	ds_p->curline = curline;
+	bspcontext->thisdrawseg->x1 = loopcontext.startx = start;
+	bspcontext->thisdrawseg->x2 = stop;
+	bspcontext->thisdrawseg->curline = bspcontext->curline;
 	loopcontext.stopx = stop+1;
 
 	// calculate scale at both ends and step
-	ds_p->scale1 = rw_scale = 
+	bspcontext->thisdrawseg->scale1 = rw_scale = 
 	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start], rw_distance);
 
 	if (stop > start )
@@ -517,9 +519,9 @@ void R_StoreWallRange( int start, int stop )
 		// TODO: calculate second distance? Maybe?
 		//rw_distance = FixedMul( R_PointToDist (curline->v2->x, curline->v2->y), sineval );
 
-		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop], rw_distance );
-		ds_p->scalestep = rw_scalestep = 
-			(ds_p->scale2 - rw_scale) / (stop-start);
+		bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop], rw_distance );
+		bspcontext->thisdrawseg->scalestep = rw_scalestep = 
+			(bspcontext->thisdrawseg->scale2 - rw_scale) / (stop-start);
 	}
 	else
 	{
@@ -535,30 +537,30 @@ void R_StoreWallRange( int start, int stop )
 			
 			gxt = FixedMul(trx,viewcos); 
 			gyt = -FixedMul(try,viewsin); 
-			ds_p->scale1 = FixedDiv(projection, gxt-gyt)<<detailshift;
+			bspcontext->thisdrawseg->scale1 = FixedDiv(projection, gxt-gyt)<<detailshift;
 		}
 #endif
-		ds_p->scale2 = ds_p->scale1;
+		bspcontext->thisdrawseg->scale2 = bspcontext->thisdrawseg->scale1;
 	}
 
 	// calculate texture boundaries
 	//  and decide if floor / ceiling marks are needed
-	worldtop = frontsector->ceilingheight - viewz;
-	worldbottom = frontsector->floorheight - viewz;
+	worldtop = bspcontext->frontsector->ceilingheight - viewz;
+	worldbottom = bspcontext->frontsector->floorheight - viewz;
 	
 	loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
-	ds_p->maskedtexturecol = NULL;
+	bspcontext->thisdrawseg->maskedtexturecol = NULL;
 	
-	if (!backsector)
+	if (!bspcontext->backsector)
 	{
 		// single sided line
-		loopcontext.midtexture = texturetranslation[sidedef->midtexture];
+		loopcontext.midtexture = texturetranslation[bspcontext->sidedef->midtexture];
 		// a single sided line is terminal, so it must mark ends
 		loopcontext.markfloor = loopcontext.markceiling = true;
-		if (linedef->flags & ML_DONTPEGBOTTOM)
+		if (bspcontext->linedef->flags & ML_DONTPEGBOTTOM)
 		{
-			vtop = frontsector->floorheight +
-			textureheight[sidedef->midtexture];
+			vtop = bspcontext->frontsector->floorheight +
+			textureheight[bspcontext->sidedef->midtexture];
 			// bottom of texture at bottom
 			rw_midtexturemid = vtop - viewz;	
 		}
@@ -567,72 +569,72 @@ void R_StoreWallRange( int start, int stop )
 			// top of texture at top
 			rw_midtexturemid = worldtop;
 		}
-		rw_midtexturemid += sidedef->rowoffset;
+		rw_midtexturemid += bspcontext->sidedef->rowoffset;
 
-		ds_p->silhouette = SIL_BOTH;
-		ds_p->sprtopclip = screenheightarray;
-		ds_p->sprbottomclip = negonearray;
-		ds_p->bsilheight = INT_MAX;
-		ds_p->tsilheight = INT_MIN;
+		bspcontext->thisdrawseg->silhouette = SIL_BOTH;
+		bspcontext->thisdrawseg->sprtopclip = screenheightarray;
+		bspcontext->thisdrawseg->sprbottomclip = negonearray;
+		bspcontext->thisdrawseg->bsilheight = INT_MAX;
+		bspcontext->thisdrawseg->tsilheight = INT_MIN;
 	}
 	else
 	{
 		// two sided line
-		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
-		ds_p->silhouette = 0;
+		bspcontext->thisdrawseg->sprtopclip = bspcontext->thisdrawseg->sprbottomclip = NULL;
+		bspcontext->thisdrawseg->silhouette = 0;
 	
-		if (frontsector->floorheight > backsector->floorheight)
+		if (bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight)
 		{
-			ds_p->silhouette = SIL_BOTTOM;
-			ds_p->bsilheight = frontsector->floorheight;
+			bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
+			bspcontext->thisdrawseg->bsilheight = bspcontext->frontsector->floorheight;
 		}
-		else if (backsector->floorheight > viewz)
+		else if (bspcontext->backsector->floorheight > viewz)
 		{
-			ds_p->silhouette = SIL_BOTTOM;
-			ds_p->bsilheight = INT_MAX;
-			// ds_p->sprbottomclip = negonearray;
+			bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
+			bspcontext->thisdrawseg->bsilheight = INT_MAX;
+			// bspcontext->thisdrawseg->sprbottomclip = negonearray;
 		}
 	
-		if (frontsector->ceilingheight < backsector->ceilingheight)
+		if (bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight)
 		{
-			ds_p->silhouette |= SIL_TOP;
-			ds_p->tsilheight = frontsector->ceilingheight;
+			bspcontext->thisdrawseg->silhouette |= SIL_TOP;
+			bspcontext->thisdrawseg->tsilheight = bspcontext->frontsector->ceilingheight;
 		}
-		else if (backsector->ceilingheight < viewz)
+		else if (bspcontext->backsector->ceilingheight < viewz)
 		{
-			ds_p->silhouette |= SIL_TOP;
-			ds_p->tsilheight = INT_MIN;
-			// ds_p->sprtopclip = screenheightarray;
+			bspcontext->thisdrawseg->silhouette |= SIL_TOP;
+			bspcontext->thisdrawseg->tsilheight = INT_MIN;
+			// bspcontext->thisdrawseg->sprtopclip = screenheightarray;
 		}
 		
-		if (backsector->ceilingheight <= frontsector->floorheight)
+		if (bspcontext->backsector->ceilingheight <= bspcontext->frontsector->floorheight)
 		{
-			ds_p->sprbottomclip = negonearray;
-			ds_p->bsilheight = INT_MAX;
-			ds_p->silhouette |= SIL_BOTTOM;
+			bspcontext->thisdrawseg->sprbottomclip = negonearray;
+			bspcontext->thisdrawseg->bsilheight = INT_MAX;
+			bspcontext->thisdrawseg->silhouette |= SIL_BOTTOM;
 		}
 	
-		if (backsector->floorheight >= frontsector->ceilingheight)
+		if (bspcontext->backsector->floorheight >= bspcontext->frontsector->ceilingheight)
 		{
-			ds_p->sprtopclip = screenheightarray;
-			ds_p->tsilheight = INT_MIN;
-			ds_p->silhouette |= SIL_TOP;
+			bspcontext->thisdrawseg->sprtopclip = screenheightarray;
+			bspcontext->thisdrawseg->tsilheight = INT_MIN;
+			bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 		}
 	
-		worldhigh = backsector->ceilingheight - viewz;
-		worldlow = backsector->floorheight - viewz;
+		worldhigh = bspcontext->backsector->ceilingheight - viewz;
+		worldlow = bspcontext->backsector->floorheight - viewz;
 		
 		// hack to allow height changes in outdoor areas
-		if (frontsector->ceilingpic == skyflatnum 
-			&& backsector->ceilingpic == skyflatnum)
+		if (bspcontext->frontsector->ceilingpic == skyflatnum 
+			&& bspcontext->backsector->ceilingpic == skyflatnum)
 		{
 			worldtop = worldhigh;
 		}
 	
 			
 		if (worldlow != worldbottom 
-			|| backsector->floorpic != frontsector->floorpic
-			|| backsector->lightlevel != frontsector->lightlevel)
+			|| bspcontext->backsector->floorpic != bspcontext->frontsector->floorpic
+			|| bspcontext->backsector->lightlevel != bspcontext->frontsector->lightlevel)
 		{
 			loopcontext.markfloor = true;
 		}
@@ -644,8 +646,8 @@ void R_StoreWallRange( int start, int stop )
 	
 			
 		if (worldhigh != worldtop 
-			|| backsector->ceilingpic != frontsector->ceilingpic
-			|| backsector->lightlevel != frontsector->lightlevel)
+			|| bspcontext->backsector->ceilingpic != bspcontext->frontsector->ceilingpic
+			|| bspcontext->backsector->lightlevel != bspcontext->frontsector->lightlevel)
 		{
 			loopcontext.markceiling = true;
 		}
@@ -655,8 +657,8 @@ void R_StoreWallRange( int start, int stop )
 			loopcontext.markceiling = false;
 		}
 	
-		if (backsector->ceilingheight <= frontsector->floorheight
-			|| backsector->floorheight >= frontsector->ceilingheight)
+		if (bspcontext->backsector->ceilingheight <= bspcontext->frontsector->floorheight
+			|| bspcontext->backsector->floorheight >= bspcontext->frontsector->ceilingheight)
 		{
 			// closed door
 			loopcontext.markceiling = loopcontext.markfloor = true;
@@ -666,8 +668,8 @@ void R_StoreWallRange( int start, int stop )
 		if (worldhigh < worldtop)
 		{
 			// top texture
-			loopcontext.toptexture = texturetranslation[sidedef->toptexture];
-			if (linedef->flags & ML_DONTPEGTOP)
+			loopcontext.toptexture = texturetranslation[bspcontext->sidedef->toptexture];
+			if (bspcontext->linedef->flags & ML_DONTPEGTOP)
 			{
 			// top of texture at top
 				rw_toptexturemid = worldtop;
@@ -675,8 +677,8 @@ void R_StoreWallRange( int start, int stop )
 			else
 			{
 				vtop =
-					backsector->ceilingheight
-					+ textureheight[sidedef->toptexture];
+					bspcontext->backsector->ceilingheight
+					+ textureheight[bspcontext->sidedef->toptexture];
 		
 				// bottom of texture
 				rw_toptexturemid = vtop - viewz;	
@@ -685,9 +687,9 @@ void R_StoreWallRange( int start, int stop )
 		if (worldlow > worldbottom)
 		{
 			// bottom texture
-			loopcontext.bottomtexture = texturetranslation[sidedef->bottomtexture];
+			loopcontext.bottomtexture = texturetranslation[bspcontext->sidedef->bottomtexture];
 
-			if (linedef->flags & ML_DONTPEGBOTTOM )
+			if (bspcontext->linedef->flags & ML_DONTPEGBOTTOM )
 			{
 				// bottom of texture at bottom
 				// top of texture at top
@@ -698,15 +700,15 @@ void R_StoreWallRange( int start, int stop )
 				rw_bottomtexturemid = worldlow;
 			}
 		}
-		rw_toptexturemid += sidedef->rowoffset;
-		rw_bottomtexturemid += sidedef->rowoffset;
+		rw_toptexturemid += bspcontext->sidedef->rowoffset;
+		rw_bottomtexturemid += bspcontext->sidedef->rowoffset;
 	
 		// allocate space for masked texture tables
-		if (sidedef->midtexture)
+		if (bspcontext->sidedef->midtexture)
 		{
 			// masked midtexture
 			loopcontext.maskedtexture = true;
-			ds_p->maskedtexturecol = loopcontext.maskedtexturecol = lastopening - loopcontext.startx;
+			bspcontext->thisdrawseg->maskedtexturecol = loopcontext.maskedtexturecol = lastopening - loopcontext.startx;
 			lastopening += loopcontext.stopx - loopcontext.startx;
 		}
 	}
@@ -721,7 +723,7 @@ void R_StoreWallRange( int start, int stop )
 		if (offsetangle > ANG180)
 		{
 			// Performs the negate op on an unsigned type without a warning
-			offsetangle = ( ~offsetangle + 1 );
+			offsetangle = M_NEGATE( offsetangle );
 		}
 
 		if (offsetangle > ANG90)
@@ -735,7 +737,7 @@ void R_StoreWallRange( int start, int stop )
 		if (rw_normalangle-rw_angle1 < ANG180)
 			rw_offset = -rw_offset;
 
-		rw_offset += sidedef->textureoffset + curline->offset;
+		rw_offset += bspcontext->sidedef->textureoffset + bspcontext->curline->offset;
 		rw_centerangle = ANG90 + viewangle - rw_normalangle;
 	
 		// calculate light table
@@ -744,12 +746,16 @@ void R_StoreWallRange( int start, int stop )
 		// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 		if (!fixedcolormap)
 		{
-			lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
+			lightnum = (bspcontext->frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-			if (curline->v1->y == curline->v2->y)
-			lightnum--;
-			else if (curline->v1->x == curline->v2->x)
-			lightnum++;
+			if (bspcontext->curline->v1->y == bspcontext->curline->v2->y)
+			{
+				lightnum--;
+			}
+			else if (bspcontext->curline->v1->x == bspcontext->curline->v2->x)
+			{
+				lightnum++;
+			}
 
 			if( fixedcolormapindex )
 				walllightsindex = fixedcolormapindex;
@@ -767,13 +773,13 @@ void R_StoreWallRange( int start, int stop )
 	// if a floor / ceiling plane is on the wrong side
 	//  of the view plane, it is definitely invisible
 	//  and doesn't need to be marked.
-	if (frontsector->floorheight >= viewz)
+	if (bspcontext->frontsector->floorheight >= viewz)
 	{
 		// above view plane
 		loopcontext.markfloor = false;
 	}
 
-	if (frontsector->ceilingheight <= viewz && frontsector->ceilingpic != skyflatnum)
+	if (bspcontext->frontsector->ceilingheight <= viewz && bspcontext->frontsector->ceilingpic != skyflatnum)
 	{
 		// below view plane
 		loopcontext.markceiling = false;
@@ -790,7 +796,7 @@ void R_StoreWallRange( int start, int stop )
 	loopcontext.bottomstep = -FixedMul (rw_scalestep,worldbottom);
 	loopcontext.bottomfrac = (centeryfrac>>4) - FixedMul (worldbottom, rw_scale);
 	
-	if (backsector)
+	if (bspcontext->backsector)
 	{	
 		worldhigh >>= 4;
 		worldlow >>= 4;
@@ -822,32 +828,32 @@ void R_StoreWallRange( int start, int stop )
 	R_RenderSegLoop( &loopcontext );
 
 	// save sprite clipping info
-	if ( ((ds_p->silhouette & SIL_TOP) || loopcontext.maskedtexture)
-		&& !ds_p->sprtopclip)
+	if ( ((bspcontext->thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
+		&& !bspcontext->thisdrawseg->sprtopclip)
 	{
 		memcpy (lastopening, ceilingclip+loopcontext.startx, sizeof(*lastopening)*(loopcontext.stopx-loopcontext.startx));
-		ds_p->sprtopclip = lastopening - loopcontext.startx;
+		bspcontext->thisdrawseg->sprtopclip = lastopening - loopcontext.startx;
 		lastopening += loopcontext.stopx - loopcontext.startx;
 	}
 
-	if ( ((ds_p->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
-		&& !ds_p->sprbottomclip)
+	if ( ((bspcontext->thisdrawseg->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
+		&& !bspcontext->thisdrawseg->sprbottomclip)
 	{
 		memcpy (lastopening, floorclip+loopcontext.startx, sizeof(*lastopening)*(loopcontext.stopx-loopcontext.startx));
-		ds_p->sprbottomclip = lastopening - loopcontext.startx;
+		bspcontext->thisdrawseg->sprbottomclip = lastopening - loopcontext.startx;
 		lastopening += loopcontext.stopx - loopcontext.startx;	
 	}
 
-	if (loopcontext.maskedtexture && !(ds_p->silhouette&SIL_TOP))
+	if (loopcontext.maskedtexture && !(bspcontext->thisdrawseg->silhouette&SIL_TOP))
 	{
-		ds_p->silhouette |= SIL_TOP;
-		ds_p->tsilheight = INT_MIN;
+		bspcontext->thisdrawseg->silhouette |= SIL_TOP;
+		bspcontext->thisdrawseg->tsilheight = INT_MIN;
 	}
-	if (loopcontext.maskedtexture && !(ds_p->silhouette&SIL_BOTTOM))
+	if (loopcontext.maskedtexture && !(bspcontext->thisdrawseg->silhouette&SIL_BOTTOM))
 	{
-		ds_p->silhouette |= SIL_BOTTOM;
-		ds_p->bsilheight = INT_MAX;
+		bspcontext->thisdrawseg->silhouette |= SIL_BOTTOM;
+		bspcontext->thisdrawseg->bsilheight = INT_MAX;
 	}
-	ds_p++;
+	bspcontext->thisdrawseg++;
 }
 

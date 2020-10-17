@@ -375,11 +375,28 @@ void R_MakeSpans( spancontext_t* context, int x, int t1, int b1, int t2, int b2 
 	}
 }
 
+#ifdef RANGECHECK
+void R_ErrorCheckPlanes( rendercontext_t* context )
+{
+    if ( context->bspcontext.thisdrawseg - context->bspcontext.drawsegs > MAXDRAWSEGS)
+	I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
+		 context->bspcontext.thisdrawseg - context->bspcontext.drawsegs);
+    
+    if (lastvisplane - visplanes > MAXVISPLANES)
+	I_Error ("R_DrawPlanes: visplane overflow (%" PRIiPTR ")",
+		 lastvisplane - visplanes);
+    
+    if (lastopening - openings > MAXOPENINGS)
+	I_Error ("R_DrawPlanes: opening overflow (%" PRIiPTR ")",
+		 lastopening - openings);
+}
+#endif
+
 //
 // R_DrawPlanes
 // At the end of each frame.
 //
-void R_DrawPlanes (void)
+void R_DrawPlanes ( bspcontext_t* context )
 {
 	visplane_t*		pl;
 	int32_t			light;
@@ -407,20 +424,6 @@ void R_DrawPlanes (void)
 
 	// This isn't a constant though...
 	skycontext.output = *dest_buffer;
-
-#ifdef RANGECHECK
-    if (ds_p - drawsegs > MAXDRAWSEGS)
-	I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
-		 ds_p - drawsegs);
-    
-    if (lastvisplane - visplanes > MAXVISPLANES)
-	I_Error ("R_DrawPlanes: visplane overflow (%" PRIiPTR ")",
-		 lastvisplane - visplanes);
-    
-    if (lastopening - openings > MAXOPENINGS)
-	I_Error ("R_DrawPlanes: opening overflow (%" PRIiPTR ")",
-		 lastopening - openings);
-#endif
 
     for (pl = visplanes ; pl < lastvisplane ; pl++)
     {

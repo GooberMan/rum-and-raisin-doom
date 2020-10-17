@@ -37,6 +37,9 @@
 
 // Need ST_HEIGHT
 #include "st_stuff.h"
+#include "m_misc.h"
+
+#include "z_zone.h"
 
 #include "tables.h"
 
@@ -49,6 +52,8 @@
 // If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
 #define FIELDOFVIEW				( FINEANGLES >> 2 )	
 #define RENDERFIELDOFVIEW		( RENDERFINEANGLES >> 2 )	
+
+rendercontext_t*		rendercontext;
 
 int			viewangleoffset;
 
@@ -321,7 +326,7 @@ R_PointToAngle
 	    if (x>y)
 	    {
 		// octant 8
-		return -rendertantoangle[ SlopeDiv_Render(y,x) ];
+			return M_NEGATE(rendertantoangle[ SlopeDiv_Render(y,x) ]);
 	    }
 	    else
 	    {
@@ -409,7 +414,7 @@ R_PointToAngle2
 			if (x>y)
 			{
 				// octant 8
-				return -tantoangle[SlopeDiv_Playsim(y,x)];
+				return M_NEGATE(tantoangle[SlopeDiv_Playsim(y,x)]);
 			}
 			else
 			{
@@ -502,13 +507,11 @@ R_PointToDist
 
 #define PI acos(-1.0)
 
-
 //
 // R_InitPointToAngle
 //
 void R_InitPointToAngle (void)
 {
-    // UNUSED - now getting from tables.c
 #if RENDERSLOPEQUALITYSHIFT > 0
 	int32_t		i;
 	angle_t		t;
@@ -518,8 +521,8 @@ void R_InitPointToAngle (void)
 	//
 	for (i=0 ; i<=RENDERSLOPERANGE ; i++)
 	{
-		f = atan( (float)i/RENDERSLOPERANGE )/(PI*2);
-		t = 0xffffffff*f;
+		f = (float_t)( atan( (float_t)i/RENDERSLOPERANGE )/(PI*2) );
+		t = (angle_t)( 0xffffffff*f );
 		rendertantoangle[i] = t;
 	}
 #endif
@@ -592,9 +595,9 @@ void R_InitTables (void)
     // viewangle tangent table
     for (i=0 ; i< RENDERFINETANGENTCOUNT ; i++)
     {
-		a = (i-RENDERFINEANGLES/4+0.5)*PI*2/RENDERFINEANGLES;
-		fv = FRACUNIT*tan (a);
-		t = fv;
+		a = (float_t)( (i-RENDERFINEANGLES/4+0.5)*PI*2/RENDERFINEANGLES );
+		fv = (float_t)( FRACUNIT*tan(a) );
+		t = (int32_t)fv;
 		renderfinetangent[i] = t;
     }
     
@@ -602,8 +605,8 @@ void R_InitTables (void)
     for (i=0 ; i < RENDERFINESINECOUNT ; i++)
     {
 		// OPTIMIZE: mirror...
-		a = (i+0.5)*PI*2/RENDERFINEANGLES;
-		t = FRACUNIT*sin (a);
+		a = (float_t)( (i+0.5)*PI*2/RENDERFINEANGLES );
+		t = (int32_t)( FRACUNIT*sin (a) );
 		renderfinesine[i] = t;
     }
 #endif // RENDERQUALITYSHIFT > 0
@@ -958,11 +961,6 @@ void R_ExecuteSetViewSize (void)
 // R_Init
 //
 
-#include "z_zone.h"
-
-rendercontext_t* rendercontext;
-
-
 void R_Init (void)
 {
 	R_InitColFuncs();
@@ -1019,7 +1017,7 @@ R_PointInSubsector
 
 void R_ResetContext( rendercontext_t* context )
 {
-	R_ClearClipSegs( &context->bspcontext, 0, viewwidth );
+	R_ClearClipSegs( &context->bspcontext, 0, ( viewwidth / 2 ) + 1 );
 	R_ClearDrawSegs( &context->bspcontext );
 	R_ClearPlanes( &context->planecontext, viewwidth, viewheight, viewangle );
 	R_ClearSprites( &context->spritecontext );
@@ -1081,18 +1079,18 @@ void R_RenderPlayerView (player_t* player)
     // check for new console commands.
     NetUpdate ();
 
-    // The head node is the last node output.
-    R_RenderBSPNode ( &rendercontext->bspcontext, numnodes-1);
+	R_RenderBSPNode ( &rendercontext->bspcontext, numnodes-1);
+
+	// Check for new console commands.
+    NetUpdate ();
+    
+	R_ErrorCheckPlanes( rendercontext );
+	R_DrawPlanes ();
     
     // Check for new console commands.
     NetUpdate ();
     
-    R_DrawPlanes ();
-    
-    // Check for new console commands.
-    NetUpdate ();
-    
-    R_DrawMasked ();
+    R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
 
     // Check for new console commands.
     NetUpdate ();				

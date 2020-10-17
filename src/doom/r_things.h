@@ -52,6 +52,6 @@ void R_SortVisSprites (void);
 void R_AddSprites (sector_t* sec);
 void R_InitSprites(const char **namelist);
 void R_ClearSprites ( spritecontext_t* context );
-void R_DrawMasked (void);
+void R_DrawMasked ( spritecontext_t* spritecontext, bspcontext_t* bspcontext );
 
 #endif

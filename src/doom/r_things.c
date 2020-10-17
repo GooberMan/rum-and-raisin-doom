@@ -394,7 +394,6 @@ void R_DrawVisSprite( vissprite_t* vis, int x1, int x2 )
 	column_t*			column;
 	int32_t				texturecolumn;
 	int32_t				prevfuzzcolumn;
-	int32_t				fuzzcolumn;
 	fixed_t				frac;
 	patch_t*			patch;
 
@@ -857,114 +856,118 @@ void R_SortVisSprites (void)
 //
 // R_DrawSprite
 //
-void R_DrawSprite (vissprite_t* spr)
+void R_DrawSprite( bspcontext_t* bspcontext, vissprite_t* spr )
 {
-    drawseg_t*		ds;
-    vertclip_t		clipbot[SCREENWIDTH];
-    vertclip_t		cliptop[SCREENWIDTH];
-    int				x;
-    int				r1;
-    int				r2;
-    fixed_t			scale;
-    fixed_t			lowscale;
-    int				silhouette;
+	drawseg_t*		ds;
+	vertclip_t		clipbot[SCREENWIDTH];
+	vertclip_t		cliptop[SCREENWIDTH];
+	int32_t			x;
+	int32_t			r1;
+	int32_t			r2;
+	fixed_t			scale;
+	fixed_t			lowscale;
+	int32_t			silhouette;
 		
-    for (x = spr->x1 ; x<=spr->x2 ; x++)
-	clipbot[x] = cliptop[x] = -2;
-    
-    // Scan drawsegs from end to start for obscuring segs.
-    // The first drawseg that has a greater scale
-    //  is the clip seg.
-    for (ds=ds_p-1 ; ds >= drawsegs ; ds--)
-    {
-	// determine if the drawseg obscures the sprite
-	if (ds->x1 > spr->x2
-	    || ds->x2 < spr->x1
-	    || (!ds->silhouette
-		&& !ds->maskedtexturecol) )
+	for (x = spr->x1 ; x<=spr->x2 ; x++)
 	{
-	    // does not cover sprite
-	    continue;
+		clipbot[x] = cliptop[x] = -2;
 	}
-			
-	r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
-	r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 
-	if (ds->scale1 > ds->scale2)
+	// Scan drawsegs from end to start for obscuring segs.
+	// The first drawseg that has a greater scale
+	//  is the clip seg.
+	for (ds = bspcontext->thisdrawseg - 1 ; ds >= bspcontext->drawsegs ; ds--)
 	{
-	    lowscale = ds->scale2;
-	    scale = ds->scale1;
-	}
-	else
-	{
-	    lowscale = ds->scale1;
-	    scale = ds->scale2;
-	}
+		// determine if the drawseg obscures the sprite
+		if (ds->x1 > spr->x2
+			|| ds->x2 < spr->x1
+			|| (!ds->silhouette
+			&& !ds->maskedtexturecol) )
+		{
+			// does not cover sprite
+			continue;
+		}
+			
+		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
+		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
+
+		if (ds->scale1 > ds->scale2)
+		{
+			lowscale = ds->scale2;
+			scale = ds->scale1;
+		}
+		else
+		{
+			lowscale = ds->scale1;
+			scale = ds->scale2;
+		}
 		
-	if (scale < spr->scale
-	    || ( lowscale < spr->scale
-		 && !R_PointOnSegSide (spr->gx, spr->gy, ds->curline) ) )
-	{
-	    // masked mid texture?
-	    if (ds->maskedtexturecol)	
-		R_RenderMaskedSegRange (ds, r1, r2);
-	    // seg is behind sprite
-	    continue;			
-	}
+		if (scale < spr->scale
+			|| ( lowscale < spr->scale
+				&& !R_PointOnSegSide (spr->gx, spr->gy, ds->curline) ) )
+		{
+			// masked mid texture?
+			if (ds->maskedtexturecol)
+			{
+				R_RenderMaskedSegRange( bspcontext, ds, r1, r2 );
+			}
+			// seg is behind sprite
+			continue;			
+		}
 
 	
-	// clip this piece of the sprite
-	silhouette = ds->silhouette;
+		// clip this piece of the sprite
+		silhouette = ds->silhouette;
 	
-	if (spr->gz >= ds->bsilheight)
-	    silhouette &= ~SIL_BOTTOM;
+		if (spr->gz >= ds->bsilheight)
+			silhouette &= ~SIL_BOTTOM;
 
-	if (spr->gzt <= ds->tsilheight)
-	    silhouette &= ~SIL_TOP;
+		if (spr->gzt <= ds->tsilheight)
+			silhouette &= ~SIL_TOP;
 			
-	if (silhouette == 1)
-	{
-	    // bottom sil
-	    for (x=r1 ; x<=r2 ; x++)
-		if (clipbot[x] == -2)
-		    clipbot[x] = ds->sprbottomclip[x];
+		if (silhouette == 1)
+		{
+			// bottom sil
+			for (x=r1 ; x<=r2 ; x++)
+			if (clipbot[x] == -2)
+				clipbot[x] = ds->sprbottomclip[x];
+		}
+		else if (silhouette == 2)
+		{
+			// top sil
+			for (x=r1 ; x<=r2 ; x++)
+			if (cliptop[x] == -2)
+				cliptop[x] = ds->sprtopclip[x];
+		}
+		else if (silhouette == 3)
+		{
+			// both
+			for (x=r1 ; x<=r2 ; x++)
+			{
+			if (clipbot[x] == -2)
+				clipbot[x] = ds->sprbottomclip[x];
+			if (cliptop[x] == -2)
+				cliptop[x] = ds->sprtopclip[x];
+			}
+		}
+		
 	}
-	else if (silhouette == 2)
+
+	// all clipping has been performed, so draw the sprite
+
+	// check for unclipped columns
+	for (x = spr->x1 ; x<=spr->x2 ; x++)
 	{
-	    // top sil
-	    for (x=r1 ; x<=r2 ; x++)
-		if (cliptop[x] == -2)
-		    cliptop[x] = ds->sprtopclip[x];
-	}
-	else if (silhouette == 3)
-	{
-	    // both
-	    for (x=r1 ; x<=r2 ; x++)
-	    {
 		if (clipbot[x] == -2)
-		    clipbot[x] = ds->sprbottomclip[x];
+			clipbot[x] = viewheight;
+
 		if (cliptop[x] == -2)
-		    cliptop[x] = ds->sprtopclip[x];
-	    }
+			cliptop[x] = -1;
 	}
 		
-    }
-    
-    // all clipping has been performed, so draw the sprite
-
-    // check for unclipped columns
-    for (x = spr->x1 ; x<=spr->x2 ; x++)
-    {
-	if (clipbot[x] == -2)		
-	    clipbot[x] = viewheight;
-
-	if (cliptop[x] == -2)
-	    cliptop[x] = -1;
-    }
-		
-    mfloorclip = clipbot;
-    mceilingclip = cliptop;
-    R_DrawVisSprite (spr, spr->x1, spr->x2);
+	mfloorclip = clipbot;
+	mceilingclip = cliptop;
+	R_DrawVisSprite(spr, spr->x1, spr->x2);
 }
 
 
@@ -973,34 +976,39 @@ void R_DrawSprite (vissprite_t* spr)
 //
 // R_DrawMasked
 //
-void R_DrawMasked (void)
+void R_DrawMasked( spritecontext_t* spritecontext, bspcontext_t* bspcontext )
 {
-    vissprite_t*	spr;
-    drawseg_t*		ds;
+	vissprite_t*	spr;
+	drawseg_t*		ds;
 	
-    R_SortVisSprites ();
+	R_SortVisSprites ();
 
-    if (vissprite_p > vissprites)
-    {
-	// draw all vissprites back to front
-	for (spr = vsprsortedhead.next ;
-	     spr != &vsprsortedhead ;
-	     spr=spr->next)
+	if (vissprite_p > vissprites)
 	{
-	    
-	    R_DrawSprite (spr);
+		// draw all vissprites back to front
+		for (spr = vsprsortedhead.next ;
+				spr != &vsprsortedhead ;
+				spr=spr->next)
+		{
+			R_DrawSprite( bspcontext, spr );
+		}
 	}
-    }
-    
-    // render any remaining masked mid textures
-    for (ds=ds_p-1 ; ds >= drawsegs ; ds--)
-	if (ds->maskedtexturecol)
-	    R_RenderMaskedSegRange (ds, ds->x1, ds->x2);
-    
-    // draw the psprites on top of everything
-    //  but does not draw on side views
-    if (!viewangleoffset)		
-	R_DrawPlayerSprites ();
+
+	// render any remaining masked mid textures
+	for ( ds = bspcontext->thisdrawseg - 1 ; ds >= bspcontext->drawsegs ; ds-- )
+	{
+		if (ds->maskedtexturecol)
+		{
+			R_RenderMaskedSegRange( bspcontext, ds, ds->x1, ds->x2 );
+		}
+	}
+
+	// draw the psprites on top of everything
+	//  but does not draw on side views
+	if (!viewangleoffset)
+	{
+		R_DrawPlayerSprites ();
+	}
 }
 
 

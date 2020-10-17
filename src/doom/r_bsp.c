@@ -34,47 +34,19 @@
 #include "r_state.h"
 #include "m_misc.h"
 
-//#include "r_local.h"
 
-
-
-seg_t*		curline;
-side_t*		sidedef;
-line_t*		linedef;
-sector_t*	frontsector;
-sector_t*	backsector;
-
-drawseg_t	drawsegs[MAXDRAWSEGS];
-drawseg_t*	ds_p;
-
-// newend is one past the last valid seg
-cliprange_t*	newend;
-cliprange_t	solidsegs[MAXSEGS];
-
-#define BSP_MIN 0
-#define BSP_MAX viewwidth
-
-void R_StoreWallRange( int start, int stop );
+void R_StoreWallRange( bspcontext_t* bspcontext, int start, int stop );
 
 //
 // R_ClearClipSegs
 //
 void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
 {
-	solidsegs[0].first = -0x7fffffff;
-	solidsegs[0].last = BSP_MIN - 1;
-	solidsegs[1].first = BSP_MAX;
-	solidsegs[1].last = 0x7fffffff;
-	newend = solidsegs+2;
-
-	if( context )
-	{
-		context->solidsegs[0].first		= -0x7fffffff;
-		context->solidsegs[0].last		= mincol - 1;
-		context->solidsegs[1].first		= maxcol;
-		context->solidsegs[1].last		= 0x7fffffff;
-		context->solidsegsend = context->solidsegs + 2;
-	}
+	context->solidsegs[0].first		= -0x7fffffff;
+	context->solidsegs[0].last		= mincol - 1;
+	context->solidsegs[1].first		= maxcol;
+	context->solidsegs[1].last		= 0x7fffffff;
+	context->solidsegsend = context->solidsegs + 2;
 }
 
 //
@@ -82,15 +54,8 @@ void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
 //
 void R_ClearDrawSegs ( bspcontext_t* context )
 {
-	ds_p = drawsegs;
-
-	if( context )
-	{
-		context->thisdrawseg = context->drawsegs;
-	}
+	context->thisdrawseg = context->drawsegs;
 }
-
-
 
 //
 // R_ClipSolidWallSegment
@@ -98,14 +63,14 @@ void R_ClearDrawSegs ( bspcontext_t* context )
 //  e.g. single sided LineDefs (middle texture)
 //  that entirely block the view.
 // 
-void R_ClipSolidWallSegment ( int first, int last )
+void R_ClipSolidWallSegment( bspcontext_t* context, int first, int last )
 {
 	cliprange_t*	next;
 	cliprange_t*	start;
 
 	// Find the first range that touches the range
 	//  (adjacent pixels are touching).
-	start = solidsegs;
+	start = context->solidsegs;
 	while (start->last < first-1)
 	{
 		++start;
@@ -117,9 +82,9 @@ void R_ClipSolidWallSegment ( int first, int last )
 		{
 			// Post is entirely visible (above start),
 			//  so insert a new clippost.
-			R_StoreWallRange (first, last);
-			next = newend;
-			newend++;
+			R_StoreWallRange( context, first, last );
+			next = context->solidsegsend;
+			context->solidsegsend++;
 
 			while (next != start)
 			{
@@ -132,7 +97,7 @@ void R_ClipSolidWallSegment ( int first, int last )
 		}
 
 		// There is a fragment above *start.
-		R_StoreWallRange (first, start->first - 1);
+		R_StoreWallRange( context, first, start->first - 1 );
 		// Now adjust the clip size.
 		start->first = first;
 	}
@@ -147,7 +112,7 @@ void R_ClipSolidWallSegment ( int first, int last )
 	while (last >= (next+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
+		R_StoreWallRange( context, next->last + 1, (next+1)->first - 1 );
 		++next;
 	
 		if (last <= next->last)
@@ -160,7 +125,7 @@ void R_ClipSolidWallSegment ( int first, int last )
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange (next->last + 1, last);
+	R_StoreWallRange( context, next->last + 1, last );
 	// Adjust the clip size.
 	start->last = last;
 	
@@ -173,13 +138,13 @@ crunch:
 		return;
 	}
 
-	while (next++ != newend)
+	while (next++ != context->solidsegsend)
 	{
 		// Remove a post.
 		*++start = *next;
 	}
 
-	newend = start+1;
+	context->solidsegsend = start+1;
 }
 
 
@@ -191,13 +156,13 @@ crunch:
 // Does handle windows,
 //  e.g. LineDefs with upper and lower texture.
 //
-void R_ClipPassWallSegment( int	first, int	last )
+void R_ClipPassWallSegment( bspcontext_t* context, int	first, int	last )
 {
 	cliprange_t*	start;
 
 	// Find the first range that touches the range
 	//  (adjacent pixels are touching).
-	start = solidsegs;
+	start = context->solidsegs;
 	while (start->last < first-1)
 	{
 		++start;
@@ -208,12 +173,12 @@ void R_ClipPassWallSegment( int	first, int	last )
 		if (last < start->first-1)
 		{
 			// Post is entirely visible (above start).
-			R_StoreWallRange (first, last);
+			R_StoreWallRange( context, first, last );
 			return;
 		}
 		
 		// There is a fragment above *start.
-		R_StoreWallRange (first, start->first - 1);
+		R_StoreWallRange( context, first, start->first - 1 );
 	}
 
 	// Bottom contained in start?
@@ -225,7 +190,7 @@ void R_ClipPassWallSegment( int	first, int	last )
 	while (last >= (start+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange (start->last + 1, (start+1)->first - 1);
+		R_StoreWallRange( context, start->last + 1, (start+1)->first - 1 );
 		++start;
 	
 		if (last <= start->last)
@@ -235,7 +200,7 @@ void R_ClipPassWallSegment( int	first, int	last )
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange (start->last + 1, last);
+	R_StoreWallRange( context, start->last + 1, last );
 }
 
 //
@@ -244,7 +209,7 @@ void R_ClipPassWallSegment( int	first, int	last )
 // and adds any visible pieces to the line list.
 //
 
-void R_AddLine (seg_t*	line)
+void R_AddLine( bspcontext_t* context, seg_t* line )
 {
 	int32_t		x1;
 	int32_t		x2;
@@ -253,7 +218,7 @@ void R_AddLine (seg_t*	line)
 	angle_t		span;
 	angle_t		tspan;
 
-	curline = line;
+	context->curline = line;
 
 	// OPTIMIZE: quickly reject orthogonal back sides.
 	angle1 = R_PointToAngle (line->v1->x, line->v1->y);
@@ -293,7 +258,7 @@ void R_AddLine (seg_t*	line)
 		// Totally off the left edge?
 		if (tspan >= span)
 			return;	
-		angle2 = -clipangle;
+		angle2 = M_NEGATE( clipangle );
 	}
 
 	// The seg is in the view range,
@@ -309,41 +274,47 @@ void R_AddLine (seg_t*	line)
 		return;
 	}
 	
-	backsector = line->backsector;
+	context->backsector = line->backsector;
 
 	// Single sided line?
-	if (!backsector)
+	if (!context->backsector)
+	{
 		goto clipsolid;
+	}
 
 	// Closed door.
-	if (backsector->ceilingheight <= frontsector->floorheight
-	|| backsector->floorheight >= frontsector->ceilingheight)
+	if (context->backsector->ceilingheight <= context->frontsector->floorheight
+		|| context->backsector->floorheight >= context->frontsector->ceilingheight)
+	{
 		goto clipsolid;
+	}
 
 	// Window.
-	if (backsector->ceilingheight != frontsector->ceilingheight
-	|| backsector->floorheight != frontsector->floorheight)
+	if (context->backsector->ceilingheight != context->frontsector->ceilingheight
+		|| context->backsector->floorheight != context->frontsector->floorheight)
+	{
 		goto clippass;
+	}
 
 	// Reject empty lines used for triggers
 	//  and special events.
 	// Identical floor and ceiling on both sides,
 	// identical light levels on both sides,
 	// and no middle texture.
-	if (backsector->ceilingpic == frontsector->ceilingpic
-	&& backsector->floorpic == frontsector->floorpic
-	&& backsector->lightlevel == frontsector->lightlevel
-	&& curline->sidedef->midtexture == 0)
+	if (context->backsector->ceilingpic == context->frontsector->ceilingpic
+		&& context->backsector->floorpic == context->frontsector->floorpic
+		&& context->backsector->lightlevel == context->frontsector->lightlevel
+		&& context->curline->sidedef->midtexture == 0)
 	{
 		return;
 	}
 
 clippass:
-	R_ClipPassWallSegment (x1, x2-1);
+	R_ClipPassWallSegment( context, x1, x2-1 );
 	return;
 
 clipsolid:
-	R_ClipSolidWallSegment (x1, x2-1);
+	R_ClipSolidWallSegment( context, x1, x2-1 );
 }
 
 
@@ -369,7 +340,7 @@ int32_t	checkcoord[12][4] =
 };
 
 
-boolean R_CheckBBox (fixed_t* bspcoord)
+boolean R_CheckBBox( bspcontext_t* context, fixed_t* bspcoord )
 {
 	int32_t		boxx;
 	int32_t		boxy;
@@ -448,7 +419,7 @@ boolean R_CheckBBox (fixed_t* bspcoord)
 		if (tspan >= span)
 			return false;
 	
-		angle2 = -clipangle;
+		angle2 = M_NEGATE( clipangle );
 	}
 
 
@@ -465,7 +436,7 @@ boolean R_CheckBBox (fixed_t* bspcoord)
 		return false;
 	sx2--;
 	
-	start = solidsegs;
+	start = context->solidsegs;
 	while (start->last < sx2)
 	{
 		start++;
@@ -506,43 +477,39 @@ void R_Subsector ( bspcontext_t* context, int num)
 
 	sscount++;
 	sub = &subsectors[num];
-	frontsector = sub->sector;
+	context->frontsector = sub->sector;
 	count = sub->numlines;
 	line = &segs[sub->firstline];
 
-	if (frontsector->floorheight < viewz)
+	if (context->frontsector->floorheight < viewz)
 	{
-		floorplane = R_FindPlane (frontsector->floorheight,
-						frontsector->floorpic,
-						frontsector->lightlevel);
+		floorplane = R_FindPlane(context->frontsector->floorheight, context->frontsector->floorpic, context->frontsector->lightlevel);
 	}
 	else
 	{
 		floorplane = NULL;
 	}
 
-	if (frontsector->ceilingheight > viewz 
-	|| frontsector->ceilingpic == skyflatnum)
+	if (context->frontsector->ceilingheight > viewz 
+		|| context->frontsector->ceilingpic == skyflatnum)
 	{
-		ceilingplane = R_FindPlane (frontsector->ceilingheight,
-						frontsector->ceilingpic,
-						frontsector->lightlevel);
+		ceilingplane = R_FindPlane( context->frontsector->ceilingheight, context->frontsector->ceilingpic, context->frontsector->lightlevel );
 	}
 	else
 	{
 		ceilingplane = NULL;
 	}
 		
-	R_AddSprites (frontsector);	
+	R_AddSprites( context->frontsector );
 
 	while (count--)
 	{
-		R_AddLine (line);
+		R_AddLine( context, line );
 		line++;
 	}
 
 	// check for solidsegs overflow - extremely unsatisfactory!
-	if(newend > &solidsegs[ VANILLA_MAXSEGS ])
+	if( context->solidsegsend > &context->solidsegs[ VANILLA_MAXSEGS ] )
 	{
 		I_Error("R_Subsector: solidsegs overflow (vanilla may crash here)\n");
 	}
@@ -580,7 +547,7 @@ void R_RenderBSPNode ( bspcontext_t* context, int bspnum )
 	R_RenderBSPNode ( context, bsp->children[side]);
 
 	// Possibly divide back space.
-	if (R_CheckBBox (bsp->bbox[side^1]))
+	if ( R_CheckBBox( context, bsp->bbox[side^1] ) )
 	{
 		R_RenderBSPNode ( context, bsp->children[side^1]);
 	}

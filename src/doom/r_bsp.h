@@ -21,21 +21,6 @@
 #define __R_BSP__
 
 
-
-extern seg_t*		curline;
-extern side_t*		sidedef;
-extern line_t*		linedef;
-extern sector_t*	frontsector;
-extern sector_t*	backsector;
-
-extern int32_t		rw_x;
-extern int32_t		rw_stopx;
-
-extern boolean		skymap;
-
-extern drawseg_t	drawsegs[MAXDRAWSEGS];
-extern drawseg_t*	ds_p;
-
 typedef void (*drawfunc_t) (int start, int stop);
 
 
@@ -43,8 +28,6 @@ typedef void (*drawfunc_t) (int start, int stop);
 void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol );
 void R_ClearDrawSegs ( bspcontext_t* context );
 
-
 void R_RenderBSPNode ( bspcontext_t* context, int bspnum);
-
 
 #endif

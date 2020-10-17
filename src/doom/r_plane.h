@@ -40,7 +40,13 @@ void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, int
 void R_MapPlane( spancontext_t* context, int y, int x1, int x2 );
 void R_MakeSpans( spancontext_t* context, int x, int t1, int b1, int t2, int b2 );
 
-void R_DrawPlanes (void);
+#ifdef RANGECHECK
+void R_ErrorCheckPlanes( rendercontext_t* context );
+#else
+#define R_ErrorCheckPlanes( context )
+#endif // RANGECHECK
+
+void R_DrawPlanes ( );
 
 visplane_t*
 R_FindPlane
