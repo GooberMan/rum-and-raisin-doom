@@ -1017,7 +1017,7 @@ R_PointInSubsector
 
 void R_ResetContext( rendercontext_t* context )
 {
-	R_ClearClipSegs( &context->bspcontext, 0, ( viewwidth / 2 ) + 1 );
+	R_ClearClipSegs( &context->bspcontext, 0, viewwidth );
 	R_ClearDrawSegs( &context->bspcontext );
 	R_ClearPlanes( &context->planecontext, viewwidth, viewheight, viewangle );
 	R_ClearSprites( &context->spritecontext );
