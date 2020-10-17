@@ -958,11 +958,15 @@ void R_ExecuteSetViewSize (void)
 // R_Init
 //
 
+#include "z_zone.h"
+
+rendercontext_t* rendercontext;
 
 
 void R_Init (void)
 {
 	R_InitColFuncs();
+	rendercontext = Z_Malloc( sizeof( *rendercontext ), PU_STATIC, NULL );
 
     R_InitData ();
     printf (".");
@@ -1013,6 +1017,13 @@ R_PointInSubsector
     return &subsectors[nodenum & ~NF_SUBSECTOR];
 }
 
+void R_ResetContext( rendercontext_t* context )
+{
+	R_ClearClipSegs( &context->bspcontext, 0, viewwidth );
+	R_ClearDrawSegs( &context->bspcontext );
+	R_ClearPlanes( &context->planecontext, viewwidth, viewheight, viewangle );
+	R_ClearSprites( &context->spritecontext );
+}
 
 
 //
@@ -1020,8 +1031,8 @@ R_PointInSubsector
 //
 void R_SetupFrame (player_t* player)
 {		
-	int		i;
-    
+	int32_t		i;
+
 	viewplayer = player;
 	viewx = player->mo->x;
 	viewy = player->mo->y;
@@ -1052,11 +1063,12 @@ void R_SetupFrame (player_t* player)
 	{
 		fixedcolormap = 0;
 	}
-		
+
+	R_ResetContext( rendercontext );
+
 	framecount++;
 	validcount++;
 }
-
 
 
 //
@@ -1066,17 +1078,11 @@ void R_RenderPlayerView (player_t* player)
 {	
     R_SetupFrame (player);
 
-    // Clear buffers.
-    R_ClearClipSegs ();
-    R_ClearDrawSegs ();
-    R_ClearPlanes ();
-    R_ClearSprites ();
-    
     // check for new console commands.
     NetUpdate ();
 
     // The head node is the last node output.
-    R_RenderBSPNode (numnodes-1);
+    R_RenderBSPNode ( &rendercontext->bspcontext, numnodes-1);
     
     // Check for new console commands.
     NetUpdate ();

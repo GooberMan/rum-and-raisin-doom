@@ -40,11 +40,11 @@ typedef void (*drawfunc_t) (int start, int stop);
 
 
 // BSP?
-void R_ClearClipSegs (void);
-void R_ClearDrawSegs (void);
+void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol );
+void R_ClearDrawSegs ( bspcontext_t* context );
 
 
-void R_RenderBSPNode (int bspnum);
+void R_RenderBSPNode ( bspcontext_t* context, int bspnum);
 
 
 #endif

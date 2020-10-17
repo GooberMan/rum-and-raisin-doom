@@ -177,30 +177,53 @@ void R_MapPlane( spancontext_t* context, int y, int x1, int x2 )
 // R_ClearPlanes
 // At begining of frame.
 //
-void R_ClearPlanes (void)
+void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, int32_t thisangle )
 {
-    int		i;
-    angle_t	angle;
-    
-    // opening / clipping determination
-    for (i=0 ; i<viewwidth ; i++)
-    {
-	floorclip[i] = viewheight;
-	ceilingclip[i] = -1;
-    }
+	int32_t	i;
+	angle_t	angle;
 
-    lastvisplane = visplanes;
-    lastopening = openings;
-    
-    // texture calculation
-    memset (cachedheight, 0, sizeof(cachedheight));
+	// opening / clipping determination
+	for (i=0 ; i<viewwidth ; i++)
+	{
+		floorclip[i] = viewheight;
+		ceilingclip[i] = -1;
+	}
 
-    // left to right mapping
-    angle = (viewangle-ANG90)>>ANGLETOFINESHIFT;
+	lastvisplane = visplanes;
+	lastopening = openings;
+
+	// texture calculation
+	memset (cachedheight, 0, sizeof(cachedheight));
+
+	// left to right mapping
+	angle = (viewangle-ANG90)>>RENDERANGLETOFINESHIFT;
 	
-    // scale will be unit scale at SCREENWIDTH/2 distance
-    basexscale = FixedDiv (finecosine[angle],centerxfrac);
-    baseyscale = -FixedDiv (finesine[angle],centerxfrac);
+	// scale will be unit scale at SCREENWIDTH/2 distance
+	basexscale = FixedDiv (renderfinecosine[angle],centerxfrac);
+	baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
+
+	if( context )
+	{
+		// opening / clipping determination
+		for (i=0 ; i<width ; i++)
+		{
+			context->floorclip[i] = height;
+			context->ceilingclip[i] = -1;
+		}
+
+		context->lastvisplane = context->visplanes;
+		context->lastopening = context->openings;
+
+		// texture calculation
+		memset (context->cachedheight, 0, sizeof(context->cachedheight));
+
+		// left to right mapping
+		angle = (thisangle - ANG90)>>RENDERANGLETOFINESHIFT;
+	
+		// scale will be unit scale at SCREENWIDTH/2 distance
+		context->basexscale = FixedDiv (renderfinecosine[angle],centerxfrac);
+		context->baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
+	}
 }
 
 

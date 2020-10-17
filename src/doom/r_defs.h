@@ -44,14 +44,14 @@
 
 // Silhouette, needed for clipping Segs (mainly)
 // and sprites representing things.
-#define SIL_NONE		0
-#define SIL_BOTTOM		1
-#define SIL_TOP			2
-#define SIL_BOTH		3
+#define SIL_NONE				0
+#define SIL_BOTTOM				1
+#define SIL_TOP					2
+#define SIL_BOTH				3
 
-#define MAXVISPLANES	512
-#define MAXOPENINGS		( SCREENWIDTH*64 )
-#define MAXDRAWSEGS		( MAXVISPLANES << 2 )
+#define MAXVISPLANES			512
+#define MAXOPENINGS				( SCREENWIDTH*64 )
+#define MAXDRAWSEGS				( MAXVISPLANES << 2 )
 
 // We must expand MAXSEGS to the theoretical limit of the number of solidsegs
 // that can be generated in a scene by the DOOM engine. This was determined by
@@ -59,8 +59,8 @@
 // The simplest thing we can do, other than fix this bug, is to let the game
 // render overage and then bomb out by detecting the overflow after the 
 // fact. -haleyjd
-//#define MAXSEGS 32
-#define MAXSEGS			(SCREENWIDTH / 2 + 1)
+#define VANILLA_MAXSEGS			32
+#define MAXSEGS					(SCREENWIDTH / 2 + 1)
 
 typedef uint16_t				vpindex_t;
 #define VPINDEX_INVALID			( ~(vpindex_t)0 )
@@ -467,6 +467,62 @@ typedef	struct
     
 } cliprange_t;
 
+typedef struct bspcontext_s
+{
+	seg_t*			curline;
+	side_t*			sidedef;
+	line_t*			linedef;
+	sector_t*		frontsector;
+	sector_t*		backsector;
+
+	drawseg_t		drawsegs[MAXDRAWSEGS];
+	drawseg_t*		thisdrawseg;
+
+	cliprange_t		solidsegs[MAXSEGS];
+	cliprange_t*	solidsegsend;
+
+} bspcontext_t;
+
+typedef struct planecontext_s
+{
+	visplane_t		visplanes[MAXVISPLANES];
+	visplane_t*		lastvisplane;
+	visplane_t*		floorplane;
+	visplane_t*		ceilingplane;
+
+	vertclip_t		openings[MAXOPENINGS];
+	vertclip_t*		lastopening;
+
+	vertclip_t		floorclip[SCREENWIDTH];
+	vertclip_t		ceilingclip[SCREENWIDTH];
+
+	fixed_t			yslope[SCREENHEIGHT];
+	fixed_t			distscale[SCREENWIDTH];
+
+	fixed_t			basexscale;
+	fixed_t			baseyscale;
+
+	fixed_t			cachedheight[SCREENHEIGHT];
+	fixed_t			cacheddistance[SCREENHEIGHT];
+	fixed_t			cachedxstep[SCREENHEIGHT];
+	fixed_t			cachedystep[SCREENHEIGHT];
+
+} planecontext_t;
+
+typedef struct spritecontext_s
+{
+	vissprite_t		vissprites[MAXVISSPRITES];
+	vissprite_t*	thisvissprite;
+	vissprite_t		vsprsortedhead;
+
+	vertclip_t*		mfloorclip;
+	vertclip_t*		mceilingclip;
+	fixed_t			spryscale;
+	fixed_t			sprtopscreen;
+
+	fixed_t			pspritescale;
+	fixed_t			pspriteiscale;
+} spritecontext_t;
 
 //
 // Render context is required for threaded rendering.
@@ -512,68 +568,23 @@ typedef void (*planefunction_t)(int top, int bottom);
 typedef struct rendercontext_s
 {
 	// Setup
-	vbuffer_t		buffer;
+	vbuffer_t			buffer;
 
-	int32_t			mincolumn;
-	int32_t			maxcolumn;
+	int32_t				mincolumn;
+	int32_t				maxcolumn;
 
-	uint64_t		lasttimetaken;
+	uint64_t			lasttimetaken;
 
-	// BSP
-
-	seg_t*			curline;
-	side_t*			sidedef;
-	line_t*			linedef;
-	sector_t*		frontsector;
-	sector_t*		backsector;
-
-	drawseg_t		drawsegs[MAXDRAWSEGS];
-	drawseg_t*		ds_p;
-
-	cliprange_t*	newend;
-	cliprange_t		solidsegs[MAXSEGS];
-
-	// Columns
-	colcontext_t	col;
-
-	// Planes
-
-	visplane_t		visplanes[MAXVISPLANES];
-	visplane_t*		lastvisplane;
-	visplane_t*		floorplane;
-	visplane_t*		ceilingplane;
-
-	vertclip_t		openings[MAXOPENINGS];
-	vertclip_t*		lastopening;
-
-	vertclip_t		floorclip[SCREENWIDTH];
-	vertclip_t		ceilingclip[SCREENWIDTH];
-
-	fixed_t			yslope[SCREENHEIGHT];
-	fixed_t			distscale[SCREENWIDTH];
-
-	// Sprites
-
-	vissprite_t		vissprites[MAXVISSPRITES];
-	vissprite_t*	vissprite_p;
-	vissprite_t		vsprsortedhead;
-
-	vertclip_t*		mfloorclip;
-	vertclip_t*		mceilingclip;
-	fixed_t			spryscale;
-	fixed_t			sprtopscreen;
-
-	fixed_t			pspritescale;
-	fixed_t			pspriteiscale;
+	bspcontext_t		bspcontext;
+	planecontext_t		planecontext;
+	spritecontext_t		spritecontext;
 
 	// Functions
-
-	colfunc_t		colfunc;
-
-	colfunc_t		fuzzcolfunc;
-	colfunc_t		transcolfunc;
+	colfunc_t			colfunc;
+	colfunc_t			fuzzcolfunc;
+	colfunc_t			transcolfunc;
 	
-	spanfunc_t		spanfunc;
+	spanfunc_t			spanfunc;
 
 } rendercontext_t;
 

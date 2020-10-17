@@ -280,7 +280,6 @@ void R_InitSpriteDefs(const char **namelist)
 //
 vissprite_t	vissprites[MAXVISSPRITES];
 vissprite_t*	vissprite_p;
-int		newvissprite;
 
 
 
@@ -306,9 +305,14 @@ void R_InitSprites(const char **namelist)
 // R_ClearSprites
 // Called at frame start.
 //
-void R_ClearSprites (void)
+void R_ClearSprites ( spritecontext_t* context )
 {
-    vissprite_p = vissprites;
+	vissprite_p = vissprites;
+
+	if( context )
+	{
+		context->thisvissprite = context->vissprites;
+	}
 }
 
 

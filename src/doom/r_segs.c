@@ -54,41 +54,39 @@ fixed_t		rw_bottomtexturemid;
 
 typedef struct segloopcontext_s
 {
-	int32_t		startx;
-	int32_t		stopx;
+	int32_t			startx;
+	int32_t			stopx;
 
 	// True if any of the segs textures might be visible.
-	boolean		segtextured;
+	boolean			segtextured;
 
-	boolean		maskedtexture;
-	int32_t		toptexture;
-	int32_t		bottomtexture;
-	int32_t		midtexture;
+	boolean			maskedtexture;
+	int32_t			toptexture;
+	int32_t			bottomtexture;
+	int32_t			midtexture;
 
 	// False if the back side is the same plane.
-	boolean		markfloor;	
-	boolean		markceiling;
+	boolean			markfloor;	
+	boolean			markceiling;
 
-	fixed_t		pixhigh;
-	fixed_t		pixlow;
-	fixed_t		pixhighstep;
-	fixed_t		pixlowstep;
+	fixed_t			pixhigh;
+	fixed_t			pixlow;
+	fixed_t			pixhighstep;
+	fixed_t			pixlowstep;
 
-	fixed_t		topfrac;
-	fixed_t		topstep;
+	fixed_t			topfrac;
+	fixed_t			topstep;
 
-	fixed_t		bottomfrac;
-	fixed_t		bottomstep;
+	fixed_t			bottomfrac;
+	fixed_t			bottomstep;
+
+	vertclip_t*		maskedtexturecol;
+
 } segloopcontext_t;
 
 
 lighttable_t**		walllights;
 int32_t				walllightsindex;
-
-vertclip_t*		maskedtexturecol;
-
-// Debugging - replace lightmap with index indicating texture reads per 16-byte block
-extern byte detailmaps[16][256];
 
 #ifdef RANGECHECK
 void R_RangeCheckNamed( colcontext_t* context, const char* func )
@@ -123,6 +121,7 @@ void R_RenderMaskedSegRange( drawseg_t*	ds, int x1, int x2 )
 	column_t*			col;
 	int32_t				lightnum;
 	int32_t				texnum;
+	vertclip_t*			maskedtexturecol;
 
 	colcontext_t		spritecontext;
 	extern vbuffer_t*	dest_buffer;
@@ -238,6 +237,7 @@ void R_RenderMaskedSegRange( drawseg_t*	ds, int x1, int x2 )
 #define HEIGHTBITS		12
 #define HEIGHTUNIT		(1<<HEIGHTBITS)
 
+// Detail maps show me how may reads are going to happen in any 16-byte block.
 extern byte detailmaps[16][256];
 
 void R_RenderSegLoop ( segloopcontext_t* context )
@@ -440,7 +440,7 @@ void R_RenderSegLoop ( segloopcontext_t* context )
 			{
 				// save texturecol
 				//  for backdrawing of masked mid texture
-				maskedtexturecol[currx] = texturecolumn;
+				context->maskedtexturecol[currx] = texturecolumn;
 			}
 		}
 		
@@ -706,7 +706,7 @@ void R_StoreWallRange( int start, int stop )
 		{
 			// masked midtexture
 			loopcontext.maskedtexture = true;
-			ds_p->maskedtexturecol = maskedtexturecol = lastopening - loopcontext.startx;
+			ds_p->maskedtexturecol = loopcontext.maskedtexturecol = lastopening - loopcontext.startx;
 			lastopening += loopcontext.stopx - loopcontext.startx;
 		}
 	}
