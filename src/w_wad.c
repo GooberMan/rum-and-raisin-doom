@@ -57,7 +57,7 @@ typedef PACKED_STRUCT (
 
 // Location of each lump on disk.
 lumpinfo_t **lumpinfo;
-unsigned int numlumps = 0;
+uint32_t numlumps = 0;
 
 // Hash table for fast lookups
 static lumpindex_t *lumphash;

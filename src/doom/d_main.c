@@ -1318,10 +1318,10 @@ static void G_CheckDemoStatusAtExit (void)
 //
 void D_DoomMain (void)
 {
-    int p;
+    int32_t p;
     char file[256];
     char demolumpname[9];
-    int numiwadlumps;
+    uint32_t numiwadlumps;
 
     I_AtExit(D_Endoom, false);
 
@@ -1729,7 +1729,7 @@ void D_DoomMain (void)
     //
     if (M_ParmExists("-dehlump"))
     {
-        int i, loaded = 0;
+        uint32_t i, loaded = 0;
 
         for (i = numiwadlumps; i < numlumps; ++i)
         {
