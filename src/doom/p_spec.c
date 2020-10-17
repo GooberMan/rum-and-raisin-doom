@@ -1412,16 +1412,17 @@ line_t*		linespeciallist[MAXLINEANIMS];
 
 static unsigned int NumScrollers()
 {
-    unsigned int i, scrollers = 0;
+	int32_t		i;
+	uint32_t	scrollers = 0;
 
-    for (i = 0; i < numlines; i++)
-    {
-        if (48 == lines[i].special)
-        {
-            scrollers++;
-        }
-    }
-    return scrollers;
+	for (i = 0; i < numlines; i++)
+	{
+		if (48 == lines[i].special)
+		{
+			scrollers++;
+		}
+	}
+	return scrollers;
 }
 
 // Parses command line parameters.

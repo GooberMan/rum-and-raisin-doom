@@ -30,7 +30,7 @@
 // Only display the disk icon if more then this much bytes have been read
 // during the previous tic.
 
-static const int diskicon_threshold = 20*1024;
+static const size_t diskicon_threshold = 20*1024;
 
 // Two buffers: disk_data contains the data representing the disk icon
 // (raw, not a patch_t) while saved_background is an equivalently-sized

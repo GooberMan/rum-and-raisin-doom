@@ -105,12 +105,12 @@ wad_file_t *W_AddFile (const char *filename)
     wadinfo_t header;
     lumpindex_t i;
     wad_file_t *wad_file;
-    int length;
-    int startlump;
+    int32_t length;
+    lumpindex_t startlump;
     filelump_t *fileinfo;
     filelump_t *filerover;
     lumpinfo_t *filelumps;
-    int numfilelumps;
+    int32_t numfilelumps;
 
     // If the filename begins with a ~, it indicates that we should use the
     // reload hack.

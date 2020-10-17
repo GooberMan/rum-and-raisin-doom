@@ -424,7 +424,9 @@ void R_DrawColumnLow ( colcontext_t* context )
     pixel_t*	dest2;
     fixed_t		frac;
     fixed_t		fracstep;
-	byte sample;
+	byte		sample;
+
+	count = context->yh - context->yl;
 
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.

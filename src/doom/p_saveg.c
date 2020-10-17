@@ -548,7 +548,7 @@ static void saveg_read_ticcmd_t(ticcmd_t *str)
     str->angleturn = saveg_read16();
 
     // short consistancy;
-    str->consistancy = saveg_read16();
+    str->consistancy = (byte)saveg_read16();
 
     // byte chatchar;
     str->chatchar = saveg_read8();

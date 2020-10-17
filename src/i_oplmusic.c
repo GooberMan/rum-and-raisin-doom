@@ -780,9 +780,9 @@ static void ReplaceExistingVoiceDoom1(void)
 
 static void ReplaceExistingVoiceDoom2(opl_channel_data_t *channel)
 {
-    int i;
-    int result;
-    int priority;
+    int32_t i;
+    int32_t result;
+    uint32_t priority;
 
     result = 0;
 

@@ -382,30 +382,29 @@ void R_GenerateLookup (int texnum)
 //
 byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
 {
-    int		lump;
-    int		ofs;
+	int		ofs;
 	
-    col &= texturewidthmask[tex];
-    ofs = texturecompositesize[tex] * colormapindex + texturecompositecolumnofs[tex][col];
+	col &= texturewidthmask[tex];
+	ofs = texturecompositesize[tex] * colormapindex + texturecompositecolumnofs[tex][col];
 
-    if ( !texturecomposite[tex] )
+	if ( !texturecomposite[tex] )
 	{
 		R_GenerateComposite (tex);
 	}
 
-    return texturecomposite[tex] + ofs;
+	return texturecomposite[tex] + ofs;
 }
 
 byte* R_GetRawColumn( int32_t tex, int32_t col )
 {
-    int		lump;
-    int		ofs;
+	int		lump;
+	int		ofs;
 	
-    col &= texturewidthmask[ tex];
-    ofs = texturecolumnofs[tex][col];
-    lump = texturecolumnlump[tex][col];
+	col &= texturewidthmask[ tex];
+	ofs = texturecolumnofs[tex][col];
+	lump = texturecolumnlump[tex][col];
     
-    if (lump > 0)
+	if (lump > 0)
 	{
 		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
 	}
