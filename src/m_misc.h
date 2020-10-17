@@ -29,6 +29,7 @@
 #define M_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
 #define M_BITMASK( numbits ) ( ~( ~0 << numbits ) )
 #define M_BITMASK64( numbits ) ( ~( ~0ll << numbits ) )
+#define M_NEGATE( unsignedval ) ( ~unsignedval + 1 )
 
 boolean M_WriteFile(const char *name, const void *source, int length);
 int M_ReadFile(const char *name, byte **buffer);
