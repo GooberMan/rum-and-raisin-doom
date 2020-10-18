@@ -375,7 +375,13 @@ void R_GenerateLookup (int texnum)
 }
 
 
-
+void R_CacheComposite( int32_t tex )
+{
+	if ( !texturecomposite[ tex ] )
+	{
+		R_GenerateComposite( tex );
+	}
+}
 
 //
 // R_GetColumn
@@ -838,19 +844,16 @@ void R_PrecacheLevel (void)
 	int32_t			animend;
 	int32_t			thisanim;
 
-    if (demoplayback)
-	return;
-    
-    // Precache flats.
-    flatpresent = Z_Malloc(numflats, PU_STATIC, NULL);
-    memset (flatpresent,0,numflats);	
+	// Precache flats.
+	flatpresent = Z_Malloc(numflats, PU_STATIC, NULL);
+	memset (flatpresent,0,numflats);	
 
 	// This needs to be static, and allocated elsewhere
 	precachedflats = Z_Malloc( numflats * sizeof(byte*), PU_LEVEL, NULL );
 	memset( precachedflats, 0, numflats * sizeof(byte*) );
 
-    for (i=0 ; i<numsectors ; i++)
-    {
+	for (i=0 ; i<numsectors ; i++)
+	{
 		flatpresent[sectors[i].floorpic] = 1;
 		flatpresent[sectors[i].ceilingpic] = 1;
 
@@ -873,12 +876,12 @@ void R_PrecacheLevel (void)
 				flatpresent[ thisanim ] = 1;
 			}
 		}
-    }
+	}
 	
-    flatmemory = 0;
+	flatmemory = 0;
 
-    for (i=0 ; i<numflats ; i++)
-    {
+	for (i=0 ; i<numflats ; i++)
+	{
 		if (flatpresent[i])
 		{
 			lump = firstflat + i;
@@ -897,76 +900,78 @@ void R_PrecacheLevel (void)
 				}
 			}
 		}
-    }
-
-    Z_Free(flatpresent);
-    
-    // Precache textures.
-    texturepresent = Z_Malloc(numtextures, PU_STATIC, NULL);
-    memset (texturepresent,0, numtextures);
-	
-    for (i=0 ; i<numsides ; i++)
-    {
-	texturepresent[sides[i].toptexture] = 1;
-	texturepresent[sides[i].midtexture] = 1;
-	texturepresent[sides[i].bottomtexture] = 1;
-    }
-
-    // Sky texture is always present.
-    // Note that F_SKY1 is the name used to
-    //  indicate a sky floor/ceiling as a flat,
-    //  while the sky texture is stored like
-    //  a wall texture, with an episode dependend
-    //  name.
-    texturepresent[skytexture] = 1;
-	
-    texturememory = 0;
-    for (i=0 ; i<numtextures ; i++)
-    {
-	if (!texturepresent[i])
-	    continue;
-
-	texture = textures[i];
-	
-	for (j=0 ; j<texture->patchcount ; j++)
-	{
-	    lump = texture->patches[j].patch;
-	    texturememory += lumpinfo[lump]->size;
-	    W_CacheLumpNum(lump , PU_CACHE);
 	}
-    }
 
-    Z_Free(texturepresent);
-    
-    // Precache sprites.
-    spritepresent = Z_Malloc(numsprites, PU_STATIC, NULL);
-    memset (spritepresent,0, numsprites);
+	Z_Free(flatpresent);
+
+	// Precache textures.
+	texturepresent = Z_Malloc(numtextures, PU_STATIC, NULL);
+	memset (texturepresent,0, numtextures);
 	
-    for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    {
+	for (i=0 ; i<numsides ; i++)
+	{
+		texturepresent[sides[i].toptexture] = 1;
+		texturepresent[sides[i].midtexture] = 1;
+		texturepresent[sides[i].bottomtexture] = 1;
+	}
+
+	// Sky texture is always present.
+	// Note that F_SKY1 is the name used to
+	//  indicate a sky floor/ceiling as a flat,
+	//  while the sky texture is stored like
+	//  a wall texture, with an episode dependend
+	//  name.
+	texturepresent[skytexture] = 1;
+	
+	texturememory = 0;
+	for (i=0 ; i<numtextures ; i++)
+	{
+		if (!texturepresent[i])
+			continue;
+
+		texture = textures[i];
+	
+		for (j=0 ; j<texture->patchcount ; j++)
+		{
+			lump = texture->patches[j].patch;
+			texturememory += lumpinfo[lump]->size;
+			W_CacheLumpNum( lump , PU_LEVEL ); // TODO: Switch to cache after masked textures get a SIMD renderer
+		}
+
+		R_CacheComposite( i );
+	}
+
+	Z_Free(texturepresent);
+
+	// Precache sprites.
+	spritepresent = Z_Malloc(numsprites, PU_STATIC, NULL);
+	memset (spritepresent,0, numsprites);
+	
+	for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
+	{
 	if (th->function.acp1 == (actionf_p1)P_MobjThinker)
-	    spritepresent[((mobj_t *)th)->sprite] = 1;
-    }
-	
-    spritememory = 0;
-    for (i=0 ; i<numsprites ; i++)
-    {
-	if (!spritepresent[i])
-	    continue;
-
-	for (j=0 ; j<sprites[i].numframes ; j++)
-	{
-	    sf = &sprites[i].spriteframes[j];
-	    for (k=0 ; k<8 ; k++)
-	    {
-		lump = firstspritelump + sf->lump[k];
-		spritememory += lumpinfo[lump]->size;
-		W_CacheLumpNum(lump , PU_CACHE);
-	    }
+		spritepresent[((mobj_t *)th)->sprite] = 1;
 	}
-    }
+	
+	spritememory = 0;
+	for (i=0 ; i<numsprites ; i++)
+	{
+		if (!spritepresent[i])
+			continue;
 
-    Z_Free(spritepresent);
+		for (j=0 ; j<sprites[i].numframes ; j++)
+		{
+			sf = &sprites[i].spriteframes[j];
+			for (k=0 ; k<8 ; k++)
+			{
+				lump = firstspritelump + sf->lump[k];
+				spritememory += lumpinfo[lump]->size;
+				W_CacheLumpNum(lump , PU_LEVEL);
+			}
+		}
+	}
+
+	Z_Free(spritepresent);
 }
 
 

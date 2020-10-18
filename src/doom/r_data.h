@@ -24,6 +24,7 @@
 #include "r_defs.h"
 #include "r_state.h"
 
+void R_CacheComposite( int32_t tex );
 
 // Retrieve column data for span blitting.
 byte* R_GetColumn ( int32_t tex, int32_t col, int32_t colormapindex );
