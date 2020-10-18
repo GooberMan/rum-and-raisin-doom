@@ -36,22 +36,6 @@
 
 // OPTIMIZE: closed two sided lines as single sided
 
-angle_t		rw_normalangle;
-// angle to line origin
-angle_t		rw_angle1;
-
-//
-// regular wall
-//
-angle_t		rw_centerangle;
-fixed_t		rw_offset;
-fixed_t		rw_distance;
-fixed_t		rw_scale;
-fixed_t		rw_scalestep;
-fixed_t		rw_midtexturemid;
-fixed_t		rw_toptexturemid;
-fixed_t		rw_bottomtexturemid;
-
 typedef struct segloopcontext_s
 {
 	int32_t			startx;
@@ -102,7 +86,7 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 	}
 }
 
-#define R_RangeCheck() R_RangeCheckNamed( &wallcontext, __FUNCTION__ )
+#define R_RangeCheck() R_RangeCheckNamed( &wallcolcontext, __FUNCTION__ )
 
 #else // !RANGECHECK
 
@@ -121,6 +105,7 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 	column_t*			col;
 	int32_t				lightnum;
 	int32_t				texnum;
+	int32_t				scalestep;
 	vertclip_t*			maskedtexturecol;
 
 	colcontext_t		spritecolcontext;
@@ -159,8 +144,8 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 
 	maskedtexturecol = ds->maskedtexturecol;
 
-	rw_scalestep = ds->scalestep;
-	spritecontext->spryscale = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
+	scalestep = ds->scalestep;
+	spritecontext->spryscale = ds->scale1 + (x1 - ds->x1)*scalestep;
 	spritecontext->mfloorclip = ds->sprbottomclip;
 	spritecontext->mceilingclip = ds->sprtopclip;
 
@@ -220,7 +205,7 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 
 			colfunc = restorefunc;
 		}
-		spritecontext->spryscale += rw_scalestep;
+		spritecontext->spryscale += scalestep;
 
 	}
 }
@@ -242,7 +227,7 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 // Detail maps show me how may reads are going to happen in any 16-byte block.
 extern byte detailmaps[16][256];
 
-void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontext )
+void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
 {
 	angle_t			angle;
 	uint32_t		index;
@@ -255,12 +240,12 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 	int32_t			bottom;
 	int32_t			currx = segcontext->startx;
 
-	colcontext_t	wallcontext;
+	colcontext_t	wallcolcontext;
 	extern vbuffer_t* dest_buffer;
 
 	colfunc_t		restorefunc = colfunc;
 
-	wallcontext.output = *dest_buffer;
+	wallcolcontext.output = *dest_buffer;
 
 	for ( ; currx < segcontext->stopx ; currx++)
 	{
@@ -316,11 +301,11 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 		if (segcontext->segtextured)
 		{
 			// calculate texture offset
-			angle = (rw_centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
-			texturecolumn = rw_offset-FixedMul(renderfinetangent[angle],rw_distance);
+			angle = (wallcontext->centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
+			texturecolumn = wallcontext->offset-FixedMul(renderfinetangent[angle],wallcontext->distance);
 			texturecolumn >>= FRACBITS;
 			// calculate lighting
-			index = rw_scale>>LIGHTSCALESHIFT;
+			index = wallcontext->scale>>LIGHTSCALESHIFT;
 
 #if SCREENWIDTH != 320
 			index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
@@ -336,14 +321,14 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 			{
 				colormapindex = walllightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ walllightsindex ][ index ] : walllightsindex;
 			}
-			wallcontext.x = currx;
-			wallcontext.scale = rw_scale;
-			wallcontext.iscale = 0xffffffffu / (unsigned)rw_scale;
+			wallcolcontext.x = currx;
+			wallcolcontext.scale = wallcontext->scale;
+			wallcolcontext.iscale = 0xffffffffu / (unsigned)wallcontext->scale;
 
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 			colfunc = colfuncs[ 15 ];
 #else
-			colfunc = colfuncs[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ];
+			colfunc = colfuncs[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ];
 #endif
 	
 		}
@@ -357,12 +342,12 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 		if (segcontext->midtexture && yh >= yl)
 		{
 			// single sided line
-			wallcontext.yl = yl;
-			wallcontext.yh = yh;
-			wallcontext.texturemid = rw_midtexturemid;
-			wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
+			wallcolcontext.yl = yl;
+			wallcolcontext.yh = yh;
+			wallcolcontext.texturemid = wallcontext->midtexturemid;
+			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
 			R_RangeCheck();
-			colfunc( &wallcontext );
+			colfunc( &wallcolcontext );
 			planecontext->ceilingclip[currx] = viewheight;
 			planecontext->floorclip[currx] = -1;
 		}
@@ -382,12 +367,12 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 
 				if (mid >= yl)
 				{
-					wallcontext.yl = yl;
-					wallcontext.yh = mid;
-					wallcontext.texturemid = rw_toptexturemid;
-					wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
+					wallcolcontext.yl = yl;
+					wallcolcontext.yh = mid;
+					wallcolcontext.texturemid = wallcontext->toptexturemid;
+					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
 					R_RangeCheck();
-					colfunc( &wallcontext );
+					colfunc( &wallcolcontext );
 					planecontext->ceilingclip[currx] = mid;
 				}
 				else
@@ -416,12 +401,12 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 		
 				if (mid <= yh)
 				{
-					wallcontext.yl = mid;
-					wallcontext.yh = yh;
-					wallcontext.texturemid = rw_bottomtexturemid;
-					wallcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
+					wallcolcontext.yl = mid;
+					wallcolcontext.yh = yh;
+					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
+					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
 					R_RangeCheck();
-					colfunc( &wallcontext );
+					colfunc( &wallcolcontext );
 					planecontext->floorclip[currx] = mid;
 				}
 				else
@@ -446,13 +431,13 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 			}
 		}
 		
-		rw_scale += rw_scalestep;
+		wallcontext->scale += wallcontext->scalestep;
 		segcontext->topfrac += segcontext->topstep;
 		segcontext->bottomfrac += segcontext->bottomstep;
 
 		colfunc = restorefunc;
 #if R_DRAWCOLUMN_DEBUGDISTANCES
-		wallcontext.colormap = restorelightmap;
+		wallcolcontext.colormap = restorelightmap;
 #endif // R_DRAWCOLUMN_DEBUGDISTANCES
 	}
 }
@@ -462,20 +447,19 @@ void R_RenderSegLoop ( planecontext_t* planecontext, segloopcontext_t* segcontex
 // A wall segment will be drawn
 //  between start and stop pixels (inclusive).
 //
-void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_t start, int32_t stop )
+void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
 {
-	fixed_t		hyp;
-	fixed_t		sineval;
-	angle_t		distangle, offsetangle;
-	fixed_t		vtop;
-	int32_t		lightnum;
+	fixed_t				hyp;
+	fixed_t				sineval;
+	angle_t				distangle, offsetangle;
+	fixed_t				vtop;
+	int32_t				lightnum;
+	int32_t				worldtop;
+	int32_t				worldbottom;
+	int32_t				worldhigh;
+	int32_t				worldlow;
 
-	segloopcontext_t loopcontext;
-
-	int32_t		worldtop;
-	int32_t		worldbottom;
-	int32_t		worldhigh;
-	int32_t		worldlow;
+	segloopcontext_t	loopcontext;
 
 	// don't overflow and crash
 	if ( bspcontext->thisdrawseg == &bspcontext->drawsegs[MAXDRAWSEGS])
@@ -494,16 +478,16 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 	// mark the segment as visible for auto map
 	bspcontext->linedef->flags |= ML_MAPPED;
 
-	// calculate rw_distance for scale calculation
-	rw_normalangle = bspcontext->curline->angle + ANG90;
-	offsetangle = abs((int)rw_normalangle-(int)rw_angle1);
+	// calculate wallcontext->distance for scale calculation
+	wallcontext->normalangle = bspcontext->curline->angle + ANG90;
+	offsetangle = abs((int)wallcontext->normalangle-(int)wallcontext->angle1);
 	offsetangle = M_MIN( offsetangle, ANG90 );
 
 	distangle = ANG90 - offsetangle;
 	hyp = R_PointToDist (bspcontext->curline->v1->x, bspcontext->curline->v1->y);
 	sineval = renderfinesine[distangle>>RENDERANGLETOFINESHIFT];
 	// If this value blows out, renderer go boom. Need to increase resolution of this thing
-	rw_distance = FixedMul (hyp, sineval);
+	wallcontext->distance = FixedMul (hyp, sineval);
 	
 	bspcontext->thisdrawseg->x1 = loopcontext.startx = start;
 	bspcontext->thisdrawseg->x2 = stop;
@@ -511,23 +495,23 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 	loopcontext.stopx = stop+1;
 
 	// calculate scale at both ends and step
-	bspcontext->thisdrawseg->scale1 = rw_scale = 
-	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start], rw_distance);
+	bspcontext->thisdrawseg->scale1 = wallcontext->scale = 
+	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle);
 
 	if (stop > start )
 	{
 		// TODO: calculate second distance? Maybe?
-		//rw_distance = FixedMul( R_PointToDist (curline->v2->x, curline->v2->y), sineval );
+		//wallcontext->distance = FixedMul( R_PointToDist (curline->v2->x, curline->v2->y), sineval );
 
-		bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop], rw_distance );
-		bspcontext->thisdrawseg->scalestep = rw_scalestep = 
-			(bspcontext->thisdrawseg->scale2 - rw_scale) / (stop-start);
+		bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle );
+		bspcontext->thisdrawseg->scalestep = wallcontext->scalestep = 
+			(bspcontext->thisdrawseg->scale2 - wallcontext->scale) / (stop-start);
 	}
 	else
 	{
 	// UNUSED: try to fix the stretched line bug
 #if 0
-		if (rw_distance < FRACUNIT/2)
+		if (wallcontext->distance < FRACUNIT/2)
 		{
 			fixed_t		trx,try;
 			fixed_t		gxt,gyt;
@@ -562,14 +546,14 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 			vtop = bspcontext->frontsector->floorheight +
 			textureheight[bspcontext->sidedef->midtexture];
 			// bottom of texture at bottom
-			rw_midtexturemid = vtop - viewz;	
+			wallcontext->midtexturemid = vtop - viewz;	
 		}
 		else
 		{
 			// top of texture at top
-			rw_midtexturemid = worldtop;
+			wallcontext->midtexturemid = worldtop;
 		}
-		rw_midtexturemid += bspcontext->sidedef->rowoffset;
+		wallcontext->midtexturemid += bspcontext->sidedef->rowoffset;
 
 		bspcontext->thisdrawseg->silhouette = SIL_BOTH;
 		bspcontext->thisdrawseg->sprtopclip = screenheightarray;
@@ -672,7 +656,7 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 			if (bspcontext->linedef->flags & ML_DONTPEGTOP)
 			{
 			// top of texture at top
-				rw_toptexturemid = worldtop;
+				wallcontext->toptexturemid = worldtop;
 			}
 			else
 			{
@@ -681,7 +665,7 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 					+ textureheight[bspcontext->sidedef->toptexture];
 		
 				// bottom of texture
-				rw_toptexturemid = vtop - viewz;	
+				wallcontext->toptexturemid = vtop - viewz;	
 			}
 		}
 		if (worldlow > worldbottom)
@@ -693,15 +677,15 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 			{
 				// bottom of texture at bottom
 				// top of texture at top
-				rw_bottomtexturemid = worldtop;
+				wallcontext->bottomtexturemid = worldtop;
 			}
 			else	// top of texture at top
 			{
-				rw_bottomtexturemid = worldlow;
+				wallcontext->bottomtexturemid = worldlow;
 			}
 		}
-		rw_toptexturemid += bspcontext->sidedef->rowoffset;
-		rw_bottomtexturemid += bspcontext->sidedef->rowoffset;
+		wallcontext->toptexturemid += bspcontext->sidedef->rowoffset;
+		wallcontext->bottomtexturemid += bspcontext->sidedef->rowoffset;
 	
 		// allocate space for masked texture tables
 		if (bspcontext->sidedef->midtexture)
@@ -713,12 +697,12 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 		}
 	}
 
-	// calculate rw_offset (only needed for textured lines)
+	// calculate wallcontext->offset (only needed for textured lines)
 	loopcontext.segtextured = loopcontext.midtexture | loopcontext.toptexture | loopcontext.bottomtexture | loopcontext.maskedtexture;
 
 	if (loopcontext.segtextured)
 	{
-		offsetangle = rw_normalangle-rw_angle1;
+		offsetangle = wallcontext->normalangle-wallcontext->angle1;
 	
 		if (offsetangle > ANG180)
 		{
@@ -732,13 +716,13 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 		}
 
 		sineval = finesine[offsetangle >>ANGLETOFINESHIFT];
-		rw_offset = FixedMul (hyp, sineval);
+		wallcontext->offset = FixedMul (hyp, sineval);
 
-		if (rw_normalangle-rw_angle1 < ANG180)
-			rw_offset = -rw_offset;
+		if (wallcontext->normalangle-wallcontext->angle1 < ANG180)
+			wallcontext->offset = -wallcontext->offset;
 
-		rw_offset += bspcontext->sidedef->textureoffset + bspcontext->curline->offset;
-		rw_centerangle = ANG90 + viewangle - rw_normalangle;
+		wallcontext->offset += bspcontext->sidedef->textureoffset + bspcontext->curline->offset;
+		wallcontext->centerangle = ANG90 + viewangle - wallcontext->normalangle;
 	
 		// calculate light table
 		//  use different light tables
@@ -790,11 +774,11 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 	worldtop >>= 4;
 	worldbottom >>= 4;
 	
-	loopcontext.topstep = -FixedMul (rw_scalestep, worldtop);
-	loopcontext.topfrac = (centeryfrac>>4) - FixedMul (worldtop, rw_scale);
+	loopcontext.topstep = -FixedMul (wallcontext->scalestep, worldtop);
+	loopcontext.topfrac = (centeryfrac>>4) - FixedMul (worldtop, wallcontext->scale);
 
-	loopcontext.bottomstep = -FixedMul (rw_scalestep,worldbottom);
-	loopcontext.bottomfrac = (centeryfrac>>4) - FixedMul (worldbottom, rw_scale);
+	loopcontext.bottomstep = -FixedMul (wallcontext->scalestep,worldbottom);
+	loopcontext.bottomfrac = (centeryfrac>>4) - FixedMul (worldbottom, wallcontext->scale);
 	
 	if (bspcontext->backsector)
 	{	
@@ -803,14 +787,14 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 
 		if (worldhigh < worldtop)
 		{
-			loopcontext.pixhigh = (centeryfrac>>4) - FixedMul (worldhigh, rw_scale);
-			loopcontext.pixhighstep = -FixedMul (rw_scalestep,worldhigh);
+			loopcontext.pixhigh = (centeryfrac>>4) - FixedMul (worldhigh, wallcontext->scale);
+			loopcontext.pixhighstep = -FixedMul (wallcontext->scalestep,worldhigh);
 		}
 	
 		if (worldlow > worldbottom)
 		{
-			loopcontext.pixlow = (centeryfrac>>4) - FixedMul (worldlow, rw_scale);
-			loopcontext.pixlowstep = -FixedMul (rw_scalestep,worldlow);
+			loopcontext.pixlow = (centeryfrac>>4) - FixedMul (worldlow, wallcontext->scale);
+			loopcontext.pixlowstep = -FixedMul (wallcontext->scalestep,worldlow);
 		}
 	}
 
@@ -825,7 +809,7 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 		planecontext->floorplane = R_CheckPlane ( planecontext, planecontext->floorplane, loopcontext.startx, loopcontext.stopx-1 );
 	}
 
-	R_RenderSegLoop( planecontext, &loopcontext );
+	R_RenderSegLoop( planecontext, wallcontext, &loopcontext );
 
 	// save sprite clipping info
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)

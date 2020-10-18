@@ -107,10 +107,4 @@ extern angle_t		clipangle;
 extern int32_t		viewangletox[RENDERFINEANGLES/2];
 extern angle_t		xtoviewangle[SCREENWIDTH+1];
 
-extern fixed_t		rw_distance;
-extern angle_t		rw_normalangle;
-
-// angle to line origin
-extern angle_t		rw_angle1;
-
 #endif

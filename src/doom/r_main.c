@@ -539,7 +539,7 @@ void R_InitPointToAngle (void)
 #define MAXSCALE ( 64 * ( SCREENWIDTH / 320 ) )
 #define MAXSCALE_FIXED ( MAXSCALE << FRACBITS )
 
-fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance)
+fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle)
 {
     fixed_t		scale;
     angle_t		anglea;
@@ -551,8 +551,8 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance)
 
 	scale = MAXSCALE_FIXED;
 
-    anglea = ANG90 + (visangle-viewangle);
-    angleb = ANG90 + (visangle-rw_normalangle);
+    anglea = ANG90 + (visangle - view_angle);
+    angleb = ANG90 + (visangle - normal_angle);
 
     // both sines are allways positive
     sinea = renderfinesine[anglea>>RENDERANGLETOFINESHIFT];

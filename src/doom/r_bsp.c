@@ -27,6 +27,7 @@
 
 #include "r_main.h"
 #include "r_plane.h"
+#include "r_segs.h"
 #include "r_things.h"
 
 // State.
@@ -34,8 +35,6 @@
 #include "r_state.h"
 #include "m_misc.h"
 
-
-void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_t start, int32_t stop );
 
 //
 // R_ClearClipSegs
@@ -63,7 +62,7 @@ void R_ClearDrawSegs ( bspcontext_t* context )
 //  e.g. single sided LineDefs (middle texture)
 //  that entirely block the view.
 // 
-void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_t first, int32_t last )
+void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
 {
 	cliprange_t*	next;
 	cliprange_t*	start;
@@ -82,7 +81,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 		{
 			// Post is entirely visible (above start),
 			//  so insert a new clippost.
-			R_StoreWallRange( bspcontext, planecontext, first, last );
+			R_StoreWallRange( bspcontext, planecontext, wallcontext, first, last );
 			next = bspcontext->solidsegsend;
 			bspcontext->solidsegsend++;
 
@@ -97,7 +96,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 		}
 
 		// There is a fragment above *start.
-		R_StoreWallRange( bspcontext, planecontext, first, start->first - 1 );
+		R_StoreWallRange( bspcontext, planecontext, wallcontext, first, start->first - 1 );
 		// Now adjust the clip size.
 		start->first = first;
 	}
@@ -112,7 +111,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 	while (last >= (next+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange( bspcontext, planecontext, next->last + 1, (next+1)->first - 1 );
+		R_StoreWallRange( bspcontext, planecontext, wallcontext, next->last + 1, (next+1)->first - 1 );
 		++next;
 	
 		if (last <= next->last)
@@ -125,7 +124,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange( bspcontext, planecontext, next->last + 1, last );
+	R_StoreWallRange( bspcontext, planecontext, wallcontext, next->last + 1, last );
 	// Adjust the clip size.
 	start->last = last;
 	
@@ -156,7 +155,7 @@ crunch:
 // Does handle windows,
 //  e.g. LineDefs with upper and lower texture.
 //
-void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_t first, int32_t last )
+void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
 {
 	cliprange_t*	start;
 
@@ -173,12 +172,12 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 		if (last < start->first-1)
 		{
 			// Post is entirely visible (above start).
-			R_StoreWallRange( bspcontext, planecontext, first, last );
+			R_StoreWallRange( bspcontext, planecontext, wallcontext, first, last );
 			return;
 		}
 		
 		// There is a fragment above *start.
-		R_StoreWallRange( bspcontext, planecontext, first, start->first - 1 );
+		R_StoreWallRange( bspcontext, planecontext, wallcontext, first, start->first - 1 );
 	}
 
 	// Bottom contained in start?
@@ -190,7 +189,7 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 	while (last >= (start+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange( bspcontext, planecontext, start->last + 1, (start+1)->first - 1 );
+		R_StoreWallRange( bspcontext, planecontext, wallcontext, start->last + 1, (start+1)->first - 1 );
 		++start;
 	
 		if (last <= start->last)
@@ -200,7 +199,7 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange( bspcontext, planecontext, start->last + 1, last );
+	R_StoreWallRange( bspcontext, planecontext, wallcontext, start->last + 1, last );
 }
 
 //
@@ -211,12 +210,14 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 
 void R_AddLine( bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* line )
 {
-	int32_t		x1;
-	int32_t		x2;
-	angle_t		angle1;
-	angle_t		angle2;
-	angle_t		span;
-	angle_t		tspan;
+	int32_t			x1;
+	int32_t			x2;
+	angle_t			angle1;
+	angle_t			angle2;
+	angle_t			span;
+	angle_t			tspan;
+
+	wallcontext_t	wallcontext;
 
 	bspcontext->curline = line;
 
@@ -235,7 +236,7 @@ void R_AddLine( bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* l
 	}
 
 	// Global angle needed by segcalc.
-	rw_angle1 = angle1;
+	wallcontext.angle1 = angle1;
 	angle1 -= viewangle;
 	angle2 -= viewangle;
 	
@@ -310,11 +311,11 @@ void R_AddLine( bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* l
 	}
 
 clippass:
-	R_ClipPassWallSegment( bspcontext, planecontext, x1, x2-1 );
+	R_ClipPassWallSegment( bspcontext, planecontext, &wallcontext, x1, x2-1 );
 	return;
 
 clipsolid:
-	R_ClipSolidWallSegment( bspcontext, planecontext, x1, x2-1 );
+	R_ClipSolidWallSegment( bspcontext, planecontext, &wallcontext, x1, x2-1 );
 }
 
 

@@ -20,6 +20,7 @@
 #ifndef __R_SEGS__
 #define __R_SEGS__
 
+void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop );
 void R_RenderMaskedSegRange( bspcontext_t* context, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 );
 
 #endif
