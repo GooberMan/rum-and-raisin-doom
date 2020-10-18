@@ -115,7 +115,7 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 //
 // R_RenderMaskedSegRange
 //
-void R_RenderMaskedSegRange( bspcontext_t* bspcontext, drawseg_t* ds, int x1, int x2 )
+void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
 {
 	uint32_t			index;
 	column_t*			col;
@@ -123,12 +123,12 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, drawseg_t* ds, int x1, in
 	int32_t				texnum;
 	vertclip_t*			maskedtexturecol;
 
-	colcontext_t		spritecontext;
+	colcontext_t		spritecolcontext;
 	extern vbuffer_t*	dest_buffer;
 
 	colfunc_t			restorefunc = colfunc;
 
-	spritecontext.output = *dest_buffer;
+	spritecolcontext.output = *dest_buffer;
 
 	// Calculate light table.
 	// Use different light tables
@@ -160,41 +160,41 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, drawseg_t* ds, int x1, in
 	maskedtexturecol = ds->maskedtexturecol;
 
 	rw_scalestep = ds->scalestep;
-	spryscale = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
-	mfloorclip = ds->sprbottomclip;
-	mceilingclip = ds->sprtopclip;
+	spritecontext->spryscale = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
+	spritecontext->mfloorclip = ds->sprbottomclip;
+	spritecontext->mceilingclip = ds->sprtopclip;
 
 	// find positioning
 	if (bspcontext->curline->linedef->flags & ML_DONTPEGBOTTOM)
 	{
-		spritecontext.texturemid = bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight
+		spritecolcontext.texturemid = bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight
 									? bspcontext->frontsector->floorheight
 									: bspcontext->backsector->floorheight;
-		spritecontext.texturemid = spritecontext.texturemid + textureheight[texnum] - viewz;
+		spritecolcontext.texturemid = spritecolcontext.texturemid + textureheight[texnum] - viewz;
 	}
 	else
 	{
-		spritecontext.texturemid = bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight
+		spritecolcontext.texturemid = bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight
 									? bspcontext->frontsector->ceilingheight
 									: bspcontext->backsector->ceilingheight;
-		spritecontext.texturemid = spritecontext.texturemid - viewz;
+		spritecolcontext.texturemid = spritecolcontext.texturemid - viewz;
 	}
-	spritecontext.texturemid += bspcontext->curline->sidedef->rowoffset;
+	spritecolcontext.texturemid += bspcontext->curline->sidedef->rowoffset;
 
 	if (fixedcolormap)
 	{
-		spritecontext.colormap = fixedcolormap;
+		spritecolcontext.colormap = fixedcolormap;
 	}
 
 	// draw the columns
-	for (spritecontext.x = x1 ; spritecontext.x <= x2 ; spritecontext.x++)
+	for (spritecolcontext.x = x1 ; spritecolcontext.x <= x2 ; spritecolcontext.x++)
 	{
 		// calculate lighting
-		if (maskedtexturecol[spritecontext.x] != MASKEDTEXCOL_INVALID)
+		if (maskedtexturecol[spritecolcontext.x] != MASKEDTEXCOL_INVALID)
 		{
 			if (!fixedcolormap)
 			{
-				index = spryscale>>LIGHTSCALESHIFT;
+				index = spritecontext->spryscale>>LIGHTSCALESHIFT;
 #if SCREENWIDTH != 320
 				index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
 #endif // SCREENWIDTH != 320
@@ -202,25 +202,25 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, drawseg_t* ds, int x1, in
 				if (index >=  MAXLIGHTSCALE )
 					index = MAXLIGHTSCALE-1;
 
-				spritecontext.colormap = walllights[index];
+				spritecolcontext.colormap = walllights[index];
 			}
 			
-			sprtopscreen = centeryfrac - FixedMul(spritecontext.texturemid, spryscale);
-			spritecontext.scale = spryscale;
-			spritecontext.iscale = 0xffffffffu / (unsigned)spryscale;
+			spritecontext->sprtopscreen = centeryfrac - FixedMul(spritecolcontext.texturemid, spritecontext->spryscale);
+			spritecolcontext.scale = spritecontext->spryscale;
+			spritecolcontext.iscale = 0xffffffffu / (unsigned)spritecontext->spryscale;
 
 			// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
 			colfunc = &R_DrawColumn_Untranslated; // colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
 
 			// draw the texture
-			col = (column_t *)( R_GetRawColumn( texnum,maskedtexturecol[spritecontext.x] ) -3 );
+			col = (column_t *)( R_GetRawColumn( texnum,maskedtexturecol[spritecolcontext.x] ) -3 );
 			
-			R_DrawMaskedColumn( &spritecontext, col );
-			maskedtexturecol[spritecontext.x] = MASKEDTEXCOL_INVALID;
+			R_DrawMaskedColumn( spritecontext, &spritecolcontext, col );
+			maskedtexturecol[spritecolcontext.x] = MASKEDTEXCOL_INVALID;
 
 			colfunc = restorefunc;
 		}
-		spryscale += rw_scalestep;
+		spritecontext->spryscale += rw_scalestep;
 
 	}
 }

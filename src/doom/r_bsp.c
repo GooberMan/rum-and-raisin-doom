@@ -460,7 +460,7 @@ boolean R_CheckBBox( bspcontext_t* context, fixed_t* bspcoord )
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
-void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_t num )
+void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t num )
 {
 	int32_t			count;
 	seg_t*			line;
@@ -500,7 +500,7 @@ void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_
 		planecontext->ceilingplane = NULL;
 	}
 		
-	R_AddSprites( bspcontext->frontsector );
+	R_AddSprites( spritecontext, bspcontext->frontsector );
 
 	while (count--)
 	{
@@ -523,7 +523,7 @@ void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-void R_RenderBSPNode ( bspcontext_t* bspcontext, planecontext_t* planecontext, int32_t bspnum )
+void R_RenderBSPNode ( bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum )
 {
 	node_t*		bsp;
 	int32_t		side;
@@ -532,9 +532,9 @@ void R_RenderBSPNode ( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 	if (bspnum & NF_SUBSECTOR)
 	{
 		if (bspnum == -1)
-			R_Subsector ( bspcontext, planecontext, 0 );
+			R_Subsector ( bspcontext, planecontext, spritecontext, 0 );
 		else
-			R_Subsector ( bspcontext, planecontext, bspnum&(~NF_SUBSECTOR) );
+			R_Subsector ( bspcontext, planecontext, spritecontext, bspnum&(~NF_SUBSECTOR) );
 		return;
 	}
 		
@@ -544,12 +544,12 @@ void R_RenderBSPNode ( bspcontext_t* bspcontext, planecontext_t* planecontext, i
 	side = R_PointOnSide (viewx, viewy, bsp);
 
 	// Recursively divide front space.
-	R_RenderBSPNode ( bspcontext, planecontext, bsp->children[side]);
+	R_RenderBSPNode ( bspcontext, planecontext, spritecontext, bsp->children[side]);
 
 	// Possibly divide back space.
 	if ( R_CheckBBox( bspcontext, bsp->bbox[side^1] ) )
 	{
-		R_RenderBSPNode ( bspcontext, planecontext, bsp->children[side^1]);
+		R_RenderBSPNode ( bspcontext, planecontext, spritecontext, bsp->children[side^1]);
 	}
 }
 

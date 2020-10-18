@@ -24,34 +24,23 @@
 // Remove when you've made a render context
 #include "r_defs.h"
 
-extern vissprite_t	vissprites[MAXVISSPRITES];
-extern vissprite_t*	vissprite_p;
-extern vissprite_t	vsprsortedhead;
-
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
-// Does not need to be in a context
+// Does not need to be in a threaded context
 extern vertclip_t	negonearray[SCREENWIDTH];
 extern vertclip_t	screenheightarray[SCREENWIDTH];
 
-// vars for R_DrawMaskedColumn
-extern vertclip_t*	mfloorclip;
-extern vertclip_t*	mceilingclip;
-extern fixed_t		spryscale;
-extern fixed_t		sprtopscreen;
-
 extern fixed_t		pspritescale;
 extern fixed_t		pspriteiscale;
+// End global constants
 
+void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* context, column_t* column );
 
-void R_DrawMaskedColumn( colcontext_t* context, column_t* column );
+void R_SortVisSprites( spritecontext_t* spritecontext );
 
-
-void R_SortVisSprites (void);
-
-void R_AddSprites (sector_t* sec);
+void R_AddSprites( spritecontext_t* spritecontext, sector_t* sec );
 void R_InitSprites(const char **namelist);
-void R_ClearSprites ( spritecontext_t* context );
+void R_ClearSprites ( spritecontext_t* spritecontext );
 void R_DrawMasked ( spritecontext_t* spritecontext, bspcontext_t* bspcontext );
 
 #endif

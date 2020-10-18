@@ -515,8 +515,14 @@ typedef struct planecontext_s
 
 typedef struct spritecontext_s
 {
-	vissprite_t		vissprites[MAXVISSPRITES];
-	vissprite_t*	thisvissprite;
+	int32_t			leftclip;
+	int32_t			rightclip;
+
+	// The +1 accounts for the overflow sprite
+	vissprite_t		vissprites[MAXVISSPRITES + 1];
+
+	vissprite_t*	nextvissprite;
+
 	vissprite_t		vsprsortedhead;
 
 	vertclip_t*		mfloorclip;
@@ -524,8 +530,8 @@ typedef struct spritecontext_s
 	fixed_t			spryscale;
 	fixed_t			sprtopscreen;
 
-	fixed_t			pspritescale;
-	fixed_t			pspriteiscale;
+	lighttable_t**	spritelights;
+
 } spritecontext_t;
 
 //

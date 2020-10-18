@@ -1015,12 +1015,15 @@ R_PointInSubsector
     return &subsectors[nodenum & ~NF_SUBSECTOR];
 }
 
-void R_ResetContext( rendercontext_t* context )
+void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightclip )
 {
-	R_ClearClipSegs( &context->bspcontext, 0, viewwidth );
+	R_ClearClipSegs( &context->bspcontext, leftclip, rightclip );
 	R_ClearDrawSegs( &context->bspcontext );
 	R_ClearPlanes( &context->planecontext, viewwidth, viewheight, viewangle );
 	R_ClearSprites( &context->spritecontext );
+
+	context->spritecontext.leftclip = leftclip;
+	context->spritecontext.rightclip = rightclip;
 }
 
 
@@ -1062,7 +1065,7 @@ void R_SetupFrame (player_t* player)
 		fixedcolormap = 0;
 	}
 
-	R_ResetContext( rendercontext );
+	R_ResetContext( rendercontext, 0, viewwidth );
 
 	framecount++;
 	validcount++;
@@ -1079,7 +1082,7 @@ void R_RenderPlayerView (player_t* player)
     // check for new console commands.
     NetUpdate ();
 
-	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, numnodes-1 );
+	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
 
 	// Check for new console commands.
     NetUpdate ();
