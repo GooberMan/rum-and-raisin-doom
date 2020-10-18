@@ -53,7 +53,8 @@
 #define FIELDOFVIEW				( FINEANGLES >> 2 )	
 #define RENDERFIELDOFVIEW		( RENDERFINEANGLES >> 2 )	
 
-rendercontext_t*		rendercontext;
+rendercontext_t**		rendercontexts;
+int32_t					numrendercontexts;
 
 int32_t					viewangleoffset;
 
@@ -790,6 +791,31 @@ void R_InitColFuncs( void )
 }
 
 
+void R_InitContexts( void )
+{
+	int32_t currcontext;
+	int32_t currstart;
+	int32_t incrementby = SCREENWIDTH / 4;
+
+	numrendercontexts = 4;
+	currstart = 0;
+	incrementby = SCREENWIDTH / numrendercontexts;
+
+	rendercontexts = Z_Malloc( sizeof( rendercontext_t* ) * numrendercontexts, PU_STATIC, NULL );
+	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	{
+		rendercontexts[ currcontext ] = Z_Malloc( sizeof( rendercontext_t ) * numrendercontexts, PU_STATIC, NULL );
+
+		rendercontexts[ currcontext ]->starttime = 0;
+		rendercontexts[ currcontext ]->endtime = 1;
+		rendercontexts[ currcontext ]->timetaken = 1;
+
+		rendercontexts[ currcontext ]->begincolumn = M_MAX( currstart - 1, 0 );
+		currstart += incrementby;
+		rendercontexts[ currcontext ]->endcolumn = M_MAX( currstart + 1, SCREENWIDTH );
+	}
+}
+
 //
 // R_SetViewSize
 // Do not really change anything here,
@@ -959,7 +985,8 @@ void R_ExecuteSetViewSize (void)
 void R_Init (void)
 {
 	R_InitColFuncs();
-	rendercontext = Z_Malloc( sizeof( *rendercontext ), PU_STATIC, NULL );
+
+	R_InitContexts();
 
     R_InitData ();
     printf (".");
@@ -1028,6 +1055,8 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 void R_SetupFrame (player_t* player)
 {		
 	int32_t		i;
+	int32_t		currcontext;
+	int32_t		currstart;
 
 	viewplayer = player;
 	viewx = player->mo->x;
@@ -1058,36 +1087,39 @@ void R_SetupFrame (player_t* player)
 		fixedcolormap = 0;
 	}
 
-	R_ResetContext( rendercontext, 0, viewwidth );
+	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	{
+		R_ResetContext( rendercontexts[ currcontext ], 0, viewwidth );
+	}
 
 	framecount++;
 	validcount++;
 }
 
+#include "w_wad.h"
 
 //
 // R_RenderView
 //
 void R_RenderPlayerView (player_t* player)
 {	
-    R_SetupFrame (player);
+	rendercontext_t* rendercontext = rendercontexts[ 0 ];
 
-    // check for new console commands.
-    NetUpdate ();
+	R_SetupFrame (player);
+
+	// NetUpdate can cause lump loads, so we wait until rendering is done before doing it again.
+	// This is a change from the vanilla renderer.
+	NetUpdate ();
+
+	wadrenderlock = true;
 
 	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
-
-	// Check for new console commands.
-    NetUpdate ();
-    
 	R_ErrorCheckPlanes( rendercontext );
 	R_DrawPlanes( &rendercontext->planecontext );
-    
-    // Check for new console commands.
-    NetUpdate ();
-    
-    R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
+	R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
 
-    // Check for new console commands.
-    NetUpdate ();				
+	wadrenderlock = false;
+
+	// And now, back to your regular programming.
+	NetUpdate ();
 }

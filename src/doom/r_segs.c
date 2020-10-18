@@ -469,7 +469,9 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 		
 #ifdef RANGECHECK
 	if (start >=viewwidth || start > stop)
-	I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
+	{
+		I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
+	}
 #endif
 
 	bspcontext->sidedef = bspcontext->curline->sidedef;
@@ -815,6 +817,12 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
 		&& !bspcontext->thisdrawseg->sprtopclip)
 	{
+#ifdef RANGECHECK
+		if( ( planecontext->lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext->openings > MAXOPENINGS )
+		{
+			I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+		}
+#endif // RANGECHECK
 		memcpy (planecontext->lastopening, planecontext->ceilingclip+loopcontext.startx, sizeof(*planecontext->lastopening)*(loopcontext.stopx-loopcontext.startx));
 		bspcontext->thisdrawseg->sprtopclip = planecontext->lastopening - loopcontext.startx;
 		planecontext->lastopening += loopcontext.stopx - loopcontext.startx;
@@ -823,6 +831,12 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
 		&& !bspcontext->thisdrawseg->sprbottomclip)
 	{
+#ifdef RANGECHECK
+		if( ( planecontext->lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext->openings > MAXOPENINGS )
+		{
+			I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+		}
+#endif // RANGECHECK
 		memcpy (planecontext->lastopening, planecontext->floorclip+loopcontext.startx, sizeof(*planecontext->lastopening)*(loopcontext.stopx-loopcontext.startx));
 		bspcontext->thisdrawseg->sprbottomclip = planecontext->lastopening - loopcontext.startx;
 		planecontext->lastopening += loopcontext.stopx - loopcontext.startx;	

@@ -49,4 +49,7 @@ int R_FlatNumForName(const char *name);
 int R_TextureNumForName(const char *name);
 int R_CheckTextureNumForName(const char *name);
 
+// RUM AND RAISIN NOTE: DO NOT USE THIS WITHOUT M_MIN( strlen( name ), 8 )
+const char* R_TextureNameForNum( int32_t tex );
+
 #endif

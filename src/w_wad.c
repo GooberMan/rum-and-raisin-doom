@@ -59,6 +59,8 @@ typedef PACKED_STRUCT (
 lumpinfo_t **lumpinfo;
 uint32_t numlumps = 0;
 
+boolean wadrenderlock = false;
+
 // Hash table for fast lookups
 static lumpindex_t *lumphash;
 
@@ -321,7 +323,6 @@ lumpindex_t W_GetNumForName(const char *name)
     return i;
 }
 
-
 //
 // W_LumpLength
 // Returns the buffer size needed to load the given lump.
@@ -385,11 +386,12 @@ void *W_CacheLumpNum(lumpindex_t lumpnum, int tag)
 {
     byte *result;
     lumpinfo_t *lump;
+	boolean changed;
 
-    if ((unsigned)lumpnum >= numlumps)
-    {
-	I_Error ("W_CacheLumpNum: %i >= numlumps", lumpnum);
-    }
+	if ((unsigned)lumpnum >= numlumps)
+	{
+		I_Error ("W_CacheLumpNum: %i >= numlumps", lumpnum);
+	}
 
     lump = lumpinfo[lumpnum];
 
@@ -409,16 +411,25 @@ void *W_CacheLumpNum(lumpindex_t lumpnum, int tag)
         // Already cached, so just switch the zone tag.
 
         result = lump->cache;
-        Z_ChangeTag(lump->cache, tag);
+        changed = Z_ChangeTag(lump->cache, tag);
+
+		if( changed && wadrenderlock )
+		{
+			I_Error ( "W_CacheLumpNum: %i changed zone during render", lumpnum );
+		}
     }
     else
     {
         // Not yet loaded, so load it now
+		if( wadrenderlock )
+		{
+			I_Error ( "W_CacheLumpNum: %i requested during render", lumpnum );
+		}
 
-        lump->cache = Z_Malloc(W_LumpLength(lumpnum), tag, &lump->cache);
-	W_ReadLump (lumpnum, lump->cache);
-        result = lump->cache;
-    }
+		lump->cache = Z_Malloc(W_LumpLength(lumpnum), tag, &lump->cache);
+		W_ReadLump (lumpnum, lump->cache);
+		result = lump->cache;
+	}
 	
     return result;
 }

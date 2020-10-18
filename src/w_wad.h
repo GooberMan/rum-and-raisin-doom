@@ -53,6 +53,8 @@ struct lumpinfo_s
 extern lumpinfo_t **lumpinfo;
 extern uint32_t numlumps;
 
+extern boolean wadrenderlock;
+
 wad_file_t *W_AddFile(const char *filename);
 void W_Reload(void);
 

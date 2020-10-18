@@ -491,9 +491,10 @@ void Z_CheckHeap (void)
 //
 // Z_ChangeTag
 //
-void Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
+boolean Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
 {
     memblock_t*	block;
+	boolean changed;
 	
     block = (memblock_t *) ((byte *)ptr - sizeof(memblock_t));
 
@@ -505,7 +506,10 @@ void Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
         I_Error("%s:%i: Z_ChangeTag: an owner is required "
                 "for purgable blocks", file, line);
 
+	changed = block->tag != tag;
     block->tag = tag;
+
+	return changed;
 }
 
 void Z_ChangeUser(void *ptr, void **user)

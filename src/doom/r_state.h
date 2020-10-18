@@ -57,10 +57,11 @@ extern int*		texturetranslation;
 
 
 // Sprite....
-extern int		firstspritelump;
-extern int		lastspritelump;
-extern int		numspritelumps;
+extern int32_t		firstspritelump;
+extern int32_t		lastspritelump;
+extern int32_t		numspritelumps;
 
+extern patch_t**	spritepatches;
 
 
 //

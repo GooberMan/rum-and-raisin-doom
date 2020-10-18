@@ -349,7 +349,7 @@ void R_DrawVisSprite( spritecontext_t* spritecontext, vissprite_t* vis, int32_t 
 
 	colfunc_t			restorefunc = colfunc;
 
-	patch = W_CacheLumpNum( vis->patch + firstspritelump, PU_LEVEL );
+	patch = spritepatches[ vis->patch ];
 
 	spritecolcontext.output = *dest_buffer;
 	spritecolcontext.colormap = vis->colormap;

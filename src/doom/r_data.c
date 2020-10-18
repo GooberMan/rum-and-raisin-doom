@@ -136,13 +136,15 @@ int		firstpatch;
 int		lastpatch;
 int		numpatches;
 
-int		firstspritelump;
-int		lastspritelump;
-int		numspritelumps;
+int32_t		firstspritelump;
+int32_t		lastspritelump;
+int32_t		numspritelumps;
+patch_t**	spritepatches;
 
-int		numtextures;
-texture_t**	textures;
-texture_t**     textures_hashtable;
+
+int				numtextures;
+texture_t**		textures;
+texture_t**		textures_hashtable;
 
 
 int*			texturewidthmask;
@@ -259,7 +261,7 @@ void R_GenerateComposite (int texnum)
 		
     for (index=0; index<texture->patchcount; index++, patch++)
     {
-		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+		realpatch = W_CacheLumpNum (patch->patch, COMPOSITE_ZONE); // TODO: Change back to PU_CACHE when masked textures get composited
 		x1 = patch->originx;
 		x2 = x1 + SHORT(realpatch->width);
 
@@ -296,8 +298,6 @@ void R_GenerateComposite (int texnum)
 		}
 	}
 }
-
-
 
 //
 // R_GenerateLookup
@@ -336,7 +336,7 @@ void R_GenerateLookup (int texnum)
 	 i<texture->patchcount;
 	 i++, patch++)
     {
-		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
+		realpatch = W_CacheLumpNum (patch->patch, COMPOSITE_ZONE);
 		x1 = patch->originx;
 		x2 = x1 + SHORT(realpatch->width);
 	
@@ -377,9 +377,30 @@ void R_GenerateLookup (int texnum)
 
 void R_CacheComposite( int32_t tex )
 {
+	int32_t animstart;
+	int32_t animend;
+
 	if ( !texturecomposite[ tex ] )
 	{
-		R_GenerateComposite( tex );
+		animstart = P_GetPicAnimStart( true, tex );
+		if( animstart >= 0 )
+		{
+			animend = animstart + P_GetPicAnimLength( true, animstart );
+			for( ; animstart < animend; ++animstart )
+			{
+				R_GenerateComposite( animstart );
+			}
+		}
+		else
+		{
+			R_GenerateComposite( tex );
+
+			animstart = P_GetPicSwitchOpposite( tex );
+			if( animstart != -1 )
+			{
+				R_GenerateComposite( animstart );
+			}
+		}
 	}
 }
 
@@ -412,7 +433,7 @@ byte* R_GetRawColumn( int32_t tex, int32_t col )
     
 	if (lump > 0)
 	{
-		return (byte *)W_CacheLumpNum(lump,PU_CACHE)+ofs;
+		return (byte *)W_CacheLumpNum(lump,COMPOSITE_ZONE)+ofs;
 	}
 
 	return R_GetColumn( tex, col, 0 );
@@ -684,16 +705,19 @@ void R_InitSpriteLumps (void)
     spritewidth = Z_Malloc (numspritelumps*sizeof(*spritewidth), PU_STATIC, 0);
     spriteoffset = Z_Malloc (numspritelumps*sizeof(*spriteoffset), PU_STATIC, 0);
     spritetopoffset = Z_Malloc (numspritelumps*sizeof(*spritetopoffset), PU_STATIC, 0);
+	spritepatches = Z_Malloc(numspritelumps * sizeof(*spritepatches), PU_STATIC, 0 );
 	
     for (i=0 ; i< numspritelumps ; i++)
     {
-	if (!(i&63))
-	    printf (".");
+		if (!(i&63))
+			printf (".");
 
-	patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
-	spritewidth[i] = SHORT(patch->width)<<FRACBITS;
-	spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
-	spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
+		patch = W_CacheLumpNum (firstspritelump+i, PU_STATIC);
+		spritewidth[i] = SHORT(patch->width)<<FRACBITS;
+		spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
+		spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
+
+		spritepatches[i] = patch;
     }
 }
 
@@ -785,6 +809,10 @@ int R_CheckTextureNumForName(const char *name)
     return -1;
 }
 
+const char* R_TextureNameForNum( int32_t tex )
+{
+	return textures[ tex ]->name;
+}
 
 
 //
@@ -815,7 +843,7 @@ int R_TextureNumForName(const char *name)
 //
 int		flatmemory;
 int		texturememory;
-int		spritememory;
+//int		spritememory;
 
 byte** precachedflats;
 
@@ -823,7 +851,7 @@ void R_PrecacheLevel (void)
 {
     char*		flatpresent;
     char*		texturepresent;
-    char*		spritepresent;
+    //char*		spritepresent;
 
     int			i;
     int			j;
@@ -943,14 +971,15 @@ void R_PrecacheLevel (void)
 
 	Z_Free(texturepresent);
 
+/*
 	// Precache sprites.
 	spritepresent = Z_Malloc(numsprites, PU_STATIC, NULL);
 	memset (spritepresent,0, numsprites);
 	
 	for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
 	{
-	if (th->function.acp1 == (actionf_p1)P_MobjThinker)
-		spritepresent[((mobj_t *)th)->sprite] = 1;
+		if (th->function.acp1 == (actionf_p1)P_MobjThinker)
+			spritepresent[((mobj_t *)th)->sprite] = 1;
 	}
 	
 	spritememory = 0;
@@ -966,12 +995,13 @@ void R_PrecacheLevel (void)
 			{
 				lump = firstspritelump + sf->lump[k];
 				spritememory += lumpinfo[lump]->size;
-				W_CacheLumpNum(lump , PU_LEVEL);
+				W_CacheLumpNum(lump , PU_STATIC);
 			}
 		}
 	}
 
 	Z_Free(spritepresent);
+*/
 }
 
 

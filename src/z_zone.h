@@ -25,6 +25,7 @@
 #define __Z_ZONE__
 
 #include <stdio.h>
+#include "doomtype.h"
 
 //
 // ZONE MEMORY
@@ -57,7 +58,7 @@ void    Z_FreeTags (int lowtag, int hightag);
 void    Z_DumpHeap (int lowtag, int hightag);
 void    Z_FileDumpHeap (FILE *f);
 void    Z_CheckHeap (void);
-void    Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
+boolean Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
 void    Z_ChangeUser(void *ptr, void **user);
 int     Z_FreeMemory (void);
 unsigned int Z_ZoneSize(void);

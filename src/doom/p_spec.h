@@ -42,6 +42,8 @@ void    P_InitPicAnims (void);
 int32_t P_GetPicAnimStart( boolean istexture, int32_t animframe );
 int32_t P_GetPicAnimLength( boolean istexture, int32_t start );
 
+int32_t P_GetPicSwitchOpposite( int32_t tex );
+
 // at map load
 void    P_SpawnSpecials (void);
 

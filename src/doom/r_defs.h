@@ -49,8 +49,8 @@
 #define SIL_TOP					2
 #define SIL_BOTH				3
 
-#define MAXVISPLANES			512
-#define MAXOPENINGS				( SCREENWIDTH*64 )
+#define MAXVISPLANES			256
+#define MAXOPENINGS				( SCREENWIDTH*32 )
 #define MAXDRAWSEGS				( MAXVISPLANES << 2 )
 
 // We must expand MAXSEGS to the theoretical limit of the number of solidsegs
@@ -583,8 +583,8 @@ typedef struct rendercontext_s
 	// Setup
 	vbuffer_t			buffer;
 
-	int32_t				mincolumn;
-	int32_t				maxcolumn;
+	int32_t				begincolumn;
+	int32_t				endcolumn;
 
 	uint64_t			starttime;
 	uint64_t			endtime;
