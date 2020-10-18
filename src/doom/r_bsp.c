@@ -475,7 +475,6 @@ void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, sprite
 	}
 #endif
 
-	sscount++;
 	sub = &subsectors[num];
 	bspcontext->frontsector = sub->sector;
 	count = sub->numlines;

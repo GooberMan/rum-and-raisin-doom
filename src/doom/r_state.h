@@ -45,9 +45,9 @@ extern fixed_t*		spritetopoffset;
 
 extern lighttable_t*	colormaps;
 
-extern int		viewwidth;
-extern int		scaledviewwidth;
-extern int		viewheight;
+extern int32_t		viewwidth;
+extern int32_t		scaledviewwidth;
+extern int32_t		viewheight;
 
 extern int		firstflat;
 
@@ -101,24 +101,16 @@ extern fixed_t		viewz;
 extern angle_t		viewangle;
 extern player_t*	viewplayer;
 
-
 // ?
 extern angle_t		clipangle;
 
-extern int		viewangletox[RENDERFINEANGLES/2];
+extern int32_t		viewangletox[RENDERFINEANGLES/2];
 extern angle_t		xtoviewangle[SCREENWIDTH+1];
-//extern fixed_t		finetangent[FINEANGLES/2];
 
 extern fixed_t		rw_distance;
 extern angle_t		rw_normalangle;
 
-
-
 // angle to line origin
-extern int		rw_angle1;
-
-// Segs count?
-extern int		sscount;
-
+extern angle_t		rw_angle1;
 
 #endif

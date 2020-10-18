@@ -32,22 +32,17 @@
 extern fixed_t		viewcos;
 extern fixed_t		viewsin;
 
-extern int		viewwindowx;
-extern int		viewwindowy;
+extern int32_t		viewwindowx;
+extern int32_t		viewwindowy;
 
-
-
-extern int		centerx;
-extern int		centery;
+extern int32_t		centerx;
+extern int32_t		centery;
 
 extern fixed_t		centerxfrac;
 extern fixed_t		centeryfrac;
 extern fixed_t		projection;
 
-extern int		validcount;
-
-extern int		linecount;
-extern int		loopcount;
+extern int32_t		validcount;
 
 
 //
@@ -73,7 +68,7 @@ extern lighttable_t*	scalelightfixed[MAXLIGHTSCALE];
 extern lighttable_t*	zlight[LIGHTLEVELS][MAXLIGHTZ];
 extern int32_t			zlightindex[LIGHTLEVELS][MAXLIGHTZ];
 
-extern int				extralight;
+extern int32_t			extralight;
 extern lighttable_t*	fixedcolormap;
 extern int32_t			fixedcolormapindex;
 

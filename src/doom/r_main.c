@@ -55,62 +55,57 @@
 
 rendercontext_t*		rendercontext;
 
-int			viewangleoffset;
+int32_t					viewangleoffset;
 
 // increment every time a check is made
-int			validcount = 1;		
+int32_t					validcount = 1;		
 
 
-lighttable_t*		fixedcolormap;
-int32_t				fixedcolormapindex;
+lighttable_t*			fixedcolormap;
+int32_t					fixedcolormapindex;
 extern lighttable_t**	walllights;
 extern int32_t			walllightsindex;
 
-int			centerx;
-int			centery;
+int32_t					centerx;
+int32_t					centery;
 
-fixed_t			centerxfrac;
-fixed_t			centeryfrac;
-fixed_t			projection;
+fixed_t					centerxfrac;
+fixed_t					centeryfrac;
+fixed_t					projection;
 
 // just for profiling purposes
-int			framecount;	
+int32_t					framecount;	
 
-int			sscount;
-int			linecount;
-int			loopcount;
+fixed_t					viewx;
+fixed_t					viewy;
+fixed_t					viewz;
 
-fixed_t			viewx;
-fixed_t			viewy;
-fixed_t			viewz;
+angle_t					viewangle;
 
-angle_t			viewangle;
+fixed_t					viewcos;
+fixed_t					viewsin;
 
-fixed_t			viewcos;
-fixed_t			viewsin;
-
-player_t*		viewplayer;
+player_t*				viewplayer;
 
 // 0 = high, 1 = low
-int			detailshift;	
+int32_t					detailshift;	
 
 //
 // precalculated math tables
 //
-angle_t			clipangle;
+angle_t					clipangle;
 
 // The viewangletox[viewangle + FINEANGLES/4] lookup
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
 
-// TODO: Convert everything to RENDERFINEANGLES
-int			viewangletox[RENDERFINEANGLES/2];
+int32_t				viewangletox[RENDERFINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
 // from clipangle to -clipangle.
-angle_t			xtoviewangle[SCREENWIDTH+1];
+angle_t				xtoviewangle[SCREENWIDTH+1];
 
 lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
@@ -120,7 +115,7 @@ int32_t				zlightindex[LIGHTLEVELS][MAXLIGHTZ];
 colfunc_t			colfuncs[ COLFUNC_COUNT ];
 
 // bumped light from gun blasts
-int					extralight;
+int32_t				extralight;
 
 
 colfunc_t			colfunc;
@@ -1041,11 +1036,9 @@ void R_SetupFrame (player_t* player)
 	extralight = player->extralight;
 
 	viewz = player->viewz;
-    
+
 	viewsin = renderfinesine[viewangle>>RENDERANGLETOFINESHIFT];
 	viewcos = renderfinecosine[viewangle>>RENDERANGLETOFINESHIFT];
-	
-	sscount = 0;
 	
 	fixedcolormapindex = player->fixedcolormap;
 	if (player->fixedcolormap)

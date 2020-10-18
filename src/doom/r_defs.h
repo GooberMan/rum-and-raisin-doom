@@ -292,17 +292,6 @@ typedef struct
 } node_t;
 
 
-
-
-// PC direct to screen pointers
-//B UNUSED - keep till detailshift in r_draw.c resolved
-//extern byte*	destview;
-//extern byte*	destscreen;
-
-
-
-
-
 //
 // OTHER TYPES
 //
@@ -466,6 +455,20 @@ typedef	struct
     int last;
     
 } cliprange_t;
+
+typedef struct wallcontext_s
+{
+	angle_t			normalangle;
+	angle_t			angle1;
+	angle_t			centerangle;
+	fixed_t			offset;
+	fixed_t			distance;
+	fixed_t			scale;
+	fixed_t			scalestep;
+	fixed_t			midtexturemid;
+	fixed_t			toptexturemid;
+	fixed_t			bottomtexturemid;
+} wallcontext_t;
 
 typedef struct bspcontext_s
 {

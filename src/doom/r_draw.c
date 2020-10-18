@@ -59,11 +59,11 @@
 //
 
 
-int		viewwidth;
-int		scaledviewwidth;
-int		viewheight;
-int		viewwindowx;
-int		viewwindowy; 
+int32_t			viewwidth;
+int32_t			scaledviewwidth;
+int32_t			viewheight;
+int32_t			viewwindowx;
+int32_t			viewwindowy; 
 
 size_t			xlookup[MAXWIDTH];
 size_t			rowofs[MAXHEIGHT]; 
@@ -72,7 +72,7 @@ size_t			rowofs[MAXHEIGHT];
 //  translate a limited part to another
 //  (color ramps used for  suit colors).
 //
-byte		translations[3][256];	
+byte			translations[3][256];	
  
 // Backing buffer containing the bezel drawn around the screen and 
 // surrounding background.
@@ -194,12 +194,12 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 
 	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
 
-	basedest	= context->output.data + xlookup[context->x] + rowofs[context->yl];
+	basedest	= (size_t)context->output.data + xlookup[context->x] + rowofs[context->yl];
 	enddest		= basedest + ( context->yh - context->yl);
 	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
 	// HACK FOR NOW
-	simddest	= basedest - overlap;
+	simddest	= ( simd_int8x16_t* )( basedest - overlap );
 	curr		= context->yl - overlap;
 
 	fracstep	= context->iscale << 4;
@@ -245,7 +245,7 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 
 		prevsample	= _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
 
-	} while( simddest <= enddest );
+	} while( (size_t)simddest <= enddest );
 }
 
 #if 0
@@ -878,7 +878,7 @@ R_InitBuffer
 ( int		width,
   int		height ) 
 { 
-    size_t	i; 
+    int32_t	i; 
 
     // Handle resize,
     //  e.g. smaller view windows
