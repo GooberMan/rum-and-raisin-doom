@@ -129,6 +129,7 @@ static vbuffer_t background_data;
 	#define _store_int8x16			vst1q_s8
 
 	#define _set_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p ) { a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
+	#define literal_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p ) { a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
 
 #else
 	#define COLUMN_AVX 0
