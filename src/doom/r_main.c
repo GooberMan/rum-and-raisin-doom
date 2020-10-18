@@ -1079,13 +1079,13 @@ void R_RenderPlayerView (player_t* player)
     // check for new console commands.
     NetUpdate ();
 
-	R_RenderBSPNode ( &rendercontext->bspcontext, numnodes-1);
+	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, numnodes-1 );
 
 	// Check for new console commands.
     NetUpdate ();
     
 	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes ();
+	R_DrawPlanes( &rendercontext->planecontext );
     
     // Check for new console commands.
     NetUpdate ();

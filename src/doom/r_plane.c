@@ -35,54 +35,11 @@
 #include "m_misc.h"
 
 //
-// opening
+// Constants. Don't need to be in a context. Will get them off the stack at some point though.
 //
-// TODO: MOVE TO CONTEXTS
-
-// Here comes the obnoxious "visplane".
-visplane_t		visplanes[MAXVISPLANES];
-visplane_t*		lastvisplane;
-visplane_t*		floorplane;
-visplane_t*		ceilingplane;
-
-// ?
-vertclip_t		openings[MAXOPENINGS];
-vertclip_t*		lastopening;
-
-
-//
-// Clip values are the solid pixel bounding the range.
-//  floorclip starts out SCREENHEIGHT
-//  ceilingclip starts out -1
-//
-vertclip_t			floorclip[SCREENWIDTH];
-vertclip_t			ceilingclip[SCREENWIDTH];
-
-//
-// spanstart holds the start of a plane span
-// initialized to 0 at start
-//
-int32_t			spanstart[SCREENHEIGHT];
-int32_t			spanstop[SCREENHEIGHT];
-
-//
-// texture mapping
-//
-
-lighttable_t**		planezlight;
-int32_t			planezlightindex;
-fixed_t			planeheight;
 
 fixed_t			yslope[SCREENHEIGHT];
 fixed_t			distscale[SCREENWIDTH];
-fixed_t			basexscale;
-fixed_t			baseyscale;
-
-fixed_t			cachedheight[SCREENHEIGHT];
-fixed_t			cacheddistance[SCREENHEIGHT];
-fixed_t			cachedxstep[SCREENHEIGHT];
-fixed_t			cachedystep[SCREENHEIGHT];
-// END MOVE TO CONTEXTS
 
 
 //
@@ -108,13 +65,13 @@ void R_InitPlanes (void)
 //
 // BASIC PRIMITIVE
 //
-void R_MapPlane( spancontext_t* context, int y, int x1, int x2 )
+void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32_t y, int32_t x1, int32_t x2 )
 {
 	angle_t		angle;
 	fixed_t		distance;
 	fixed_t		length;
 	uint32_t	index;
-	byte*		originalsource = context->source;
+	byte*		originalsource = spancontext->source;
 	
 #ifdef RANGECHECK
 	if (x2 < x1
@@ -126,30 +83,29 @@ void R_MapPlane( spancontext_t* context, int y, int x1, int x2 )
 	}
 #endif
 
-	// TODO: planeheight needs to go straight in to the context...
-	if (planeheight != cachedheight[y])
+	if (planecontext->planeheight != planecontext->cachedheight[y])
 	{
-		cachedheight[y] = planeheight;
-		distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
-		context->xstep = cachedxstep[y] = FixedMul (distance,basexscale);
-		context->ystep = cachedystep[y] = FixedMul (distance,baseyscale);
+		planecontext->cachedheight[y] = planecontext->planeheight;
+		distance = planecontext->cacheddistance[y] = FixedMul (planecontext->planeheight, yslope[y]);
+		spancontext->xstep = planecontext->cachedxstep[y] = FixedMul (distance, planecontext->basexscale);
+		spancontext->ystep = planecontext->cachedystep[y] = FixedMul (distance, planecontext->baseyscale);
 	}
 	else
 	{
-		distance = cacheddistance[y];
-		context->xstep = cachedxstep[y];
-		context->ystep = cachedystep[y];
+		distance = planecontext->cacheddistance[y];
+		spancontext->xstep = planecontext->cachedxstep[y];
+		spancontext->ystep = planecontext->cachedystep[y];
 	}
 	
 	length = FixedMul (distance,distscale[x1]);
 	angle = (viewangle + xtoviewangle[x1])>>RENDERANGLETOFINESHIFT;
-	context->xfrac = viewx + FixedMul(renderfinecosine[angle], length);
-	context->yfrac = -viewy - FixedMul(renderfinesine[angle], length);
+	spancontext->xfrac = viewx + FixedMul(renderfinecosine[angle], length);
+	spancontext->yfrac = -viewy - FixedMul(renderfinesine[angle], length);
 
 	if( fixedcolormapindex )
 	{
 		// TODO: This should be a real define somewhere
-		context->source += ( 4096 * fixedcolormapindex );
+		spancontext->source += ( 4096 * fixedcolormapindex );
 	}
 	else
 	{
@@ -157,19 +113,19 @@ void R_MapPlane( spancontext_t* context, int y, int x1, int x2 )
 		if (index >= MAXLIGHTZ )
 			index = MAXLIGHTZ-1;
 
-		index = zlightindex[planezlightindex][index];
+		index = zlightindex[planecontext->planezlightindex][index];
 
-		context->source += ( 4096 * index );
+		spancontext->source += ( 4096 * index );
 	}
 
-    context->y = y;
-    context->x1 = x1;
-    context->x2 = x2;
+	spancontext->y = y;
+	spancontext->x1 = x1;
+	spancontext->x2 = x2;
 
-    // high or low detail
-    spanfunc( context );	
+	// high or low detail
+	spanfunc( spancontext );
 
-	context->source = originalsource;
+	spancontext->source = originalsource;
 }
 
 
@@ -177,7 +133,7 @@ void R_MapPlane( spancontext_t* context, int y, int x1, int x2 )
 // R_ClearPlanes
 // At begining of frame.
 //
-void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, int32_t thisangle )
+void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle )
 {
 	int32_t	i;
 	angle_t	angle;
@@ -185,45 +141,22 @@ void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, int
 	// opening / clipping determination
 	for (i=0 ; i<viewwidth ; i++)
 	{
-		floorclip[i] = viewheight;
-		ceilingclip[i] = -1;
+		context->floorclip[i] = viewheight;
+		context->ceilingclip[i] = -1;
 	}
 
-	lastvisplane = visplanes;
-	lastopening = openings;
+	context->lastvisplane = context->visplanes;
+	context->lastopening = context->openings;
 
 	// texture calculation
-	memset (cachedheight, 0, sizeof(cachedheight));
+	memset (context->cachedheight, 0, sizeof(context->cachedheight));
 
 	// left to right mapping
-	angle = (viewangle-ANG90)>>RENDERANGLETOFINESHIFT;
+	angle = (thisangle-ANG90)>>RENDERANGLETOFINESHIFT;
 	
 	// scale will be unit scale at SCREENWIDTH/2 distance
-	basexscale = FixedDiv (renderfinecosine[angle],centerxfrac);
-	baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
-
-	if( context )
-	{
-		// opening / clipping determination
-		for (i=0 ; i<width ; i++)
-		{
-			context->floorclip[i] = height;
-			context->ceilingclip[i] = -1;
-		}
-
-		context->lastvisplane = context->visplanes;
-		context->lastopening = context->openings;
-
-		// texture calculation
-		memset (context->cachedheight, 0, sizeof(context->cachedheight));
-
-		// left to right mapping
-		angle = (thisangle - ANG90)>>RENDERANGLETOFINESHIFT;
-	
-		// scale will be unit scale at SCREENWIDTH/2 distance
-		context->basexscale = FixedDiv (renderfinecosine[angle],centerxfrac);
-		context->baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
-	}
+	context->basexscale = FixedDiv (renderfinecosine[angle],centerxfrac);
+	context->baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
 }
 
 
@@ -234,143 +167,142 @@ void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, int
 //
 
 // R&R TODO: Optimize this wow linear search this will ruin lives
-visplane_t*
-R_FindPlane
-( fixed_t	height,
-  int		picnum,
-  int		lightlevel )
+visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel )
 {
-    visplane_t*	check;
+	visplane_t*	check;
 	
-    if (picnum == skyflatnum)
-    {
-	height = 0;			// all skys map together
-	lightlevel = 0;
-    }
-	
-    for (check=visplanes; check<lastvisplane; check++)
-    {
-	if (height == check->height
-	    && picnum == check->picnum
-	    && lightlevel == check->lightlevel)
+	if (picnum == skyflatnum)
 	{
-	    break;
+		height = 0;			// all skys map together
+		lightlevel = 0;
 	}
-    }
-    
+	
+	for (check= context->visplanes; check< context->lastvisplane; check++)
+	{
+		if (height == check->height
+			&& picnum == check->picnum
+			&& lightlevel == check->lightlevel)
+		{
+			break;
+		}
+	}
 			
-    if (check < lastvisplane)
-	return check;
+	if (check < context->lastvisplane)
+	{
+		return check;
+	}
 		
-    if (lastvisplane - visplanes == MAXVISPLANES)
-	I_Error ("R_FindPlane: no more visplanes");
+	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
+	{
+		I_Error ("R_FindPlane: no more visplanes");
+	}
 		
-    lastvisplane++;
+	context->lastvisplane++;
 
-    check->height = height;
-    check->picnum = picnum;
-    check->lightlevel = lightlevel;
-    check->minx = SCREENWIDTH;
-    check->maxx = -1;
-    
-    memset (check->top,VPINDEX_INVALID,sizeof(check->top));
+	check->height = height;
+	check->picnum = picnum;
+	check->lightlevel = lightlevel;
+	check->minx = SCREENWIDTH;
+	check->maxx = -1;
+
+	memset (check->top,VPINDEX_INVALID,sizeof(check->top));
 		
-    return check;
+	return check;
 }
 
 
 //
 // R_CheckPlane
 //
-visplane_t*
-R_CheckPlane
-( visplane_t*	pl,
-  int		start,
-  int		stop )
+visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start, int32_t stop )
 {
-    int		intrl;
-    int		intrh;
-    int		unionl;
-    int		unionh;
-    int		x;
+	int32_t		intrl;
+	int32_t		intrh;
+	int32_t		unionl;
+	int32_t		unionh;
+	int32_t		x;
 	
-    if (start < pl->minx)
-    {
-	intrl = pl->minx;
-	unionl = start;
-    }
-    else
-    {
-	unionl = pl->minx;
-	intrl = start;
-    }
+	if (start < pl->minx)
+	{
+		intrl = pl->minx;
+		unionl = start;
+	}
+	else
+	{
+		unionl = pl->minx;
+		intrl = start;
+	}
 	
-    if (stop > pl->maxx)
-    {
-	intrh = pl->maxx;
-	unionh = stop;
-    }
-    else
-    {
-	unionh = pl->maxx;
-	intrh = stop;
-    }
+	if (stop > pl->maxx)
+	{
+		intrh = pl->maxx;
+		unionh = stop;
+	}
+	else
+	{
+		unionh = pl->maxx;
+		intrh = stop;
+	}
 
-    for (x=intrl ; x<= intrh ; x++)
-	if (pl->top[x] != VPINDEX_INVALID)
-	    break;
+	for (x=intrl ; x<= intrh ; x++)
+	{
+		if (pl->top[x] != VPINDEX_INVALID)
+			break;
+	}
 
-    if (x > intrh)
-    {
-	pl->minx = unionl;
-	pl->maxx = unionh;
+	if (x > intrh)
+	{
+		pl->minx = unionl;
+		pl->maxx = unionh;
 
-	// use the same one
-	return pl;		
-    }
+		// use the same one
+		return pl;
+	}
 	
-    // make a new visplane
-    lastvisplane->height = pl->height;
-    lastvisplane->picnum = pl->picnum;
-    lastvisplane->lightlevel = pl->lightlevel;
+	// make a new visplane
+	context->lastvisplane->height = pl->height;
+	context->lastvisplane->picnum = pl->picnum;
+	context->lastvisplane->lightlevel = pl->lightlevel;
     
-    if (lastvisplane - visplanes == MAXVISPLANES)
-	I_Error ("R_CheckPlane: no more visplanes");
+	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
+	{
+		I_Error ("R_CheckPlane: no more visplanes");
+	}
 
-    pl = lastvisplane++;
-    pl->minx = start;
-    pl->maxx = stop;
+	pl = context->lastvisplane++;
+	pl->minx = start;
+	pl->maxx = stop;
 
-    memset (pl->top,VPINDEX_INVALID,sizeof(pl->top));
+	memset (pl->top,VPINDEX_INVALID,sizeof(pl->top));
 		
-    return pl;
+	return pl;
 }
 
 
 //
 // R_MakeSpans
 //
-void R_MakeSpans( spancontext_t* context, int x, int t1, int b1, int t2, int b2 )
+void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t b2 )
 {
 	while (t1 < t2 && t1<=b1)
 	{
-		R_MapPlane( context, t1,spanstart[t1],x-1 );
+		R_MapPlane( planecontext, spancontext, t1, planecontext->spanstart[t1], x-1 );
 		t1++;
 	}
 	while (b1 > b2 && b1>=t1)
 	{
-		R_MapPlane( context, b1,spanstart[b1],x-1 );
+		R_MapPlane( planecontext, spancontext, b1, planecontext->spanstart[b1], x-1 );
 		b1--;
 	}
 	
 	while (t2 < t1 && t2<=b2)
 	{
-		spanstart[t2] = x;
+		planecontext->spanstart[t2] = x;
 		t2++;
 	}
 	while (b2 > b1 && b2>=t2)
 	{
-		spanstart[b2] = x;
+		planecontext->spanstart[b2] = x;
 		b2--;
 	}
 }
@@ -378,17 +310,23 @@ void R_MakeSpans( spancontext_t* context, int x, int t1, int b1, int t2, int b2 
 #ifdef RANGECHECK
 void R_ErrorCheckPlanes( rendercontext_t* context )
 {
-    if ( context->bspcontext.thisdrawseg - context->bspcontext.drawsegs > MAXDRAWSEGS)
-	I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
-		 context->bspcontext.thisdrawseg - context->bspcontext.drawsegs);
-    
-    if (lastvisplane - visplanes > MAXVISPLANES)
-	I_Error ("R_DrawPlanes: visplane overflow (%" PRIiPTR ")",
-		 lastvisplane - visplanes);
-    
-    if (lastopening - openings > MAXOPENINGS)
-	I_Error ("R_DrawPlanes: opening overflow (%" PRIiPTR ")",
-		 lastopening - openings);
+	if ( context->bspcontext.thisdrawseg - context->bspcontext.drawsegs > MAXDRAWSEGS)
+	{
+		I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
+				context->bspcontext.thisdrawseg - context->bspcontext.drawsegs);
+	}
+
+	if ( context->planecontext.lastvisplane - context->planecontext.visplanes > MAXVISPLANES)
+	{
+		I_Error ("R_DrawPlanes: visplane overflow (%" PRIiPTR ")",
+				context->planecontext.lastvisplane - context->planecontext.visplanes);
+	}
+
+	if (context->planecontext.lastopening - context->planecontext.openings > MAXOPENINGS)
+	{
+		I_Error ("R_DrawPlanes: opening overflow (%" PRIiPTR ")",
+				context->planecontext.lastopening - context->planecontext.openings);
+	}
 }
 #endif
 
@@ -396,7 +334,7 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 // R_DrawPlanes
 // At the end of each frame.
 //
-void R_DrawPlanes ( bspcontext_t* context )
+void R_DrawPlanes( planecontext_t* planecontext )
 {
 	visplane_t*		pl;
 	int32_t			light;
@@ -425,8 +363,8 @@ void R_DrawPlanes ( bspcontext_t* context )
 	// This isn't a constant though...
 	skycontext.output = *dest_buffer;
 
-    for (pl = visplanes ; pl < lastvisplane ; pl++)
-    {
+	for (pl = planecontext->visplanes ; pl < planecontext->lastvisplane ; pl++)
+	{
 		if (pl->minx > pl->maxx)
 			continue;
 	
@@ -457,7 +395,7 @@ void R_DrawPlanes ( bspcontext_t* context )
 		lumpnum = flattranslation[pl->picnum];
 		spancontext.source = precachedflats[ lumpnum ];
 
-		planeheight = abs(pl->height-viewz);
+		planecontext->planeheight = abs(pl->height-viewz);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 		if (light >= LIGHTLEVELS)
@@ -466,8 +404,8 @@ void R_DrawPlanes ( bspcontext_t* context )
 		if (light < 0)
 			light = 0;
 
-		planezlightindex = light;
-		planezlight = zlight[light];
+		planecontext->planezlightindex = light;
+		planecontext->planezlight = zlight[light];
 
 		pl->top[pl->maxx+1] = VPINDEX_INVALID;
 		pl->top[pl->minx-1] = VPINDEX_INVALID;
@@ -476,7 +414,7 @@ void R_DrawPlanes ( bspcontext_t* context )
 
 		for (x=pl->minx ; x<= stop ; x++)
 		{
-			R_MakeSpans( &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
+			R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
 		}
 	
 	}

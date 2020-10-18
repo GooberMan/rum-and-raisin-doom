@@ -26,19 +26,14 @@
 
 
 // Visplane related.
-extern  vertclip_t*		lastopening;
-
-extern vertclip_t	floorclip[SCREENWIDTH];
-extern vertclip_t	ceilingclip[SCREENWIDTH];
-
 extern fixed_t		yslope[SCREENHEIGHT];
 extern fixed_t		distscale[SCREENWIDTH];
 
 void R_InitPlanes (void);
-void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, int32_t thisangle );
+void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle );
 
-void R_MapPlane( spancontext_t* context, int y, int x1, int x2 );
-void R_MakeSpans( spancontext_t* context, int x, int t1, int b1, int t2, int b2 );
+void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32_t y, int32_t x1, int32_t x2 );
+void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t b2 );
 
 #ifdef RANGECHECK
 void R_ErrorCheckPlanes( rendercontext_t* context );
@@ -48,17 +43,9 @@ void R_ErrorCheckPlanes( rendercontext_t* context );
 
 void R_DrawPlanes ( );
 
-visplane_t*
-R_FindPlane
-( fixed_t	height,
-  int		picnum,
-  int		lightlevel );
+visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel );
 
-visplane_t*
-R_CheckPlane
-( visplane_t*	pl,
-  int		start,
-  int		stop );
+visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start, int32_t stop );
 
 
 

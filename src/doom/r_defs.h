@@ -496,8 +496,12 @@ typedef struct planecontext_s
 	vertclip_t		floorclip[SCREENWIDTH];
 	vertclip_t		ceilingclip[SCREENWIDTH];
 
-	fixed_t			yslope[SCREENHEIGHT];
-	fixed_t			distscale[SCREENWIDTH];
+	int32_t			spanstart[SCREENHEIGHT];
+	int32_t			spanstop[SCREENHEIGHT];
+
+	lighttable_t**	planezlight;
+	int32_t			planezlightindex;
+	fixed_t			planeheight;
 
 	fixed_t			basexscale;
 	fixed_t			baseyscale;
@@ -573,7 +577,9 @@ typedef struct rendercontext_s
 	int32_t				mincolumn;
 	int32_t				maxcolumn;
 
-	uint64_t			lasttimetaken;
+	uint64_t			starttime;
+	uint64_t			endtime;
+	uint64_t			timetaken;
 
 	bspcontext_t		bspcontext;
 	planecontext_t		planecontext;
