@@ -38,6 +38,7 @@
 // Need ST_HEIGHT
 #include "st_stuff.h"
 #include "m_misc.h"
+#include "w_wad.h"
 
 #include "z_zone.h"
 
@@ -791,13 +792,24 @@ void R_InitColFuncs( void )
 }
 
 
+void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightclip )
+{
+	context->begincolumn = context->spritecontext.leftclip = leftclip;
+	context->endcolumn = context->spritecontext.rightclip = rightclip;
+
+	R_ClearClipSegs( &context->bspcontext, leftclip, rightclip );
+	R_ClearDrawSegs( &context->bspcontext );
+	R_ClearPlanes( &context->planecontext, viewwidth, viewheight, viewangle );
+	R_ClearSprites( &context->spritecontext );
+}
+
 void R_InitContexts( void )
 {
 	int32_t currcontext;
 	int32_t currstart;
-	int32_t incrementby = SCREENWIDTH / 4;
+	int32_t incrementby;
 
-	numrendercontexts = 4;
+	numrendercontexts = 1;
 	currstart = 0;
 	incrementby = SCREENWIDTH / numrendercontexts;
 
@@ -810,9 +822,11 @@ void R_InitContexts( void )
 		rendercontexts[ currcontext ]->endtime = 1;
 		rendercontexts[ currcontext ]->timetaken = 1;
 
-		rendercontexts[ currcontext ]->begincolumn = M_MAX( currstart - 1, 0 );
+		rendercontexts[ currcontext ]->begincolumn = rendercontexts[ currcontext ]->spritecontext.leftclip = M_MAX( currstart - 1, 0 );
 		currstart += incrementby;
-		rendercontexts[ currcontext ]->endcolumn = M_MAX( currstart + 1, SCREENWIDTH );
+		rendercontexts[ currcontext ]->endcolumn = rendercontexts[ currcontext ]->spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
+
+		R_ResetContext( rendercontexts[ currcontext ], rendercontexts[ currcontext ]->begincolumn, rendercontexts[ currcontext ]->endcolumn );
 	}
 }
 
@@ -1037,18 +1051,6 @@ R_PointInSubsector
     return &subsectors[nodenum & ~NF_SUBSECTOR];
 }
 
-void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightclip )
-{
-	R_ClearClipSegs( &context->bspcontext, leftclip, rightclip );
-	R_ClearDrawSegs( &context->bspcontext );
-	R_ClearPlanes( &context->planecontext, viewwidth, viewheight, viewangle );
-	R_ClearSprites( &context->spritecontext );
-
-	context->spritecontext.leftclip = leftclip;
-	context->spritecontext.rightclip = rightclip;
-}
-
-
 //
 // R_SetupFrame
 //
@@ -1057,6 +1059,13 @@ void R_SetupFrame (player_t* player)
 	int32_t		i;
 	int32_t		currcontext;
 	int32_t		currstart;
+	int32_t		desiredwidth;
+
+	double_t	lastframetime;
+	double_t	currpercentage;
+	double_t	percentagedebt;
+
+	double_t	idealpercentage = 1.0 / (double_t)numrendercontexts;
 
 	viewplayer = player;
 	viewx = player->mo->x;
@@ -1087,23 +1096,66 @@ void R_SetupFrame (player_t* player)
 		fixedcolormap = 0;
 	}
 
+	lastframetime = 0;
+	percentagedebt = 0;
+	currstart = 0;
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
-		R_ResetContext( rendercontexts[ currcontext ], 0, viewwidth );
+		lastframetime += rendercontexts[ currcontext ]->timetaken;
+	}
+
+	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	{
+		currpercentage = rendercontexts[ currcontext ]->timetaken / lastframetime;
+		if( currpercentage > idealpercentage )
+		{
+			currpercentage -= 0.05f;
+			percentagedebt += 0.05f;
+		}
+		else if( currpercentage < idealpercentage && percentagedebt > 0 )
+		{
+			currpercentage += percentagedebt;
+			percentagedebt = 0;
+		}
+
+		desiredwidth = viewwidth * currpercentage;
+
+		R_ResetContext( rendercontexts[ currcontext ], M_MAX( currstart - 1, 0 ), M_MIN( currstart + desiredwidth + 1, viewwidth ) );
+		currstart += desiredwidth;
 	}
 
 	framecount++;
 	validcount++;
 }
 
-#include "w_wad.h"
+void R_RenderViewContext( rendercontext_t* rendercontext )
+{
+	rendercontext->starttime = I_GetTimeUS();
+
+	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
+	R_ErrorCheckPlanes( rendercontext );
+	R_DrawPlanes( &rendercontext->planecontext );
+	R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
+
+	rendercontext->endtime = I_GetTimeUS();
+	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
+}
 
 //
 // R_RenderView
 //
+#define MAXWIDTH			(SCREENWIDTH + ( SCREENWIDTH >> 1) )
+#define MAXHEIGHT			(SCREENHEIGHT + ( SCREENHEIGHT >> 1) )
+
+extern size_t			xlookup[MAXWIDTH];
+extern size_t			rowofs[MAXHEIGHT];
+
 void R_RenderPlayerView (player_t* player)
 {	
-	rendercontext_t* rendercontext = rendercontexts[ 0 ];
+	int32_t currcontext;
+
+	byte* outputcolumn;
+	byte* endcolumn;
 
 	R_SetupFrame (player);
 
@@ -1113,10 +1165,22 @@ void R_RenderPlayerView (player_t* player)
 
 	wadrenderlock = true;
 
-	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
-	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes( &rendercontext->planecontext );
-	R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
+	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	{
+		R_RenderViewContext( rendercontexts[ currcontext ] );
+	}
+
+	for( currcontext = 1; currcontext < numrendercontexts; ++currcontext )
+	{
+		outputcolumn = I_VideoBuffer + xlookup[ rendercontexts[ currcontext ]->begincolumn + 1 ] + rowofs[ 0 ];
+		endcolumn = outputcolumn + viewheight;
+
+		while( outputcolumn != endcolumn )
+		{
+			*outputcolumn = 249;
+			++outputcolumn;
+		}
+	}
 
 	wadrenderlock = false;
 
