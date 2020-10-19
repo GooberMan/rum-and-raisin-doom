@@ -55,7 +55,9 @@
 #define RENDERFIELDOFVIEW		( RENDERFINEANGLES >> 2 )	
 
 rendercontext_t**		rendercontexts;
-int32_t					numrendercontexts;
+int32_t					numrendercontexts = 3;
+boolean					renderloadbalancing = false;
+boolean					rendersplitvisualise = false;
 
 int32_t					viewangleoffset;
 
@@ -803,13 +805,16 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 	R_ClearSprites( &context->spritecontext );
 }
 
+#include "hu_lib.h"
+#include "hu_stuff.h"
+extern patch_t*		hu_font[HU_FONTSIZE];
+
 void R_InitContexts( void )
 {
 	int32_t currcontext;
 	int32_t currstart;
 	int32_t incrementby;
 
-	numrendercontexts = 1;
 	currstart = 0;
 	incrementby = SCREENWIDTH / numrendercontexts;
 
@@ -827,6 +832,10 @@ void R_InitContexts( void )
 		rendercontexts[ currcontext ]->endcolumn = rendercontexts[ currcontext ]->spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
 
 		R_ResetContext( rendercontexts[ currcontext ], rendercontexts[ currcontext ]->begincolumn, rendercontexts[ currcontext ]->endcolumn );
+
+		rendercontexts[ currcontext ]->debugtime = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
+
+		HUlib_initTextLine( rendercontexts[ currcontext ]->debugtime, ( FixedDiv( rendercontexts[ currcontext ]->begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 3, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
 	}
 }
 
@@ -1096,40 +1105,57 @@ void R_SetupFrame (player_t* player)
 		fixedcolormap = 0;
 	}
 
-	lastframetime = 0;
-	percentagedebt = 0;
-	currstart = 0;
-	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	if( renderloadbalancing )
 	{
-		lastframetime += rendercontexts[ currcontext ]->timetaken;
+		lastframetime = 0;
+		percentagedebt = 0;
+		currstart = 0;
+		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		{
+			lastframetime += rendercontexts[ currcontext ]->timetaken;
+		}
+
+		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		{
+			currpercentage = rendercontexts[ currcontext ]->timetaken / lastframetime;
+			if( currpercentage > idealpercentage )
+			{
+				currpercentage -= 0.05f;
+				percentagedebt += 0.05f;
+			}
+			else if( currpercentage < idealpercentage && percentagedebt > 0 )
+			{
+				currpercentage += percentagedebt;
+				percentagedebt = 0;
+			}
+
+			desiredwidth = (int32_t)( viewwidth * currpercentage );
+
+			R_ResetContext( rendercontexts[ currcontext ], M_MAX( currstart - 1, 0 ), M_MIN( currstart + desiredwidth + 1, viewwidth ) );
+			currstart += desiredwidth;
+		}
 	}
-
-	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	else
 	{
-		currpercentage = rendercontexts[ currcontext ]->timetaken / lastframetime;
-		if( currpercentage > idealpercentage )
-		{
-			currpercentage -= 0.05f;
-			percentagedebt += 0.05f;
-		}
-		else if( currpercentage < idealpercentage && percentagedebt > 0 )
-		{
-			currpercentage += percentagedebt;
-			percentagedebt = 0;
-		}
+		currstart = 0;
 
-		desiredwidth = viewwidth * currpercentage;
+		desiredwidth = viewwidth / numrendercontexts;
+		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		{
+			rendercontexts[ currcontext ]->begincolumn = rendercontexts[ currcontext ]->spritecontext.leftclip = M_MAX( currstart - 1, 0 );
+			currstart += desiredwidth;
+			rendercontexts[ currcontext ]->endcolumn = rendercontexts[ currcontext ]->spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
 
-		R_ResetContext( rendercontexts[ currcontext ], M_MAX( currstart - 1, 0 ), M_MIN( currstart + desiredwidth + 1, viewwidth ) );
-		currstart += desiredwidth;
+			R_ResetContext( rendercontexts[ currcontext ], rendercontexts[ currcontext ]->begincolumn, rendercontexts[ currcontext ]->endcolumn );
+		}
 	}
 
 	framecount++;
-	validcount++;
 }
 
 void R_RenderViewContext( rendercontext_t* rendercontext )
 {
+	validcount++;
 	rendercontext->starttime = I_GetTimeUS();
 
 	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
@@ -1157,6 +1183,12 @@ void R_RenderPlayerView (player_t* player)
 	byte* outputcolumn;
 	byte* endcolumn;
 
+	double_t totaltime = 0;
+	hu_textline_t* debugtime;
+
+	char outputbuffer[ HU_MAXLINELENGTH+1 ];
+	char* working;
+
 	R_SetupFrame (player);
 
 	// NetUpdate can cause lump loads, so we wait until rendering is done before doing it again.
@@ -1170,15 +1202,38 @@ void R_RenderPlayerView (player_t* player)
 		R_RenderViewContext( rendercontexts[ currcontext ] );
 	}
 
-	for( currcontext = 1; currcontext < numrendercontexts; ++currcontext )
+	if( rendersplitvisualise )
 	{
-		outputcolumn = I_VideoBuffer + xlookup[ rendercontexts[ currcontext ]->begincolumn + 1 ] + rowofs[ 0 ];
-		endcolumn = outputcolumn + viewheight;
-
-		while( outputcolumn != endcolumn )
+		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
-			*outputcolumn = 249;
-			++outputcolumn;
+			totaltime += rendercontexts[ currcontext ]->timetaken;
+		}
+
+		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		{
+			debugtime = (hu_textline_t*)rendercontexts[ currcontext ]->debugtime;
+
+			memset( outputbuffer, 0, sizeof( outputbuffer ) );
+			sprintf( outputbuffer, "%0.1fms (%0.1f%%)", ( rendercontexts[ currcontext ]->timetaken / 1000.0 ), ( rendercontexts[ currcontext ]->timetaken / totaltime ) * 100.0 );
+			working = outputbuffer;
+			HUlib_clearTextLine( debugtime );
+			while( *working )
+			{
+				HUlib_addCharToTextLine( debugtime, *working++ );
+			}
+			HUlib_drawTextLine( debugtime, false );
+
+			if( currcontext > 0 )
+			{
+				outputcolumn = I_VideoBuffer + xlookup[ rendercontexts[ currcontext ]->begincolumn + 1 ] + rowofs[ 0 ];
+				endcolumn = outputcolumn + viewheight;
+
+				while( outputcolumn != endcolumn )
+				{
+					*outputcolumn = 249;
+					++outputcolumn;
+				}
+			}
 		}
 	}
 

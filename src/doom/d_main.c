@@ -186,8 +186,8 @@ const byte whacky_void_indices[] =
 const int32_t num_whacky_void_indices = sizeof( whacky_void_indices ) / sizeof( *whacky_void_indices );
 const uint64_t whacky_void_microseconds = 1200000;
 
-boolean			whacky_void;
-boolean			black_void;
+boolean			whacky_void = false;
+boolean			black_void = false;
 
 boolean D_Display (void)
 {
@@ -1316,9 +1316,15 @@ static void G_CheckDemoStatusAtExit (void)
 //
 // D_DoomMain
 //
+
+extern int32_t numrendercontexts;
+extern boolean renderloadbalancing;
+extern boolean rendersplitvisualise;
+
 void D_DoomMain (void)
 {
     int32_t p;
+	int32_t count;
     char file[256];
     char demolumpname[9];
     uint32_t numiwadlumps;
@@ -1746,13 +1752,21 @@ void D_DoomMain (void)
 	p = M_CheckParmWithArgs( "-perf", 1 );
 	if( p )
 	{
-		int count;
 		M_StrToInt( myargv[p + 1], &count );
 		I_InitPerfFrames( count );
 	}
 
 	black_void = M_ParmExists( "-blackvoid" );
 	whacky_void = M_ParmExists( "-whackyvoid" );
+
+	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
+	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
+
+	p = M_CheckParmWithArgs( "-numrendercontexts", 1 );
+	if( p )
+	{
+		M_StrToInt( myargv[p + 1], &numrendercontexts );
+	}
 
     // Set the gamedescription string. This is only possible now that
     // we've finished loading Dehacked patches.

@@ -40,6 +40,8 @@
 // For vbuffer_t
 // Should move it out elsewhere
 #include "v_video.h"
+// hu_textline_t lives in here, but we can't access it thanks to recursive includes :-(
+//#include "hu_lib.h"
 
 
 // Silhouette, needed for clipping Segs (mainly)
@@ -600,6 +602,9 @@ typedef struct rendercontext_s
 	colfunc_t			transcolfunc;
 	
 	spanfunc_t			spanfunc;
+
+	// Debug
+	void*				debugtime;
 
 } rendercontext_t;
 
