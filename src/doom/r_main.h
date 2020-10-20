@@ -163,6 +163,12 @@ void R_RenderPlayerView (player_t *player);
 // Called by startup code.
 void R_Init (void);
 
+// Called after a new map load
+void R_RefreshContexts( void );
+
+// Teleport? Spawn? Let's assume render context balances are out of whack
+void R_RebalanceContexts( void );
+
 // Called by M_Responder.
 void R_SetViewSize (int blocks, int detail);
 

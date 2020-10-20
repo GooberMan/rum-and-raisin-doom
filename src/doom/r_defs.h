@@ -115,38 +115,40 @@ typedef struct
 //
 typedef	struct
 {
-    fixed_t	floorheight;
-    fixed_t	ceilingheight;
-    short	floorpic;
-    short	ceilingpic;
-    short	lightlevel;
-    short	special;
-    short	tag;
+	int32_t		index;
 
-    // 0 = untraversed, 1,2 = sndlines -1
-    int		soundtraversed;
+	fixed_t		floorheight;
+	fixed_t		ceilingheight;
+	int16_t		floorpic;
+	int16_t		ceilingpic;
+	int16_t		lightlevel;
+	int16_t		special;
+	int16_t		tag;
 
-    // thing that made a sound (or null)
-    mobj_t*	soundtarget;
+	// 0 = untraversed, 1,2 = sndlines -1
+	int32_t		soundtraversed;
 
-    // mapblock bounding box for height changes
-    int		blockbox[4];
+	// thing that made a sound (or null)
+	mobj_t*		soundtarget	;
 
-    // origin for any sounds played by the sector
-    degenmobj_t	soundorg;
+	// mapblock bounding box for height changes
+	int32_t		blockbox[4];
 
-    // if == validcount, already checked
-    int		validcount;
+	// origin for any sounds played by the sector
+	degenmobj_t	soundorg;
 
-    // list of mobjs in sector
-    mobj_t*	thinglist;
+	// if == validcount, already checked
+	// Used by algorithms that traverse the BSP. Not thread safe.
+	int32_t		validcount;
 
-    // thinker_t for reversable actions
-    void*	specialdata;
+	// list of mobjs in sector
+	mobj_t*		thinglist;
 
-    int			linecount;
-    struct line_s**	lines;	// [linecount] size
-    
+	// thinker_t for reversable actions
+	void*		specialdata;
+
+	int32_t			linecount;
+	struct line_s**	lines;	// [linecount] size
 } sector_t;
 
 
@@ -536,6 +538,8 @@ typedef struct spritecontext_s
 	fixed_t			sprtopscreen;
 
 	lighttable_t**	spritelights;
+	
+	boolean*		sectorvisited;
 
 } spritecontext_t;
 

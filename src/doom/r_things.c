@@ -594,13 +594,13 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 	// A sector might have been split into several
 	//  subsectors during BSP building.
 	// Thus we check whether its already added.
-	if (sec->validcount == validcount)
+	if ( spritecontext->sectorvisited[ sec->index ] )
 	{
 		return;
 	}
 
 	// Well, now it will be done.
-	sec->validcount = validcount;
+	spritecontext->sectorvisited[ sec->index ] = true;
 	
 	lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
 

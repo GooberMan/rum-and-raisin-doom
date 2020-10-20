@@ -274,31 +274,32 @@ void P_LoadSubsectors (int lump)
 //
 void P_LoadSectors (int lump)
 {
-    byte*		data;
-    int			i;
-    mapsector_t*	ms;
-    sector_t*		ss;
+	byte*			data;
+	int32_t			index;
+	mapsector_t*	ms;
+	sector_t*		ss;
 	
-    numsectors = W_LumpLength (lump) / sizeof(mapsector_t);
-    sectors = Z_Malloc (numsectors*sizeof(sector_t),PU_LEVEL,0);	
-    memset (sectors, 0, numsectors*sizeof(sector_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
+	numsectors = W_LumpLength (lump) / sizeof(mapsector_t);
+	sectors = Z_Malloc (numsectors*sizeof(sector_t),PU_LEVEL,0);	
+	memset (sectors, 0, numsectors*sizeof(sector_t));
+	data = W_CacheLumpNum (lump,PU_STATIC);
 	
-    ms = (mapsector_t *)data;
-    ss = sectors;
-    for (i=0 ; i<numsectors ; i++, ss++, ms++)
-    {
-	ss->floorheight = SHORT(ms->floorheight)<<FRACBITS;
-	ss->ceilingheight = SHORT(ms->ceilingheight)<<FRACBITS;
-	ss->floorpic = R_FlatNumForName(ms->floorpic);
-	ss->ceilingpic = R_FlatNumForName(ms->ceilingpic);
-	ss->lightlevel = SHORT(ms->lightlevel);
-	ss->special = SHORT(ms->special);
-	ss->tag = SHORT(ms->tag);
-	ss->thinglist = NULL;
-    }
-	
-    W_ReleaseLumpNum(lump);
+	ms = (mapsector_t *)data;
+	ss = sectors;
+	for (index=0 ; index<numsectors ; index++, ss++, ms++)
+	{
+		ss->index			= index;
+		ss->floorheight		= SHORT(ms->floorheight)<<FRACBITS;
+		ss->ceilingheight	= SHORT(ms->ceilingheight)<<FRACBITS;
+		ss->floorpic		= R_FlatNumForName(ms->floorpic);
+		ss->ceilingpic		= R_FlatNumForName(ms->ceilingpic);
+		ss->lightlevel		= SHORT(ms->lightlevel);
+		ss->special			= SHORT(ms->special);
+		ss->tag				= SHORT(ms->tag);
+		ss->thinglist		= NULL;
+	}
+
+	W_ReleaseLumpNum(lump);
 }
 
 
@@ -863,9 +864,8 @@ P_SetupLevel
     // build subsector connect matrix
     //	UNUSED P_ConnectSubsectors ();
 
-    // preload graphics
-    if (precache)
-	R_PrecacheLevel ();
+	R_RefreshContexts();
+	R_PrecacheLevel();
 
     //printf ("free memory: 0x%x\n", Z_FreeMemory());
 

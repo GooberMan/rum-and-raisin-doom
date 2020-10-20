@@ -58,6 +58,7 @@ rendercontext_t**		rendercontexts;
 int32_t					numrendercontexts = 3;
 boolean					renderloadbalancing = false;
 boolean					rendersplitvisualise = false;
+boolean					renderrebalancecontexts = false;
 
 int32_t					viewangleoffset;
 
@@ -839,6 +840,22 @@ void R_InitContexts( void )
 	}
 }
 
+void R_RefreshContexts( void )
+{
+	int32_t currcontext;
+	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	{
+		rendercontexts[ currcontext ]->spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+	}
+
+	renderrebalancecontexts = true;
+}
+
+void R_RebalanceContexts( void )
+{
+	renderrebalancecontexts = true;
+}
+
 //
 // R_SetViewSize
 // Do not really change anything here,
@@ -1105,7 +1122,7 @@ void R_SetupFrame (player_t* player)
 		fixedcolormap = 0;
 	}
 
-	if( renderloadbalancing )
+	if( renderloadbalancing && !renderrebalancecontexts )
 	{
 		lastframetime = 0;
 		percentagedebt = 0;
@@ -1135,7 +1152,8 @@ void R_SetupFrame (player_t* player)
 			currstart += desiredwidth;
 		}
 	}
-	else
+	
+	if( !renderloadbalancing || renderrebalancecontexts )
 	{
 		currstart = 0;
 
@@ -1148,6 +1166,8 @@ void R_SetupFrame (player_t* player)
 
 			R_ResetContext( rendercontexts[ currcontext ], rendercontexts[ currcontext ]->begincolumn, rendercontexts[ currcontext ]->endcolumn );
 		}
+
+		renderrebalancecontexts = false;
 	}
 
 	framecount++;
@@ -1157,6 +1177,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 {
 	validcount++;
 	rendercontext->starttime = I_GetTimeUS();
+
+	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
 
 	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
 	R_ErrorCheckPlanes( rendercontext );
