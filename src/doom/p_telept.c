@@ -124,6 +124,12 @@ EV_Teleport
 
 		thing->angle = m->angle;
 		thing->momx = thing->momy = thing->momz = 0;
+
+		// Ah, the old display player hack. Should change display object over to just plain be an mobj I guess. But this'll do
+		if( thing->player && thing->player == &players[ displayplayer ] )
+		{
+			R_RebalanceContexts();
+		}
 		return 1;
 	    }	
 	}

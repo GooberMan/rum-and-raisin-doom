@@ -140,8 +140,6 @@ byte*		demo_p;
 byte*		demoend; 
 boolean         singledemo;            	// quit after playing a demo from cmdline 
  
-boolean         precache = true;        // if true, load all graphics at start 
-
 boolean         testcontrols = false;    // Invoked by setup to test controls
 int             testcontrols_mousespeed;
  
@@ -1104,6 +1102,10 @@ void G_PlayerReborn (int player)
     for (i=0 ; i<NUMAMMO ; i++) 
 	p->maxammo[i] = maxammo[i]; 
 		 
+	if( player == displayplayer )
+	{
+		R_RebalanceContexts();
+	}
 }
 
 //
@@ -2245,10 +2247,7 @@ void G_DoPlayDemo (void)
 	netdemo = true;
     }
 
-    // don't spend a lot of time in loadlevel 
-    precache = PLAYDEMOCACHE;
     G_InitNew (skill, episode, map); 
-    precache = true; 
     starttime = I_GetTime (); 
 
     usergame = false; 
