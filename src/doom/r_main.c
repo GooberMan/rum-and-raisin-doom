@@ -42,6 +42,8 @@
 
 #include "z_zone.h"
 
+#include "i_thread.h"
+
 #include "tables.h"
 
 #define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
@@ -51,14 +53,26 @@
 
 // Fineangles in the SCREENWIDTH wide window.
 // If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
-#define FIELDOFVIEW				( FINEANGLES >> 2 )	
-#define RENDERFIELDOFVIEW		( RENDERFINEANGLES >> 2 )	
+#define FIELDOFVIEW				( FINEANGLES >> 2 )
+#define RENDERFIELDOFVIEW		( RENDERFINEANGLES >> 2 )
 
-rendercontext_t**		rendercontexts;
+typedef struct renderdata_s
+{
+	rendercontext_t		context;
+	threadhandle_t		thread;
+	atomicval_t			running;
+	atomicval_t			shouldquit;
+	atomicval_t			framewaiting;
+	atomicval_t			framefinished;
+} renderdata_t;
+
+renderdata_t*			renderdatas;
+
 int32_t					numrendercontexts = 3;
 boolean					renderloadbalancing = false;
 boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
+boolean					renderthreaded = true;
 
 int32_t					viewangleoffset;
 
@@ -68,8 +82,6 @@ int32_t					validcount = 1;
 
 lighttable_t*			fixedcolormap;
 int32_t					fixedcolormapindex;
-extern lighttable_t**	walllights;
-extern int32_t			walllightsindex;
 
 int32_t					centerx;
 int32_t					centery;
@@ -123,7 +135,6 @@ colfunc_t			colfuncs[ COLFUNC_COUNT ];
 int32_t				extralight;
 
 
-colfunc_t			colfunc;
 colfunc_t			fuzzcolfunc;
 colfunc_t			transcolfunc;
 
@@ -806,9 +817,46 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 	R_ClearSprites( &context->spritecontext );
 }
 
+void R_RenderViewContext( rendercontext_t* rendercontext )
+{
+	rendercontext->starttime = I_GetTimeUS();
+
+	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
+
+	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
+	R_ErrorCheckPlanes( rendercontext );
+	R_DrawPlanes( &rendercontext->planecontext );
+	R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
+
+	rendercontext->endtime = I_GetTimeUS();
+	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
+}
+
 #include "hu_lib.h"
 #include "hu_stuff.h"
 extern patch_t*		hu_font[HU_FONTSIZE];
+
+int32_t R_ContextThreadFunc( void* userdata )
+{
+	renderdata_t* data = (renderdata_t*)userdata;
+	int32_t ret = 0;
+
+	I_AtomicExchange( &data->running, 1 );
+
+	while( !I_AtomicLoad( &data->shouldquit ) )
+	{
+		if( I_AtomicExchange( &data->framewaiting, 0 ) )
+		{
+			R_RenderViewContext( &data->context );
+			I_AtomicExchange( &data->framefinished, 1 );
+		}
+		I_Sleep( 1 );
+	}
+
+	I_AtomicExchange( &data->running, 0 );
+
+	return ret;
+}
 
 void R_InitContexts( void )
 {
@@ -819,24 +867,29 @@ void R_InitContexts( void )
 	currstart = 0;
 	incrementby = SCREENWIDTH / numrendercontexts;
 
-	rendercontexts = Z_Malloc( sizeof( rendercontext_t* ) * numrendercontexts, PU_STATIC, NULL );
+	renderdatas = Z_Malloc( sizeof( renderdata_t ) * numrendercontexts, PU_STATIC, NULL );
+	memset( renderdatas, 0, sizeof( renderdata_t ) * numrendercontexts );
+
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
-		rendercontexts[ currcontext ] = Z_Malloc( sizeof( rendercontext_t ) * numrendercontexts, PU_STATIC, NULL );
+		renderdatas[ currcontext ].context.starttime = 0;
+		renderdatas[ currcontext ].context.endtime = 1;
+		renderdatas[ currcontext ].context.timetaken = 1;
 
-		rendercontexts[ currcontext ]->starttime = 0;
-		rendercontexts[ currcontext ]->endtime = 1;
-		rendercontexts[ currcontext ]->timetaken = 1;
-
-		rendercontexts[ currcontext ]->begincolumn = rendercontexts[ currcontext ]->spritecontext.leftclip = M_MAX( currstart - 1, 0 );
+		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 1, 0 );
 		currstart += incrementby;
-		rendercontexts[ currcontext ]->endcolumn = rendercontexts[ currcontext ]->spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
+		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
 
-		R_ResetContext( rendercontexts[ currcontext ], rendercontexts[ currcontext ]->begincolumn, rendercontexts[ currcontext ]->endcolumn );
+		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
-		rendercontexts[ currcontext ]->debugtime = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
+		renderdatas[ currcontext ].context.debugtime = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
 
-		HUlib_initTextLine( rendercontexts[ currcontext ]->debugtime, ( FixedDiv( rendercontexts[ currcontext ]->begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 3, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
+		HUlib_initTextLine( renderdatas[ currcontext ].context.debugtime, ( FixedDiv( renderdatas[ currcontext ].context.begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 3, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
+
+		if( renderthreaded && currcontext < numrendercontexts - 1 )
+		{
+			renderdatas[ currcontext ].thread = I_ThreadCreate( &R_ContextThreadFunc, &renderdatas[ currcontext ] );
+		}
 	}
 }
 
@@ -845,7 +898,7 @@ void R_RefreshContexts( void )
 	int32_t currcontext;
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
-		rendercontexts[ currcontext ]->spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+		renderdatas[ currcontext ].context.spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
 	}
 
 	renderrebalancecontexts = true;
@@ -956,7 +1009,6 @@ void R_ExecuteSetViewSize (void)
     projection = centerxfrac;
 
 	colfuncbase = COLFUNC_NUM * ( detailshift );
-	colfunc = colfuncs[ colfuncbase + 15 ];
 	fuzzcolfunc = colfuncs[ colfuncbase + COLFUNC_FUZZINDEX ];
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
 
@@ -1111,8 +1163,8 @@ void R_SetupFrame (player_t* player)
 			colormaps
 			+ player->fixedcolormap*256;
 	
-		walllights = scalelightfixed;
-		walllightsindex = fixedcolormapindex;
+		//walllights = scalelightfixed;
+		//walllightsindex = fixedcolormapindex;
 
 		for (i=0 ; i<MAXLIGHTSCALE ; i++)
 			scalelightfixed[i] = fixedcolormap;
@@ -1129,12 +1181,12 @@ void R_SetupFrame (player_t* player)
 		currstart = 0;
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
-			lastframetime += rendercontexts[ currcontext ]->timetaken;
+			lastframetime += renderdatas[ currcontext ].context.timetaken;
 		}
 
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
-			currpercentage = rendercontexts[ currcontext ]->timetaken / lastframetime;
+			currpercentage = renderdatas[ currcontext ].context.timetaken / lastframetime;
 			if( currpercentage > idealpercentage )
 			{
 				currpercentage -= 0.05f;
@@ -1148,7 +1200,7 @@ void R_SetupFrame (player_t* player)
 
 			desiredwidth = (int32_t)( viewwidth * currpercentage );
 
-			R_ResetContext( rendercontexts[ currcontext ], M_MAX( currstart - 1, 0 ), M_MIN( currstart + desiredwidth + 1, viewwidth ) );
+			R_ResetContext( &renderdatas[ currcontext ].context, M_MAX( currstart - 1, 0 ), M_MIN( currstart + desiredwidth + 1, viewwidth ) );
 			currstart += desiredwidth;
 		}
 	}
@@ -1160,33 +1212,17 @@ void R_SetupFrame (player_t* player)
 		desiredwidth = viewwidth / numrendercontexts;
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
-			rendercontexts[ currcontext ]->begincolumn = rendercontexts[ currcontext ]->spritecontext.leftclip = M_MAX( currstart - 1, 0 );
+			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 1, 0 );
 			currstart += desiredwidth;
-			rendercontexts[ currcontext ]->endcolumn = rendercontexts[ currcontext ]->spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
+			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
 
-			R_ResetContext( rendercontexts[ currcontext ], rendercontexts[ currcontext ]->begincolumn, rendercontexts[ currcontext ]->endcolumn );
+			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 		}
 
 		renderrebalancecontexts = false;
 	}
 
 	framecount++;
-}
-
-void R_RenderViewContext( rendercontext_t* rendercontext )
-{
-	validcount++;
-	rendercontext->starttime = I_GetTimeUS();
-
-	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
-
-	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
-	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes( &rendercontext->planecontext );
-	R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
-
-	rendercontext->endtime = I_GetTimeUS();
-	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
 }
 
 //
@@ -1201,12 +1237,18 @@ extern size_t			rowofs[MAXHEIGHT];
 void R_RenderPlayerView (player_t* player)
 {	
 	int32_t currcontext;
+	int32_t finishedcontexts;
+	uint64_t looptimestart;
+	uint64_t looptimeend;
 
 	byte* outputcolumn;
 	byte* endcolumn;
 
 	double_t totaltime = 0;
 	hu_textline_t* debugtime;
+
+	hu_textline_t debugtotaltime;
+	HUlib_initTextLine( &debugtotaltime, 0, V_VIRTUALHEIGHT - ST_HEIGHT - 18, hu_font, HU_FONTSTART);
 
 	char outputbuffer[ HU_MAXLINELENGTH+1 ];
 	char* working;
@@ -1219,24 +1261,57 @@ void R_RenderPlayerView (player_t* player)
 
 	wadrenderlock = true;
 
+	if( rendersplitvisualise ) looptimestart = I_GetTimeUS();
+
+	finishedcontexts = 0;
+
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
-		R_RenderViewContext( rendercontexts[ currcontext ] );
+		if( renderthreaded && currcontext < numrendercontexts - 1 )
+		{
+			I_AtomicExchange( &renderdatas[ currcontext ].framewaiting, 1 );
+		}
+		else
+		{
+			R_RenderViewContext( &renderdatas[ currcontext ].context );
+			++finishedcontexts;
+		}
+	}
+
+	while( renderthreaded && finishedcontexts != numrendercontexts )
+	{
+		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		{
+			finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
+		}
+		I_Sleep( 1 );
 	}
 
 	if( rendersplitvisualise )
 	{
+		looptimeend = I_GetTimeUS();
+
+		memset( outputbuffer, 0, sizeof( outputbuffer ) );
+		sprintf( outputbuffer, "Loop time: %0.1fms", (looptimeend - looptimestart ) / 1000.0 );
+		working = outputbuffer;
+		HUlib_clearTextLine( &debugtotaltime );
+		while( *working )
+		{
+			HUlib_addCharToTextLine( &debugtotaltime, *working++ );
+		}
+		HUlib_drawTextLine( &debugtotaltime, false );
+
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
-			totaltime += rendercontexts[ currcontext ]->timetaken;
+			totaltime += renderdatas[ currcontext ].context.timetaken;
 		}
 
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
-			debugtime = (hu_textline_t*)rendercontexts[ currcontext ]->debugtime;
+			debugtime = (hu_textline_t*)renderdatas[ currcontext ].context.debugtime;
 
 			memset( outputbuffer, 0, sizeof( outputbuffer ) );
-			sprintf( outputbuffer, "%0.1fms (%0.1f%%)", ( rendercontexts[ currcontext ]->timetaken / 1000.0 ), ( rendercontexts[ currcontext ]->timetaken / totaltime ) * 100.0 );
+			sprintf( outputbuffer, "%0.1fms (%0.1f%%)", ( renderdatas[ currcontext ].context.timetaken / 1000.0 ), ( renderdatas[ currcontext ].context.timetaken / totaltime ) * 100.0 );
 			working = outputbuffer;
 			HUlib_clearTextLine( debugtime );
 			while( *working )
@@ -1247,7 +1322,7 @@ void R_RenderPlayerView (player_t* player)
 
 			if( currcontext > 0 )
 			{
-				outputcolumn = I_VideoBuffer + xlookup[ rendercontexts[ currcontext ]->begincolumn + 1 ] + rowofs[ 0 ];
+				outputcolumn = I_VideoBuffer + xlookup[ renderdatas[ currcontext ].context.begincolumn + 1 ] + rowofs[ 0 ];
 				endcolumn = outputcolumn + viewheight;
 
 				while( outputcolumn != endcolumn )

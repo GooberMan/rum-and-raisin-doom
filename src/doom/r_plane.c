@@ -347,9 +347,7 @@ void R_DrawPlanes( planecontext_t* planecontext )
 	colcontext_t	skycontext;
 	extern vbuffer_t* dest_buffer;
 
-	colfunc_t		restore = colfunc;
-
-	colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
+	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
 
 	spancontext.output = *dest_buffer;
 
@@ -385,7 +383,7 @@ void R_DrawPlanes( planecontext_t* planecontext )
 					// Because of this hack, sky is not affected
 					//  by INVUL inverse mapping.
 					skycontext.source = R_GetColumn(skytexture, angle, 0);
-					colfunc( &skycontext );
+					skycontext.colfunc( &skycontext );
 				}
 			}
 			continue;
@@ -418,6 +416,4 @@ void R_DrawPlanes( planecontext_t* planecontext )
 		}
 	
 	}
-
-	colfunc = restore;
 }

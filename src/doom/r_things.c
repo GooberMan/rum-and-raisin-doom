@@ -322,7 +322,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 
 			// Drawn by either R_DrawColumn
 			//  or (SHADOW) R_DrawFuzzColumn.
-			colfunc( colcontext );	
+			colcontext->colfunc( colcontext );	
 		}
 		column = (column_t *)(  (byte *)column + column->length + 4);
 	}
@@ -343,25 +343,26 @@ void R_DrawVisSprite( spritecontext_t* spritecontext, vissprite_t* vis, int32_t 
 	int32_t				prevfuzzcolumn;
 	fixed_t				frac;
 	patch_t*			patch;
+	boolean				isfuzz = false;
 
 	colcontext_t		spritecolcontext;
 	extern vbuffer_t*	dest_buffer;
-
-	colfunc_t			restorefunc = colfunc;
 
 	patch = spritepatches[ vis->patch ];
 
 	spritecolcontext.output = *dest_buffer;
 	spritecolcontext.colormap = vis->colormap;
+	spritecolcontext.colfunc = &R_DrawColumn_Untranslated; 
 
 	if (!spritecolcontext.colormap)
 	{
 		// NULL colormap = shadow draw
-		colfunc = fuzzcolfunc;
+		spritecolcontext.colfunc = fuzzcolfunc;
+		isfuzz = true;
 	}
 	else if (vis->mobjflags & MF_TRANSLATION)
 	{
-		colfunc = transcolfunc;
+		spritecolcontext.colfunc = transcolfunc;
 		spritecolcontext.translation = translationtables - 256 +
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
@@ -375,6 +376,13 @@ void R_DrawVisSprite( spritecontext_t* spritecontext, vissprite_t* vis, int32_t 
 	prevfuzzcolumn = -1;
 	for (spritecolcontext.x=vis->x1 ; spritecolcontext.x<=vis->x2 ; spritecolcontext.x++, frac += vis->xiscale)
 	{
+		// One interesting side effect of transposing the buffer:
+		// It's now the left and right edges of the screen that we need to not sample
+
+		if( isfuzz && ( spritecolcontext.x <= spritecontext->leftclip + 1 || spritecolcontext.x >= spritecontext->rightclip - 1 ) )
+		{
+			continue;
+		}
 		texturecolumn = frac>>FRACBITS;
 #ifdef RANGECHECK
 		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
@@ -393,8 +401,6 @@ void R_DrawVisSprite( spritecontext_t* spritecontext, vissprite_t* vis, int32_t 
 		column = (column_t *)( (byte *)patch + LONG(patch->columnofs[texturecolumn]) );
 		R_DrawMaskedColumn( spritecontext, &spritecolcontext, column );
 	}
-
-	colfunc = restorefunc;
 }
 
 
@@ -587,9 +593,6 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 	mobj_t*		thing;
 	int			lightnum;
 
-	colfunc_t restore = colfunc;
-	colfunc = &R_DrawColumn_Untranslated;
-
 	// BSP is traversed by subsector.
 	// A sector might have been split into several
 	//  subsectors during BSP building.
@@ -622,8 +625,6 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 	{
 		R_ProjectSprite( spritecontext, thing );
 	}
-
-	colfunc = restore;
 }
 
 

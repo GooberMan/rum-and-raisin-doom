@@ -472,6 +472,10 @@ typedef struct wallcontext_s
 	fixed_t			midtexturemid;
 	fixed_t			toptexturemid;
 	fixed_t			bottomtexturemid;
+
+	lighttable_t**	lights;
+	int32_t			lightsindex;
+
 } wallcontext_t;
 
 typedef struct bspcontext_s
@@ -548,6 +552,13 @@ typedef struct spritecontext_s
 // So everything "global" goes in here. Everything.
 //
 
+typedef struct colcontext_s colcontext_t;
+typedef struct spancontext_s spancontext_t;
+
+typedef void (*colfunc_t)( colcontext_t* );
+typedef void (*spanfunc_t)( spancontext_t* );
+typedef void (*planefunction_t)(int top, int bottom);
+
 typedef struct colcontext_s
 {
 	vbuffer_t		output;
@@ -555,6 +566,8 @@ typedef struct colcontext_s
 
 	lighttable_t*	colormap;
 	byte*			translation;
+
+	colfunc_t		colfunc;
 
 	int32_t			x;
 	int32_t			yl;
@@ -578,11 +591,6 @@ typedef struct spancontext_s
 	fixed_t			xstep; 
 	fixed_t			ystep;
 } spancontext_t;
-
-typedef void (*colfunc_t)( colcontext_t* );
-typedef void (*spanfunc_t)( spancontext_t* );
-typedef void (*planefunction_t)(int top, int bottom);
-
 
 typedef struct rendercontext_s
 {

@@ -98,7 +98,6 @@ extern	int		detailshift;
 
 extern colfunc_t colfuncs[ COLFUNC_COUNT ];
 
-extern colfunc_t colfunc;
 extern colfunc_t transcolfunc;
 extern colfunc_t fuzzcolfunc;
 

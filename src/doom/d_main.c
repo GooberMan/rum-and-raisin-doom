@@ -1320,6 +1320,7 @@ static void G_CheckDemoStatusAtExit (void)
 extern int32_t numrendercontexts;
 extern boolean renderloadbalancing;
 extern boolean rendersplitvisualise;
+extern boolean renderthreaded;
 
 void D_DoomMain (void)
 {
@@ -1761,6 +1762,7 @@ void D_DoomMain (void)
 
 	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
+	renderthreaded  = !M_ParmExists( "-norenderthreaded" );
 
 	p = M_CheckParmWithArgs( "-numrendercontexts", 1 );
 	if( p )

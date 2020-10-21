@@ -36,6 +36,7 @@
 #include "st_stuff.h"
 #include "i_swap.h"
 #include "r_state.h"
+#include "i_thread.h"
 
 // State.
 #include "doomstat.h"
@@ -485,7 +486,7 @@ fixed_t fuzzstepy = (fixed_t)( ((int64_t)FUZZ_FRACBASEY << FRACBITS) / SCREENHEI
 
 #define FIXED_FUZZTABLE ( 50 << FRACBITS )
 #else // !ADJUSTED_FUZZ
-int fuzzpos = 0;
+atomicval_t fuzzpos = 0;
 #endif // ADJUSTED_FUZZ
 
 //
@@ -520,11 +521,6 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 #endif // ADJUSTED_FUZZ
     count = context->yh - context->yl; 
 
-	// One interesting side effect of transposing the buffer:
-	// It's now the left and right edges of the screen that we need to not sample
-	if (!context->x || context->x == viewwidth-1)
-		return;
-		 
     dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
 
     // Looks familiar.
@@ -543,16 +539,13 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 		//  a pixel that is either one column
 		//  left or right of the current one.
 		// Add index from colormap to index.
-		*dest = colormaps[6*256+dest[fuzzoffset[thisfuzzpos]]]; 
+		*dest = colormaps[ 6*256 + dest[ fuzzoffset[ I_AtomicIncrement( &fuzzpos, 1 ) % FUZZTABLE ] ] ]; 
 
 #if ADJUSTED_FUZZ
 		// Clamp table lookup index.
 		fuzzpos += fuzzstepy;
 		if (fuzzpos >= FIXED_FUZZTABLE)
 		    fuzzpos = 0;
-#else
-		if( ++fuzzpos == FUZZTABLE )
-			fuzzpos = 0;
 #endif
 	
 		dest += 1;

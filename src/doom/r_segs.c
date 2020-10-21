@@ -69,9 +69,6 @@ typedef struct segloopcontext_s
 } segloopcontext_t;
 
 
-lighttable_t**		walllights;
-int32_t				walllightsindex;
-
 #ifdef RANGECHECK
 void R_RangeCheckNamed( colcontext_t* context, const char* func )
 {
@@ -108,12 +105,14 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 	int32_t				scalestep;
 	vertclip_t*			maskedtexturecol;
 
+	lighttable_t**		walllights;
+	int32_t				walllightsindex;
+
 	colcontext_t		spritecolcontext;
 	extern vbuffer_t*	dest_buffer;
 
-	colfunc_t			restorefunc = colfunc;
-
 	spritecolcontext.output = *dest_buffer;
+	spritecolcontext.colfunc = &R_DrawColumn_Untranslated; 
 
 	// Calculate light table.
 	// Use different light tables
@@ -195,15 +194,13 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 			spritecolcontext.iscale = 0xffffffffu / (unsigned)spritecontext->spryscale;
 
 			// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
-			colfunc = &R_DrawColumn_Untranslated; // colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
+			// spritecolcontext.colfunc = colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
 
 			// draw the texture
 			col = (column_t *)( R_GetRawColumn( texnum,maskedtexturecol[spritecolcontext.x] ) -3 );
 			
 			R_DrawMaskedColumn( spritecontext, &spritecolcontext, col );
 			maskedtexturecol[spritecolcontext.x] = MASKEDTEXCOL_INVALID;
-
-			colfunc = restorefunc;
 		}
 		spritecontext->spryscale += scalestep;
 
@@ -242,8 +239,6 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 
 	colcontext_t	wallcolcontext;
 	extern vbuffer_t* dest_buffer;
-
-	colfunc_t		restorefunc = colfunc;
 
 	wallcolcontext.output = *dest_buffer;
 
@@ -319,16 +314,16 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 			}
 			else
 			{
-				colormapindex = walllightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ walllightsindex ][ index ] : walllightsindex;
+				colormapindex = wallcontext->lightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ wallcontext->lightsindex ][ index ] : wallcontext->lightsindex;
 			}
 			wallcolcontext.x = currx;
 			wallcolcontext.scale = wallcontext->scale;
 			wallcolcontext.iscale = 0xffffffffu / (unsigned)wallcontext->scale;
 
 #if R_DRAWCOLUMN_DEBUGDISTANCES
-			colfunc = colfuncs[ 15 ];
+			wallcolcontext.colfunc = colfuncs[ 15 ];
 #else
-			colfunc = colfuncs[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ];
+			wallcolcontext.colfunc = colfuncs[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ];
 #endif
 	
 		}
@@ -347,7 +342,7 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 			wallcolcontext.texturemid = wallcontext->midtexturemid;
 			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
 			R_RangeCheck();
-			colfunc( &wallcolcontext );
+			wallcolcontext.colfunc( &wallcolcontext );
 			planecontext->ceilingclip[currx] = viewheight;
 			planecontext->floorclip[currx] = -1;
 		}
@@ -372,7 +367,7 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 					wallcolcontext.texturemid = wallcontext->toptexturemid;
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
 					R_RangeCheck();
-					colfunc( &wallcolcontext );
+					wallcolcontext.colfunc( &wallcolcontext );
 					planecontext->ceilingclip[currx] = mid;
 				}
 				else
@@ -406,7 +401,7 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
 					R_RangeCheck();
-					colfunc( &wallcolcontext );
+					wallcolcontext.colfunc( &wallcolcontext );
 					planecontext->floorclip[currx] = mid;
 				}
 				else
@@ -435,7 +430,6 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 		segcontext->topfrac += segcontext->topstep;
 		segcontext->bottomfrac += segcontext->bottomstep;
 
-		colfunc = restorefunc;
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 		wallcolcontext.colormap = restorelightmap;
 #endif // R_DRAWCOLUMN_DEBUGDISTANCES
@@ -744,15 +738,15 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 			}
 
 			if( fixedcolormapindex )
-				walllightsindex = fixedcolormapindex;
+				wallcontext->lightsindex = fixedcolormapindex;
 			else if (lightnum < 0)
-				walllightsindex = 0;
+				wallcontext->lightsindex = 0;
 			else if (lightnum >= LIGHTLEVELS)
-				walllightsindex = LIGHTLEVELS-1;
+				wallcontext->lightsindex = LIGHTLEVELS-1;
 			else
-				walllightsindex = lightnum;
+				wallcontext->lightsindex = lightnum;
 		
-			walllights = scalelight[ walllightsindex ];
+			wallcontext->lights = scalelight[ wallcontext->lightsindex ];
 		}
 	}
 
