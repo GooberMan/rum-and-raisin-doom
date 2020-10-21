@@ -1284,7 +1284,7 @@ void R_RenderPlayerView (player_t* player)
 		{
 			finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
 		}
-		I_Sleep( 1 );
+		//I_Sleep( 0 );
 	}
 
 	if( rendersplitvisualise )
