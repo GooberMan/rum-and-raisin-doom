@@ -618,6 +618,7 @@ typedef struct rendercontext_s
 
 	// Debug
 	void*				debugtime;
+	void*				debugpercent;
 
 } rendercontext_t;
 

@@ -884,8 +884,10 @@ void R_InitContexts( void )
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
 		renderdatas[ currcontext ].context.debugtime = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
+		renderdatas[ currcontext ].context.debugpercent = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
 
-		HUlib_initTextLine( renderdatas[ currcontext ].context.debugtime, ( FixedDiv( renderdatas[ currcontext ].context.begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 3, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
+		HUlib_initTextLine( renderdatas[ currcontext ].context.debugtime, ( FixedDiv( renderdatas[ currcontext ].context.begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 17, hu_font, HU_FONTSTART);
+		HUlib_initTextLine( renderdatas[ currcontext ].context.debugpercent, ( FixedDiv( renderdatas[ currcontext ].context.begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
 
 		if( renderthreaded && currcontext < numrendercontexts - 1 )
 		{
@@ -1235,6 +1237,17 @@ void R_SetupFrame (player_t* player)
 extern size_t			xlookup[MAXWIDTH];
 extern size_t			rowofs[MAXHEIGHT];
 
+static void R_DrawMsg( const char* msg, hu_textline_t* line )
+{
+	const char* working = msg;
+	HUlib_clearTextLine( line );
+	while( *working )
+	{
+		HUlib_addCharToTextLine( line, *working++ );
+	}
+	HUlib_drawTextLine( line, false );
+}
+
 void R_RenderPlayerView (player_t* player)
 {	
 	int32_t currcontext;
@@ -1247,9 +1260,10 @@ void R_RenderPlayerView (player_t* player)
 
 	double_t totaltime = 0;
 	hu_textline_t* debugtime;
+	hu_textline_t* debugpercent;
 
 	hu_textline_t debugtotaltime;
-	HUlib_initTextLine( &debugtotaltime, 0, V_VIRTUALHEIGHT - ST_HEIGHT - 18, hu_font, HU_FONTSTART);
+	HUlib_initTextLine( &debugtotaltime, 1, V_VIRTUALHEIGHT - ST_HEIGHT - 30, hu_font, HU_FONTSTART);
 
 	char outputbuffer[ HU_MAXLINELENGTH+1 ];
 	char* working;
@@ -1294,13 +1308,7 @@ void R_RenderPlayerView (player_t* player)
 
 		memset( outputbuffer, 0, sizeof( outputbuffer ) );
 		sprintf( outputbuffer, "Loop time: %0.1fms", (looptimeend - looptimestart ) / 1000.0 );
-		working = outputbuffer;
-		HUlib_clearTextLine( &debugtotaltime );
-		while( *working )
-		{
-			HUlib_addCharToTextLine( &debugtotaltime, *working++ );
-		}
-		HUlib_drawTextLine( &debugtotaltime, false );
+		R_DrawMsg( outputbuffer, &debugtotaltime );
 
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
@@ -1310,16 +1318,15 @@ void R_RenderPlayerView (player_t* player)
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
 			debugtime = (hu_textline_t*)renderdatas[ currcontext ].context.debugtime;
+			debugpercent = (hu_textline_t*)renderdatas[ currcontext ].context.debugpercent;
 
 			memset( outputbuffer, 0, sizeof( outputbuffer ) );
-			sprintf( outputbuffer, "%0.1fms (%0.1f%%)", ( renderdatas[ currcontext ].context.timetaken / 1000.0 ), ( renderdatas[ currcontext ].context.timetaken / totaltime ) * 100.0 );
-			working = outputbuffer;
-			HUlib_clearTextLine( debugtime );
-			while( *working )
-			{
-				HUlib_addCharToTextLine( debugtime, *working++ );
-			}
-			HUlib_drawTextLine( debugtime, false );
+			sprintf( outputbuffer, "%0.1fms", ( renderdatas[ currcontext ].context.timetaken / 1000.0 ) );
+			R_DrawMsg( outputbuffer, debugtime );
+
+			memset( outputbuffer, 0, sizeof( outputbuffer ) );
+			sprintf( outputbuffer, "%0.1f%%", ( renderdatas[ currcontext ].context.timetaken / totaltime ) * 100.0 );
+			R_DrawMsg( outputbuffer, debugpercent );
 
 			if( currcontext > 0 )
 			{
