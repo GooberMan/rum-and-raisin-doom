@@ -94,6 +94,9 @@ int SlopeDiv_Render(unsigned int num, unsigned int den);
 // R_PointToAngle2 calls this. Search reveals it was only called by playsim, so we drop back to normal for it.
 int SlopeDiv_Playsim(unsigned int num, unsigned int den);
 
+// Quick hack to get Heretic/Hexen/Strife running again
+#define SlopeDiv( x, y ) SlopeDiv_Playsim( x, y )
+
 // Separate render tables are wanted, since altering the other tables
 // will immediately break vanilla compatibility.
 #define RENDERQUALITYSHIFT			4
