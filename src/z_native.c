@@ -1,6 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -442,9 +443,10 @@ void Z_CheckHeap (void)
 // Z_ChangeTag
 //
 
-void Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
+boolean Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
 {
     memblock_t*	block;
+    boolean changed;
 	
     block = (memblock_t *) ((byte *)ptr - sizeof(memblock_t));
 
@@ -460,8 +462,10 @@ void Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
     // its new list.
 
     Z_RemoveBlock(block);
+    changed = block->tag != tag;
     block->tag = tag;
     Z_InsertBlock(block);
+    return tag;
 }
 
 void Z_ChangeUser(void *ptr, void **user)
