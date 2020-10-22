@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include "doomtype.h"
 
 typedef int32_t (*threadfunc_t)( void* );
 typedef void* threadhandle_t;

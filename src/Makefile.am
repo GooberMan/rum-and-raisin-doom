@@ -80,6 +80,7 @@ i_sdlmusic.c                               \
 i_sdlsound.c                               \
 i_sound.c            i_sound.h             \
 i_timer.c            i_timer.h             \
+i_thread.cpp         i_thread.h            \
 i_video.c            i_video.h             \
 i_videohr.c          i_videohr.h           \
 midifile.c           midifile.h            \

@@ -100,6 +100,7 @@
 // standard and defined to include stdint.h, so include this. 
 
 #include <inttypes.h>
+#include <stddef.h>
 
 #if defined(__cplusplus) || defined(__bool_true_false_are_defined)
 
