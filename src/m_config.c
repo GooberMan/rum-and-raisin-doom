@@ -694,13 +694,6 @@ static default_collection_t doom_defaults =
 static default_t extra_defaults_list[] =
 {
     //!
-    // Name of the SDL video driver to use.  If this is an empty string,
-    // the default video driver is used.
-    //
-
-    CONFIG_VARIABLE_STRING(video_driver),
-
-    //!
     // Position of the window on the screen when running in windowed
     // mode. Accepted values are: "" (empty string) - don't care,
     // "center" - place window at center of screen, "x,y" - place
@@ -771,13 +764,6 @@ static default_t extra_defaults_list[] =
     //
 
     CONFIG_VARIABLE_INT(fullscreen_height),
-
-    //!
-    // If non-zero, force the use of a software renderer. For use on
-    // systems lacking hardware acceleration.
-    //
-
-    CONFIG_VARIABLE_INT(force_software_renderer),
 
     //!
     // Maximum number of pixels to use for intermediate scaling buffer.

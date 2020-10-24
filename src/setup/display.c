@@ -66,12 +66,10 @@ static window_size_t window_sizes_scaled[] =
     { 0, 0},
 };
 
-static char *video_driver = "";
 static char *window_position = "";
 static int aspect_ratio_correct = 1;
 static int integer_scaling = 0;
 static int vga_porch_flash = 0;
-static int force_software_renderer = 0;
 static int fullscreen = 1;
 static int fullscreen_width = 0, fullscreen_height = 0;
 static int window_width = 800, window_height = 600;
@@ -108,16 +106,6 @@ void SetDisplayDriver(void)
         return;
     }
 
-    // Use the value from the configuration file, if it has been set.
-
-    if (strcmp(video_driver, "") != 0)
-    {
-        char *env_string;
-
-        env_string = M_StringJoin("SDL_VIDEODRIVER=", video_driver, NULL);
-        putenv(env_string);
-        free(env_string);
-    }
 }
 
 static void WindowSizeSelected(TXT_UNCAST_ARG(widget), TXT_UNCAST_ARG(size))
@@ -279,12 +267,10 @@ void BindDisplayVariables(void)
     M_BindIntVariable("window_width",              &window_width);
     M_BindIntVariable("window_height",             &window_height);
     M_BindIntVariable("startup_delay",             &startup_delay);
-    M_BindStringVariable("video_driver",           &video_driver);
     M_BindStringVariable("window_position",        &window_position);
     M_BindIntVariable("usegamma",                  &usegamma);
     M_BindIntVariable("png_screenshots",           &png_screenshots);
     M_BindIntVariable("vga_porch_flash",           &vga_porch_flash);
-    M_BindIntVariable("force_software_renderer",   &force_software_renderer);
     M_BindIntVariable("max_scaling_buffer_pixels", &max_scaling_buffer_pixels);
     M_BindIntVariable("border_style",              &border_style);
     M_BindIntVariable("border_bezel_style",        &border_bezel_style);

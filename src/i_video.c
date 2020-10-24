@@ -54,9 +54,11 @@
 
 // These are (1) the window (or the full screen) that our game is rendered to
 // and (2) the renderer that scales the texture (see below) into this window.
+// Breaking from Chocolate Doom, we only support the GL backend.
 
-static SDL_Window *screen;
-static SDL_Renderer *renderer;
+static SDL_Window *screen = NULL;
+static SDL_Renderer *renderer = NULL;
+static SDL_GLContext glcontext = NULL;
 
 // Window title
 
@@ -107,10 +109,6 @@ int border_style = 0;
 // 0 = original, 1 = dithered
 int border_bezel_style = 0;
 
-// SDL video driver name
-
-char *video_driver = "";
-
 // Window position:
 
 char *window_position = "center";
@@ -148,11 +146,6 @@ int integer_scaling = false;
 // VGA Porch palette change emulation
 
 int vga_porch_flash = false;
-
-// Force software rendering, for systems which lack effective hardware
-// acceleration
-
-int force_software_renderer = false;
 
 // Time to wait for the screen to settle on startup before starting the
 // game (ms)
@@ -920,11 +913,13 @@ void I_SetWindowTitle(const char *title)
 // the title set with I_SetWindowTitle.
 //
 
+#define EDITION_STRING
+
 void I_InitWindowTitle(void)
 {
     char *buf;
 
-    buf = M_StringJoin(window_title, " - ", PACKAGE_STRING, NULL);
+    buf = M_StringJoin(window_title, " - ", PACKAGE_STRING EDITION_STRING, NULL);
     SDL_SetWindowTitle(screen, buf);
     free(buf);
 }
@@ -1109,21 +1104,6 @@ void I_CheckIsScreensaver(void)
     }
 }
 
-static void SetSDLVideoDriver(void)
-{
-    // Allow a default value for the SDL video driver to be specified
-    // in the configuration file.
-
-    if (strcmp(video_driver, "") != 0)
-    {
-        char *env_string;
-
-        env_string = M_StringJoin("SDL_VIDEODRIVER=", video_driver, NULL);
-        putenv(env_string);
-        free(env_string);
-    }
-}
-
 // Check the display bounds of the display referred to by 'video_display' and
 // set x and y to a location that places the window in the center of that
 // display.
@@ -1188,12 +1168,17 @@ void I_GetWindowPosition(int *x, int *y, int w, int h)
 
 static void SetVideoMode(void)
 {
-    int w, h;
-    int x, y;
-    unsigned int rmask, gmask, bmask, amask;
-    int bpp;
-    int window_flags = 0, renderer_flags = 0;
-    SDL_DisplayMode mode;
+	int32_t w, h;
+	int32_t x, y;
+	uint32_t rmask, gmask, bmask, amask;
+	int32_t bpp;
+	int32_t window_flags = 0, renderer_flags = 0;
+	int32_t drivercount = SDL_GetNumRenderDrivers();
+	int32_t testdriver = -1;
+	int32_t requesteddriver = -1;
+	SDL_RendererInfo info;
+
+	SDL_DisplayMode mode;
 
     w = window_width;
     h = window_height;
@@ -1259,6 +1244,17 @@ static void SetVideoMode(void)
         I_InitWindowIcon();
     }
 
+	for( testdriver = 0; testdriver < drivercount; ++testdriver )
+	{
+		SDL_GetRenderDriverInfo( testdriver, &info );
+		if( strcasecmp( info.name, "opengl" ) == 0 )
+		{
+			requesteddriver = testdriver;
+			break;
+		}
+	}
+
+
     // The SDL_RENDERER_TARGETTEXTURE flag is required to render the
     // intermediate texture into the upscaled texture.
     renderer_flags = SDL_RENDERER_TARGETTEXTURE;
@@ -1275,12 +1271,6 @@ static void SetVideoMode(void)
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
     }
 
-    if (force_software_renderer)
-    {
-        renderer_flags |= SDL_RENDERER_SOFTWARE;
-        renderer_flags &= ~SDL_RENDERER_PRESENTVSYNC;
-    }
-
     if (renderer != NULL)
     {
         SDL_DestroyRenderer(renderer);
@@ -1289,30 +1279,19 @@ static void SetVideoMode(void)
         texture_upscaled = NULL;
     }
 
-    renderer = SDL_CreateRenderer(screen, -1, renderer_flags);
-
-    // If we could not find a matching render driver,
-    // try again without hardware acceleration.
-
-    if (renderer == NULL && !force_software_renderer)
-    {
-        renderer_flags |= SDL_RENDERER_SOFTWARE;
-        renderer_flags &= ~SDL_RENDERER_PRESENTVSYNC;
-
-        renderer = SDL_CreateRenderer(screen, -1, renderer_flags);
-
-        // If this helped, save the setting for later.
-        if (renderer != NULL)
-        {
-            force_software_renderer = 1;
-        }
-    }
+    renderer = SDL_CreateRenderer(screen, requesteddriver, renderer_flags);
 
     if (renderer == NULL)
     {
         I_Error("Error creating renderer for screen window: %s",
                 SDL_GetError());
     }
+
+	glcontext = SDL_GL_GetCurrentContext();
+	if( glcontext == NULL )
+	{
+		I_Error( "SDL not initialised in OpenGL mode" );
+	}
 
     // Important: Set the "logical size" of the rendering context. At the same
     // time this also defines the aspect ratio that is preserved while scaling
@@ -1421,8 +1400,6 @@ void I_InitGraphics(void)
         putenv(winenv);
     }
 
-    SetSDLVideoDriver();
-
     if (SDL_Init(SDL_INIT_VIDEO) < 0) 
     {
         I_Error("Failed to initialize video: %s", SDL_GetError());
@@ -1509,12 +1486,10 @@ void I_BindVideoVariables(void)
     M_BindIntVariable("startup_delay",             &startup_delay);
     M_BindIntVariable("fullscreen_width",          &fullscreen_width);
     M_BindIntVariable("fullscreen_height",         &fullscreen_height);
-    M_BindIntVariable("force_software_renderer",   &force_software_renderer);
     M_BindIntVariable("max_scaling_buffer_pixels", &max_scaling_buffer_pixels);
     M_BindIntVariable("window_width",              &window_width);
     M_BindIntVariable("window_height",             &window_height);
     M_BindIntVariable("grabmouse",                 &grabmouse);
-    M_BindStringVariable("video_driver",           &video_driver);
     M_BindStringVariable("window_position",        &window_position);
     M_BindIntVariable("usegamma",                  &usegamma);
     M_BindIntVariable("png_screenshots",           &png_screenshots);
