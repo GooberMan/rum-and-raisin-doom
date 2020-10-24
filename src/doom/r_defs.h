@@ -54,7 +54,9 @@
 
 #define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			256
+#define VANILLA_MAXOPENINGS		( 320 * 64 )
 #define MAXOPENINGS				( SCREENWIDTH*32 )
+#define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
 #define MAXDRAWSEGS				( MAXVISPLANES << 2 )
 
 // We must expand MAXSEGS to the theoretical limit of the number of solidsegs
