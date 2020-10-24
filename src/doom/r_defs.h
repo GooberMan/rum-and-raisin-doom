@@ -52,6 +52,7 @@
 #define SIL_TOP					2
 #define SIL_BOTH				3
 
+#define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			256
 #define MAXOPENINGS				( SCREENWIDTH*32 )
 #define MAXDRAWSEGS				( MAXVISPLANES << 2 )
@@ -72,6 +73,9 @@ typedef pixel_t					lighttable_t;
 
 typedef int32_t					vertclip_t;
 #define MASKEDTEXCOL_INVALID	( (vertclip_t)0x7FFFFFFF )
+
+#define VANILLA_MAXVISSPRITES	128
+#define MAXVISSPRITES			1024
 
 
 //
@@ -161,21 +165,21 @@ typedef	struct
 
 typedef struct
 {
-    // add this to the calculated texture column
-    fixed_t	textureoffset;
-    
-    // add this to the calculated texture top
-    fixed_t	rowoffset;
+	// add this to the calculated texture column
+	fixed_t		textureoffset;
 
-    // Texture indices.
-    // We do not maintain names here. 
-    short	toptexture;
-    short	bottomtexture;
-    short	midtexture;
+	// add this to the calculated texture top
+	fixed_t		rowoffset;
 
-    // Sector the SideDef is facing.
-    sector_t*	sector;
-    
+	// Texture indices.
+	// We do not maintain names here. 
+	int16_t		toptexture;
+	int16_t		bottomtexture;
+	int16_t		midtexture;
+
+	// Sector the SideDef is facing.
+	sector_t*	sector;
+
 } side_t;
 
 
@@ -185,51 +189,50 @@ typedef struct
 //
 typedef enum
 {
-    ST_HORIZONTAL,
-    ST_VERTICAL,
-    ST_POSITIVE,
-    ST_NEGATIVE
-
+	ST_HORIZONTAL,
+	ST_VERTICAL,
+	ST_POSITIVE,
+	ST_NEGATIVE
 } slopetype_t;
 
 
 
 typedef struct line_s
 {
-    // Vertices, from v1 to v2.
-    vertex_t*	v1;
-    vertex_t*	v2;
+	// Vertices, from v1 to v2.
+	vertex_t*	v1;
+	vertex_t*	v2;
 
-    // Precalculated v2 - v1 for side checking.
-    fixed_t	dx;
-    fixed_t	dy;
+	// Precalculated v2 - v1 for side checking.
+	fixed_t		dx;
+	fixed_t		dy;
 
-    // Animation related.
-    short	flags;
-    short	special;
-    short	tag;
+	// Animation related.
+	int16_t		flags;
+	int16_t		special;
+	int16_t		tag;
 
-    // Visual appearance: SideDefs.
-    //  sidenum[1] will be -1 if one sided
-    short	sidenum[2];			
+	// Visual appearance: SideDefs.
+	//  sidenum[1] will be -1 if one sided
+	uint16_t	sidenum[2];			
 
-    // Neat. Another bounding box, for the extent
-    //  of the LineDef.
-    fixed_t	bbox[4];
+	// Neat. Another bounding box, for the extent
+	//  of the LineDef.
+	fixed_t	bbox[4];
 
-    // To aid move clipping.
-    slopetype_t	slopetype;
+	// To aid move clipping.
+	slopetype_t	slopetype;
 
-    // Front and back sector.
-    // Note: redundant? Can be retrieved from SideDefs.
-    sector_t*	frontsector;
-    sector_t*	backsector;
+	// Front and back sector.
+	// Note: redundant? Can be retrieved from SideDefs.
+	sector_t*	frontsector;
+	sector_t*	backsector;
 
-    // if == validcount, already checked
-    int		validcount;
+	// if == validcount, already checked
+	int32_t		validcount;
 
-    // thinker_t for reversable actions
-    void*	specialdata;		
+	// thinker_t for reversable actions
+	void*	specialdata;
 } line_t;
 
 
@@ -244,10 +247,9 @@ typedef struct line_s
 //
 typedef struct subsector_s
 {
-    sector_t*	sector;
-    short	numlines;
-    short	firstline;
-    
+	sector_t*	sector;
+	uint16_t	numlines;
+	uint16_t	firstline;
 } subsector_t;
 
 
@@ -257,22 +259,21 @@ typedef struct subsector_s
 //
 typedef struct
 {
-    vertex_t*	v1;
-    vertex_t*	v2;
-    
-    fixed_t	offset;
+	vertex_t*	v1;
+	vertex_t*	v2;
 
-    angle_t	angle;
+	fixed_t	offset;
 
-    side_t*	sidedef;
-    line_t*	linedef;
+	angle_t	angle;
 
-    // Sector references.
-    // Could be retrieved from linedef, too.
-    // backsector is NULL for one sided lines
-    sector_t*	frontsector;
-    sector_t*	backsector;
-    
+	side_t*	sidedef;
+	line_t*	linedef;
+
+	// Sector references.
+	// Could be retrieved from linedef, too.
+	// backsector is NULL for one sided lines
+	sector_t*	frontsector;
+	sector_t*	backsector;
 } seg_t;
 
 
@@ -282,18 +283,17 @@ typedef struct
 //
 typedef struct
 {
-    // Partition line.
-    fixed_t	x;
-    fixed_t	y;
-    fixed_t	dx;
-    fixed_t	dy;
+	// Partition line.
+	fixed_t	x;
+	fixed_t	y;
+	fixed_t	dx;
+	fixed_t	dy;
 
-    // Bounding box for each child.
-    fixed_t	bbox[2][4];
+	// Bounding box for each child.
+	fixed_t	bbox[2][4];
 
-    // If NF_SUBSECTOR its a subsector.
-    unsigned short children[2];
-    
+	// If NF_SUBSECTOR its a subsector.
+	uint16_t children[2];
 } node_t;
 
 
@@ -312,31 +312,31 @@ typedef struct
 //
 typedef struct drawseg_s
 {
-    seg_t*		curline;
-    int			x1;
-    int			x2;
+	seg_t*		curline;
+	int32_t		x1;
+	int32_t		x2;
 
-    fixed_t		scale1;
-    fixed_t		scale2;
-    fixed_t		scalestep;
+	fixed_t		scale1;
+	fixed_t		scale2;
+	fixed_t		scalestep;
 
-    // 0=none, 1=bottom, 2=top, 3=both
-    int			silhouette;
+	// 0=none, 1=bottom, 2=top, 3=both
+	int32_t		silhouette;
 
-    // do not clip sprites above this
-    fixed_t		bsilheight;
+	// do not clip sprites above this
+	fixed_t		bsilheight;
 
-    // do not clip sprites below this
-    fixed_t		tsilheight;
-    
-    // Pointers to lists for sprite clipping,
-    //  all three adjusted so [x1] is first value.
-    vertclip_t*	sprtopclip;		
-    vertclip_t*	sprbottomclip;	
+	// do not clip sprites below this
+	fixed_t		tsilheight;
+
+	// Pointers to lists for sprite clipping,
+	//  all three adjusted so [x1] is first value.
+	vertclip_t*	sprtopclip;
+	vertclip_t*	sprbottomclip;
 
 	// TODO: Make this 32-bit
-    vertclip_t*		maskedtexturecol;
-    
+	vertclip_t*		maskedtexturecol;
+
 } drawseg_t;
 
 // A vissprite_t is a thing
@@ -344,41 +344,39 @@ typedef struct drawseg_s
 // I.e. a sprite object that is partly visible.
 typedef struct vissprite_s
 {
-    // Doubly linked list.
-    struct vissprite_s*	prev;
-    struct vissprite_s*	next;
-    
-    int			x1;
-    int			x2;
+	// Doubly linked list.
+	struct vissprite_s*	prev;
+	struct vissprite_s*	next;
 
-    // for line side calculation
-    fixed_t		gx;
-    fixed_t		gy;		
+	int32_t			x1;
+	int32_t			x2;
 
-    // global bottom / top for silhouette clipping
-    fixed_t		gz;
-    fixed_t		gzt;
+	// for line side calculation
+	fixed_t			gx;
+	fixed_t			gy;
 
-    // horizontal position of x1
-    fixed_t		startfrac;
-    
-    fixed_t		scale;
-    
-    // negative if flipped
-    fixed_t		xiscale;	
+	// global bottom / top for silhouette clipping
+	fixed_t			gz;
+	fixed_t			gzt;
 
-    fixed_t		texturemid;
-    int			patch;
+	// horizontal position of x1
+	fixed_t			startfrac;
 
-    // for color translation and shadow draw,
-    //  maxbright frames as well
-    lighttable_t*	colormap;
-   
-    int			mobjflags;
-    
+	fixed_t			scale;
+
+	// negative if flipped
+	fixed_t			xiscale;
+
+	fixed_t			texturemid;
+	int32_t			patch;
+
+	// for color translation and shadow draw,
+	//  maxbright frames as well
+	lighttable_t*	colormap;
+
+	int32_t			mobjflags;
+
 } vissprite_t;
-
-#define MAXVISSPRITES  	1024
 
 //	
 // Sprites are patches with a special naming convention
