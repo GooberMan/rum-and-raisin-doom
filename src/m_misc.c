@@ -55,6 +55,7 @@
 
 void M_MakeDirectory(const char *path)
 {
+	if( strlen( path ) > 0 )
 #ifdef _WIN32
     mkdir(path);
 #else
