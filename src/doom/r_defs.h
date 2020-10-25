@@ -216,7 +216,7 @@ typedef struct line_s
 
 	// Visual appearance: SideDefs.
 	//  sidenum[1] will be -1 if one sided
-	uint16_t	sidenum[2];			
+	int16_t	sidenum[2];			
 
 	// Neat. Another bounding box, for the extent
 	//  of the LineDef.
