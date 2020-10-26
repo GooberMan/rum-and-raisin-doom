@@ -23,6 +23,7 @@ extern boolean		debugmenuactive;
 extern int32_t		debugmenuclosesound;
 
 void M_InitDebugMenu( void );
+void M_BindDebugMenuVariables( void );
 void M_RenderDebugMenu( void );
 
 // menuname can be categorised with pipes, ie Edit|Preferences|Some pref category

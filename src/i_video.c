@@ -217,7 +217,7 @@ int usegamma = 0;
 unsigned int joywait = 0;
 
 // Dear ImGui. For debugging justice
-static ImGuiContext* imgui_context;
+extern ImGuiContext* imgui_context;
 
 extern boolean debugmenuactive;
 
@@ -1241,7 +1241,6 @@ static void I_SetupDearImGui(void)
 {
 	int32_t retval;
 
-	imgui_context = igCreateContext( NULL );
 	retval = CImGui_ImplSDL2_InitForOpenGL( screen, glcontext );
 	if ( !retval )
 	{

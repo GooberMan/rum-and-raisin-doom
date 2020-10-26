@@ -110,6 +110,7 @@ static const char *game_title = "Doom";
 static char *back_flat = "F_PAVE01";
 static int comport = 0;
 static char *nickname = NULL;
+static int32_t debugmenu_theme = 1;
 
 static void BindMiscVariables(void)
 {
@@ -153,6 +154,8 @@ static void BindMiscVariables(void)
     {
         M_BindIntVariable("screenblocks",   &screenblocks);
     }
+
+	M_BindIntVariable("debugmenu_theme",   &debugmenu_theme);
 
 }
 

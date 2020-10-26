@@ -1761,6 +1761,12 @@ static default_t extra_defaults_list[] =
     //
 
     CONFIG_VARIABLE_KEY(key_multi_msgplayer8),
+
+	//!
+	// Tracks the debug menu theme. Nothing more. Integer that maps directly in to the theme array.
+	//
+
+	CONFIG_VARIABLE_INT(debugmenu_theme),
 };
 
 static default_collection_t extra_defaults =
