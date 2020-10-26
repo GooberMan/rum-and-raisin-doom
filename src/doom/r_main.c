@@ -32,6 +32,10 @@
 
 #include "m_bbox.h"
 #include "m_menu.h"
+#include "m_debugmenu.h"
+
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
 
 #include "r_local.h"
 #include "r_sky.h"
@@ -69,11 +73,16 @@ typedef struct renderdata_s
 
 renderdata_t*			renderdatas;
 
-int32_t					numrendercontexts = 3;
+#define DEFAULT_RENDERCONTEXTS 4
+
+int32_t					numrendercontexts = DEFAULT_RENDERCONTEXTS;
+int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
 boolean					renderloadbalancing = false;
 boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
 boolean					renderthreaded = true;
+boolean					renderSIMDcolumns = true;
+int32_t					performancegraphscale = 20;
 
 int32_t					viewangleoffset;
 
@@ -820,7 +829,18 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 
 void R_RenderViewContext( rendercontext_t* rendercontext )
 {
+	int32_t currtime;
+
 	rendercontext->starttime = I_GetTimeUS();
+#if RENDER_PERF_GRAPHING
+	rendercontext->bspcontext.storetimetaken = 0;
+	rendercontext->bspcontext.solidtimetaken = 0;
+	rendercontext->bspcontext.maskedtimetaken = 0;
+
+	rendercontext->planecontext.flattimetaken = 0;
+
+	rendercontext->spritecontext.maskedtimetaken = 0;
+#endif
 
 	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
 
@@ -831,6 +851,27 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 
 	rendercontext->endtime = I_GetTimeUS();
 	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
+
+#if RENDER_PERF_GRAPHING
+	rendercontext->frametimes[ rendercontext->nextframetime ] = (float_t)rendercontext->timetaken / 1000.f;
+	rendercontext->walltimes[ rendercontext->nextframetime ] = (float_t)( rendercontext->bspcontext.solidtimetaken + rendercontext->bspcontext.maskedtimetaken ) / 1000.f;
+	rendercontext->flattimes[ rendercontext->nextframetime ] = (float_t)rendercontext->planecontext.flattimetaken / 1000.f;
+	rendercontext->spritetimes[ rendercontext->nextframetime ] = (float_t)rendercontext->spritecontext.maskedtimetaken / 1000.f;
+	rendercontext->everythingelsetimes[ rendercontext->nextframetime ] = (float_t)( rendercontext->timetaken
+																					- rendercontext->bspcontext.solidtimetaken 
+																					- rendercontext->bspcontext.maskedtimetaken
+																					- rendercontext->planecontext.flattimetaken
+																					- rendercontext->spritecontext.maskedtimetaken ) / 1000.f;
+
+	rendercontext->nextframetime = ( rendercontext->nextframetime + 1 ) % MAXPROFILETIMES;
+
+	rendercontext->frameaverage = 0;
+	for( currtime = 0; currtime < MAXPROFILETIMES; ++currtime )
+	{
+		rendercontext->frameaverage += rendercontext->frametimes[ currtime ];
+	}
+	rendercontext->frameaverage /= MAXPROFILETIMES;
+#endif
 }
 
 #include "hu_lib.h"
@@ -902,6 +943,13 @@ void R_RefreshContexts( void )
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
 		renderdatas[ currcontext ].context.spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+#if RENDER_PERF_GRAPHING
+		memset( renderdatas[ currcontext ].context.frametimes, 0, sizeof( renderdatas[ currcontext ].context.frametimes) );
+		memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
+		memset( renderdatas[ currcontext ].context.flattimes, 0, sizeof( renderdatas[ currcontext ].context.flattimes) );
+		memset( renderdatas[ currcontext ].context.spritetimes, 0, sizeof( renderdatas[ currcontext ].context.spritetimes) );
+		memset( renderdatas[ currcontext ].context.everythingelsetimes, 0, sizeof( renderdatas[ currcontext ].context.everythingelsetimes) );
+#endif // RENDER_PERF_GRAPHING
 	}
 
 	renderrebalancecontexts = true;
@@ -1071,7 +1119,110 @@ void R_ExecuteSetViewSize (void)
     }
 }
 
+static boolean debugwindow_renderthreading = false;
 
+#if RENDER_PERF_GRAPHING
+static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptrdiff_t dataoffs, int32_t datalen, ptrdiff_t nextentryoffs )
+{
+	int32_t currcontext = 0;
+	int32_t currtime;
+
+	byte* context;
+	int32_t nextentry;
+
+	float_t* data;
+	float_t frameavg;
+	float_t times[ MAXPROFILETIMES ];
+	float_t average;
+	char overlay[ 64 ];
+	ImVec2 objsize;
+
+	memset( times, 0, sizeof( times ) );
+
+	if( igBeginTabItem( graphname, NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+	{
+		igSliderInt( "Time scale (ms)", &performancegraphscale, 5, 100, "%dms", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+		igNewLine();
+		igBeginColumns( "Performance columns", M_MIN( 2, numusablerendercontexts ), ImGuiColumnsFlags_NoBorder );
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+		{
+			// This is downright ugly. Don't ever do this
+			context = (byte*)&renderdatas[ currcontext ];
+			nextentry = *(int32_t*)( context + nextentryoffs );
+			data = (float_t*)( context + dataoffs );
+			frameavg = frameavgoffs >= 0 ? *(float_t*)( context + frameavgoffs ) : -1.f;
+
+			average = 0;
+			for( currtime = 0; currtime < datalen; ++currtime )
+			{
+				times[ currtime ] = data[ ( nextentry + currtime ) % datalen ];
+				average += times[ currtime ];
+			}
+			average /= datalen;
+			if( frameavg < 0.f )
+			{
+				sprintf( overlay, "avg: %0.2fms", average );
+			}
+			else
+			{
+				sprintf( overlay, "avg: %0.2fms / %0.2fms", average, frameavg );
+			}
+			objsize.x = igGetColumnWidth( igGetColumnIndex() );
+			objsize.y = fminf( objsize.x * 0.75f, 180.f );
+
+			igText( "Context %d", currcontext );
+			igPlotHistogramFloatPtr( "Frametime", times, datalen, 0, overlay, 0.f, (float_t)performancegraphscale, objsize, sizeof(float_t) );
+			igNewLine();
+			igNextColumn();
+		}
+		igEndColumns();
+
+		igEndTabItem();
+	}
+}
+#endif //RENDER_PERF_GRAPHING
+
+#define OFFSETOF( type, var ) ( (ptrdiff_t) ( &( (type*)0 )-> ## var ) )
+
+static void R_RenderThreadingWindow( const char* name )
+{
+#if RENDER_PERF_GRAPHING
+	// This is downright ugly. Don't ever do this
+	ptrdiff_t frametimesoff = OFFSETOF( renderdata_t, context.frametimes );
+	ptrdiff_t walltimesoff = OFFSETOF( renderdata_t, context.walltimes );
+	ptrdiff_t flattimesoff = OFFSETOF( renderdata_t, context.flattimes );
+	ptrdiff_t spritetimesoff = OFFSETOF( renderdata_t, context.spritetimes );
+	ptrdiff_t elsetimesoff = OFFSETOF( renderdata_t, context.everythingelsetimes );
+	ptrdiff_t avgtimeoff = OFFSETOF( renderdata_t, context.frameaverage );
+	ptrdiff_t nexttimeoff = OFFSETOF( renderdata_t, context.nextframetime );
+#endif // RENDER_PERF_GRAPHING
+
+	if( igBeginTabBar( "Threading tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
+	{
+#if RENDER_PERF_GRAPHING
+		R_RenderGraphTab( "Overall",			-1,				frametimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Walls",				avgtimeoff,		walltimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Flats",				avgtimeoff,		flattimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Sprites",			avgtimeoff,		spritetimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Everything else",	avgtimeoff,		elsetimesoff,		MAXPROFILETIMES,	nexttimeoff );
+#endif // RENDER_PERF_GRAPHING
+
+		if( igBeginTabItem( "Options", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			igText( "Performance options" );
+			igSeparator();
+			igSliderInt( "Running threads", &numusablerendercontexts, 1, numrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+			igCheckbox( "Load balancing", &renderloadbalancing );
+			igCheckbox( "SIMD columns", &renderSIMDcolumns );
+			igNewLine();
+			igText( "Debug options" );
+			igSeparator();
+			igCheckbox( "Visualise split", &rendersplitvisualise );
+			igEndTabItem();
+		}
+		igEndTabBar();
+	}
+}
 
 //
 // R_Init
@@ -1099,6 +1250,8 @@ void R_Init (void)
     R_InitSkyMap ();
     R_InitTranslationTables ();
     printf (".");
+
+	M_RegisterDebugMenuWindow( "Render|Threading", &debugwindow_renderthreading, &R_RenderThreadingWindow );
 	
     framecount = 0;
 }
@@ -1146,7 +1299,7 @@ void R_SetupFrame (player_t* player)
 	double_t	currpercentage;
 	double_t	percentagedebt;
 
-	double_t	idealpercentage = 1.0 / (double_t)numrendercontexts;
+	double_t	idealpercentage = 1.0 / (double_t)numusablerendercontexts;
 
 	viewplayer = player;
 	viewx = player->mo->x;
@@ -1182,12 +1335,12 @@ void R_SetupFrame (player_t* player)
 		lastframetime = 0;
 		percentagedebt = 0;
 		currstart = 0;
-		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
 			lastframetime += renderdatas[ currcontext ].context.timetaken;
 		}
 
-		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
 			currpercentage = renderdatas[ currcontext ].context.timetaken / lastframetime;
 			if( currpercentage > idealpercentage )
@@ -1207,13 +1360,13 @@ void R_SetupFrame (player_t* player)
 			currstart += desiredwidth;
 		}
 	}
-	
+
 	if( !renderloadbalancing || renderrebalancecontexts )
 	{
 		currstart = 0;
 
-		desiredwidth = viewwidth / numrendercontexts;
-		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		desiredwidth = viewwidth / numusablerendercontexts;
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
 			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 1, 0 );
 			currstart += desiredwidth;
@@ -1266,7 +1419,6 @@ void R_RenderPlayerView (player_t* player)
 	HUlib_initTextLine( &debugtotaltime, 1, V_VIRTUALHEIGHT - ST_HEIGHT - 30, hu_font, HU_FONTSTART);
 
 	char outputbuffer[ HU_MAXLINELENGTH+1 ];
-	char* working;
 
 	R_SetupFrame (player);
 
@@ -1280,9 +1432,9 @@ void R_RenderPlayerView (player_t* player)
 
 	finishedcontexts = 0;
 
-	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 	{
-		if( renderthreaded && currcontext < numrendercontexts - 1 )
+		if( renderthreaded && currcontext < numusablerendercontexts - 1 )
 		{
 			I_AtomicExchange( &renderdatas[ currcontext ].framewaiting, 1 );
 		}
@@ -1293,9 +1445,9 @@ void R_RenderPlayerView (player_t* player)
 		}
 	}
 
-	while( renderthreaded && finishedcontexts != numrendercontexts )
+	while( renderthreaded && finishedcontexts != numusablerendercontexts )
 	{
-		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
 			finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
 		}
@@ -1310,12 +1462,12 @@ void R_RenderPlayerView (player_t* player)
 		sprintf( outputbuffer, "Loop time: %0.1fms", (looptimeend - looptimestart ) / 1000.0 );
 		R_DrawMsg( outputbuffer, &debugtotaltime );
 
-		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
 			totaltime += renderdatas[ currcontext ].context.timetaken;
 		}
 
-		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
 			debugtime = (hu_textline_t*)renderdatas[ currcontext ].context.debugtime;
 			debugpercent = (hu_textline_t*)renderdatas[ currcontext ].context.debugpercent;

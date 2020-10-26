@@ -188,8 +188,14 @@ const byte whacky_void_indices[] =
 const int32_t num_whacky_void_indices = sizeof( whacky_void_indices ) / sizeof( *whacky_void_indices );
 const uint64_t whacky_void_microseconds = 1200000;
 
-boolean			whacky_void = false;
-boolean			black_void = false;
+typedef enum
+{
+	Void_NoClear,
+	Void_Black,
+	Void_Whacky,
+} voidclear_e;
+
+int32_t voidcleartype = Void_NoClear;
 
 boolean D_Display (void)
 {
@@ -211,16 +217,16 @@ boolean D_Display (void)
 
 	start = I_GetTimeUS();
 
-	if( black_void )
+	if( voidcleartype == Void_Black )
 	{
 		memset( I_VideoBuffer, 0, SCREENHEIGHT * SCREENWIDTH );
 	}
-	else if( whacky_void )
+	else if( voidcleartype == Void_Whacky )
 	{
 		memset( I_VideoBuffer, whacky_void_indices[ ( start % whacky_void_microseconds ) / ( whacky_void_microseconds / num_whacky_void_indices ) ], SCREENHEIGHT * SCREENWIDTH );
 	}
 		
-    redrawsbar = false;
+    redrawsbar = voidcleartype != Void_NoClear;
     
     // change the view size if needed
     if (setsizeneeded)
@@ -1321,6 +1327,7 @@ static void G_CheckDemoStatusAtExit (void)
 //
 
 extern int32_t numrendercontexts;
+extern int32_t numusablerendercontexts;
 extern boolean renderloadbalancing;
 extern boolean rendersplitvisualise;
 extern boolean renderthreaded;
@@ -1762,8 +1769,12 @@ void D_DoomMain (void)
 		I_InitPerfFrames( count );
 	}
 
-	black_void = M_ParmExists( "-blackvoid" );
-	whacky_void = M_ParmExists( "-whackyvoid" );
+	if( M_ParmExists( "-blackvoid" ) ) voidcleartype = Void_Black;
+	if( M_ParmExists( "-whackyvoid" ) ) voidcleartype = Void_Whacky;
+
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", &voidcleartype, Void_NoClear );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", &voidcleartype, Void_Black );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Whacky", &voidcleartype, Void_Whacky );
 
 	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
@@ -1773,6 +1784,7 @@ void D_DoomMain (void)
 	if( p )
 	{
 		M_StrToInt( myargv[p + 1], &numrendercontexts );
+		numusablerendercontexts = numrendercontexts;
 	}
 
     // Set the gamedescription string. This is only possible now that

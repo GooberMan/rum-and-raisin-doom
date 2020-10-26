@@ -73,6 +73,12 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 	fixed_t		length;
 	uint32_t	index;
 	byte*		originalsource = spancontext->source;
+
+#if RENDER_PERF_GRAPHING
+	uint64_t			starttime = I_GetTimeUS();
+	uint64_t			endtime;
+#endif // RENDER_PERF_GRAPHING
+
 	
 #ifdef RANGECHECK
 	if (x2 < x1
@@ -127,6 +133,11 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 	spanfunc( spancontext );
 
 	spancontext->source = originalsource;
+
+#if RENDER_PERF_GRAPHING
+	endtime = I_GetTimeUS();
+	planecontext->flattimetaken += ( endtime - starttime );
+#endif // RENDER_PERF_GRAPHING
 }
 
 

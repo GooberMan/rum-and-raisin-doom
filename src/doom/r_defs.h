@@ -79,6 +79,9 @@ typedef int32_t					vertclip_t;
 #define VANILLA_MAXVISSPRITES	128
 #define MAXVISSPRITES			1024
 
+#define RENDER_PERF_GRAPHING	1
+#define MAXPROFILETIMES			( 35 * 8 )
+
 
 //
 // INTERNAL MAP TYPES
@@ -493,6 +496,11 @@ typedef struct bspcontext_s
 	cliprange_t		solidsegs[MAXSEGS];
 	cliprange_t*	solidsegsend;
 
+#if RENDER_PERF_GRAPHING
+	uint64_t		storetimetaken;
+	uint64_t		solidtimetaken;
+	uint64_t		maskedtimetaken;
+#endif // RENDER_PERF_GRAPHING
 } bspcontext_t;
 
 typedef struct planecontext_s
@@ -523,6 +531,9 @@ typedef struct planecontext_s
 	fixed_t			cachedxstep[SCREENHEIGHT];
 	fixed_t			cachedystep[SCREENHEIGHT];
 
+#if RENDER_PERF_GRAPHING
+	uint64_t			flattimetaken;
+#endif // RENDER_PERF_GRAPHING
 } planecontext_t;
 
 typedef struct spritecontext_s
@@ -546,6 +557,9 @@ typedef struct spritecontext_s
 	
 	boolean*		sectorvisited;
 
+#if RENDER_PERF_GRAPHING
+	uint64_t		maskedtimetaken;
+#endif // RENDER_PERF_GRAPHING
 } spritecontext_t;
 
 //
@@ -604,6 +618,16 @@ typedef struct rendercontext_s
 	uint64_t			starttime;
 	uint64_t			endtime;
 	uint64_t			timetaken;
+
+#if RENDER_PERF_GRAPHING
+	float_t				frametimes[ MAXPROFILETIMES ];
+	float_t				walltimes[ MAXPROFILETIMES ];
+	float_t				flattimes[ MAXPROFILETIMES ];
+	float_t				spritetimes[ MAXPROFILETIMES ];
+	float_t				everythingelsetimes[ MAXPROFILETIMES ];
+	float_t				frameaverage;
+	uint64_t			nextframetime;
+#endif // RENDER_PERF_GRAPHING
 
 	bspcontext_t		bspcontext;
 	planecontext_t		planecontext;

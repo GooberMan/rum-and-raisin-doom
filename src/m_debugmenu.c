@@ -462,7 +462,7 @@ void M_RenderDebugMenu( void )
 	menuentry_t* thiswindow;
 	menufunc_t callback;
 	boolean isopen;
-	int32_t windowflags = ImGuiWindowFlags_NoFocusOnAppearing;
+	int32_t windowflags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse;
 	if( !debugmenuactive ) windowflags |= ImGuiWindowFlags_NoInputs;
 
 	memcpy( igGetStyle()->Colors, themes[ debugmenu_theme ].colors, sizeof( igGetStyle()->Colors ) );
@@ -485,12 +485,16 @@ void M_RenderDebugMenu( void )
 			isopen = *(boolean*)thiswindow->data;
 			if( isopen )
 			{
-				if( igBegin( thiswindow->name, thiswindow->data, windowflags ) )
+				igPushIDPtr( thiswindow->name );
 				{
-					callback = thiswindow->callback;
-					callback( thiswindow->name );
+					if( igBegin( thiswindow->name, thiswindow->data, windowflags ) )
+					{
+						callback = thiswindow->callback;
+						callback( thiswindow->name );
+					}
+					igEnd();
 				}
-				igEnd();
+				igPopID();
 			}
 		}
 

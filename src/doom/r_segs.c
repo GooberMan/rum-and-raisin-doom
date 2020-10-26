@@ -112,6 +112,11 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 	colcontext_t		spritecolcontext;
 	extern vbuffer_t*	dest_buffer;
 
+#if RENDER_PERF_GRAPHING
+	uint64_t		starttime = I_GetTimeUS();
+	uint64_t		endtime;
+#endif // RENDER_PERF_GRAPHING
+
 	spritecolcontext.output = *dest_buffer;
 	spritecolcontext.colfunc = &R_DrawColumn_Untranslated; 
 
@@ -206,6 +211,11 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 		spritecontext->spryscale += scalestep;
 
 	}
+
+#if RENDER_PERF_GRAPHING
+	endtime = I_GetTimeUS();
+	bspcontext->maskedtimetaken += ( endtime - starttime );
+#endif // RENDER_PERF_GRAPHING
 }
 
 
@@ -225,7 +235,7 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 // Detail maps show me how may reads are going to happen in any 16-byte block.
 extern byte detailmaps[16][256];
 
-void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
+uint64_t R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
 {
 	angle_t			angle;
 	uint32_t		index;
@@ -240,6 +250,12 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 
 	colcontext_t	wallcolcontext;
 	extern vbuffer_t* dest_buffer;
+	extern boolean renderSIMDcolumns;
+
+#if RENDER_PERF_GRAPHING
+	uint64_t		starttime = I_GetTimeUS();
+	uint64_t		endtime;
+#endif // RENDER_PERF_GRAPHING
 
 	wallcolcontext.output = *dest_buffer;
 
@@ -324,7 +340,7 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 			wallcolcontext.colfunc = colfuncs[ 15 ];
 #else
-			wallcolcontext.colfunc = colfuncs[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ];
+			wallcolcontext.colfunc = colfuncs[ M_MAX( M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ), 15 * (int32_t)!renderSIMDcolumns ) ];
 #endif
 	
 		}
@@ -435,6 +451,13 @@ void R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext,
 		wallcolcontext.colormap = restorelightmap;
 #endif // R_DRAWCOLUMN_DEBUGDISTANCES
 	}
+
+#if RENDER_PERF_GRAPHING
+	endtime = I_GetTimeUS();
+	return endtime - starttime;
+#else
+	return 0;
+#endif // RENDER_PERF_GRAPHING
 }
 
 //
@@ -455,6 +478,12 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 	int32_t				worldlow;
 
 	segloopcontext_t	loopcontext;
+
+	uint64_t			walltime;
+#if RENDER_PERF_GRAPHING
+	uint64_t			starttime = I_GetTimeUS();
+	uint64_t			endtime;
+#endif // RENDER_PERF_GRAPHING
 
 	// don't overflow and crash
 	if ( bspcontext->thisdrawseg == &bspcontext->drawsegs[MAXDRAWSEGS])
@@ -806,7 +835,10 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 		planecontext->floorplane = R_CheckPlane ( planecontext, planecontext->floorplane, loopcontext.startx, loopcontext.stopx-1 );
 	}
 
-	R_RenderSegLoop( planecontext, wallcontext, &loopcontext );
+	walltime = R_RenderSegLoop( planecontext, wallcontext, &loopcontext );
+#if RENDER_PERF_GRAPHING
+	bspcontext->solidtimetaken += walltime;
+#endif // RENDER_PERF_GRAPHING
 
 	// save sprite clipping info
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
@@ -848,5 +880,12 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 		bspcontext->thisdrawseg->bsilheight = INT_MAX;
 	}
 	bspcontext->thisdrawseg++;
+
+#if RENDER_PERF_GRAPHING
+	endtime = I_GetTimeUS();
+
+	bspcontext->storetimetaken += (endtime - starttime);
+#endif // RENDER_PERF_GRAPHING
+
 }
 

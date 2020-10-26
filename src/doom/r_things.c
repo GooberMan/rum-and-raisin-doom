@@ -851,6 +851,12 @@ void R_DrawSprite( spritecontext_t* spritecontext, bspcontext_t* bspcontext, vis
 	fixed_t			scale;
 	fixed_t			lowscale;
 	int32_t			silhouette;
+
+#if RENDER_PERF_GRAPHING
+	uint64_t			starttime;
+	uint64_t			endtime;
+#endif // RENDER_PERF_GRAPHING
+
 		
 	for (x = spr->x1 ; x<=spr->x2 ; x++)
 	{
@@ -893,7 +899,14 @@ void R_DrawSprite( spritecontext_t* spritecontext, bspcontext_t* bspcontext, vis
 			// masked mid texture?
 			if (ds->maskedtexturecol)
 			{
+#if RENDER_PERF_GRAPHING
+				starttime = I_GetTimeUS();
+#endif // RENDER_PERF_GRAPHING
 				R_RenderMaskedSegRange( bspcontext, spritecontext, ds, r1, r2 );
+#if RENDER_PERF_GRAPHING
+				endtime = I_GetTimeUS();
+				bspcontext->maskedtimetaken += ( endtime - starttime );
+#endif // RENDER_PERF_GRAPHING
 			}
 			// seg is behind sprite
 			continue;			
@@ -951,7 +964,14 @@ void R_DrawSprite( spritecontext_t* spritecontext, bspcontext_t* bspcontext, vis
 		
 	spritecontext->mfloorclip = clipbot;
 	spritecontext->mceilingclip = cliptop;
+#if RENDER_PERF_GRAPHING
+	starttime = I_GetTimeUS();
+#endif // RENDER_PERF_GRAPHING
 	R_DrawVisSprite( spritecontext, spr, spr->x1, spr->x2 );
+#if RENDER_PERF_GRAPHING
+	endtime = I_GetTimeUS();
+	spritecontext->maskedtimetaken += ( endtime - starttime );
+#endif // RENDER_PERF_GRAPHING
 }
 
 
