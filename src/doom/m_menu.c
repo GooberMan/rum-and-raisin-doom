@@ -120,6 +120,8 @@ char			saveOldString[SAVESTRINGSIZE];
 
 boolean			inhelpscreens;
 boolean			menuactive;
+boolean			debugmenuactive = false;
+int32_t			debugmenuclosesound = sfx_swtchx;
 
 #define SKULLXOFF		-32
 #define LINEHEIGHT		16
@@ -1351,6 +1353,11 @@ static boolean IsNullKey(int key)
 // CONTROL PANEL
 //
 
+static boolean M_DebugResponder( event_t* ev )
+{
+	return true;
+}
+
 //
 // M_Responder
 //
@@ -1399,6 +1406,18 @@ boolean M_Responder (event_t* ev)
 
         return true;
     }
+
+	if (ev->type == ev_keydown && ev->data1 == key_menu_debug)
+	{
+		debugmenuactive = !debugmenuactive;
+		S_StartSound(NULL, debugmenuactive ? sfx_swtchn : sfx_swtchx);
+		return true;
+	}
+
+	if( debugmenuactive )
+	{
+		return M_DebugResponder( ev );
+	}
 
     // key is the key pressed, ch is the actual character typed
   

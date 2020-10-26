@@ -89,6 +89,8 @@
 #define KEYP_EQUALS     KEY_EQUALS
 #define KEYP_ENTER      KEY_ENTER
 
+#define KEY_TILDE		'`'
+
 #define SCANCODE_TO_KEYS_ARRAY {                                            \
     0,   0,   0,   0,   'a',                                  /* 0-9 */     \
     'b', 'c', 'd', 'e', 'f',                                                \

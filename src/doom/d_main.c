@@ -51,6 +51,7 @@
 #include "m_controls.h"
 #include "m_misc.h"
 #include "m_menu.h"
+#include "m_debugmenu.h"
 #include "p_saveg.h"
 
 #include "i_endoom.h"
@@ -1330,6 +1331,8 @@ void D_DoomMain (void)
     char file[256];
     char demolumpname[9];
     uint32_t numiwadlumps;
+
+	M_InitDebugMenu();
 
     I_AtExit(D_Endoom, false);
 

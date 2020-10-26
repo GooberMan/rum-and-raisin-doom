@@ -21,6 +21,14 @@
 #include <stdlib.h>
 
 #include "SDL.h"
+
+#ifdef _WIN32
+#define USE_GLAD 1
+#include <glad/glad.h>
+#else
+#define USE_GLAD 0
+#endif
+
 #include "SDL_opengl.h"
 
 #ifdef _WIN32
@@ -29,6 +37,10 @@
 #endif
 #include <windows.h>
 #endif
+
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
+#include "cimguiglue.h"
 
 #include "icon.c"
 
@@ -42,6 +54,7 @@
 #include "i_timer.h"
 #include "i_video.h"
 #include "m_argv.h"
+#include "m_debugmenu.h"
 #include "m_config.h"
 #include "m_misc.h"
 #include "tables.h"
@@ -203,6 +216,11 @@ int usegamma = 0;
 // Joystick/gamepad hysteresis
 unsigned int joywait = 0;
 
+// Dear ImGui. For debugging justice
+static ImGuiContext* imgui_context;
+
+extern boolean debugmenuactive;
+
 static boolean MouseShouldBeGrabbed()
 {
     // never grab the mouse when in screensaver mode
@@ -230,6 +248,9 @@ static boolean MouseShouldBeGrabbed()
 
     if (nograbmouse_override || !grabmouse)
         return false;
+
+	if( debugmenuactive )
+		return false;
 
     // Invoke the grabmouse callback function to determine whether
     // the mouse should be grabbed
@@ -425,6 +446,8 @@ void I_GetEvent(void)
 
     while (SDL_PollEvent(&sdlevent))
     {
+		CImGui_ImplSDL2_ProcessEvent( &sdlevent );
+
         switch (sdlevent.type)
         {
             case SDL_KEYDOWN:
@@ -831,6 +854,20 @@ void I_FinishUpdate (void)
 
 	SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 
+	// ImGui time!
+	CImGui_ImplOpenGL3_NewFrame();
+	CImGui_ImplSDL2_NewFrame( screen );
+
+	igGetIO()->WantCaptureKeyboard = debugmenuactive;
+	igGetIO()->WantCaptureMouse = debugmenuactive;
+
+	igNewFrame();
+	
+	M_RenderDebugMenu();
+
+	igRender();
+	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
+
     // Draw!
 
     SDL_RenderPresent(renderer);
@@ -1166,6 +1203,58 @@ void I_GetWindowPosition(int *x, int *y, int w, int h)
     }
 }
 
+#ifdef __APPLE__
+#define GLSL_VERSION "#version 150"
+#define GL_VERSION_MAJOR 3
+#define GL_VERSION_MINOR 2
+#define GL_CONTEXTFLAGS SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
+#else
+#define GLSL_VERSION "#version 130"
+#define GL_VERSION_MAJOR 3
+#define GL_VERSION_MINOR 0
+#define GL_CONTEXTFLAGS 0
+#endif
+
+static void I_SetupOpenGL(void)
+{
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, GL_CONTEXTFLAGS);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GL_VERSION_MAJOR);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GL_VERSION_MINOR);
+}
+
+#if USE_GLAD
+static void I_SetupGLAD(void)
+{
+	int32_t retval;
+	retval = gladLoadGLLoader( (GLADloadproc)&SDL_GL_GetProcAddress );
+	if ( !retval )
+	{
+		I_Error( "gladLoadGLLoader failed to initialise" );
+	}
+}
+#else // !USE_GLAD
+#define I_SetupGLAD()
+#endif // USE_GLAD
+
+static void I_SetupDearImGui(void)
+{
+	int32_t retval;
+
+	imgui_context = igCreateContext( NULL );
+	retval = CImGui_ImplSDL2_InitForOpenGL( screen, glcontext );
+	if ( !retval )
+	{
+		I_Error( "ImGui_ImplSDL2_InitForOpenGL failed to initialise" );
+	}
+
+	retval = CImGui_ImplOpenGL3_Init( GLSL_VERSION );
+	if ( !retval )
+	{
+		I_Error( "CImGui_ImplOpenGL3_Init failed to initialise" );
+	}
+}
+
 static void SetVideoMode(void)
 {
 	int32_t w, h;
@@ -1279,6 +1368,8 @@ static void SetVideoMode(void)
         texture_upscaled = NULL;
     }
 
+	I_SetupOpenGL();
+
     renderer = SDL_CreateRenderer(screen, requesteddriver, renderer_flags);
 
     if (renderer == NULL)
@@ -1292,6 +1383,8 @@ static void SetVideoMode(void)
 	{
 		I_Error( "SDL not initialised in OpenGL mode" );
 	}
+
+	I_SetupGLAD();
 
     // Important: Set the "logical size" of the rendering context. At the same
     // time this also defines the aspect ratio that is preserved while scaling
@@ -1375,6 +1468,8 @@ static void SetVideoMode(void)
     // Initially create the upscaled texture for rendering to screen
 
     CreateUpscaledTexture(true);
+
+	I_SetupDearImGui();
 }
 
 void I_InitGraphics(void)
@@ -1464,7 +1559,10 @@ void I_InitGraphics(void)
 
     // clear out any events waiting at the start and center the mouse
   
-    while (SDL_PollEvent(&dummy));
+    while (SDL_PollEvent(&dummy))
+	{
+		CImGui_ImplSDL2_ProcessEvent( &dummy );
+	}
 
     initialized = true;
 

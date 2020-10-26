@@ -816,13 +816,13 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(png_screenshots),
 
     //!
-    // 0 = original, 1 = INTERPIC
+    // Values are 0 = original, 1 = INTERPIC
     //
 
     CONFIG_VARIABLE_INT(border_style),
 
     //!
-    // 0 = original, 1 = dithered
+    // Values are 0 = original, 1 = dithered
     //
 
     CONFIG_VARIABLE_INT(border_bezel_style),
@@ -1405,6 +1405,12 @@ static default_t extra_defaults_list[] =
     //
 
     CONFIG_VARIABLE_KEY(key_menu_screenshot),
+
+    //!
+    // Keyboard shortcut bring up the ImGui debug menus.
+    //
+
+    CONFIG_VARIABLE_KEY(key_menu_debug),
 
     //!
     // Key to toggle the map view.
