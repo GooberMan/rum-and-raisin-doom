@@ -202,6 +202,59 @@ static ImVec4 theme_greenallthewaydown[ ImGuiCol_COUNT ] =
 	{ 0, 0, 0, 0.6 },								// ImGuiCol_ModalWindowDimBg,
 };
 
+// Generated with above, but using colours plucked from the Doom palette
+static ImVec4 theme_doomedspacemarine[ ImGuiCol_COUNT ] =
+{
+	{ 0.937255, 0, 0, 0.8 },						// ImGuiCol_Text,
+	{ 0.337255, 0, 0, 0.8 },						// ImGuiCol_TextDisabled,
+	{ 0.262745, 0, 0, 0.8 },						// ImGuiCol_WindowBg,
+	{ 0, 0, 0, 0.2 },								// ImGuiCol_ChildBg,
+	{ 0.262745, 0, 0, 0.901961 },					// ImGuiCol_PopupBg,
+	{ 0.662745, 0.4, 0.4, 0.8 },					// ImGuiCol_Border,
+	{ 0, 0, 0, 0.8 },								// ImGuiCol_BorderShadow,
+	{ 0.309804, 0.309804, 0.309804, 0.4 },			// ImGuiCol_FrameBg,
+	{ 0.509804, 0.509804, 0.509804, 0.4 },			// ImGuiCol_FrameBgHovered,
+	{ 0.409804, 0.409804, 0.409804, 1 },			// ImGuiCol_FrameBgActive,
+	{ 0.262745, 0, 0, 0.8 },						// ImGuiCol_TitleBg,
+	{ 0.362745, 0.1, 0.1, 1 },						// ImGuiCol_TitleBgActive,
+	{ 0.0627451, 0, 0, 0.8 },						// ImGuiCol_TitleBgCollapsed,
+	{ 0.0627451, 0, 0, 0.8 },						// ImGuiCol_MenuBarBg,
+	{ 0.662745, 0.4, 0.4, 0.501961 },				// ImGuiCol_ScrollbarBg,
+	{ 0.562745, 0.3, 0.3, 0.8 },					// ImGuiCol_ScrollbarGrab,
+	{ 0.762745, 0.5, 0.5, 0.8 },					// ImGuiCol_ScrollbarGrabHovered,
+	{ 0.662745, 0.4, 0.4, 1 },						// ImGuiCol_ScrollbarGrabActive,
+	{ 1, 1, 0.137255, 0.8 },						// ImGuiCol_CheckMark,
+	{ 1, 1, 0.137255, 0.8 },						// ImGuiCol_SliderGrab,
+	{ 1.1, 1.1, 0.237255, 1 },						// ImGuiCol_SliderGrabActive,
+	{ 0.32549, 0.247059, 0.184314, 0.8 },			// ImGuiCol_Button,
+	{ 0.52549, 0.447059, 0.384314, 0.8 },			// ImGuiCol_ButtonHovered,
+	{ 0.42549, 0.347059, 0.284314, 1 },				// ImGuiCol_ButtonActive,
+	{ 0.309804, 0.309804, 0.309804, 0.8 },			// ImGuiCol_Header,
+	{ 0.509804, 0.509804, 0.509804, 0.8 },			// ImGuiCol_HeaderHovered,
+	{ 0.409804, 0.409804, 0.409804, 1 },			// ImGuiCol_HeaderActive,
+	{ 0.662745, 0.4, 0.4, 0.8 },					// ImGuiCol_Separator,
+	{ 0.862745, 0.6, 0.6, 0.8 },					// ImGuiCol_SeparatorHovered,
+	{ 0.762745, 0.5, 0.5, 1 },						// ImGuiCol_SeparatorActive,
+	{ 0.32549, 0.247059, 0.184314, 0.2 },			// ImGuiCol_ResizeGrip,
+	{ 0.52549, 0.447059, 0.384314, 0.2 },			// ImGuiCol_ResizeGripHovered,
+	{ 0.42549, 0.347059, 0.284314, 1 },				// ImGuiCol_ResizeGripActive,
+	{ 0.32549, 0.247059, 0.184314, 0.6 },			// ImGuiCol_Tab,
+	{ 0.52549, 0.447059, 0.384314, 0.6 },			// ImGuiCol_TabHovered,
+	{ 0.42549, 0.347059, 0.284314, 1 },				// ImGuiCol_TabActive,
+	{ 0.32549, 0.247059, 0.184314, 0.6 },			// ImGuiCol_TabUnfocused,
+	{ 0.42549, 0.347059, 0.284314, 1 },				// ImGuiCol_TabUnfocusedActive,
+	{ 1, 1, 0.137255, 0.8 },						// ImGuiCol_PlotLines,
+	{ 1.2, 1.2, 0.337255, 0.8 },					// ImGuiCol_PlotLinesHovered,
+	{ 1, 1, 0.137255, 0.8 },						// ImGuiCol_PlotHistogram,
+	{ 1.2, 1.2, 0.337255, 0.8 },					// ImGuiCol_PlotHistogramHovered,
+	{ 1, 1, 0.137255, 0.4 },						// ImGuiCol_TextSelectedBg,
+	{ 1, 1, 0.137255, 0.8 },						// ImGuiCol_DragDropTarget,
+	{ 1, 1, 1, 0.8 },								// ImGuiCol_NavHighlight,
+	{ 1, 1, 1, 0.8 },								// ImGuiCol_NavWindowingHighlight,
+	{ 1, 1, 1, 0.2 },								// ImGuiCol_NavWindowingDimBg,
+	{ 0, 0, 0, 0.6 },								// ImGuiCol_ModalWindowDimBg,
+};
+
 // https://github.com/ocornut/imgui/issues/707#issuecomment-576867100
 static ImVec4 theme_valveclassic[ ImGuiCol_COUNT ] =
 {
@@ -267,6 +320,7 @@ static themedata_t themes[] =
 	{ "Funky Green Highlight",		theme_funkygreenhighlight },
 	{ "Purpley-yellowey Thing",		theme_purpleyellowthing },
 	{ "Green All The Way Down",		theme_greenallthewaydown },
+	{ "Doomed Space Marine",		theme_doomedspacemarine },
 	{ "Valve Classic",				theme_valveclassic },
 	{ NULL, NULL }
 };
