@@ -585,10 +585,17 @@ static menuentry_t* M_FindOrCreateDebugMenuCategory( const char* category_name, 
 	return currentry;
 }
 
+#include <stdio.h>
+#include <string.h>
+
 static menuentry_t* M_FindDebugMenuCategory( const char* category_name )
 {
+	size_t start = 0;
+	size_t curr = 0;
+	size_t end = strlen( category_name );
+
 	char tokbuffer[ MAXNAMELENGTH + 1 ];
-	const char* token = NULL;
+	memset( tokbuffer, 0, sizeof( tokbuffer ) );
 
 	menuentry_t* currcategory = rootentry;
 
@@ -597,14 +604,25 @@ static menuentry_t* M_FindDebugMenuCategory( const char* category_name )
 		return rootentry;
 	}
 
-	memset( tokbuffer, 0, sizeof( tokbuffer ) );
-	strcpy( tokbuffer, category_name );
-
-	token = strtok( tokbuffer, "|" );
-	while( token )
+	while( curr != end )
 	{
-		currcategory = M_FindOrCreateDebugMenuCategory( token, currcategory );
-		token = strtok( NULL, "|" );
+		if( category_name[ curr ] == '|' )
+		{
+			if( curr != start )
+			{
+				strncpy( tokbuffer, &category_name[ start ], ( curr - start ) );
+				currcategory = M_FindOrCreateDebugMenuCategory( tokbuffer, currcategory );
+				memset( tokbuffer, 0, sizeof( tokbuffer ) );
+			}
+			start = curr + 1;
+		}
+		++curr;
+	}
+
+	if( curr != start )
+	{
+		strncpy( tokbuffer, &category_name[ start ], ( curr - start ) );
+		currcategory = M_FindOrCreateDebugMenuCategory( tokbuffer, currcategory );
 	}
 
 	return currcategory;
