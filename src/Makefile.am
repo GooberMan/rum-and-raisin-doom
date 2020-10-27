@@ -18,10 +18,22 @@ SETUP_BINARIES = @PROGRAM_PREFIX@doom-setup$(EXEEXT)    \
 
 execgames_SCRIPTS = $(SETUP_BINARIES)
 
-AM_CFLAGS = -I$(top_srcdir)/textscreen            \
-            -I$(top_srcdir)/opl                   \
-            -I$(top_srcdir)/pcsound               \
+AM_CFLAGS = -I$(top_srcdir)/textscreen                     \
+            -I$(top_srcdir)/opl                            \
+            -I$(top_srcdir)/pcsound                        \
+            -I$(top_srcdir)/ext/cimgui                     \
+            -I$(top_srcdir)/ext/cimguiglue                 \
+            -I$(top_srcdir)/ext/cimgui/imgui               \
+            -I$(top_srcdir)/ext/cimgui/imgui/examples      \
+            -I$(top_srcdir)/ext/glad/include               \
             @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
+
+AM_CXXFLAGS = -I$(top_srcdir)/ext/cimgui                     \
+              -I$(top_srcdir)/ext/cimguiglue                 \
+              -I$(top_srcdir)/ext/cimgui/imgui               \
+              -I$(top_srcdir)/ext/cimgui/imgui/examples      \
+              -I$(top_srcdir)/ext/glad/include               \
+              @SDL_CFLAGS@ @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
 
 # Common source files used by absolutely everything:
 
@@ -89,6 +101,7 @@ m_bbox.c             m_bbox.h              \
 m_cheat.c            m_cheat.h             \
 m_config.c           m_config.h            \
 m_controls.c         m_controls.h          \
+m_debugmenu.c        m_debugmenu.h         \
 m_fixed.c            m_fixed.h             \
 net_client.c         net_client.h          \
 net_common.c         net_common.h          \
@@ -117,7 +130,26 @@ w_file_stdc.c                              \
 w_file_posix.c                             \
 w_file_win32.c                             \
 w_merge.c            w_merge.h             \
-z_zone.c             z_zone.h
+z_zone.c             z_zone.h              \
+$(top_builddir)/ext/glad/src/glad.c        \
+$(top_builddir)/ext/glad/include/glad/glad.h        \
+$(top_builddir)/ext/glad/include/KHR/khrplatform.h   \
+$(top_builddir)/ext/cimgui/imgui/imgui.cpp      \
+$(top_builddir)/ext/cimgui/imgui/imgui_demo.cpp      \
+$(top_builddir)/ext/cimgui/imgui/imgui_draw.cpp      \
+$(top_builddir)/ext/cimgui/imgui/imgui_widgets.cpp      \
+$(top_builddir)/ext/cimgui/imgui/imgui.h      \
+$(top_builddir)/ext/cimgui/imgui/imgui_internal.h      \
+$(top_builddir)/ext/cimgui/imgui/examples/imgui_impl_opengl3.cpp      \
+$(top_builddir)/ext/cimgui/imgui/examples/imgui_impl_opengl3.h      \
+$(top_builddir)/ext/cimgui/imgui/examples/imgui_impl_sdl.cpp      \
+$(top_builddir)/ext/cimgui/imgui/examples/imgui_impl_sdl.h      \
+$(top_builddir)/ext/cimgui/cimgui.cpp      \
+$(top_builddir)/ext/cimgui/cimgui.h        \
+$(top_builddir)/ext/cimguiglue/cimguiglue.cpp      \
+$(top_builddir)/ext/cimguiglue/cimguiglue.h
+
+
 
 DEHACKED_SOURCE_FILES =                    \
 deh_defs.h                                 \

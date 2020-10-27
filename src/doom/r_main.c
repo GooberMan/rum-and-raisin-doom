@@ -25,7 +25,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-
+#include <stddef.h>
 
 #include "doomdef.h"
 #include "d_loop.h"
@@ -1182,19 +1182,17 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 }
 #endif //RENDER_PERF_GRAPHING
 
-#define OFFSETOF( type, var ) ( (ptrdiff_t) ( &( (type*)0 )-> ## var ) )
-
 static void R_RenderThreadingWindow( const char* name )
 {
 #if RENDER_PERF_GRAPHING
 	// This is downright ugly. Don't ever do this
-	ptrdiff_t frametimesoff = OFFSETOF( renderdata_t, context.frametimes );
-	ptrdiff_t walltimesoff = OFFSETOF( renderdata_t, context.walltimes );
-	ptrdiff_t flattimesoff = OFFSETOF( renderdata_t, context.flattimes );
-	ptrdiff_t spritetimesoff = OFFSETOF( renderdata_t, context.spritetimes );
-	ptrdiff_t elsetimesoff = OFFSETOF( renderdata_t, context.everythingelsetimes );
-	ptrdiff_t avgtimeoff = OFFSETOF( renderdata_t, context.frameaverage );
-	ptrdiff_t nexttimeoff = OFFSETOF( renderdata_t, context.nextframetime );
+	ptrdiff_t frametimesoff = offsetof( renderdata_t, context.frametimes );
+	ptrdiff_t walltimesoff = offsetof( renderdata_t, context.walltimes );
+	ptrdiff_t flattimesoff = offsetof( renderdata_t, context.flattimes );
+	ptrdiff_t spritetimesoff = offsetof( renderdata_t, context.spritetimes );
+	ptrdiff_t elsetimesoff = offsetof( renderdata_t, context.everythingelsetimes );
+	ptrdiff_t avgtimeoff = offsetof( renderdata_t, context.frameaverage );
+	ptrdiff_t nexttimeoff = offsetof( renderdata_t, context.nextframetime );
 #endif // RENDER_PERF_GRAPHING
 
 	if( igBeginTabBar( "Threading tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )

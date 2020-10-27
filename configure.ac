@@ -119,7 +119,7 @@ AS_IF([test "x$with_libpng" != xno], [
 # TODO: We currently link everything against libraries that don't need it.
 # Use the specific library CFLAGS/LIBS variables instead of setting them here.
 CFLAGS="$CFLAGS $SDL_CFLAGS -pthread ${SAMPLERATE_CFLAGS:-} ${PNG_CFLAGS:-}"
-LDFLAGS="$LDFLAGS $SDL_LIBS -pthread ${SAMPLERATE_LIBS:-} ${PNG_LIBS:-}"
+LDFLAGS="$LDFLAGS $SDL_LIBS -pthread -ldl ${SAMPLERATE_LIBS:-} ${PNG_LIBS:-}"
 AC_CHECK_LIB(m, log)
 
 AC_CHECK_HEADERS([dirent.h linux/kd.h dev/isa/spkrio.h dev/speaker/speaker.h])
@@ -158,7 +158,7 @@ AM_CONDITIONAL(HAVE_ICONS, [test "x$enable_icons" != xno])
 
 dnl Automake v1.8.0 is required, please upgrade!
 
-AM_INIT_AUTOMAKE([1.8.0 foreign])
+AM_INIT_AUTOMAKE([1.8.0 foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 WINDOWS_RC_VERSION=`echo $PACKAGE_VERSION | sed 's/-.*//; s/\./, /g; s/$/, 0/'`

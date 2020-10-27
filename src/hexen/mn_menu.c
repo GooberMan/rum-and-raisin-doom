@@ -2,6 +2,7 @@
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 1993-2008 Raven Software
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -131,6 +132,7 @@ boolean MenuActive;
 int InfoType;
 int messageson = true;
 boolean mn_SuicideConsole;
+boolean debugmenuactive = false;
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 

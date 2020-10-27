@@ -1,6 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -126,6 +127,7 @@ boolean                 menuactive;
 boolean                 menupause;      // haleyjd 08/29/10: [STRIFE] New global
 int                     menupausetime;  // haleyjd 09/04/10: [STRIFE] New global
 boolean                 menuindialog;   // haleyjd 09/04/10: ditto
+boolean                 debugmenuactive = false;
 
 // haleyjd 08/27/10: [STRIFE] SKULLXOFF == -28, LINEHEIGHT == 19
 #define CURSORXOFF		-28
