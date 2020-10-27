@@ -328,6 +328,7 @@ static themedata_t themes[] =
 typedef struct menuentry_s
 {
 	char				name[ MAXNAMELENGTH + 1 ]; // +1 for overflow
+	char				caption[ MAXNAMELENGTH + 1 ]; // +1 for overflow
 	menuentry_t*		parent;
 	menuentry_t*		children[ MAXCHILDREN + 1 ]; // +1 for overflow
 	menuentry_t**		freechild;
@@ -431,6 +432,7 @@ void M_InitDebugMenu( void )
 	{
 		M_RegisterDebugMenuButton( "Close debug", &M_OnDebugMenuCloseButton );
 		M_FindDebugMenuCategory( "Core" );
+		M_FindDebugMenuCategory( "Game" );
 		M_FindDebugMenuCategory( "Render" );
 		M_FindDebugMenuCategory( "Map" );
 	}
@@ -444,9 +446,9 @@ void M_InitDebugMenu( void )
 		++thistheme;
 	}
 
-	M_RegisterDebugMenuWindow( "Core|About...", &aboutwindow_open, &M_AboutWindow );
+	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, &aboutwindow_open, &M_AboutWindow );
 	M_RegisterDebugMenuSeparator( "Core" );
-	M_RegisterDebugMenuButton( "Core|Quit " PACKAGE_NAME, &M_OnDebugMenuCoreQuit );
+	M_RegisterDebugMenuButton( "Core|Quit", &M_OnDebugMenuCoreQuit );
 
 }
 
@@ -539,9 +541,9 @@ void M_RenderDebugMenu( void )
 			isopen = *(boolean*)thiswindow->data;
 			if( isopen )
 			{
-				igPushIDPtr( thiswindow->name );
+				igPushIDPtr( thiswindow );
 				{
-					if( igBegin( thiswindow->name, thiswindow->data, windowflags ) )
+					if( igBegin( thiswindow->caption, thiswindow->data, windowflags ) )
 					{
 						callback = thiswindow->callback;
 						callback( thiswindow->name );
@@ -695,13 +697,14 @@ void M_RegisterDebugMenuButton( const char* full_path, menufunc_t callback )
 	category->freechild++;
 }
 
-void M_RegisterDebugMenuWindow( const char* full_path, boolean* active, menufunc_t callback )
+void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, boolean* active, menufunc_t callback )
 {
 	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
 	sprintf( currentry->name, actualname );
+	sprintf( currentry->caption, caption );
 	currentry->type = MET_Window;
 	currentry->freechild = currentry->children;
 	currentry->data = active;

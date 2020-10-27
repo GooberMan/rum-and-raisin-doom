@@ -29,7 +29,7 @@ void M_RenderDebugMenu( void );
 // menuname can be categorised with pipes, ie Edit|Preferences|Some pref category
 
 void M_RegisterDebugMenuButton( const char* full_path, menufunc_t callback );
-void M_RegisterDebugMenuWindow( const char* full_path, boolean* active, menufunc_t callback );
+void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, boolean* active, menufunc_t callback );
 void M_RegisterDebugMenuCheckbox( const char* full_path, boolean* value );
 void M_RegisterDebugMenuRadioButton( const char* full_path, int32_t* value, int32_t selectedval );
 void M_RegisterDebugMenuSeparator( const char* category_path );

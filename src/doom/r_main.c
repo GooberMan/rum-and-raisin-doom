@@ -1119,10 +1119,11 @@ void R_ExecuteSetViewSize (void)
     }
 }
 
-static boolean debugwindow_renderthreading = false;
+static boolean debugwindow_renderthreadinggraphs = false;
+static boolean debugwindow_renderthreadingoptions = false;
 
 #if RENDER_PERF_GRAPHING
-static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptrdiff_t dataoffs, int32_t datalen, ptrdiff_t nextentryoffs )
+static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptrdiff_t backgroundoffs, ptrdiff_t dataoffs, int32_t datalen, ptrdiff_t nextentryoffs )
 {
 	int32_t currcontext = 0;
 	int32_t currtime;
@@ -1136,6 +1137,9 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 	float_t average;
 	char overlay[ 64 ];
 	ImVec2 objsize;
+	ImVec2 cursorpos;
+	ImVec4 nobackground = { 0, 0, 0, 0 };
+	ImVec4 barcolor = igGetStyle()->Colors[ ImGuiCol_TextDisabled ];
 
 	memset( times, 0, sizeof( times ) );
 
@@ -1146,11 +1150,32 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 		igBeginColumns( "Performance columns", M_MIN( 2, numusablerendercontexts ), ImGuiColumnsFlags_NoBorder );
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
+			igText( "Context %d", currcontext );
+
 			// This is downright ugly. Don't ever do this
 			context = (byte*)&renderdatas[ currcontext ];
 			nextentry = *(int32_t*)( context + nextentryoffs );
-			data = (float_t*)( context + dataoffs );
 			frameavg = frameavgoffs >= 0 ? *(float_t*)( context + frameavgoffs ) : -1.f;
+			objsize.x = igGetColumnWidth( igGetColumnIndex() );
+			objsize.y = fminf( objsize.x * 0.75f, 180.f );
+
+			if( backgroundoffs >= 0 )
+			{
+				igGetCursorPos( &cursorpos );
+				data = (float_t*)( context + backgroundoffs );
+				for( currtime = 0; currtime < datalen; ++currtime )
+				{
+					times[ currtime ] = data[ ( nextentry + currtime ) % datalen ];
+				}
+
+				igPushStyleColorVec4( ImGuiCol_PlotHistogram, barcolor );
+				igPlotHistogramFloatPtr( "Frametime", times, datalen, 0, NULL, 0.f, (float_t)performancegraphscale, objsize, sizeof(float_t) );
+				igPopStyleColor( 1 );
+
+				igSetCursorPos( cursorpos );
+			}
+
+			data = (float_t*)( context + dataoffs );
 
 			average = 0;
 			for( currtime = 0; currtime < datalen; ++currtime )
@@ -1167,11 +1192,11 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 			{
 				sprintf( overlay, "avg: %0.2fms / %0.2fms", average, frameavg );
 			}
-			objsize.x = igGetColumnWidth( igGetColumnIndex() );
-			objsize.y = fminf( objsize.x * 0.75f, 180.f );
 
-			igText( "Context %d", currcontext );
+			if( backgroundoffs >= 0 ) igPushStyleColorVec4( ImGuiCol_FrameBg, nobackground );
 			igPlotHistogramFloatPtr( "Frametime", times, datalen, 0, overlay, 0.f, (float_t)performancegraphscale, objsize, sizeof(float_t) );
+			if( backgroundoffs >= 0 ) igPopStyleColor( 1 );
+
 			igNewLine();
 			igNextColumn();
 		}
@@ -1180,11 +1205,9 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 		igEndTabItem();
 	}
 }
-#endif //RENDER_PERF_GRAPHING
 
-static void R_RenderThreadingWindow( const char* name )
+static void R_RenderThreadingGraphsWindow( const char* name )
 {
-#if RENDER_PERF_GRAPHING
 	// This is downright ugly. Don't ever do this
 	ptrdiff_t frametimesoff = offsetof( renderdata_t, context.frametimes );
 	ptrdiff_t walltimesoff = offsetof( renderdata_t, context.walltimes );
@@ -1193,33 +1216,31 @@ static void R_RenderThreadingWindow( const char* name )
 	ptrdiff_t elsetimesoff = offsetof( renderdata_t, context.everythingelsetimes );
 	ptrdiff_t avgtimeoff = offsetof( renderdata_t, context.frameaverage );
 	ptrdiff_t nexttimeoff = offsetof( renderdata_t, context.nextframetime );
-#endif // RENDER_PERF_GRAPHING
 
 	if( igBeginTabBar( "Threading tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
-#if RENDER_PERF_GRAPHING
-		R_RenderGraphTab( "Overall",			-1,				frametimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Walls",				avgtimeoff,		walltimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Flats",				avgtimeoff,		flattimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Sprites",			avgtimeoff,		spritetimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Everything else",	avgtimeoff,		elsetimesoff,		MAXPROFILETIMES,	nexttimeoff );
-#endif // RENDER_PERF_GRAPHING
+		R_RenderGraphTab( "Overall",			-1,				-1,					frametimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Walls",				avgtimeoff,		frametimesoff,		walltimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Flats",				avgtimeoff,		frametimesoff,		flattimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Sprites",			avgtimeoff,		frametimesoff,		spritetimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Everything else",	avgtimeoff,		frametimesoff,		elsetimesoff,		MAXPROFILETIMES,	nexttimeoff );
 
-		if( igBeginTabItem( "Options", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
-		{
-			igText( "Performance options" );
-			igSeparator();
-			igSliderInt( "Running threads", &numusablerendercontexts, 1, numrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-			igCheckbox( "Load balancing", &renderloadbalancing );
-			igCheckbox( "SIMD columns", &renderSIMDcolumns );
-			igNewLine();
-			igText( "Debug options" );
-			igSeparator();
-			igCheckbox( "Visualise split", &rendersplitvisualise );
-			igEndTabItem();
-		}
 		igEndTabBar();
 	}
+}
+#endif // RENDER_PERF_GRAPHING
+
+static void R_RenderThreadingOptionsWindow( const char* name )
+{
+	igText( "Performance options" );
+	igSeparator();
+	igSliderInt( "Running threads", &numusablerendercontexts, 1, numrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+	igCheckbox( "Load balancing", &renderloadbalancing );
+	igCheckbox( "SIMD columns", &renderSIMDcolumns );
+	igNewLine();
+	igText( "Debug options" );
+	igSeparator();
+	igCheckbox( "Visualise split", &rendersplitvisualise );
 }
 
 //
@@ -1249,7 +1270,10 @@ void R_Init (void)
     R_InitTranslationTables ();
     printf (".");
 
-	M_RegisterDebugMenuWindow( "Render|Threading", &debugwindow_renderthreading, &R_RenderThreadingWindow );
+	M_RegisterDebugMenuWindow( "Render|Threading|Options", "Render Threading Options", &debugwindow_renderthreadingoptions, &R_RenderThreadingOptionsWindow );
+#if RENDER_PERF_GRAPHING
+	M_RegisterDebugMenuWindow( "Render|Threading|Graphs", "Render Graphs", &debugwindow_renderthreadinggraphs, &R_RenderThreadingGraphsWindow );
+#endif //RENDER_PERF_GRAPHING
 	
     framecount = 0;
 }
