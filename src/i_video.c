@@ -22,12 +22,8 @@
 
 #include "SDL.h"
 
-#ifdef _WIN32
 #define USE_GLAD 1
 #include <glad/glad.h>
-#else
-#define USE_GLAD 0
-#endif
 
 #include "SDL_opengl.h"
 
@@ -862,7 +858,7 @@ void I_FinishUpdate (void)
 	igGetIO()->WantCaptureMouse = debugmenuactive;
 
 	igNewFrame();
-	
+
 	M_RenderDebugMenu();
 
 	igRender();
