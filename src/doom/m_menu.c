@@ -2084,12 +2084,55 @@ void M_Ticker (void)
 
 static boolean debugwindow_options = false;
 
+typedef struct windowsizes_s
+{
+	int32_t			width;
+	int32_t			height;
+	const char*		asstring;
+} windowsizes_t;
+
+#define WINDOWDIM( w, h )	{ w, h, #w "x" #h }
+#define WINDOW_MINWIDTH 800
+#define WINDOW_MINHEIGHT 600
+
+static windowsizes_t window_sizes_scaled[] =
+{
+	// It honeslty doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
+	// Uncomment if your port needs them. But be warned that the ImGui overlay will be basically
+	// impossible to use.
+
+	//WINDOWDIM( 320,		240		),
+	//WINDOWDIM( 512,		400		),
+	//WINDOWDIM( 640,		480		),
+	WINDOWDIM( 800,		600		),
+	WINDOWDIM( 960,		720		),
+	WINDOWDIM( 1024,	800		),
+	WINDOWDIM( 1280,	960		),
+	WINDOWDIM( 1600,	1200	),
+	WINDOWDIM( 1920,	1440	),
+	WINDOWDIM( 2560,	1920	),
+	WINDOWDIM( 3840,	2880	),
+};
+static int32_t window_sizes_scaled_count = sizeof( window_sizes_scaled ) / sizeof( *window_sizes_scaled );
+static int32_t window_width_working;
+static int32_t window_height_working;
+static const char* window_dimensions_current = NULL;
+
+static const char* hack_fullscreen = "";
+
 static void M_DebugMenuOptionsWindow( const char* itemname )
 {
 	extern int fullscreen;
+	extern int window_width;
+	extern int window_height;
 
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
+
+	int32_t currsizeindex = 0;
+	int32_t index;
+	bool selected;
+	ImVec2 zerosize = { 0, 0 };
 
 	if( igBeginTabBar( "Doom Options tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
@@ -2109,33 +2152,118 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 
 		if( igBeginTabItem( "Screen", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
-			if( igSliderInt( "Screen size", &screenblocks, 3, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			igText( "Windowed dimensions: %dx%d", window_width, window_height );
+			igText( "Fullscreen dimensions: %dx%d", window_width, window_height );
+
+			igColumns( 2, "", false );
+			igSetColumnWidth( 0, 200.f );
+			igText( "Predefined windowed sizes" );
+
+			igNextColumn();
+			igPushItemWidth( 180.f );
+			igPushIDPtr( &window_dimensions_current );
+			if( igBeginCombo( "", window_dimensions_current, ImGuiComboFlags_None ) )
+			{
+				for( index = 0; index < window_sizes_scaled_count; ++index )
+				{
+					selected = window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height;
+					if( igSelectableBool( window_sizes_scaled[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+					{
+						window_dimensions_current = window_sizes_scaled[ index ].asstring;
+						window_width_working = window_sizes_scaled[ index ].width;
+						window_height_working = window_sizes_scaled[ index ].height;
+						I_SetWindowDimensions( window_width_working, window_height_working );
+					}
+				}
+				igEndCombo();
+			}
+			igPopID();
+			igPopItemWidth();
+
+			igNextColumn();
+			igText( "Custom windowed width" );
+			igSameLine( 0, -1 );
+
+			igNextColumn();
+			igPushItemWidth( 80.f );
+			if( igInputInt( "w", &window_width_working, 16, 160, ImGuiInputTextFlags_None ) )
+			{
+				window_width_working = M_MAX( WINDOW_MINWIDTH, window_width_working );
+				window_height_working = M_MAX( WINDOW_MINHEIGHT, window_width_working * 300 / 400 );
+			}
+			igSameLine( 0, -1 );
+			if( igInputInt( "h", &window_height_working, 12, 120, ImGuiInputTextFlags_None ) )
+			{
+				window_height_working = M_MAX( WINDOW_MINHEIGHT, window_height_working );
+				window_width_working = M_MAX( WINDOW_MINWIDTH, window_height_working * 400 / 300 );
+			}
+			igSameLine( 0, -1 );
+			igPopItemWidth();
+			if( igButton( "Apply", zerosize ) )
+			{
+				I_SetWindowDimensions( window_width_working, window_height_working );
+
+				window_dimensions_current = NULL;
+				for( index = 0; index < window_sizes_scaled_count; ++index )
+				{
+					if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
+					{
+						window_dimensions_current = window_sizes_scaled[ index ].asstring;
+					}
+				}
+			}
+
+			igNextColumn();
+			igText( "Full screen" );
+			igNextColumn();
+			WorkingBool = !!fullscreen;
+			igPushIDPtr( &fullscreen );
+			if( igCheckbox( "", &WorkingBool ) )
+			{
+				I_ToggleFullScreen();
+			}
+			igPopID();
+
+			igNextColumn();
+			igText( "Screen size" );
+			igNextColumn();
+			igPushIDPtr( &screenblocks );
+			igPushItemWidth( 200.f );
+			if( igSliderInt( "", &screenblocks, 3, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
 				screenSize = screenblocks - 3;
 				R_SetViewSize (screenblocks, detailLevel);
 			}
+			igPopItemWidth();
+			igPopID();
 
+			igNextColumn();
+			igText( "Low detail" );
+			igNextColumn();
 			WorkingBool = !!detailLevel;
-			if( igCheckbox( "Low detail", &WorkingBool ) )
+			igPushIDPtr( &detailLevel );
+			if( igCheckbox( "", &WorkingBool ) )
 			{
 				detailLevel = (int32_t)WorkingBool;
 				players[consoleplayer].message = DEH_String( !detailLevel ? DETAILHI : DETAILLO );
 				R_SetViewSize (screenblocks, detailLevel);
 			}
+			igPopID();
 
+			igNextColumn();
+			igText( "Messages" );
+			igNextColumn();
 			WorkingBool = !!showMessages;
-			if( igCheckbox( "Messages", &WorkingBool ) )
+			igPushIDPtr( &showMessages );
+			if( igCheckbox( "", &WorkingBool ) )
 			{
 				showMessages = (int32_t)WorkingBool;
 				players[consoleplayer].message = DEH_String( !showMessages ? MSGOFF : MSGON );
 				message_dontfuckwithme = true;
 			}
+			igPopID();
 
-			WorkingBool = !!fullscreen;
-			if( igCheckbox( "Full screen", &WorkingBool ) )
-			{
-				I_ToggleFullScreen();
-			}
+			igColumns( 1, "", false );
 
 			igEndTabItem();
 		}
@@ -2162,6 +2290,11 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 //
 void M_Init (void)
 {
+	extern int window_width;
+	extern int window_height;
+
+	int32_t index;
+
     currentMenu = &MainDef;
     menuactive = 0;
     itemOn = currentMenu->lastOn;
@@ -2216,6 +2349,17 @@ void M_Init (void)
     }
 
     opldev = M_CheckParm("-opldev") > 0;
+
+	window_width_working = window_width;
+	window_height_working = window_height;
+
+	for( index = 0; index < window_sizes_scaled_count; ++index )
+	{
+		if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
+		{
+			window_dimensions_current = window_sizes_scaled[ index ].asstring;
+		}
+	}
 
 	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", &debugwindow_options, &M_DebugMenuOptionsWindow );
 }

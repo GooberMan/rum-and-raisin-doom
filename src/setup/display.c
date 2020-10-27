@@ -41,8 +41,11 @@ typedef struct
 // List of aspect ratio-uncorrected window sizes:
 static window_size_t window_sizes_unscaled[] =
 {
-    { 320,  200 },
-    { 640,  400 },
+// It honeslty doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
+// Uncomment if your port needs them. But be warned that the ImGui overlay will be basically
+// impossible to use.
+//    { 320,  200 },
+//    { 640,  400 },
     { 960,  600 },
     { 1280, 800 },
     { 1600, 1000 },
@@ -52,9 +55,12 @@ static window_size_t window_sizes_unscaled[] =
 // List of aspect ratio-corrected window sizes:
 static window_size_t window_sizes_scaled[] =
 {
-    { 320,  240 },
-    { 512,  400 },
-    { 640,  480 },
+// It honeslty doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
+// Uncomment if your port needs them. But be warned that the ImGui overlay will be basically
+// impossible to use.
+//    { 320,  240 },
+//    { 512,  400 },
+//    { 640,  480 },
     { 800,  600 },
     { 960,  720 },
     { 1024, 800 },

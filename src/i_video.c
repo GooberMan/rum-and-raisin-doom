@@ -432,6 +432,17 @@ void I_ToggleFullScreen(void)
     }
 }
 
+void I_SetWindowDimensions( int32_t w, int32_t h )
+{
+	window_width = w;
+	window_height = h;
+
+	if( !fullscreen )
+	{
+		SDL_SetWindowSize(screen, window_width, window_height);
+	}
+}
+
 void I_GetEvent(void)
 {
     extern void I_HandleKeyboardEvent(SDL_Event *sdlevent);
