@@ -404,7 +404,7 @@ static boolean ToggleFullScreenKeyShortcut(SDL_Keysym *sym)
             sym->scancode == SDL_SCANCODE_KP_ENTER) && (sym->mod & flags) != 0;
 }
 
-static void I_ToggleFullScreen(void)
+void I_ToggleFullScreen(void)
 {
     unsigned int flags = 0;
 
@@ -726,9 +726,6 @@ void I_FinishUpdate (void)
 	SDL_Rect Target;
 	int render_width;
 	int render_height;
-	float scalefactor = 1.f;
-	float scalexfactor = 8.f;
-	float scaleyfactor = 6.f;
 
     if (!initialized)
         return;
@@ -831,22 +828,11 @@ void I_FinishUpdate (void)
 
 	SDL_GetRendererOutputSize( renderer, &render_width, &render_height );
 
-	if( SCREENWIDTH < window_width )
-	{
-		//scalefactor = (float)SCREENWIDTH / (float)window_width;
-	}
-
-	if( !aspect_ratio_correct )
-	{
-		// Not working yet, probably needs different calculations...
-		scaleyfactor = 5.f;
-		scalefactor *= 1.2f;
-	}
-
-	Target.x = actualheight / ( scaleyfactor / scalefactor );
-	Target.w = actualheight * scalefactor;
-	Target.y = -SCREENWIDTH / ( scalexfactor / scalefactor );
-	Target.h = SCREENWIDTH * scalefactor;
+	// Better transormation courtesy of Altazimuth
+	Target.x = (SCREENWIDTH - actualheight) / 2;
+	Target.y = (actualheight - SCREENWIDTH) / 2;
+	Target.w = actualheight;
+	Target.h = SCREENWIDTH;
 
 	SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 
