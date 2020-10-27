@@ -35,6 +35,7 @@
 #include "i_system.h"
 #include "i_timer.h"
 #include "i_video.h"
+
 #include "m_misc.h"
 #include "v_video.h"
 #include "w_wad.h"
@@ -61,6 +62,11 @@
 
 #include "m_menu.h"
 
+#include "i_video.h"
+
+#include "m_debugmenu.h"
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
 
 extern patch_t*		hu_font[HU_FONTSIZE];
 extern boolean		message_dontfuckwithme;
@@ -2076,6 +2082,80 @@ void M_Ticker (void)
     }
 }
 
+static boolean debugwindow_options = false;
+
+static void M_DebugMenuOptionsWindow( const char* itemname )
+{
+	extern int fullscreen;
+
+	bool WorkingBool = false;
+	int32_t WorkingInt = 0;
+
+	if( igBeginTabBar( "Doom Options tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
+	{
+		if( igBeginTabItem( "Mouse", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+
+			WorkingInt = (int32_t)( mouse_acceleration * 10.f );
+			if( igSliderInt( "Acceleration", &WorkingInt, 10, 50, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			{
+				mouse_acceleration = (float_t)WorkingInt * 0.1f;
+			}
+			igSliderInt( "Threshold", &mouse_threshold, 0, 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+
+			igEndTabItem();
+		}
+
+		if( igBeginTabItem( "Screen", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			if( igSliderInt( "Screen size", &screenblocks, 3, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			{
+				screenSize = screenblocks - 3;
+				R_SetViewSize (screenblocks, detailLevel);
+			}
+
+			WorkingBool = !!detailLevel;
+			if( igCheckbox( "Low detail", &WorkingBool ) )
+			{
+				detailLevel = (int32_t)WorkingBool;
+				players[consoleplayer].message = DEH_String( !detailLevel ? DETAILHI : DETAILLO );
+				R_SetViewSize (screenblocks, detailLevel);
+			}
+
+			WorkingBool = !!showMessages;
+			if( igCheckbox( "Messages", &WorkingBool ) )
+			{
+				showMessages = (int32_t)WorkingBool;
+				players[consoleplayer].message = DEH_String( !showMessages ? MSGOFF : MSGON );
+				message_dontfuckwithme = true;
+			}
+
+			WorkingBool = !!fullscreen;
+			if( igCheckbox( "Full screen", &WorkingBool ) )
+			{
+				I_ToggleFullScreen();
+			}
+
+			igEndTabItem();
+		}
+
+		if( igBeginTabItem( "Sound", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			if( igSliderInt( "Effects", &sfxVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			{
+				S_SetSfxVolume( sfxVolume * 8 );
+			}
+			if( igSliderInt( "Music", &musicVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			{
+				S_SetSfxVolume( sfxVolume * 8 );
+			}
+
+			igEndTabItem();
+		}
+		igEndTabBar();
+	}
+}
 
 //
 // M_Init
@@ -2136,5 +2216,7 @@ void M_Init (void)
     }
 
     opldev = M_CheckParm("-opldev") > 0;
+
+	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", &debugwindow_options, &M_DebugMenuOptionsWindow );
 }
 
