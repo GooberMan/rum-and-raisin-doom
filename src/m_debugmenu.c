@@ -450,7 +450,7 @@ void M_InitDebugMenu( void )
 	M_RegisterDebugMenuCheckbox( "Core|Pause While Active", "Multiplayer ignores this", &debugmenupausesplaysim );
 	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, &aboutwindow_open, &M_AboutWindow );
 	M_RegisterDebugMenuSeparator( "Core" );
-	M_RegisterDebugMenuButton( "Core|Quit", NULL, &M_OnDebugMenuCoreQuit );
+	M_RegisterDebugMenuButton( "Core|Quit", "Yes, this means quit the game", &M_OnDebugMenuCoreQuit );
 
 }
 
