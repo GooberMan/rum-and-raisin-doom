@@ -1,6 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -100,6 +101,7 @@ extern  boolean         respawnmonsters;
 
 // Netgame? Only true if >1 player.
 extern  boolean	netgame;
+extern boolean solonetgame;
 
 // 0=Cooperative; 1=Deathmatch; 2=Altdeath
 extern int deathmatch;
@@ -140,6 +142,7 @@ extern  boolean statusbaractive;
 extern  boolean automapactive;	// In AutoMap mode?
 extern  boolean	menuactive;	// Menu overlayed?
 extern  boolean debugmenuactive; // ImGui debug menu
+extern  boolean debugmenupausesplaysim;
 extern  boolean	paused;		// Game Pause?
 
 

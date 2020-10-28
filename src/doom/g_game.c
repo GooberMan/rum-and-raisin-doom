@@ -120,6 +120,7 @@ boolean         viewactive;
  
 int             deathmatch;           	// only if started as net death 
 boolean         netgame;                // only true if packets are broadcast 
+boolean			solonetgame;
 boolean         playeringame[MAXPLAYERS]; 
 player_t        players[MAXPLAYERS]; 
 

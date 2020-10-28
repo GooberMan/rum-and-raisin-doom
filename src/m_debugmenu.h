@@ -20,6 +20,7 @@
 typedef void (*menufunc_t)( const char* itemname );
 // Expected to be defined per-game
 extern boolean		debugmenuactive;
+extern boolean		debugmenupausesplaysim;
 extern int32_t		debugmenuclosesound;
 
 void M_InitDebugMenu( void );
@@ -28,10 +29,10 @@ void M_RenderDebugMenu( void );
 
 // menuname can be categorised with pipes, ie Edit|Preferences|Some pref category
 
-void M_RegisterDebugMenuButton( const char* full_path, menufunc_t callback );
+void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback );
 void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, boolean* active, menufunc_t callback );
-void M_RegisterDebugMenuCheckbox( const char* full_path, boolean* value );
-void M_RegisterDebugMenuRadioButton( const char* full_path, int32_t* value, int32_t selectedval );
+void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value );
+void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval );
 void M_RegisterDebugMenuSeparator( const char* category_path );
 
 #endif // !defined( __M_DEBUGMENU_H__ )

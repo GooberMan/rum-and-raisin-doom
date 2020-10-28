@@ -131,7 +131,6 @@ char		mapdir[1024];           // directory of development maps
 int             show_endoom = 1;
 int             show_diskicon = 1;
 
-
 void D_ConnectNetGame(void);
 void D_CheckNetGame(void);
 
@@ -208,6 +207,10 @@ boolean D_Display (void)
     int				y;
     boolean			wipe;
     boolean			redrawsbar;
+
+	boolean ispaused = paused
+		|| 	( gamestate == GS_LEVEL && !demoplayback && debugmenuactive && debugmenupausesplaysim && ( solonetgame || !netgame ) );
+
 
 	const char* framereason = reasons[ gamestate ];
 
@@ -328,7 +331,7 @@ boolean D_Display (void)
     oldgamestate = wipegamestate = gamestate;
     
     // draw pause pic
-    if (paused)
+    if (ispaused)
     {
 	if (automapactive)
 	    y = 4;
@@ -468,6 +471,7 @@ boolean D_GrabMouseCallback(void)
 //
 //  D_RunFrame
 //
+
 void D_RunFrame()
 {
     int nowtime;
@@ -1772,9 +1776,9 @@ void D_DoomMain (void)
 	if( M_ParmExists( "-blackvoid" ) ) voidcleartype = Void_Black;
 	if( M_ParmExists( "-whackyvoid" ) ) voidcleartype = Void_Whacky;
 
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", &voidcleartype, Void_NoClear );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", &voidcleartype, Void_Black );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Whacky", &voidcleartype, Void_Whacky );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Whacky", NULL, &voidcleartype, Void_Whacky );
 
 	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );

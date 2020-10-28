@@ -1,5 +1,6 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -111,6 +112,7 @@ static char *back_flat = "F_PAVE01";
 static int comport = 0;
 static char *nickname = NULL;
 static int32_t debugmenu_theme = 1;
+static int32_t debugmenu_pausesplaysim = 1;
 
 static void BindMiscVariables(void)
 {
@@ -156,6 +158,7 @@ static void BindMiscVariables(void)
     }
 
 	M_BindIntVariable("debugmenu_theme",   &debugmenu_theme);
+	M_BindIntVariable("debugmenu_pausesplaysim",   &debugmenu_pausesplaysim);
 
 }
 

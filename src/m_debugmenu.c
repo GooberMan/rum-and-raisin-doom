@@ -329,6 +329,7 @@ typedef struct menuentry_s
 {
 	char				name[ MAXNAMELENGTH + 1 ]; // +1 for overflow
 	char				caption[ MAXNAMELENGTH + 1 ]; // +1 for overflow
+	char				tooltip[ MAXNAMELENGTH + 1 ]; // +1 for overflow
 	menuentry_t*		parent;
 	menuentry_t*		children[ MAXCHILDREN + 1 ]; // +1 for overflow
 	menuentry_t**		freechild;
@@ -430,7 +431,7 @@ void M_InitDebugMenu( void )
 
 	// Core layout. Add top level categories here
 	{
-		M_RegisterDebugMenuButton( "Close debug", &M_OnDebugMenuCloseButton );
+		M_RegisterDebugMenuButton( "Close debug", NULL, &M_OnDebugMenuCloseButton );
 		M_FindDebugMenuCategory( "Core" );
 		M_FindDebugMenuCategory( "Game" );
 		M_FindDebugMenuCategory( "Render" );
@@ -442,19 +443,31 @@ void M_InitDebugMenu( void )
 	{
 		memset( themefullpath, 0, sizeof( themefullpath ) );
 		sprintf( themefullpath, "Core|Theme|%s", thistheme->name );
-		M_RegisterDebugMenuRadioButton( themefullpath, &debugmenu_theme, (int32_t)( thistheme - themes ) );
+		M_RegisterDebugMenuRadioButton( themefullpath, NULL, &debugmenu_theme, (int32_t)( thistheme - themes ) );
 		++thistheme;
 	}
 
+	M_RegisterDebugMenuCheckbox( "Core|Pause While Active", "Multiplayer ignores this", &debugmenupausesplaysim );
 	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, &aboutwindow_open, &M_AboutWindow );
 	M_RegisterDebugMenuSeparator( "Core" );
-	M_RegisterDebugMenuButton( "Core|Quit", &M_OnDebugMenuCoreQuit );
+	M_RegisterDebugMenuButton( "Core|Quit", NULL, &M_OnDebugMenuCoreQuit );
 
 }
 
 void M_BindDebugMenuVariables( void )
 {
-	M_BindIntVariable("debugmenu_theme",	&debugmenu_theme);
+	M_BindIntVariable("debugmenu_theme",			&debugmenu_theme);
+	M_BindIntVariable("debugmenu_pausesplaysim",	&debugmenupausesplaysim );
+}
+
+static void M_RenderTooltip( menuentry_t* cat )
+{
+	if( cat->tooltip[ 0 ] && igIsItemHovered( ImGuiHoveredFlags_None ) )
+	{
+		igBeginTooltip();
+		igText( cat->tooltip );
+		igEndTooltip();
+	}
 }
 
 static void M_ThrowAnErrorBecauseThisIsInvalid( menuentry_t* cat )
@@ -484,16 +497,19 @@ static void M_RenderButtonItem( menuentry_t* cat )
 		callback = cat->callback;
 		callback( cat->name );
 	}
+	M_RenderTooltip( cat );
 }
 
 static void M_RenderCheckboxItem( menuentry_t* cat )
 {
 	igCheckbox( cat->name, cat->data );
+	M_RenderTooltip( cat );
 }
 
 static void M_RenderRadioButtonItem( menuentry_t* cat )
 {
 	igRadioButtonIntPtr( cat->name, (int32_t*)cat->data, cat->comparison );
+	M_RenderTooltip( cat );
 }
 
 static void M_RenderSeparator( menuentry_t* cat )
@@ -679,13 +695,14 @@ static const char* M_GetActualName( const char* full_path )
 	return actualname;
 }
 
-void M_RegisterDebugMenuButton( const char* full_path, menufunc_t callback )
+void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback )
 {
 	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
 	sprintf( currentry->name, actualname );
+	if( tooltip ) sprintf( currentry->tooltip, tooltip );
 	currentry->type = MET_Button;
 	currentry->freechild = currentry->children;
 	currentry->enabled = true;
@@ -717,13 +734,14 @@ void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, bool
 	category->freechild++;
 }
 
-void M_RegisterDebugMenuCheckbox( const char* full_path, boolean* value )
+void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value )
 {
 	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
 	sprintf( currentry->name, actualname );
+	if( tooltip ) sprintf( currentry->tooltip, tooltip );
 	currentry->type = MET_Checkbox;
 	currentry->freechild = currentry->children;
 	currentry->data = value;
@@ -735,13 +753,14 @@ void M_RegisterDebugMenuCheckbox( const char* full_path, boolean* value )
 	category->freechild++;
 }
 
-void M_RegisterDebugMenuRadioButton( const char* full_path, int32_t* value, int32_t selectedval )
+void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval )
 {
 	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
 	sprintf( currentry->name, actualname );
+	if( tooltip ) sprintf( currentry->tooltip, tooltip );
 	currentry->type = MET_RadioButton;
 	currentry->freechild = currentry->children;
 	currentry->data = value;

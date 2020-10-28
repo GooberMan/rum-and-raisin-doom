@@ -1,6 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -126,8 +127,11 @@ void P_Ticker (void)
 {
     int		i;
     
+	boolean ispaused = paused
+		|| 	( !demoplayback && debugmenuactive && debugmenupausesplaysim && ( solonetgame || !netgame ) );
+
     // run the tic
-    if (paused)
+    if (ispaused)
 	return;
 		
     // pause if in menu and at least one tic has been run

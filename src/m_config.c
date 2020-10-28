@@ -1767,6 +1767,12 @@ static default_t extra_defaults_list[] =
 	//
 
 	CONFIG_VARIABLE_INT(debugmenu_theme),
+
+	//!
+	// Debug menu can let the playsim run ahead while it's active. Or not. Up to you.
+	//
+
+	CONFIG_VARIABLE_INT(debugmenu_pausesplaysim),
 };
 
 static default_collection_t extra_defaults =
