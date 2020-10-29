@@ -2124,9 +2124,13 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 	extern int fullscreen;
 	extern int window_width;
 	extern int window_height;
+	extern int border_style;
+	extern int border_bezel_style;
 
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
+
+	bool doresize = false;
 
 	int32_t currsizeindex = 0;
 	int32_t index;
@@ -2151,11 +2155,20 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 
 		if( igBeginTabItem( "Screen", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
-			igText( "Windowed dimensions: %dx%d", window_width, window_height );
-			igText( "Fullscreen dimensions: %dx%d", window_width, window_height );
-
 			igColumns( 2, "", false );
 			igSetColumnWidth( 0, 200.f );
+
+			igText( "Windowed dimensions" );
+			igNextColumn();
+			igText( "%dx%d", window_width, window_height );
+			igNextColumn();
+			igText( "Fullscreen dimensions" );
+			igNextColumn();
+			igText( "%dx%d", window_width, window_height );
+			igNextColumn();
+
+			igSeparatorEx( ImGuiSeparatorFlags_Horizontal | ImGuiSeparatorFlags_SpanAllColumns );
+
 			igText( "Predefined windowed sizes" );
 
 			igNextColumn();
@@ -2223,7 +2236,30 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 			}
 			igPopID();
 
-			igNextColumn();
+			igColumns( 1, "", false );
+
+			igEndTabItem();
+		}
+
+		if( igBeginTabItem( "Sound", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			if( igSliderInt( "Effects", &sfxVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			{
+				S_SetSfxVolume( sfxVolume * 8 );
+			}
+			if( igSliderInt( "Music", &musicVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			{
+				S_SetSfxVolume( sfxVolume * 8 );
+			}
+
+			igEndTabItem();
+		}
+
+		if( igBeginTabItem( "View", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			igColumns( 2, "", false );
+			igSetColumnWidth( 0, 200.f );
+
 			igText( "Screen size" );
 			igNextColumn();
 			igPushIDPtr( &screenblocks );
@@ -2235,6 +2271,31 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 			}
 			igPopItemWidth();
 			igPopID();
+
+			igNextColumn();
+			igText( "Border style" );
+			igNextColumn();
+
+			igPushIDPtr( &border_style );
+			doresize |= igRadioButtonIntPtr( "Original", &border_style, 0 );
+			igSameLine( 0, -1 );
+			doresize |= igRadioButtonIntPtr( "INTERPIC", &border_style, 1 );
+			igPopID();
+
+			igNextColumn();
+			igText( "Border bezels" );
+			igNextColumn();
+
+			igPushIDPtr( &border_bezel_style );
+			doresize |= igRadioButtonIntPtr( "Original", &border_bezel_style, 0 );
+			igSameLine( 0, -1 );
+			doresize |= igRadioButtonIntPtr( "Dithered", &border_bezel_style, 1 );
+			igPopID();
+
+			if( doresize )
+			{
+				R_SetViewSize (screenblocks, detailLevel);
+			}
 
 			igNextColumn();
 			igText( "Low detail" );
@@ -2267,19 +2328,6 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 			igEndTabItem();
 		}
 
-		if( igBeginTabItem( "Sound", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
-		{
-			if( igSliderInt( "Effects", &sfxVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
-			{
-				S_SetSfxVolume( sfxVolume * 8 );
-			}
-			if( igSliderInt( "Music", &musicVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
-			{
-				S_SetSfxVolume( sfxVolume * 8 );
-			}
-
-			igEndTabItem();
-		}
 		igEndTabBar();
 	}
 }
