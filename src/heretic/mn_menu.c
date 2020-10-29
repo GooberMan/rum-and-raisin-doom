@@ -127,7 +127,6 @@ extern int screenblocks;
 boolean MenuActive;
 int InfoType;
 boolean messageson;
-boolean debugmenuactive = false;
 
 // Private Data
 

@@ -126,8 +126,6 @@ char			saveOldString[SAVESTRINGSIZE];
 
 boolean			inhelpscreens;
 boolean			menuactive;
-boolean			debugmenuactive = false;
-boolean			debugmenupausesplaysim = true;
 int32_t			debugmenuclosesound = sfx_swtchx;
 
 #define SKULLXOFF		-32

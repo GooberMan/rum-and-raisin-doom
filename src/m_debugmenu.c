@@ -354,6 +354,8 @@ static void M_RenderRadioButtonItem( menuentry_t* cat );
 static void M_RenderSeparator( menuentry_t* cat );
 
 ImGuiContext*			imgui_context;
+boolean					debugmenuactive = false;
+boolean					debugmenupausesplaysim = true;
 static int32_t			debugmenu_theme = 1;
 
 static menuentry_t		entries[ MAXENTRIES + 1 ]; // +1 for overflow

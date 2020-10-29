@@ -127,7 +127,6 @@ boolean                 menuactive;
 boolean                 menupause;      // haleyjd 08/29/10: [STRIFE] New global
 int                     menupausetime;  // haleyjd 09/04/10: [STRIFE] New global
 boolean                 menuindialog;   // haleyjd 09/04/10: ditto
-boolean                 debugmenuactive = false;
 
 // haleyjd 08/27/10: [STRIFE] SKULLXOFF == -28, LINEHEIGHT == 19
 #define CURSORXOFF		-28

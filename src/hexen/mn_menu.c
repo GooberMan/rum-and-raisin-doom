@@ -132,7 +132,6 @@ boolean MenuActive;
 int InfoType;
 int messageson = true;
 boolean mn_SuicideConsole;
-boolean debugmenuactive = false;
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 

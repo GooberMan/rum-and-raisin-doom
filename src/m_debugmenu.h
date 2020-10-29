@@ -18,9 +18,6 @@
 #include "doomtype.h"
 
 typedef void (*menufunc_t)( const char* itemname );
-// Expected to be defined per-game
-extern boolean		debugmenuactive;
-extern boolean		debugmenupausesplaysim;
 extern int32_t		debugmenuclosesound;
 
 void M_InitDebugMenu( void );
