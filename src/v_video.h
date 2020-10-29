@@ -27,6 +27,7 @@
 
 // Needed because we are refering to patches.
 #include "v_patch.h"
+#include "i_video.h"
 
 //
 // VIDEO
@@ -44,15 +45,6 @@ extern byte *tinttable;
 // Strife.
 typedef boolean (*vpatchclipfunc_t)(patch_t *, int, int);
 void V_SetPatchClipCallback(vpatchclipfunc_t func);
-
-// TODO: Should align 16
-typedef struct vbuffer_s
-{
-	pixel_t*	data;
-	int32_t		width;
-	int32_t		height;
-} vbuffer_t;
-
 
 // Allocates buffer screens, call before R_Init.
 void V_Init (void);

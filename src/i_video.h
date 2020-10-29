@@ -44,10 +44,20 @@
 
 typedef boolean (*grabmouse_callback_t)(void);
 
+// TODO: Should align 16
+typedef struct vbuffer_s
+{
+	pixel_t*	data;
+	int32_t		width;
+	int32_t		height;
+	int32_t		pitch;
+	int32_t		pixel_size_bytes;
+} vbuffer_t;
+
 // Called by D_DoomMain,
 // determines the hardware configuration
 // and sets up the video mode
-void I_InitGraphics (void);
+void I_InitGraphics ( int32_t numbuffers );
 
 void I_GraphicsCheckCommandLine(void);
 
@@ -64,8 +74,6 @@ void I_UpdateNoBlit (void);
 void I_FinishUpdate (void);
 
 void I_ReadScreen (pixel_t* scr);
-
-void I_BeginRead (void);
 
 void I_SetWindowTitle(const char *title);
 

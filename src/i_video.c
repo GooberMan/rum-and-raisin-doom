@@ -85,6 +85,23 @@ static SDL_Surface *argbbuffer = NULL;
 static SDL_Texture *texture = NULL;
 static SDL_Texture *texture_upscaled = NULL;
 
+// The screen buffer; this is modified to draw things to the screen
+
+pixel_t *I_VideoBuffer = NULL;
+
+typedef struct renderbuffer_s
+{
+	vbuffer_t		screenbuffer;
+	SDL_Surface*	nativesurface;
+	SDL_Surface*	argbsurface;
+	SDL_Rect		validregion;
+} renderbuffer_t;
+
+renderbuffer_t*		renderbuffers = NULL;
+int32_t				renderbuffercount = 0;
+int32_t				renderbufferswidth = 0;
+int32_t				renderbuffersheight = 0;
+
 static SDL_Rect blit_rect = {
     0,
     0,
@@ -131,9 +148,16 @@ int video_display = 0;
 int window_width = 800;
 int window_height = 600;
 
+boolean render_dimensions_independent = true;
+int32_t render_width = SCREENWIDTH;
+int32_t render_height = SCREENHEIGHT;
+
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
 
 int fullscreen_width = 0, fullscreen_height = 0;
+
+int display_width = 0;
+int display_height = 0;
 
 // Maximum number of pixels to use for intermediate scale buffer.
 
@@ -166,10 +190,6 @@ static int startup_delay = 1000;
 
 static int grabmouse = true;
 static boolean nograbmouse_override = false;
-
-// The screen buffer; this is modified to draw things to the screen
-
-pixel_t *I_VideoBuffer = NULL;
 
 // If true, game is running as a screensaver
 
@@ -229,6 +249,10 @@ static boolean MouseShouldBeGrabbed()
     if (!window_focused)
         return false;
 
+	// Debug menu needs mouse. Ergo, don't grab mouse.
+	if( debugmenuactive )
+		return false;
+
     // always grab the mouse when full screen (dont want to 
     // see the mouse pointer)
 
@@ -244,9 +268,6 @@ static boolean MouseShouldBeGrabbed()
 
     if (nograbmouse_override || !grabmouse)
         return false;
-
-	if( debugmenuactive )
-		return false;
 
     // Invoke the grabmouse callback function to determine whether
     // the mouse should be grabbed
@@ -305,29 +326,6 @@ void I_StartFrame (void)
 {
     // er?
 
-}
-
-// Adjust window_width / window_height variables to be an an aspect
-// ratio consistent with the aspect_ratio_correct variable.
-static void AdjustWindowSize(void)
-{
-	// I want to test high resolutions without breaking window size
-	// Fix this right up later
-#if MATCH_WINDOW_TO_BACKBUFFER
-    if (aspect_ratio_correct || integer_scaling)
-    {
-        if (window_width * actualheight <= window_height * SCREENWIDTH)
-        {
-            // We round up window_height if the ratio is not exact; this leaves
-            // the result stable.
-            window_height = (window_width * actualheight + SCREENWIDTH - 1) / SCREENWIDTH;
-        }
-        else
-        {
-            window_width = window_height * SCREENWIDTH / actualheight;
-        }
-    }
-#endif
 }
 
 static void HandleWindowEvent(SDL_WindowEvent *event)
@@ -427,7 +425,6 @@ void I_ToggleFullScreen(void)
 
     if (!fullscreen)
     {
-        AdjustWindowSize();
         SDL_SetWindowSize(screen, window_width, window_height);
     }
 }
@@ -536,6 +533,8 @@ void I_UpdateNoBlit (void)
     // what is this?
 }
 
+#define MOUSE_MOVE_TO_BOTTOMRIGHT 0
+
 static void UpdateGrab(void)
 {
     static boolean currently_grabbed = false;
@@ -559,6 +558,7 @@ static void UpdateGrab(void)
 
         SetShowCursor(true);
 
+#if MOUSE_MOVE_TO_BOTTOMRIGHT
         // When releasing the mouse from grab, warp the mouse cursor to
         // the bottom-right of the screen. This is a minimally distracting
         // place for it to appear - we may only have released the grab
@@ -568,6 +568,7 @@ static void UpdateGrab(void)
         SDL_GetWindowSize(screen, &screen_w, &screen_h);
         SDL_WarpMouseInWindow(screen, screen_w - 16, screen_h - 16);
         SDL_GetRelativeMouseState(NULL, NULL);
+#endif // MOUSE_MOVE_TO_BOTTOMRIGHT
     }
 
     currently_grabbed = grab;
@@ -588,11 +589,11 @@ static void LimitTextureSize(int *w_upscale, int *h_upscale)
                 SDL_GetError());
     }
 
-    while (*w_upscale * SCREENWIDTH > rinfo.max_texture_width)
+    while (*w_upscale * render_width > rinfo.max_texture_width)
     {
         --*w_upscale;
     }
-    while (*h_upscale * SCREENHEIGHT > rinfo.max_texture_height)
+    while (*h_upscale * render_height > rinfo.max_texture_height)
     {
         --*h_upscale;
     }
@@ -611,14 +612,14 @@ static void LimitTextureSize(int *w_upscale, int *h_upscale)
     // huge textures, so the user can use this to reduce the maximum texture
     // size if desired.
 
-    if (max_scaling_buffer_pixels < SCREENWIDTH * SCREENHEIGHT)
+    if (max_scaling_buffer_pixels < render_width * render_height)
     {
         I_Error("CreateUpscaledTexture: max_scaling_buffer_pixels too small "
                 "to create a texture buffer: %d < %d",
-                max_scaling_buffer_pixels, SCREENWIDTH * SCREENHEIGHT);
+                max_scaling_buffer_pixels, render_width * render_height);
     }
 
-    while (*w_upscale * *h_upscale * SCREENWIDTH * SCREENHEIGHT
+    while (*w_upscale * *h_upscale * render_width * render_height
            > max_scaling_buffer_pixels)
     {
         if (*w_upscale > *h_upscale)
@@ -635,7 +636,7 @@ static void LimitTextureSize(int *w_upscale, int *h_upscale)
     {
         printf("CreateUpscaledTexture: Limited texture size to %dx%d "
                "(max %d pixels, max texture size %dx%d)\n",
-               *w_upscale * SCREENWIDTH, *h_upscale * SCREENHEIGHT,
+               *w_upscale * render_width, *h_upscale * render_height,
                max_scaling_buffer_pixels,
                rinfo.max_texture_width, rinfo.max_texture_height);
     }
@@ -661,25 +662,25 @@ static void CreateUpscaledTexture(boolean force)
     // of the texture, the rendered area is scaled down to fit. Calculate
     // the actual dimensions of the rendered area.
 
-    if (w * actualheight < h * SCREENWIDTH)
+    if (w * actualheight < h * render_width)
     {
         // Tall window.
 
-        h = w * actualheight / SCREENWIDTH;
+        h = w * actualheight / render_width;
     }
     else
     {
         // Wide window.
 
-        w = h * SCREENWIDTH / actualheight;
+        w = h * render_width / actualheight;
     }
 
     // Pick texture size the next integer multiple of the screen dimensions.
     // If one screen dimension matches an integer multiple of the original
     // resolution, there is no need to overscale in this direction.
 
-    w_upscale = (w + SCREENWIDTH - 1) / SCREENWIDTH;
-    h_upscale = (h + SCREENHEIGHT - 1) / SCREENHEIGHT;
+    w_upscale = (w + render_width - 1) / render_width;
+    h_upscale = (h + render_height - 1) / render_height;
 
     // Minimum texture dimensions of 320x200.
 
@@ -713,8 +714,8 @@ static void CreateUpscaledTexture(boolean force)
     new_texture = SDL_CreateTexture(renderer,
                                 pixel_format,
                                 SDL_TEXTUREACCESS_TARGET,
-                                h_upscale*SCREENHEIGHT,
-                                w_upscale*SCREENWIDTH);
+                                h_upscale*render_height,
+                                w_upscale*render_width);
 
     old_texture = texture_upscaled;
     texture_upscaled = new_texture;
@@ -724,6 +725,8 @@ static void CreateUpscaledTexture(boolean force)
         SDL_DestroyTexture(old_texture);
     }
 }
+
+#define FPS_DOTS_SUPPORTED 0
 
 //
 // I_FinishUpdate
@@ -735,8 +738,6 @@ void I_FinishUpdate (void)
     int i;
 
 	SDL_Rect Target;
-	int render_width;
-	int render_height;
 
     if (!initialized)
         return;
@@ -758,7 +759,6 @@ void I_FinishUpdate (void)
 
                 // Adjust the window by resizing again so that the window
                 // is the right aspect ratio.
-                AdjustWindowSize();
                 SDL_SetWindowSize(screen, window_width, window_height);
             }
             CreateUpscaledTexture(false);
@@ -784,6 +784,7 @@ void I_FinishUpdate (void)
 
     // draws little dots on the bottom of the screen
 
+#if FPS_DOTS_SUPPORTED
     if (display_fps_dots)
     {
 	i = I_GetTime();
@@ -792,10 +793,11 @@ void I_FinishUpdate (void)
 	if (tics > 20) tics = 20;
 
 	for (i=0 ; i<tics*4 ; i+=4)
-	    I_VideoBuffer[ (SCREENHEIGHT-1)*SCREENWIDTH + i] = 0xff;
+	    I_VideoBuffer[ (render_height-1)*render_width + i] = 0xff;
 	for ( ; i<20*4 ; i+=4)
-	    I_VideoBuffer[ (SCREENHEIGHT-1)*SCREENWIDTH + i] = 0x0;
+	    I_VideoBuffer[ (render_height-1)*render_width + i] = 0x0;
     }
+#endif // FPS_DOTS_SUPPORTED
 
     // Draw disk icon before blit, if necessary.
     V_DrawDiskIcon();
@@ -837,13 +839,11 @@ void I_FinishUpdate (void)
 
 	SDL_SetRenderTarget(renderer, NULL);
 
-	SDL_GetRendererOutputSize( renderer, &render_width, &render_height );
-
 	// Better transormation courtesy of Altazimuth
-	Target.x = (SCREENWIDTH - actualheight) / 2;
-	Target.y = (actualheight - SCREENWIDTH) / 2;
+	Target.x = (render_width - actualheight) / 2;
+	Target.y = (actualheight - render_width) / 2;
 	Target.w = actualheight;
-	Target.h = SCREENWIDTH;
+	Target.h = render_width;
 
 	SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 
@@ -874,7 +874,7 @@ void I_FinishUpdate (void)
 //
 void I_ReadScreen (pixel_t* scr)
 {
-    memcpy(scr, I_VideoBuffer, SCREENWIDTH*SCREENHEIGHT*sizeof(*scr));
+    memcpy(scr, I_VideoBuffer, render_width*render_height*sizeof(*scr));
 }
 
 
@@ -974,7 +974,7 @@ static void SetScaleFactor(int factor)
 {
     // Pick 320x200 or 320x240, depending on aspect ratio correct
 
-    window_width = factor * SCREENWIDTH;
+    window_width = factor * render_width;
     window_height = factor * actualheight;
     fullscreen = false;
 }
@@ -1338,7 +1338,7 @@ static void SetVideoMode(void)
         pixel_format = SDL_GetWindowPixelFormat(screen);
 
 #if MATCH_WINDOW_TO_BACKBUFFER
-        SDL_SetWindowMinimumSize(screen, SCREENWIDTH, actualheight);
+        SDL_SetWindowMinimumSize(screen, render_width, actualheight);
 #endif // MATCH_WINDOW_TO_BACKBUFFER
 
         I_InitWindowTitle();
@@ -1365,6 +1365,9 @@ static void SetVideoMode(void)
         I_Error("Could not get display mode for video display #%d: %s",
         video_display, SDL_GetError());
     }
+
+	display_width = mode.w;
+	display_height = mode.h;
 
     // Turn on vsync if we aren't in a -timedemo
     if (!singletics && mode.refresh_rate > 0)
@@ -1405,7 +1408,7 @@ static void SetVideoMode(void)
     if (aspect_ratio_correct || integer_scaling)
     {
         SDL_RenderSetLogicalSize(renderer,
-                                 SCREENWIDTH,
+                                 render_width,
                                  actualheight);
     }
 
@@ -1421,41 +1424,6 @@ static void SetVideoMode(void)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
-
-    // Create the 8-bit paletted and the 32-bit RGBA screenbuffer surfaces.
-
-    if (screenbuffer != NULL)
-    {
-        SDL_FreeSurface(screenbuffer);
-        screenbuffer = NULL;
-    }
-
-    if (screenbuffer == NULL)
-    {
-        screenbuffer = SDL_CreateRGBSurface(0,
-                                            SCREENHEIGHT, SCREENWIDTH, 8,
-                                            0, 0, 0, 0);
-        SDL_FillRect(screenbuffer, NULL, 0);
-    }
-
-    // Format of argbbuffer must match the screen pixel format because we
-    // import the surface data into the texture.
-
-    if (argbbuffer != NULL)
-    {
-        SDL_FreeSurface(argbbuffer);
-        argbbuffer = NULL;
-    }
-
-    if (argbbuffer == NULL)
-    {
-        SDL_PixelFormatEnumToMasks(pixel_format, &bpp,
-                                   &rmask, &gmask, &bmask, &amask);
-        argbbuffer = SDL_CreateRGBSurface(0,
-                                          SCREENHEIGHT, SCREENWIDTH, bpp,
-                                          rmask, gmask, bmask, amask);
-        SDL_FillRect(argbbuffer, NULL, 0);
-    }
 
     if (texture != NULL)
     {
@@ -1475,7 +1443,7 @@ static void SetVideoMode(void)
     texture = SDL_CreateTexture(renderer,
                                 pixel_format,
                                 SDL_TEXTUREACCESS_STREAMING,
-                                SCREENHEIGHT, SCREENWIDTH);
+                                render_height, render_width);
 
     // Initially create the upscaled texture for rendering to screen
 
@@ -1484,7 +1452,88 @@ static void SetVideoMode(void)
 	I_SetupDearImGui();
 }
 
-void I_InitGraphics(void)
+static void I_DeinitRenderBuffers( void )
+{
+	renderbuffer_t* curr = renderbuffers;
+	renderbuffer_t* end = renderbuffers + renderbuffercount;
+
+	if( renderbuffers != NULL )
+	{
+		while( curr != end )
+		{
+			SDL_FreeSurface( curr->argbsurface );
+			SDL_FreeSurface( curr->nativesurface );
+			++curr;
+		};
+
+		Z_Free( renderbuffers );
+		renderbuffers = NULL;
+		renderbuffercount = 0;
+		renderbufferswidth = 0;
+		renderbuffersheight = 0;
+	}
+}
+
+static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t height )
+{
+	renderbuffer_t* curr;
+	renderbuffer_t* end;
+	uint32_t rmask, gmask, bmask, amask;
+	int32_t bpp;
+
+	SDL_Rect region = { 0, 0, height, width };
+
+	if( renderbuffercount != numbuffers
+		|| renderbufferswidth != width
+		|| renderbuffersheight != height )
+	{
+		I_DeinitRenderBuffers();
+
+		if( numbuffers == 0 )
+		{
+			I_Error( "I_RefreshRenderBuffers: You can't have zero buffers. Be sensible." );
+		}
+
+		SDL_PixelFormatEnumToMasks( pixel_format, &bpp, &rmask, &gmask, &bmask, &amask );
+
+		renderbuffers = curr = Z_Malloc( sizeof( renderbuffer_t) * numbuffers, PU_STATIC, NULL );
+		renderbuffercount = numbuffers;
+		end = curr + numbuffers;
+
+		while( curr != end )
+		{
+			// Transposed aw yiss
+			curr->nativesurface = SDL_CreateRGBSurface( 0, height, width, 8, 0, 0, 0, 0 );
+			SDL_FillRect( curr->nativesurface, NULL, 0 );
+
+			curr->screenbuffer.data = curr->nativesurface->pixels;
+			curr->screenbuffer.width = height;
+			curr->screenbuffer.height = width;
+			curr->screenbuffer.pitch = curr->nativesurface->pitch;
+			curr->screenbuffer.pixel_size_bytes = 1;
+
+			SDL_SetPaletteColors( curr->nativesurface->format->palette, palette, 0, 256 );
+
+			// Format of argbbuffer must match the screen pixel format because we
+			// import the surface data into the texture.
+			curr->argbsurface = SDL_CreateRGBSurface( 0, height, width, bpp, rmask, gmask, bmask, amask );
+			SDL_FillRect( curr->argbsurface, NULL, 0 );
+
+			curr->validregion = region;
+
+			++curr;
+		}
+
+		screenbuffer = renderbuffers->nativesurface;
+		argbbuffer = renderbuffers->argbsurface;
+
+		blit_rect.w = height;
+		blit_rect.h = width;
+	}
+
+}
+
+void I_InitGraphics( int32_t numbuffers )
 {
     SDL_Event dummy;
     byte *doompal;
@@ -1519,30 +1568,31 @@ void I_InitGraphics(void)
         fullscreen = true;
     }
 
-    if (aspect_ratio_correct == 1)
-    {
-        actualheight = SCREENHEIGHT_4_3;
-    }
-    else
-    {
-        actualheight = SCREENHEIGHT;
-    }
+	if( !render_dimensions_independent )
+	{
+		render_width = window_width;
+		render_height = window_height;
+	}
+
+	if (aspect_ratio_correct == 1)
+	{
+		actualheight = ( render_width * 7500 / 10000 );
+	}
+	else
+	{
+		actualheight = ( render_width * 6250 / 10000 );
+	}
 
     // Create the game window; this may switch graphic modes depending
     // on configuration.
-    AdjustWindowSize();
     SetVideoMode();
-
-    // Start with a clear black screen
-    // (screen will be flipped after we set the palette)
-
-    SDL_FillRect(screenbuffer, NULL, 0);
 
     // Set the palette
 
     doompal = W_CacheLumpName(DEH_String("PLAYPAL"), PU_CACHE);
     I_SetPalette(doompal);
-    SDL_SetPaletteColors(screenbuffer->format->palette, palette, 0, 256);
+
+	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
 
     // SDL2-TODO UpdateFocus();
     UpdateGrab();
@@ -1567,7 +1617,7 @@ void I_InitGraphics(void)
 
     // Clear the screen to black.
 
-    memset(I_VideoBuffer, 0, SCREENWIDTH * SCREENHEIGHT * sizeof(*I_VideoBuffer));
+    memset(I_VideoBuffer, 0, render_width * render_height * sizeof(*I_VideoBuffer));
 
     // clear out any events waiting at the start and center the mouse
   

@@ -131,6 +131,12 @@ char		mapdir[1024];           // directory of development maps
 int             show_endoom = 1;
 int             show_diskicon = 1;
 
+extern int32_t numrendercontexts;
+extern int32_t numusablerendercontexts;
+extern boolean renderloadbalancing;
+extern boolean rendersplitvisualise;
+extern boolean renderthreaded;
+
 void D_ConnectNetGame(void);
 void D_CheckNetGame(void);
 
@@ -560,7 +566,7 @@ void D_DoomLoop (void)
     I_SetWindowTitle(gamedescription);
     I_GraphicsCheckCommandLine();
     I_SetGrabMouseCallback(D_GrabMouseCallback);
-    I_InitGraphics();
+    I_InitGraphics( numrendercontexts );
     EnableLoadingDisk();
 
     TryRunTics();
@@ -1329,12 +1335,6 @@ static void G_CheckDemoStatusAtExit (void)
 //
 // D_DoomMain
 //
-
-extern int32_t numrendercontexts;
-extern int32_t numusablerendercontexts;
-extern boolean renderloadbalancing;
-extern boolean rendersplitvisualise;
-extern boolean renderthreaded;
 
 void D_DoomMain (void)
 {
