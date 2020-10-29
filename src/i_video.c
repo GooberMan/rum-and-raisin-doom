@@ -38,12 +38,6 @@
 #include "cimgui.h"
 #include "cimguiglue.h"
 
-#if defined( _WIN32 ) || defined( __APPLE__ )
-#define ALLOW_IMGUI_RENDER 1
-#else
-#define ALLOW_IMGUI_RENDER 0
-#endif // Platform checks for now
-
 #include "icon.c"
 
 #include "config.h"
@@ -854,7 +848,6 @@ void I_FinishUpdate (void)
 	SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 
 	// ImGui time!
-#if ALLOW_IMGUI_RENDER
 	CImGui_ImplOpenGL3_NewFrame();
 	CImGui_ImplSDL2_NewFrame( screen );
 
@@ -867,7 +860,6 @@ void I_FinishUpdate (void)
 
 	igRender();
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
-#endif // ALLOW_IMGUI_RENDER
     // Draw!
 
     SDL_RenderPresent(renderer);
@@ -1204,13 +1196,13 @@ void I_GetWindowPosition(int *x, int *y, int w, int h)
 }
 
 #ifdef __APPLE__
-int32_t GLSL_VERSION		= "#version 150";
+const char* GLSL_VERSION		= "#version 150";
 int32_t GL_VERSION_MAJOR	= 3;
 int32_t GL_VERSION_MINOR	= 2;
 int32_t GL_CONTEXTFLAGS		= SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
 int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
 #else
-int32_t GLSL_VERSION		= "#version 130";
+const char* GLSL_VERSION		= "#version 130";
 int32_t GL_VERSION_MAJOR	= 3;
 int32_t GL_VERSION_MINOR	= 0;
 int32_t GL_CONTEXTFLAGS		= 0;
@@ -1260,7 +1252,6 @@ static void I_SetupGLAD(void)
 
 static void I_SetupDearImGui(void)
 {
-#if ALLOW_IMGUI_RENDER
 	int32_t retval;
 
 	retval = CImGui_ImplSDL2_InitForOpenGL( screen, glcontext );
@@ -1274,7 +1265,6 @@ static void I_SetupDearImGui(void)
 	{
 		I_Error( "CImGui_ImplOpenGL3_Init failed to initialise" );
 	}
-#endif // ALLOW_IMGUI_RENDER
 }
 
 static void SetVideoMode(void)

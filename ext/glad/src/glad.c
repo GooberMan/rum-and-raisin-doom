@@ -1964,6 +1964,9 @@ static void find_coreGLES2(void) {
         NULL
     };
 
+	const char* renderer = NULL;
+	int rendermajor = 0, renderminor = 0;
+
     version = (const char*) glGetString(GL_VERSION);
     if (!version) return;
 
@@ -1974,6 +1977,22 @@ static void find_coreGLES2(void) {
             break;
         }
     }
+
+	// Raspberry Pi hack
+	if( strncmp( (const char*) glGetString( GL_VENDOR ), "Broadcom", 8 ) == 0 )
+	{
+		renderer = (const char*)glGetString( GL_RENDERER );
+		if( strncmp( renderer, "V3D ", 4 ) == 0 )
+		{
+			sscanf( renderer + 4, "%d.%d", &rendermajor, &renderminor );
+
+			if( ( rendermajor >= 4 && renderminor >= 2 )
+				|| rendermajor > 4 )
+			{
+				version = "3.1";
+			}
+		}
+	}
 
 /* PR #18 */
 #ifdef _MSC_VER
@@ -2001,7 +2020,8 @@ int gladLoadGLES2Loader(GLADloadproc load) {
 	load_GL_ES_VERSION_2_0(load);
 	load_GL_ES_VERSION_3_0(load);
 
-	if (!find_extensionsGLES2()) return 0;
+	// Raspberry Pi hack. Do we even need extensions?
+	//if (!find_extensionsGLES2()) return 0;
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
 
