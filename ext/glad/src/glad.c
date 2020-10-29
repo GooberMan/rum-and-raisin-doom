@@ -1984,7 +1984,11 @@ static void find_coreGLES2(void) {
 		renderer = (const char*)glGetString( GL_RENDERER );
 		if( strncmp( renderer, "V3D ", 4 ) == 0 )
 		{
+#ifdef _MSC_VER
+			sscanf_s( renderer + 4, "%d.%d", &rendermajor, &renderminor );
+#else
 			sscanf( renderer + 4, "%d.%d", &rendermajor, &renderminor );
+#endif
 
 			if( ( rendermajor >= 4 && renderminor >= 2 )
 				|| rendermajor > 4 )
