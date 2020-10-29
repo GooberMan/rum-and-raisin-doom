@@ -1204,21 +1204,23 @@ void I_GetWindowPosition(int *x, int *y, int w, int h)
 }
 
 #ifdef __APPLE__
-#define GLSL_VERSION "#version 150"
-#define GL_VERSION_MAJOR 3
-#define GL_VERSION_MINOR 2
-#define GL_CONTEXTFLAGS SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
+int32_t GLSL_VERSION		= "#version 150";
+int32_t GL_VERSION_MAJOR	= 3;
+int32_t GL_VERSION_MINOR	= 2;
+int32_t GL_CONTEXTFLAGS		= SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
+int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
 #else
-#define GLSL_VERSION "#version 130"
-#define GL_VERSION_MAJOR 3
-#define GL_VERSION_MINOR 0
-#define GL_CONTEXTFLAGS 0
+int32_t GLSL_VERSION		= "#version 130";
+int32_t GL_VERSION_MAJOR	= 3;
+int32_t GL_VERSION_MINOR	= 0;
+int32_t GL_CONTEXTFLAGS		= 0;
+int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
 #endif
 
 static void I_SetupOpenGL(void)
 {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, GL_CONTEXTFLAGS);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GL_CONTEXTPROFILE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GL_VERSION_MAJOR);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GL_VERSION_MINOR);
 }
@@ -1230,7 +1232,26 @@ static void I_SetupGLAD(void)
 	retval = gladLoadGLLoader( (GLADloadproc)&SDL_GL_GetProcAddress );
 	if ( !retval )
 	{
-		I_Error( "gladLoadGLLoader failed to initialise" );
+		I_Error( "GLAD could not find any OpenGL version" );
+	}
+
+	if( !GLAD_GL_VERSION_3_0 )
+	{
+		// Attempt to see if we're embedded, this will be nice
+		retval = gladLoadGLES2Loader( (GLADloadproc)&SDL_GL_GetProcAddress );
+
+		if ( !retval )
+		{
+			I_Error( "GLAD could not find any OpenGL ES version" );
+		}
+
+		if( !GLAD_GL_ES_VERSION_3_0 )
+		{
+			I_Error( "GLAD could not find any OpenGL ES 3" );
+		}
+
+		GLSL_VERSION = "#version 300 es";
+		GL_CONTEXTPROFILE = SDL_GL_CONTEXT_PROFILE_ES;
 	}
 }
 #else // !USE_GLAD
