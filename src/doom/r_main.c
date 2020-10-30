@@ -1430,6 +1430,7 @@ void R_SetupFrame (player_t* player)
 			}
 			else
 			{
+				renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( renderdatas[ currcontext ].context.bufferindex );
 				I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, currstart, currstart + desiredwidth );
 			}
 
