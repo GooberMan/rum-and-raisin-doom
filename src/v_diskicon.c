@@ -69,6 +69,9 @@ static void SaveDiskData(const char *disk_lump, int xoffs, int yoffs)
 
 	tmpbuffer.width = SCREENWIDTH;
 	tmpbuffer.height = SCREENHEIGHT;
+	tmpbuffer.pitch = SCREENHEIGHT;
+	tmpbuffer.pixel_size_bytes = 1;
+	tmpbuffer.magic_value = vbuffer_magic;
 
     // Allocate a complete temporary screen where we'll draw the patch.
     tmpbuffer.data = Z_Malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(*tmpbuffer.data),

@@ -161,7 +161,9 @@ void F_StartFinale (void)
 
 	// erase the entire screen to a tiled background
 	src.data = W_CacheLumpName ( finaleflat , PU_LEVEL );
-	src.width = src.height = 64;
+	src.width = src.height = src.pitch = 64;
+	src.pixel_size_bytes = 1;
+	src.magic_value = vbuffer_magic;
 
 	V_InflateAndTransposeBuffer( &src, &finaleflatdata, PU_LEVEL );
 }

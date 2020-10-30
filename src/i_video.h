@@ -52,7 +52,13 @@ typedef struct vbuffer_s
 	int32_t		height;
 	int32_t		pitch;
 	int32_t		pixel_size_bytes;
+	int32_t		magic_value;
 } vbuffer_t;
+
+enum
+{
+	vbuffer_magic = 0x7ac71e55,
+};
 
 // Called by D_DoomMain,
 // determines the hardware configuration

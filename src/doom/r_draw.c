@@ -989,6 +989,8 @@ void R_FillBackScreen (void)
                                      PU_STATIC, NULL);
 		background_data.width = SCREENWIDTH;
 		background_data.height = SCREENHEIGHT;
+		background_data.pitch = SCREENHEIGHT;
+		background_data.pixel_size_bytes = 1;
     }
 
     if (gamemode == commercial)

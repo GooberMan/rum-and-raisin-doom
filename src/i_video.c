@@ -732,9 +732,9 @@ static void CreateUpscaledTexture(boolean force)
 //
 void I_FinishUpdate (void)
 {
-    static int lasttic;
-    int tics;
-    int i;
+	static int32_t lasttic;
+	int32_t tics;
+	int32_t i;
 
 	SDL_Rect Target;
 
@@ -804,31 +804,33 @@ void I_FinishUpdate (void)
     // Draw disk icon before blit, if necessary.
     V_DrawDiskIcon();
 
-    if (palette_to_set)
-    {
-        SDL_SetPaletteColors(screenbuffer->format->palette, palette, 0, 256);
-        palette_to_set = false;
 
-        if (vga_porch_flash)
-        {
-            // "flash" the pillars/letterboxes with palette changes, emulating
-            // VGA "porch" behaviour (GitHub issue #832)
-            SDL_SetRenderDrawColor(renderer, palette[0].r, palette[0].g,
-                palette[0].b, SDL_ALPHA_OPAQUE);
-        }
-    }
-
-    // Blit from the paletted 8-bit screen buffer to the intermediate
-    // 32-bit RGBA buffer that we can load into the texture.
-
+	if ( palette_to_set && vga_porch_flash)
+	{
+		// "flash" the pillars/letterboxes with palette changes, emulating
+		// VGA "porch" behaviour (GitHub issue #832)
+		SDL_SetRenderDrawColor(renderer, palette[0].r, palette[0].g,
+			palette[0].b, SDL_ALPHA_OPAQUE);
+	}
+	
 	while( curr != end )
 	{
+		if (palette_to_set)
+		{
+			SDL_SetPaletteColors( curr->nativesurface->format->palette, palette, 0, 256 );
+		}
+
+		// Blit from the paletted 8-bit screen buffer to the intermediate
+		// 32-bit RGBA buffer that we can load into the texture.
+
 		if( curr->validregion.h > 0 )
 		{
 			SDL_LowerBlit( curr->nativesurface, &curr->validregion, argbbuffer, &curr->validregion );
 		}
 		++curr;
 	}
+
+	palette_to_set = false;
 
     // Update the intermediate texture with the contents of the RGBA buffer.
 
@@ -1520,6 +1522,7 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 			curr->screenbuffer.height = width;
 			curr->screenbuffer.pitch = curr->nativesurface->pitch;
 			curr->screenbuffer.pixel_size_bytes = 1;
+			curr->screenbuffer.magic_value = vbuffer_magic;
 
 			SDL_SetPaletteColors( curr->nativesurface->format->palette, palette, 0, 256 );
 

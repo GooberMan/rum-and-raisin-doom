@@ -1447,8 +1447,11 @@ void ST_Init (void)
 {
     ST_loadData();
 
+    st_backing_buffer.data = (pixel_t *) Z_Malloc(ST_BUFFERWIDTH * ST_BUFFERHEIGHT * sizeof(*st_backing_buffer.data), PU_STATIC, 0);
 	st_backing_buffer.width = ST_BUFFERWIDTH;
 	st_backing_buffer.height = ST_BUFFERHEIGHT;
-    st_backing_buffer.data = (pixel_t *) Z_Malloc(ST_BUFFERWIDTH * ST_BUFFERHEIGHT * sizeof(*st_backing_buffer.data), PU_STATIC, 0);
+	st_backing_buffer.pitch = ST_BUFFERHEIGHT;
+	st_backing_buffer.pixel_size_bytes = 1;
+	st_backing_buffer.magic_value = vbuffer_magic;
 }
 

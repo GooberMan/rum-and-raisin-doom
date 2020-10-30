@@ -126,14 +126,14 @@ void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
 	adjusteddestx = FixedMul( destx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
 	adjusteddesty = FixedMul( desty << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
 
-	src = source->data + source->height * adjustedsrcx + adjustedsrcy;
-	dest = dest_buffer->data + dest_buffer->height * adjusteddestx + adjusteddesty; 
+	src = source->data + source->pitch * adjustedsrcx + adjustedsrcy;
+	dest = dest_buffer->data + dest_buffer->pitch * adjusteddestx + adjusteddesty; 
  
 	for ( ; adjustedsrcwidth>0 ; adjustedsrcwidth--) 
 	{ 
 		memcpy(dest, src, adjustedsrcheight * sizeof(*dest));
-		src += source->height; 
-		dest += dest_buffer->height; 
+		src += source->pitch; 
+		dest += dest_buffer->pitch; 
 	} 
 }
 
@@ -145,21 +145,33 @@ void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
 //
 void V_InflateAndTransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone )
 {
+	if( source->magic_value != vbuffer_magic )
+	{
+		I_Error( "V_InflateAndTransposeBuffer: source not initialised" );
+	}
+
 	byte* dest;
 	fixed_t virtualcol;
 	fixed_t virtualrow;
 
 	fixed_t sourcewidth_fixed = source->width << FRACBITS;
 	fixed_t sourceheight_fixed = source->width << FRACBITS;
+	fixed_t sourcepitch_fixed = source->pitch << FRACBITS;
 	fixed_t inflatedwidth_fixed = FixedMul( sourcewidth_fixed, V_WIDTHMULTIPLIER );
+	fixed_t inflatedheight_fixed = FixedMul( sourceheight_fixed, V_WIDTHMULTIPLIER );
+	fixed_t inflatedpitch_fixed = FixedMul( sourcepitch_fixed, V_WIDTHMULTIPLIER );
 
 	int32_t inflatedwidth = inflatedwidth_fixed >> FRACBITS;
-	int32_t inflatedheight = inflatedwidth_fixed >> FRACBITS;
+	int32_t inflatedheight = inflatedheight_fixed >> FRACBITS;
+	int32_t inflatedpitch = inflatedpitch_fixed >> FRACBITS;
 
 	int sample;
 
 	output->width = inflatedwidth;
 	output->height = inflatedheight;
+	output->pitch = inflatedpitch;
+	output->pixel_size_bytes = source->pixel_size_bytes;
+	output->magic_value = vbuffer_magic;
 
 	dest = output->data = Z_Malloc( inflatedwidth * inflatedheight, outputmemzone, &output->data );
 
@@ -249,7 +261,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	virtualwidth = clippedwidth << FRACBITS;
 
     virtualcol = 0;
-    desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->height + ( virtualy >> FRACBITS );
+    desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS );
 
     for ( ; virtualcol < virtualwidth; )
     {
@@ -278,7 +290,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
             column = (column_t *)((byte *)column + column->length + 4);
         }
 
-		desttop += dest_buffer->height;
+		desttop += dest_buffer->pitch;
 		virtualcol += V_WIDTHSTEP;
     }
 
@@ -339,7 +351,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 	virtualwidth = SHORT(patch->width) << FRACBITS;
 
     virtualcol = 0;
-    desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->height + ( virtualy >> FRACBITS );
+    desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS );
 
     for ( ; virtualcol < virtualwidth; )
     {
@@ -368,7 +380,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
             column = (column_t *)((byte *)column + column->length + 4);
         }
 
-		desttop += dest_buffer->height;
+		desttop += dest_buffer->pitch;
 		virtualcol += V_WIDTHSTEP;
     }
 
@@ -645,6 +657,7 @@ void V_LoadXlaTable(void)
 // Draw a linear block of pixels into the view buffer.
 //
 
+// This seems flaky...
 void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
 { 
 	// TODO: Only the screen wipe calls this function in Doom.
@@ -658,19 +671,19 @@ void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
      || y < 0
      || y + height > SCREENHEIGHT)
     {
-	I_Error ("Bad V_DrawBlock");
+		I_Error ("Bad V_DrawBlock");
     }
 #endif 
  
     V_MarkRect (x, y, width, height); 
  
-    dest = dest_buffer->data + x * dest_buffer->height + y; 
+    dest = dest_buffer->data + x * dest_buffer->pitch + y; 
 
     while (height--) 
     { 
 		memcpy (dest, src, width * sizeof(*dest));
 		src += height; 
-		dest += dest_buffer->height; 
+		dest += dest_buffer->pitch; 
     } 
 } 
 
@@ -755,15 +768,22 @@ void V_Init (void)
 { 
 	default_buffer.width = SCREENWIDTH;
 	default_buffer.height = SCREENHEIGHT;
+	default_buffer.pitch = SCREENHEIGHT;
 	default_buffer.data = I_VideoBuffer;
+	default_buffer.pixel_size_bytes = 1;
+	default_buffer.magic_value = vbuffer_magic;
 
-	dest_buffer = &default_buffer;
+	V_UseBuffer( &default_buffer );
 }
 
 // Set the buffer that the code draws to.
 
 void V_UseBuffer(vbuffer_t *buffer)
 {
+	if( buffer->magic_value != vbuffer_magic )
+	{
+		I_Error( "V_UseBuffer: Incorrectly initialised buffer passed." );
+	}
     dest_buffer = buffer;
 }
 
@@ -987,8 +1007,11 @@ void WritePNGfile(char *filename, pixel_t *data,
 // V_ScreenShot
 //
 
+#define RUMANDRAISIN_SCREENSHOTSNEEDHELP 0
+
 void V_ScreenShot(const char *format)
 {
+#if RUMANDRAISIN_SCREENSHOTSNEEDHELP
     int i;
     char lbmname[16]; // haleyjd 20110213: BUG FIX - 12 is too small!
     const char *ext;
@@ -1046,6 +1069,7 @@ void V_ScreenShot(const char *format)
                  SCREENWIDTH, SCREENHEIGHT,
                  W_CacheLumpName (DEH_String("PLAYPAL"), PU_CACHE));
     }
+#endif // RUMANDRAISIN_SCREENSHOTSNEEDHELP
 }
 
 #define MOUSE_SPEED_BOX_WIDTH  120
