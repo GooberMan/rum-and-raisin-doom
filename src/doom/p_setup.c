@@ -803,22 +803,15 @@ P_SetupLevel
     // if working with a devlopment map, reload it
     W_Reload ();
 
-    // find map name
-    if ( gamemode == commercial)
-    {
-	if (map<10)
-	    DEH_snprintf(lumpname, 9, "map0%i", map);
+	// find map name
+	if ( gamemode == commercial)
+	{
+		DEH_snprintf(lumpname, 9, "MAP%02d", map);
+	}
 	else
-	    DEH_snprintf(lumpname, 9, "map%i", map);
-    }
-    else
-    {
-	lumpname[0] = 'E';
-	lumpname[1] = '0' + episode;
-	lumpname[2] = 'M';
-	lumpname[3] = '0' + map;
-	lumpname[4] = 0;
-    }
+	{
+		DEH_snprintf( lumpname, 9, "E%dM%d", episode, map );
+	}
 
     lumpnum = W_GetNumForName (lumpname);
 	
