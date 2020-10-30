@@ -36,8 +36,8 @@ typedef enum
 
 typedef struct menuentry_s menuentry_t;
 
-#define MAXCHILDREN		32
-#define MAXENTRIES		128
+#define MAXCHILDREN		64
+#define MAXENTRIES		256
 #define MAXNAMELENGTH	127
 
 // Filled out on init
@@ -377,18 +377,18 @@ static renderchild_t	childfuncs[] =
 
 static boolean aboutwindow_open = false;
 
-static void M_OnDebugMenuCloseButton( const char* itemname )
+static void M_OnDebugMenuCloseButton( const char* itemname, void* data )
 {
 	//S_StartSound(NULL, debugmenuclosesound);
 	debugmenuactive = false;
 }
 
-static void M_OnDebugMenuCoreQuit( const char* itemname )
+static void M_OnDebugMenuCoreQuit( const char* itemname, void* data )
 {
 	I_Quit();
 }
 
-static void M_AboutWindow( const char* itemname )
+static void M_AboutWindow( const char* itemname, void* data )
 {
 	igText( PACKAGE_STRING );
 	igText( "\"Haha software render go BRRRRR!\"" );
@@ -434,7 +434,7 @@ void M_InitDebugMenu( void )
 
 	// Core layout. Add top level categories here
 	{
-		M_RegisterDebugMenuButton( "Close debug", NULL, &M_OnDebugMenuCloseButton );
+		M_RegisterDebugMenuButton( "Close debug", NULL, &M_OnDebugMenuCloseButton, NULL );
 		M_FindDebugMenuCategory( "Core" );
 		M_FindDebugMenuCategory( "Game" );
 		M_FindDebugMenuCategory( "Render" );
@@ -453,7 +453,7 @@ void M_InitDebugMenu( void )
 	M_RegisterDebugMenuCheckbox( "Core|Pause While Active", "Multiplayer ignores this", &debugmenupausesplaysim );
 	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, &aboutwindow_open, &M_AboutWindow );
 	M_RegisterDebugMenuSeparator( "Core" );
-	M_RegisterDebugMenuButton( "Core|Quit", "Yes, this means quit the game", &M_OnDebugMenuCoreQuit );
+	M_RegisterDebugMenuButton( "Core|Quit", "Yes, this means quit the game", &M_OnDebugMenuCoreQuit, NULL );
 
 }
 
@@ -498,7 +498,7 @@ static void M_RenderButtonItem( menuentry_t* cat )
 	if( igMenuItemBool( cat->name, "", false, true ) )
 	{
 		callback = cat->callback;
-		callback( cat->name );
+		callback( cat->name, cat->data );
 	}
 	M_RenderTooltip( cat );
 }
@@ -565,7 +565,7 @@ void M_RenderDebugMenu( void )
 					if( igBegin( thiswindow->caption, thiswindow->data, windowflags ) )
 					{
 						callback = thiswindow->callback;
-						callback( thiswindow->name );
+						callback( thiswindow->name, NULL );
 					}
 					igEnd();
 				}
@@ -698,7 +698,12 @@ static const char* M_GetActualName( const char* full_path )
 	return actualname;
 }
 
-void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback )
+void M_RegisterDebugMenuCategory( const char* full_path )
+{
+	M_FindDebugMenuCategory( full_path );
+}
+
+void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata )
 {
 	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
@@ -708,6 +713,7 @@ void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menu
 	if( tooltip ) sprintf( currentry->tooltip, tooltip );
 	currentry->type = MET_Button;
 	currentry->freechild = currentry->children;
+	currentry->data = callbackdata;
 	currentry->enabled = true;
 	currentry->comparison = -1;
 	currentry->parent = category;

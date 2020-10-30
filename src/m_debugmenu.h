@@ -17,7 +17,7 @@
 
 #include "doomtype.h"
 
-typedef void (*menufunc_t)( const char* itemname );
+typedef void (*menufunc_t)( const char* itemname, void* data );
 extern int32_t		debugmenuclosesound;
 
 void M_InitDebugMenu( void );
@@ -26,7 +26,8 @@ void M_RenderDebugMenu( void );
 
 // menuname can be categorised with pipes, ie Edit|Preferences|Some pref category
 
-void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback );
+void M_RegisterDebugMenuCategory( const char* full_path );
+void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata );
 void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, boolean* active, menufunc_t callback );
 void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value );
 void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval );

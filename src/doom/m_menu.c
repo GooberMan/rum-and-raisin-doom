@@ -68,6 +68,310 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
 
+
+typedef struct mapdetails_s
+{
+	int32_t				episodenum;
+	int32_t				mapnum;
+	const char*			name;
+} mapdetails_t;
+
+typedef struct episodedetails_s
+{
+	int32_t				num;
+	const char*			name;
+	mapdetails_t*		maps;
+} episodedetails_t;
+
+typedef struct gamedetails_s
+{
+	const char*			name;
+	episodedetails_t*	episodes;
+} gamedetails_t;
+
+static gamedetails_t game_doomshareware =
+{
+	"Doom shareware", (episodedetails_t[]){
+		1, "Knee-Deep In The Dead", (mapdetails_t[]){
+			{ 1,	1,		HUSTR_E1M1	},
+			{ 1,	2,		HUSTR_E1M2	},
+			{ 1,	3,		HUSTR_E1M3	},
+			{ 1,	4,		HUSTR_E1M4	},
+			{ 1,	5,		HUSTR_E1M5	},
+			{ 1,	6,		HUSTR_E1M6	},
+			{ 1,	7,		HUSTR_E1M7	},
+			{ 1,	8,		HUSTR_E1M8	},
+			{ 1,	9,		HUSTR_E1M9	},
+			{ -1,	-1,		NULL		}
+		},
+		{ -1, NULL, NULL }
+	}
+};
+
+static gamedetails_t game_doomregistered =
+{
+	"Doom registered", (episodedetails_t[]){
+		1, "Knee-Deep In The Dead", (mapdetails_t[]){
+			{ 1,	1,		HUSTR_E1M1	},
+			{ 1,	2,		HUSTR_E1M2	},
+			{ 1,	3,		HUSTR_E1M3	},
+			{ 1,	4,		HUSTR_E1M4	},
+			{ 1,	5,		HUSTR_E1M5	},
+			{ 1,	6,		HUSTR_E1M6	},
+			{ 1,	7,		HUSTR_E1M7	},
+			{ 1,	8,		HUSTR_E1M8	},
+			{ 1,	9,		HUSTR_E1M9	},
+			{ -1,	-1,		NULL		}
+		},
+
+		2, "The Shores of Hell", (mapdetails_t[]){
+			{ 2,	1,		HUSTR_E2M1	},
+			{ 2,	2,		HUSTR_E2M2	},
+			{ 2,	3,		HUSTR_E2M3	},
+			{ 2,	4,		HUSTR_E2M4	},
+			{ 2,	5,		HUSTR_E2M5	},
+			{ 2,	6,		HUSTR_E2M6	},
+			{ 2,	7,		HUSTR_E2M7	},
+			{ 2,	8,		HUSTR_E2M8	},
+			{ 2,	9,		HUSTR_E2M9	},
+			{ -1,	-1,		NULL		}
+		},
+
+		3, "Inferno", (mapdetails_t[]){
+			{ 3,	1,		HUSTR_E3M1	},
+			{ 3,	2,		HUSTR_E3M2	},
+			{ 3,	3,		HUSTR_E3M3	},
+			{ 3,	4,		HUSTR_E3M4	},
+			{ 3,	5,		HUSTR_E3M5	},
+			{ 3,	6,		HUSTR_E3M6	},
+			{ 3,	7,		HUSTR_E3M7	},
+			{ 3,	8,		HUSTR_E3M8	},
+			{ 3,	9,		HUSTR_E3M9	},
+			{ -1,	-1,		NULL		}
+		},
+		{ -1, NULL, NULL }
+	}
+};
+
+static gamedetails_t game_doomultimate =
+{
+	"Ultimate Doom", (episodedetails_t[]){
+		1, "Knee-Deep In The Dead", (mapdetails_t[]){
+			{ 1,	1,		HUSTR_E1M1	},
+			{ 1,	2,		HUSTR_E1M2	},
+			{ 1,	3,		HUSTR_E1M3	},
+			{ 1,	4,		HUSTR_E1M4	},
+			{ 1,	5,		HUSTR_E1M5	},
+			{ 1,	6,		HUSTR_E1M6	},
+			{ 1,	7,		HUSTR_E1M7	},
+			{ 1,	8,		HUSTR_E1M8	},
+			{ 1,	9,		HUSTR_E1M9	},
+			{ -1,	-1,		NULL		}
+		},
+
+		2, "The Shores of Hell", (mapdetails_t[]){
+			{ 2,	1,		HUSTR_E2M1	},
+			{ 2,	2,		HUSTR_E2M2	},
+			{ 2,	3,		HUSTR_E2M3	},
+			{ 2,	4,		HUSTR_E2M4	},
+			{ 2,	5,		HUSTR_E2M5	},
+			{ 2,	6,		HUSTR_E2M6	},
+			{ 2,	7,		HUSTR_E2M7	},
+			{ 2,	8,		HUSTR_E2M8	},
+			{ 2,	9,		HUSTR_E2M9	},
+			{ -1,	-1,		NULL		}
+		},
+
+		3, "Inferno", (mapdetails_t[]){
+			{ 3,	1,		HUSTR_E3M1	},
+			{ 3,	2,		HUSTR_E3M2	},
+			{ 3,	3,		HUSTR_E3M3	},
+			{ 3,	4,		HUSTR_E3M4	},
+			{ 3,	5,		HUSTR_E3M5	},
+			{ 3,	6,		HUSTR_E3M6	},
+			{ 3,	7,		HUSTR_E3M7	},
+			{ 3,	8,		HUSTR_E3M8	},
+			{ 3,	9,		HUSTR_E3M9	},
+			{ -1,	-1,		NULL		}
+		},
+
+		4, "Thy Flesh Consumed", (mapdetails_t[]){
+			{ 4,	1,		HUSTR_E4M1	},
+			{ 4,	2,		HUSTR_E4M2	},
+			{ 4,	3,		HUSTR_E4M3	},
+			{ 4,	4,		HUSTR_E4M4	},
+			{ 4,	5,		HUSTR_E4M5	},
+			{ 4,	6,		HUSTR_E4M6	},
+			{ 4,	7,		HUSTR_E4M7	},
+			{ 4,	8,		HUSTR_E4M8	},
+			{ 4,	9,		HUSTR_E4M9	},
+			{ -1,	-1,		NULL		}
+		},
+
+		5, "(Fifth episode)", (mapdetails_t[]){
+			{ 5,	1,		"E5M1"		},
+			{ 5,	2,		"E5M2"		},
+			{ 5,	3,		"E5M3"		},
+			{ 5,	4,		"E5M4"		},
+			{ 5,	5,		"E5M5"		},
+			{ 5,	6,		"E5M6"		},
+			{ 5,	7,		"E5M7"		},
+			{ 5,	8,		"E5M8"		},
+			{ 5,	9,		"E5M9"		},
+			{ -1,	-1,		NULL		}
+		},
+		{ -1, NULL, NULL }
+	}
+};
+
+static gamedetails_t game_chexquest =
+{
+	"Chex Quest", (episodedetails_t[]){
+		1, "Chex Quest", (mapdetails_t[]){
+			{ 1,	1,		HUSTR_E1M1	},
+			{ 1,	2,		HUSTR_E1M2	},
+			{ 1,	3,		HUSTR_E1M3	},
+			{ 1,	4,		HUSTR_E1M4	},
+			{ 1,	5,		HUSTR_E1M5	},
+			{ -1,	-1,		NULL		}
+		},
+		{ -1, NULL, NULL }
+	}
+};
+
+static gamedetails_t game_doom2 =
+{
+	"Doom II - Hell On Earth", (episodedetails_t[]){
+		0, "Hell On Earth", (mapdetails_t[]){
+			{ 1,	1,		HUSTR_1		},
+			{ 1,	2,		HUSTR_2		},
+			{ 1,	3,		HUSTR_3		},
+			{ 1,	4,		HUSTR_4		},
+			{ 1,	5,		HUSTR_5		},
+			{ 1,	6,		HUSTR_6		},
+			{ 1,	7,		HUSTR_7		},
+			{ 1,	8,		HUSTR_8		},
+			{ 1,	9,		HUSTR_9		},
+			{ 1,	10,		HUSTR_10	},
+			{ 1,	11,		HUSTR_11	},
+			{ 1,	12,		HUSTR_12	},
+			{ 1,	13,		HUSTR_13	},
+			{ 1,	14,		HUSTR_14	},
+			{ 1,	15,		HUSTR_15	},
+			{ 1,	16,		HUSTR_16	},
+			{ 1,	17,		HUSTR_17	},
+			{ 1,	18,		HUSTR_18	},
+			{ 1,	19,		HUSTR_19	},
+			{ 1,	20,		HUSTR_20	},
+			{ 1,	21,		HUSTR_21	},
+			{ 1,	22,		HUSTR_22	},
+			{ 1,	23,		HUSTR_23	},
+			{ 1,	24,		HUSTR_24	},
+			{ 1,	25,		HUSTR_25	},
+			{ 1,	26,		HUSTR_26	},
+			{ 1,	27,		HUSTR_27	},
+			{ 1,	28,		HUSTR_28	},
+			{ 1,	29,		HUSTR_29	},
+			{ 1,	30,		HUSTR_30	},
+			{ 1,	31,		HUSTR_31	},
+			{ 1,	32,		HUSTR_32	},
+			{ -1,	-1,		NULL		}
+		},
+		{ -1, NULL, NULL }
+	}
+};
+
+static gamedetails_t game_evilution =
+{
+	"TNT - Evilution", (episodedetails_t[]){
+		0, "Evilution", (mapdetails_t[]){
+			{ 1,	1,		THUSTR_1	},
+			{ 1,	2,		THUSTR_2	},
+			{ 1,	3,		THUSTR_3	},
+			{ 1,	4,		THUSTR_4	},
+			{ 1,	5,		THUSTR_5	},
+			{ 1,	6,		THUSTR_6	},
+			{ 1,	7,		THUSTR_7	},
+			{ 1,	8,		THUSTR_8	},
+			{ 1,	9,		THUSTR_9	},
+			{ 1,	10,		THUSTR_10	},
+			{ 1,	11,		THUSTR_11	},
+			{ 1,	12,		THUSTR_12	},
+			{ 1,	13,		THUSTR_13	},
+			{ 1,	14,		THUSTR_14	},
+			{ 1,	15,		THUSTR_15	},
+			{ 1,	16,		THUSTR_16	},
+			{ 1,	17,		THUSTR_17	},
+			{ 1,	18,		THUSTR_18	},
+			{ 1,	19,		THUSTR_19	},
+			{ 1,	20,		THUSTR_20	},
+			{ 1,	21,		THUSTR_21	},
+			{ 1,	22,		THUSTR_22	},
+			{ 1,	23,		THUSTR_23	},
+			{ 1,	24,		THUSTR_24	},
+			{ 1,	25,		THUSTR_25	},
+			{ 1,	26,		THUSTR_26	},
+			{ 1,	27,		THUSTR_27	},
+			{ 1,	28,		THUSTR_28	},
+			{ 1,	29,		THUSTR_29	},
+			{ 1,	30,		THUSTR_30	},
+			{ 1,	31,		THUSTR_31	},
+			{ 1,	32,		THUSTR_32	},
+			{ 1,	33,		"MAP33"		},
+			{ 1,	34,		"MAP34"		},
+			{ 1,	35,		"MAP35"		},
+			{ -1,	-1,		NULL		}
+		},
+		{ -1, NULL, NULL }
+	}
+};
+
+static gamedetails_t game_plutonia =
+{
+	"The Plutonia Experiment", (episodedetails_t[]){
+		0, "The Plutonia Experiment", (mapdetails_t[]){
+			{ 1,	1,		PHUSTR_1	},
+			{ 1,	2,		PHUSTR_2	},
+			{ 1,	3,		PHUSTR_3	},
+			{ 1,	4,		PHUSTR_4	},
+			{ 1,	5,		PHUSTR_5	},
+			{ 1,	6,		PHUSTR_6	},
+			{ 1,	7,		PHUSTR_7	},
+			{ 1,	8,		PHUSTR_8	},
+			{ 1,	9,		PHUSTR_9	},
+			{ 1,	10,		PHUSTR_10	},
+			{ 1,	11,		PHUSTR_11	},
+			{ 1,	12,		PHUSTR_12	},
+			{ 1,	13,		PHUSTR_13	},
+			{ 1,	14,		PHUSTR_14	},
+			{ 1,	15,		PHUSTR_15	},
+			{ 1,	16,		PHUSTR_16	},
+			{ 1,	17,		PHUSTR_17	},
+			{ 1,	18,		PHUSTR_18	},
+			{ 1,	19,		PHUSTR_19	},
+			{ 1,	20,		PHUSTR_20	},
+			{ 1,	21,		PHUSTR_21	},
+			{ 1,	22,		PHUSTR_22	},
+			{ 1,	23,		PHUSTR_23	},
+			{ 1,	24,		PHUSTR_24	},
+			{ 1,	25,		PHUSTR_25	},
+			{ 1,	26,		PHUSTR_26	},
+			{ 1,	27,		PHUSTR_27	},
+			{ 1,	28,		PHUSTR_28	},
+			{ 1,	29,		PHUSTR_29	},
+			{ 1,	30,		PHUSTR_30	},
+			{ 1,	31,		PHUSTR_31	},
+			{ 1,	32,		PHUSTR_32	},
+			{ -1,	-1,		NULL		}
+		},
+		{ -1, NULL, NULL }
+	}
+};
+
+static gamedetails_t*	debugmenu_currgame = NULL;
+static int32_t			debugmenu_currgameepisodes = 0;
+static int32_t			debugmenu_currgameskill = sk_medium;
+
 extern patch_t*		hu_font[HU_FONTSIZE];
 extern boolean		message_dontfuckwithme;
 
@@ -2119,7 +2423,7 @@ static const char* window_dimensions_current = NULL;
 
 static const char* hack_fullscreen = "";
 
-static void M_DebugMenuOptionsWindow( const char* itemname )
+static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
 	extern int window_width;
@@ -2354,6 +2658,28 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 	}
 }
 
+static void M_DebugMenuNewGame( const char* itemname, void* data )
+{
+	mapdetails_t* map = (mapdetails_t*)data;
+
+	G_DeferedInitNew( debugmenu_currgameskill, map->episodenum, map->mapnum );
+}
+
+static void M_DebugMenuRegisterEpisodeMaps( const char* category, episodedetails_t* episode, menufunc_t callback )
+{
+	char namebuffer[ 128 ];
+
+	mapdetails_t* curr = episode->maps;
+	
+	while( curr->mapnum != -1 )
+	{
+		memset( namebuffer, 0, sizeof( namebuffer ) );
+		sprintf( namebuffer, "%s|%s", category, DEH_String( curr->name ) );
+		M_RegisterDebugMenuButton( namebuffer, NULL, callback, curr );
+		++curr;
+	}
+}
+
 //
 // M_Init
 //
@@ -2363,6 +2689,10 @@ void M_Init (void)
 	extern int window_height;
 
 	int32_t index;
+
+	episodedetails_t* workingepisode;
+
+	char episodestem[ 128 ];
 
     currentMenu = &MainDef;
     menuactive = 0;
@@ -2428,6 +2758,75 @@ void M_Init (void)
 		{
 			window_dimensions_current = window_sizes_scaled[ index ].asstring;
 		}
+	}
+
+	switch( gamemission )
+	{
+	case doom:
+		switch( gamemode )
+		{
+		case shareware:
+			debugmenu_currgame = &game_doomshareware;
+			break;
+		case registered:
+			debugmenu_currgame = &game_doomregistered;
+			break;
+		default:
+			// Just assume full range for everything else
+			debugmenu_currgame = &game_doomultimate;
+			break;
+		}
+		break;
+	case doom2:
+		debugmenu_currgame = &game_doom2;
+		break;
+	case pack_tnt:
+		debugmenu_currgame = &game_evilution;
+		break;
+	case pack_plut:
+		debugmenu_currgame = &game_plutonia;
+		break;
+	case pack_chex:
+		debugmenu_currgame = &game_chexquest;
+		break;
+	default:
+		// Just assume Doom 2 style for everything else
+		debugmenu_currgame = &game_doom2;
+		break;
+	}
+
+	workingepisode = debugmenu_currgame->episodes;
+	while( workingepisode->num != -1 )
+	{
+		++workingepisode;
+	};
+	debugmenu_currgameepisodes = workingepisode - debugmenu_currgame->episodes;
+
+	M_RegisterDebugMenuCategory( "Game|New" );
+
+	M_RegisterDebugMenuRadioButton( "Game|New|No skill", NULL, &debugmenu_currgameskill, -1 );
+	M_RegisterDebugMenuRadioButton( "Game|New|I'm too young to die", NULL, &debugmenu_currgameskill, 0 );
+	M_RegisterDebugMenuRadioButton( "Game|New|Hey, not too rough", NULL, &debugmenu_currgameskill, 1 );
+	M_RegisterDebugMenuRadioButton( "Game|New|Hurt me plenty", NULL, &debugmenu_currgameskill, 2 );
+	M_RegisterDebugMenuRadioButton( "Game|New|Ultra violence", NULL, &debugmenu_currgameskill, 3 );
+	M_RegisterDebugMenuRadioButton( "Game|New|Nightmare", NULL, &debugmenu_currgameskill, 4 );
+	M_RegisterDebugMenuSeparator( "Game|New" );
+
+	if( debugmenu_currgameepisodes == 1 )
+	{
+		M_DebugMenuRegisterEpisodeMaps( "Game|New", debugmenu_currgame->episodes, &M_DebugMenuNewGame );
+	}
+	else
+	{
+		workingepisode = debugmenu_currgame->episodes;
+		while( workingepisode->num != -1 )
+		{
+			memset( episodestem, 0, sizeof( episodestem ) );
+			sprintf( episodestem, "Game|New|%s", workingepisode->name );
+			M_DebugMenuRegisterEpisodeMaps( episodestem, workingepisode, &M_DebugMenuNewGame );
+
+			++workingepisode;
+		};
 	}
 
 	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", &debugwindow_options, &M_DebugMenuOptionsWindow );
