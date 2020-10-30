@@ -19,6 +19,9 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
 
+#include <stdio.h>
+#include <string.h>
+
 typedef enum
 {
 	MET_Invalid,
@@ -377,6 +380,9 @@ static renderchild_t	childfuncs[] =
 
 static boolean aboutwindow_open = false;
 
+#define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_DebugMenu: More than %d elements total added", MAXENTRIES ); }
+#define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_DebugMenu: Too many child elements added to %s", elem->name ); }
+
 static void M_OnDebugMenuCloseButton( const char* itemname, void* data )
 {
 	//S_StartSound(NULL, debugmenuclosesound);
@@ -606,9 +612,6 @@ static menuentry_t* M_FindOrCreateDebugMenuCategory( const char* category_name, 
 	return currentry;
 }
 
-#include <stdio.h>
-#include <string.h>
-
 static menuentry_t* M_FindDebugMenuCategory( const char* category_name )
 {
 	size_t start = 0;
@@ -701,6 +704,8 @@ static const char* M_GetActualName( const char* full_path )
 void M_RegisterDebugMenuCategory( const char* full_path )
 {
 	M_FindDebugMenuCategory( full_path );
+
+	CHECK_ELEMENTS();
 }
 
 void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata )
@@ -721,6 +726,9 @@ void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menu
 
 	*category->freechild = currentry;
 	category->freechild++;
+
+	CHECK_CHILDREN( category );
+	CHECK_ELEMENTS();
 }
 
 void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, boolean* active, menufunc_t callback )
@@ -741,6 +749,9 @@ void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, bool
 
 	*category->freechild = currentry;
 	category->freechild++;
+
+	CHECK_CHILDREN( category );
+	CHECK_ELEMENTS();
 }
 
 void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value )
@@ -760,6 +771,9 @@ void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, bo
 
 	*category->freechild = currentry;
 	category->freechild++;
+
+	CHECK_CHILDREN( category );
+	CHECK_ELEMENTS();
 }
 
 void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval )
@@ -779,6 +793,9 @@ void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip,
 
 	*category->freechild = currentry;
 	category->freechild++;
+
+	CHECK_CHILDREN( category );
+	CHECK_ELEMENTS();
 }
 
 void M_RegisterDebugMenuSeparator( const char* category_path )
@@ -795,4 +812,7 @@ void M_RegisterDebugMenuSeparator( const char* category_path )
 
 	*category->freechild = currentry;
 	category->freechild++;
+
+	CHECK_CHILDREN( category );
+	CHECK_ELEMENTS();
 }
