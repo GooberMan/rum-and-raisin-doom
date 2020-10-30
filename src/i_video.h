@@ -59,6 +59,9 @@ typedef struct vbuffer_s
 // and sets up the video mode
 void I_InitGraphics ( int32_t numbuffers );
 
+vbuffer_t* I_GetRenderBuffer( int32_t index );
+void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );
+
 void I_GraphicsCheckCommandLine(void);
 
 void I_ShutdownGraphics(void);

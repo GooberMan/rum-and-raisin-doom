@@ -163,6 +163,9 @@ void R_RenderPlayerView (player_t *player);
 // Called by startup code.
 void R_Init (void);
 
+// Called after display system initialised
+void R_InitContexts( void );
+
 // Called after a new map load
 void R_RefreshContexts( void );
 

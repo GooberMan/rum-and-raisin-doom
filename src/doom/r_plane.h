@@ -42,7 +42,7 @@ void R_ErrorCheckPlanes( rendercontext_t* context );
 #define R_ErrorCheckPlanes( context )
 #endif // RANGECHECK
 
-void R_DrawPlanes ( );
+void R_DrawPlanes ( vbuffer_t* dest, planecontext_t* planecontext );
 
 visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel );
 

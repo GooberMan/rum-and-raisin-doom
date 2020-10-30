@@ -346,7 +346,7 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 // R_DrawPlanes
 // At the end of each frame.
 //
-void R_DrawPlanes( planecontext_t* planecontext )
+void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	visplane_t*		pl;
 	int32_t			light;
@@ -357,11 +357,10 @@ void R_DrawPlanes( planecontext_t* planecontext )
 
 	spancontext_t	spancontext;
 	colcontext_t	skycontext;
-	extern vbuffer_t* dest_buffer;
 
 	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
 
-	spancontext.output = *dest_buffer;
+	spancontext.output = *dest;
 
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook
@@ -371,7 +370,7 @@ void R_DrawPlanes( planecontext_t* planecontext )
 	skycontext.texturemid = skytexturemid;
 
 	// This isn't a constant though...
-	skycontext.output = *dest_buffer;
+	skycontext.output = *dest;
 
 	for (pl = planecontext->visplanes ; pl < planecontext->lastvisplane ; pl++)
 	{

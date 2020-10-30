@@ -82,6 +82,7 @@ boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
 boolean					renderthreaded = true;
 boolean					renderSIMDcolumns = true;
+boolean					rendersinglebuffer = true;
 int32_t					performancegraphscale = 20;
 
 int32_t					viewangleoffset;
@@ -150,6 +151,16 @@ colfunc_t			transcolfunc;
 
 spanfunc_t			spanfunc;
 
+const byte whacky_void_indices[] =
+{
+	251,
+	249,
+	118,
+	200,
+};
+const int32_t num_whacky_void_indices = sizeof( whacky_void_indices ) / sizeof( *whacky_void_indices );
+const uint64_t whacky_void_microseconds = 1200000;
+int32_t voidcleartype = Void_NoClear;
 
 
 //
@@ -830,6 +841,8 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 void R_RenderViewContext( rendercontext_t* rendercontext )
 {
 	int32_t currtime;
+	byte* output = rendercontext->buffer.data + rendercontext->buffer.pitch * rendercontext->begincolumn;
+	size_t outputsize = rendercontext->buffer.pitch * (rendercontext->endcolumn - rendercontext->begincolumn );
 
 	rendercontext->starttime = I_GetTimeUS();
 #if RENDER_PERF_GRAPHING
@@ -842,12 +855,21 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	rendercontext->spritecontext.maskedtimetaken = 0;
 #endif
 
+	if( voidcleartype == Void_Black )
+	{
+		memset( output, 0, outputsize );
+	}
+	else if( voidcleartype == Void_Whacky )
+	{
+		memset( output, whacky_void_indices[ ( rendercontext->starttime % whacky_void_microseconds ) / ( whacky_void_microseconds / num_whacky_void_indices ) ], outputsize );
+	}
+		
 	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
 
-	R_RenderBSPNode( &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
+	R_RenderBSPNode( &rendercontext->buffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
 	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes( &rendercontext->planecontext );
-	R_DrawMasked( &rendercontext->spritecontext, &rendercontext->bspcontext );
+	R_DrawPlanes( &rendercontext->buffer, &rendercontext->planecontext );
+	R_DrawMasked( &rendercontext->buffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
 
 	rendercontext->endtime = I_GetTimeUS();
 	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
@@ -914,13 +936,18 @@ void R_InitContexts( void )
 
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
-		renderdatas[ currcontext ].context.starttime = 0;
-		renderdatas[ currcontext ].context.endtime = 1;
-		renderdatas[ currcontext ].context.timetaken = 1;
+		renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( currcontext );
+		renderdatas[ currcontext ].context.bufferindex = currcontext;
+
+		I_SetRenderBufferValidColumns( currcontext, currstart, currstart + incrementby );
 
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 1, 0 );
 		currstart += incrementby;
 		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
+
+		renderdatas[ currcontext ].context.starttime = 0;
+		renderdatas[ currcontext ].context.endtime = 1;
+		renderdatas[ currcontext ].context.timetaken = 1;
 
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
@@ -934,24 +961,31 @@ void R_InitContexts( void )
 		{
 			renderdatas[ currcontext ].thread = I_ThreadCreate( &R_ContextThreadFunc, &renderdatas[ currcontext ] );
 		}
+
+		if( numsectors > 0 )
+		{
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+		}
 	}
 }
 
 void R_RefreshContexts( void )
 {
 	int32_t currcontext;
-	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	if( renderdatas )
 	{
-		renderdatas[ currcontext ].context.spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		{
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
 #if RENDER_PERF_GRAPHING
-		memset( renderdatas[ currcontext ].context.frametimes, 0, sizeof( renderdatas[ currcontext ].context.frametimes) );
-		memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
-		memset( renderdatas[ currcontext ].context.flattimes, 0, sizeof( renderdatas[ currcontext ].context.flattimes) );
-		memset( renderdatas[ currcontext ].context.spritetimes, 0, sizeof( renderdatas[ currcontext ].context.spritetimes) );
-		memset( renderdatas[ currcontext ].context.everythingelsetimes, 0, sizeof( renderdatas[ currcontext ].context.everythingelsetimes) );
+			memset( renderdatas[ currcontext ].context.frametimes, 0, sizeof( renderdatas[ currcontext ].context.frametimes) );
+			memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
+			memset( renderdatas[ currcontext ].context.flattimes, 0, sizeof( renderdatas[ currcontext ].context.flattimes) );
+			memset( renderdatas[ currcontext ].context.spritetimes, 0, sizeof( renderdatas[ currcontext ].context.spritetimes) );
+			memset( renderdatas[ currcontext ].context.everythingelsetimes, 0, sizeof( renderdatas[ currcontext ].context.everythingelsetimes) );
 #endif // RENDER_PERF_GRAPHING
+		}
 	}
-
 	renderrebalancecontexts = true;
 }
 
@@ -1237,6 +1271,7 @@ static void R_RenderThreadingOptionsWindow( const char* name )
 	igSliderInt( "Running threads", &numusablerendercontexts, 1, numrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 	igCheckbox( "Load balancing", &renderloadbalancing );
 	igCheckbox( "SIMD columns", &renderSIMDcolumns );
+	igCheckbox( "Single render buffer", &rendersinglebuffer );
 	igNewLine();
 	igText( "Debug options" );
 	igSeparator();
@@ -1250,8 +1285,6 @@ static void R_RenderThreadingOptionsWindow( const char* name )
 void R_Init (void)
 {
 	R_InitColFuncs();
-
-	R_InitContexts();
 
     R_InitData ();
     printf (".");
@@ -1390,11 +1423,26 @@ void R_SetupFrame (player_t* player)
 		desiredwidth = viewwidth / numusablerendercontexts;
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
-			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 1, 0 );
+			if( rendersinglebuffer )
+			{
+				renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
+				I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, 0, currcontext == 0 ? viewwidth : 0 );
+			}
+			else
+			{
+				I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, currstart, currstart + desiredwidth );
+			}
+
+			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 3, 0 );
 			currstart += desiredwidth;
-			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
+			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart + 3, SCREENWIDTH );
 
 			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
+		}
+
+		for( ; currcontext < numrendercontexts; ++currcontext )
+		{
+			I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, 0, 0 );
 		}
 
 		renderrebalancecontexts = false;

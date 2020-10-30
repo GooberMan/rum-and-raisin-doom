@@ -539,7 +539,7 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 		//  a pixel that is either one column
 		//  left or right of the current one.
 		// Add index from colormap to index.
-		*dest = colormaps[ 6*256 + dest[ fuzzoffset[ I_AtomicIncrement( &fuzzpos, 1 ) % FUZZTABLE ] ] ]; 
+		*dest = colormaps[ 6*256 + dest[ fuzzoffset[ (uint32_t)I_AtomicIncrement( &fuzzpos, 1 ) % FUZZTABLE ] ] ]; 
 
 #if ADJUSTED_FUZZ
 		// Clamp table lookup index.

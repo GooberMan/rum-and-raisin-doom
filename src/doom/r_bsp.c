@@ -63,7 +63,7 @@ void R_ClearDrawSegs ( bspcontext_t* context )
 //  e.g. single sided LineDefs (middle texture)
 //  that entirely block the view.
 // 
-void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
+void R_ClipSolidWallSegment( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
 {
 	cliprange_t*	next;
 	cliprange_t*	start;
@@ -82,7 +82,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 		{
 			// Post is entirely visible (above start),
 			//  so insert a new clippost.
-			R_StoreWallRange( bspcontext, planecontext, wallcontext, first, last );
+			R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, first, last );
 			next = bspcontext->solidsegsend;
 			bspcontext->solidsegsend++;
 
@@ -97,7 +97,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 		}
 
 		// There is a fragment above *start.
-		R_StoreWallRange( bspcontext, planecontext, wallcontext, first, start->first - 1 );
+		R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, first, start->first - 1 );
 		// Now adjust the clip size.
 		start->first = first;
 	}
@@ -112,7 +112,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 	while (last >= (next+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange( bspcontext, planecontext, wallcontext, next->last + 1, (next+1)->first - 1 );
+		R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, next->last + 1, (next+1)->first - 1 );
 		++next;
 	
 		if (last <= next->last)
@@ -125,7 +125,7 @@ void R_ClipSolidWallSegment( bspcontext_t* bspcontext, planecontext_t* planecont
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange( bspcontext, planecontext, wallcontext, next->last + 1, last );
+	R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, next->last + 1, last );
 	// Adjust the clip size.
 	start->last = last;
 	
@@ -156,7 +156,7 @@ crunch:
 // Does handle windows,
 //  e.g. LineDefs with upper and lower texture.
 //
-void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
+void R_ClipPassWallSegment( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
 {
 	cliprange_t*	start;
 
@@ -173,12 +173,12 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 		if (last < start->first-1)
 		{
 			// Post is entirely visible (above start).
-			R_StoreWallRange( bspcontext, planecontext, wallcontext, first, last );
+			R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, first, last );
 			return;
 		}
 		
 		// There is a fragment above *start.
-		R_StoreWallRange( bspcontext, planecontext, wallcontext, first, start->first - 1 );
+		R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, first, start->first - 1 );
 	}
 
 	// Bottom contained in start?
@@ -190,7 +190,7 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 	while (last >= (start+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange( bspcontext, planecontext, wallcontext, start->last + 1, (start+1)->first - 1 );
+		R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, start->last + 1, (start+1)->first - 1 );
 		++start;
 	
 		if (last <= start->last)
@@ -200,7 +200,7 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange( bspcontext, planecontext, wallcontext, start->last + 1, last );
+	R_StoreWallRange( dest, bspcontext, planecontext, wallcontext, start->last + 1, last );
 }
 
 //
@@ -209,7 +209,7 @@ void R_ClipPassWallSegment( bspcontext_t* bspcontext, planecontext_t* planeconte
 // and adds any visible pieces to the line list.
 //
 
-void R_AddLine( bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* line )
+void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* line )
 {
 	int32_t			x1;
 	int32_t			x2;
@@ -312,11 +312,11 @@ void R_AddLine( bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* l
 	}
 
 clippass:
-	R_ClipPassWallSegment( bspcontext, planecontext, &wallcontext, x1, x2-1 );
+	R_ClipPassWallSegment( dest, bspcontext, planecontext, &wallcontext, x1, x2-1 );
 	return;
 
 clipsolid:
-	R_ClipSolidWallSegment( bspcontext, planecontext, &wallcontext, x1, x2-1 );
+	R_ClipSolidWallSegment( dest, bspcontext, planecontext, &wallcontext, x1, x2-1 );
 }
 
 
@@ -462,7 +462,7 @@ boolean R_CheckBBox( bspcontext_t* context, fixed_t* bspcoord )
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
-void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t num )
+void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t num )
 {
 	int32_t			count;
 	seg_t*			line;
@@ -505,7 +505,7 @@ void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, sprite
 
 	while (count--)
 	{
-		R_AddLine( bspcontext, planecontext, line );
+		R_AddLine( dest, bspcontext, planecontext, line );
 		line++;
 	}
 
@@ -524,7 +524,7 @@ void R_Subsector( bspcontext_t* bspcontext, planecontext_t* planecontext, sprite
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-void R_RenderBSPNode ( bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum )
+void R_RenderBSPNode ( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum )
 {
 	node_t*		bsp;
 	int32_t		side;
@@ -533,9 +533,9 @@ void R_RenderBSPNode ( bspcontext_t* bspcontext, planecontext_t* planecontext, s
 	if (bspnum & NF_SUBSECTOR)
 	{
 		if (bspnum == -1)
-			R_Subsector ( bspcontext, planecontext, spritecontext, 0 );
+			R_Subsector ( dest, bspcontext, planecontext, spritecontext, 0 );
 		else
-			R_Subsector ( bspcontext, planecontext, spritecontext, bspnum&(~NF_SUBSECTOR) );
+			R_Subsector ( dest, bspcontext, planecontext, spritecontext, bspnum&(~NF_SUBSECTOR) );
 		return;
 	}
 		
@@ -545,12 +545,12 @@ void R_RenderBSPNode ( bspcontext_t* bspcontext, planecontext_t* planecontext, s
 	side = R_PointOnSide (viewx, viewy, bsp);
 
 	// Recursively divide front space.
-	R_RenderBSPNode ( bspcontext, planecontext, spritecontext, bsp->children[side]);
+	R_RenderBSPNode ( dest, bspcontext, planecontext, spritecontext, bsp->children[side]);
 
 	// Possibly divide back space.
 	if ( R_CheckBBox( bspcontext, bsp->bbox[side^1] ) )
 	{
-		R_RenderBSPNode ( bspcontext, planecontext, spritecontext, bsp->children[side^1]);
+		R_RenderBSPNode ( dest, bspcontext, planecontext, spritecontext, bsp->children[side^1]);
 	}
 }
 

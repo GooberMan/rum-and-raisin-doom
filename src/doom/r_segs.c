@@ -97,7 +97,7 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 //
 // R_RenderMaskedSegRange
 //
-void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
+void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
 {
 	uint32_t			index;
 	column_t*			col;
@@ -110,14 +110,13 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 	int32_t				walllightsindex;
 
 	colcontext_t		spritecolcontext;
-	extern vbuffer_t*	dest_buffer;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		starttime = I_GetTimeUS();
 	uint64_t		endtime;
 #endif // RENDER_PERF_GRAPHING
 
-	spritecolcontext.output = *dest_buffer;
+	spritecolcontext.output = *dest;
 	spritecolcontext.colfunc = &R_DrawColumn_Untranslated; 
 
 	// Calculate light table.
@@ -235,7 +234,7 @@ void R_RenderMaskedSegRange( bspcontext_t* bspcontext, spritecontext_t* spriteco
 // Detail maps show me how may reads are going to happen in any 16-byte block.
 extern byte detailmaps[16][256];
 
-uint64_t R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
+uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
 {
 	angle_t			angle;
 	uint32_t		index;
@@ -249,7 +248,6 @@ uint64_t R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcont
 	int32_t			currx = segcontext->startx;
 
 	colcontext_t	wallcolcontext;
-	extern vbuffer_t* dest_buffer;
 	extern boolean renderSIMDcolumns;
 
 #if RENDER_PERF_GRAPHING
@@ -257,7 +255,7 @@ uint64_t R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcont
 	uint64_t		endtime;
 #endif // RENDER_PERF_GRAPHING
 
-	wallcolcontext.output = *dest_buffer;
+	wallcolcontext.output = *dest;
 
 	for ( ; currx < segcontext->stopx ; currx++)
 	{
@@ -465,7 +463,7 @@ uint64_t R_RenderSegLoop ( planecontext_t* planecontext, wallcontext_t* wallcont
 // A wall segment will be drawn
 //  between start and stop pixels (inclusive).
 //
-void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
+void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
 {
 	fixed_t				hyp;
 	fixed_t				sineval;
@@ -835,7 +833,7 @@ void R_StoreWallRange( bspcontext_t* bspcontext, planecontext_t* planecontext, w
 		planecontext->floorplane = R_CheckPlane ( planecontext, planecontext->floorplane, loopcontext.startx, loopcontext.stopx-1 );
 	}
 
-	walltime = R_RenderSegLoop( planecontext, wallcontext, &loopcontext );
+	walltime = R_RenderSegLoop( dest, planecontext, wallcontext, &loopcontext );
 #if RENDER_PERF_GRAPHING
 	bspcontext->solidtimetaken += walltime;
 #endif // RENDER_PERF_GRAPHING

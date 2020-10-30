@@ -26,6 +26,6 @@
 void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol );
 void R_ClearDrawSegs ( bspcontext_t* context );
 
-void R_RenderBSPNode ( bspcontext_t* context, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum );
+void R_RenderBSPNode ( vbuffer_t* dest, bspcontext_t* context, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum );
 
 #endif

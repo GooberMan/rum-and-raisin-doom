@@ -611,6 +611,7 @@ typedef struct rendercontext_s
 {
 	// Setup
 	vbuffer_t			buffer;
+	int32_t				bufferindex;
 
 	int32_t				begincolumn;
 	int32_t				endcolumn;
@@ -645,5 +646,12 @@ typedef struct rendercontext_s
 	void*				debugpercent;
 
 } rendercontext_t;
+
+typedef enum
+{
+	Void_NoClear,
+	Void_Black,
+	Void_Whacky,
+} voidclear_e;
 
 #endif

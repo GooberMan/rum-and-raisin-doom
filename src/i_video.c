@@ -93,7 +93,6 @@ typedef struct renderbuffer_s
 {
 	vbuffer_t		screenbuffer;
 	SDL_Surface*	nativesurface;
-	SDL_Surface*	argbsurface;
 	SDL_Rect		validregion;
 } renderbuffer_t;
 
@@ -739,6 +738,9 @@ void I_FinishUpdate (void)
 
 	SDL_Rect Target;
 
+	renderbuffer_t* curr = renderbuffers;
+	renderbuffer_t* end = renderbuffers + renderbuffercount;
+
     if (!initialized)
         return;
 
@@ -819,7 +821,14 @@ void I_FinishUpdate (void)
     // Blit from the paletted 8-bit screen buffer to the intermediate
     // 32-bit RGBA buffer that we can load into the texture.
 
-    SDL_LowerBlit(screenbuffer, &blit_rect, argbbuffer, &blit_rect);
+	while( curr != end )
+	{
+		if( curr->validregion.h > 0 )
+		{
+			SDL_LowerBlit( curr->nativesurface, &curr->validregion, argbbuffer, &curr->validregion );
+		}
+		++curr;
+	}
 
     // Update the intermediate texture with the contents of the RGBA buffer.
 
@@ -1459,9 +1468,9 @@ static void I_DeinitRenderBuffers( void )
 
 	if( renderbuffers != NULL )
 	{
+		SDL_FreeSurface( argbbuffer );
 		while( curr != end )
 		{
-			SDL_FreeSurface( curr->argbsurface );
 			SDL_FreeSurface( curr->nativesurface );
 			++curr;
 		};
@@ -1514,23 +1523,33 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 
 			SDL_SetPaletteColors( curr->nativesurface->format->palette, palette, 0, 256 );
 
-			// Format of argbbuffer must match the screen pixel format because we
-			// import the surface data into the texture.
-			curr->argbsurface = SDL_CreateRGBSurface( 0, height, width, bpp, rmask, gmask, bmask, amask );
-			SDL_FillRect( curr->argbsurface, NULL, 0 );
-
 			curr->validregion = region;
 
 			++curr;
 		}
 
 		screenbuffer = renderbuffers->nativesurface;
-		argbbuffer = renderbuffers->argbsurface;
+
+		// Format of argbbuffer must match the screen pixel format because we
+		// import the surface data into the texture.
+		argbbuffer = SDL_CreateRGBSurface( 0, height, width, bpp, rmask, gmask, bmask, amask );
+		SDL_FillRect( argbbuffer, NULL, 0 );
 
 		blit_rect.w = height;
 		blit_rect.h = width;
 	}
 
+}
+
+vbuffer_t* I_GetRenderBuffer( int32_t index )
+{
+	return &renderbuffers[ index ].screenbuffer;
+}
+
+void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end )
+{
+	renderbuffers[ index ].validregion.y = begin;
+	renderbuffers[ index ].validregion.h = end - begin;
 }
 
 void I_InitGraphics( int32_t numbuffers )

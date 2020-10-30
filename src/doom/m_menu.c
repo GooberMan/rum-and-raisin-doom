@@ -2105,7 +2105,7 @@ static windowsizes_t window_sizes_scaled[] =
 	//WINDOWDIM( 640,		480		),
 	WINDOWDIM( 800,		600		),
 	WINDOWDIM( 960,		720		),
-	WINDOWDIM( 1024,	800		),
+	WINDOWDIM( 1024,	768		),
 	WINDOWDIM( 1280,	960		),
 	WINDOWDIM( 1600,	1200	),
 	WINDOWDIM( 1920,	1440	),
@@ -2124,6 +2124,8 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 	extern int fullscreen;
 	extern int window_width;
 	extern int window_height;
+	extern int display_width;
+	extern int display_height;
 	extern int border_style;
 	extern int border_bezel_style;
 
@@ -2164,12 +2166,12 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 			igNextColumn();
 			igText( "Fullscreen dimensions" );
 			igNextColumn();
-			igText( "%dx%d", window_width, window_height );
+			igText( "%dx%d", display_width, display_height );
 			igNextColumn();
 
 			igSeparatorEx( ImGuiSeparatorFlags_Horizontal | ImGuiSeparatorFlags_SpanAllColumns );
 
-			igText( "Predefined windowed sizes" );
+			igText( "Predefined window sizes" );
 
 			igNextColumn();
 			igPushItemWidth( 180.f );
@@ -2193,7 +2195,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 			igPopItemWidth();
 
 			igNextColumn();
-			igText( "Custom windowed width" );
+			igText( "Custom window size" );
 			igSameLine( 0, -1 );
 
 			igNextColumn();
@@ -2237,7 +2239,27 @@ static void M_DebugMenuOptionsWindow( const char* itemname )
 			igPopID();
 
 			igColumns( 1, "", false );
+			igNewLine();
 
+			igColumns( 2, "", false );
+			igSetColumnWidth( 0, 200.f );
+
+			igText( "Separate backbuffer size" );
+			igNextColumn();
+			igText( "<coming soon>" );
+			igNextColumn();
+
+			igText( "Predefined backbuffer sizes" );
+			igNextColumn();
+			igText( "<coming soon>" );
+			igNextColumn();
+
+			igText( "Custom backbuffer size" );
+			igNextColumn();
+			igText( "<coming soon>" );
+			igNextColumn();
+
+			igColumns( 1, "", false );
 			igEndTabItem();
 		}
 

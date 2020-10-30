@@ -337,7 +337,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
-void R_DrawVisSprite( spritecontext_t* spritecontext, vissprite_t* vis, int32_t x1, int32_t x2 )
+void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite_t* vis, int32_t x1, int32_t x2 )
 {
 	column_t*			column;
 	int32_t				texturecolumn;
@@ -347,11 +347,10 @@ void R_DrawVisSprite( spritecontext_t* spritecontext, vissprite_t* vis, int32_t 
 	boolean				isfuzz = false;
 
 	colcontext_t		spritecolcontext;
-	extern vbuffer_t*	dest_buffer;
 
 	patch = spritepatches[ vis->patch ];
 
-	spritecolcontext.output = *dest_buffer;
+	spritecolcontext.output = *dest;
 	spritecolcontext.colormap = vis->colormap;
 	spritecolcontext.colfunc = &R_DrawColumn_Untranslated; 
 
@@ -632,7 +631,7 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 //
 // R_DrawPSprite
 //
-void R_DrawPSprite ( spritecontext_t* spritecontext, pspdef_t* psp )
+void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* psp )
 {
 	fixed_t			tx;
 	int32_t			x1;
@@ -734,7 +733,7 @@ void R_DrawPSprite ( spritecontext_t* spritecontext, pspdef_t* psp )
 		vis->colormap = spritecontext->spritelights[MAXLIGHTSCALE-1];
 	}
 	
-	R_DrawVisSprite( spritecontext, vis, vis->x1, vis->x2 );
+	R_DrawVisSprite( dest, spritecontext, vis, vis->x1, vis->x2 );
 }
 
 
@@ -742,7 +741,7 @@ void R_DrawPSprite ( spritecontext_t* spritecontext, pspdef_t* psp )
 //
 // R_DrawPlayerSprites
 //
-void R_DrawPlayerSprites ( spritecontext_t* spritecontext )
+void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
 {
 	int32_t		i;
 	int32_t		lightnum;
@@ -773,7 +772,7 @@ void R_DrawPlayerSprites ( spritecontext_t* spritecontext )
 	{
 		if (psp->state)
 		{
-			R_DrawPSprite ( spritecontext, psp );
+			R_DrawPSprite ( dest, spritecontext, psp );
 		}
 	}
 }
@@ -840,7 +839,7 @@ void R_SortVisSprites ( spritecontext_t* spritecontext )
 //
 // R_DrawSprite
 //
-void R_DrawSprite( spritecontext_t* spritecontext, bspcontext_t* bspcontext, vissprite_t* spr )
+void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext, vissprite_t* spr )
 {
 	drawseg_t*		ds;
 	vertclip_t		clipbot[SCREENWIDTH];
@@ -902,7 +901,7 @@ void R_DrawSprite( spritecontext_t* spritecontext, bspcontext_t* bspcontext, vis
 #if RENDER_PERF_GRAPHING
 				starttime = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
-				R_RenderMaskedSegRange( bspcontext, spritecontext, ds, r1, r2 );
+				R_RenderMaskedSegRange( dest, bspcontext, spritecontext, ds, r1, r2 );
 #if RENDER_PERF_GRAPHING
 				endtime = I_GetTimeUS();
 				bspcontext->maskedtimetaken += ( endtime - starttime );
@@ -967,7 +966,7 @@ void R_DrawSprite( spritecontext_t* spritecontext, bspcontext_t* bspcontext, vis
 #if RENDER_PERF_GRAPHING
 	starttime = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
-	R_DrawVisSprite( spritecontext, spr, spr->x1, spr->x2 );
+	R_DrawVisSprite( dest, spritecontext, spr, spr->x1, spr->x2 );
 #if RENDER_PERF_GRAPHING
 	endtime = I_GetTimeUS();
 	spritecontext->maskedtimetaken += ( endtime - starttime );
@@ -978,7 +977,7 @@ void R_DrawSprite( spritecontext_t* spritecontext, bspcontext_t* bspcontext, vis
 //
 // R_DrawMasked
 //
-void R_DrawMasked( spritecontext_t* spritecontext, bspcontext_t* bspcontext )
+void R_DrawMasked( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext )
 {
 	vissprite_t*	spr;
 	drawseg_t*		ds;
@@ -992,7 +991,7 @@ void R_DrawMasked( spritecontext_t* spritecontext, bspcontext_t* bspcontext )
 				spr != &spritecontext->vsprsortedhead ;
 				spr = spr->next)
 		{
-			R_DrawSprite( spritecontext, bspcontext, spr );
+			R_DrawSprite( dest, spritecontext, bspcontext, spr );
 		}
 	}
 
@@ -1001,7 +1000,7 @@ void R_DrawMasked( spritecontext_t* spritecontext, bspcontext_t* bspcontext )
 	{
 		if (ds->maskedtexturecol)
 		{
-			R_RenderMaskedSegRange( bspcontext, spritecontext, ds, ds->x1, ds->x2 );
+			R_RenderMaskedSegRange( dest, bspcontext, spritecontext, ds, ds->x1, ds->x2 );
 		}
 	}
 
@@ -1009,7 +1008,7 @@ void R_DrawMasked( spritecontext_t* spritecontext, bspcontext_t* bspcontext )
 	//  but does not draw on side views
 	if (!viewangleoffset)
 	{
-		R_DrawPlayerSprites ( spritecontext );
+		R_DrawPlayerSprites ( dest, spritecontext );
 	}
 }
 
