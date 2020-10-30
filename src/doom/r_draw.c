@@ -461,7 +461,9 @@ void R_DrawColumnLow ( colcontext_t* context )
 // Spectre/Invisibility.
 //
 #define FUZZTABLE		50 
-#define FUZZOFF	(SCREENHEIGHT)
+// Hoo boy did I get this wrong originally. Vanilla offset by SCREENWIDTH, ie one column.
+// Thus the correct value for vanilla compatibility is 1, not SCREENHEIGHT.
+#define FUZZOFF	( 1 )
 
 
 int	fuzzoffset[FUZZTABLE] =
@@ -514,7 +516,10 @@ void R_DrawFuzzColumn ( colcontext_t* context )
     int			count; 
     pixel_t*	dest;
     fixed_t		frac;
-    fixed_t		fracstep;	 
+    fixed_t		fracstep;
+
+	int32_t fuzzposbase = I_AtomicLoad( &fuzzpos );
+	int32_t fuzzposadd = fuzzposbase;
 
 #if ADJUSTED_FUZZ
 	fuzzpos = cachedfuzzpos;
@@ -539,7 +544,7 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 		//  a pixel that is either one column
 		//  left or right of the current one.
 		// Add index from colormap to index.
-		*dest = colormaps[ 6*256 + dest[ fuzzoffset[ (uint32_t)I_AtomicIncrement( &fuzzpos, 1 ) % FUZZTABLE ] ] ]; 
+		*dest = colormaps[ 6*256 + dest[ fuzzoffset[ (uint32_t)fuzzposadd++ % FUZZTABLE ] ] ]; 
 
 #if ADJUSTED_FUZZ
 		// Clamp table lookup index.
@@ -551,7 +556,9 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 		dest += 1;
 
 		frac += fracstep; 
-    } while (count--); 
+    } while (count--);
+
+	I_AtomicIncrement( &fuzzpos, fuzzposadd - fuzzposbase );
 } 
 
 // low detail mode version

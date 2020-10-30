@@ -297,6 +297,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 	int32_t		topscreen;
 	int32_t		bottomscreen;
 	fixed_t		basetexturemid;
+	boolean		isfuzz = colcontext->colormap == NULL;
 	
 	basetexturemid = colcontext->texturemid;
 	
@@ -309,6 +310,11 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 
 		colcontext->yl = (topscreen+FRACUNIT-1)>>FRACBITS;
 		colcontext->yh = (bottomscreen-1)>>FRACBITS;
+
+		if( isfuzz && ( colcontext->yl <= 0 || colcontext->yh >= colcontext->output.height - 1 ) )
+		{
+			continue;
+		}
 		
 		if (colcontext->yh >= spritecontext->mfloorclip[colcontext->x])
 			colcontext->yh = spritecontext->mfloorclip[colcontext->x]-1;
@@ -376,13 +382,6 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	prevfuzzcolumn = -1;
 	for (spritecolcontext.x=vis->x1 ; spritecolcontext.x<=vis->x2 ; spritecolcontext.x++, frac += vis->xiscale)
 	{
-		// One interesting side effect of transposing the buffer:
-		// It's now the left and right edges of the screen that we need to not sample
-
-		if( isfuzz && ( spritecolcontext.x <= spritecontext->leftclip + 1 || spritecolcontext.x >= spritecontext->rightclip - 1 ) )
-		{
-			continue;
-		}
 		texturecolumn = frac>>FRACBITS;
 #ifdef RANGECHECK
 		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
