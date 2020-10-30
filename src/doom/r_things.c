@@ -31,6 +31,7 @@
 #include "i_system.h"
 #include "z_zone.h"
 #include "w_wad.h"
+#include "m_misc.h"
 
 #include "r_local.h"
 
@@ -311,11 +312,12 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 		colcontext->yl = (topscreen+FRACUNIT-1)>>FRACBITS;
 		colcontext->yh = (bottomscreen-1)>>FRACBITS;
 
-		if( isfuzz && ( colcontext->yl <= 0 || colcontext->yh >= colcontext->output.height - 1 ) )
+		if( isfuzz )
 		{
-			continue;
+			colcontext->yl = M_MAX( colcontext->yl, 1 );
+			colcontext->yh = M_MIN( colcontext->yh, viewheight - 1 );
 		}
-		
+
 		if (colcontext->yh >= spritecontext->mfloorclip[colcontext->x])
 			colcontext->yh = spritecontext->mfloorclip[colcontext->x]-1;
 		if (colcontext->yl <= spritecontext->mceilingclip[colcontext->x])

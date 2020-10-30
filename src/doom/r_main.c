@@ -941,9 +941,9 @@ void R_InitContexts( void )
 
 		I_SetRenderBufferValidColumns( currcontext, currstart, currstart + incrementby );
 
-		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 1, 0 );
+		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
-		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart + 1, SCREENWIDTH );
+		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, SCREENWIDTH );
 
 		renderdatas[ currcontext ].context.starttime = 0;
 		renderdatas[ currcontext ].context.endtime = 1;
@@ -1411,7 +1411,7 @@ void R_SetupFrame (player_t* player)
 
 			desiredwidth = (int32_t)( viewwidth * currpercentage );
 
-			R_ResetContext( &renderdatas[ currcontext ].context, M_MAX( currstart - 1, 0 ), M_MIN( currstart + desiredwidth + 1, viewwidth ) );
+			R_ResetContext( &renderdatas[ currcontext ].context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );
 			currstart += desiredwidth;
 		}
 	}
@@ -1434,9 +1434,9 @@ void R_SetupFrame (player_t* player)
 				I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, currstart, currstart + desiredwidth );
 			}
 
-			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart - 3, 0 );
+			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
-			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart + 3, SCREENWIDTH );
+			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, SCREENWIDTH );
 
 			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 		}
