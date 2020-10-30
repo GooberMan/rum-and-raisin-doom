@@ -1072,8 +1072,11 @@ void V_ScreenShot(const char *format)
 #endif // RUMANDRAISIN_SCREENSHOTSNEEDHELP
 }
 
-#define MOUSE_SPEED_BOX_WIDTH  120
-#define MOUSE_SPEED_BOX_HEIGHT 9
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
+
+#define MOUSE_SPEED_BOX_WIDTH  300
+#define MOUSE_SPEED_BOX_HEIGHT 15
 #define MOUSE_SPEED_BOX_X (SCREENWIDTH - MOUSE_SPEED_BOX_WIDTH - 10)
 #define MOUSE_SPEED_BOX_Y 15
 
@@ -1083,14 +1086,19 @@ void V_ScreenShot(const char *format)
 
 static void DrawAcceleratingBox(int speed)
 {
-    int red, white, yellow;
     int original_speed;
     int redline_x;
     int linelen;
 
-    red = I_GetPaletteIndex(0xff, 0x00, 0x00);
-    white = I_GetPaletteIndex(0xff, 0xff, 0xff);
-    yellow = I_GetPaletteIndex(0xff, 0xff, 0x00);
+	extern ImGuiContext* imgui_context;
+
+	ImVec2 start = { 0, 0 };
+	ImVec2 end = { 0, MOUSE_SPEED_BOX_HEIGHT };
+	ImVec2 cursorpos;
+
+	ImU32 red = 0xFF0000FF;
+	ImU32 white = 0xFFFFFFFF; 
+	ImU32 yellow = 0xFF00FFFF;
 
     // Calculate the position of the red threshold line when calibrating
     // acceleration.  This is 1/3 of the way along the box.
@@ -1111,31 +1119,45 @@ static void DrawAcceleratingBox(int speed)
         linelen = (speed * redline_x) / mouse_threshold;
     }
 
-    // Horizontal "thermometer"
-    if (linelen > MOUSE_SPEED_BOX_WIDTH - 1)
-    {
-        linelen = MOUSE_SPEED_BOX_WIDTH - 1;
-    }
+	igText( "Acceleration" );
+	igNextColumn();
+
+	igGetCursorScreenPos( &cursorpos );
+	start = cursorpos;
+	end = cursorpos;
+	end.y += MOUSE_SPEED_BOX_HEIGHT;
+
+	// Horizontal "thermometer"
+	if (linelen > MOUSE_SPEED_BOX_WIDTH - 1)
+	{
+		linelen = MOUSE_SPEED_BOX_WIDTH - 1;
+	}
 
     if (linelen < redline_x)
     {
-        V_DrawHorizLine(MOUSE_SPEED_BOX_X + 1,
-                        MOUSE_SPEED_BOX_Y + MOUSE_SPEED_BOX_HEIGHT / 2,
-                        linelen, white);
+		end.x = cursorpos.x + linelen;
+		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, white, 0.f, ImDrawCornerFlags_All );
     }
     else
     {
-        V_DrawHorizLine(MOUSE_SPEED_BOX_X + 1,
-                        MOUSE_SPEED_BOX_Y + MOUSE_SPEED_BOX_HEIGHT / 2,
-                        redline_x, white);
-        V_DrawHorizLine(MOUSE_SPEED_BOX_X + redline_x,
-                        MOUSE_SPEED_BOX_Y + MOUSE_SPEED_BOX_HEIGHT / 2,
-                        linelen - redline_x, yellow);
-    }
+		end.x = cursorpos.x + redline_x;
+		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, white, 0.f, ImDrawCornerFlags_All );
 
-    // Draw acceleration threshold line
-    V_DrawVertLine(MOUSE_SPEED_BOX_X + redline_x, MOUSE_SPEED_BOX_Y + 1,
-                   MOUSE_SPEED_BOX_HEIGHT - 2, red);
+		start.x = cursorpos.x + redline_x;
+		end.x = cursorpos.x + ( linelen - redline_x );
+		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, yellow, 0.f, ImDrawCornerFlags_All );
+	}
+
+	start = cursorpos;
+	start.y +=  MOUSE_SPEED_BOX_HEIGHT;
+
+	end = cursorpos;
+	end.x += redline_x;
+	end.y += MOUSE_SPEED_BOX_HEIGHT + 2;
+
+	ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, red, 0.f, ImDrawCornerFlags_All );
+
+	igNextColumn();
 }
 
 // Highest seen mouse turn speed. We scale the range of the thermometer
@@ -1145,10 +1167,15 @@ static int max_seen_speed = MOUSE_SPEED_BOX_WIDTH - 1;
 
 static void DrawNonAcceleratingBox(int speed)
 {
-    int white;
     int linelen;
+	extern ImGuiContext* imgui_context;
 
-    white = I_GetPaletteIndex(0xff, 0xff, 0xff);
+	ImVec2 start = { 0, 0 };
+	ImVec2 end = { 0, MOUSE_SPEED_BOX_HEIGHT };
+
+	igGetCursorScreenPos( &start );
+	end = start;
+	end.y += MOUSE_SPEED_BOX_HEIGHT;
 
     if (speed > max_seen_speed)
     {
@@ -1157,38 +1184,26 @@ static void DrawNonAcceleratingBox(int speed)
 
     // Draw horizontal "thermometer":
     linelen = speed * (MOUSE_SPEED_BOX_WIDTH - 1) / max_seen_speed;
+	end.x = linelen;
 
-    V_DrawHorizLine(MOUSE_SPEED_BOX_X + 1,
-                    MOUSE_SPEED_BOX_Y + MOUSE_SPEED_BOX_HEIGHT / 2,
-                    linelen, white);
+	igText( "Highest seen speed" );
+	igNextColumn();
+	ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, igColorConvertFloat4ToU32( igGetStyle()->Colors[ ImGuiCol_PlotLines ] ), 0.f, ImDrawCornerFlags_All );
+	igNextColumn();
 }
 
 void V_DrawMouseSpeedBox(int speed)
 {
     extern int usemouse;
-    int bgcolor, bordercolor, black;
 
-    // If the mouse is turned off, don't draw the box at all.
+	// If the mouse is turned off, don't draw the box at all.
     if (!usemouse)
     {
         return;
     }
 
-    // Get palette indices for colors for widget. These depend on the
-    // palette of the game being played.
-
-    bgcolor = I_GetPaletteIndex(0x77, 0x77, 0x77);
-    bordercolor = I_GetPaletteIndex(0x55, 0x55, 0x55);
-    black = I_GetPaletteIndex(0x00, 0x00, 0x00);
-
-    // Calculate box position
-
-    V_DrawFilledBox(MOUSE_SPEED_BOX_X, MOUSE_SPEED_BOX_Y,
-                    MOUSE_SPEED_BOX_WIDTH, MOUSE_SPEED_BOX_HEIGHT, bgcolor);
-    V_DrawBox(MOUSE_SPEED_BOX_X, MOUSE_SPEED_BOX_Y,
-              MOUSE_SPEED_BOX_WIDTH, MOUSE_SPEED_BOX_HEIGHT, bordercolor);
-    V_DrawHorizLine(MOUSE_SPEED_BOX_X + 1, MOUSE_SPEED_BOX_Y + 4,
-                    MOUSE_SPEED_BOX_WIDTH - 2, black);
+	igColumns( 2, "", false );
+	igSetColumnWidth( 0, 150.f );
 
     // If acceleration is used, draw a box that helps to calibrate the
     // threshold point.
@@ -1200,5 +1215,7 @@ void V_DrawMouseSpeedBox(int speed)
     {
         DrawNonAcceleratingBox(speed);
     }
+
+	igColumns( 1, "", false );
 }
 

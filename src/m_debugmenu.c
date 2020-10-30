@@ -339,6 +339,7 @@ typedef struct menuentry_s
 	menuentry_t**		freechild;
 	menufunc_t			callback;
 	void*				data;
+	ImVec2				dimensions;
 	boolean				enabled;
 	int32_t				comparison;
 	menuentrytype_e		type;
@@ -457,7 +458,7 @@ void M_InitDebugMenu( void )
 	}
 
 	M_RegisterDebugMenuCheckbox( "Core|Pause While Active", "Multiplayer ignores this", &debugmenupausesplaysim );
-	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, &aboutwindow_open, &M_AboutWindow );
+	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, &M_AboutWindow );
 	M_RegisterDebugMenuSeparator( "Core" );
 	M_RegisterDebugMenuButton( "Core|Quit", "Yes, this means quit the game", &M_OnDebugMenuCoreQuit, NULL );
 
@@ -568,6 +569,7 @@ void M_RenderDebugMenu( void )
 			{
 				igPushIDPtr( thiswindow );
 				{
+					igSetNextWindowSize( thiswindow->dimensions, ImGuiCond_FirstUseEver );
 					if( igBegin( thiswindow->caption, thiswindow->data, windowflags ) )
 					{
 						callback = thiswindow->callback;
@@ -731,7 +733,7 @@ void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menu
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, boolean* active, menufunc_t callback )
+void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menufunc_t callback )
 {
 	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
@@ -742,6 +744,8 @@ void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, bool
 	currentry->type = MET_Window;
 	currentry->freechild = currentry->children;
 	currentry->data = active;
+	currentry->dimensions.x = (float_t)initialwidth;
+	currentry->dimensions.y = (float_t)initialheight;
 	currentry->enabled = true;
 	currentry->comparison = -1;
 	currentry->parent = category;

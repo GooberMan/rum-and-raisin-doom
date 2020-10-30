@@ -185,6 +185,11 @@ const char* reasons[] =
 
 extern int32_t voidcleartype;
 
+void D_TestControls( const char* itemname, void* data )
+{
+	V_DrawMouseSpeedBox( testcontrols_mousespeed );
+}
+
 boolean D_Display (void)
 {
     static  boolean		viewactivestate = false;
@@ -305,13 +310,6 @@ boolean D_Display (void)
 			borderdrawcount--;
 		}
 
-	}
-
-	if (testcontrols)
-	{
-		// Box showing current mouse speed
-
-		V_DrawMouseSpeedBox(testcontrols_mousespeed);
 	}
 
 	menuactivestate = menuactive;
@@ -1939,12 +1937,14 @@ void D_DoomMain (void)
 
     p = M_CheckParm("-testcontrols");
 
-    if (p > 0)
+    if ( p > 0)
     {
         startepisode = 1;
         startmap = 1;
         autostart = true;
         testcontrols = true;
+
+		M_RegisterDebugMenuWindow( "Test|Mouse", "Mouse testing", 400, 200, &testcontrols, &D_TestControls );
     }
 
     // Check for load game parameter
