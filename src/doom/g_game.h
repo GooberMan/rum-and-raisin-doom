@@ -30,12 +30,12 @@
 //
 void G_DeathMatchSpawnPlayer (int playernum);
 
-void G_InitNew (skill_t skill, int episode, int map);
+void G_InitNew (skill_t skill, int episode, int map, boolean pistolstarts);
 
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,
 // but a warp test can start elsewhere
-void G_DeferedInitNew (skill_t skill, int episode, int map);
+void G_DeferedInitNew (skill_t skill, int episode, int map, boolean pistolstart);
 
 void G_DeferedPlayDemo (const char* demo);
 

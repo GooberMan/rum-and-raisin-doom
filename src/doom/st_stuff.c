@@ -679,7 +679,7 @@ ST_Responder (event_t* ev)
 
       // So be it.
       plyr->message = DEH_String(STSTR_CLEV);
-      G_DeferedInitNew(gameskill, epsd, map);
+      G_DeferedInitNew(gameskill, epsd, map, false);
     }
   }
   return false;

@@ -102,6 +102,7 @@ skill_t         gameskill;
 boolean		respawnmonsters;
 int             gameepisode; 
 int             gamemap; 
+boolean			gamepistolstarts;
 
 // If non-zero, exit the level after this number of minutes.
 
@@ -1543,9 +1544,19 @@ void G_WorldDone (void)
 } 
  
 void G_DoWorldDone (void) 
-{        
+{
+	int32_t curr;
+
     gamestate = GS_LEVEL; 
     gamemap = wminfo.next+1; 
+
+	if( gamepistolstarts )
+	{
+		for ( curr=0; curr < MAXPLAYERS; ++curr )
+		{
+			players[curr].playerstate = PST_REBORN;
+		}
+	}
     G_DoLoadLevel (); 
     gameaction = ga_nothing; 
     viewactive = true; 
@@ -1592,7 +1603,7 @@ void G_DoLoadGame (void)
     savedleveltime = leveltime;
     
     // load a base level 
-    G_InitNew (gameskill, gameepisode, gamemap); 
+    G_InitNew (gameskill, gameepisode, gamemap, false); 
  
     leveltime = savedleveltime;
 
@@ -1625,9 +1636,19 @@ G_SaveGame
 ( int	slot,
   char*	description )
 {
-    savegameslot = slot;
-    M_StringCopy(savedescription, description, sizeof(savedescription));
-    sendsave = true;
+	extern boolean message_dontfuckwithme;
+	
+	if( gamepistolstarts )
+	{
+		players[consoleplayer].message = "Pistol starts break saves. Not saving.";
+		message_dontfuckwithme = true;
+	}
+	else
+	{
+		savegameslot = slot;
+		M_StringCopy(savedescription, description, sizeof(savedescription));
+		sendsave = true;
+	}
 }
 
 void G_DoSaveGame (void) 
@@ -1713,20 +1734,23 @@ void G_DoSaveGame (void)
 // Can be called by the startup code or the menu task,
 // consoleplayer, displayplayer, playeringame[] should be set. 
 //
-skill_t	d_skill; 
-int     d_episode; 
-int     d_map; 
+skill_t		d_skill; 
+int			d_episode; 
+int			d_map; 
+boolean		d_pistolstarts = false;
  
-void
-G_DeferedInitNew
-( skill_t	skill,
-  int		episode,
-  int		map) 
+void G_DeferedInitNew( skill_t	skill, int episode, int map, boolean pistolstart) 
 { 
     d_skill = skill; 
     d_episode = episode; 
     d_map = map; 
+	d_pistolstarts = pistolstart;
     gameaction = ga_newgame; 
+
+	if( demorecording && pistolstart )
+	{
+		I_Error( "G_DeferedInitNew: You cannot record a demo with pistol starts enabled, this will break vanilla." );
+	}
 } 
 
 
@@ -1741,16 +1765,12 @@ void G_DoNewGame (void)
     fastparm = false;
     nomonsters = false;
     consoleplayer = 0;
-    G_InitNew (d_skill, d_episode, d_map); 
+    G_InitNew (d_skill, d_episode, d_map, d_pistolstarts); 
     gameaction = ga_nothing; 
 } 
 
 
-void
-G_InitNew
-( skill_t	skill,
-  int		episode,
-  int		map )
+void G_InitNew( skill_t skill, int episode, int map, boolean pistolstarts )
 {
     const char *skytexturename;
     int             i;
@@ -1861,6 +1881,7 @@ G_InitNew
     gameepisode = episode;
     gamemap = map;
     gameskill = skill;
+	gamepistolstarts = pistolstarts;
 
     viewactive = true;
 
@@ -2249,7 +2270,7 @@ void G_DoPlayDemo (void)
 	netdemo = true;
     }
 
-    G_InitNew (skill, episode, map); 
+    G_InitNew (skill, episode, map, false); 
     starttime = I_GetTime (); 
 
     usergame = false; 
