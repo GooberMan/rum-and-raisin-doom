@@ -30,6 +30,7 @@ void M_RegisterDebugMenuCategory( const char* full_path );
 void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata );
 void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menufunc_t callback );
 void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value );
+void M_RegisterDebugMenuCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval );
 void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval );
 void M_RegisterDebugMenuSeparator( const char* category_path );
 

@@ -30,6 +30,7 @@ typedef enum
 	MET_Category,
 	MET_Button,
 	MET_Checkbox,
+	MET_CheckboxFlag,
 	MET_RadioButton,
 
 	MET_Separator,
@@ -355,6 +356,7 @@ static void M_RenderWindowItem( menuentry_t* cat );
 static void M_RenderCategoryItem( menuentry_t* cat );
 static void M_RenderButtonItem( menuentry_t* cat );
 static void M_RenderCheckboxItem( menuentry_t* cat );
+static void M_RenderCheckboxFlagItem( menuentry_t* cat );
 static void M_RenderRadioButtonItem( menuentry_t* cat );
 static void M_RenderSeparator( menuentry_t* cat );
 
@@ -374,6 +376,7 @@ static renderchild_t	childfuncs[] =
 	&M_RenderCategoryItem,
 	&M_RenderButtonItem,
 	&M_RenderCheckboxItem,
+	&M_RenderCheckboxFlagItem,
 	&M_RenderRadioButtonItem,
 	&M_RenderSeparator,
 	&M_ThrowAnErrorBecauseThisIsInvalid,
@@ -514,6 +517,11 @@ static void M_RenderCheckboxItem( menuentry_t* cat )
 {
 	igCheckbox( cat->name, cat->data );
 	M_RenderTooltip( cat );
+}
+
+static void M_RenderCheckboxFlagItem( menuentry_t* cat )
+{
+	igCheckboxFlags( cat->name, cat->data, *(uint32_t*)&cat->comparison );
 }
 
 static void M_RenderRadioButtonItem( menuentry_t* cat )
@@ -771,6 +779,28 @@ void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, bo
 	currentry->data = value;
 	currentry->enabled = true;
 	currentry->comparison = -1;
+	currentry->parent = category;
+
+	*category->freechild = currentry;
+	category->freechild++;
+
+	CHECK_CHILDREN( category );
+	CHECK_ELEMENTS();
+}
+
+void M_RegisterDebugMenuCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval )
+{
+	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
+	menuentry_t* currentry = nextentry++;
+	const char* actualname = M_GetActualName( full_path );
+
+	sprintf( currentry->name, actualname );
+	if( tooltip ) sprintf( currentry->tooltip, tooltip );
+	currentry->type = MET_CheckboxFlag;
+	currentry->freechild = currentry->children;
+	currentry->data = value;
+	currentry->enabled = true;
+	currentry->comparison = flagsval;
 	currentry->parent = category;
 
 	*category->freechild = currentry;
