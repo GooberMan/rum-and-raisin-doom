@@ -165,4 +165,15 @@ typedef enum
     
 } powerduration_t;
 
+typedef enum gameflags_e
+{
+	GF_None							= 0,
+
+	GF_PistolStarts					= 0x10000000,
+	GF_LoopOneLevel					= 0x20000000,
+
+	GF_VanillaIncompatibleFlags		= GF_PistolStarts | GF_LoopOneLevel,
+
+} gameflags_t;
+
 #endif          // __DOOMDEF__

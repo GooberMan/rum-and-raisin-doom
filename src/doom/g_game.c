@@ -102,7 +102,7 @@ skill_t         gameskill;
 boolean		respawnmonsters;
 int             gameepisode; 
 int             gamemap; 
-boolean			gamepistolstarts;
+int32_t			gameflags;
 
 // If non-zero, exit the level after this number of minutes.
 
@@ -1369,7 +1369,7 @@ void G_DoCompleted (void)
 
         if (gameversion == exe_chex)
         {
-            if (gamemap == 5)
+            if (gamemap == 5 && !( gameflags & GF_LoopOneLevel ) )
             {
                 gameaction = ga_victory;
                 return;
@@ -1380,8 +1380,12 @@ void G_DoCompleted (void)
             switch(gamemap)
             {
               case 8:
-                gameaction = ga_victory;
-                return;
+				if( !( gameflags & GF_LoopOneLevel ) )
+				{
+					gameaction = ga_victory;
+					return;
+				}
+				break;
               case 9: 
                 for (i=0 ; i<MAXPLAYERS ; i++) 
                     players[i].didsecret = true; 
@@ -1391,71 +1395,84 @@ void G_DoCompleted (void)
     }
 
 //#if 0  Hmmm - why?
-    if ( (gamemap == 8)
-	 && (gamemode != commercial) ) 
-    {
-	// victory 
-	gameaction = ga_victory; 
-	return; 
-    } 
+	if ( (gamemap == 8) && (gamemode != commercial) && !( gameflags & GF_LoopOneLevel ) ) 
+	{
+		// victory 
+		gameaction = ga_victory; 
+		return; 
+	} 
 	 
-    if ( (gamemap == 9)
-	 && (gamemode != commercial) ) 
-    {
-	// exit secret level 
-	for (i=0 ; i<MAXPLAYERS ; i++) 
-	    players[i].didsecret = true; 
-    } 
+	if ( (gamemap == 9) && (gamemode != commercial) ) 
+	{
+		// exit secret level 
+		for (i=0 ; i<MAXPLAYERS ; i++) 
+		{
+			players[i].didsecret = true; 
+		}
+	} 
 //#endif
     
 	 
-    wminfo.didsecret = players[consoleplayer].didsecret; 
-    wminfo.epsd = gameepisode -1; 
-    wminfo.last = gamemap -1;
-    
-    // wminfo.next is 0 biased, unlike gamemap
-    if ( gamemode == commercial)
-    {
-	if (secretexit)
-	    switch(gamemap)
-	    {
-	      case 15: wminfo.next = 30; break;
-	      case 31: wminfo.next = 31; break;
-	    }
-	else
-	    switch(gamemap)
-	    {
-	      case 31:
-	      case 32: wminfo.next = 15; break;
-	      default: wminfo.next = gamemap;
-	    }
-    }
-    else
-    {
-	if (secretexit) 
-	    wminfo.next = 8; 	// go to secret level 
-	else if (gamemap == 9) 
+	wminfo.didsecret = players[consoleplayer].didsecret; 
+	wminfo.epsd = gameepisode -1; 
+	wminfo.last = gamemap -1;
+
+	if( !( gameflags & GF_LoopOneLevel ) )
 	{
-	    // returning from secret level 
-	    switch (gameepisode) 
-	    { 
-	      case 1: 
-		wminfo.next = 3; 
-		break; 
-	      case 2: 
-		wminfo.next = 5; 
-		break; 
-	      case 3: 
-		wminfo.next = 6; 
-		break; 
-	      case 4:
-		wminfo.next = 2;
-		break;
-	    }                
-	} 
-	else 
-	    wminfo.next = gamemap;          // go to next level 
-    }
+		// wminfo.next is 0 biased, unlike gamemap
+		if ( gamemode == commercial)
+		{
+			if (secretexit)
+			{
+				switch(gamemap)
+				{
+				  case 15: wminfo.next = 30; break;
+				  case 31: wminfo.next = 31; break;
+				}
+			}
+			else
+			{
+				switch(gamemap)
+				{
+				  case 31:
+				  case 32: wminfo.next = 15; break;
+				  default: wminfo.next = gamemap;
+				}
+			}
+		}
+		else
+		{
+			if (secretexit) 
+				wminfo.next = 8; 	// go to secret level 
+			else if (gamemap == 9) 
+			{
+				// returning from secret level 
+				switch (gameepisode) 
+				{ 
+				case 1: 
+					wminfo.next = 3; 
+					break; 
+				case 2: 
+					wminfo.next = 5; 
+					break; 
+				case 3: 
+					wminfo.next = 6; 
+					break; 
+				case 4:
+					wminfo.next = 2;
+					break;
+				}
+			} 
+			else
+			{
+				wminfo.next = gamemap;          // go to next level
+			}
+		}
+	}
+	else
+	{
+		wminfo.next = gamemap - 1;
+	}
 		 
     wminfo.maxkills = totalkills; 
     wminfo.maxitems = totalitems; 
@@ -1550,7 +1567,7 @@ void G_DoWorldDone (void)
     gamestate = GS_LEVEL; 
     gamemap = wminfo.next+1; 
 
-	if( gamepistolstarts )
+	if( gameflags & GF_PistolStarts )
 	{
 		for ( curr=0; curr < MAXPLAYERS; ++curr )
 		{
@@ -1603,7 +1620,7 @@ void G_DoLoadGame (void)
     savedleveltime = leveltime;
     
     // load a base level 
-    G_InitNew (gameskill, gameepisode, gamemap, false); 
+    G_InitNew (gameskill, gameepisode, gamemap, GF_None); 
  
     leveltime = savedleveltime;
 
@@ -1638,9 +1655,9 @@ G_SaveGame
 {
 	extern boolean message_dontfuckwithme;
 	
-	if( gamepistolstarts )
+	if( gameflags & GF_VanillaIncompatibleFlags )
 	{
-		players[consoleplayer].message = "Pistol starts break saves. Not saving.";
+		players[consoleplayer].message = "Vanilla-incompatible flags in use. Not saving.";
 		message_dontfuckwithme = true;
 	}
 	else
@@ -1734,22 +1751,22 @@ void G_DoSaveGame (void)
 // Can be called by the startup code or the menu task,
 // consoleplayer, displayplayer, playeringame[] should be set. 
 //
-skill_t		d_skill; 
-int			d_episode; 
-int			d_map; 
-boolean		d_pistolstarts = false;
+skill_t			d_skill; 
+int				d_episode; 
+int				d_map; 
+gameflags_t		d_gameflags = GF_None;
  
-void G_DeferedInitNew( skill_t	skill, int episode, int map, boolean pistolstart) 
+void G_DeferedInitNew( skill_t	skill, int episode, int map, gameflags_t flags) 
 { 
     d_skill = skill; 
     d_episode = episode; 
     d_map = map; 
-	d_pistolstarts = pistolstart;
+	d_gameflags = flags;
     gameaction = ga_newgame; 
 
-	if( demorecording && pistolstart )
+	if( demorecording && ( gameflags & GF_VanillaIncompatibleFlags ) )
 	{
-		I_Error( "G_DeferedInitNew: You cannot record a demo with pistol starts enabled, this will break vanilla." );
+		I_Error( "G_DeferedInitNew: Vanilla-incompatible gameflags specified, this will break demos." );
 	}
 } 
 
@@ -1765,12 +1782,12 @@ void G_DoNewGame (void)
     fastparm = false;
     nomonsters = false;
     consoleplayer = 0;
-    G_InitNew (d_skill, d_episode, d_map, d_pistolstarts); 
+    G_InitNew (d_skill, d_episode, d_map, d_gameflags); 
     gameaction = ga_nothing; 
 } 
 
 
-void G_InitNew( skill_t skill, int episode, int map, boolean pistolstarts )
+void G_InitNew( skill_t skill, int episode, int map, gameflags_t flags )
 {
     const char *skytexturename;
     int             i;
@@ -1881,7 +1898,7 @@ void G_InitNew( skill_t skill, int episode, int map, boolean pistolstarts )
     gameepisode = episode;
     gamemap = map;
     gameskill = skill;
-	gamepistolstarts = pistolstarts;
+	gameflags = flags;
 
     viewactive = true;
 
@@ -2270,7 +2287,7 @@ void G_DoPlayDemo (void)
 	netdemo = true;
     }
 
-    G_InitNew (skill, episode, map, false); 
+    G_InitNew (skill, episode, map, GF_None); 
     starttime = I_GetTime (); 
 
     usergame = false; 

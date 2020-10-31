@@ -2047,7 +2047,7 @@ void D_DoomMain (void)
     if (gameaction != ga_loadgame )
     {
 	if (autostart || netgame)
-	    G_InitNew (startskill, startepisode, startmap, false);
+	    G_InitNew (startskill, startepisode, startmap, GF_None);
 	else
 	    D_StartTitle ();                // start up intro loop
     }

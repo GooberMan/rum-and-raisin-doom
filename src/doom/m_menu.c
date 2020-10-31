@@ -368,10 +368,10 @@ static gamedetails_t game_plutonia =
 	}
 };
 
-static gamedetails_t*	debugmenu_currgame = NULL;
-static int32_t			debugmenu_currgameepisodes = 0;
-static int32_t			debugmenu_currgameskill = sk_medium;
-static int32_t			debugmenu_pistolstarts = false;
+static gamedetails_t*	debugmenu_currgame			= NULL;
+static int32_t			debugmenu_currgameepisodes	= 0;
+static int32_t			debugmenu_currgameskill		= sk_medium;
+static int32_t			debugmenu_currgameflags		= GF_None;
 
 extern patch_t*		hu_font[HU_FONTSIZE];
 extern boolean		message_dontfuckwithme;
@@ -2422,8 +2422,6 @@ static int32_t window_width_working;
 static int32_t window_height_working;
 static const char* window_dimensions_current = NULL;
 
-static const char* hack_fullscreen = "";
-
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
@@ -2663,7 +2661,7 @@ static void M_DebugMenuNewGame( const char* itemname, void* data )
 {
 	mapdetails_t* map = (mapdetails_t*)data;
 
-	G_DeferedInitNew( debugmenu_currgameskill, map->episodenum, map->mapnum, debugmenu_pistolstarts );
+	G_DeferedInitNew( debugmenu_currgameskill, map->episodenum, map->mapnum, debugmenu_currgameflags );
 }
 
 static void M_DebugMenuRegisterEpisodeMaps( const char* category, episodedetails_t* episode, menufunc_t callback )
@@ -2688,7 +2686,6 @@ void M_Init (void)
 {
 	extern int window_width;
 	extern int window_height;
-	extern boolean d_pistolstarts;
 
 	int32_t index;
 
@@ -2813,7 +2810,8 @@ void M_Init (void)
 	M_RegisterDebugMenuRadioButton( "Game|New|Ultra violence", NULL, &debugmenu_currgameskill, 3 );
 	M_RegisterDebugMenuRadioButton( "Game|New|Nightmare", NULL, &debugmenu_currgameskill, 4 );
 	M_RegisterDebugMenuSeparator( "Game|New" );
-	M_RegisterDebugMenuCheckbox( "Game|New|Pistol Starts", NULL, &debugmenu_pistolstarts );
+	M_RegisterDebugMenuCheckboxFlag( "Game|New|Pistol Starts", NULL, &debugmenu_currgameflags, GF_PistolStarts );
+	M_RegisterDebugMenuCheckboxFlag( "Game|New|Loop one level", NULL, &debugmenu_currgameflags, GF_LoopOneLevel );
 	M_RegisterDebugMenuSeparator( "Game|New" );
 
 	if( debugmenu_currgameepisodes == 1 )
