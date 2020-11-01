@@ -2641,20 +2641,6 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			igPopID();
 
 			igNextColumn();
-			igText( "Span func" );
-			igNextColumn();
-			igPushIDPtr( &spanfunc );
-			WorkingInt = (spanfunc == &R_DrawSpan ? 0 : 1 );
-			WorkingBool = igRadioButtonIntPtr( "Original", &WorkingInt, 0 );
-			igSameLine( 0, -1 );
-			WorkingBool |= igRadioButtonIntPtr( "32-bit calcs", &WorkingInt, 1 );
-			if( WorkingBool )
-			{
-				spanfunc = (WorkingInt == 0 ? &R_DrawSpan : &R_DrawSpan_High );
-			}
-			igPopID();
-
-			igNextColumn();
 			igText( "Low detail" );
 			igNextColumn();
 			WorkingBool = !!detailLevel;

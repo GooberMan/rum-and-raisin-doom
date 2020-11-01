@@ -913,66 +913,7 @@ void R_InitTranslationTables (void)
 // In consequence, flats are not stored by column (like walls),
 //  and the inner loop has to step in texture space u and v.
 //
-// just for profiling
-int			dscount;
-
-
-//
-// Draws the actual span.
-void R_DrawSpan ( spancontext_t* context ) 
-{ 
-	uint32_t	position;
-	uint32_t	step;
-	pixel_t		*dest;
-	uint32_t	count;
-	uint32_t	spot;
-	uint32_t	xtemp;
-	uint32_t	ytemp;
-
-#ifdef RANGECHECK
-    if (context->x2 < context->x1
-	|| context->x1<0
-	|| context->x2>=SCREENWIDTH
-	|| (unsigned)context->y>SCREENHEIGHT)
-    {
-	I_Error( "R_DrawSpan: %i to %i at %i",
-		 context->x1,context->x2,context->y);
-    }
-//	dscount++;
-#endif
-
-    // Pack position and step variables into a single 32-bit integer,
-    // with x in the top 16 bits and y in the bottom 16 bits.  For
-    // each 16-bit part, the top 6 bits are the integer part and the
-    // bottom 10 bits are the fractional part of the pixel position.
-
-    position = ((context->xfrac << 10) & 0xffff0000)
-             | ((context->yfrac >> 6)  & 0x0000ffff);
-    step = ((context->xstep << 10) & 0xffff0000)
-         | ((context->ystep >> 6)  & 0x0000ffff);
-
-    dest = context->output.data + xlookup[context->x1] + rowofs[context->y];
-
-    count = context->x2 - context->x1;
-
-    do
-    {
-		// Calculate current texture index in u,v.
-		ytemp = (position >> 4) & 0x0fc0;
-		xtemp = (position >> 26);
-		spot = xtemp | ytemp;
-
-		// Lookup pixel from flat texture tile,
-		*dest = context->source[spot];
-		dest += SCREENHEIGHT;
-
-		position += step;
-
-	} while (count--);
-}
-
-// Avoids the 16 bit calculations in the original function
-void R_DrawSpan_High ( spancontext_t* context ) 
+void R_DrawSpan( spancontext_t* context ) 
 { 
 	uint32_t	positionx;
 	uint32_t	positiony;
@@ -992,7 +933,8 @@ void R_DrawSpan_High ( spancontext_t* context )
 
 	do
 	{
-		// Calculate current texture index in u,v.
+		// Avoids the 16 bit calculations in the original function
+		// Multiplies y by 64 and leaves x as is, for direct flat texel lookup
 		spot = ( (positiony & 0x3F0000 ) >> 10)
 				| ( (positionx & 0x3F0000 ) >> 16);
 
