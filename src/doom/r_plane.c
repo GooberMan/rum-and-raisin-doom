@@ -129,6 +129,17 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 	spancontext->x1 = x1;
 	spancontext->x2 = x2;
 
+#ifdef RANGECHECK
+	if (spancontext->x2 < spancontext->x1
+		|| spancontext->x1<0
+		|| spancontext->x2>=SCREENWIDTH
+		|| (unsigned)spancontext->y>SCREENHEIGHT)
+	{
+		I_Error( "R_MapPlane: Attempting to draw span %i to %i at %i",
+			 spancontext->x1,spancontext->x2,spancontext->y);
+	}
+#endif
+
 	// high or low detail
 	spanfunc( spancontext );
 

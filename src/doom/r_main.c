@@ -1105,11 +1105,11 @@ void R_ExecuteSetViewSize (void)
 
     if (!detailshift)
     {
-		spanfunc = R_DrawSpan;
+		spanfunc = &R_DrawSpan_High;
     }
     else
     {
-		spanfunc = R_DrawSpanLow;
+		spanfunc = &R_DrawSpanLow;
     }
 
     R_InitBuffer (scaledviewwidth, viewheight);

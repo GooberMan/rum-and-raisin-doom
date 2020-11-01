@@ -953,7 +953,6 @@ void R_DrawSpan ( spancontext_t* context )
 
     dest = context->output.data + xlookup[context->x1] + rowofs[context->y];
 
-    // We do not check for zero spans here?
     count = context->x2 - context->x1;
 
     do
@@ -971,6 +970,42 @@ void R_DrawSpan ( spancontext_t* context )
 
 	} while (count--);
 }
+
+// Avoids the 16 bit calculations in the original function
+void R_DrawSpan_High ( spancontext_t* context ) 
+{ 
+	uint32_t	positionx;
+	uint32_t	positiony;
+	uint32_t	stepx;
+	uint32_t	stepy;
+	pixel_t		*dest;
+	uint32_t	count;
+	uint32_t	spot;
+
+	positionx = context->xfrac;
+	positiony = context->yfrac;
+	stepx = context->xstep;
+	stepy = context->ystep;
+
+	dest = context->output.data + xlookup[context->x1] + rowofs[context->y];
+	count = context->x2 - context->x1;
+
+	do
+	{
+		// Calculate current texture index in u,v.
+		spot = ( (positiony & 0x3F0000 ) >> 10)
+				| ( (positionx & 0x3F0000 ) >> 16);
+
+		// Lookup pixel from flat texture tile,
+		*dest = context->source[spot];
+		dest += SCREENHEIGHT;
+
+		positionx += stepx;
+		positiony += stepy;
+
+	} while (count--);
+}
+
 
 //
 // Again..

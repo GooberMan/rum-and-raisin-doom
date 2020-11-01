@@ -99,6 +99,8 @@ extern byte**		precachedflats;
 // No Sepctre effect needed.
 void 	R_DrawSpan ( spancontext_t* context );
 
+void 	R_DrawSpan_High( spancontext_t* context );
+
 // Low resolution mode, 160x200?
 void 	R_DrawSpanLow ( spancontext_t* context );
 
