@@ -2432,6 +2432,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	extern int border_style;
 	extern int border_bezel_style;
 	extern int32_t fuzz_style;
+	extern int32_t span_type;
 
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
@@ -2638,6 +2639,15 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 				igText( "Not implemented yet, defers to Adjusted" );
 				igEndTooltip();
 			}
+			igPopID();
+
+			igNextColumn();
+			igText( "Span type" );
+			igNextColumn();
+			igPushIDPtr( &span_type );
+			igRadioButtonIntPtr( "Original", &span_type, 0 );
+			igSameLine( 0, -1 );
+			igRadioButtonIntPtr( "Visplane column render", &span_type, 1 );
 			igPopID();
 
 			igNextColumn();

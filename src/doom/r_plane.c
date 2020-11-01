@@ -42,6 +42,12 @@
 fixed_t			yslope[SCREENHEIGHT];
 fixed_t			distscale[SCREENWIDTH];
 
+typedef enum spantype_e
+{
+	Span_Original,
+	Span_VisplaneColumn,
+} spantype_t;
+int32_t			span_type = Span_VisplaneColumn;
 
 //
 // R_InitPlanes
@@ -227,6 +233,8 @@ visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum
 	check->lightlevel = lightlevel;
 	check->minx = SCREENWIDTH;
 	check->maxx = -1;
+	check->miny = SCREENHEIGHT;
+	check->maxy = -1;
 
 	memset (check->top,VPINDEX_INVALID,sizeof(check->top));
 		
@@ -353,10 +361,105 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 }
 #endif
 
+#define MAXWIDTH			(SCREENWIDTH + ( SCREENWIDTH >> 1) )
+#define MAXHEIGHT			(SCREENHEIGHT + ( SCREENHEIGHT >> 1) )
+
+extern size_t			xlookup[MAXWIDTH];
+extern size_t			rowofs[MAXHEIGHT];
+
+__declspec( noinline ) void R_DrawVisplaneColumn( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
+{
+	pixel_t*			dest = spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
+	pixel_t*			source;
+
+	int32_t				y = visplane->top[ x ];
+	int32_t				stop = visplane->bottom[ x ] + 1;
+
+	angle_t				angle = (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
+	fixed_t				anglecos = renderfinecosine[ angle ];
+	fixed_t				anglesin = renderfinesine[ angle ];
+
+	fixed_t				distance;
+	fixed_t				length;
+	int32_t				lightindex;
+	int32_t				spot;
+
+	fixed_t				xfrac;
+	fixed_t				yfrac;
+
+#if RENDER_PERF_GRAPHING
+	uint64_t			starttime = I_GetTimeUS();
+	uint64_t			endtime;
+#endif // RENDER_PERF_GRAPHING
+
+#ifdef RANGECHECK
+	if ( x < 0
+		|| x >= viewwidth
+		|| y < 0
+		|| stop > viewheight)
+	{
+		I_Error ("R_DrawVisplaneColumn: y %i -> %i at %i", y, stop, x);
+	}
+#endif
+
+	do
+	{
+		// Can precalc
+		distance	= planecontext->cacheddistance[ y ];
+
+		// Cannot precalc
+		length		= FixedMul ( distance, distscale[ x ] );
+		xfrac		= viewx + FixedMul( anglecos, length );
+		yfrac		= -viewy - FixedMul( anglesin, length );
+
+		if( fixedcolormapindex )
+		{
+			// TODO: This should be a real define somewhere
+			source = spancontext->source + ( 4096 * fixedcolormapindex );
+		}
+		else
+		{
+			lightindex = M_MIN( ( distance >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
+			lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
+
+			source = spancontext->source + ( 4096 * lightindex );
+		}
+
+		spot = ( (yfrac & 0x3F0000 ) >> 10)
+			| ( (xfrac & 0x3F0000 ) >> 16);
+
+		// Lookup pixel from flat texture tile,
+		*dest++ = source[spot];
+
+	} while( ++y < stop );
+
+#if RENDER_PERF_GRAPHING
+	endtime = I_GetTimeUS();
+	planecontext->flattimetaken += ( endtime - starttime );
+#endif // RENDER_PERF_GRAPHING
+
+}
+
+void R_PrepareVisplaneColum( visplane_t* visplane, planecontext_t* planecontext )
+{
+	int32_t y = visplane->miny;
+	int32_t stop = visplane->maxy + 1;
+
+	do
+	{
+		if ( planecontext->planeheight != planecontext->cachedheight[ y ] )
+		{
+			planecontext->cachedheight[ y ]			= planecontext->planeheight;
+			planecontext->cacheddistance[ y ]		= FixedMul ( planecontext->planeheight, yslope[ y ] );
+		}
+	} while( ++y < stop );
+}
+
 //
 // R_DrawPlanes
 // At the end of each frame.
 //
+#pragma optimize( "", off )
 void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	visplane_t*		pl;
@@ -410,7 +513,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			}
 			continue;
 		}
-	
+
 		// regular flat
 		lumpnum = flattranslation[pl->picnum];
 		spancontext.source = precachedflats[ lumpnum ];
@@ -429,13 +532,29 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 		pl->top[pl->maxx+1] = VPINDEX_INVALID;
 		pl->top[pl->minx-1] = VPINDEX_INVALID;
-		
+
 		stop = pl->maxx + 1;
 
-		for (x=pl->minx ; x<= stop ; x++)
+		if( span_type == Span_Original )
 		{
-			R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
+			for (x=pl->minx ; x<= stop ; x++)
+			{
+				R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
+			}
 		}
-	
+		else
+		{
+			R_PrepareVisplaneColum( pl, planecontext );
+
+			for (x=pl->minx ; x <= stop ; x++)
+			{
+				if( pl->top[ x ] < pl->bottom[ x ] )
+				{
+					R_DrawVisplaneColumn( planecontext, &spancontext, pl, x );
+				}
+			}
+		}
 	}
 }
+
+#pragma optimize( "", on )

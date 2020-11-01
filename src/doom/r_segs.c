@@ -282,6 +282,9 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			{
 				planecontext->ceilingplane->top[currx] = top;
 				planecontext->ceilingplane->bottom[currx] = bottom;
+
+				planecontext->ceilingplane->miny = M_MIN( top, planecontext->ceilingplane->miny );
+				planecontext->ceilingplane->maxy = M_MAX( bottom, planecontext->ceilingplane->maxy );
 			}
 		}
 		
@@ -304,6 +307,9 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			{
 				planecontext->floorplane->top[currx] = top;
 				planecontext->floorplane->bottom[currx] = bottom;
+
+				planecontext->floorplane->miny = M_MIN( top, planecontext->floorplane->miny );
+				planecontext->floorplane->maxy = M_MAX( bottom, planecontext->floorplane->maxy );
 			}
 		}
 	

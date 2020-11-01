@@ -434,10 +434,12 @@ typedef struct
 typedef struct
 {
   fixed_t		height;
-  int			picnum;
-  int			lightlevel;
-  int			minx;
-  int			maxx;
+  int32_t		picnum;
+  int32_t		lightlevel;
+  int32_t		minx;
+  int32_t		maxx;
+  int32_t		miny;
+  int32_t		maxy;
   
   // leave pads for [minx-1]/[maxx+1]
   
