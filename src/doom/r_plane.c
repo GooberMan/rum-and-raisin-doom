@@ -380,12 +380,12 @@ static void R_DrawVisplaneColumn( planecontext_t* planecontext, spancontext_t* s
 	fixed_t				anglesin = renderfinesine[ angle ];
 
 	fixed_t				distance;
-	fixed_t				length;
+	fixed_t				length = 0;
 	int32_t				lightindex;
 	int32_t				spot;
 
-	fixed_t				xfrac;
-	fixed_t				yfrac;
+	fixed_t				xfrac = 0;
+	fixed_t				yfrac = 0;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			starttime = I_GetTimeUS();
@@ -404,26 +404,14 @@ static void R_DrawVisplaneColumn( planecontext_t* planecontext, spancontext_t* s
 
 	do
 	{
-		// Can precalc
 		distance	= planecontext->cacheddistance[ y ];
 
-		// Cannot precalc
+		// Cannot precalc (yet )
 		length		= FixedMul ( distance, distscale[ x ] );
 		xfrac		= viewx + FixedMul( anglecos, length );
 		yfrac		= -viewy - FixedMul( anglesin, length );
 
-		if( fixedcolormapindex )
-		{
-			// TODO: This should be a real define somewhere
-			source = spancontext->source + ( 4096 * fixedcolormapindex );
-		}
-		else
-		{
-			lightindex = M_MIN( ( distance >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
-			lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
-
-			source = spancontext->source + ( 4096 * lightindex );
-		}
+		source = spancontext->source + planecontext->cachedsourceoffset[ y ];
 
 		spot = ( (yfrac & 0x3F0000 ) >> 10)
 			| ( (xfrac & 0x3F0000 ) >> 16);
@@ -444,6 +432,7 @@ void R_PrepareVisplaneColum( visplane_t* visplane, planecontext_t* planecontext 
 {
 	int32_t y = visplane->miny;
 	int32_t stop = visplane->maxy + 1;
+	int32_t lightindex;
 
 	do
 	{
@@ -451,6 +440,21 @@ void R_PrepareVisplaneColum( visplane_t* visplane, planecontext_t* planecontext 
 		{
 			planecontext->cachedheight[ y ]			= planecontext->planeheight;
 			planecontext->cacheddistance[ y ]		= FixedMul ( planecontext->planeheight, yslope[ y ] );
+		}
+
+		if( planecontext->planezlight != planecontext->cachedzlightindex[ y ] )
+		{
+			if( fixedcolormapindex )
+			{
+				// TODO: This should be a real define somewhere
+				planecontext->cachedsourceoffset[ y ] = fixedcolormapindex * 4096;
+			}
+			else
+			{
+				lightindex = M_MIN( ( planecontext->cacheddistance[ y ] >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
+				planecontext->cachedsourceoffset[ y ] = zlightindex[ planecontext->planezlightindex ][ lightindex ] * 4096;
+			}
+
 		}
 	} while( ++y < stop );
 }

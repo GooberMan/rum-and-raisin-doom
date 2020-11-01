@@ -533,6 +533,8 @@ typedef struct planecontext_s
 	fixed_t			cacheddistance[SCREENHEIGHT];
 	fixed_t			cachedxstep[SCREENHEIGHT];
 	fixed_t			cachedystep[SCREENHEIGHT];
+	int32_t			cachedzlightindex[SCREENHEIGHT];
+	int32_t			cachedsourceoffset[SCREENHEIGHT];
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			flattimetaken;
