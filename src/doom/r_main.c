@@ -31,6 +31,7 @@
 #include "d_loop.h"
 
 #include "m_bbox.h"
+#include "m_config.h"
 #include "m_menu.h"
 #include "m_debugmenu.h"
 
@@ -145,11 +146,11 @@ colfunc_t			colfuncs[ COLFUNC_COUNT ];
 // bumped light from gun blasts
 int32_t				extralight;
 
-
-colfunc_t			fuzzcolfunc;
 colfunc_t			transcolfunc;
 
 spanfunc_t			spanfunc;
+
+int32_t				fuzz_style = Fuzz_Original;
 
 const byte whacky_void_indices[] =
 {
@@ -536,6 +537,10 @@ R_PointToDist
     return dist;
 }
 
+void R_BindRenderVariables( void )
+{
+	M_BindIntVariable("fuzz_style",			&fuzz_style);
+}
 
 #define PI acos(-1.0)
 
@@ -822,7 +827,9 @@ void R_InitColFuncs( void )
 	memset( detailmaps[ 14 ], 84, 256 );
 	memset( detailmaps[ 15 ], 82, 256 );
 
-	colfuncs[ COLFUNC_FUZZINDEX ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZINDEX ] = &R_DrawFuzzColumn;
+	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Original ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Original ] = &R_DrawFuzzColumn;
+	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Adjusted ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Adjusted ] = &R_DrawAdjustedFuzzColumn;
+	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Heatwave ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Heatwave ] = &R_DrawHeatwaveFuzzColumn;
 	colfuncs[ COLFUNC_TRANSLATEINDEX ] = colfuncs[ COLFUNC_NUM + COLFUNC_TRANSLATEINDEX ] = &R_DrawTranslatedColumn;
 }
 
@@ -1094,7 +1101,6 @@ void R_ExecuteSetViewSize (void)
     projection = centerxfrac;
 
 	colfuncbase = COLFUNC_NUM * ( detailshift );
-	fuzzcolfunc = colfuncs[ colfuncbase + COLFUNC_FUZZINDEX ];
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
 
     if (!detailshift)
@@ -1240,7 +1246,7 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 	}
 }
 
-static void R_RenderThreadingGraphsWindow( const char* name )
+static void R_RenderThreadingGraphsWindow( const char* name, void* data )
 {
 	// This is downright ugly. Don't ever do this
 	ptrdiff_t frametimesoff = offsetof( renderdata_t, context.frametimes );
@@ -1264,7 +1270,7 @@ static void R_RenderThreadingGraphsWindow( const char* name )
 }
 #endif // RENDER_PERF_GRAPHING
 
-static void R_RenderThreadingOptionsWindow( const char* name )
+static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 {
 	igText( "Performance options" );
 	igSeparator();

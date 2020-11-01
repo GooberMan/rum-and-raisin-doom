@@ -21,9 +21,6 @@
 #ifndef __R_DRAW__
 #define __R_DRAW__
 
-
-#define ADJUSTED_FUZZ 0
-
 // The span blitting interface.
 // Hook in assembler or system specific BLT
 //  here.
@@ -83,6 +80,9 @@ void R_DrawColumn_SixteenSamples ( colcontext_t* context );
 void	R_CacheFuzzColumn (void);
 void 	R_DrawFuzzColumn ( colcontext_t* context );
 void 	R_DrawFuzzColumnLow ( colcontext_t* context );
+
+void R_DrawAdjustedFuzzColumn( colcontext_t* context );
+void R_DrawHeatwaveFuzzColumn( colcontext_t* context );
 
 // Draw with color translation tables,
 //  for player sprite rendering,

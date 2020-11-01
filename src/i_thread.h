@@ -30,6 +30,12 @@ typedef void* threadhandle_t;
 typedef ptrdiff_t atomicval_t;
 typedef atomicval_t* atomicptr_t;
 
+#ifdef _MSC_VER
+#define THREADLOCAL static __declspec(thread)
+#else
+#define THREADLOCAL static __thread
+#endif // _MSC_VER
+
 threadhandle_t I_ThreadCreate( threadfunc_t runfunc, void* userdata );
 void I_ThreadDestroy( threadhandle_t thread );
 void I_ThreadJoin( threadhandle_t thread );

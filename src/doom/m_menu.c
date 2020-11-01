@@ -2431,6 +2431,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	extern int display_height;
 	extern int border_style;
 	extern int border_bezel_style;
+	extern int32_t fuzz_style;
 
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
@@ -2621,6 +2622,23 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			{
 				R_SetViewSize (screenblocks, detailLevel);
 			}
+
+			igNextColumn();
+			igText( "Fuzz style" );
+			igNextColumn();
+			igPushIDPtr( &fuzz_style );
+			igRadioButtonIntPtr( "Original", &fuzz_style, Fuzz_Original );
+			igSameLine( 0, -1 );
+			igRadioButtonIntPtr( "Adjusted", &fuzz_style, Fuzz_Adjusted );
+			igSameLine( 0, -1 );
+			igRadioButtonIntPtr( "Heatwave", &fuzz_style, Fuzz_Heatwave );
+			if( igIsItemHovered( ImGuiHoveredFlags_None ) )
+			{
+				igBeginTooltip();
+				igText( "Not implemented yet, defers to Adjusted" );
+				igEndTooltip();
+			}
+			igPopID();
 
 			igNextColumn();
 			igText( "Low detail" );

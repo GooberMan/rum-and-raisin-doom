@@ -816,16 +816,25 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(png_screenshots),
 
     //!
+    // @game doom
     // Values are 0 = original, 1 = INTERPIC
     //
 
     CONFIG_VARIABLE_INT(border_style),
 
     //!
+    // @game doom
     // Values are 0 = original, 1 = dithered
     //
 
     CONFIG_VARIABLE_INT(border_bezel_style),
+
+    //!
+    // @game doom
+    // Values are 0 = original, 1 = adjusted, 2 = heatwave
+    //
+
+    CONFIG_VARIABLE_INT(fuzz_style),
 
     //!
     // Sound output sample rate, in Hz.  Typical values to use are

@@ -401,6 +401,8 @@ void D_BindVariables(void)
     M_BindChatControls(MAXPLAYERS);
 	M_BindDebugMenuVariables();
 
+	R_BindRenderVariables();
+
     key_multi_msgplayer[0] = HUSTR_KEYGREEN;
     key_multi_msgplayer[1] = HUSTR_KEYINDIGO;
     key_multi_msgplayer[2] = HUSTR_KEYBROWN;
@@ -632,10 +634,15 @@ void D_DoAdvanceDemo (void)
     // However! There is an alternate version of Final Doom that
     // includes a fixed executable.
 
-    if (gameversion == exe_ultimate || gameversion == exe_final)
-      demosequence = (demosequence+1)%7;
-    else
-      demosequence = (demosequence+1)%6;
+	if( (gameversion == exe_ultimate || gameversion == exe_final)
+		/*&& W_CheckNumForName( DEH_String("demo4") ) != -1*/ )
+	{
+		demosequence = (demosequence+1)%7;
+	}
+	else
+	{
+		demosequence = (demosequence+1)%6;
+	}
     
     switch (demosequence)
     {

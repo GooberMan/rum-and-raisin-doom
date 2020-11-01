@@ -371,6 +371,7 @@ typedef struct vissprite_s
 
 	// negative if flipped
 	fixed_t			xiscale;
+	fixed_t			xscale;
 
 	fixed_t			texturemid;
 	int32_t			patch;
@@ -647,11 +648,38 @@ typedef struct rendercontext_s
 
 } rendercontext_t;
 
-typedef enum
+typedef enum voidclear_e
 {
 	Void_NoClear,
 	Void_Black,
 	Void_Whacky,
-} voidclear_e;
+
+	Void_Count,
+} voidclear_t;
+
+typedef enum borderstyle_e
+{
+	Border_Original,
+	Border_Interpic,
+
+	Border_Count,
+} borderstyle_t;
+
+typedef enum bezelstyle_e
+{
+	Bezel_Original,
+	Bezel_Dithered,
+
+	Bezel_Count,
+} bezelstyle_t;
+
+typedef enum fuzzstyle_e
+{
+	Fuzz_Original,
+	Fuzz_Adjusted,
+	Fuzz_Heatwave,
+
+	Fuzz_Count,
+} fuzzstyle_t;
 
 #endif

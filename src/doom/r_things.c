@@ -353,6 +353,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	fixed_t				frac;
 	patch_t*			patch;
 	boolean				isfuzz = false;
+	int32_t				fuzzcolumn;
 
 	colcontext_t		spritecolcontext;
 
@@ -365,7 +366,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	if (!spritecolcontext.colormap)
 	{
 		// NULL colormap = shadow draw
-		spritecolcontext.colfunc = fuzzcolfunc;
+		spritecolcontext.colfunc = colfuncs[ COLFUNC_FUZZBASEINDEX + fuzz_style ];
 		isfuzz = true;
 	}
 	else if (vis->mobjflags & MF_TRANSLATION)
@@ -375,6 +376,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
 	
+	spritecolcontext.scale = abs(vis->xscale)>>detailshift;
 	spritecolcontext.iscale = abs(vis->xiscale)>>detailshift;
 	spritecolcontext.texturemid = vis->texturemid;
 	frac = vis->startfrac;
@@ -390,14 +392,15 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 			I_Error ("R_DrawSpriteRange: bad texturecolumn");
 #endif
 
-#if ADJUSTED_FUZZ
-		fuzzcolumn = ( spritecontext.x * 100 ) / FUZZ_X_RATIO;
-		if(prevfuzzcolumn != fuzzcolumn)
+		if( fuzz_style != Fuzz_Original )
 		{
-			R_CacheFuzzColumn();
-			prevfuzzcolumn = fuzzcolumn;
+			fuzzcolumn = ( spritecolcontext.x * 100 ) / FUZZ_X_RATIO;
+			if(prevfuzzcolumn != fuzzcolumn)
+			{
+				R_CacheFuzzColumn();
+				prevfuzzcolumn = fuzzcolumn;
+			}
 		}
-#endif // ADJUSTED_FUZZ
 
 		column = (column_t *)( (byte *)patch + LONG(patch->columnofs[texturecolumn]) );
 		R_DrawMaskedColumn( spritecontext, &spritecolcontext, column );
@@ -539,11 +542,13 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	if (flip)
 	{
 		vis->startfrac = spritewidth[lump]-1;
+		vis->xscale = -xscale;
 		vis->xiscale = -iscale;
 	}
 	else
 	{
 		vis->startfrac = 0;
+		vis->xscale = xscale;
 		vis->xiscale = iscale;
 	}
 
@@ -696,11 +701,13 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 
 	if (flip)
 	{
+		vis->xscale = -pspritescale;
 		vis->xiscale = -pspriteiscale;
 		vis->startfrac = spritewidth[lump]-1;
 	}
 	else
 	{
+		vis->xscale = pspritescale;
 		vis->xiscale = pspriteiscale;
 		vis->startfrac = 0;
 	}
