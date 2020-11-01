@@ -1097,10 +1097,11 @@ void G_PlayerReborn (int player)
     p->usedown = p->attackdown = true;	// don't do anything immediately 
     p->playerstate = PST_LIVE;       
     p->health = deh_initial_health;     // Use dehacked value
-    p->readyweapon = p->pendingweapon = wp_pistol; 
-    p->weaponowned[wp_fist] = true; 
-    p->weaponowned[wp_pistol] = true; 
-    p->ammo[am_clip] = deh_initial_bullets; 
+
+	p->readyweapon = p->pendingweapon = wp_pistol; 
+	p->weaponowned[wp_fist] = true; 
+	p->weaponowned[wp_pistol] = true; 
+	p->ammo[am_clip] = deh_initial_bullets; 
 	 
     for (i=0 ; i<NUMAMMO ; i++) 
 	p->maxammo[i] = maxammo[i]; 
@@ -2280,12 +2281,13 @@ void G_DoPlayDemo (void)
     for (i=0 ; i<MAXPLAYERS ; i++) 
 	playeringame[i] = *demo_p++; 
 
-    if (playeringame[1] || M_CheckParm("-solo-net") > 0
-                        || M_CheckParm("-netdemo") > 0)
-    {
-	netgame = true;
-	netdemo = true;
-    }
+	if (playeringame[1] || M_CheckParm("-solo-net") > 0
+						|| M_CheckParm("-netdemo") > 0)
+	{
+		netgame = true;
+		netdemo = true;
+		solonetgame = M_CheckParm("-solo-net") > 0 && !playeringame[1];
+	}
 
     G_InitNew (skill, episode, map, GF_None); 
     starttime = I_GetTime (); 

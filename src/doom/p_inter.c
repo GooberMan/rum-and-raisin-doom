@@ -110,17 +110,21 @@ P_GiveAmmo
     // Preferences are not user selectable.
     switch (ammo)
     {
-      case am_clip:
-	if (player->readyweapon == wp_fist)
-	{
-	    if (player->weaponowned[wp_chaingun])
-		player->pendingweapon = wp_chaingun;
-	    else
-		player->pendingweapon = wp_pistol;
-	}
-	break;
+    case am_clip:
+		if (player->readyweapon == wp_fist)
+		{
+			if (player->weaponowned[wp_chaingun])
+			{
+				player->pendingweapon = wp_chaingun;
+			}
+			else if (player->weaponowned[wp_pistol])
+			{
+				player->pendingweapon = wp_pistol;
+			}
+		}
+		break;
 	
-      case am_shell:
+    case am_shell:
 	if (player->readyweapon == wp_fist
 	    || player->readyweapon == wp_pistol)
 	{

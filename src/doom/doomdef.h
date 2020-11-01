@@ -169,10 +169,15 @@ typedef enum gameflags_e
 {
 	GF_None							= 0,
 
+	GF_RespawnMonsters				= 0x00000001,
+	GF_FastMonsters					= 0x00000002,
+
+	GF_Pacifist						= 0x08000000,
+
 	GF_PistolStarts					= 0x10000000,
 	GF_LoopOneLevel					= 0x20000000,
 
-	GF_VanillaIncompatibleFlags		= GF_PistolStarts | GF_LoopOneLevel,
+	GF_VanillaIncompatibleFlags		= GF_Pacifist | GF_PistolStarts | GF_LoopOneLevel,
 
 } gameflags_t;
 
