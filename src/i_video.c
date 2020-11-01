@@ -147,7 +147,14 @@ int video_display = 0;
 int window_width = 800;
 int window_height = 600;
 
-boolean render_dimensions_independent = true;
+enum renderdimensions_e
+{
+	RMD_MatchWindow,
+	RMD_ScaleWindow,
+	RMD_Independent,
+};
+
+int32_t render_dimensions_mode = RMD_Independent;
 int32_t render_width = SCREENWIDTH;
 int32_t render_height = SCREENHEIGHT;
 
@@ -1590,10 +1597,11 @@ void I_InitGraphics( int32_t numbuffers )
         fullscreen = true;
     }
 
-	if( !render_dimensions_independent )
+	if( render_dimensions_mode == RMD_MatchWindow )
 	{
 		render_width = window_width;
 		render_height = window_height;
+		// TODO: Scale back down for aspect ratio stuff... although I think I might go ahead and baleete all that.
 	}
 
 	if (aspect_ratio_correct == 1)
@@ -1675,6 +1683,8 @@ void I_BindVideoVariables(void)
     M_BindStringVariable("window_position",        &window_position);
     M_BindIntVariable("usegamma",                  &usegamma);
     M_BindIntVariable("png_screenshots",           &png_screenshots);
+
+	// TODO: Move these to R_BindRenderVariables now that it exists
     M_BindIntVariable("border_style",              &border_style);
     M_BindIntVariable("border_bezel_style",        &border_bezel_style);
 }
