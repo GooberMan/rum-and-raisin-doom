@@ -367,7 +367,7 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 extern size_t			xlookup[MAXWIDTH];
 extern size_t			rowofs[MAXHEIGHT];
 
-__declspec( noinline ) void R_DrawVisplaneColumn( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
+static void R_DrawVisplaneColumn( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
 {
 	pixel_t*			dest = spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
 	pixel_t*			source;
@@ -459,7 +459,6 @@ void R_PrepareVisplaneColum( visplane_t* visplane, planecontext_t* planecontext 
 // R_DrawPlanes
 // At the end of each frame.
 //
-#pragma optimize( "", off )
 void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	visplane_t*		pl;
@@ -556,5 +555,3 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		}
 	}
 }
-
-#pragma optimize( "", on )
