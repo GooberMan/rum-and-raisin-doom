@@ -46,8 +46,9 @@ typedef enum spantype_e
 {
 	Span_Original,
 	Span_VisplaneColumn,
+	Span_RasterColumn
 } spantype_t;
-int32_t			span_type = Span_VisplaneColumn;
+int32_t			span_type = Span_RasterColumn;
 
 //
 // R_InitPlanes
@@ -416,7 +417,6 @@ static void R_DrawVisplaneColumn( planecontext_t* planecontext, spancontext_t* s
 		spot = ( (yfrac & 0x3F0000 ) >> 10)
 			| ( (xfrac & 0x3F0000 ) >> 16);
 
-		// Lookup pixel from flat texture tile,
 		*dest++ = source[spot];
 
 	} while( ++y < stop );
@@ -459,10 +459,114 @@ void R_PrepareVisplaneColum( visplane_t* visplane, planecontext_t* planecontext 
 	} while( ++y < stop );
 }
 
+// Used http://www.lysator.liu.se/~mikaelk/doc/perspectivetexture/ as reference for how to implement an efficient rasteriser
+static void R_RasteriseVisplaneColumn( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
+{
+	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
+	pixel_t*			source			= spancontext->source;
+
+	int32_t				ybase			= visplane->top[ x ];
+	int32_t				count			= visplane->bottom[ x ] - ybase;
+
+	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
+	fixed_t				anglecos		= renderfinecosine[ angle ];
+	fixed_t				anglesin		= renderfinesine[ angle ];
+
+	fixed_t				currdistance	= planecontext->cacheddistance[ ybase ];
+	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
+
+	fixed_t				prevxfrac		= viewx + FixedMul( anglecos, currlength );
+	fixed_t				prevyfrac		= -viewy - FixedMul( anglesin, currlength );
+	fixed_t				nextxfrac;
+	fixed_t				nextyfrac;
+
+	fixed_t				xfrac;
+	fixed_t				yfrac;
+	fixed_t				xstep;
+	fixed_t				ystep;
+
+	int32_t				spot;
+
+
+#define DOSAMPLE() spot = ( (yfrac & 0x3F0000 ) >> 10) | ( (xfrac & 0x3F0000 ) >> 16);\
+source = spancontext->source + planecontext->cachedsourceoffset[ ybase++ ]; \
+*dest++ = source[spot]; \
+xfrac += xstep; \
+yfrac += ystep;
+
+#if RENDER_PERF_GRAPHING
+	uint64_t			starttime = I_GetTimeUS();
+	uint64_t			endtime;
+#endif // RENDER_PERF_GRAPHING
+
+	while( count >= PLANE_PIXELLEAP )
+	{
+		currdistance	= planecontext->cacheddistance[ ybase + PLANE_PIXELLEAP ];
+		currlength		= FixedMul ( currdistance, distscale[ x ] );
+		nextxfrac		= viewx + FixedMul( anglecos, currlength );
+		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
+
+		xfrac = prevxfrac;
+		yfrac = prevyfrac;
+		xstep =	( nextxfrac - prevxfrac ) >> PLANE_PIXELLEAP_LOG2;
+		ystep =	( nextyfrac - prevyfrac ) >> PLANE_PIXELLEAP_LOG2;
+
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+
+		prevxfrac = nextxfrac;
+		prevyfrac = nextyfrac;
+
+		count -= PLANE_PIXELLEAP;
+	};
+
+	if( count >= 0 )
+	{
+		currdistance	= planecontext->cacheddistance[ ybase + count ];
+		currlength		= FixedMul ( currdistance, distscale[ x ] );
+		nextxfrac		= viewx + FixedMul( anglecos, currlength );
+		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
+
+		xfrac = prevxfrac;
+		yfrac = prevyfrac;
+		xstep =	( nextxfrac - prevxfrac ) / ( count + 1 );
+		ystep =	( nextyfrac - prevyfrac ) / ( count + 1 );
+
+		do
+		{
+			DOSAMPLE();
+			--count;
+		} while( count >= 0);
+	}
+
+#if RENDER_PERF_GRAPHING
+	endtime = I_GetTimeUS();
+	planecontext->flattimetaken += ( endtime - starttime );
+#endif // RENDER_PERF_GRAPHING
+
+}
+
 //
 // R_DrawPlanes
 // At the end of each frame.
 //
+
+typedef void (*rasterfunc_t)( planecontext_t*, spancontext_t*, visplane_t*, int32_t );
+
 void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	visplane_t*		pl;
@@ -474,6 +578,10 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	spancontext_t	spancontext;
 	colcontext_t	skycontext;
+
+	rasterfunc_t	raster = span_type == Span_VisplaneColumn ? &R_DrawVisplaneColumn
+								: span_type == Span_RasterColumn ? &R_RasteriseVisplaneColumn
+								: NULL;
 
 	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
 
@@ -553,7 +661,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			{
 				if( pl->top[ x ] < pl->bottom[ x ] )
 				{
-					R_DrawVisplaneColumn( planecontext, &spancontext, pl, x );
+					raster( planecontext, &spancontext, pl, x );
 				}
 			}
 		}

@@ -506,6 +506,10 @@ typedef struct bspcontext_s
 #endif // RENDER_PERF_GRAPHING
 } bspcontext_t;
 
+#define PLANE_PIXELLEAP			( 16 )
+#define PLANE_PIXELLEAP_LOG2	( 4 )
+#define PLANE_MAXPIXELS			( SCREENHEIGHT >> PLANE_PIXELLEAP_LOG2 )
+
 typedef struct planecontext_s
 {
 	visplane_t		visplanes[MAXVISPLANES];
@@ -535,6 +539,10 @@ typedef struct planecontext_s
 	fixed_t			cachedystep[SCREENHEIGHT];
 	int32_t			cachedzlightindex[SCREENHEIGHT];
 	int32_t			cachedsourceoffset[SCREENHEIGHT];
+
+	fixed_t			cachedxfrac[ PLANE_MAXPIXELS ];
+	fixed_t			cachedyfrac[ PLANE_MAXPIXELS ];
+	fixed_t			cacheddist[ PLANE_MAXPIXELS ];
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			flattimetaken;
