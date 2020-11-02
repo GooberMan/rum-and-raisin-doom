@@ -45,7 +45,6 @@ fixed_t			distscale[SCREENWIDTH];
 typedef enum spantype_e
 {
 	Span_Original,
-	Span_VisplaneColumn,
 	Span_RasterColumn
 } spantype_t;
 int32_t			span_type = Span_RasterColumn;
@@ -368,67 +367,8 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 extern size_t			xlookup[MAXWIDTH];
 extern size_t			rowofs[MAXHEIGHT];
 
-static void R_DrawVisplaneColumn( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
-{
-	pixel_t*			dest = spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
-	pixel_t*			source;
-
-	int32_t				y = visplane->top[ x ];
-	int32_t				stop = visplane->bottom[ x ] + 1;
-
-	angle_t				angle = (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
-	fixed_t				anglecos = renderfinecosine[ angle ];
-	fixed_t				anglesin = renderfinesine[ angle ];
-
-	fixed_t				distance;
-	fixed_t				length = 0;
-	int32_t				lightindex;
-	int32_t				spot;
-
-	fixed_t				xfrac = 0;
-	fixed_t				yfrac = 0;
-
-#if RENDER_PERF_GRAPHING
-	uint64_t			starttime = I_GetTimeUS();
-	uint64_t			endtime;
-#endif // RENDER_PERF_GRAPHING
-
-#ifdef RANGECHECK
-	if ( x < 0
-		|| x >= viewwidth
-		|| y < 0
-		|| stop > viewheight)
-	{
-		I_Error ("R_DrawVisplaneColumn: y %i -> %i at %i", y, stop, x);
-	}
-#endif
-
-	do
-	{
-		distance	= planecontext->cacheddistance[ y ];
-
-		// Cannot precalc (yet )
-		length		= FixedMul ( distance, distscale[ x ] );
-		xfrac		= viewx + FixedMul( anglecos, length );
-		yfrac		= -viewy - FixedMul( anglesin, length );
-
-		source = spancontext->source + planecontext->cachedsourceoffset[ y ];
-
-		spot = ( (yfrac & 0x3F0000 ) >> 10)
-			| ( (xfrac & 0x3F0000 ) >> 16);
-
-		*dest++ = source[spot];
-
-	} while( ++y < stop );
-
-#if RENDER_PERF_GRAPHING
-	endtime = I_GetTimeUS();
-	planecontext->flattimetaken += ( endtime - starttime );
-#endif // RENDER_PERF_GRAPHING
-
-}
-
-void R_PrepareVisplaneColum( visplane_t* visplane, planecontext_t* planecontext )
+// TODO: Sort visplanes by height
+void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext )
 {
 	int32_t y = visplane->miny;
 	int32_t stop = visplane->maxy + 1;
@@ -442,22 +382,27 @@ void R_PrepareVisplaneColum( visplane_t* visplane, planecontext_t* planecontext 
 			planecontext->cacheddistance[ y ]		= FixedMul ( planecontext->planeheight, yslope[ y ] );
 		}
 
-		if( planecontext->planezlight != planecontext->cachedzlightindex[ y ] )
+
+		if( planecontext->planezlightindex != planecontext->cachedzlightindex[ y ] )
 		{
 			if( fixedcolormapindex )
 			{
 				// TODO: This should be a real define somewhere
+				planecontext->cachedzlightindex[ y ] = -1;
 				planecontext->cachedsourceoffset[ y ] = fixedcolormapindex * 4096;
 			}
 			else
 			{
 				lightindex = M_MIN( ( planecontext->cacheddistance[ y ] >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
-				planecontext->cachedsourceoffset[ y ] = zlightindex[ planecontext->planezlightindex ][ lightindex ] * 4096;
+				planecontext->cachedzlightindex[ y ] = zlightindex[ planecontext->planezlightindex ][ lightindex ];
+				planecontext->cachedsourceoffset[ y ] = planecontext->cachedzlightindex[ y ] * 4096;
 			}
 
 		}
 	} while( ++y < stop );
 }
+
+#define RASTERISE_UNROLLED 1
 
 // Used http://www.lysator.liu.se/~mikaelk/doc/perspectivetexture/ as reference for how to implement an efficient rasteriser
 static void R_RasteriseVisplaneColumn( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
@@ -466,6 +411,7 @@ static void R_RasteriseVisplaneColumn( planecontext_t* planecontext, spancontext
 	pixel_t*			source			= spancontext->source;
 
 	int32_t				ybase			= visplane->top[ x ];
+	int32_t				ycache			= ybase;
 	int32_t				count			= visplane->bottom[ x ] - ybase;
 
 	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
@@ -501,7 +447,8 @@ yfrac += ystep;
 
 	while( count >= PLANE_PIXELLEAP )
 	{
-		currdistance	= planecontext->cacheddistance[ ybase + PLANE_PIXELLEAP ];
+		ycache			= ybase + PLANE_PIXELLEAP;
+		currdistance	= planecontext->cacheddistance[ ycache ];
 		currlength		= FixedMul ( currdistance, distscale[ x ] );
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
@@ -511,6 +458,12 @@ yfrac += ystep;
 		xstep =	( nextxfrac - prevxfrac ) >> PLANE_PIXELLEAP_LOG2;
 		ystep =	( nextyfrac - prevyfrac ) >> PLANE_PIXELLEAP_LOG2;
 
+#if !RASTERISE_UNROLLED
+		do
+		{
+			DOSAMPLE();
+		} while( ybase < ycache );
+#else // RASTERISE_UNROLLED
 		DOSAMPLE();
 		DOSAMPLE();
 		DOSAMPLE();
@@ -527,6 +480,7 @@ yfrac += ystep;
 		DOSAMPLE();
 		DOSAMPLE();
 		DOSAMPLE();
+#endif // !RASTERISE_UNROLLED
 
 		prevxfrac = nextxfrac;
 		prevyfrac = nextyfrac;
@@ -550,7 +504,7 @@ yfrac += ystep;
 		{
 			DOSAMPLE();
 			--count;
-		} while( count >= 0);
+		} while( count >= 0 );
 	}
 
 #if RENDER_PERF_GRAPHING
@@ -565,8 +519,6 @@ yfrac += ystep;
 // At the end of each frame.
 //
 
-typedef void (*rasterfunc_t)( planecontext_t*, spancontext_t*, visplane_t*, int32_t );
-
 void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	visplane_t*		pl;
@@ -578,10 +530,6 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	spancontext_t	spancontext;
 	colcontext_t	skycontext;
-
-	rasterfunc_t	raster = span_type == Span_VisplaneColumn ? &R_DrawVisplaneColumn
-								: span_type == Span_RasterColumn ? &R_RasteriseVisplaneColumn
-								: NULL;
 
 	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
 
@@ -597,6 +545,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 	// This isn't a constant though...
 	skycontext.output = *dest;
 
+	// TODO: Sort visplanes by height
 	for (pl = planecontext->visplanes ; pl < planecontext->lastvisplane ; pl++)
 	{
 		if (pl->minx > pl->maxx)
@@ -655,13 +604,13 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		}
 		else
 		{
-			R_PrepareVisplaneColum( pl, planecontext );
+			R_PrepareVisplaneRaster( pl, planecontext );
 
 			for (x=pl->minx ; x <= stop ; x++)
 			{
 				if( pl->top[ x ] < pl->bottom[ x ] )
 				{
-					raster( planecontext, &spancontext, pl, x );
+					R_RasteriseVisplaneColumn( planecontext, &spancontext, pl, x );
 				}
 			}
 		}

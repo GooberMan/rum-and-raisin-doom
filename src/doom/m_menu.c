@@ -2647,9 +2647,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			igPushIDPtr( &span_type );
 			igRadioButtonIntPtr( "Original", &span_type, 0 );
 			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "Naive column", &span_type, 1 );
-			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "Raster column", &span_type, 2 );
+			igRadioButtonIntPtr( "Raster column", &span_type, 1 );
 			igPopID();
 
 			igNextColumn();
