@@ -1214,25 +1214,36 @@ void I_GetWindowPosition(int *x, int *y, int w, int h)
 }
 
 #ifdef __APPLE__
-const char* GLSL_VERSION		= "#version 150";
+const char* GLSL_VERSION	= "#version 150";
 int32_t GL_VERSION_MAJOR	= 3;
 int32_t GL_VERSION_MINOR	= 2;
 int32_t GL_CONTEXTFLAGS		= SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
 int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
 #else
-const char* GLSL_VERSION		= "#version 130";
+const char* GLSL_VERSION	= "#version 130";
 int32_t GL_VERSION_MAJOR	= 3;
 int32_t GL_VERSION_MINOR	= 0;
 int32_t GL_CONTEXTFLAGS		= 0;
 int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
 #endif
 
+#ifdef __linux__
+#define CHECK_GLES			1
+#else
+#define CHECK_GLES			0
+#endif // __linux__
+
 static void I_SetupOpenGL(void)
 {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, GL_CONTEXTFLAGS);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GL_CONTEXTPROFILE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GL_VERSION_MAJOR);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GL_VERSION_MINOR);
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS,			GL_CONTEXTFLAGS );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK,	GL_CONTEXTPROFILE );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION,	GL_VERSION_MAJOR );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION,	GL_VERSION_MINOR );
+
+	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER,			1 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE,				24 );
+	SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE,			8 );
+ 
 }
 
 #if USE_GLAD
@@ -1247,6 +1258,7 @@ static void I_SetupGLAD(void)
 
 	if( !GLAD_GL_VERSION_3_0 )
 	{
+#if CHECK_GLES
 		// Attempt to see if we're embedded, this will be nice
 		retval = gladLoadGLES2Loader( (GLADloadproc)&SDL_GL_GetProcAddress );
 
@@ -1262,6 +1274,13 @@ static void I_SetupGLAD(void)
 
 		GLSL_VERSION = "#version 300 es";
 		GL_CONTEXTPROFILE = SDL_GL_CONTEXT_PROFILE_ES;
+#else // !CHECK_GLES
+		I_Error( "GLAD could not find OpenGL 3.0.\nVersion detected: %d.%d\nVersion string: %s\nHardware vendor: %s\nHardware driver: %s"
+					, GLVersion.major, GLVersion.minor
+					, (const char*) glGetString( GL_VERSION )
+					, (const char*) glGetString( GL_VENDOR )
+					, (const char*) glGetString( GL_RENDERER ) );
+#endif // CHECK_GLES
 	}
 }
 #else // !USE_GLAD
