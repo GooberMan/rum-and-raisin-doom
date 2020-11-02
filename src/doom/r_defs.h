@@ -537,7 +537,7 @@ typedef struct planecontext_s
 	fixed_t			cacheddistance[SCREENHEIGHT];
 	fixed_t			cachedxstep[SCREENHEIGHT];
 	fixed_t			cachedystep[SCREENHEIGHT];
-	int32_t			cachedzlightindex[SCREENHEIGHT];
+	lighttable_t**	cachedzlightptr[SCREENHEIGHT];
 	int32_t			cachedsourceoffset[SCREENHEIGHT];
 
 	fixed_t			cachedxfrac[ PLANE_MAXPIXELS ];

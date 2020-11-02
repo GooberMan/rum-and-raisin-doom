@@ -383,19 +383,20 @@ void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext
 		}
 
 
-		if( planecontext->planezlightindex != planecontext->cachedzlightindex[ y ] )
+		if( planecontext->planezlight != planecontext->cachedzlightptr[ y ] )
 		{
 			if( fixedcolormapindex )
 			{
 				// TODO: This should be a real define somewhere
-				planecontext->cachedzlightindex[ y ] = -1;
+				planecontext->cachedzlightptr[ y ] = NULL;
 				planecontext->cachedsourceoffset[ y ] = fixedcolormapindex * 4096;
 			}
 			else
 			{
 				lightindex = M_MIN( ( planecontext->cacheddistance[ y ] >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
-				planecontext->cachedzlightindex[ y ] = zlightindex[ planecontext->planezlightindex ][ lightindex ];
-				planecontext->cachedsourceoffset[ y ] = planecontext->cachedzlightindex[ y ] * 4096;
+				lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
+				planecontext->cachedsourceoffset[ y ] = lightindex * 4096;
+				planecontext->cachedzlightptr[ y ] = zlight[ planecontext->planezlightindex ];
 			}
 
 		}
