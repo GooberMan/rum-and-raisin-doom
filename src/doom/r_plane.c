@@ -382,8 +382,8 @@ void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext
 			planecontext->cacheddistance[ y ]		= FixedMul ( planecontext->planeheight, yslope[ y ] );
 		}
 
-
-		if( planecontext->planezlight != planecontext->cachedzlightptr[ y ] )
+		// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
+		//if( planecontext->planezlight != planecontext->cachedzlightptr[ y ] )
 		{
 			if( fixedcolormapindex )
 			{
