@@ -6,18 +6,24 @@ PACKAGE_SHORTDESC="Fork of Chocolate Doom focusing on renderer optimisations"
 PACKAGE_COPYRIGHT="Copyright (C) 1993-2020"
 PACKAGE_LICENSE="GNU General Public License, version 2"
 PACKAGE_MAINTAINER="Ethan Watson"
-PACKAGE_URL="https://www.chocolate-doom.org/"
+PACKAGE_URL="https://github.com/GooberMan/rum-and-raisin-doom"
 PACKAGE_RDNS="org.rum_and_raisin_doom"
-PACKAGE_BUGREPORT="https://github.com/chocolate-doom/chocolate-doom/issues"
 
 AC_CONFIG_AUX_DIR(autotools)
 AC_CANONICAL_HOST
 
 orig_CFLAGS="$CFLAGS"
 
+orig_CC="$CC"
+orig_CXX="$CXX"
+
+CC="clang"
+CXX="clang++"
+
 AM_PROG_AR
 CXXFLAGS="$CXXFLAGS -std=c++11"
-AC_PROG_CXX
+AC_PROG_CC( [clang gcc])
+AC_PROG_CXX( [clang++ g++])
 AC_PROG_RANLIB
 AC_CHECK_PROG(HAVE_PYTHON, python, true, false)
 
