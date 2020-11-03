@@ -171,14 +171,21 @@ void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, ang
 	for (i=0 ; i<viewwidth ; i++)
 	{
 		context->floorclip[i] = viewheight;
-		context->ceilingclip[i] = -1;
 	}
+	memset( context->ceilingclip, -1, sizeof( context->ceilingclip ) );
 
 	context->lastvisplane = context->visplanes;
 	context->lastopening = context->openings;
 
 	// texture calculation
-	memset (context->cachedheight, 0, sizeof(context->cachedheight));
+	if( span_type == Span_Original )
+	{
+		memset (context->cachedheight, 0, sizeof(context->cachedheight));
+	}
+	else
+	{
+		memset (context->raster, 0, sizeof(context->raster));
+	}
 
 	// left to right mapping
 	angle = (thisangle-ANG90)>>RENDERANGLETOFINESHIFT;
@@ -374,12 +381,12 @@ void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext
 	int32_t stop = visplane->maxy + 1;
 	int32_t lightindex;
 
-	do
+	while( y < stop )
 	{
-		if ( planecontext->planeheight != planecontext->cachedheight[ y ] )
+		if ( planecontext->planeheight != planecontext->raster[ y ].height )
 		{
-			planecontext->cachedheight[ y ]			= planecontext->planeheight;
-			planecontext->cacheddistance[ y ]		= FixedMul ( planecontext->planeheight, yslope[ y ] );
+			planecontext->raster[ y ].height		= planecontext->planeheight;
+			planecontext->raster[ y ].distance		= FixedMul ( planecontext->planeheight, yslope[ y ] );
 		}
 
 		// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
@@ -388,19 +395,21 @@ void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext
 			if( fixedcolormapindex )
 			{
 				// TODO: This should be a real define somewhere
-				planecontext->cachedzlightptr[ y ] = NULL;
-				planecontext->cachedsourceoffset[ y ] = fixedcolormapindex * 4096;
+				planecontext->raster[ y ].zlight = NULL;
+				planecontext->raster[ y ].sourceoffset = fixedcolormapindex * 4096;
 			}
 			else
 			{
-				lightindex = M_MIN( ( planecontext->cacheddistance[ y ] >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
+				lightindex = M_MIN( ( planecontext->raster[ y ].distance >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
 				lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
-				planecontext->cachedsourceoffset[ y ] = lightindex * 4096;
-				planecontext->cachedzlightptr[ y ] = zlight[ planecontext->planezlightindex ];
+				planecontext->raster[ y ].sourceoffset = lightindex * 4096;
+				planecontext->raster[ y ].zlight = zlight[ planecontext->planezlightindex ];
 			}
 
 		}
-	} while( ++y < stop );
+
+		++y;
+	};
 }
 
 #define RASTERISE_UNROLLED 1
@@ -419,7 +428,7 @@ static void R_RasteriseVisplaneColumn( planecontext_t* planecontext, spancontext
 	fixed_t				anglecos		= renderfinecosine[ angle ];
 	fixed_t				anglesin		= renderfinesine[ angle ];
 
-	fixed_t				currdistance	= planecontext->cacheddistance[ ybase ];
+	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
 	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
 
 	fixed_t				prevxfrac		= viewx + FixedMul( anglecos, currlength );
@@ -436,7 +445,7 @@ static void R_RasteriseVisplaneColumn( planecontext_t* planecontext, spancontext
 
 
 #define DOSAMPLE() spot = ( (yfrac & 0x3F0000 ) >> 10) | ( (xfrac & 0x3F0000 ) >> 16);\
-source = spancontext->source + planecontext->cachedsourceoffset[ ybase++ ]; \
+source = spancontext->source + planecontext->raster[ ybase++ ].sourceoffset; \
 *dest++ = source[spot]; \
 xfrac += xstep; \
 yfrac += ystep;
@@ -449,7 +458,7 @@ yfrac += ystep;
 	while( count >= PLANE_PIXELLEAP )
 	{
 		ycache			= ybase + PLANE_PIXELLEAP;
-		currdistance	= planecontext->cacheddistance[ ycache ];
+		currdistance	= planecontext->raster[ ycache ].distance;
 		currlength		= FixedMul ( currdistance, distscale[ x ] );
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
@@ -466,6 +475,30 @@ yfrac += ystep;
 		} while( ybase < ycache );
 #else // RASTERISE_UNROLLED
 		DOSAMPLE();
+#if PLANE_PIXELLEAP >= 2
+		DOSAMPLE();
+#endif
+#if PLANE_PIXELLEAP >= 4
+		DOSAMPLE();
+		DOSAMPLE();
+#endif
+#if PLANE_PIXELLEAP >= 8
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+#endif
+#if PLANE_PIXELLEAP >= 16
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+		DOSAMPLE();
+#endif
+#if PLANE_PIXELLEAP >= 32
 		DOSAMPLE();
 		DOSAMPLE();
 		DOSAMPLE();
@@ -481,6 +514,11 @@ yfrac += ystep;
 		DOSAMPLE();
 		DOSAMPLE();
 		DOSAMPLE();
+		DOSAMPLE();
+#endif
+#if PLANE_PIXELLEAP > 32
+		iamanerror;
+#endif
 #endif // !RASTERISE_UNROLLED
 
 		prevxfrac = nextxfrac;
@@ -491,7 +529,7 @@ yfrac += ystep;
 
 	if( count >= 0 )
 	{
-		currdistance	= planecontext->cacheddistance[ ybase + count ];
+		currdistance	= planecontext->raster[ ybase + count ].distance;
 		currlength		= FixedMul ( currdistance, distscale[ x ] );
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );

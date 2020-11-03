@@ -506,9 +506,17 @@ typedef struct bspcontext_s
 #endif // RENDER_PERF_GRAPHING
 } bspcontext_t;
 
-#define PLANE_PIXELLEAP			( 16 )
-#define PLANE_PIXELLEAP_LOG2	( 4 )
+#define PLANE_PIXELLEAP			( 32 )
+#define PLANE_PIXELLEAP_LOG2	( 5 )
 #define PLANE_MAXPIXELS			( SCREENHEIGHT >> PLANE_PIXELLEAP_LOG2 )
+
+typedef struct rastercache_s
+{
+	lighttable_t**	zlight;
+	size_t			sourceoffset;
+	fixed_t			height;
+	fixed_t			distance;
+} rastercache_t;
 
 typedef struct planecontext_s
 {
@@ -520,29 +528,28 @@ typedef struct planecontext_s
 	vertclip_t		openings[MAXOPENINGS];
 	vertclip_t*		lastopening;
 
-	vertclip_t		floorclip[SCREENWIDTH];
-	vertclip_t		ceilingclip[SCREENWIDTH];
+	vertclip_t		floorclip[ SCREENWIDTH ];
+	vertclip_t		ceilingclip[ SCREENWIDTH ];
 
-	int32_t			spanstart[SCREENHEIGHT];
-	int32_t			spanstop[SCREENHEIGHT];
-
+	// Common renderer values
 	lighttable_t**	planezlight;
 	int32_t			planezlightindex;
 	fixed_t			planeheight;
 
+	// New renderer values
+	rastercache_t	raster[ SCREENHEIGHT ];
+
+	// Original renderer values
 	fixed_t			basexscale;
 	fixed_t			baseyscale;
+
+	int32_t			spanstart[SCREENHEIGHT];
+	int32_t			spanstop[SCREENHEIGHT];
 
 	fixed_t			cachedheight[SCREENHEIGHT];
 	fixed_t			cacheddistance[SCREENHEIGHT];
 	fixed_t			cachedxstep[SCREENHEIGHT];
 	fixed_t			cachedystep[SCREENHEIGHT];
-	lighttable_t**	cachedzlightptr[SCREENHEIGHT];
-	int32_t			cachedsourceoffset[SCREENHEIGHT];
-
-	fixed_t			cachedxfrac[ PLANE_MAXPIXELS ];
-	fixed_t			cachedyfrac[ PLANE_MAXPIXELS ];
-	fixed_t			cacheddist[ PLANE_MAXPIXELS ];
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			flattimetaken;
