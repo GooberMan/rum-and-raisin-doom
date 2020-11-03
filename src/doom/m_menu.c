@@ -2438,6 +2438,17 @@ static int32_t render_width_working;
 static int32_t render_height_working;
 static const char* render_dimensions_current = NULL;
 
+static const char* span_override_strings[] =
+{
+	"None",
+	"Original",
+	"Polyraster Log2(4)",
+	"Polyraster Log2(8)",
+	"Polyraster Log2(16)",
+	"Polyraster Log2(32)",
+};
+static int32_t span_override_strings_count = sizeof( span_override_strings ) / sizeof( *span_override_strings );
+
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
@@ -2448,7 +2459,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	extern int border_style;
 	extern int border_bezel_style;
 	extern int32_t fuzz_style;
-	extern int32_t span_type;
+	extern int32_t span_override;
 
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
@@ -2676,12 +2687,21 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			igPopID();
 
 			igNextColumn();
-			igText( "Span type" );
+			igText( "Span func override" );
 			igNextColumn();
-			igPushIDPtr( &span_type );
-			igRadioButtonIntPtr( "Original", &span_type, 0 );
-			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "Raster column", &span_type, 1 );
+			igPushIDPtr( &span_override );
+			if( igBeginCombo( "", span_override_strings[ span_override ], ImGuiComboFlags_None ) )
+			{
+				for( index = 0; index < span_override_strings_count; ++index )
+				{
+					selected = index == span_override;
+					if( igSelectableBool( span_override_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+					{
+						span_override = index;
+					}
+				}
+				igEndCombo();
+			}
 			igPopID();
 
 			igNextColumn();

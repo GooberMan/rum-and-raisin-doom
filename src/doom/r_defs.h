@@ -501,9 +501,17 @@ typedef struct bspcontext_s
 #endif // RENDER_PERF_GRAPHING
 } bspcontext_t;
 
-#define PLANE_PIXELLEAP			( 32 )
-#define PLANE_PIXELLEAP_LOG2	( 5 )
-#define PLANE_MAXPIXELS			( MAXSCREENHEIGHT >> PLANE_PIXELLEAP_LOG2 )
+#define PLANE_PIXELLEAP_32			( 32 )
+#define PLANE_PIXELLEAP_32_LOG2		( 5 )
+
+#define PLANE_PIXELLEAP_16			( 16 )
+#define PLANE_PIXELLEAP_16_LOG2		( 4 )
+
+#define PLANE_PIXELLEAP_8			( 8 )
+#define PLANE_PIXELLEAP_8_LOG2		( 3 )
+
+#define PLANE_PIXELLEAP_4			( 4 )
+#define PLANE_PIXELLEAP_4_LOG2		( 2 )
 
 typedef struct rastercache_s
 {
