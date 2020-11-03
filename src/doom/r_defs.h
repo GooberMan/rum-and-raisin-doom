@@ -55,7 +55,7 @@
 #define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			256
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
-#define MAXOPENINGS				( SCREENWIDTH*32 )
+#define MAXOPENINGS				( MAXSCREENWIDTH*32 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
 #define MAXDRAWSEGS				( MAXVISPLANES << 2 )
 
@@ -66,7 +66,7 @@
 // render overage and then bomb out by detecting the overflow after the 
 // fact. -haleyjd
 #define VANILLA_MAXSEGS			32
-#define MAXSEGS					(SCREENWIDTH / 2 + 1)
+#define MAXSEGS					( MAXSCREENWIDTH / 2 + 1 )
 
 typedef uint16_t				vpindex_t;
 #define VPINDEX_INVALID			( ~(vpindex_t)0 )
@@ -95,9 +95,9 @@ typedef int32_t					vertclip_t;
 //
 typedef struct
 {
-    fixed_t	x;
-    fixed_t	y;
-    
+	fixed_t				x;
+	fixed_t				y;
+
 } vertex_t;
 
 
@@ -112,11 +112,10 @@ struct line_s;
 //  updated.
 typedef struct
 {
-    thinker_t		thinker;	// not used for anything
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
-
+	thinker_t			thinker;	// not used for anything
+	fixed_t				x;
+	fixed_t				y;
+	fixed_t				z;
 } degenmobj_t;
 
 //
@@ -125,40 +124,40 @@ typedef struct
 //
 typedef	struct
 {
-	int32_t		index;
+	int32_t				index;
 
-	fixed_t		floorheight;
-	fixed_t		ceilingheight;
-	int16_t		floorpic;
-	int16_t		ceilingpic;
-	int16_t		lightlevel;
-	int16_t		special;
-	int16_t		tag;
+	fixed_t				floorheight;
+	fixed_t				ceilingheight;
+	int16_t				floorpic;
+	int16_t				ceilingpic;
+	int16_t				lightlevel;
+	int16_t				special;
+	int16_t				tag;
 
 	// 0 = untraversed, 1,2 = sndlines -1
-	int32_t		soundtraversed;
+	int32_t				soundtraversed;
 
 	// thing that made a sound (or null)
-	mobj_t*		soundtarget	;
+	mobj_t*				soundtarget;
 
 	// mapblock bounding box for height changes
-	int32_t		blockbox[4];
+	int32_t				blockbox[4];
 
 	// origin for any sounds played by the sector
-	degenmobj_t	soundorg;
+	degenmobj_t			soundorg;
 
 	// if == validcount, already checked
 	// Used by algorithms that traverse the BSP. Not thread safe.
-	int32_t		validcount;
+	int32_t				validcount;
 
 	// list of mobjs in sector
-	mobj_t*		thinglist;
+	mobj_t*				thinglist;
 
 	// thinker_t for reversable actions
-	void*		specialdata;
+	void*				specialdata;
 
-	int32_t			linecount;
-	struct line_s**	lines;	// [linecount] size
+	int32_t				linecount;
+	struct line_s**		lines;	// [linecount] size
 } sector_t;
 
 
@@ -171,19 +170,19 @@ typedef	struct
 typedef struct
 {
 	// add this to the calculated texture column
-	fixed_t		textureoffset;
+	fixed_t				textureoffset;
 
 	// add this to the calculated texture top
-	fixed_t		rowoffset;
+	fixed_t				rowoffset;
 
 	// Texture indices.
 	// We do not maintain names here. 
-	int16_t		toptexture;
-	int16_t		bottomtexture;
-	int16_t		midtexture;
+	int16_t				toptexture;
+	int16_t				bottomtexture;
+	int16_t				midtexture;
 
 	// Sector the SideDef is facing.
-	sector_t*	sector;
+	sector_t*			sector;
 
 } side_t;
 
@@ -205,39 +204,39 @@ typedef enum
 typedef struct line_s
 {
 	// Vertices, from v1 to v2.
-	vertex_t*	v1;
-	vertex_t*	v2;
+	vertex_t*			v1;
+	vertex_t*			v2;
 
 	// Precalculated v2 - v1 for side checking.
-	fixed_t		dx;
-	fixed_t		dy;
+	fixed_t				dx;
+	fixed_t				dy;
 
 	// Animation related.
-	int16_t		flags;
-	int16_t		special;
-	int16_t		tag;
+	int16_t				flags;
+	int16_t				special;
+	int16_t				tag;
 
 	// Visual appearance: SideDefs.
 	//  sidenum[1] will be -1 if one sided
-	int16_t	sidenum[2];			
+	int16_t				sidenum[2];			
 
 	// Neat. Another bounding box, for the extent
 	//  of the LineDef.
-	fixed_t	bbox[4];
+	fixed_t				bbox[4];
 
 	// To aid move clipping.
-	slopetype_t	slopetype;
+	slopetype_t			slopetype;
 
 	// Front and back sector.
 	// Note: redundant? Can be retrieved from SideDefs.
-	sector_t*	frontsector;
-	sector_t*	backsector;
+	sector_t*			frontsector;
+	sector_t*			backsector;
 
 	// if == validcount, already checked
-	int32_t		validcount;
+	int32_t				validcount;
 
 	// thinker_t for reversable actions
-	void*	specialdata;
+	void*				specialdata;
 } line_t;
 
 
@@ -252,9 +251,9 @@ typedef struct line_s
 //
 typedef struct subsector_s
 {
-	sector_t*	sector;
-	uint16_t	numlines;
-	uint16_t	firstline;
+	sector_t*			sector;
+	uint16_t			numlines;
+	uint16_t			firstline;
 } subsector_t;
 
 
@@ -264,21 +263,21 @@ typedef struct subsector_s
 //
 typedef struct
 {
-	vertex_t*	v1;
-	vertex_t*	v2;
+	vertex_t*			v1;
+	vertex_t*			v2;
 
-	fixed_t	offset;
+	fixed_t				offset;
 
-	angle_t	angle;
+	angle_t				angle;
 
-	side_t*	sidedef;
-	line_t*	linedef;
+	side_t*				sidedef;
+	line_t*				linedef;
 
 	// Sector references.
 	// Could be retrieved from linedef, too.
 	// backsector is NULL for one sided lines
-	sector_t*	frontsector;
-	sector_t*	backsector;
+	sector_t*			frontsector;
+	sector_t*			backsector;
 } seg_t;
 
 
@@ -286,19 +285,19 @@ typedef struct
 //
 // BSP node.
 //
-typedef struct
+typedef struct node_s
 {
 	// Partition line.
-	fixed_t	x;
-	fixed_t	y;
-	fixed_t	dx;
-	fixed_t	dy;
+	fixed_t				x;
+	fixed_t				y;
+	fixed_t				dx;
+	fixed_t				dy;
 
 	// Bounding box for each child.
-	fixed_t	bbox[2][4];
+	fixed_t				bbox[2][4];
 
 	// If NF_SUBSECTOR its a subsector.
-	uint16_t children[2];
+	uint16_t			children[2];
 } node_t;
 
 
@@ -317,30 +316,30 @@ typedef struct
 //
 typedef struct drawseg_s
 {
-	seg_t*		curline;
-	int32_t		x1;
-	int32_t		x2;
+	seg_t*				curline;
+	int32_t				x1;
+	int32_t				x2;
 
-	fixed_t		scale1;
-	fixed_t		scale2;
-	fixed_t		scalestep;
+	fixed_t				scale1;
+	fixed_t				scale2;
+	fixed_t				scalestep;
 
 	// 0=none, 1=bottom, 2=top, 3=both
-	int32_t		silhouette;
+	int32_t				silhouette;
 
 	// do not clip sprites above this
-	fixed_t		bsilheight;
+	fixed_t				bsilheight;
 
 	// do not clip sprites below this
-	fixed_t		tsilheight;
+	fixed_t				tsilheight;
 
 	// Pointers to lists for sprite clipping,
 	//  all three adjusted so [x1] is first value.
-	vertclip_t*	sprtopclip;
-	vertclip_t*	sprbottomclip;
+	vertclip_t*			sprtopclip;
+	vertclip_t*			sprbottomclip;
 
 	// TODO: Make this 32-bit
-	vertclip_t*		maskedtexturecol;
+	vertclip_t*			maskedtexturecol;
 
 } drawseg_t;
 
@@ -353,34 +352,34 @@ typedef struct vissprite_s
 	struct vissprite_s*	prev;
 	struct vissprite_s*	next;
 
-	int32_t			x1;
-	int32_t			x2;
+	int32_t				x1;
+	int32_t				x2;
 
 	// for line side calculation
-	fixed_t			gx;
-	fixed_t			gy;
+	fixed_t				gx;
+	fixed_t				gy;
 
 	// global bottom / top for silhouette clipping
-	fixed_t			gz;
-	fixed_t			gzt;
+	fixed_t				gz;
+	fixed_t				gzt;
 
 	// horizontal position of x1
-	fixed_t			startfrac;
+	fixed_t				startfrac;
 
-	fixed_t			scale;
+	fixed_t				scale;
 
 	// negative if flipped
-	fixed_t			xiscale;
-	fixed_t			xscale;
+	fixed_t				xiscale;
+	fixed_t				xscale;
 
-	fixed_t			texturemid;
-	int32_t			patch;
+	fixed_t				texturemid;
+	int32_t				patch;
 
 	// for color translation and shadow draw,
 	//  maxbright frames as well
-	lighttable_t*	colormap;
+	lighttable_t*		colormap;
 
-	int32_t			mobjflags;
+	int32_t				mobjflags;
 
 } vissprite_t;
 
@@ -399,19 +398,19 @@ typedef struct vissprite_s
 // Some sprites will only have one picture used
 // for all views: NNNNF0
 //
-typedef struct
+typedef struct spriteframe_s
 {
-    // If false use 0 for any position.
-    // Note: as eight entries are available,
-    //  we might as well insert the same name eight times.
-    boolean	rotate;
+	// If false use 0 for any position.
+	// Note: as eight entries are available,
+	//  we might as well insert the same name eight times.
+	boolean				rotate;
 
-    // Lump to use for view angles 0-7.
-    short	lump[8];
+	// Lump to use for view angles 0-7.
+	int16_t				lump[8];
 
-    // Flip bit (1 = flip) to use for view angles 0-7.
-    byte	flip[8];
-    
+	// Flip bit (1 = flip) to use for view angles 0-7.
+	byte				flip[8];
+
 } spriteframe_t;
 
 
@@ -422,36 +421,33 @@ typedef struct
 //
 typedef struct
 {
-    int			numframes;
-    spriteframe_t*	spriteframes;
+	int32_t				numframes;
+	spriteframe_t*		spriteframes;
 
 } spritedef_t;
 
 
-//
-// Now what is a visplane, anyway?
-// 
 typedef struct
 {
-  fixed_t		height;
-  int32_t		picnum;
-  int32_t		lightlevel;
-  int32_t		minx;
-  int32_t		maxx;
-  int32_t		miny;
-  int32_t		maxy;
+	fixed_t				height;
+	int32_t				picnum;
+	int32_t				lightlevel;
+	int32_t				minx;
+	int32_t				maxx;
+	int32_t				miny;
+	int32_t				maxy;
   
-  // leave pads for [minx-1]/[maxx+1]
+	// leave pads for [minx-1]/[maxx+1]
   
-  vpindex_t		pad1;
-  // Here lies the rub for all
-  //  dynamic resize/change of resolution.
-  vpindex_t		top[SCREENWIDTH];
-  vpindex_t		pad2;
-  vpindex_t		pad3;
-  // See above.
-  vpindex_t		bottom[SCREENWIDTH];
-  vpindex_t		pad4;
+	vpindex_t			pad1;
+	// Here lies the rub for all
+	//  dynamic resize/change of resolution.
+	vpindex_t			top[ MAXSCREENWIDTH ];
+	vpindex_t			pad2;
+	vpindex_t			pad3;
+	// See above.
+	vpindex_t			bottom[ MAXSCREENWIDTH ];
+	vpindex_t			pad4;
 
 } visplane_t;
 
@@ -462,94 +458,93 @@ typedef struct
 //
 typedef	struct
 {
-    int	first;
-    int last;
-    
+	int32_t				first;
+	int32_t				last;
 } cliprange_t;
 
 typedef struct wallcontext_s
 {
-	angle_t			normalangle;
-	angle_t			angle1;
-	angle_t			centerangle;
-	fixed_t			offset;
-	fixed_t			distance;
-	fixed_t			scale;
-	fixed_t			scalestep;
-	fixed_t			midtexturemid;
-	fixed_t			toptexturemid;
-	fixed_t			bottomtexturemid;
+	angle_t				normalangle;
+	angle_t				angle1;
+	angle_t				centerangle;
+	fixed_t				offset;
+	fixed_t				distance;
+	fixed_t				scale;
+	fixed_t				scalestep;
+	fixed_t				midtexturemid;
+	fixed_t				toptexturemid;
+	fixed_t				bottomtexturemid;
 
-	lighttable_t**	lights;
-	int32_t			lightsindex;
+	lighttable_t**		lights;
+	int32_t				lightsindex;
 
 } wallcontext_t;
 
 typedef struct bspcontext_s
 {
-	seg_t*			curline;
-	side_t*			sidedef;
-	line_t*			linedef;
-	sector_t*		frontsector;
-	sector_t*		backsector;
+	seg_t*				curline;
+	side_t*				sidedef;
+	line_t*				linedef;
+	sector_t*			frontsector;
+	sector_t*			backsector;
 
-	drawseg_t		drawsegs[MAXDRAWSEGS];
-	drawseg_t*		thisdrawseg;
+	drawseg_t			drawsegs[MAXDRAWSEGS];
+	drawseg_t*			thisdrawseg;
 
-	cliprange_t		solidsegs[MAXSEGS];
-	cliprange_t*	solidsegsend;
+	cliprange_t			solidsegs[MAXSEGS];
+	cliprange_t*		solidsegsend;
 
 #if RENDER_PERF_GRAPHING
-	uint64_t		storetimetaken;
-	uint64_t		solidtimetaken;
-	uint64_t		maskedtimetaken;
+	uint64_t			storetimetaken;
+	uint64_t			solidtimetaken;
+	uint64_t			maskedtimetaken;
 #endif // RENDER_PERF_GRAPHING
 } bspcontext_t;
 
 #define PLANE_PIXELLEAP			( 32 )
 #define PLANE_PIXELLEAP_LOG2	( 5 )
-#define PLANE_MAXPIXELS			( SCREENHEIGHT >> PLANE_PIXELLEAP_LOG2 )
+#define PLANE_MAXPIXELS			( MAXSCREENHEIGHT >> PLANE_PIXELLEAP_LOG2 )
 
 typedef struct rastercache_s
 {
-	lighttable_t**	zlight;
-	size_t			sourceoffset;
-	fixed_t			height;
-	fixed_t			distance;
+	lighttable_t**		zlight;
+	size_t				sourceoffset;
+	fixed_t				height;
+	fixed_t				distance;
 } rastercache_t;
 
 typedef struct planecontext_s
 {
-	visplane_t		visplanes[MAXVISPLANES];
-	visplane_t*		lastvisplane;
-	visplane_t*		floorplane;
-	visplane_t*		ceilingplane;
+	visplane_t			visplanes[MAXVISPLANES];
+	visplane_t*			lastvisplane;
+	visplane_t*			floorplane;
+	visplane_t*			ceilingplane;
 
-	vertclip_t		openings[MAXOPENINGS];
-	vertclip_t*		lastopening;
+	vertclip_t			openings[MAXOPENINGS];
+	vertclip_t*			lastopening;
 
-	vertclip_t		floorclip[ SCREENWIDTH ];
-	vertclip_t		ceilingclip[ SCREENWIDTH ];
+	vertclip_t			floorclip[ MAXSCREENWIDTH ];
+	vertclip_t			ceilingclip[ MAXSCREENWIDTH ];
 
 	// Common renderer values
-	lighttable_t**	planezlight;
-	int32_t			planezlightindex;
-	fixed_t			planeheight;
+	lighttable_t**		planezlight;
+	int32_t				planezlightindex;
+	fixed_t				planeheight;
 
 	// New renderer values
-	rastercache_t	raster[ SCREENHEIGHT ];
+	rastercache_t		raster[ MAXSCREENHEIGHT ];
 
 	// Original renderer values
-	fixed_t			basexscale;
-	fixed_t			baseyscale;
+	fixed_t				basexscale;
+	fixed_t				baseyscale;
 
-	int32_t			spanstart[SCREENHEIGHT];
-	int32_t			spanstop[SCREENHEIGHT];
+	int32_t				spanstart[ MAXSCREENHEIGHT ];
+	int32_t				spanstop[ MAXSCREENHEIGHT ];
 
-	fixed_t			cachedheight[SCREENHEIGHT];
-	fixed_t			cacheddistance[SCREENHEIGHT];
-	fixed_t			cachedxstep[SCREENHEIGHT];
-	fixed_t			cachedystep[SCREENHEIGHT];
+	fixed_t				cachedheight[ MAXSCREENHEIGHT ];
+	fixed_t				cacheddistance[ MAXSCREENHEIGHT ];
+	fixed_t				cachedxstep[ MAXSCREENHEIGHT ];
+	fixed_t				cachedystep[ MAXSCREENHEIGHT ];
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			flattimetaken;
@@ -558,27 +553,27 @@ typedef struct planecontext_s
 
 typedef struct spritecontext_s
 {
-	int32_t			leftclip;
-	int32_t			rightclip;
+	int32_t				leftclip;
+	int32_t				rightclip;
 
 	// The +1 accounts for the overflow sprite
-	vissprite_t		vissprites[MAXVISSPRITES + 1];
+	vissprite_t			vissprites[MAXVISSPRITES + 1];
 
-	vissprite_t*	nextvissprite;
+	vissprite_t*		nextvissprite;
 
-	vissprite_t		vsprsortedhead;
+	vissprite_t			vsprsortedhead;
 
-	vertclip_t*		mfloorclip;
-	vertclip_t*		mceilingclip;
-	fixed_t			spryscale;
-	fixed_t			sprtopscreen;
+	vertclip_t*			mfloorclip;
+	vertclip_t*			mceilingclip;
+	fixed_t				spryscale;
+	fixed_t				sprtopscreen;
 
-	lighttable_t**	spritelights;
+	lighttable_t**		spritelights;
 	
-	boolean*		sectorvisited;
+	boolean*			sectorvisited;
 
 #if RENDER_PERF_GRAPHING
-	uint64_t		maskedtimetaken;
+	uint64_t			maskedtimetaken;
 #endif // RENDER_PERF_GRAPHING
 } spritecontext_t;
 
@@ -596,35 +591,35 @@ typedef void (*planefunction_t)(int top, int bottom);
 
 typedef struct colcontext_s
 {
-	vbuffer_t		output;
-	byte*			source;
+	vbuffer_t			output;
+	byte*				source;
 
-	lighttable_t*	colormap;
-	byte*			translation;
+	lighttable_t*		colormap;
+	byte*				translation;
 
-	colfunc_t		colfunc;
+	colfunc_t			colfunc;
 
-	int32_t			x;
-	int32_t			yl;
-	int32_t			yh;
-	fixed_t			scale;
-	fixed_t			iscale;
-	fixed_t			texturemid;
+	int32_t				x;
+	int32_t				yl;
+	int32_t				yh;
+	fixed_t				scale;
+	fixed_t				iscale;
+	fixed_t				texturemid;
 } colcontext_t;
 
 typedef struct spancontext_s
 {
-	vbuffer_t		output;
-	byte*			source;
+	vbuffer_t			output;
+	byte*				source;
 
-	int32_t			y; 
-	int32_t			x1; 
-	int32_t			x2;
+	int32_t				y; 
+	int32_t				x1; 
+	int32_t				x2;
 
-	fixed_t			xfrac; 
-	fixed_t			yfrac; 
-	fixed_t			xstep; 
-	fixed_t			ystep;
+	fixed_t				xfrac; 
+	fixed_t				yfrac; 
+	fixed_t				xstep; 
+	fixed_t				ystep;
 } spancontext_t;
 
 typedef struct rendercontext_s

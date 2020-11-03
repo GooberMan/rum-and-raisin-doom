@@ -50,6 +50,9 @@ extern int32_t		viewwidth;
 extern int32_t		scaledviewwidth;
 extern int32_t		viewheight;
 
+extern int32_t		render_width;
+extern int32_t		render_height;
+
 extern int		firstflat;
 
 // for global animation
@@ -106,7 +109,7 @@ extern player_t*	viewplayer;
 // ?
 extern angle_t		clipangle;
 
-extern int32_t		viewangletox[RENDERFINEANGLES/2];
-extern angle_t		xtoviewangle[SCREENWIDTH+1];
+extern int32_t		viewangletox[ RENDERFINEANGLES/2 ];
+extern angle_t		xtoviewangle[ MAXSCREENWIDTH+1 ];
 
 #endif

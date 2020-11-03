@@ -27,8 +27,8 @@
 
 
 // Visplane related.
-extern fixed_t		yslope[SCREENHEIGHT];
-extern fixed_t		distscale[SCREENWIDTH];
+extern fixed_t		yslope[ MAXSCREENHEIGHT ];
+extern fixed_t		distscale[ MAXSCREENWIDTH ];
 
 void R_InitPlanes (void);
 void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle );

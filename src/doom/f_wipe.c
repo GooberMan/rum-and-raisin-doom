@@ -39,6 +39,9 @@ static pixel_t*	wipe_scr_start;
 static pixel_t*	wipe_scr_end;
 static pixel_t*	wipe_scr;
 
+extern int32_t render_width;
+extern int32_t render_height;
+
 int
 wipe_initColorXForm
 ( int	width,
@@ -231,7 +234,7 @@ wipe_StartScreen
   int	width,
   int	height )
 {
-    wipe_scr_start = Z_Malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(*wipe_scr_start), PU_STATIC, NULL);
+    wipe_scr_start = Z_Malloc(render_width * render_height * sizeof(*wipe_scr_start), PU_STATIC, NULL);
     I_ReadScreen(wipe_scr_start);
     return 0;
 }
@@ -243,7 +246,7 @@ wipe_EndScreen
   int	width,
   int	height )
 {
-    wipe_scr_end = Z_Malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(*wipe_scr_end), PU_STATIC, NULL);
+    wipe_scr_end = Z_Malloc(render_width * render_height * sizeof(*wipe_scr_end), PU_STATIC, NULL);
     I_ReadScreen(wipe_scr_end);
     V_DrawBlock(x, y, width, height, wipe_scr_start); // restore start scr.
     return 0;

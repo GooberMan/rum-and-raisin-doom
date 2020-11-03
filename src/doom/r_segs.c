@@ -75,9 +75,9 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 {
 	if( context->yl != context->yh )
 	{
-		if ((unsigned)context->x >= SCREENWIDTH
+		if ((unsigned)context->x >= render_width
 			|| context->yl < 0
-			|| context->yh >= SCREENHEIGHT) 
+			|| context->yh >= render_height) 
 		{
 			I_Error ("%s: %i to %i at %i", func, context->yl, context->yh, context->x);
 		}
@@ -184,9 +184,10 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 			if (!fixedcolormap)
 			{
 				index = spritecontext->spryscale>>LIGHTSCALESHIFT;
-#if SCREENWIDTH != 320
-				index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
-#endif // SCREENWIDTH != 320
+				if( render_width != 320 )
+				{
+					index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+				}
 
 				if (index >=  MAXLIGHTSCALE )
 					index = MAXLIGHTSCALE-1;
@@ -323,9 +324,10 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			// calculate lighting
 			index = wallcontext->scale>>LIGHTSCALESHIFT;
 
-#if SCREENWIDTH != 320
-			index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
-#endif // SCREENWIDTH != 320
+			if( render_width != 320 )
+			{
+				index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+			}
 
 			if (index >=  MAXLIGHTSCALE ) index = MAXLIGHTSCALE-1;
 

@@ -43,8 +43,8 @@
 // Constant arrays, don't need to live in a context
 
 //  used for psprite clipping and initializing clipping
-vertclip_t		negonearray[SCREENWIDTH];
-vertclip_t		screenheightarray[SCREENWIDTH];
+vertclip_t		negonearray[ MAXSCREENWIDTH ];
+vertclip_t		screenheightarray[ MAXSCREENWIDTH ];
 
 fixed_t			pspritescale;
 fixed_t			pspriteiscale;
@@ -255,7 +255,7 @@ void R_InitSprites(const char **namelist)
 {
     vertclip_t		i;
 	
-    for (i=0 ; i<SCREENWIDTH ; i++)
+    for (i=0 ; i<MAXSCREENWIDTH ; i++)
     {
 		negonearray[i] = -1;
     }
@@ -340,7 +340,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 }
 
 
-#define FUZZ_X_RATIO ( ( SCREENWIDTH * 100 ) / 320 )
+#define FUZZ_X_RATIO ( ( render_width * 100 ) / 320 )
 //
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
@@ -578,9 +578,10 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	{
 		// diminished light
 		index = xscale>>(LIGHTSCALESHIFT-detailshift);
-#if SCREENWIDTH != 320
-		index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
-#endif // SCREENWIDTH != 320
+		if( render_width != 320 )
+		{
+			index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+		}
 
 		if (index >= MAXLIGHTSCALE) 
 			index = MAXLIGHTSCALE-1;
@@ -850,8 +851,8 @@ void R_SortVisSprites ( spritecontext_t* spritecontext )
 void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext, vissprite_t* spr )
 {
 	drawseg_t*		ds;
-	vertclip_t		clipbot[SCREENWIDTH];
-	vertclip_t		cliptop[SCREENWIDTH];
+	vertclip_t		clipbot[MAXSCREENWIDTH];
+	vertclip_t		cliptop[MAXSCREENWIDTH];
 	int32_t			x;
 	int32_t			r1;
 	int32_t			r2;

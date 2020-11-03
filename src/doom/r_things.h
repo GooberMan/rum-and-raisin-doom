@@ -28,8 +28,8 @@
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
 // Does not need to be in a threaded context
-extern vertclip_t	negonearray[SCREENWIDTH];
-extern vertclip_t	screenheightarray[SCREENWIDTH];
+extern vertclip_t	negonearray[ MAXSCREENWIDTH];
+extern vertclip_t	screenheightarray[ MAXSCREENWIDTH ];
 
 extern fixed_t		pspritescale;
 extern fixed_t		pspriteiscale;

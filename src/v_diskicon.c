@@ -62,21 +62,24 @@ static void CopyRegion(pixel_t *dest, int dest_pitch,
     }
 }
 
+extern int32_t render_width;
+extern int32_t render_height;
+
 static void SaveDiskData(const char *disk_lump, int xoffs, int yoffs)
 {
     patch_t *disk;
 	vbuffer_t tmpbuffer;
 
-	tmpbuffer.width = SCREENWIDTH;
-	tmpbuffer.height = SCREENHEIGHT;
-	tmpbuffer.pitch = SCREENHEIGHT;
+	tmpbuffer.width = render_width;
+	tmpbuffer.height = render_height;
+	tmpbuffer.pitch = render_height;
 	tmpbuffer.pixel_size_bytes = 1;
 	tmpbuffer.magic_value = vbuffer_magic;
 
     // Allocate a complete temporary screen where we'll draw the patch.
-    tmpbuffer.data = Z_Malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(*tmpbuffer.data),
+    tmpbuffer.data = Z_Malloc(render_width * render_height * sizeof(*tmpbuffer.data),
                          PU_STATIC, NULL);
-    memset(tmpbuffer.data, 0, SCREENWIDTH * SCREENHEIGHT * sizeof(*tmpbuffer.data));
+    memset(tmpbuffer.data, 0, render_width * render_height * sizeof(*tmpbuffer.data));
     V_UseBuffer(&tmpbuffer);
 
     // Buffer where we'll save the disk data.
@@ -94,7 +97,7 @@ static void SaveDiskData(const char *disk_lump, int xoffs, int yoffs)
     disk = W_CacheLumpName(disk_lump, PU_STATIC);
     V_DrawPatch(loading_disk_xoffs, loading_disk_yoffs, disk);
     CopyRegion(disk_data, LOADING_DISK_W,
-               tmpbuffer.data + yoffs * SCREENWIDTH + xoffs, SCREENWIDTH,
+               tmpbuffer.data + xoffs * render_width + yoffs, render_width,
                LOADING_DISK_W, LOADING_DISK_H);
     W_ReleaseLumpName(disk_lump);
 
@@ -127,7 +130,7 @@ void V_BeginRead(size_t nbytes)
 static pixel_t *DiskRegionPointer(void)
 {
     return I_VideoBuffer
-         + loading_disk_yoffs * SCREENWIDTH
+         + loading_disk_xoffs * render_height
          + loading_disk_xoffs;
 }
 
@@ -137,11 +140,11 @@ void V_DrawDiskIcon(void)
     {
         // Save the background behind the disk before we draw it.
         CopyRegion(saved_background, LOADING_DISK_W,
-                   DiskRegionPointer(), SCREENWIDTH,
+                   DiskRegionPointer(), render_height,
                    LOADING_DISK_W, LOADING_DISK_H);
 
         // Write the disk to the screen buffer.
-        CopyRegion(DiskRegionPointer(), SCREENWIDTH,
+        CopyRegion(DiskRegionPointer(), render_height,
                    disk_data, LOADING_DISK_W,
                    LOADING_DISK_W, LOADING_DISK_H);
         disk_drawn = true;

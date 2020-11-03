@@ -230,7 +230,7 @@ boolean D_Display (void)
 	if (gamestate != wipegamestate)
 	{
 		wipe = true;
-		wipe_StartScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
+		wipe_StartScreen(0, 0, render_width, render_height);
 	}
 	else
 	{
@@ -254,11 +254,11 @@ boolean D_Display (void)
 			// Slight hack to get around the fact that we memset everything now for the automap
 			redrawsbar = true;
 		}
-		if (wipe || (viewheight != SCREENHEIGHT && fullscreen))
+		if (wipe || (viewheight != render_height && fullscreen))
 			redrawsbar = true;
 		if (inhelpscreensstate && !inhelpscreens)
 			redrawsbar = true;              // just put away the help screen
-		fullscreen = viewheight == SCREENHEIGHT;
+		fullscreen = viewheight == render_height;
 		break;
 
 	case GS_INTERMISSION:
@@ -302,7 +302,7 @@ boolean D_Display (void)
 }
 
 	// see if the border needs to be updated to the screen
-	if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != SCREENWIDTH)
+	if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != render_width)
 	{
 		if (menuactive || menuactivestate || !viewactivestate)
 			borderdrawcount = 3;
@@ -492,7 +492,7 @@ void D_RunFrame()
 
         wipestart = nowtime;
         wipe = !wipe_ScreenWipe(wipe_Melt
-                               , 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
+                               , 0, 0, render_width, render_height, tics);
         I_UpdateNoBlit ();
         M_Drawer ();                            // menu is drawn even on top of wipes
 
@@ -519,7 +519,7 @@ void D_RunFrame()
         if ((wipe = D_Display ()))
         {
             // start wipe on this frame
-            wipe_EndScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
+            wipe_EndScreen(0, 0, render_width, render_height);
 
             wipestart = I_GetTime () - 1;
         } else {

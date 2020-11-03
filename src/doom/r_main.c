@@ -135,7 +135,7 @@ int32_t				viewangletox[RENDERFINEANGLES/2];
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
 // from clipangle to -clipangle.
-angle_t				xtoviewangle[SCREENWIDTH+1];
+angle_t				xtoviewangle[MAXSCREENWIDTH+1];
 
 lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
@@ -579,7 +579,7 @@ void R_InitPointToAngle (void)
 // Defining the original maximum as a function of your
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
-#define MAXSCALE ( 64 * ( SCREENWIDTH / 320 ) )
+#define MAXSCALE ( 64 * ( render_width / 320 ) )
 #define MAXSCALE_FIXED ( MAXSCALE << FRACBITS )
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle)
@@ -669,7 +669,7 @@ void R_InitTextureMapping (void)
     // Calc focallength
     //  so FIELDOFVIEW angles covers SCREENWIDTH.
     focallength = FixedDiv (centerxfrac,
-			    renderfinetangent[RENDERFINEANGLES/4+RENDERFIELDOFVIEW/2] );
+			    renderfinetangent[ RENDERFINEANGLES / 4 + RENDERFIELDOFVIEW / 2 ] );
 	
     for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
     {
@@ -737,11 +737,12 @@ void R_InitLightTables (void)
 		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
 		for (j=0 ; j<MAXLIGHTZ ; j++)
 		{
-			scale = FixedDiv ((SCREENWIDTH/2*FRACUNIT), (j+1)<<LIGHTZSHIFT);
+			scale = FixedDiv ( ( render_width / 2 * FRACUNIT ), ( j + 1 ) << LIGHTZSHIFT );
 			scale >>= LIGHTSCALESHIFT;
-#if SCREENWIDTH != 320
-			scale = FixedDiv( scale << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
-#endif // SCREENWIDTH != 320
+			if( render_width != 320 )
+			{
+				scale = FixedDiv( scale << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+			}
 
 			level = startmap - scale/DISTMAP;
 
@@ -941,7 +942,7 @@ void R_InitContexts( void )
 	int32_t incrementby;
 
 	currstart = 0;
-	incrementby = SCREENWIDTH / numrendercontexts;
+	incrementby = render_width / numrendercontexts;
 
 	renderdatas = Z_Malloc( sizeof( renderdata_t ) * numrendercontexts, PU_STATIC, NULL );
 	memset( renderdatas, 0, sizeof( renderdata_t ) * numrendercontexts );
@@ -955,7 +956,7 @@ void R_InitContexts( void )
 
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
-		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, SCREENWIDTH );
+		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, render_width );
 
 		renderdatas[ currcontext ].context.starttime = 0;
 		renderdatas[ currcontext ].context.endtime = 1;
@@ -1041,17 +1042,18 @@ typedef enum detail_e
 //
 // R_ExecuteSetViewSize
 //
+
 void R_ExecuteSetViewSize (void)
 {
-    fixed_t	cosadj;
-    fixed_t	dy;
-    int		i;
-    int		j;
-    int		level;
-    int		startmap; 	
-	int		colfuncbase;
+	fixed_t		cosadj;
+	fixed_t		dy;
+	int32_t		i;
+	int32_t		j;
+	int32_t		level;
+	int32_t		startmap;
+	int32_t		colfuncbase;
 
-    setsizeneeded = false;
+	setsizeneeded = false;
 
 	//switch( setdetail )
 	//{
@@ -1085,83 +1087,89 @@ void R_ExecuteSetViewSize (void)
 	//	viewheight = (setblocks*(SCREENHEIGHT-SBARHEIGHT)/10)&~7;
     //}
 
-   if (setblocks == 11)
-    {
-	scaledviewwidth = SCREENWIDTH;
-	viewheight = SCREENHEIGHT;
-    }
-    else
-    {
-	scaledviewwidth = setblocks*SCREENWIDTH/10;
-	viewheight = (setblocks*(SCREENHEIGHT-SBARHEIGHT)/10)&~7;
-    }
-    
-    detailshift = setdetail;
-    viewwidth = scaledviewwidth>>detailshift;
-    
-    centery = viewheight/2;
-    centerx = viewwidth/2;
-    centerxfrac = centerx<<FRACBITS;
-    centeryfrac = centery<<FRACBITS;
-    projection = centerxfrac;
+	if (setblocks == 11)
+	{
+		scaledviewwidth = render_width;
+		viewheight = render_height;
+	}
+	else
+	{
+		scaledviewwidth = setblocks * render_width / 10;
+		viewheight = (setblocks * ( render_height - SBARHEIGHT ) / 10 ) & ~7;
+	}
+
+	detailshift = setdetail;
+	viewwidth = scaledviewwidth >> detailshift;
+
+	centery = viewheight /2;
+	centerx = viewwidth /2;
+	centerxfrac = centerx << FRACBITS;
+	centeryfrac = centery << FRACBITS;
+	projection = centerxfrac;
 
 	colfuncbase = COLFUNC_NUM * ( detailshift );
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
 
-    if (!detailshift)
-    {
-		spanfunc = &R_DrawSpan;
-    }
-    else
-    {
-		spanfunc = &R_DrawSpanLow;
-    }
-
-    R_InitBuffer (scaledviewwidth, viewheight);
-	
-    R_InitTextureMapping ();
-    
-    // psprite scales
-    pspritescale = FixedMul( FRACUNIT*viewwidth/SCREENWIDTH, V_WIDTHMULTIPLIER );
-    pspriteiscale = FixedDiv( FRACUNIT*SCREENWIDTH/viewwidth, V_WIDTHMULTIPLIER );
-    
-    // thing clipping
-    for (i=0 ; i<viewwidth ; i++)
-	screenheightarray[i] = viewheight;
-    
-    // planes
-    for (i=0 ; i<viewheight ; i++)
-    {
-	dy = ((i-viewheight/2)<<FRACBITS)+FRACUNIT/2;
-	dy = abs(dy);
-	yslope[i] = FixedDiv ( (viewwidth<<detailshift)/2*FRACUNIT, dy);
-    }
-	
-    for (i=0 ; i<viewwidth ; i++)
-    {
-	cosadj = abs(renderfinecosine[xtoviewangle[i]>>RENDERANGLETOFINESHIFT]);
-	distscale[i] = FixedDiv (FRACUNIT,cosadj);
-    }
-    
-    // Calculate the light levels to use
-    //  for each level / scale combination.
-    for (i=0 ; i< LIGHTLEVELS ; i++)
-    {
-	startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
-	for (j=0 ; j<MAXLIGHTSCALE ; j++)
+	if (!detailshift)
 	{
-	    level = startmap - j*SCREENWIDTH/(viewwidth<<detailshift)/DISTMAP;
-
-	    if (level < 0)
-		level = 0;
-
-	    if (level >= NUMLIGHTCOLORMAPS)
-		level = NUMLIGHTCOLORMAPS-1;
-
-	    scalelight[i][j] = colormaps + level*256;
-		scalelightindex[i][j] = level;
+		spanfunc = &R_DrawSpan;
 	}
-    }
+	else
+	{
+		spanfunc = &R_DrawSpanLow;
+	}
+
+	R_InitBuffer (scaledviewwidth, viewheight);
+	
+	R_InitTextureMapping ();
+
+	// psprite scales
+	pspritescale = FixedMul( FRACUNIT * viewwidth / render_width, V_WIDTHMULTIPLIER );
+	pspriteiscale = FixedDiv( FRACUNIT * render_width / viewwidth, V_WIDTHMULTIPLIER );
+
+	// thing clipping
+	for (i=0 ; i<viewwidth ; i++)
+	{
+		screenheightarray[i] = viewheight;
+	}
+
+	// planes
+	for (i=0 ; i<viewheight ; i++)
+	{
+		dy = ( ( i- viewheight / 2 ) << FRACBITS ) + FRACUNIT / 2;
+		dy = abs( dy );
+		yslope[ i ] = FixedDiv ( ( viewwidth << detailshift ) / 2 * FRACUNIT, dy );
+	}
+	
+	for ( i=0 ; i<viewwidth ; i++ )
+	{
+		cosadj = abs( renderfinecosine[ xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] );
+		distscale[ i ] = FixedDiv ( FRACUNIT, cosadj );
+	}
+
+	// Calculate the light levels to use
+	//  for each level / scale combination.
+	for ( i=0 ; i < LIGHTLEVELS ; i++ )
+	{
+		startmap = ( (LIGHTLEVELS - 1 - i ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
+		for ( j=0 ; j < MAXLIGHTSCALE ; j++ )
+		{
+			level = startmap - j * render_width / ( viewwidth << detailshift ) / DISTMAP;
+
+			if (level < 0)
+			{
+				level = 0;
+			}
+
+			if (level >= NUMLIGHTCOLORMAPS)
+			{
+				level = NUMLIGHTCOLORMAPS-1;
+			}
+
+			scalelight[ i ][ j ] = colormaps + level * 256;
+			scalelightindex[ i ][ j ] = level;
+		}
+	}
 }
 
 static boolean debugwindow_renderthreadinggraphs = false;
@@ -1192,6 +1200,11 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 	{
 		igSliderInt( "Time scale (ms)", &performancegraphscale, 5, 100, "%dms", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 		igNewLine();
+#if !defined( NDEBUG )
+		igText( "YOU ARE PROFILING A DEBUG BUILD, THIS WILL GIVE YOU WRONG RESULTS" );
+		igNewLine();
+#endif // !defined( NDEBUG );
+
 		igBeginColumns( "Performance columns", M_MIN( 2, numusablerendercontexts ), ImGuiColumnsFlags_NoBorder );
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
@@ -1467,7 +1480,7 @@ void R_SetupFrame (player_t* player)
 
 			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
-			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, SCREENWIDTH );
+			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, viewwidth );
 
 			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 		}
@@ -1486,8 +1499,8 @@ void R_SetupFrame (player_t* player)
 //
 // R_RenderView
 //
-#define MAXWIDTH			(SCREENWIDTH + ( SCREENWIDTH >> 1) )
-#define MAXHEIGHT			(SCREENHEIGHT + ( SCREENHEIGHT >> 1) )
+#define MAXWIDTH			(MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
+#define MAXHEIGHT			(MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
 
 extern size_t			xlookup[MAXWIDTH];
 extern size_t			rowofs[MAXHEIGHT];

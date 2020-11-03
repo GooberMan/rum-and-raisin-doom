@@ -39,8 +39,8 @@
 // Constants. Don't need to be in a context. Will get them off the stack at some point though.
 //
 
-fixed_t			yslope[SCREENHEIGHT];
-fixed_t			distscale[SCREENWIDTH];
+fixed_t			yslope[ MAXSCREENHEIGHT ];
+fixed_t			distscale[ MAXSCREENWIDTH ];
 
 typedef enum spantype_e
 {
@@ -138,8 +138,8 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 #ifdef RANGECHECK
 	if (spancontext->x2 < spancontext->x1
 		|| spancontext->x1<0
-		|| spancontext->x2>=SCREENWIDTH
-		|| (unsigned)spancontext->y>SCREENHEIGHT)
+		|| spancontext->x2>=render_width
+		|| (unsigned)spancontext->y>render_height)
 	{
 		I_Error( "R_MapPlane: Attempting to draw span %i to %i at %i",
 			 spancontext->x1,spancontext->x2,spancontext->y);
@@ -238,9 +238,9 @@ visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum
 	check->height = height;
 	check->picnum = picnum;
 	check->lightlevel = lightlevel;
-	check->minx = SCREENWIDTH;
+	check->minx = render_width;
 	check->maxx = -1;
-	check->miny = SCREENHEIGHT;
+	check->miny = render_height;
 	check->maxy = -1;
 
 	memset (check->top,VPINDEX_INVALID,sizeof(check->top));
@@ -368,8 +368,8 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 }
 #endif
 
-#define MAXWIDTH			(SCREENWIDTH + ( SCREENWIDTH >> 1) )
-#define MAXHEIGHT			(SCREENHEIGHT + ( SCREENHEIGHT >> 1) )
+#define MAXWIDTH			(MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
+#define MAXHEIGHT			(MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
 
 extern size_t			xlookup[MAXWIDTH];
 extern size_t			rowofs[MAXHEIGHT];
@@ -390,7 +390,7 @@ void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext
 		}
 
 		// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
-		//if( planecontext->planezlight != planecontext->cachedzlightptr[ y ] )
+		//if( planecontext->planezlight != planecontext->raster[ y ].zlight )
 		{
 			if( fixedcolormapindex )
 			{

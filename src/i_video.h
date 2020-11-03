@@ -28,6 +28,9 @@
 // Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
 // and SCREENHEIGHT_4_3 to be 4:3 correct.
 
+#define MAXSCREENWIDTH		2560
+#define MAXSCREENHEIGHT		( SCREENWIDTH * 6250 / 10000 )
+
 #define SCREENWIDTH  2560
 #define SCREENHEIGHT ( SCREENWIDTH * 6250 / 10000 )
 #define SCREENHEIGHT_4_3 ( SCREENWIDTH * 7500 / 10000 )
@@ -36,11 +39,11 @@
 #define V_VIRTUALHEIGHT 200
 
 // TODO: We need to redo this to be pure integer math. Fixed/float results in inaccuracies at different resolutions :-(
-#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / SCREENWIDTH )
-#define V_WIDTHMULTIPLIER ( ( SCREENWIDTH << FRACBITS ) / V_VIRTUALWIDTH )
+#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / render_width )
+#define V_WIDTHMULTIPLIER ( ( render_width << FRACBITS ) / V_VIRTUALWIDTH )
 
-#define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / SCREENHEIGHT )
-#define V_HEIGHTMULTIPLIER ( ( SCREENHEIGHT << FRACBITS ) / V_VIRTUALHEIGHT )
+#define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / render_height )
+#define V_HEIGHTMULTIPLIER ( ( render_height << FRACBITS ) / V_VIRTUALHEIGHT )
 
 typedef boolean (*grabmouse_callback_t)(void);
 

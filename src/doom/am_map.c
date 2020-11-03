@@ -93,7 +93,7 @@
 #define INITSCALEMTOF (.2*FRACUNIT)
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
-#define F_PANINC	( 4 * SCREENWIDTH / 320 )
+#define F_PANINC	( 4 * render_width / 320 )
 // how much zoom-in per tic
 // goes to 2x in 1 second
 #define M_ZOOMIN        ((int) (1.02*FRACUNIT))
@@ -201,16 +201,17 @@ static int 	grid = 0;
 static int 	leveljuststarted = 1; 	// kluge until AM_LevelInit() is called
 
 boolean    	automapactive = false;
-static int 	finit_width = SCREENWIDTH;
-static int 	finit_height = SCREENHEIGHT - ST_BUFFERHEIGHT;
 
 // location of window on screen
 static int 	f_x;
 static int	f_y;
 
 // size of window on screen
-static int 	f_w;
-static int	f_h;
+//static int 	f_w;
+//static int	f_h;
+
+#define f_w ( render_width )
+#define f_h ( render_height - ST_BUFFERHEIGHT )
 
 static int 	lightlev; 		// used for funky strobing effect
 static pixel_t*	fb; 			// pseudo-frame buffer
@@ -523,8 +524,6 @@ void AM_LevelInit(void)
     leveljuststarted = 0;
 
     f_x = f_y = 0;
-    f_w = finit_width;
-    f_h = finit_height;
 
     AM_clearMarks();
 
@@ -835,6 +834,9 @@ void AM_Ticker (void)
 
     amclock++;
 
+	// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
+	AM_changeWindowScale();
+
     if (followplayer)
 	AM_doFollowPlayer();
 
@@ -855,9 +857,12 @@ void AM_Ticker (void)
 //
 // Clear automap frame buffer.
 //
+
+#define render_pitch render_height
 void AM_clearFB(int color)
 {
-    memset(fb, color, f_w*SCREENHEIGHT*sizeof(*fb));
+	// TODO: THIS IS BROKEN THIS IS BROKEN THIS IS BROKEN
+    memset(fb, color, f_w*render_pitch*sizeof(*fb));
 }
 
 
@@ -1031,7 +1036,7 @@ AM_drawFline
 	return;
     }
 
-#define PUTDOT(xx,yy,cc) fb[(xx)*SCREENHEIGHT+(yy)]=(cc)
+#define PUTDOT(xx,yy,cc) fb[(xx)*render_pitch+(yy)]=(cc)
 
     dx = fl->b.x - fl->a.x;
     ax = 2 * (dx<0 ? -dx : dx);
@@ -1355,7 +1360,7 @@ void AM_drawMarks(void)
 
 void AM_drawCrosshair(int color)
 {
-    fb[(SCREENHEIGHT*(f_w>>1) + (f_h>>1))] = color; // single point for now
+    fb[(render_pitch*(f_w>>1) + (f_h>>1))] = color; // single point for now
 
 }
 

@@ -59,7 +59,7 @@ extern int32_t		validcount;
 
 #define MAXLIGHTSCALE		48
 #define LIGHTSCALESHIFT		12
-#define LIGHTSCALEDIVIDE	( ( SCREENWIDTH << FRACBITS) / 320 )
+#define LIGHTSCALEDIVIDE	( ( render_width << FRACBITS ) / 320 )
 #define MAXLIGHTZ	       128
 #define LIGHTZSHIFT		20
 

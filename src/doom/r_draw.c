@@ -45,8 +45,8 @@
 
 // ?
 // This does precisely nothing but hard limit what you can do with a given executable
-#define MAXWIDTH			(SCREENWIDTH + ( SCREENWIDTH >> 1) )
-#define MAXHEIGHT			(SCREENHEIGHT + ( SCREENHEIGHT >> 1) )
+#define MAXWIDTH			( MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
+#define MAXHEIGHT			( MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
 
 // status bar height at bottom of screen
 #define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
@@ -463,7 +463,7 @@ void R_DrawColumnLow ( colcontext_t* context )
 // Spectre/Invisibility.
 //
 // Hoo boy did I get this wrong originally. Vanilla offset by SCREENWIDTH, ie one column.
-// Thus the correct value for vanilla compatibility is 1, not SCREENHEIGHT.
+// Thus the correct value for vanilla compatibility is 1, not render_height.
 #define FUZZOFF	( 1 )
 #define FUZZPRIME ( 29 )
 
@@ -659,7 +659,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 	int32_t		fuzzpossample;
 
 	pixel_t*	src;
-	pixel_t		srcbuffer[ SCREENHEIGHT ];
+	pixel_t		srcbuffer[ MAXSCREENHEIGHT ];
 	pixel_t*	basecolorpmap = colormaps + 6*256;
 	pixel_t*	darkercolormap = colormaps + 12*256;
 	pixel_t*	samplecolormap;
@@ -771,8 +771,8 @@ void R_DrawFuzzColumnLow ( colcontext_t* context )
 	if (++fuzzpos == FUZZTABLE) 
 	    fuzzpos = 0;
 	
-	dest += SCREENWIDTH;
-	dest2 += SCREENWIDTH;
+	++dest;
+	++dest2;
 
 	frac += fracstep; 
     } while (count--); 
@@ -855,8 +855,8 @@ void R_DrawTranslatedColumnLow ( colcontext_t* context )
 	//  is mapped to gray, red, black/indigo. 
 	*dest = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
 	*dest2 = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-	dest += SCREENWIDTH;
-	dest2 += SCREENWIDTH;
+	++dest;
+	++dest2;
 	
 	frac += fracstep; 
     } while (count--); 
@@ -940,7 +940,7 @@ void R_DrawSpan( spancontext_t* context )
 
 		// Lookup pixel from flat texture tile,
 		*dest = context->source[spot];
-		dest += SCREENHEIGHT;
+		dest += render_height;
 
 		positionx += stepx;
 		positiony += stepy;
@@ -964,8 +964,8 @@ void R_DrawSpanLow ( spancontext_t* context )
 #ifdef RANGECHECK
     if (ds_x2 < ds_x1
 	|| ds_x1<0
-	|| ds_x2>=SCREENWIDTH
-	|| (unsigned)ds_y>SCREENHEIGHT)
+	|| ds_x2>=render_width
+	|| (unsigned)ds_y>render_height)
     {
 	I_Error( "R_DrawSpan: %i to %i at %i",
 		 ds_x1,ds_x2,ds_y);
@@ -1021,16 +1021,16 @@ R_InitBuffer
     // Handle resize,
     //  e.g. smaller view windows
     //  with border and/or status bar.
-    viewwindowx = (SCREENWIDTH-width) >> 1; 
+    viewwindowx = (render_width-width) >> 1; 
     // Samw with base row offset.
-    if (width == SCREENWIDTH) 
+    if (width == render_width) 
 		viewwindowy = 0;
     else 
-		viewwindowy = (SCREENHEIGHT-SBARHEIGHT-height) >> 1;
+		viewwindowy = (render_height-SBARHEIGHT-height) >> 1;
 
     // Preclaculate all column offsets.
     for (i=0 ; i<width ; i++) 
-		xlookup[i] = (i+viewwindowx)*SCREENHEIGHT; 
+		xlookup[i] = (i+viewwindowx)*render_height; 
 
     // Row offset. For windows.
     for (i=0 ; i<height ; i++)
@@ -1053,7 +1053,7 @@ static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtu
 	int32_t numcols = FixedMul( virtualwidth << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
 	int32_t numrows;
 
-	byte* outputbase = dest_buffer->data + ( FixedMul( virtualx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) * dest_buffer->height
+	byte* outputbase = dest_buffer->data + ( FixedMul( virtualx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) * dest_buffer->pitch
 										+ ( FixedMul( virtualy << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS );
 	byte* output;
 
@@ -1067,7 +1067,7 @@ static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtu
 			*output = colormap[ *output ];
 			++output;
 		}
-		outputbase += dest_buffer->height;
+		outputbase += dest_buffer->pitch;
 	}
 }
 
@@ -1108,27 +1108,33 @@ void R_FillBackScreen (void)
     // If we are running full screen, there is no need to do any of this,
     // and the background buffer can be freed if it was previously in use.
 
-    if (scaledviewwidth == SCREENWIDTH)
-    {
-        if (background_data.data != NULL)
-        {
-            Z_Free(background_data.data);
-            background_data.data = NULL;
-        }
+	if( scaledviewwidth == render_width
+		|| background_data.width != render_width
+		|| background_data.height != render_height )
+	{
+		if (background_data.data != NULL)
+		{
+			Z_Free(background_data.data);
+			memset( &background_data, 0, sizeof( background_data ) );
+		}
 
-	return;
-    }
+		if( scaledviewwidth == render_width )
+		{
+			return;
+		}
+	}
 
     // Allocate the background buffer if necessary
 	
-    if (background_data.data == NULL)
-    {
-        background_data.data = Z_Malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(*background_data.data),
-                                     PU_STATIC, NULL);
-		background_data.width = SCREENWIDTH;
-		background_data.height = SCREENHEIGHT;
-		background_data.pitch = SCREENHEIGHT;
+	if (background_data.data == NULL)
+	{
+		background_data.data = Z_Malloc(render_width * render_height * sizeof(*background_data.data),
+										PU_STATIC, NULL);
+		background_data.width = render_width;
+		background_data.height = render_height;
+		background_data.pitch = render_height;
 		background_data.pixel_size_bytes = 1;
+		background_data.magic_value = vbuffer_magic;
     }
 
     if (gamemode == commercial)
@@ -1240,12 +1246,12 @@ static void R_VideoErase( unsigned ofs, int count )
 void R_VideoEraseRegion( int x, int y, int width, int height )
 {
 	int col = 0;
-	int ofs = ( x * SCREENHEIGHT ) + y;
+	int ofs = ( x * render_height ) + y;
 
 	for( ; col < width; ++col )
 	{
 		R_VideoErase( ofs, height );
-		ofs += SCREENHEIGHT;
+		ofs += render_height;
 	}
 }
 
@@ -1261,33 +1267,33 @@ void R_DrawViewBorder (void)
     int		ofs;
     int		i; 
  
-    if (scaledviewwidth == SCREENWIDTH) 
+    if (scaledviewwidth == render_width) 
 	return; 
   
-    top = (SCREENHEIGHT-SBARHEIGHT-viewheight)/2;
-    side = (SCREENWIDTH-scaledviewwidth)/2;
+    top = (render_height-SBARHEIGHT-viewheight)/2;
+    side = (render_width-scaledviewwidth)/2;
 
 	ofs = 0;
 	for( i = 0; i < side; ++i )
 	{
-		R_VideoErase( ofs, SCREENHEIGHT - SBARHEIGHT );
-		ofs += SCREENHEIGHT;
+		R_VideoErase( ofs, render_height - SBARHEIGHT );
+		ofs += render_height;
 	}
 
-	for( i = side; i < SCREENWIDTH - side; ++i )
+	for( i = side; i < render_width - side; ++i )
 	{
 		R_VideoErase( ofs, top );
-		R_VideoErase( ofs + SCREENHEIGHT - SBARHEIGHT - top, top );
-		ofs += SCREENHEIGHT;
+		R_VideoErase( ofs + render_height - SBARHEIGHT - top, top );
+		ofs += render_height;
 	}
 
-	for( i = SCREENWIDTH - side; i < SCREENWIDTH; ++i )
+	for( i = render_width - side; i < render_width; ++i )
 	{
-		R_VideoErase( ofs, SCREENHEIGHT - SBARHEIGHT );
-		ofs += SCREENHEIGHT;
+		R_VideoErase( ofs, render_height - SBARHEIGHT );
+		ofs += render_height;
 	}
 
-    V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
+    V_MarkRect (0,0,render_width, render_height-SBARHEIGHT); 
 } 
  
  

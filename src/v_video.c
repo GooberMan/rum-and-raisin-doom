@@ -63,6 +63,9 @@ vbuffer_t* dest_buffer;
 
 int dirtybox[4]; 
 
+extern int32_t render_width;
+extern int32_t render_height;
+
 // haleyjd 08/28/10: clipping callback function for patches.
 // This is needed for Chocolate Strife, which clips patches to the screen.
 static vpatchclipfunc_t patchclip_callback = NULL;
@@ -165,7 +168,7 @@ void V_InflateAndTransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outp
 	int32_t inflatedheight = inflatedheight_fixed >> FRACBITS;
 	int32_t inflatedpitch = inflatedpitch_fixed >> FRACBITS;
 
-	int sample;
+	int32_t sample;
 
 	output->width = inflatedwidth;
 	output->height = inflatedheight;
@@ -336,9 +339,9 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 
 #ifdef RANGECHECK 
     if (x < 0
-     || x + SHORT(patch->width) > SCREENWIDTH
+     || x + SHORT(patch->width) > render_width
      || y < 0
-     || y + SHORT(patch->height) > SCREENHEIGHT)
+     || y + SHORT(patch->height) > render_height)
     {
         I_Error("Bad V_DrawPatchFlipped");
     }
@@ -432,15 +435,16 @@ void V_DrawTLPatch(int x, int y, patch_t * patch)
     x -= SHORT(patch->leftoffset);
 
     if (x < 0
-     || x + SHORT(patch->width) > SCREENWIDTH 
+     || x + SHORT(patch->width) > render_width 
      || y < 0
-     || y + SHORT(patch->height) > SCREENHEIGHT)
+     || y + SHORT(patch->height) > render_height)
     {
         I_Error("Bad V_DrawTLPatch");
     }
 
     col = 0;
-    desttop = dest_screen + y * SCREENWIDTH + x;
+	// TODO: THIS NEEDS HELP
+    desttop = dest_screen + x * render_height + y;
 
     w = SHORT(patch->width);
     for (; col < w; x++, col++, desttop++)
@@ -452,16 +456,18 @@ void V_DrawTLPatch(int x, int y, patch_t * patch)
         while (column->topdelta != 0xff)
         {
             source = (byte *) column + 3;
-            dest = desttop + column->topdelta * SCREENWIDTH;
+            dest = desttop + column->topdelta;
             count = column->length;
 
             while (count--)
             {
                 *dest = tinttable[((*dest) << 8) + *source++];
-                dest += SCREENWIDTH;
+                ++dest;
             }
             column = (column_t *) ((byte *) column + column->length + 4);
         }
+
+		desttop += render_height;
     }
 #endif
 }
@@ -491,7 +497,7 @@ void V_DrawXlaPatch(int x, int y, patch_t * patch)
     }
 
     col = 0;
-    desttop = dest_screen + y * SCREENWIDTH + x;
+    desttop = dest_screen + x * render_height + y;
 
     w = SHORT(patch->width);
     for(; col < w; x++, col++, desttop++)
@@ -503,18 +509,20 @@ void V_DrawXlaPatch(int x, int y, patch_t * patch)
         while(column->topdelta != 0xff)
         {
             source = (byte *) column + 3;
-            dest = desttop + column->topdelta * SCREENWIDTH;
+            dest = desttop + column->topdelta;
             count = column->length;
 
             while(count--)
             {
                 *dest = xlatab[*dest + ((*source) << 8)];
                 source++;
-                dest += SCREENWIDTH;
+                dest++;
             }
             column = (column_t *) ((byte *) column + column->length + 4);
         }
-    }
+
+		desttop += render_height;
+	}
 #endif
 }
 
@@ -538,15 +546,15 @@ void V_DrawAltTLPatch(int x, int y, patch_t * patch)
     x -= SHORT(patch->leftoffset);
 
     if (x < 0
-     || x + SHORT(patch->width) > SCREENWIDTH
+     || x + SHORT(patch->width) > render_width
      || y < 0
-     || y + SHORT(patch->height) > SCREENHEIGHT)
+     || y + SHORT(patch->height) > render_height)
     {
         I_Error("Bad V_DrawAltTLPatch");
     }
 
     col = 0;
-    desttop = dest_screen + y * SCREENWIDTH + x;
+    desttop = dest_screen + x * render_height + y;
 
     w = SHORT(patch->width);
     for (; col < w; x++, col++, desttop++)
@@ -558,17 +566,19 @@ void V_DrawAltTLPatch(int x, int y, patch_t * patch)
         while (column->topdelta != 0xff)
         {
             source = (byte *) column + 3;
-            dest = desttop + column->topdelta * SCREENWIDTH;
+            dest = desttop + column->topdelta;
             count = column->length;
 
             while (count--)
             {
                 *dest = tinttable[((*dest) << 8) + *source++];
-                dest += SCREENWIDTH;
+                dest++;
             }
             column = (column_t *) ((byte *) column + column->length + 4);
         }
-    }
+
+		desttop += render_height;
+	}
 #endif
 }
 
@@ -593,16 +603,16 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
     x -= SHORT(patch->leftoffset);
 
     if (x < 0
-     || x + SHORT(patch->width) > SCREENWIDTH
+     || x + SHORT(patch->width) > render_width
      || y < 0
-     || y + SHORT(patch->height) > SCREENHEIGHT)
+     || y + SHORT(patch->height) > render_height)
     {
         I_Error("Bad V_DrawShadowedPatch");
     }
 
     col = 0;
-    desttop = dest_screen + y * SCREENWIDTH + x;
-    desttop2 = dest_screen + (y + 2) * SCREENWIDTH + x + 2;
+    desttop = dest_screen + x * render_height + y;
+    desttop2 = dest_screen + (x + 2) * render_height + y + 2;
 
     w = SHORT(patch->width);
     for (; col < w; x++, col++, desttop++, desttop2++)
@@ -614,20 +624,24 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
         while (column->topdelta != 0xff)
         {
             source = (byte *) column + 3;
-            dest = desttop + column->topdelta * SCREENWIDTH;
-            dest2 = desttop2 + column->topdelta * SCREENWIDTH;
+            dest = desttop + column->topdelta;
+            dest2 = desttop2 + column->topdelta;
             count = column->length;
 
             while (count--)
             {
                 *dest2 = tinttable[((*dest2) << 8)];
-                dest2 += SCREENWIDTH;
+                dest2++;
                 *dest = *source++;
-                dest += SCREENWIDTH;
+                dest++;
 
             }
             column = (column_t *) ((byte *) column + column->length + 4);
         }
+
+		desttop += render_height;
+		desttop2 += render_height;
+
     }
 #endif
 }
@@ -667,9 +681,9 @@ void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
  
 #ifdef RANGECHECK 
     if (x < 0
-     || x + width >SCREENWIDTH
+     || x + width >render_width
      || y < 0
-     || y + height > SCREENHEIGHT)
+     || y + height > render_height)
     {
 		I_Error ("Bad V_DrawBlock");
     }
@@ -764,11 +778,13 @@ void V_DrawRawScreen(pixel_t *raw)
 //
 // V_Init
 // 
+
+// THIS IS EVILLLLLLLLLLLLL
 void V_Init (void) 
 { 
-	default_buffer.width = SCREENWIDTH;
-	default_buffer.height = SCREENHEIGHT;
-	default_buffer.pitch = SCREENHEIGHT;
+	default_buffer.width = render_width;
+	default_buffer.height = render_height;
+	default_buffer.pitch = render_height;
 	default_buffer.data = I_VideoBuffer;
 	default_buffer.pixel_size_bytes = 1;
 	default_buffer.magic_value = vbuffer_magic;
@@ -1077,7 +1093,7 @@ void V_ScreenShot(const char *format)
 
 #define MOUSE_SPEED_BOX_WIDTH  300
 #define MOUSE_SPEED_BOX_HEIGHT 15
-#define MOUSE_SPEED_BOX_X (SCREENWIDTH - MOUSE_SPEED_BOX_WIDTH - 10)
+#define MOUSE_SPEED_BOX_X (render_width - MOUSE_SPEED_BOX_WIDTH - 10)
 #define MOUSE_SPEED_BOX_Y 15
 
 //
@@ -1167,7 +1183,7 @@ static int max_seen_speed = MOUSE_SPEED_BOX_WIDTH - 1;
 
 static void DrawNonAcceleratingBox(int speed)
 {
-    int linelen;
+	int32_t linelen;
 	extern ImGuiContext* imgui_context;
 
 	ImVec2 start = { 0, 0 };
@@ -1177,14 +1193,14 @@ static void DrawNonAcceleratingBox(int speed)
 	end = start;
 	end.y += MOUSE_SPEED_BOX_HEIGHT;
 
-    if (speed > max_seen_speed)
-    {
-        max_seen_speed = speed;
-    }
+	if (speed > max_seen_speed)
+	{
+		max_seen_speed = speed;
+	}
 
-    // Draw horizontal "thermometer":
-    linelen = speed * (MOUSE_SPEED_BOX_WIDTH - 1) / max_seen_speed;
-	end.x = linelen;
+	// Draw horizontal "thermometer":
+	linelen = speed * (MOUSE_SPEED_BOX_WIDTH - 1) / max_seen_speed;
+	end.x = (float_t)linelen;
 
 	igText( "Highest seen speed" );
 	igNextColumn();

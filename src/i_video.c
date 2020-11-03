@@ -545,6 +545,9 @@ static void UpdateGrab(void)
 {
     static boolean currently_grabbed = false;
     boolean grab;
+#if MOUSE_MOVE_TO_BOTTOMRIGHT
+    int32_t screen_w, screen_h;
+#endif // MOUSE_MOVE_TO_BOTTOMRIGHT
 
     grab = MouseShouldBeGrabbed();
 
@@ -560,7 +563,6 @@ static void UpdateGrab(void)
     }
     else if (!grab && currently_grabbed)
     {
-        int screen_w, screen_h;
 
         SetShowCursor(true);
 
@@ -741,7 +743,9 @@ void I_FinishUpdate (void)
 {
 	static int32_t lasttic;
 	int32_t tics;
+#if FPS_DOTS_SUPPORTED
 	int32_t i;
+#endif // FPS_DOTS_SUPPORTED
 
 	SDL_Rect Target;
 
@@ -1314,7 +1318,6 @@ static void SetVideoMode(void)
 {
 	int32_t w, h;
 	int32_t x, y;
-	uint32_t rmask, gmask, bmask, amask;
 	int32_t bpp;
 	int32_t window_flags = 0, renderer_flags = 0;
 	int32_t drivercount = SDL_GetNumRenderDrivers();
