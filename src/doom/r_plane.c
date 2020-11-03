@@ -400,7 +400,7 @@ void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext
 			}
 			else
 			{
-				lightindex = M_MIN( ( planecontext->raster[ y ].distance >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) );
+				lightindex = M_MAX( 0, M_MIN( ( planecontext->raster[ y ].distance >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) ) );
 				lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
 				planecontext->raster[ y ].sourceoffset = lightindex * 4096;
 				planecontext->raster[ y ].zlight = zlight[ planecontext->planezlightindex ];
