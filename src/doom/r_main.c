@@ -1355,6 +1355,18 @@ void R_Init (void)
     framecount = 0;
 }
 
+void R_RenderDimensionsChanged( void )
+{
+	extern int detailLevel;
+	extern int screenblocks;
+	extern boolean refreshstatusbar;
+
+	refreshstatusbar = true;
+	V_RestoreBuffer();
+	R_InitLightTables();
+	R_SetViewSize( screenblocks, detailLevel );
+	R_ExecuteSetViewSize();
+}
 
 //
 // R_PointInSubsector

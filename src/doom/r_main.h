@@ -164,6 +164,9 @@ void R_RenderPlayerView (player_t *player);
 // Called by startup code.
 void R_Init (void);
 
+// Called when render_width and render_height change
+void R_RenderDimensionsChanged( void );
+
 // Called after display system initialised
 void R_InitContexts( void );
 

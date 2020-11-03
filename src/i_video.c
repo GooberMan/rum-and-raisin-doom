@@ -158,6 +158,12 @@ int32_t render_dimensions_mode = RMD_Independent;
 int32_t render_width = SCREENWIDTH;
 int32_t render_height = SCREENHEIGHT;
 
+int32_t queued_window_width = 800;
+int32_t queued_window_height = 600;
+int32_t queued_fullscreen = true;
+int32_t queued_render_width = SCREENWIDTH;
+int32_t queued_render_height = SCREENHEIGHT;
+
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
 
 int fullscreen_width = 0, fullscreen_height = 0;
@@ -325,15 +331,6 @@ void I_ShutdownGraphics(void)
 
 
 
-//
-// I_StartFrame
-//
-void I_StartFrame (void)
-{
-    // er?
-
-}
-
 static void HandleWindowEvent(SDL_WindowEvent *event)
 {
     int i;
@@ -408,7 +405,7 @@ static boolean ToggleFullScreenKeyShortcut(SDL_Keysym *sym)
             sym->scancode == SDL_SCANCODE_KP_ENTER) && (sym->mod & flags) != 0;
 }
 
-void I_ToggleFullScreen(void)
+void I_PerformFullscreen(void)
 {
     unsigned int flags = 0;
 
@@ -420,7 +417,7 @@ void I_ToggleFullScreen(void)
         return;
     }
 
-    fullscreen = !fullscreen;
+    fullscreen = !queued_fullscreen;
 
     if (fullscreen)
     {
@@ -435,15 +432,21 @@ void I_ToggleFullScreen(void)
     }
 }
 
+void I_ToggleFullScreen(void)
+{
+	queued_fullscreen = !fullscreen;
+}
+
 void I_SetWindowDimensions( int32_t w, int32_t h )
 {
-	window_width = w;
-	window_height = h;
+	queued_window_width = w;
+	queued_window_height = h;
+}
 
-	if( !fullscreen )
-	{
-		SDL_SetWindowSize(screen, window_width, window_height);
-	}
+void I_SetRenderDimensions( int32_t w, int32_t h )
+{
+	queued_render_width = w;
+	queued_render_height = h;
 }
 
 void I_GetEvent(void)
@@ -1447,17 +1450,6 @@ static void SetVideoMode(void)
 
 	I_SetupGLAD();
 
-    // Important: Set the "logical size" of the rendering context. At the same
-    // time this also defines the aspect ratio that is preserved while scaling
-    // and stretching the texture into the window.
-
-    if (aspect_ratio_correct || integer_scaling)
-    {
-        SDL_RenderSetLogicalSize(renderer,
-                                 render_width,
-                                 actualheight);
-    }
-
     // Force integer scales for resolution-independent rendering.
 
 #if SDL_VERSION_ATLEAST(2, 0, 5)
@@ -1471,30 +1463,6 @@ static void SetVideoMode(void)
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
-    if (texture != NULL)
-    {
-        SDL_DestroyTexture(texture);
-    }
-
-    // Set the scaling quality for rendering the intermediate texture into
-    // the upscaled texture to "nearest", which is gritty and pixelated and
-    // resembles software scaling pretty well.
-
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-
-    // Create the intermediate texture that the RGBA surface gets loaded into.
-    // The SDL_TEXTUREACCESS_STREAMING flag means that this texture's content
-    // is going to change frequently.
-
-    texture = SDL_CreateTexture(renderer,
-                                pixel_format,
-                                SDL_TEXTUREACCESS_STREAMING,
-                                render_height, render_width);
-
-    // Initially create the upscaled texture for rendering to screen
-
-    CreateUpscaledTexture(true);
-
 	I_SetupDearImGui();
 }
 
@@ -1505,6 +1473,8 @@ static void I_DeinitRenderBuffers( void )
 
 	if( renderbuffers != NULL )
 	{
+		SDL_DestroyTexture( texture );
+
 		SDL_FreeSurface( argbbuffer );
 		while( curr != end )
 		{
@@ -1573,8 +1543,61 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 		argbbuffer = SDL_CreateRGBSurface( 0, height, width, bpp, rmask, gmask, bmask, amask );
 		SDL_FillRect( argbbuffer, NULL, 0 );
 
-		blit_rect.w = height;
-		blit_rect.h = width;
+		queued_render_height = render_height = blit_rect.w = height;
+		queued_render_width = render_width = blit_rect.h = width;
+
+		if (aspect_ratio_correct == 1)
+		{
+			actualheight = ( render_width * 7500 / 10000 );
+		}
+		else
+		{
+			actualheight = ( render_width * 6250 / 10000 );
+		}
+
+		// Set the scaling quality for rendering the intermediate texture into
+		// the upscaled texture to "nearest", which is gritty and pixelated and
+		// resembles software scaling pretty well.
+
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+
+		// Create the intermediate texture that the RGBA surface gets loaded into.
+		// The SDL_TEXTUREACCESS_STREAMING flag means that this texture's content
+		// is going to change frequently.
+
+		texture = SDL_CreateTexture(renderer,
+									pixel_format,
+									SDL_TEXTUREACCESS_STREAMING,
+									render_height, render_width);
+
+		CreateUpscaledTexture( true );
+
+		// Important: Set the "logical size" of the rendering context. At the same
+		// time this also defines the aspect ratio that is preserved while scaling
+		// and stretching the texture into the window.
+
+		if (aspect_ratio_correct || integer_scaling)
+		{
+			SDL_RenderSetLogicalSize(renderer,
+										render_width,
+										actualheight);
+		}
+
+
+		// REMOVE THIS ANCIENT CODE ALREADY JEEBUS
+
+		// The actual 320x200 canvas that we draw to. This is the pixel buffer of
+		// the 8-bit paletted screen buffer that gets blit on an intermediate
+		// 32-bit RGBA screen buffer that gets loaded into a texture that gets
+		// finally rendered into our window or full screen in I_FinishUpdate().
+
+		I_VideoBuffer = screenbuffer->pixels;
+		V_RestoreBuffer();
+
+		// Clear the screen to black.
+
+		memset(I_VideoBuffer, 0, render_width * render_height * sizeof(*I_VideoBuffer));
+
 	}
 
 }
@@ -1592,6 +1615,12 @@ void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end )
 
 void I_InitGraphics( int32_t numbuffers )
 {
+	queued_window_width = window_width;
+	queued_window_height = window_height;
+	queued_fullscreen = fullscreen;
+	queued_render_width = render_width;
+	queued_render_height = render_height;
+
     SDL_Event dummy;
     byte *doompal;
     char *env;
@@ -1665,18 +1694,6 @@ void I_InitGraphics( int32_t numbuffers )
         SDL_Delay(startup_delay);
     }
 
-    // The actual 320x200 canvas that we draw to. This is the pixel buffer of
-    // the 8-bit paletted screen buffer that gets blit on an intermediate
-    // 32-bit RGBA screen buffer that gets loaded into a texture that gets
-    // finally rendered into our window or full screen in I_FinishUpdate().
-
-    I_VideoBuffer = screenbuffer->pixels;
-    V_RestoreBuffer();
-
-    // Clear the screen to black.
-
-    memset(I_VideoBuffer, 0, render_width * render_height * sizeof(*I_VideoBuffer));
-
     // clear out any events waiting at the start and center the mouse
   
     while (SDL_PollEvent(&dummy))
@@ -1689,6 +1706,37 @@ void I_InitGraphics( int32_t numbuffers )
     // Call I_ShutdownGraphics on quit
 
     I_AtExit(I_ShutdownGraphics, true);
+}
+
+//
+// I_StartFrame
+//
+void I_StartFrame (void)
+{
+	if( queued_render_width != render_width
+		|| queued_render_height != render_height )
+	{
+		I_RefreshRenderBuffers( renderbuffercount, queued_render_width, queued_render_height );
+	}
+
+	if( queued_window_width != window_width
+		|| queued_window_height != window_height )
+	{
+		if( !fullscreen )
+		{
+			SDL_SetWindowSize( screen, queued_window_width, queued_window_height );
+		}
+		else
+		{
+			window_width = queued_window_width;
+			window_height = queued_window_height;
+		}
+	}
+
+	if( queued_fullscreen != fullscreen )
+	{
+		I_PerformFullscreen();
+	}
 }
 
 // Bind all variables controlling video options into the configuration

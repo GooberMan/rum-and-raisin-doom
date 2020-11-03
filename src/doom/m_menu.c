@@ -2426,6 +2426,18 @@ static int32_t window_width_working;
 static int32_t window_height_working;
 static const char* window_dimensions_current = NULL;
 
+static windowsizes_t render_sizes[] =
+{
+	WINDOWDIM( 320,		200 ),
+	WINDOWDIM( 640,		400 ),
+	WINDOWDIM( 1280,	800 ),
+	WINDOWDIM( 2560,	1600 ),
+};
+static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
+static int32_t render_width_working;
+static int32_t render_height_working;
+static const char* render_dimensions_current = NULL;
+
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
@@ -2560,7 +2572,25 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 
 			igText( "Predefined backbuffer sizes" );
 			igNextColumn();
-			igText( "<coming soon>" );
+			igPushItemWidth( 180.f );
+			igPushIDPtr( &render_dimensions_current );
+			if( igBeginCombo( "", render_dimensions_current, ImGuiComboFlags_None ) )
+			{
+				for( index = 0; index < render_sizes_count; ++index )
+				{
+					selected = render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height;
+					if( igSelectableBool( render_sizes[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+					{
+						render_dimensions_current = render_sizes[ index ].asstring;
+						render_width_working = render_sizes[ index ].width;
+						render_height_working = render_sizes[ index ].height;
+						I_SetRenderDimensions( render_width_working, render_height_working );
+					}
+				}
+				igEndCombo();
+			}
+			igPopID();
+			igPopItemWidth();
 			igNextColumn();
 
 			igText( "Custom backbuffer size" );
@@ -2790,6 +2820,15 @@ void M_Init (void)
 			window_dimensions_current = window_sizes_scaled[ index ].asstring;
 		}
 	}
+
+	for( index = 0; index < render_sizes_count; ++index )
+	{
+		if( render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height )
+		{
+			render_dimensions_current = render_sizes[ index ].asstring;
+		}
+	}
+
 
 	switch( gamemission )
 	{

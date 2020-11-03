@@ -809,7 +809,12 @@ void V_RestoreBuffer(void)
 {
 	dest_buffer = &default_buffer;
 	// HACK: V_Init doesn't have valid I_VideoBuffer pointer :-(
+	default_buffer.width = render_width;
+	default_buffer.height = render_height;
+	default_buffer.pitch = render_height;
 	default_buffer.data = I_VideoBuffer;
+	default_buffer.pixel_size_bytes = 1;
+	default_buffer.magic_value = vbuffer_magic;
 }
 
 //

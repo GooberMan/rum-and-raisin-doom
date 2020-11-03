@@ -139,6 +139,8 @@ extern boolean		rendersplitvisualise;
 extern boolean		renderthreaded;
 extern atomicval_t	renderthreadCPUmelter;
 
+boolean refreshstatusbar = true;
+
 void D_ConnectNetGame(void);
 void D_CheckNetGame(void);
 
@@ -216,7 +218,8 @@ boolean D_Display (void)
 
 	start = I_GetTimeUS();
 
-	redrawsbar = voidcleartype != Void_NoClear;
+	redrawsbar = refreshstatusbar || voidcleartype != Void_NoClear;
+	refreshstatusbar = false;
 
 	// change the view size if needed
 	if (setsizeneeded)
@@ -470,6 +473,9 @@ void D_RunFrame()
     static int wipestart;
     static boolean wipe;
 
+	int32_t prev_render_width = render_width;
+	int32_t prev_render_height = render_height;
+
 	uint64_t start;
 	uint64_t end;
 	uint64_t total;
@@ -508,6 +514,12 @@ void D_RunFrame()
 
     // frame syncronous IO operations
     I_StartFrame ();
+
+	// TODO: Callbacks or something
+	if( prev_render_width != render_width || prev_render_height != render_height )
+	{
+		R_RenderDimensionsChanged();
+	}
 
     TryRunTics (); // will run at least one tic
 
