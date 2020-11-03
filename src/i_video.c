@@ -1250,7 +1250,9 @@ static void I_SetupOpenGL(void)
 static void I_SetupGLAD(void)
 {
 	int32_t retval;
-	retval = gladLoadGLLoader( (GLADloadproc)&SDL_GL_GetProcAddress );
+	// GLAD handles symbol loading for all platforms we care about, so let it sort it out instead
+	// of following SDL's advice to use its GL_ProcAddress function.
+	retval = gladLoadGL();
 	if ( !retval )
 	{
 		I_Error( "GLAD could not find any OpenGL version" );
