@@ -1704,7 +1704,11 @@ boolean M_Responder (event_t* ev)
         // First click on close button = bring up quit confirm message.
         // Second click on close button = confirm quit
 
-        if (menuactive && messageToPrint && messageRoutine == M_QuitResponse)
+		if( debugmenuactive )
+		{
+			I_Quit();
+		}
+		else if( menuactive && messageToPrint && messageRoutine == M_QuitResponse )
         {
             M_QuitResponse(key_menu_confirm);
         }

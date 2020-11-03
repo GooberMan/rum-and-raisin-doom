@@ -84,6 +84,7 @@ boolean					renderrebalancecontexts = false;
 boolean					renderthreaded = true;
 boolean					renderSIMDcolumns = true;
 boolean					rendersinglebuffer = true;
+atomicval_t				renderthreadCPUmelter = 0;
 int32_t					performancegraphscale = 20;
 
 int32_t					viewangleoffset;
@@ -921,7 +922,11 @@ int32_t R_ContextThreadFunc( void* userdata )
 			R_RenderViewContext( &data->context );
 			I_AtomicExchange( &data->framefinished, 1 );
 		}
-		I_Sleep( 1 );
+
+		if( I_AtomicLoad( &renderthreadCPUmelter ) == 0 )
+		{
+			I_Sleep( 1 );
+		}
 	}
 
 	I_AtomicExchange( &data->running, 0 );
@@ -1272,9 +1277,29 @@ static void R_RenderThreadingGraphsWindow( const char* name, void* data )
 
 static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 {
+	boolean WorkingBool = I_AtomicLoad( &renderthreadCPUmelter ) != 0;
+
 	igText( "Performance options" );
 	igSeparator();
 	igSliderInt( "Running threads", &numusablerendercontexts, 1, numrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+
+	igPushIDPtr( &renderthreadCPUmelter );
+	if( igCheckbox( "CPU melter (nosleep)", &WorkingBool ) )
+	{
+		I_AtomicExchange( &renderthreadCPUmelter, (atomicval_t)!!WorkingBool );
+	}
+	if( igIsItemHovered( ImGuiHoveredFlags_None ) )
+	{
+		igBeginTooltip();
+		igText( "For when you absolutely, positively don't care\n"
+				"about power usage or balancing CPU resources.\n"
+				"Brute force eliminates main thread stall. Don't\n"
+				"complain if your CPU overheats, it was your own\n"
+				"choice to turn this option on." );
+		igEndTooltip();
+	}
+	igPopID();
+
 	igCheckbox( "Load balancing", &renderloadbalancing );
 	igCheckbox( "SIMD columns", &renderSIMDcolumns );
 	igCheckbox( "Single render buffer", &rendersinglebuffer );
