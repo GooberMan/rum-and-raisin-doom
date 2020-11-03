@@ -58,6 +58,7 @@
 #include "i_input.h"
 #include "i_joystick.h"
 #include "i_system.h"
+#include "i_thread.h"
 #include "i_timer.h"
 #include "i_video.h"
 
@@ -131,11 +132,12 @@ char		mapdir[1024];           // directory of development maps
 int             show_endoom = 1;
 int             show_diskicon = 1;
 
-extern int32_t numrendercontexts;
-extern int32_t numusablerendercontexts;
-extern boolean renderloadbalancing;
-extern boolean rendersplitvisualise;
-extern boolean renderthreaded;
+extern int32_t		numrendercontexts;
+extern int32_t		numusablerendercontexts;
+extern boolean		renderloadbalancing;
+extern boolean		rendersplitvisualise;
+extern boolean		renderthreaded;
+extern atomicval_t	renderthreadCPUmelter;
 
 void D_ConnectNetGame(void);
 void D_CheckNetGame(void);
@@ -1773,6 +1775,10 @@ void D_DoomMain (void)
 	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
 	renderthreaded  = !M_ParmExists( "-norenderthreaded" );
+	if( M_ParmExists( "-cpumelter" ) )
+	{
+		I_AtomicExchange( &renderthreadCPUmelter, 1 );
+	}
 
 	p = M_CheckParmWithArgs( "-numrendercontexts", 1 );
 	if( p )
