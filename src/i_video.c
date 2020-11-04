@@ -22,7 +22,9 @@
 
 #include "SDL.h"
 
-#define USE_GLAD 1
+#include "m_debugmenu.h"
+
+#define USE_GLAD ( USE_IMGUI )
 #include <glad/glad.h>
 
 #include "SDL_opengl.h"
@@ -244,8 +246,10 @@ int usegamma = 0;
 // Joystick/gamepad hysteresis
 unsigned int joywait = 0;
 
+#if USE_IMGUI
 // Dear ImGui. For debugging justice
 extern ImGuiContext* imgui_context;
+#endif // USE_IMGUI
 
 extern boolean debugmenuactive;
 
@@ -459,8 +463,9 @@ void I_GetEvent(void)
 
     while (SDL_PollEvent(&sdlevent))
     {
+#if USE_IMGUI
 		CImGui_ImplSDL2_ProcessEvent( &sdlevent );
-
+#endif // USE_IMGUI
         switch (sdlevent.type)
         {
             case SDL_KEYDOWN:
@@ -873,6 +878,7 @@ void I_FinishUpdate (void)
 	SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 
 	// ImGui time!
+#if USE_IMGUI
 	CImGui_ImplOpenGL3_NewFrame();
 	CImGui_ImplSDL2_NewFrame( screen );
 
@@ -885,6 +891,7 @@ void I_FinishUpdate (void)
 
 	igRender();
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
+#endif // USE_IMGUI
     // Draw!
 
     SDL_RenderPresent(renderer);
@@ -1300,6 +1307,7 @@ static void I_SetupGLAD(void)
 #define I_SetupGLAD()
 #endif // USE_GLAD
 
+#if USE_IMGUI
 static void I_SetupDearImGui(void)
 {
 	int32_t retval;
@@ -1316,6 +1324,9 @@ static void I_SetupDearImGui(void)
 		I_Error( "CImGui_ImplOpenGL3_Init failed to initialise" );
 	}
 }
+#else // !USE_IMGUI
+#define I_SetupDearImGui()
+#endif // USE_IMGUI
 
 static void SetVideoMode(void)
 {
@@ -1698,7 +1709,9 @@ void I_InitGraphics( int32_t numbuffers )
   
     while (SDL_PollEvent(&dummy))
 	{
+#if USE_IMGUI
 		CImGui_ImplSDL2_ProcessEvent( &dummy );
+#endif // USE_IMGUI
 	}
 
     initialized = true;

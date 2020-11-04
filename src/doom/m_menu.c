@@ -1721,12 +1721,14 @@ boolean M_Responder (event_t* ev)
         return true;
     }
 
+#if USE_IMGUI
 	if (ev->type == ev_keydown && ev->data1 == key_menu_debug)
 	{
 		debugmenuactive = !debugmenuactive;
 		S_StartSound(NULL, debugmenuactive ? sfx_swtchn : sfx_swtchx);
 		return true;
 	}
+#endif // USE_IMGUI
 
 	if( debugmenuactive )
 	{

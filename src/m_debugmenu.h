@@ -17,6 +17,13 @@
 
 #include "doomtype.h"
 
+#if defined( __APPLE__ )
+// And you can come back out after you think about what you've done.
+#define USE_IMGUI 0
+#else
+#define USE_IMGUI 1
+#endif
+
 typedef void (*menufunc_t)( const char* itemname, void* data );
 extern int32_t		debugmenuclosesound;
 

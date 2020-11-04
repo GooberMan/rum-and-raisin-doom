@@ -428,10 +428,13 @@ void M_InitDebugMenu( void )
 	char themefullpath[ MAXNAMELENGTH + 1 ];
 	themedata_t* thistheme;
 
+#if USE_IMGUI
 	imgui_context = igCreateContext( NULL );
+
 	memcpy( theme_original, igGetStyle()->Colors, sizeof( theme_original ) );
 
 	memset( entries, 0, sizeof( entries ) );
+#endif // USE_IMGUI
 
 	nextentry = entries;
 	rootentry = nextentry++;
