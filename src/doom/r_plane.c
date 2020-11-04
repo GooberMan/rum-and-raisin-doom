@@ -524,7 +524,8 @@ static void R_RasteriseVisplaneColumn_Log2_32( planecontext_t* planecontext, spa
 
 	if( count >= 0 )
 	{
-		currdistance	= planecontext->raster[ ybase + count ].distance;
+		ycache			= ybase + count;
+		currdistance	= planecontext->raster[ ycache ].distance;
 		currlength		= FixedMul ( currdistance, distscale[ x ] );
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
@@ -537,8 +538,7 @@ static void R_RasteriseVisplaneColumn_Log2_32( planecontext_t* planecontext, spa
 		do
 		{
 			DOSAMPLE();
-			--count;
-		} while( count >= 0 );
+		} while( ybase <= ycache );
 	}
 
 #if RENDER_PERF_GRAPHING
@@ -629,7 +629,8 @@ static void R_RasteriseVisplaneColumn_Log2_16( planecontext_t* planecontext, spa
 
 	if( count >= 0 )
 	{
-		currdistance	= planecontext->raster[ ybase + count ].distance;
+		ycache			= ybase + count;
+		currdistance	= planecontext->raster[ ycache ].distance;
 		currlength		= FixedMul ( currdistance, distscale[ x ] );
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
@@ -642,8 +643,7 @@ static void R_RasteriseVisplaneColumn_Log2_16( planecontext_t* planecontext, spa
 		do
 		{
 			DOSAMPLE();
-			--count;
-		} while( count >= 0 );
+		} while( ybase <= ycache );
 	}
 
 #if RENDER_PERF_GRAPHING
@@ -725,7 +725,8 @@ static void R_RasteriseVisplaneColumn_Log2_8( planecontext_t* planecontext, span
 
 	if( count >= 0 )
 	{
-		currdistance	= planecontext->raster[ ybase + count ].distance;
+		ycache			= ybase + count;
+		currdistance	= planecontext->raster[ ycache ].distance;
 		currlength		= FixedMul ( currdistance, distscale[ x ] );
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
@@ -738,8 +739,7 @@ static void R_RasteriseVisplaneColumn_Log2_8( planecontext_t* planecontext, span
 		do
 		{
 			DOSAMPLE();
-			--count;
-		} while( count >= 0 );
+		} while( ybase <= ycache );
 	}
 
 #if RENDER_PERF_GRAPHING
@@ -819,7 +819,8 @@ static void R_RasteriseVisplaneColumn_Log2_4( planecontext_t* planecontext, span
 
 	if( count >= 0 )
 	{
-		currdistance	= planecontext->raster[ ybase + count ].distance;
+		ycache			= ybase + count;
+		currdistance	= planecontext->raster[ ycache ].distance;
 		currlength		= FixedMul ( currdistance, distscale[ x ] );
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
@@ -832,8 +833,7 @@ static void R_RasteriseVisplaneColumn_Log2_4( planecontext_t* planecontext, span
 		do
 		{
 			DOSAMPLE();
-			--count;
-		} while( count >= 0 );
+		} while( ybase <= ycache );
 	}
 
 #if RENDER_PERF_GRAPHING
@@ -950,7 +950,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			case Span_PolyRaster_Log2_4:
 				for (x=pl->minx ; x <= stop ; x++)
 				{
-					if( pl->top[ x ] < pl->bottom[ x ] )
+					if( pl->top[ x ] <= pl->bottom[ x ] )
 					{
 						R_RasteriseVisplaneColumn_Log2_4( planecontext, &spancontext, pl, x );
 					}
@@ -960,7 +960,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			case Span_PolyRaster_Log2_8:
 				for (x=pl->minx ; x <= stop ; x++)
 				{
-					if( pl->top[ x ] < pl->bottom[ x ] )
+					if( pl->top[ x ] <= pl->bottom[ x ] )
 					{
 						R_RasteriseVisplaneColumn_Log2_8( planecontext, &spancontext, pl, x );
 					}
@@ -970,7 +970,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			case Span_PolyRaster_Log2_16:
 				for (x=pl->minx ; x <= stop ; x++)
 				{
-					if( pl->top[ x ] < pl->bottom[ x ] )
+					if( pl->top[ x ] <= pl->bottom[ x ] )
 					{
 						R_RasteriseVisplaneColumn_Log2_16( planecontext, &spancontext, pl, x );
 					}
@@ -980,7 +980,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			case Span_PolyRaster_Log2_32:
 				for (x=pl->minx ; x <= stop ; x++)
 				{
-					if( pl->top[ x ] < pl->bottom[ x ] )
+					if( pl->top[ x ] <= pl->bottom[ x ] )
 					{
 						R_RasteriseVisplaneColumn_Log2_32( planecontext, &spancontext, pl, x );
 					}
