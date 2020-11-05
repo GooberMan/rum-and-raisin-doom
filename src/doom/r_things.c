@@ -578,9 +578,9 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	{
 		// diminished light
 		index = xscale>>(LIGHTSCALESHIFT-detailshift);
-		if( render_width != 320 )
+		if( LIGHTSCALEMUL != FRACUNIT )
 		{
-			index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+			index = FixedMul( index << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
 		}
 
 		if (index >= MAXLIGHTSCALE) 

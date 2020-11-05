@@ -45,6 +45,10 @@ extern fixed_t		projection;
 
 extern int32_t		validcount;
 
+extern int32_t		light_render_width;
+extern fixed_t		light_scaled_divide;
+extern fixed_t		light_scaled_mul;
+
 
 //
 // Lighting LUT.
@@ -54,14 +58,15 @@ extern int32_t		validcount;
 
 // Lighting constants.
 // Now why not 32 levels here?
-#define LIGHTLEVELS	        16
-#define LIGHTSEGSHIFT	         4
+#define LIGHTLEVELS			16
+#define LIGHTSEGSHIFT		4
 
 #define MAXLIGHTSCALE		48
 #define LIGHTSCALESHIFT		12
-#define LIGHTSCALEDIVIDE	( ( render_width << FRACBITS ) / 320 )
-#define MAXLIGHTZ	       128
-#define LIGHTZSHIFT		20
+#define LIGHTSCALEDIVIDE	light_scaled_divide
+#define LIGHTSCALEMUL		light_scaled_mul
+#define MAXLIGHTZ			128
+#define LIGHTZSHIFT			20
 
 extern lighttable_t*	scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 extern int32_t			scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];

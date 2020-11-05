@@ -184,9 +184,9 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 			if (!fixedcolormap)
 			{
 				index = spritecontext->spryscale>>LIGHTSCALESHIFT;
-				if( render_width != 320 )
+				if( LIGHTSCALEMUL != FRACUNIT )
 				{
-					index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+					index = FixedMul( index << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
 				}
 
 				if (index >=  MAXLIGHTSCALE )
@@ -234,6 +234,7 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 
 // Detail maps show me how may reads are going to happen in any 16-byte block.
 extern byte detailmaps[16][256];
+extern byte lightlevelmaps[32][256];
 
 uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
 {
@@ -324,9 +325,9 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			// calculate lighting
 			index = wallcontext->scale>>LIGHTSCALESHIFT;
 
-			if( render_width != 320 )
+			if( LIGHTSCALEMUL != FRACUNIT )
 			{
-				index = FixedDiv( index << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+				index = FixedMul( index << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
 			}
 
 			if (index >=  MAXLIGHTSCALE ) index = MAXLIGHTSCALE-1;
@@ -363,7 +364,11 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			wallcolcontext.yl = yl;
 			wallcolcontext.yh = yh;
 			wallcolcontext.texturemid = wallcontext->midtexturemid;
+#if R_DRAWCOLUMN_LIGHTLEVELS
+			wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
+#else
 			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
+#endif
 			R_RangeCheck();
 			wallcolcontext.colfunc( &wallcolcontext );
 			planecontext->ceilingclip[currx] = viewheight;
@@ -388,7 +393,11 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 					wallcolcontext.yl = yl;
 					wallcolcontext.yh = mid;
 					wallcolcontext.texturemid = wallcontext->toptexturemid;
+#if R_DRAWCOLUMN_LIGHTLEVELS
+					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
+#else
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
+#endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
 					planecontext->ceilingclip[currx] = mid;
@@ -422,7 +431,11 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 					wallcolcontext.yl = mid;
 					wallcolcontext.yh = yh;
 					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
+#if R_DRAWCOLUMN_LIGHTLEVELS
+					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
+#else
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
+#endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
 					planecontext->floorclip[currx] = mid;

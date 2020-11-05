@@ -84,7 +84,7 @@ boolean					renderloadbalancing = false;
 boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
 boolean					renderthreaded = true;
-boolean					renderSIMDcolumns = true;
+boolean					renderSIMDcolumns = false;
 boolean					rendersinglebuffer = true;
 atomicval_t				renderthreadCPUmelter = 0;
 int32_t					performancegraphscale = 20;
@@ -724,6 +724,10 @@ void R_InitTextureMapping (void)
 //
 #define DISTMAP		2
 
+int32_t light_render_width = 0;
+fixed_t light_scaled_divide = 0;
+fixed_t light_scaled_mul = FRACUNIT;
+
 void R_InitLightTables (void)
 {
 	int		i;
@@ -731,6 +735,13 @@ void R_InitLightTables (void)
 	int		level;
 	int		startmap; 	
 	int		scale;
+
+	fixed_t		original_perspective = FixedDiv( 16 * FRACUNIT, 10 * FRACUNIT );
+	fixed_t		current_perspective = FixedDiv( render_width << FRACBITS, render_height << FRACBITS );
+	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
+	light_render_width = FixedMul( render_width << FRACBITS, perspective_mul ) >> FRACBITS;
+	light_scaled_divide = ( light_render_width << FRACBITS ) / 320;
+	light_scaled_mul = FixedDiv( FRACUNIT, light_scaled_divide );
     
 	// Calculate the light levels to use
 	//  for each level / distance combination.
@@ -739,11 +750,11 @@ void R_InitLightTables (void)
 		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
 		for (j=0 ; j<MAXLIGHTZ ; j++)
 		{
-			scale = FixedDiv ( ( render_width / 2 * FRACUNIT ), ( j + 1 ) << LIGHTZSHIFT );
+			scale = FixedDiv ( ( light_render_width / 2 * FRACUNIT ), ( j + 1 ) << LIGHTZSHIFT );
 			scale >>= LIGHTSCALESHIFT;
-			if( render_width != 320 )
+			if( LIGHTSCALEMUL != FRACUNIT )
 			{
-				scale = FixedDiv( scale << FRACBITS, LIGHTSCALEDIVIDE ) >> FRACBITS;
+				scale = FixedMul( scale << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
 			}
 
 			level = startmap - scale/DISTMAP;
@@ -761,10 +772,13 @@ void R_InitLightTables (void)
 }
 
 byte detailmaps[16][256];
+byte lightlevelmaps[32][256];
 
 #define HAX 0
 void R_InitColFuncs( void )
 {
+	int32_t lightlevel = 0;
+
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 	colfuncs[ 0 ] = &R_DrawColumn_OneSample;
 
@@ -830,6 +844,12 @@ void R_InitColFuncs( void )
 	memset( detailmaps[ 13 ], 86, 256 );
 	memset( detailmaps[ 14 ], 84, 256 );
 	memset( detailmaps[ 15 ], 82, 256 );
+
+	while( lightlevel < 32 )
+	{
+		memset( lightlevelmaps[ lightlevel ], 80 + lightlevel, 256 );
+		++lightlevel;
+	};
 
 	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Original ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Original ] = &R_DrawFuzzColumn;
 	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Adjusted ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Adjusted ] = &R_DrawAdjustedFuzzColumn;
@@ -1386,6 +1406,8 @@ void R_RenderDimensionsChanged( void )
 	R_InitLightTables();
 	R_InitPointToAngle();
 	R_InitTables();
+	ST_RefreshBuffer();
+	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
 	R_ExecuteSetViewSize();
 }

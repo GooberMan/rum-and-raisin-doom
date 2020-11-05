@@ -2425,6 +2425,8 @@ static windowsizes_t window_sizes_scaled[] =
 	WINDOWDIM( 1280,	720		),
 	WINDOWDIM( 1600,	900		),
 	WINDOWDIM( 1920,	1080	),
+	WINDOWDIM( 1600,	686		),
+	WINDOWDIM( 1920,	822		),
 };
 static int32_t window_sizes_scaled_count = sizeof( window_sizes_scaled ) / sizeof( *window_sizes_scaled );
 static int32_t window_width_working;
@@ -2437,7 +2439,14 @@ static windowsizes_t render_sizes[] =
 	WINDOWDIM( 640,		400 ),
 	WINDOWDIM( 1280,	800 ),
 	WINDOWDIM( 1707,	800 ),
+	WINDOWDIM( 1919,	900 ),
+	WINDOWDIM( 1600,	1000 ),
+	WINDOWDIM( 2133,	1000 ),
+	WINDOWDIM( 2800,	1000 ),
+	WINDOWDIM( 1920,	1200 ),
+	WINDOWDIM( 2560,	1200 ),
 	WINDOWDIM( 2560,	1600 ),
+
 };
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
 static int32_t render_width_working;
