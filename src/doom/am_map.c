@@ -1368,6 +1368,9 @@ void AM_Drawer (void)
 {
     if (!automapactive) return;
 
+	// TODO: FIX THIS HACK
+    fb = I_VideoBuffer;
+
     AM_clearFB(BACKGROUND);
     if (grid)
 	AM_drawGrid(GRIDCOLORS);
