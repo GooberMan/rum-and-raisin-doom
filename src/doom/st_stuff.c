@@ -1447,11 +1447,23 @@ void ST_Init (void)
 {
     ST_loadData();
 
-    st_backing_buffer.data = (pixel_t *) Z_Malloc(ST_BUFFERWIDTH * ST_BUFFERHEIGHT * sizeof(*st_backing_buffer.data), PU_STATIC, 0);
-	st_backing_buffer.width = ST_BUFFERWIDTH;
-	st_backing_buffer.height = ST_BUFFERHEIGHT;
+	memset( &st_backing_buffer, 0, sizeof( vbuffer_t ) );
+
+	ST_RefreshBuffer();
+}
+
+void ST_RefreshBuffer( void )
+{
+	if( st_backing_buffer.data != NULL )
+	{
+		return;
+		//Z_Free( st_backing_buffer.data );
+	}
+
+	st_backing_buffer.data = (pixel_t *) Z_Malloc( MAXSCREENWIDTH * ( ST_HEIGHT * 10 ) * sizeof(*st_backing_buffer.data), PU_STATIC, 0);
+	st_backing_buffer.height = MAXSCREENWIDTH;
+	st_backing_buffer.width = ST_BUFFERHEIGHT;
 	st_backing_buffer.pitch = ST_BUFFERHEIGHT;
 	st_backing_buffer.pixel_size_bytes = 1;
 	st_backing_buffer.magic_value = vbuffer_magic;
 }
-
