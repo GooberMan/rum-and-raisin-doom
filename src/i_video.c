@@ -152,7 +152,7 @@ int window_height = 600;
 enum renderdimensions_e
 {
 	RMD_MatchWindow,
-	RMD_ScaleWindow,
+	RMD_OperatingSystemScale,
 	RMD_Independent,
 };
 
@@ -1761,6 +1761,10 @@ void I_BindVideoVariables(void)
     M_BindStringVariable("window_position",        &window_position);
     M_BindIntVariable("usegamma",                  &usegamma);
     M_BindIntVariable("png_screenshots",           &png_screenshots);
+
+	M_BindIntVariable("render_width",				&render_width);
+	M_BindIntVariable("render_height",				&render_height);
+	M_BindIntVariable("render_dimensions_mode",		&render_dimensions_mode);
 
 	// TODO: Move these to R_BindRenderVariables now that it exists
     M_BindIntVariable("border_style",              &border_style);

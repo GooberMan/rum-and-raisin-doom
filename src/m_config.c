@@ -766,6 +766,26 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(fullscreen_height),
 
     //!
+    // Backbuffer width. Can be arbitrary.
+    // 
+    //
+
+    CONFIG_VARIABLE_INT(render_width),
+
+    //!
+    // Backbuffer height. Can be arbitrary.
+    //
+
+    CONFIG_VARIABLE_INT(render_height),
+
+    //!
+    // Backbuffer mode. 0 = match window, 1 = OS scaling, 2 = arbitrary
+    //
+
+    CONFIG_VARIABLE_INT(render_dimensions_mode),
+
+
+    //!
     // Maximum number of pixels to use for intermediate scaling buffer.
     // More pixels mean that the screen can be rendered more precisely,
     // but there are diminishing returns on quality. The default limits to
