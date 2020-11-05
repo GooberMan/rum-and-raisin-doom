@@ -678,18 +678,18 @@ static void CreateUpscaledTexture(boolean force)
     // of the texture, the rendered area is scaled down to fit. Calculate
     // the actual dimensions of the rendered area.
 
-    if (w * actualheight < h * render_width)
-    {
-        // Tall window.
-
-        h = w * actualheight / render_width;
-    }
-    else
-    {
-        // Wide window.
-
-        w = h * render_width / actualheight;
-    }
+    //if (w * actualheight < h * render_width)
+    //{
+    //    // Tall window.
+	//
+    //    h = w * actualheight / render_width;
+    //}
+    //else
+    //{
+    //    // Wide window.
+	//
+    //    w = h * render_width / actualheight;
+    //}
 
     // Pick texture size the next integer multiple of the screen dimensions.
     // If one screen dimension matches an integer multiple of the original
@@ -712,11 +712,6 @@ static void CreateUpscaledTexture(boolean force)
     LimitTextureSize(&w_upscale, &h_upscale);
 
     // Create a new texture only if the upscale factors have actually changed.
-
-    if (h_upscale == h_upscale_old && w_upscale == w_upscale_old && !force)
-    {
-        return;
-    }
 
     h_upscale_old = h_upscale;
     w_upscale_old = w_upscale;
@@ -1559,11 +1554,11 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 
 		if (aspect_ratio_correct == 1)
 		{
-			actualheight = ( render_width * 7500 / 10000 );
+			actualheight = ( render_height * 1200 / 1000 );
 		}
 		else
 		{
-			actualheight = ( render_width * 6250 / 10000 );
+			actualheight = render_height;
 		}
 
 		// Set the scaling quality for rendering the intermediate texture into
@@ -1587,12 +1582,9 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 		// time this also defines the aspect ratio that is preserved while scaling
 		// and stretching the texture into the window.
 
-		if (aspect_ratio_correct || integer_scaling)
-		{
-			SDL_RenderSetLogicalSize(renderer,
-										render_width,
-										actualheight);
-		}
+		SDL_RenderSetLogicalSize(renderer,
+								render_width,
+								actualheight);
 
 
 		// REMOVE THIS ANCIENT CODE ALREADY JEEBUS
@@ -1674,11 +1666,11 @@ void I_InitGraphics( int32_t numbuffers )
 
 	if (aspect_ratio_correct == 1)
 	{
-		actualheight = ( render_width * 7500 / 10000 );
+		actualheight = ( render_height * 1200 / 1000 );
 	}
 	else
 	{
-		actualheight = ( render_width * 6250 / 10000 );
+		actualheight = render_height;
 	}
 
     // Create the game window; this may switch graphic modes depending
@@ -1739,11 +1731,8 @@ void I_StartFrame (void)
 		{
 			SDL_SetWindowSize( screen, queued_window_width, queued_window_height );
 		}
-		else
-		{
-			window_width = queued_window_width;
-			window_height = queued_window_height;
-		}
+		window_width = queued_window_width;
+		window_height = queued_window_height;
 	}
 
 	if( queued_fullscreen != fullscreen )

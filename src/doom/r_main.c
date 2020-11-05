@@ -57,10 +57,12 @@
 
 
 
+int32_t	field_of_view_degrees = 90;
+
 // Fineangles in the SCREENWIDTH wide window.
 // If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
-#define FIELDOFVIEW				( FINEANGLES >> 2 )
-#define RENDERFIELDOFVIEW		( RENDERFINEANGLES >> 2 )
+#define FIELDOFVIEW				( FINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
+#define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
 
 typedef struct renderdata_s
 {
@@ -673,9 +675,9 @@ void R_InitTextureMapping (void)
 	
     for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
     {
-		if (renderfinetangent[i] > FRACUNIT*2)
+		if (renderfinetangent[i] > FRACUNIT*8)
 			t = -1;
-		else if (renderfinetangent[i] < -FRACUNIT*2)
+		else if (renderfinetangent[i] < -FRACUNIT*8)
 			t = viewwidth+1;
 		else
 		{
@@ -1053,6 +1055,18 @@ void R_ExecuteSetViewSize (void)
 	int32_t		startmap;
 	int32_t		colfuncbase;
 
+	fixed_t		original_perspective = FixedDiv( 16 * FRACUNIT, 10 * FRACUNIT );
+	fixed_t		current_perspective = FixedDiv( render_width << FRACBITS, render_height << FRACBITS );
+	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
+
+	fixed_t		perspectivecorrectscale;
+
+	fixed_t		tan_fov = FixedDiv( current_perspective >> 1, original_perspective >> 1 );
+	float_t		float_tan_fov = (float)tan_fov / 65536.f;
+	float_t		float_fov = ( atanf( float_tan_fov ) * 2.f ) / 3.1415926f * 180.f;
+	field_of_view_degrees = (int32_t)float_fov;
+	//int32_t		new_fov = ( rendertantoangle[ tan_fov >> RENDERDBITS ] ) >> FRACBITS;
+
 	setsizeneeded = false;
 
 	//switch( setdetail )
@@ -1105,7 +1119,7 @@ void R_ExecuteSetViewSize (void)
 	centerx = viewwidth /2;
 	centerxfrac = centerx << FRACBITS;
 	centeryfrac = centery << FRACBITS;
-	projection = centerxfrac;
+	projection = FixedMul( centerxfrac, perspective_mul );
 
 	colfuncbase = COLFUNC_NUM * ( detailshift );
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
@@ -1124,8 +1138,10 @@ void R_ExecuteSetViewSize (void)
 	R_InitTextureMapping ();
 
 	// psprite scales
-	pspritescale = FixedMul( FRACUNIT * viewwidth / render_width, V_WIDTHMULTIPLIER );
-	pspriteiscale = FixedDiv( FRACUNIT * render_width / viewwidth, V_WIDTHMULTIPLIER );
+	perspectivecorrectscale = ( FixedMul( render_width << FRACBITS, perspective_mul ) / V_VIRTUALWIDTH );
+
+	pspritescale = FixedMul( FRACUNIT * viewwidth / render_width, perspectivecorrectscale );
+	pspriteiscale = FixedDiv( FRACUNIT * render_width / viewwidth, perspectivecorrectscale );
 
 	// thing clipping
 	for (i=0 ; i<viewwidth ; i++)
@@ -1138,7 +1154,7 @@ void R_ExecuteSetViewSize (void)
 	{
 		dy = ( ( i- viewheight / 2 ) << FRACBITS ) + FRACUNIT / 2;
 		dy = abs( dy );
-		yslope[ i ] = FixedDiv ( ( viewwidth << detailshift ) / 2 * FRACUNIT, dy );
+		yslope[ i ] = FixedMul( FixedDiv ( ( viewwidth << detailshift ) / 2 * FRACUNIT, dy ), perspective_mul );
 	}
 	
 	for ( i=0 ; i<viewwidth ; i++ )
@@ -1320,6 +1336,10 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igText( "Debug options" );
 	igSeparator();
 	igCheckbox( "Visualise split", &rendersplitvisualise );
+	if( igSliderInt( "Horizontal FOV", &field_of_view_degrees, 60, 160, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+	{
+		R_ExecuteSetViewSize();
+	}
 }
 
 //
@@ -1364,6 +1384,8 @@ void R_RenderDimensionsChanged( void )
 	refreshstatusbar = true;
 	V_RestoreBuffer();
 	R_InitLightTables();
+	R_InitPointToAngle();
+	R_InitTables();
 	R_SetViewSize( screenblocks, detailLevel );
 	R_ExecuteSetViewSize();
 }

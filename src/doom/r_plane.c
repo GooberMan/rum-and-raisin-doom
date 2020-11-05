@@ -442,15 +442,13 @@ static void R_RasteriseVisplaneColumn_Log2_32( planecontext_t* planecontext, spa
 	fixed_t				anglesin		= renderfinesine[ angle ];
 
 	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
-	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
+	fixed_t				currlength		= FixedMul( currdistance, distscale[ x ] );
 
-	fixed_t				prevxfrac		= viewx + FixedMul( anglecos, currlength );
-	fixed_t				prevyfrac		= -viewy - FixedMul( anglesin, currlength );
+	fixed_t				xfrac		= viewx + FixedMul( anglecos, currlength );
+	fixed_t				yfrac		= -viewy - FixedMul( anglesin, currlength );
 	fixed_t				nextxfrac;
 	fixed_t				nextyfrac;
 
-	fixed_t				xfrac;
-	fixed_t				yfrac;
 	fixed_t				xstep;
 	fixed_t				ystep;
 
@@ -469,10 +467,8 @@ static void R_RasteriseVisplaneColumn_Log2_32( planecontext_t* planecontext, spa
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) >> PLANE_PIXELLEAP_32_LOG2;
-		ystep =	( nextyfrac - prevyfrac ) >> PLANE_PIXELLEAP_32_LOG2;
+		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_32_LOG2;
+		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_32_LOG2;
 
 #if !RASTERISE_UNROLLED
 		do
@@ -516,8 +512,8 @@ static void R_RasteriseVisplaneColumn_Log2_32( planecontext_t* planecontext, spa
 
 #endif // !RASTERISE_UNROLLED
 
-		prevxfrac = nextxfrac;
-		prevyfrac = nextyfrac;
+		xfrac = nextxfrac;
+		yfrac = nextyfrac;
 
 		count -= PLANE_PIXELLEAP_32;
 	};
@@ -530,10 +526,8 @@ static void R_RasteriseVisplaneColumn_Log2_32( planecontext_t* planecontext, spa
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - prevyfrac ) / ( count + 1 );
+		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
+		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
 
 		do
 		{
@@ -564,13 +558,11 @@ static void R_RasteriseVisplaneColumn_Log2_16( planecontext_t* planecontext, spa
 	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
 	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
 
-	fixed_t				prevxfrac		= viewx + FixedMul( anglecos, currlength );
-	fixed_t				prevyfrac		= -viewy - FixedMul( anglesin, currlength );
+	fixed_t				xfrac			= viewx + FixedMul( anglecos, currlength );
+	fixed_t				yfrac			= -viewy - FixedMul( anglesin, currlength );
 	fixed_t				nextxfrac;
 	fixed_t				nextyfrac;
 
-	fixed_t				xfrac;
-	fixed_t				yfrac;
 	fixed_t				xstep;
 	fixed_t				ystep;
 
@@ -590,10 +582,8 @@ static void R_RasteriseVisplaneColumn_Log2_16( planecontext_t* planecontext, spa
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) >> PLANE_PIXELLEAP_16_LOG2;
-		ystep =	( nextyfrac - prevyfrac ) >> PLANE_PIXELLEAP_16_LOG2;
+		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_16_LOG2;
+		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_16_LOG2;
 
 #if !RASTERISE_UNROLLED
 		do
@@ -621,8 +611,8 @@ static void R_RasteriseVisplaneColumn_Log2_16( planecontext_t* planecontext, spa
 
 #endif // !RASTERISE_UNROLLED
 
-		prevxfrac = nextxfrac;
-		prevyfrac = nextyfrac;
+		xfrac = nextxfrac;
+		yfrac = nextyfrac;
 
 		count -= PLANE_PIXELLEAP_16;
 	};
@@ -635,10 +625,8 @@ static void R_RasteriseVisplaneColumn_Log2_16( planecontext_t* planecontext, spa
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - prevyfrac ) / ( count + 1 );
+		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
+		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
 
 		do
 		{
@@ -669,13 +657,11 @@ static void R_RasteriseVisplaneColumn_Log2_8( planecontext_t* planecontext, span
 	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
 	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
 
-	fixed_t				prevxfrac		= viewx + FixedMul( anglecos, currlength );
-	fixed_t				prevyfrac		= -viewy - FixedMul( anglesin, currlength );
+	fixed_t				xfrac			= viewx + FixedMul( anglecos, currlength );
+	fixed_t				yfrac			= -viewy - FixedMul( anglesin, currlength );
 	fixed_t				nextxfrac;
 	fixed_t				nextyfrac;
 
-	fixed_t				xfrac;
-	fixed_t				yfrac;
 	fixed_t				xstep;
 	fixed_t				ystep;
 
@@ -694,10 +680,8 @@ static void R_RasteriseVisplaneColumn_Log2_8( planecontext_t* planecontext, span
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) >> PLANE_PIXELLEAP_8_LOG2;
-		ystep =	( nextyfrac - prevyfrac ) >> PLANE_PIXELLEAP_8_LOG2;
+		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_8_LOG2;
+		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_8_LOG2;
 
 #if !RASTERISE_UNROLLED
 		do
@@ -717,8 +701,8 @@ static void R_RasteriseVisplaneColumn_Log2_8( planecontext_t* planecontext, span
 
 #endif // !RASTERISE_UNROLLED
 
-		prevxfrac = nextxfrac;
-		prevyfrac = nextyfrac;
+		xfrac = nextxfrac;
+		yfrac = nextyfrac;
 
 		count -= PLANE_PIXELLEAP_8;
 	};
@@ -731,10 +715,8 @@ static void R_RasteriseVisplaneColumn_Log2_8( planecontext_t* planecontext, span
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - prevyfrac ) / ( count + 1 );
+		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
+		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
 
 		do
 		{
@@ -766,13 +748,11 @@ static void R_RasteriseVisplaneColumn_Log2_4( planecontext_t* planecontext, span
 	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
 	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
 
-	fixed_t				prevxfrac		= viewx + FixedMul( anglecos, currlength );
-	fixed_t				prevyfrac		= -viewy - FixedMul( anglesin, currlength );
+	fixed_t				xfrac			= viewx + FixedMul( anglecos, currlength );
+	fixed_t				yfrac			= -viewy - FixedMul( anglesin, currlength );
 	fixed_t				nextxfrac;
 	fixed_t				nextyfrac;
 
-	fixed_t				xfrac;
-	fixed_t				yfrac;
 	fixed_t				xstep;
 	fixed_t				ystep;
 
@@ -792,10 +772,8 @@ static void R_RasteriseVisplaneColumn_Log2_4( planecontext_t* planecontext, span
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) >> PLANE_PIXELLEAP_4_LOG2;
-		ystep =	( nextyfrac - prevyfrac ) >> PLANE_PIXELLEAP_4_LOG2;
+		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_4_LOG2;
+		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_4_LOG2;
 
 #if !RASTERISE_UNROLLED
 		do
@@ -811,8 +789,8 @@ static void R_RasteriseVisplaneColumn_Log2_4( planecontext_t* planecontext, span
 
 #endif // !RASTERISE_UNROLLED
 
-		prevxfrac = nextxfrac;
-		prevyfrac = nextyfrac;
+		xfrac = nextxfrac;
+		yfrac = nextyfrac;
 
 		count -= PLANE_PIXELLEAP_4;
 	};
@@ -825,10 +803,10 @@ static void R_RasteriseVisplaneColumn_Log2_4( planecontext_t* planecontext, span
 		nextxfrac		= viewx + FixedMul( anglecos, currlength );
 		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
 
-		xfrac = prevxfrac;
-		yfrac = prevyfrac;
-		xstep =	( nextxfrac - prevxfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - prevyfrac ) / ( count + 1 );
+		xfrac = xfrac;
+		yfrac = yfrac;
+		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
+		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
 
 		do
 		{
