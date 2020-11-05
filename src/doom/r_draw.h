@@ -50,7 +50,7 @@ void 	R_DrawColumnLow ( colcontext_t* context );
 #define R_SIMD_TYPE( x ) ( R_DRAWCOLUMN_SIMDOPTIMISED && R_SIMD == ( R_SIMD_ ## x ) )
 
 #define R_DRAWCOLUMN_DEBUGDISTANCES 0
-#define R_DRAWCOLUMN_LIGHTLEVELS 1
+#define R_DRAWCOLUMN_LIGHTLEVELS 0
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 
