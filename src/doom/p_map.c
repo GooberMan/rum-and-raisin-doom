@@ -1083,9 +1083,14 @@ P_AimLineAttack
     shootz = t1->z + (t1->height>>1) + 8*FRACUNIT;
 
     // can't shoot outside view angles
-	// NOTE: We should just provide aspect ratios from the render targets here ;-)
-    topslope = (render_height/2)*FRACUNIT/(render_width/2);	
-    bottomslope = -(render_height/2)*FRACUNIT/(render_width/2);
+	// Note: Chocolate Doom used the SCREENHEIGHT/SCREENWIDTH defines, which
+	// I wrapped in to render width and height to handle arbitrary resolutions.
+	// But I do believe that'll break vanilla compatbility. So forcing vanilla
+	// values right here.
+
+    topslope = (VANILLA_SCREENHEIGHT/2)*FRACUNIT/(VANILLA_SCREENWIDTH/2);
+    bottomslope = -(VANILLA_SCREENHEIGHT/2)*FRACUNIT/(VANILLA_SCREENWIDTH/2);
+
     
     attackrange = distance;
     linetarget = NULL;
