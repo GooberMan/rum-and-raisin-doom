@@ -53,7 +53,7 @@ int SlopeDiv_Render(unsigned int num, unsigned int den)
 {
     unsigned ans;
     
-    if (den < 512)
+    if (den < ( RENDERSLOPERANGE >> 2 ) ) // 512 originally, hopefully it's good...
     {
         return RENDERSLOPERANGE;
     }
@@ -76,7 +76,7 @@ int SlopeDiv_Playsim(unsigned int num, unsigned int den)
 {
     unsigned ans;
     
-    if (den < 512)
+    if (den < ( SLOPERANGE >> 2 ) ) // 512 originally, this is the same number
     {
         return SLOPERANGE;
     }
