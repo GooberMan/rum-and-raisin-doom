@@ -845,7 +845,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	if( span_override == Span_None )
 	{
-		span_type = M_MAX( Span_Original, M_MIN( (int32_t)( log2f( render_height * 0.02f ) ), Span_PolyRaster_Log2_32 ) );
+		span_type = M_MAX( Span_Original, M_MIN( (int32_t)( log2f( render_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 	}
 
 	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
