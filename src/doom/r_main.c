@@ -716,6 +716,21 @@ void R_InitTextureMapping (void)
 }
 
 
+int32_t aspect_adjusted_render_width = 0;
+fixed_t aspect_adjusted_scaled_divide = 0;
+fixed_t aspect_adjusted_scaled_mul = FRACUNIT;
+
+void R_InitAspectAdjustedValues()
+{
+	fixed_t		original_perspective = FixedDiv( 16 * FRACUNIT, 10 * FRACUNIT );
+	fixed_t		current_perspective = FixedDiv( render_width << FRACBITS, render_height << FRACBITS );
+	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
+
+	aspect_adjusted_render_width = FixedMul( render_width << FRACBITS, perspective_mul ) >> FRACBITS;
+	aspect_adjusted_scaled_divide = ( aspect_adjusted_render_width << FRACBITS ) / 320;
+	aspect_adjusted_scaled_mul = FixedDiv( FRACUNIT, aspect_adjusted_scaled_divide );
+}
+
 
 //
 // R_InitLightTables
@@ -723,10 +738,6 @@ void R_InitTextureMapping (void)
 //  because the scalelight table changes with view size.
 //
 #define DISTMAP		2
-
-int32_t light_render_width = 0;
-fixed_t light_scaled_divide = 0;
-fixed_t light_scaled_mul = FRACUNIT;
 
 void R_InitLightTables (void)
 {
@@ -736,13 +747,6 @@ void R_InitLightTables (void)
 	int		startmap; 	
 	int		scale;
 
-	fixed_t		original_perspective = FixedDiv( 16 * FRACUNIT, 10 * FRACUNIT );
-	fixed_t		current_perspective = FixedDiv( render_width << FRACBITS, render_height << FRACBITS );
-	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
-	light_render_width = FixedMul( render_width << FRACBITS, perspective_mul ) >> FRACBITS;
-	light_scaled_divide = ( light_render_width << FRACBITS ) / 320;
-	light_scaled_mul = FixedDiv( FRACUNIT, light_scaled_divide );
-    
 	// Calculate the light levels to use
 	//  for each level / distance combination.
 	for (i=0 ; i< LIGHTLEVELS ; i++)
@@ -750,7 +754,7 @@ void R_InitLightTables (void)
 		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
 		for (j=0 ; j<MAXLIGHTZ ; j++)
 		{
-			scale = FixedDiv ( ( light_render_width / 2 * FRACUNIT ), ( j + 1 ) << LIGHTZSHIFT );
+			scale = FixedDiv ( ( aspect_adjusted_render_width / 2 * FRACUNIT ), ( j + 1 ) << LIGHTZSHIFT );
 			scale >>= LIGHTSCALESHIFT;
 			if( LIGHTSCALEMUL != FRACUNIT )
 			{
@@ -1087,6 +1091,8 @@ void R_ExecuteSetViewSize (void)
 	field_of_view_degrees = (int32_t)float_fov;
 	//int32_t		new_fov = ( rendertantoangle[ tan_fov >> RENDERDBITS ] ) >> FRACBITS;
 
+	R_InitAspectAdjustedValues();
+
 	setsizeneeded = false;
 
 	//switch( setdetail )
@@ -1368,6 +1374,8 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 
 void R_Init (void)
 {
+	R_InitAspectAdjustedValues();
+
 	R_InitColFuncs();
 
     R_InitData ();

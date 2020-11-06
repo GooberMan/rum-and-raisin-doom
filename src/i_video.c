@@ -776,6 +776,8 @@ void I_FinishUpdate (void)
                 // Adjust the window by resizing again so that the window
                 // is the right aspect ratio.
                 SDL_SetWindowSize(screen, window_width, window_height);
+				queued_window_width = window_width;
+				queued_window_height = window_height;
             }
             CreateUpscaledTexture(false);
             need_resize = false;

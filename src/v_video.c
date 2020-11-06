@@ -66,6 +66,11 @@ int dirtybox[4];
 extern int32_t render_width;
 extern int32_t render_height;
 
+extern int32_t		aspect_adjusted_render_width;
+extern fixed_t		aspect_adjusted_scaled_divide;
+extern fixed_t		aspect_adjusted_scaled_mul;
+
+
 // haleyjd 08/28/10: clipping callback function for patches.
 // This is needed for Chocolate Strife, which clips patches to the screen.
 static vpatchclipfunc_t patchclip_callback = NULL;
@@ -257,9 +262,11 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
     }
 #endif
 
+
     V_MarkRect(x, y, clippedwidth, clippedheight);
 
 	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
+	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
 	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
 	virtualwidth = clippedwidth << FRACBITS;
 
@@ -350,6 +357,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
     V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
 
 	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
+	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
 	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
 	virtualwidth = SHORT(patch->width) << FRACBITS;
 
@@ -408,6 +416,7 @@ void V_DrawPatchDirect(int x, int y, patch_t *patch)
 void V_EraseRegion(int x, int y, int width, int height)
 {
 	fixed_t virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
+	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
 	fixed_t virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
 	fixed_t virtualwidth = FixedMul( width << FRACBITS, V_WIDTHMULTIPLIER );
 	fixed_t virtualheight = FixedMul( height << FRACBITS, V_HEIGHTMULTIPLIER );

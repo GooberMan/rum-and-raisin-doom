@@ -42,8 +42,8 @@
 #define V_VIRTUALHEIGHT 200
 
 // TODO: We need to redo this to be pure integer math. Fixed/float results in inaccuracies at different resolutions :-(
-#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / render_width )
-#define V_WIDTHMULTIPLIER ( ( render_width << FRACBITS ) / V_VIRTUALWIDTH )
+#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / aspect_adjusted_render_width )
+#define V_WIDTHMULTIPLIER ( ( aspect_adjusted_render_width << FRACBITS ) / V_VIRTUALWIDTH )
 
 #define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / render_height )
 #define V_HEIGHTMULTIPLIER ( ( render_height << FRACBITS ) / V_VIRTUALHEIGHT )

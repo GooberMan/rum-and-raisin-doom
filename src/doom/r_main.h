@@ -45,9 +45,9 @@ extern fixed_t		projection;
 
 extern int32_t		validcount;
 
-extern int32_t		light_render_width;
-extern fixed_t		light_scaled_divide;
-extern fixed_t		light_scaled_mul;
+extern int32_t		aspect_adjusted_render_width;
+extern fixed_t		aspect_adjusted_scaled_divide;
+extern fixed_t		aspect_adjusted_scaled_mul;
 
 
 //
@@ -63,8 +63,8 @@ extern fixed_t		light_scaled_mul;
 
 #define MAXLIGHTSCALE		48
 #define LIGHTSCALESHIFT		12
-#define LIGHTSCALEDIVIDE	light_scaled_divide
-#define LIGHTSCALEMUL		light_scaled_mul
+#define LIGHTSCALEDIVIDE	aspect_adjusted_scaled_divide
+#define LIGHTSCALEMUL		aspect_adjusted_scaled_mul
 #define MAXLIGHTZ			128
 #define LIGHTZSHIFT			20
 
