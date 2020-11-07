@@ -726,7 +726,8 @@ void R_InitAspectAdjustedValues()
 	fixed_t		current_perspective = FixedDiv( render_width << FRACBITS, render_height << FRACBITS );
 	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
 
-	aspect_adjusted_render_width = FixedMul( render_width << FRACBITS, perspective_mul ) >> FRACBITS;
+	fixed_t		intermediate_width = FixedMul( render_width << FRACBITS, perspective_mul );
+	aspect_adjusted_render_width = ( intermediate_width >> FRACBITS ) + ( ( intermediate_width & 0x00008000 ) >> 15 ) * 1;
 	aspect_adjusted_scaled_divide = ( aspect_adjusted_render_width << FRACBITS ) / 320;
 	aspect_adjusted_scaled_mul = FixedDiv( FRACUNIT, aspect_adjusted_scaled_divide );
 }
@@ -1414,7 +1415,6 @@ void R_RenderDimensionsChanged( void )
 	R_InitLightTables();
 	R_InitPointToAngle();
 	R_InitTables();
-	ST_RefreshBuffer();
 	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
 	R_ExecuteSetViewSize();

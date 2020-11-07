@@ -160,12 +160,7 @@ void F_StartFinale (void)
     finalecount = 0;
 
 	// erase the entire screen to a tiled background
-	src.data = W_CacheLumpName ( finaleflat , PU_LEVEL );
-	src.width = src.height = src.pitch = 64;
-	src.pixel_size_bytes = 1;
-	src.magic_value = vbuffer_magic;
-
-	V_InflateAndTransposeBuffer( &src, &finaleflatdata, PU_LEVEL );
+	V_TransposeFlat( finaleflat, &finaleflatdata, PU_LEVEL );
 }
 
 
@@ -245,20 +240,7 @@ void F_TextWrite (void)
     int		cx;
     int		cy;
 
-	int32_t width;
-	int32_t height;
-    
-	for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
-	{
-		width = M_MIN( V_VIRTUALWIDTH - x, 64 );
-
-		for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
-		{
-			height = M_MIN( V_VIRTUALHEIGHT - y, 64 );
-
-			V_CopyRect( 0, 0, &finaleflatdata, width, height, x, y );
-		}
-    }
+	V_TileBuffer( &finaleflatdata, 0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT );
 
     V_MarkRect (0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT);
     

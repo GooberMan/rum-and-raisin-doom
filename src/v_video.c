@@ -151,47 +151,145 @@ void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
 // Inflates source buffer to virtual screen space, and transposes it for efficient memcpy
 // operations. Written for 64x64 flats, should handle a linear byte array of any dimensions
 //
-void V_InflateAndTransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone )
+void V_TransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone )
 {
 	if( source->magic_value != vbuffer_magic )
 	{
-		I_Error( "V_InflateAndTransposeBuffer: source not initialised" );
+		I_Error( "V_TransposeBuffer: source not initialised" );
 	}
 
 	byte* dest;
-	fixed_t virtualcol;
-	fixed_t virtualrow;
 
-	fixed_t sourcewidth_fixed = source->width << FRACBITS;
-	fixed_t sourceheight_fixed = source->width << FRACBITS;
-	fixed_t sourcepitch_fixed = source->pitch << FRACBITS;
-	fixed_t inflatedwidth_fixed = FixedMul( sourcewidth_fixed, V_WIDTHMULTIPLIER );
-	fixed_t inflatedheight_fixed = FixedMul( sourceheight_fixed, V_WIDTHMULTIPLIER );
-	fixed_t inflatedpitch_fixed = FixedMul( sourcepitch_fixed, V_WIDTHMULTIPLIER );
+	int32_t x;
+	int32_t y;
 
-	int32_t inflatedwidth = inflatedwidth_fixed >> FRACBITS;
-	int32_t inflatedheight = inflatedheight_fixed >> FRACBITS;
-	int32_t inflatedpitch = inflatedpitch_fixed >> FRACBITS;
-
-	int32_t sample;
-
-	output->width = inflatedwidth;
-	output->height = inflatedheight;
-	output->pitch = inflatedpitch;
+	output->width = source->height;
+	output->height = source->width;
+	output->pitch = source->width * source->pixel_size_bytes;
 	output->pixel_size_bytes = source->pixel_size_bytes;
 	output->magic_value = vbuffer_magic;
 
-	dest = output->data = Z_Malloc( inflatedwidth * inflatedheight, outputmemzone, &output->data );
+	dest = output->data = Z_Malloc( output->width * output->height, outputmemzone, &output->data );
 
-	for(virtualcol=0; virtualcol < sourcewidth_fixed; virtualcol += V_WIDTHSTEP )
+	for( x=0; x < output->width; ++x )
 	{
-		for(virtualrow=0; virtualrow < sourceheight_fixed; virtualrow += V_WIDTHSTEP )
+		for( y=0; y < output->height; ++y )
 		{
-			sample = ( virtualrow >> FRACBITS ) * 64 + ( virtualcol >> FRACBITS );
-
-			*dest = source->data[ sample ];
+			*dest = source->data[ y * source->pitch + x ];
 			++dest;
 		}
+	}
+}
+
+void V_TransposeFlat( const char* flat_name, vbuffer_t* output, int outputmemzone )
+{
+	vbuffer_t src;
+
+	src.data = W_CacheLumpName ( flat_name , PU_CACHE );
+	src.width = src.height = src.pitch = 64;
+	src.pixel_size_bytes = 1;
+	src.magic_value = vbuffer_magic;
+
+	V_TransposeBuffer( &src, output, outputmemzone );
+}
+
+void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width, int32_t height )
+{
+	pixel_t *dest;
+	pixel_t *desttop;
+	pixel_t *source;
+
+	fixed_t virtualx;
+	fixed_t virtualy;
+	fixed_t virtualwidth;
+	fixed_t virtualheight;
+
+	fixed_t virtualsourcewidth = source_buffer->width << FRACBITS;
+	fixed_t virtualsourceheight = source_buffer->height << FRACBITS;
+
+	V_MarkRect(x, y, width, height);
+
+	// Setup destination
+	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
+	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
+	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
+
+	desttop = dest = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS );
+
+	virtualx = 0;
+	virtualy = 0;
+	virtualwidth = M_MIN( x + width, V_VIRTUALWIDTH ) << FRACBITS;
+	virtualheight = M_MIN( y + height, V_VIRTUALHEIGHT ) << FRACBITS;
+
+	// This modulo operation is rubbish, but whatever, I'll fix it later
+	for ( ; virtualx < virtualwidth; virtualx += V_WIDTHSTEP )
+	{
+		virtualy = 0;
+
+		source = source_buffer->data + ( ( virtualx % virtualsourcewidth ) >> FRACBITS ) * source_buffer->pitch;
+
+		for( ; virtualy < virtualheight; virtualy += V_HEIGHTSTEP )
+		{
+			*dest++ = source[ ( virtualy % virtualsourceheight ) >> FRACBITS ];
+		}
+
+		desttop += dest_buffer->pitch;
+		dest = desttop;
+	}
+}
+
+void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
+{
+	fixed_t		virtualx;
+	fixed_t		virtualx2;
+	fixed_t		virtualy;
+	fixed_t		virtualystart;
+	fixed_t		virtualwidth;
+	fixed_t		virtualheight;
+	fixed_t		virtualsourcewidth;
+	fixed_t		virtualsourceheight;
+	pixel_t*	desttop;
+	pixel_t*	desttop2;
+	pixel_t*	dest;
+	pixel_t*	dest2;
+	pixel_t*	source;
+
+	int32_t		widthdiff = render_width - aspect_adjusted_render_width;
+
+	if( widthdiff > 0 )
+	{
+		virtualsourcewidth = source_buffer->width << FRACBITS;
+		virtualsourceheight = source_buffer->height << FRACBITS;
+		widthdiff >>= 1;
+		virtualwidth = FixedDiv( widthdiff << FRACBITS, V_WIDTHMULTIPLIER );
+		virtualheight = ( maxy - miny ) << FRACBITS;
+
+		virtualx = 0;
+		virtualx2 = ( V_VIRTUALWIDTH << FRACBITS ) + virtualwidth;
+		virtualystart = FixedMul( ( miny << FRACBITS ), V_HEIGHTMULTIPLIER );
+
+		desttop = dest = dest_buffer->data + ( virtualystart >> FRACBITS );
+		desttop2 = dest2 = dest_buffer->data + ( FixedMul( virtualx2, V_WIDTHMULTIPLIER ) >> FRACBITS ) * dest_buffer->pitch + ( virtualystart >> FRACBITS );
+
+		// This modulo operation is rubbish, but whatever, I'll fix it later
+		for ( ; virtualx < virtualwidth; virtualx += V_WIDTHSTEP, virtualx2 += V_WIDTHSTEP )
+		{
+			virtualy = virtualystart;
+
+			source = source_buffer->data + ( ( virtualx % virtualsourcewidth ) >> FRACBITS ) * source_buffer->pitch;
+
+			for( ; virtualy < virtualystart + virtualheight; virtualy += V_HEIGHTSTEP )
+			{
+				*dest++ = *dest2++ = source[ ( virtualy % virtualsourceheight ) >> FRACBITS ];
+			}
+
+			desttop += dest_buffer->pitch;
+			dest = desttop;
+
+			desttop2 += dest_buffer->pitch;
+			dest2 = desttop2;
+		}
+
 	}
 }
  

@@ -261,9 +261,6 @@
 #define ST_MAPTITLEY		0
 #define ST_MAPHEIGHT		1
 
-// graphics are drawn to a backing screen and blitted to the real screen
-vbuffer_t			st_backing_buffer;
-	    
 // main player in game
 static player_t*	plyr; 
 
@@ -367,7 +364,8 @@ static st_number_t	w_ammo[4];
 // max ammo widgets
 static st_number_t	w_maxammo[4]; 
 
-
+// background flat for widescreen
+static vbuffer_t	tileflat;
 
  // number of frags so far in deathmatch
 static int	st_fragscount;
@@ -422,20 +420,16 @@ void ST_refreshBackground(void)
 {
 	if (st_statusbaron)
 	{
-		V_UseBuffer(&st_backing_buffer);
+		V_FillBorder( &tileflat, ST_Y, V_VIRTUALHEIGHT );
 
-		V_DrawPatch(ST_X, 0, sbar);
-
+		V_DrawPatch(ST_X, ST_Y, sbar);
+		
 		// draw right side of bar if needed (Doom 1.0)
 		if (sbarr)
-			V_DrawPatch(ST_ARMSBGX, 0, sbarr);
-
+			V_DrawPatch(ST_ARMSBGX, ST_Y, sbarr);
+		
 		if (netgame)
-			V_DrawPatch(ST_FX, 0, faceback);
-
-		V_RestoreBuffer();
-
-		V_CopyRect(ST_X, 0, &st_backing_buffer, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
+			V_DrawPatch(ST_FX, ST_Y, faceback);
 	}
 }
 
@@ -1086,10 +1080,11 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
     // Do red-/gold-shifts from damage/items
     ST_doPaletteStuff();
 
-    // If just after ST_Start(), refresh all
-    if (st_firsttime) ST_doRefresh();
-    // Otherwise, update as little as possible
-    else ST_diffDraw();
+	ST_doRefresh();
+    //// If just after ST_Start(), refresh all
+    //if (st_firsttime) ST_doRefresh();
+    //// Otherwise, update as little as possible
+    //else ST_diffDraw();
 
 }
 
@@ -1205,8 +1200,11 @@ void ST_loadGraphics(void)
 
 void ST_loadData(void)
 {
+
     lu_palette = W_GetNumForName (DEH_String("PLAYPAL"));
     ST_loadGraphics();
+
+	V_TransposeFlat( "FLAT5_4", &tileflat, PU_STATIC );
 }
 
 static void ST_unloadCallback(const char *lumpname, patch_t **variable)
@@ -1446,24 +1444,4 @@ void ST_Stop (void)
 void ST_Init (void)
 {
     ST_loadData();
-
-	memset( &st_backing_buffer, 0, sizeof( vbuffer_t ) );
-
-	ST_RefreshBuffer();
-}
-
-void ST_RefreshBuffer( void )
-{
-	if( st_backing_buffer.data != NULL )
-	{
-		return;
-		//Z_Free( st_backing_buffer.data );
-	}
-
-	st_backing_buffer.data = (pixel_t *) Z_Malloc( MAXSCREENWIDTH * ( ST_HEIGHT * 10 ) * sizeof(*st_backing_buffer.data), PU_STATIC, 0);
-	st_backing_buffer.height = MAXSCREENWIDTH;
-	st_backing_buffer.width = ST_BUFFERHEIGHT;
-	st_backing_buffer.pitch = ST_BUFFERHEIGHT;
-	st_backing_buffer.pixel_size_bytes = 1;
-	st_backing_buffer.magic_value = vbuffer_magic;
 }

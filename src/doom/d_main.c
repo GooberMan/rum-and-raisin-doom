@@ -205,6 +205,7 @@ boolean D_Display (void)
     int				y;
     boolean			wipe;
     boolean			redrawsbar;
+	patch_t*		pausepatch;
 
 	boolean ispaused = paused
 		|| 	( gamestate == GS_LEVEL && !demoplayback && debugmenuactive && debugmenupausesplaysim && ( solonetgame || !netgame ) );
@@ -326,11 +327,17 @@ boolean D_Display (void)
 	if (ispaused)
 	{
 		if (automapactive)
+		{
 			y = 4;
+		}
 		else
+		{
 			y = FixedDiv( viewwindowy, V_HEIGHTMULTIPLIER ) + 4;
-			V_DrawPatchDirect( FixedDiv( viewwindowx, V_WIDTHMULTIPLIER ) + ( FixedDiv( scaledviewwidth, V_WIDTHMULTIPLIER ) - 68) / 2, y,
-								W_CacheLumpName (DEH_String("M_PAUSE"), PU_CACHE));
+		}
+
+		pausepatch = (patch_t*)W_CacheLumpName( DEH_String("M_PAUSE"), PU_CACHE );
+
+		V_DrawPatchDirect( ( VANILLA_SCREENWIDTH - pausepatch->width ) / 2, y, pausepatch );
 	}
 
 

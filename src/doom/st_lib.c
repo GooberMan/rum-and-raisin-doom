@@ -119,8 +119,6 @@ STlib_drawNum
     if (n->y - ST_Y < 0)
 	I_Error("drawNum: n->y - ST_Y < 0");
 
-    V_CopyRect(x, n->y - ST_Y, &st_backing_buffer, w*numdigits, h, x, n->y);
-
     // if non-number, do not draw it
     if (num == 1994)
 	return;
@@ -215,25 +213,13 @@ STlib_updateMultIcon
     int			x;
     int			y;
 
-    if (*mi->on
-	&& (mi->oldinum != *mi->inum || refresh)
-	&& (*mi->inum!=-1))
-    {
-	if (mi->oldinum != -1)
+	if (*mi->on
+		&& (mi->oldinum != *mi->inum || refresh)
+		&& (*mi->inum!=-1))
 	{
-	    x = mi->x - SHORT(mi->p[mi->oldinum]->leftoffset);
-	    y = mi->y - SHORT(mi->p[mi->oldinum]->topoffset);
-	    w = SHORT(mi->p[mi->oldinum]->width);
-	    h = SHORT(mi->p[mi->oldinum]->height);
-
-	    if (y - ST_Y < 0)
-		I_Error("updateMultIcon: y - ST_Y < 0");
-
-	    V_CopyRect(x, y-ST_Y, &st_backing_buffer, w, h, x, y);
+		V_DrawPatch(mi->x, mi->y, mi->p[*mi->inum]);
+		mi->oldinum = *mi->inum;
 	}
-	V_DrawPatch(mi->x, mi->y, mi->p[*mi->inum]);
-	mi->oldinum = *mi->inum;
-    }
 }
 
 
@@ -270,20 +256,18 @@ STlib_updateBinIcon
     if (*bi->on
      && (bi->oldval != *bi->val || refresh))
     {
-	x = bi->x - SHORT(bi->p->leftoffset);
-	y = bi->y - SHORT(bi->p->topoffset);
-	w = SHORT(bi->p->width);
-	h = SHORT(bi->p->height);
+		x = bi->x - SHORT(bi->p->leftoffset);
+		y = bi->y - SHORT(bi->p->topoffset);
+		w = SHORT(bi->p->width);
+		h = SHORT(bi->p->height);
 
-	if (y - ST_Y < 0)
-	    I_Error("updateBinIcon: y - ST_Y < 0");
+		if (y - ST_Y < 0)
+			I_Error("updateBinIcon: y - ST_Y < 0");
 
-	if (*bi->val)
-	    V_DrawPatch(bi->x, bi->y, bi->p);
-	else
-	    V_CopyRect(x, y-ST_Y, &st_backing_buffer, w, h, x, y);
+		if (*bi->val)
+			V_DrawPatch(bi->x, bi->y, bi->p);
 
-	bi->oldval = *bi->val;
+		bi->oldval = *bi->val;
     }
 
 }

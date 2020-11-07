@@ -55,7 +55,11 @@ void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
                 int width, int height,
                 int destx, int desty);
 
-void V_InflateAndTransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone );
+void V_TransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone );
+void V_TransposeFlat( const char* flat_name, vbuffer_t* output, int outputmemzone );
+
+void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width, int32_t height );
+void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy );
 
 void V_DrawPatch(int x, int y, patch_t *patch);
 void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight);

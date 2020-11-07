@@ -55,9 +55,6 @@ void ST_Start (void);
 // Called by startup code.
 void ST_Init (void);
 
-void ST_RefreshBuffer( void );
-
-
 // States for status bar code.
 typedef enum
 {
@@ -76,9 +73,6 @@ typedef enum
     
 } st_chatstateenum_t;
 
-
-
-extern vbuffer_t st_backing_buffer;
 extern cheatseq_t cheat_mus;
 extern cheatseq_t cheat_god;
 extern cheatseq_t cheat_ammo;
