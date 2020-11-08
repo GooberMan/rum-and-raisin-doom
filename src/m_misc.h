@@ -26,10 +26,12 @@
 
 #include "doomtype.h"
 
-#define M_MIN( x, y ) ( ( y ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
-#define M_MAX( x, y ) ( ( x ) ^ ( ( ( x ) ^ ( y ) ) & -( ( x ) < ( y ) ) ) )
-#define M_BITMASK( numbits ) ( ~( ~0 << numbits ) )
-#define M_BITMASK64( numbits ) ( ~( ~0ll << numbits ) )
+// The ternary actually optimises pretty well on modern architectures, by an order of magnitude compared to bit twiddling operations.
+#define M_MIN( x, y ) ( x < y ? x : y )
+#define M_MAX( x, y ) ( x > y ? x : y )
+
+#define M_BITMASK( numbits ) ( ( 1 << numbits ) - 1 )
+#define M_BITMASK64( numbits ) ( 1ll << numbits ) - 1 )
 #define M_NEGATE( unsignedval ) ( ~unsignedval + 1 )
 
 boolean M_WriteFile(const char *name, const void *source, int length);
