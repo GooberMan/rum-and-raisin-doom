@@ -197,15 +197,25 @@ void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width
 {
 	pixel_t *dest;
 	pixel_t *desttop;
+	pixel_t *destbottom;
 	pixel_t *source;
 
 	fixed_t virtualx;
 	fixed_t virtualy;
+
 	fixed_t virtualwidth;
 	fixed_t virtualheight;
 
 	fixed_t virtualsourcewidth = source_buffer->width << FRACBITS;
 	fixed_t virtualsourceheight = source_buffer->height << FRACBITS;
+
+	int32_t xcount;
+	int32_t ycount;
+	int32_t ystart;
+	int32_t ylength;
+
+	width = M_MIN( V_VIRTUALWIDTH, x + width ) - x;
+	height = M_MIN( V_VIRTUALHEIGHT, y + height ) - y;
 
 	V_MarkRect(x, y, width, height);
 
@@ -214,26 +224,32 @@ void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width
 	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
 	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
 
-	desttop = dest = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS );
+	ystart = virtualy >> FRACBITS;
 
-	virtualx = 0;
-	virtualy = 0;
-	virtualwidth = M_MIN( x + width, V_VIRTUALWIDTH ) << FRACBITS;
-	virtualheight = M_MIN( y + height, V_VIRTUALHEIGHT ) << FRACBITS;
+	desttop = dest = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS ) + ystart;
+	destbottom = dest_buffer->data + ( ( virtualx >> FRACBITS ) + 1 ) * dest_buffer->pitch;
+
+	virtualwidth = M_MIN( FixedMul( width, V_WIDTHMULTIPLIER ), V_VIRTUALWIDTH ) << FRACBITS;
+	virtualheight = M_MIN( FixedMul( height, V_HEIGHTMULTIPLIER ), V_VIRTUALHEIGHT ) << FRACBITS;
+
+	xcount = M_MIN( virtualwidth, FixedMul( V_VIRTUALWIDTH << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS );
+	ylength = M_MIN( virtualheight, FixedMul( V_VIRTUALHEIGHT << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS );
 
 	// This modulo operation is rubbish, but whatever, I'll fix it later
-	for ( ; virtualx < virtualwidth; virtualx += V_WIDTHSTEP )
+	for ( ; xcount > 0; virtualx += V_WIDTHSTEP, --xcount )
 	{
 		virtualy = 0;
+		ycount = ylength;
 
-		source = source_buffer->data + ( ( virtualx % virtualsourcewidth ) >> FRACBITS ) * source_buffer->pitch;
+		source = source_buffer->data + ( ( virtualx % virtualsourcewidth ) >> FRACBITS ) * source_buffer->pitch + ystart;
 
-		for( ; virtualy < virtualheight; virtualy += V_HEIGHTSTEP )
+		for( ; ycount > 0 && dest < destbottom; virtualy += V_HEIGHTSTEP, --ycount )
 		{
 			*dest++ = source[ ( virtualy % virtualsourceheight ) >> FRACBITS ];
 		}
 
 		desttop += dest_buffer->pitch;
+		destbottom += dest_buffer->pitch;
 		dest = desttop;
 	}
 }
@@ -250,6 +266,8 @@ void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
 	fixed_t		virtualsourceheight;
 	pixel_t*	desttop;
 	pixel_t*	desttop2;
+	pixel_t*	destbottom;
+	pixel_t*	destbottom2;
 	pixel_t*	dest;
 	pixel_t*	dest2;
 	pixel_t*	source;
@@ -271,6 +289,9 @@ void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
 		desttop = dest = dest_buffer->data + ( virtualystart >> FRACBITS );
 		desttop2 = dest2 = dest_buffer->data + ( FixedMul( virtualx2, V_WIDTHMULTIPLIER ) >> FRACBITS ) * dest_buffer->pitch + ( virtualystart >> FRACBITS );
 
+		destbottom = dest_buffer->data + dest_buffer->pitch;
+		destbottom2 = dest_buffer->data + ( ( FixedMul( virtualx2, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 1 ) * dest_buffer->pitch;
+
 		// This modulo operation is rubbish, but whatever, I'll fix it later
 		for ( ; virtualx < virtualwidth; virtualx += V_WIDTHSTEP, virtualx2 += V_WIDTHSTEP )
 		{
@@ -278,15 +299,17 @@ void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
 
 			source = source_buffer->data + ( ( virtualx % virtualsourcewidth ) >> FRACBITS ) * source_buffer->pitch;
 
-			for( ; virtualy < virtualystart + virtualheight; virtualy += V_HEIGHTSTEP )
+			for( ; virtualy < virtualystart + virtualheight && dest < destbottom && dest2 < destbottom2; virtualy += V_HEIGHTSTEP )
 			{
 				*dest++ = *dest2++ = source[ ( virtualy % virtualsourceheight ) >> FRACBITS ];
 			}
 
 			desttop += dest_buffer->pitch;
+			destbottom += dest_buffer->pitch;
 			dest = desttop;
 
 			desttop2 += dest_buffer->pitch;
+			destbottom2 += dest_buffer->pitch;
 			dest2 = desttop2;
 		}
 
@@ -326,6 +349,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	int col;
     column_t *column;
     pixel_t *desttop;
+	pixel_t *destbottom;
     pixel_t *dest;
     byte *source;
 
@@ -370,6 +394,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 
     virtualcol = 0;
     desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS );
+	destbottom = dest_buffer->data + ( ( virtualx >> FRACBITS ) + 1 ) * dest_buffer->pitch;
 
     for ( ; virtualcol < virtualwidth; )
     {
@@ -387,7 +412,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 			virtualrow = 0;
             virtualpatchheight = ( column->length << FRACBITS );
 
-            while ( virtualpatchheight > 0 )
+            while ( virtualpatchheight > 0 && dest < destbottom )
             {
                 *dest++ = *source;
 				virtualrow += V_HEIGHTSTEP;
@@ -399,6 +424,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
         }
 
 		desttop += dest_buffer->pitch;
+		destbottom += dest_buffer->pitch;
 		virtualcol += V_WIDTHSTEP;
     }
 
@@ -417,6 +443,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 	int col;
     column_t *column;
     pixel_t *desttop;
+    pixel_t *destbottom;
     pixel_t *dest;
     byte *source;
 
@@ -461,6 +488,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 
     virtualcol = 0;
     desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS );
+	destbottom = dest_buffer->data + ( ( virtualx >> FRACBITS ) + 1 ) * dest_buffer->pitch;
 
     for ( ; virtualcol < virtualwidth; )
     {
@@ -478,7 +506,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 			virtualrow = 0;
             virtualpatchheight = column->length << FRACBITS;
 
-            while ( virtualpatchheight > 0 )
+            while ( virtualpatchheight > 0 && dest < destbottom )
             {
                 *dest++ = *source;
 				virtualrow += V_HEIGHTSTEP;

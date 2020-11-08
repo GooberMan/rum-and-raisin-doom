@@ -101,6 +101,7 @@ const char *finaletext;
 const char *finaleflat;
 
 static vbuffer_t finaleflatdata;
+extern vbuffer_t blackedges;
 
 void	F_StartCast (void);
 void	F_CastTicker (void);
@@ -241,6 +242,7 @@ void F_TextWrite (void)
     int		cy;
 
 	V_TileBuffer( &finaleflatdata, 0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT );
+	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
 
     V_MarkRect (0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT);
     
@@ -535,7 +537,7 @@ void F_CastDrawer (void)
     patch_t*		patch;
     
     // erase the entire screen to a background
-    V_DrawPatch (0, 0, W_CacheLumpName (DEH_String("BOSSBACK"), PU_CACHE));
+    V_DrawPatch (0, 0, W_CacheLumpName (DEH_String("BOSSBACK"), PU_LEVEL));
 
     F_CastPrint (DEH_String(castorder[castnum].name));
     
@@ -545,7 +547,7 @@ void F_CastDrawer (void)
     lump = sprframe->lump[0];
     flip = (boolean)sprframe->flip[0];
 			
-    patch = W_CacheLumpNum (lump+firstspritelump, PU_CACHE);
+    patch = W_CacheLumpNum (lump+firstspritelump, PU_STATIC);
     if (flip)
 	V_DrawPatchFlipped(V_VIRTUALWIDTH/2, 170, patch);
     else
@@ -567,6 +569,13 @@ void F_BunnyScroll (void)
 		
     p1 = W_CacheLumpName (DEH_String("PFUB2"), PU_LEVEL);
     p2 = W_CacheLumpName (DEH_String("PFUB1"), PU_LEVEL);
+	stage = 6;
+	while( stage >= 0 )
+	{
+		DEH_snprintf( name, 10, "END%i", stage );
+		W_CacheLumpName( name, PU_LEVEL );
+		--stage;
+	}
 
     V_MarkRect (0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT);
 	
@@ -641,7 +650,7 @@ static void F_ArtScreenDrawer(void)
 
         lumpname = DEH_String(lumpname);
 
-        V_DrawPatch (0, 0, W_CacheLumpName(lumpname, PU_CACHE));
+        V_DrawPatch (0, 0, W_CacheLumpName(lumpname, PU_LEVEL));
     }
 }
 

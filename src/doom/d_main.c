@@ -141,6 +141,9 @@ extern atomicval_t	renderthreadCPUmelter;
 
 boolean refreshstatusbar = true;
 
+vbuffer_t blackedges;
+int32_t blackedgesdata = 0;
+
 void D_ConnectNetGame(void);
 void D_CheckNetGame(void);
 
@@ -621,6 +624,7 @@ void D_PageTicker (void)
 void D_PageDrawer (void)
 {
     V_DrawPatch (0, 0, W_CacheLumpName(pagename, PU_CACHE));
+	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
 }
 
 
@@ -1354,6 +1358,13 @@ void D_DoomMain (void)
     char file[256];
     char demolumpname[9];
     uint32_t numiwadlumps;
+
+	blackedges.data = (byte*)&blackedgesdata;
+	blackedges.width = 2;
+	blackedges.height = 2;
+	blackedges.pitch = 2;
+	blackedges.pixel_size_bytes = 1;
+	blackedges.magic_value = vbuffer_magic;
 
 	M_InitDebugMenu();
 

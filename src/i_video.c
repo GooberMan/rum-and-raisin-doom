@@ -892,9 +892,6 @@ void I_FinishUpdate (void)
     // Draw!
 
     SDL_RenderPresent(renderer);
-
-    // Restore background and undo the disk indicator, if it was drawn.
-    V_RestoreDiskBackground();
 }
 
 
