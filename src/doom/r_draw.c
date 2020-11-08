@@ -1153,7 +1153,7 @@ void R_FillBackScreen (void)
 		src.data = W_CacheLumpName( name, PU_LEVEL );
 		src.width = src.height = 64;
 
-		V_InflateAndTransposeBuffer( &src, &inflated, PU_CACHE );
+		V_TransposeBuffer( &src, &inflated, PU_CACHE );
 
 		for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
 		{
