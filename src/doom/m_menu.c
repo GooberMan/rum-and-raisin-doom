@@ -2427,6 +2427,7 @@ static windowsizes_t window_sizes_scaled[] =
 	WINDOWDIM( 1920,	1080	),
 	WINDOWDIM( 1600,	686		),
 	WINDOWDIM( 1920,	822		),
+	WINDOWDIM( 2380,	1020	),
 };
 static int32_t window_sizes_scaled_count = sizeof( window_sizes_scaled ) / sizeof( *window_sizes_scaled );
 static int32_t window_width_working;
