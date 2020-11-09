@@ -413,6 +413,8 @@ void I_PerformFullscreen(void)
 {
     unsigned int flags = 0;
 
+    fullscreen = queued_fullscreen;
+
     // TODO: Consider implementing fullscreen toggle for SDL_WINDOW_FULLSCREEN
     // (mode-changing) setup. This is hard because we have to shut down and
     // restart again.
@@ -421,7 +423,6 @@ void I_PerformFullscreen(void)
         return;
     }
 
-    fullscreen = !queued_fullscreen;
 
     if (fullscreen)
     {
