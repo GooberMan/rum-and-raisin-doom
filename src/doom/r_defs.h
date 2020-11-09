@@ -613,8 +613,6 @@ typedef struct colcontext_s
 	fixed_t				scale;
 	fixed_t				iscale;
 	fixed_t				texturemid;
-
-	size_t				bufferoffs;
 } colcontext_t;
 
 typedef struct spancontext_s

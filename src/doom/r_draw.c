@@ -1151,21 +1151,14 @@ void R_FillBackScreen (void)
 	if( border_style == 0 )
 	{
 		src.data = W_CacheLumpName( name, PU_LEVEL );
-		src.width = src.height = 64;
+		src.width = src.height = src.pitch = 64;
+		src.pixel_size_bytes = 1;
+		src.magic_value = vbuffer_magic;
 
-		V_InflateAndTransposeBuffer( &src, &inflated, PU_CACHE );
+		V_TransposeBuffer( &src, &inflated, PU_CACHE );
 
-		for ( x=0 ; x<V_VIRTUALWIDTH ; x += 64 )
-		{
-			width = M_MIN( V_VIRTUALWIDTH - x, 64 );
-
-			for ( y=0 ; y<V_VIRTUALHEIGHT ; y += 64 )
-			{
-				height = M_MIN( V_VIRTUALHEIGHT - y, 64 );
-
-				V_CopyRect( 0, 0, &inflated, width, height, x, y );
-			}
-		}
+		V_TileBuffer( &inflated, 0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT - ST_HEIGHT );
+		//V_FillBorder( &inflated, 0, V_VIRTUALHEIGHT - ST_HEIGHT );
 	}
 	else
 	{

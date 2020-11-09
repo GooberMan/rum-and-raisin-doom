@@ -395,6 +395,8 @@ static patch_t**	lnames;
 // Buffer storing the backdrop
 static patch_t *background;
 
+extern vbuffer_t blackedges;
+
 //
 // CODE
 //
@@ -402,6 +404,7 @@ static patch_t *background;
 // slam background
 void WI_slamBackground(void)
 {
+	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
     V_DrawPatch(0, 0, background);
 }
 
