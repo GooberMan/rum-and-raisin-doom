@@ -52,7 +52,6 @@
 #include "i_timer.h"
 #include "i_video.h"
 #include "m_argv.h"
-#include "m_debugmenu.h"
 #include "m_config.h"
 #include "m_misc.h"
 #include "tables.h"
@@ -245,11 +244,6 @@ int usegamma = 0;
 
 // Joystick/gamepad hysteresis
 unsigned int joywait = 0;
-
-#if USE_IMGUI
-// Dear ImGui. For debugging justice
-extern ImGuiContext* imgui_context;
-#endif // USE_IMGUI
 
 extern boolean debugmenuactive;
 
@@ -867,13 +861,21 @@ void I_FinishUpdate (void)
 
 	SDL_SetRenderTarget(renderer, NULL);
 
-	// Better transormation courtesy of Altazimuth
-	Target.x = (render_width - actualheight) / 2;
-	Target.y = (actualheight - render_width) / 2;
-	Target.w = actualheight;
-	Target.h = render_width;
+	SDL_GL_BindTexture( texture_upscaled, NULL, NULL );
+	GLint whichID;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichID);
+	SDL_GL_UnbindTexture( texture );
 
-	SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
+	if( USE_IMGUI && !debugmenuactive )
+	{
+		// Better transormation courtesy of Altazimuth
+		Target.x = (render_width - actualheight) / 2;
+		Target.y = (actualheight - render_width) / 2;
+		Target.w = actualheight;
+		Target.h = render_width;
+
+		SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
+	}
 
 	// ImGui time!
 #if USE_IMGUI
@@ -884,6 +886,34 @@ void I_FinishUpdate (void)
 	igGetIO()->WantCaptureMouse = debugmenuactive;
 
 	igNewFrame();
+
+	static float uv0_x = 0;
+	static float uv0_y = 0;
+	static float uv1_x = 1;
+	static float uv1_y = 1;
+
+	if( debugmenuactive )
+	{
+		ImVec2 size = { 640, 480 };
+		igSetNextWindowSize( size, ImGuiCond_FirstUseEver );
+		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings ) )
+		{
+			igGetWindowSize( &size );
+			// TODO: Get correct margin sizes
+			size.x -= 20;
+			size.y -= 40;
+			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_REPEAT );
+			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_REPEAT );
+			ImVec2 uvtl = { 0, 0 };
+			ImVec2 uvtr = { 0, 1 };
+			ImVec2 uvll = { 1, 0 };
+			ImVec2 uvlr = { 1, 1 };
+			ImVec4 tint = { 1, 1, 1, 1 };
+			ImVec4 border = { 0, 0, 0, 0 };
+			igImageQuad( whichID, size, uvtl, uvtr, uvlr, uvll, tint, border );
+		}
+		igEnd();
+	}
 
 	M_RenderDebugMenu();
 
