@@ -1,5 +1,5 @@
 //
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2021 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -30,6 +30,8 @@ void CImGui_ImplOpenGL3_NewFrame( void );
 void CImGui_ImplSDL2_NewFrame( void* window );
 
 void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data );
+
+void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col);
 
 #ifdef __cplusplus
 }
