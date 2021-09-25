@@ -1148,8 +1148,18 @@ void R_FillBackScreen (void)
 
 	V_UseBuffer( &background_data );
 
-	if( border_style == 0 )
+	switch( border_style )
 	{
+	case Border_Interpic:
+		{
+			const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
+			patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_CACHE );
+			V_DrawPatch( 0, 0, interpic );
+		}
+		break;
+
+	case Border_Original:
+	default:
 		src.data = W_CacheLumpName( name, PU_LEVEL );
 		src.width = src.height = src.pitch = 64;
 		src.pixel_size_bytes = 1;
@@ -1159,16 +1169,26 @@ void R_FillBackScreen (void)
 
 		V_TileBuffer( &inflated, 0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT - ST_HEIGHT );
 		//V_FillBorder( &inflated, 0, V_VIRTUALHEIGHT - ST_HEIGHT );
-	}
-	else
-	{
-		const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
-		patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_CACHE );
-		V_DrawPatch( 0, 0, interpic );
+
+		break;
 	}
 
-	if( border_bezel_style == 0 )
+	switch( border_bezel_style )
 	{
+	case Bezel_Dithered:
+		// I cannot get this looking right at the moment. Le sigh.
+		R_RemapBackBuffer( viewx - 8, viewy - 8, vieww + 16, viewh + 16, colormaps + 2 * 256 );
+		R_RemapBackBuffer( viewx - 7, viewy - 7, vieww + 14, viewh + 14, colormaps + 4 * 256 );
+		R_RemapBackBuffer( viewx - 6, viewy - 6, vieww + 12, viewh + 12, colormaps + 6 * 256 );
+		R_RemapBackBuffer( viewx - 5, viewy - 5, vieww + 10, viewh + 10, colormaps + 7 * 256 );
+		R_RemapBackBuffer( viewx - 4, viewy - 4, vieww + 8, viewh + 8, colormaps + 8 * 256 );
+		R_RemapBackBuffer( viewx - 3, viewy - 3, vieww + 6, viewh + 6, colormaps + 9 * 256 );
+		R_RemapBackBuffer( viewx - 2, viewy - 2, vieww + 4, viewh + 4, colormaps + 10 * 256 );
+		R_RemapBackBuffer( viewx - 1, viewy - 1, vieww + 2, viewh + 2, colormaps + 11 * 256 );
+		break;
+
+	case Bezel_Original:
+	default:
 		// Draw screen and bezel; this is done to a separate screen buffer.
 		patch = W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
 		for (x=0 ; x < vieww; x+=8)
@@ -1202,18 +1222,8 @@ void R_FillBackScreen (void)
 		V_DrawPatch( viewx + vieww,
 					 viewy + viewh,
 					W_CacheLumpName(DEH_String("brdr_br"),PU_CACHE));
-	}
-	else
-	{
-		// I cannot get this looking right at the moment. Le sigh.
-		R_RemapBackBuffer( viewx - 8, viewy - 8, vieww + 16, viewh + 16, colormaps + 2 * 256 );
-		R_RemapBackBuffer( viewx - 7, viewy - 7, vieww + 14, viewh + 14, colormaps + 4 * 256 );
-		R_RemapBackBuffer( viewx - 6, viewy - 6, vieww + 12, viewh + 12, colormaps + 6 * 256 );
-		R_RemapBackBuffer( viewx - 5, viewy - 5, vieww + 10, viewh + 10, colormaps + 7 * 256 );
-		R_RemapBackBuffer( viewx - 4, viewy - 4, vieww + 8, viewh + 8, colormaps + 8 * 256 );
-		R_RemapBackBuffer( viewx - 3, viewy - 3, vieww + 6, viewh + 6, colormaps + 9 * 256 );
-		R_RemapBackBuffer( viewx - 2, viewy - 2, vieww + 4, viewh + 4, colormaps + 10 * 256 );
-		R_RemapBackBuffer( viewx - 1, viewy - 1, vieww + 2, viewh + 2, colormaps + 11 * 256 );
+		break;
+
 	}
 
     V_RestoreBuffer();
