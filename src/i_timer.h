@@ -27,16 +27,16 @@
 
 // Called by D_DoomLoop,
 // returns current time in tics.
-int I_GetTime (void);
+uint64_t I_GetTimeTicks (void);
 
 // returns current time in ms
-int I_GetTimeMS (void);
+uint64_t I_GetTimeMS (void);
 
 // returns current time in microseconds
 uint64_t I_GetTimeUS (void);
 
 // Pause for a specified number of ms
-void I_Sleep(int ms);
+void I_Sleep(uint64_t ms);
 
 // Initialize timer
 void I_InitTimer(void);

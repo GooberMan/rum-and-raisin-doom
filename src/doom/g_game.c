@@ -115,7 +115,7 @@ boolean         usergame;               // ok to save / end game
  
 boolean         timingdemo;             // if true, exit with report on completion 
 boolean         nodrawers;              // for comparative timing purposes 
-int             starttime;          	// for comparative timing purposes  	 
+uint64_t        starttime;          	// for comparative timing purposes  	 
  
 boolean         viewactive; 
  
@@ -2290,7 +2290,7 @@ void G_DoPlayDemo (void)
 	}
 
     G_InitNew (skill, episode, map, GF_None); 
-    starttime = I_GetTime (); 
+    starttime = I_GetTimeTicks(); 
 
     usergame = false; 
     demoplayback = true; 
@@ -2330,56 +2330,56 @@ void G_TimeDemo (char* name)
  
 boolean G_CheckDemoStatus (void) 
 { 
-    int             endtime; 
+	uint64_t             endtime; 
 	 
-    if (timingdemo) 
-    { 
-        float fps;
-        int realtics;
+	if (timingdemo) 
+	{ 
+		float fps;
+		int realtics;
 
-	endtime = I_GetTime (); 
-        realtics = endtime - starttime;
-        fps = ((float) gametic * TICRATE) / realtics;
+		endtime = I_GetTimeTicks(); 
+		realtics = endtime - starttime;
+		fps = ((float) gametic * TICRATE) / realtics;
 
-        // Prevent recursive calls
-        timingdemo = false;
-        demoplayback = false;
+		// Prevent recursive calls
+		timingdemo = false;
+		demoplayback = false;
 
-	I_Error ("timed %i gametics in %i realtics (%f fps)",
-                 gametic, realtics, fps);
-    } 
+		I_Error ("timed %i gametics in %i realtics (%f fps)",
+					gametic, realtics, fps);
+	} 
 	 
-    if (demoplayback) 
-    { 
-        W_ReleaseLumpName(defdemoname);
-	demoplayback = false; 
-	netdemo = false;
-	netgame = false;
-	deathmatch = false;
-	playeringame[1] = playeringame[2] = playeringame[3] = 0;
-	respawnparm = false;
-	fastparm = false;
-	nomonsters = false;
-	consoleplayer = 0;
-        
-        if (singledemo) 
-            I_Quit (); 
-        else 
-            D_AdvanceDemo (); 
+	if (demoplayback) 
+	{ 
+		W_ReleaseLumpName(defdemoname);
+		demoplayback = false; 
+		netdemo = false;
+		netgame = false;
+		deathmatch = false;
+		playeringame[1] = playeringame[2] = playeringame[3] = 0;
+		respawnparm = false;
+		fastparm = false;
+		nomonsters = false;
+		consoleplayer = 0;
 
-	return true; 
-    } 
+		if (singledemo) 
+			I_Quit (); 
+		else 
+			D_AdvanceDemo (); 
+
+		return true; 
+	} 
  
-    if (demorecording) 
-    { 
-	*demo_p++ = DEMOMARKER; 
-	M_WriteFile (demoname, demobuffer, demo_p - demobuffer); 
-	Z_Free (demobuffer); 
-	demorecording = false; 
-	I_Error ("Demo %s recorded",demoname); 
-    } 
-	 
-    return false; 
+	if (demorecording) 
+	{ 
+		*demo_p++ = DEMOMARKER; 
+		M_WriteFile (demoname, demobuffer, demo_p - demobuffer); 
+		Z_Free (demobuffer); 
+		demorecording = false; 
+		I_Error ("Demo %s recorded",demoname); 
+	} 
+
+	return false; 
 } 
  
  

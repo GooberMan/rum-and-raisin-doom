@@ -46,7 +46,7 @@ int
 wipe_initColorXForm
 ( int	width,
   int	height,
-  int	ticks )
+  uint64_t	ticks )
 {
     memcpy(wipe_scr, wipe_scr_start, width*height*sizeof(*wipe_scr));
     return 0;
@@ -56,12 +56,12 @@ int
 wipe_doColorXForm
 ( int	width,
   int	height,
-  int	ticks )
+  uint64_t	ticks )
 {
     boolean	changed;
     pixel_t*	w;
     pixel_t*	e;
-    int		newval;
+    uint64_t		newval;
 
     changed = false;
     w = wipe_scr;
@@ -77,7 +77,7 @@ wipe_doColorXForm
 		if (newval < *e)
 		    *w = *e;
 		else
-		    *w = newval;
+		    *w = (pixel_t)newval;
 		changed = true;
 	    }
 	    else if (*w < *e)
@@ -86,7 +86,7 @@ wipe_doColorXForm
 		if (newval > *e)
 		    *w = *e;
 		else
-		    *w = newval;
+		    *w = (pixel_t)newval;
 		changed = true;
 	    }
 	}
@@ -102,7 +102,7 @@ int
 wipe_exitColorXForm
 ( int	width,
   int	height,
-  int	ticks )
+  uint64_t	ticks )
 {
     return 0;
 }
@@ -116,7 +116,7 @@ int
 wipe_initMelt
 ( int	width,
   int	height,
-  int	ticks )
+  uint64_t	ticks )
 {
     int i, r;
 
@@ -142,7 +142,7 @@ int
 wipe_doMelt
 ( int	width,
   int	height,
-  int	ticks )
+  uint64_t	ticks )
 {
     int		col;
     int		j;
@@ -219,7 +219,7 @@ int
 wipe_exitMelt
 ( int	width,
   int	height,
-  int	ticks )
+  uint64_t	ticks )
 {
     Z_Free(y);
     Z_Free(wipe_scr_start);
@@ -259,13 +259,18 @@ wipe_ScreenWipe
   int	y,
   int	width,
   int	height,
-  int	ticks )
+  uint64_t	ticks )
 {
     int rc;
-    static int (*wipes[])(int, int, int) =
+    static int (*wipes[])(int, int, uint64_t) =
     {
-	wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
-	wipe_initMelt, wipe_doMelt, wipe_exitMelt
+	wipe_initColorXForm,
+	wipe_doColorXForm,
+	wipe_exitColorXForm,
+
+	wipe_initMelt,
+	wipe_doMelt,
+	wipe_exitMelt
     };
 
     // initial stuff

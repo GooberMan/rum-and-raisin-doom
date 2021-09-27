@@ -58,6 +58,6 @@ wipe_ScreenWipe
   int		y,
   int		width,
   int		height,
-  int		ticks );
+  uint64_t		ticks );
 
 #endif

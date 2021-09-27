@@ -608,7 +608,7 @@ AM_Responder
     if (ev->type == ev_joystick && joybautomap >= 0
         && (ev->data1 & (1 << joybautomap)) != 0)
     {
-        joywait = I_GetTime() + 5;
+        joywait = I_GetTimeTicks() + 5;
 
         if (!automapactive)
         {

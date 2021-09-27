@@ -243,7 +243,7 @@ static unsigned int last_resize_time;
 int usegamma = 0;
 
 // Joystick/gamepad hysteresis
-unsigned int joywait = 0;
+uint64_t joywait = 0;
 
 extern boolean debugmenuactive;
 
@@ -527,7 +527,7 @@ void I_StartTic (void)
         I_ReadMouse();
     }
 
-    if (joywait < I_GetTime())
+    if (joywait < I_GetTimeTicks())
     {
         I_UpdateJoystick();
     }
@@ -800,7 +800,7 @@ void I_FinishUpdate (void)
 #if FPS_DOTS_SUPPORTED
     if (display_fps_dots)
     {
-	i = I_GetTime();
+	i = I_GetTimeTicks();
 	tics = i - lasttic;
 	lasttic = i;
 	if (tics > 20) tics = 20;
@@ -910,7 +910,7 @@ void I_FinishUpdate (void)
 			ImVec2 uvlr = { 1, 1 };
 			ImVec4 tint = { 1, 1, 1, 1 };
 			ImVec4 border = { 0, 0, 0, 0 };
-			igImageQuad( whichID, size, uvtl, uvtr, uvlr, uvll, tint, border );
+			igImageQuad( (ImTextureID)whichID, size, uvtl, uvtr, uvlr, uvll, tint, border );
 		}
 		igEnd();
 	}

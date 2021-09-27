@@ -42,57 +42,55 @@ static uint64_t currperfframe = 0;
 // I_GetTime
 // returns time in 1/35th second tics
 //
+static uint64_t basecounter = 0;
+static uint64_t basefreq = 0;
 
-static Uint32 basetime = 0;
-static Uint64 basecounter = 0;
-static Uint64 basefreq = 0;
-
-int  I_GetTime (void)
+uint64_t I_GetTimeTicks(void)
 {
-    Uint32 ticks;
+	uint64_t counter;
 
-    ticks = SDL_GetTicks();
+	counter = SDL_GetPerformanceCounter();
 
-    if (basetime == 0)
-        basetime = ticks;
+	if (basecounter == 0)
+		basecounter = counter;
 
-    ticks -= basetime;
-
-    return (ticks * TICRATE) / 1000;    
+	return ( ( counter - basecounter ) * TICRATE ) / basefreq;
 }
 
 //
 // Same as I_GetTime, but returns time in milliseconds
 //
 
-int I_GetTimeMS(void)
+
+uint64_t I_GetTimeMS(void)
 {
-    Uint32 ticks;
+	uint64_t counter;
 
-    ticks = SDL_GetTicks();
+	counter = SDL_GetPerformanceCounter();
 
-    if (basetime == 0)
-        basetime = ticks;
+	if (basecounter == 0)
+		basecounter = counter;
 
-    return ticks - basetime;
+	return ( ( counter - basecounter ) * 1000ull ) / basefreq;
 }
 
 uint64_t I_GetTimeUS(void)
 {
-	Uint64 counter;
-	Uint64 ret;
+	uint64_t counter;
 
 	counter = SDL_GetPerformanceCounter();
 
-	ret = ( ( counter - basecounter ) * 1000000 ) / basefreq;
-	return ret;
+	if (basecounter == 0)
+		basecounter = counter;
+
+	return ( ( counter - basecounter ) * 1000000ull ) / basefreq;
 }
 
 // Sleep for a specified number of ms
 
-void I_Sleep(int ms)
+void I_Sleep(uint64_t ms)
 {
-    SDL_Delay(ms);
+    SDL_Delay((Uint32)ms);
 }
 
 void I_WaitVBL(int count)
@@ -110,7 +108,6 @@ void I_InitTimer(void)
 #endif
     SDL_Init(SDL_INIT_TIMER);
 	basefreq = SDL_GetPerformanceFrequency();
-	basecounter = SDL_GetPerformanceCounter();
 }
 
 void I_InitPerfFrames( uint64_t count )

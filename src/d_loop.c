@@ -685,7 +685,7 @@ void TryRunTics (void)
     int	counts;
 
     // get real tics
-    entertic = I_GetTime() / ticdup;
+    entertic = I_GetTimeTicks() / ticdup;
     realtics = entertic - oldentertics;
     oldentertics = entertic;
 
@@ -752,7 +752,7 @@ void TryRunTics (void)
             // If we're in a netgame, we might spin forever waiting for
             // new network data to be received. So don't stay in here
             // forever - give the menu a chance to work.
-            if (I_GetTime() / ticdup - entertic >= MAX_NETGAME_STALL_TICS)
+            if (I_GetTimeTicks() / ticdup - entertic >= MAX_NETGAME_STALL_TICS)
             {
                 return;
             }

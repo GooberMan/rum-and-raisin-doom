@@ -478,9 +478,9 @@ boolean D_GrabMouseCallback(void)
 
 void D_RunFrame()
 {
-    int nowtime;
-    int tics;
-    static int wipestart;
+    uint64_t nowtime;
+    uint64_t tics;
+    static uint64_t wipestart;
     static boolean wipe;
 
 	int32_t prev_render_width = render_width;
@@ -494,7 +494,7 @@ void D_RunFrame()
     {
         do
         {
-            nowtime = I_GetTime ();
+            nowtime = I_GetTimeTicks();
             tics = nowtime - wipestart;
             I_Sleep(1);
         } while (tics <= 0);
@@ -543,7 +543,7 @@ void D_RunFrame()
             // start wipe on this frame
             wipe_EndScreen(0, 0, render_width, render_height);
 
-            wipestart = I_GetTime () - 1;
+            wipestart = I_GetTimeTicks() - 1;
         } else {
             // normal update
             I_FinishUpdate ();              // page flip or blit buffer
