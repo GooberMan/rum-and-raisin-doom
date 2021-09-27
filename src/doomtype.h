@@ -111,14 +111,17 @@ typedef bool boolean;
 
 #else
 
-//typedef enum 
-//{
-//    false, 
-//    true
-//} boolean;
+// [R&R] TODO: Switching to stdbool.h breaks clang.
+// Some structs store booleans. This could be why.
+// Investigate further.
+typedef enum 
+{
+    false, 
+    true
+} boolean;
 
-#include <stdbool.h>
-typedef bool boolean;
+//#include <stdbool.h>
+//typedef bool boolean;
 
 #endif
 
