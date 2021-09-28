@@ -976,10 +976,18 @@ void R_InitContexts( void )
 
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
-		renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( currcontext );
 		renderdatas[ currcontext ].context.bufferindex = currcontext;
 
-		I_SetRenderBufferValidColumns( currcontext, currstart, currstart + incrementby );
+		if( rendersinglebuffer )
+		{
+			renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
+			I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, 0, currcontext == 0 ? render_width : 0 );
+		}
+		else
+		{
+			renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( currcontext );
+			I_SetRenderBufferValidColumns( currcontext, currstart, currstart + incrementby );
+		}
 
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
