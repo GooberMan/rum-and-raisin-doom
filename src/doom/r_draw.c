@@ -250,100 +250,7 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 	} while( (size_t)simddest <= enddest );
 }
 
-#if 0
-// This function proves that reads are in fact the bottleneck
-void R_DrawColumn_NaiveSIMD( void )
-{
-	int32_t		curr;
-	size_t		basedest;
-	size_t		enddest;
-	ptrdiff_t	overlap;
-	simd_int8x16_t*	simddest;
-	fixed_t		frac;
-	fixed_t		fracbase;
-	fixed_t		fracstep;
-
-	simd_int8x16_t		prevsample;
-	simd_int8x16_t		currsample;
-	simd_int8x16_t		writesample;
-	simd_int8x16_t		selectmask;
-
-	simd_int8x16_t		sample_increment;
-
-	simd_int8x16_t		sample_0_1_2_3;
-	simd_int8x16_t		sample_4_5_6_7;
-	simd_int8x16_t		sample_8_9_10_11;
-	simd_int8x16_t		sample_12_13_14_15;
-
-	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
-
-	basedest	= context->output.data + xlookup[dc_x] + rowofs[dc_yl];
-	enddest		= basedest + (dc_yh - dc_yl);
-	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
-
-	// HACK FOR NOW
-	simddest	= basedest - overlap;
-	curr		= dc_yl - overlap;
-
-	fracstep	= dc_iscale << 4;
-	frac		= dc_texturemid + ( dc_yl - centery ) * dc_iscale;
-
-	fracbase	= frac - dc_iscale * overlap;
-
-	overlap <<= 3;
-
-	// MSVC 32-bit compiles were not generating 64-bit values when using the macros. So manual code here >:-/
-	selectmask = _store_int8x16( ~( ~0ll << M_MAX( overlap - 64, 0 ) ), ~( ~0ll << ( overlap & 63 ) ) );
-	//selectmask = _store_int8x16( M_BITMASK64( M_MAX( overlap - 64, 0 ) ), M_BITMASK64( overlap & 63 ) );
-
-	sample_increment = _mm_set1_epi32( dc_iscale * 4 );
-	sample_0_1_2_3 = _mm_set_epi32( fracbase, fracbase + dc_iscale, fracbase + dc_iscale * 2, fracbase + dc_iscale * 3 );
-	sample_4_5_6_7 = _mm_add_epi32( sample_0_1_2_3, sample_increment );
-	sample_8_9_10_11 = _mm_add_epi32( sample_4_5_6_7, sample_increment );
-	sample_12_13_14_15 = _mm_add_epi32( sample_8_9_10_11, sample_increment );
-	sample_increment = _mm_set1_epi32( fracstep );
-
-	prevsample = _load_int8x16( simddest );
-	prevsample = _and_int8x16( selectmask, prevsample );
-	selectmask = _xor_int8x16( selectmask, fullmask );
-
-	do
-	{
-		currsample = _mm_set_epi8( dc_source[ sample_12_13_14_15.m128i_i8[ 2 ] ]
-								,  dc_source[ sample_12_13_14_15.m128i_i8[ 6 ] ]
-								,  dc_source[ sample_12_13_14_15.m128i_i8[ 10 ] ]
-								,  dc_source[ sample_12_13_14_15.m128i_i8[ 14 ] ]
-								,  dc_source[ sample_8_9_10_11.m128i_i8[ 2 ] ]
-								,  dc_source[ sample_8_9_10_11.m128i_i8[ 6 ] ]
-								,  dc_source[ sample_8_9_10_11.m128i_i8[ 10 ] ]
-								,  dc_source[ sample_8_9_10_11.m128i_i8[ 14 ] ]
-								,  dc_source[ sample_4_5_6_7.m128i_i8[ 2 ] ]
-								,  dc_source[ sample_4_5_6_7.m128i_i8[ 6 ] ]
-								,  dc_source[ sample_4_5_6_7.m128i_i8[ 10 ] ]
-								,  dc_source[ sample_4_5_6_7.m128i_i8[ 14 ] ]
-								,  dc_source[ sample_0_1_2_3.m128i_i8[ 2 ] ]
-								,  dc_source[ sample_0_1_2_3.m128i_i8[ 6 ] ]
-								,  dc_source[ sample_0_1_2_3.m128i_i8[ 10 ] ]
-								,  dc_source[ sample_0_1_2_3.m128i_i8[ 14 ] ]
-		);
-
-		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
-		prevsample = _and_int8x16( currsample, _xor_int8x16( selectmask, fullmask ) );
-		selectmask = fullmask;
-
-		sample_0_1_2_3 = _mm_add_epi32( sample_0_1_2_3, sample_increment );
-		sample_4_5_6_7 = _mm_add_epi32( sample_4_5_6_7, sample_increment );
-		sample_8_9_10_11 = _mm_add_epi32( sample_8_9_10_11, sample_increment );
-		sample_12_13_14_15 = _mm_add_epi32( sample_12_13_14_15, sample_increment );
-
-		_store_int8x16( simddest, writesample );
-
-		++simddest;
-	} while( simddest < enddest );
-}
-#endif // 0
-
-#endif // COLUMN_AVX
+#endif // R_DRAWCOLUMN_SIMDOPTIMISED
 
 //
 // A column is a vertical slice/span from a wall texture that,
@@ -386,6 +293,7 @@ void R_DrawColumn ( colcontext_t* context )
     } while (count--); 
 } 
 
+// This will disappear once sprites and midtexes get deflated to memory correctly
 void R_DrawColumn_Untranslated ( colcontext_t* context ) 
 { 
     int			count; 
@@ -1110,9 +1018,10 @@ void R_FillBackScreen (void)
 		|| background_data.width != render_width
 		|| background_data.height != render_height )
 	{
-		if (background_data.data != NULL)
+		if (background_data.data != NULL
+			&& (render_width > background_data.width || render_height > background_data.height ) )
 		{
-			Z_Free(background_data.data);
+			Z_Free( background_data.data );
 			memset( &background_data, 0, sizeof( background_data ) );
 		}
 
@@ -1151,7 +1060,7 @@ void R_FillBackScreen (void)
 	case Border_Interpic:
 		{
 			const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
-			patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_CACHE );
+			patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_LEVEL );
 			V_DrawPatch( 0, 0, interpic );
 		}
 		break;

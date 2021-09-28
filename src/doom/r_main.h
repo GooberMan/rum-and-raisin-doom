@@ -89,7 +89,7 @@ extern int32_t			fixedcolormapindex;
 // Blocky/low detail mode.
 //B remove this?
 //  0 = high, 1 = low
-extern	int		detailshift;	
+extern int32_t	detailshift;
 extern int32_t	fuzz_style;
 
 
