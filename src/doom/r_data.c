@@ -856,12 +856,9 @@ void R_PrecacheLevel (void)
 
     int			i;
     int			j;
-    int			k;
     int			lump;
 
     texture_t*		texture;
-    thinker_t*		th;
-    spriteframe_t*	sf;
 
 	byte*			baseflatdata;
 	byte*			outputflatdata;

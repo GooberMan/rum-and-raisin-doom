@@ -1082,8 +1082,6 @@ void R_FillBackScreen (void)
 { 
 	vbuffer_t src;
 	vbuffer_t inflated;
-	int32_t width;
-	int32_t height;
 
 	int32_t viewx = FixedDiv( viewwindowx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
 	int32_t viewy = FixedDiv( viewwindowy << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;

@@ -114,7 +114,6 @@ void	F_CastDrawer (void);
 void F_StartFinale (void)
 {
     size_t i;
-	vbuffer_t src;
 
     gameaction = ga_nothing;
     gamestate = GS_FINALE;
@@ -234,7 +233,7 @@ extern	patch_t *hu_font[HU_FONTSIZE];
 
 void F_TextWrite (void)
 {
-    int		x,y,w;
+    int		w;
     signed int	count;
     const char *ch;
     int		c;

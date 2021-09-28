@@ -841,7 +841,6 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 	colcontext_t	skycontext;
 
 	int32_t			span_type = span_override;
-	int32_t			log_dimensions;
 
 	if( span_override == Span_None )
 	{
