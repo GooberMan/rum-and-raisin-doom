@@ -20,8 +20,8 @@
 //
 
 
-
-
+extern "C"
+{
 #include "doomdef.h"
 #include "deh_main.h"
 
@@ -43,10 +43,20 @@
 #include "m_misc.h"
 #include "m_random.h"
 
+extern int border_style;
+extern int border_bezel_style;
+
+extern vbuffer_t* dest_buffer;
+
 // ?
 // This does precisely nothing but hard limit what you can do with a given executable
 #define MAXWIDTH			( MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
 #define MAXHEIGHT			( MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
+
+size_t			xlookup[MAXWIDTH];
+size_t			rowofs[MAXHEIGHT]; 
+
+}
 
 // status bar height at bottom of screen
 #define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
@@ -66,9 +76,6 @@ int32_t			scaledviewwidth;
 int32_t			viewheight;
 int32_t			viewwindowx;
 int32_t			viewwindowy; 
-
-size_t			xlookup[MAXWIDTH];
-size_t			rowofs[MAXHEIGHT]; 
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -143,38 +150,38 @@ static vbuffer_t background_data;
 
 const simd_int8x16_t MergeLookup[ 32 ] =
 {
-	literal_int8x16( 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
-	literal_int8x16( 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ),
+	literal_int8x16( -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
+	literal_int8x16(  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
 };
 
 // Introduce another branch in this function, and I will find you
@@ -194,7 +201,7 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 	simd_int8x16_t		writesample;
 	simd_int8x16_t		selectmask;
 
-	const simd_int8x16_t fullmask = _set1_int8x16( 0xFF );
+	const simd_int8x16_t fullmask = _set1_int8x16(   -1 );
 
 	basedest	= (size_t)context->output.data + xlookup[context->x] + rowofs[context->yl];
 	enddest		= basedest + ( context->yh - context->yl);
@@ -259,74 +266,124 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 // Thus a special case loop for very fast rendering can
 //  be used. It has also been used with Wolfenstein 3D.
 // 
-void R_DrawColumn ( colcontext_t* context ) 
-{ 
-    int			count; 
-    pixel_t*		dest;
-    fixed_t		frac;
-    fixed_t		fracstep;	 
 
-    count = context->yh - context->yl; 
+#define INLINE __forceinline
 
-    // Framebuffer destination address.
-    // Use ylookup LUT to avoid multiply with ScreenWidth.
-    // Use columnofs LUT for subwindows? 
-    dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
+namespace DrawColumn
+{
+	namespace Null
+	{
+		struct Renderer
+		{
+			// Draws exactly the column you give it. No extra colormapping
+			static INLINE void Draw( colcontext_t* context )
+			{
+			}
 
-    // Determine scaling,
-    //  which is the only mapping to be done.
-    fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-centery)*fracstep; 
+			// Will take the source pixels and remap them with the context's colormap
+			static INLINE void ColormapDraw( colcontext_t* context )
+			{
+			}
+		};
+	}
 
-    // Inner loop that does the actual texture mapping,
-    //  e.g. a DDA-lile scaling.
-    // This is as fast as it gets.
-    do 
-    {
-		// Re-map color indices from wall texture column
-		//  using a lighting/special effects LUT.
-		*dest = context->source[(frac>>FRACBITS)&127];
+	namespace Bytewise
+	{
+		namespace Sampler
+		{
+			// The 127 here makes it wrap, keeping max height to 128
+			// Need to make that a bit nicer somehow
+			struct Direct
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				{
+					return context->source[ (frac >> FRACBITS ) & 127 ];
+				}
+			};
+
+			struct PaletteSwap
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				{
+					return context->translation[ Direct::Sample( context, frac ) ];
+				}
+			};
+
+			struct Colormap
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				{
+					return context->colormap[ Direct::Sample( context, frac ) ];
+				}
+			};
+
+			struct ColormapPaletteSwap
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				{
+					return context->colormap[ PaletteSwap::Sample( context, frac ) ];
+				}
+			};
+		}
+
+		struct Renderer
+		{
+			template< typename Sampler >
+			static INLINE void DrawWith( colcontext_t* context )
+			{
+				int			count		= context->yh - context->yl;
+
+				// Framebuffer destination address.
+				// Use ylookup LUT to avoid multiply with ScreenWidth.
+				// Use columnofs LUT for subwindows? 
+				pixel_t*	dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
+
+				// Determine scaling, which is the only mapping to be done.
+				fixed_t		fracstep = context->iscale;
+				fixed_t		frac = context->texturemid +  ( context->yl - centery ) * fracstep;
+
+				// Inner loop that does the actual texture mapping,
+				//  e.g. a DDA-lile scaling.
+				// This is as fast as it gets.
+				do 
+				{
+					*dest = Sampler::Sample( context, frac );
 		
-		dest += 1; 
-		frac += fracstep;
+					dest += 1; 
+					frac += fracstep;
 	
-    } while (count--); 
+				} while (count--); 
+			}
+
+			static INLINE void Draw( colcontext_t* context )						{ DrawWith< Sampler::Direct >( context ); }
+			static INLINE void PaletteSwapDraw( colcontext_t* context )				{ DrawWith< Sampler::PaletteSwap >( context ); }
+			static INLINE void ColormapDraw( colcontext_t* context )				{ DrawWith< Sampler::Colormap >( context ); }
+			static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< Sampler::ColormapPaletteSwap >( context ); }
+		};
+	}
+}
+
+#if R_DRAWCOLUMN_SIMDOPTIMISED
+struct DrawColumn_SIMD
+{
+	static INLINE void Draw( colcontext_t* context )
+	{
+	}
+};
+
+#else // !R_DRAWCOLUMN_SIMDOPTIMISED
+using DrawColumn_SIMD = DrawColumn_Bytewise;
+#endif // R_DRAWCOLUMN_SIMDOPTIMISED
+
+void R_DrawColumn( colcontext_t* context ) 
+{ 
+	DrawColumn::Bytewise::Renderer::Draw( context );
 } 
 
-// This will disappear once sprites and midtexes get deflated to memory correctly
-void R_DrawColumn_Untranslated ( colcontext_t* context ) 
-{ 
-    int			count; 
-    pixel_t*		dest;
-    fixed_t		frac;
-    fixed_t		fracstep;	 
-
-    count = context->yh - context->yl; 
-
-    // Framebuffer destination address.
-    // Use ylookup LUT to avoid multiply with ScreenWidth.
-    // Use columnofs LUT for subwindows? 
-    dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
-
-    // Determine scaling,
-    //  which is the only mapping to be done.
-    fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-centery)*fracstep; 
-
-    // Inner loop that does the actual texture mapping,
-    //  e.g. a DDA-lile scaling.
-    // This is as fast as it gets.
-    do 
-    {
-		// Re-map color indices from wall texture column
-		//  using a lighting/special effects LUT.
-		*dest = context->colormap[context->source[(frac>>FRACBITS)&127]];
-		
-		dest += 1; 
-		frac += fracstep;
-	
-    } while (count--); 
-} 
+void R_DrawColumn_Untranslated( colcontext_t* context )
+{
+	DrawColumn::Bytewise::Renderer::ColormapDraw( context );
+}
 
 void R_DrawColumnLow ( colcontext_t* context ) 
 { 
@@ -704,31 +761,7 @@ byte*	translationtables;
 
 void R_DrawTranslatedColumn ( colcontext_t* context ) 
 { 
-    int			count; 
-    pixel_t*		dest;
-    fixed_t		frac;
-    fixed_t		fracstep;	 
- 
-    count = context->yh - context->yl; 
-
-    dest = context->output.data + xlookup[context->x] + rowofs[context->yl];  
-
-    // Looks familiar.
-    fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-centery)*fracstep; 
-
-    // Here we do an additional index re-mapping.
-    do 
-    {
-		// Translation tables are used
-		//  to map certain colorramps to other ones,
-		//  used with PLAY sprites.
-		// Thus the "green" ramp of the player 0 sprite
-		//  is mapped to gray, red, black/indigo. 
-		*dest++ = context->colormap[context->translation[context->source[frac>>FRACBITS]]];
-	
-		frac += fracstep; 
-    } while (count--); 
+   DrawColumn::Bytewise::Renderer::ColormapPaletteSwapDraw( context );
 } 
 
 void R_DrawTranslatedColumnLow ( colcontext_t* context ) 
@@ -783,27 +816,27 @@ void R_DrawTranslatedColumnLow ( colcontext_t* context )
 //
 void R_InitTranslationTables (void)
 {
-    int		i;
+	int		i;
 	
-    translationtables = Z_Malloc (256*3, PU_STATIC, 0);
-    
-    // translate just the 16 green colors
-    for (i=0 ; i<256 ; i++)
-    {
-	if (i >= 0x70 && i<= 0x7f)
+	translationtables = (byte*)Z_Malloc( 256*3, PU_STATIC, 0 );
+
+	// translate just the 16 green colors
+	for (i=0 ; i<256 ; i++)
 	{
-	    // map green ramp to gray, brown, red
-	    translationtables[i] = 0x60 + (i&0xf);
-	    translationtables [i+256] = 0x40 + (i&0xf);
-	    translationtables [i+512] = 0x20 + (i&0xf);
+		if (i >= 0x70 && i<= 0x7f)
+		{
+			// map green ramp to gray, brown, red
+			translationtables[i] = 0x60 + (i&0xf);
+			translationtables [i+256] = 0x40 + (i&0xf);
+			translationtables [i+512] = 0x20 + (i&0xf);
+		}
+		else
+		{
+			// Keep all other colors as is.
+			translationtables[i] = translationtables[i+256] 
+			= translationtables[i+512] = i;
+		}
 	}
-	else
-	{
-	    // Keep all other colors as is.
-	    translationtables[i] = translationtables[i+256] 
-		= translationtables[i+512] = i;
-	}
-    }
 }
 
 
@@ -956,8 +989,6 @@ R_InitBuffer
  
 static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtualwidth, int32_t virtualheight, lighttable_t* colormap )
 {
-	extern vbuffer_t* dest_buffer;
-
 	int32_t numcols = FixedMul( virtualwidth << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
 	int32_t numrows;
 
@@ -1000,9 +1031,6 @@ void R_FillBackScreen (void)
     int		y; 
     patch_t*	patch;
 
-	extern int border_style;
-	extern int border_bezel_style;
-
     // DOOM border patch.
     const char *name1 = DEH_String("FLOOR7_2");
 
@@ -1035,8 +1063,7 @@ void R_FillBackScreen (void)
 	
 	if (background_data.data == NULL)
 	{
-		background_data.data = Z_Malloc(render_width * render_height * sizeof(*background_data.data),
-										PU_STATIC, NULL);
+		background_data.data = (pixel_t*)Z_Malloc( render_width * render_height * sizeof(*background_data.data), PU_STATIC, NULL );
 		background_data.width = render_width;
 		background_data.height = render_height;
 		background_data.pitch = render_height;
@@ -1060,14 +1087,14 @@ void R_FillBackScreen (void)
 	case Border_Interpic:
 		{
 			const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
-			patch_t* interpic = W_CacheLumpName( DEH_String( lookup ), PU_LEVEL );
+			patch_t* interpic = (patch_t*)W_CacheLumpName( DEH_String( lookup ), PU_LEVEL );
 			V_DrawPatch( 0, 0, interpic );
 		}
 		break;
 
 	case Border_Original:
 	default:
-		src.data = W_CacheLumpName( name, PU_LEVEL );
+		src.data = (pixel_t*)W_CacheLumpName( name, PU_LEVEL );
 		src.width = src.height = src.pitch = 64;
 		src.pixel_size_bytes = 1;
 		src.magic_value = vbuffer_magic;
@@ -1097,38 +1124,38 @@ void R_FillBackScreen (void)
 	case Bezel_Original:
 	default:
 		// Draw screen and bezel; this is done to a separate screen buffer.
-		patch = W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
+		patch = (patch_t*)W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
 		for (x=0 ; x < vieww; x+=8)
 			V_DrawPatch( viewx + x, viewy - 8, patch);
 
-		patch = W_CacheLumpName(DEH_String("brdr_b"),PU_CACHE);
+		patch = (patch_t*)W_CacheLumpName(DEH_String("brdr_b"),PU_CACHE);
 		for (x=0 ; x < vieww; x+=8)
 			V_DrawPatch( viewx + x, viewy + viewh, patch);
 
-		patch = W_CacheLumpName(DEH_String("brdr_l"),PU_CACHE);
+		patch = (patch_t*)W_CacheLumpName(DEH_String("brdr_l"),PU_CACHE);
 		for (y=0 ; y < viewh; y+=8)
 			V_DrawPatchClipped( viewx - 8, viewy + y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
 
-		patch = W_CacheLumpName(DEH_String("brdr_r"),PU_CACHE);
+		patch = (patch_t*)W_CacheLumpName(DEH_String("brdr_r"),PU_CACHE);
 		for (y=0 ; y < viewh; y+=8)
 			V_DrawPatchClipped( viewx + vieww, viewy + y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
 
 		// Draw beveled edge. 
 		V_DrawPatch( viewx - 8,
 					 viewy - 8,
-					W_CacheLumpName(DEH_String("brdr_tl"),PU_CACHE));
+					(patch_t*)W_CacheLumpName(DEH_String("brdr_tl"),PU_CACHE));
     
 		V_DrawPatch( viewx + vieww,
 					 viewy - 8,
-					W_CacheLumpName(DEH_String("brdr_tr"),PU_CACHE));
+					(patch_t*)W_CacheLumpName(DEH_String("brdr_tr"),PU_CACHE));
     
 		V_DrawPatch( viewx - 8,
 					 viewy + viewh,
-					W_CacheLumpName(DEH_String("brdr_bl"),PU_CACHE));
+					(patch_t*)W_CacheLumpName(DEH_String("brdr_bl"),PU_CACHE));
     
 		V_DrawPatch( viewx + vieww,
 					 viewy + viewh,
-					W_CacheLumpName(DEH_String("brdr_br"),PU_CACHE));
+					(patch_t*)W_CacheLumpName(DEH_String("brdr_br"),PU_CACHE));
 		break;
 
 	}
