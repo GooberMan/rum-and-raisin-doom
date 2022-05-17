@@ -921,18 +921,20 @@ void AM_doFollowPlayer(void)
 //
 void AM_updateLightLev(void)
 {
-    static int nexttic = 0;
-    //static int litelevels[] = { 0, 3, 5, 6, 6, 7, 7, 7 };
-    static int litelevels[] = { 0, 4, 7, 10, 12, 14, 15, 15 };
-    static int litelevelscnt = 0;
+	static int nexttic = 0;
+	static int litelevels[] = { 0, 4, 7, 10, 12, 14, 15, 15, 15, 14, 12, 10, 7, 4, 0, 0 };
+	static int litelevelscnt = 0;
    
-    // Change light level
-    if (amclock>nexttic)
-    {
-	lightlev = litelevels[litelevelscnt++];
-	if (litelevelscnt == arrlen(litelevels)) litelevelscnt = 0;
-	nexttic = amclock + 6 - (amclock % 6);
-    }
+	// Change light level
+	if (amclock>nexttic)
+	{
+		lightlev = litelevels[litelevelscnt++];
+		if (litelevelscnt == arrlen(litelevels))
+		{
+			litelevelscnt = 0;
+		}
+		nexttic = amclock + 6 - (amclock % 6);
+	}
 
 }
 
@@ -971,7 +973,7 @@ void AM_Ticker (void)
 	}
 
 	// Update light level
-	// AM_updateLightLev();
+	AM_updateLightLev();
 
 }
 
@@ -1264,6 +1266,11 @@ void AM_drawGrid(int color)
 
 }
 
+int32_t AM_lookupColour( int32_t paletteindex, boolean blinking )
+{
+	return colormaps[ ( blinking ? lightlev * 256 : 0 ) + paletteindex ];
+}
+
 //
 // Determines visible lines, draws them.
 // This is LineDef based, not LineSeg based.
@@ -1289,7 +1296,7 @@ void AM_drawWalls( mapstyledata_t* style )
 
 			if (!lines[i].backsector)
 			{
-				AM_drawMline(&l, style->walls + lightlev );
+				AM_drawMline(&l, AM_lookupColour( style->walls, false ) );
 			}
 			else if (lines[i].special == 39)
 			{ // teleporters
@@ -1297,27 +1304,33 @@ void AM_drawWalls( mapstyledata_t* style )
 			}
 			else if (lines[i].flags & ML_SECRET) // secret door
 			{
-				if (cheating) AM_drawMline(&l, style->linesecrets + lightlev);
-				else AM_drawMline(&l, style->walls + lightlev);
+				if (cheating)
+				{
+					AM_drawMline(&l, AM_lookupColour( style->linesecrets, false ) );
+				}
+				else
+				{
+					AM_drawMline(&l, AM_lookupColour( style->walls, false ) );
+				}
 			}
 			else if (lines[i].backsector->floorheight
 					!= lines[i].frontsector->floorheight)
 			{
-				AM_drawMline(&l, style->floorchange + lightlev); // floor level change
+				AM_drawMline(&l, AM_lookupColour( style->floorchange, false ) ); // floor level change
 			}
 			else if (lines[i].backsector->ceilingheight
 					!= lines[i].frontsector->ceilingheight)
 			{
-				AM_drawMline(&l, style->ceilingchange + lightlev); // ceiling level change
+				AM_drawMline(&l, AM_lookupColour( style->ceilingchange, false ) ); // ceiling level change
 			}
 			else if (cheating)
 			{
-				AM_drawMline(&l, style->nochange + lightlev);
+				AM_drawMline(&l, AM_lookupColour( style->nochange, false ) );
 			}
 		}
-		else if ( plr->powers[ pw_allmap ] )
+		else if ( plr->powers[ pw_allmap ] && !(lines[i].flags & LINE_NEVERSEE) )
 		{
-			if ( !(lines[i].flags & LINE_NEVERSEE) ) AM_drawMline(&l, style->areamap );
+			AM_drawMline(&l, AM_lookupColour( style->areamap, false ) );
 		}
 	}
 }
@@ -1408,11 +1421,11 @@ void AM_drawPlayers(void)
 	if (cheating)
 	    AM_drawLineCharacter
 		(cheat_player_arrow, arrlen(cheat_player_arrow), 0,
-		 plr->mo->angle, WHITE, plr->mo->x, plr->mo->y);
+		 plr->mo->angle, AM_lookupColour( WHITE, false ), plr->mo->x, plr->mo->y);
 	else
 	    AM_drawLineCharacter
 		(player_arrow, arrlen(player_arrow), 0, plr->mo->angle,
-		 WHITE, plr->mo->x, plr->mo->y);
+		 AM_lookupColour( WHITE, false ), plr->mo->x, plr->mo->y);
 	return;
     }
 
@@ -1434,7 +1447,7 @@ void AM_drawPlayers(void)
 	
 	AM_drawLineCharacter
 	    (player_arrow, arrlen(player_arrow), 0, p->mo->angle,
-	     color, p->mo->x, p->mo->y);
+	     AM_lookupColour( color, false ), p->mo->x, p->mo->y);
     }
 
 }
@@ -1474,7 +1487,7 @@ void AM_drawThings( mapstyledata_t* style )
 			{
 				colour = style->things;
 			}
-			AM_drawLineCharacter( thintriangle_guy, arrlen(thintriangle_guy), 16<<FRACBITS, t->angle, colour + lightlev, t->x, t->y);
+			AM_drawLineCharacter( thintriangle_guy, arrlen(thintriangle_guy), 16<<FRACBITS, t->angle, AM_lookupColour( colour, false ), t->x, t->y);
 			t = t->snext;
 		}
 	}
@@ -1514,10 +1527,10 @@ void AM_Drawer (void)
 	// TODO: FIX THIS HACK
     fb = I_VideoBuffer;
 
-	AM_clearFB( map_styledata[ map_style ].background );
+	AM_clearFB( AM_lookupColour( map_styledata[ map_style ].background, false ) );
 	if (grid)
 	{
-		AM_drawGrid( map_styledata[ map_style ].grid );
+		AM_drawGrid( AM_lookupColour( map_styledata[ map_style ].grid, false ) );
 	}
 	AM_drawWalls( &map_styledata[ map_style ] );
 	AM_drawPlayers();
@@ -1525,7 +1538,7 @@ void AM_Drawer (void)
 	{
 		AM_drawThings( &map_styledata[ map_style ] );
 	}
-	AM_drawCrosshair( map_styledata[ map_style ].crosshair );
+	AM_drawCrosshair( AM_lookupColour( map_styledata[ map_style ].crosshair, false ) );
 
 	AM_drawMarks();
 
