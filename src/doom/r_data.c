@@ -153,9 +153,20 @@ int*			texturewidthmask;
 fixed_t*		textureheight;		
 int*			texturecompositesize;
 short**			texturecolumnlump;
-unsigned short**	texturecolumnofs;
-unsigned short**	texturecompositecolumnofs;
+uint32_t**		texturecolumnofs;
+uint32_t**		texturecompositecolumnofs;
 byte**			texturecomposite;
+
+// TODO: Roll composites in to this struct
+typedef struct texturecomposite_s
+{
+	char		name[8];
+	int32_t		size;
+	int32_t		width;
+	int32_t		height;
+	int32_t		pitch;
+	byte*		data;
+} texturecomposite_t;
 
 // for global animation
 int*		flattranslation;
@@ -231,6 +242,10 @@ R_DrawColumnInCache
 #define COMPOSITE_MULTIPLIER ( NUMCOLORMAPS )
 #define COMPOSITE_ZONE ( PU_LEVEL )
 
+#define COMPOSITE_HEIGHTSTEP ( 128 )
+#define COMPOSITE_HEIGHTMASK ( COMPOSITE_HEIGHTSTEP - 1 )
+#define COMPOSITE_HEIGHTALIGN( x ) ( ( x  + COMPOSITE_HEIGHTMASK ) & ~COMPOSITE_HEIGHTMASK )
+
 void R_GenerateComposite (int texnum)
 {
 	byte*				block;
@@ -246,13 +261,14 @@ void R_GenerateComposite (int texnum)
 	int32_t				index;
 	column_t*			patchcol;
 	int16_t*			collump;
-	uint16_t*			colofs;
+	uint32_t*			colofs;
 	
 	texture = textures[texnum];
 
 	block = Z_Malloc (texturecompositesize[texnum] * COMPOSITE_MULTIPLIER,
 						COMPOSITE_ZONE, 
 						&texturecomposite[texnum]);	
+	memset( block, 0xFB, texturecompositesize[texnum] * COMPOSITE_MULTIPLIER );
 
     collump = texturecolumnlump[texnum];
     colofs = texturecompositecolumnofs[texnum];
@@ -314,7 +330,7 @@ void R_GenerateLookup (int texnum)
     int			x2;
     int			i;
     short*		collump;
-    unsigned short*	colofs;
+    uint32_t*	colofs;
 	
     texture = textures[texnum];
 
@@ -368,8 +384,10 @@ void R_GenerateLookup (int texnum)
 		}
 	
 		// Pre-caching textures breaks on TNT and PLUTONIA with a 64KB limit. Them sky textures are chonkers.
+
+		// TODO: Remove colofs and just use a pitch value on the texture...
 		colofs[x] = texturecompositesize[texnum];
-		texturecompositesize[texnum] += texture->height;
+		texturecompositesize[texnum] += COMPOSITE_HEIGHTALIGN( texture->height );
     }
 
     Z_Free(patchcount);
@@ -656,7 +674,9 @@ void R_InitTextures (void)
     // Precalculate whatever possible.	
 
     for (i=0 ; i<numtextures ; i++)
-	R_GenerateLookup (i);
+	{
+		R_GenerateLookup (i);
+	}
     
     // Create translation table for global animation.
     texturetranslation = Z_Malloc ((numtextures+1)*sizeof(*texturetranslation), PU_STATIC, 0);
