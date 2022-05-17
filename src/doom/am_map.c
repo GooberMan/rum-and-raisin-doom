@@ -367,6 +367,9 @@ static int32_t lightticlength = 6;
 static int32_t lightlevels[] = { 0, 4, 7, 10, 12, 14, 15, 15, 15, 14, 12, 10, 7, 4, 0, 0 };
 static int32_t lightlevelscnt = 0;
 
+static int32_t linewidth = 1;
+static int32_t lineheight = 1;
+
 void AM_BindAutomapVariables( void )
 {
 	M_BindIntVariable( "map_style",							&map_style );
@@ -1023,10 +1026,10 @@ boolean AM_clipMline( mline_t* ml, fline_t* fl )
 {
 	enum
 	{
-	LEFT	= 1,
-	RIGHT	= 2,
-	BOTTOM	= 4,
-	TOP		= 8,
+		LEFT	= 1,
+		RIGHT	= 2,
+		BOTTOM	= 4,
+		TOP		= 8,
 	};
     
     register int	outcode1 = 0;
@@ -1157,88 +1160,108 @@ AM_drawFline
 ( fline_t*	fl,
   int		color )
 {
-    register int x;
-    register int y;
-    register int dx;
-    register int dy;
-    register int sx;
-    register int sy;
-    register int ax;
-    register int ay;
-    register int d;
+	register int x;
+	register int y;
+	register int dx;
+	register int dy;
+	register int sx;
+	register int sy;
+	register int ax;
+	register int ay;
+	register int d;
     
-    static int fuck = 0;
+	static int fuck = 0;
 
-    // For debugging only
-    if (      fl->a.x < 0 || fl->a.x >= f_w
-	   || fl->a.y < 0 || fl->a.y >= f_h
-	   || fl->b.x < 0 || fl->b.x >= f_w
-	   || fl->b.y < 0 || fl->b.y >= f_h)
-    {
-        DEH_fprintf(stderr, "fuck %d \r", fuck++);
-	return;
-    }
-
-#define PUTDOT(xx,yy,cc) fb[(xx)*render_pitch+(yy)]=(cc)
-
-    dx = fl->b.x - fl->a.x;
-    ax = 2 * (dx<0 ? -dx : dx);
-    sx = dx<0 ? -1 : 1;
-
-    dy = fl->b.y - fl->a.y;
-    ay = 2 * (dy<0 ? -dy : dy);
-    sy = dy<0 ? -1 : 1;
-
-    x = fl->a.x;
-    y = fl->a.y;
-
-    if (ax > ay)
-    {
-	d = ay - ax/2;
-	while (1)
+	// For debugging only
+	if ( fl->a.x < 0 || fl->a.x >= f_w
+		|| fl->a.y < 0 || fl->a.y >= f_h
+		|| fl->b.x < 0 || fl->b.x >= f_w
+		|| fl->b.y < 0 || fl->b.y >= f_h)
 	{
-	    PUTDOT(x,y,color);
-	    if (x == fl->b.x) return;
-	    if (d>=0)
-	    {
-		y += sy;
-		d -= ax;
-	    }
-	    x += sx;
-	    d += ay;
+		DEH_fprintf(stderr, "fuck %d \r", fuck++);
+		return;
 	}
-    }
-    else
-    {
-	d = ax - ay/2;
-	while (1)
+
+	#define PUTDOT(xx,yy,cc) fb[(xx)*render_pitch+(yy)]=(cc)
+
+	dx = fl->b.x - fl->a.x;
+	ax = 2 * (dx<0 ? -dx : dx);
+	sx = dx<0 ? -1 : 1;
+
+	dy = fl->b.y - fl->a.y;
+	ay = 2 * (dy<0 ? -dy : dy);
+	sy = dy<0 ? -1 : 1;
+
+	x = fl->a.x;
+	y = fl->a.y;
+
+	if (ax > ay)
 	{
-	    PUTDOT(x, y, color);
-	    if (y == fl->b.y) return;
-	    if (d >= 0)
-	    {
-		x += sx;
-		d -= ay;
-	    }
-	    y += sy;
-	    d += ax;
+		d = ay - ax/2;
+		while (1)
+		{
+			PUTDOT(x,y,color);
+			if (x == fl->b.x) return;
+			if (d>=0)
+			{
+				y += sy;
+				d -= ax;
+			}
+			x += sx;
+			d += ay;
+		}
 	}
-    }
+	else
+	{
+		d = ax - ay/2;
+		while (1)
+		{
+			PUTDOT(x, y, color);
+			if (y == fl->b.y) return;
+			if (d >= 0)
+			{
+			x += sx;
+			d -= ay;
+			}
+			y += sy;
+			d += ax;
+		}
+	}
 }
 
 
 //
 // Clip lines, draw visible part sof lines.
 //
-void
-AM_drawMline
-( mline_t*	ml,
-  int		color )
+void AM_drawMline( mline_t* ml, int color )
 {
-    static fline_t fl;
+	static fline_t fl;
 
-    if (AM_clipMline(ml, &fl))
-	AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
+	int32_t ax = 0;
+	int32_t ay = 0;
+	int32_t bx = 0;
+	int32_t by = 0;
+	int32_t loopx = 0;
+	int32_t loopy = 0;
+
+	if (AM_clipMline(ml, &fl))
+	{
+		ax = fl.a.x;
+		ay = fl.a.y;
+		bx = fl.b.x;
+		by = fl.b.y;
+		for( loopx = 0; loopx < linewidth; ++loopx )
+		{
+			fl.a.x = ax + loopx;
+			fl.b.x = bx + loopx;
+			for( loopy = 0; loopy < lineheight; ++loopy )
+			{
+				fl.a.y = ay + loopy;
+				fl.b.y = by + loopy;
+				AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
+			}
+		}
+	}
 }
 
 
@@ -1542,7 +1565,22 @@ void AM_drawMarks(void)
 
 void AM_drawCrosshair(int color)
 {
-    fb[(render_pitch*(f_w>>1) + (f_h>>1))] = color; // single point for now
+	// fb[(render_pitch*(f_w>>1) + (f_h>>1))] = color; // single point for now
+
+	// HACK to give us a dot at proper scale
+
+	int32_t loopx;
+	fline_t fl;
+	fl.a.x = fl.b.x = f_w >> 1;
+	fl.a.y = fl.b.y = f_h >> 1;
+	fl.b.y += lineheight;
+
+	for( loopx = 0; loopx < linewidth; ++loopx )
+	{
+		AM_drawFline( &fl, color );
+		++fl.a.x;
+		++fl.b.x;
+	}
 
 }
 
@@ -1550,10 +1588,13 @@ void AM_Drawer (void)
 {
 	mapstyledata_t* style = &map_styledata[ map_style ];
 
-    if (!automapactive) return;
+	if (!automapactive) return;
 
 	// TODO: FIX THIS HACK
-    fb = I_VideoBuffer;
+	fb = I_VideoBuffer;
+
+	linewidth = FixedDiv( 1 << FRACBITS, V_WIDTHSTEP << FRACBITS );
+	lineheight = FixedDiv( 1 << FRACBITS, V_HEIGHTSTEP << FRACBITS );
 
 	AM_clearFB( AM_lookupColour( style->background, style->background_blinking ) );
 	if (grid)
