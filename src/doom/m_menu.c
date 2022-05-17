@@ -64,9 +64,12 @@
 
 #include "i_video.h"
 
+#include "am_map.h"
+
 #include "m_debugmenu.h"
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
+#include "cimguiglue.h"
 
 
 typedef struct mapdetails_s
@@ -2465,6 +2468,75 @@ static const char* span_override_strings[] =
 };
 static int32_t span_override_strings_count = sizeof( span_override_strings ) / sizeof( *span_override_strings );
 
+static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byte* palette )
+{
+	byte* paletteentry;
+	ImU32 colour;
+	ImVec2 coloursize;
+	ImVec2 popupspacing;
+	int32_t paletteindex;
+
+	coloursize.x = coloursize.y = 22.f;
+	popupspacing.x = popupspacing.y = 2.f;
+
+	igPushIDPtr( colourindex );
+
+	igNextColumn();
+	igText( itemname );
+	igNextColumn();
+
+	paletteentry = palette + *colourindex * 3;
+	colour = IM_COL32( paletteentry[ 0 ], paletteentry[ 1 ], paletteentry[ 2 ], 255 );
+
+	igPushStyleColorU32( ImGuiCol_Button, colour );
+	igPushStyleColorU32( ImGuiCol_Border, IM_COL32_BLACK );
+	igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 2.f );
+	if( igButton( " ", coloursize ) )
+	{
+		igOpenPopup( "colorpicker", ImGuiPopupFlags_None );
+	}
+	igPopStyleVar( 1 );
+	igPopStyleColor( 2 );
+
+	if( igBeginPopup( "colorpicker", ImGuiWindowFlags_None ) )
+	{
+		paletteentry = palette;
+
+		igPushStyleVarVec2( ImGuiStyleVar_ItemSpacing, popupspacing );
+
+		for( paletteindex = 0; paletteindex < 256; ++paletteindex )
+		{
+			igPushIDPtr( paletteentry );
+
+			colour = IM_COL32( paletteentry[ 0 ], paletteentry[ 1 ], paletteentry[ 2 ], 255 );
+			igPushStyleColorU32( ImGuiCol_Button, colour );
+			igPushStyleColorU32( ImGuiCol_Border, paletteindex == *colourindex ? IM_COL32_WHITE : IM_COL32_BLACK );
+			igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 1.f );
+			if( igButton( " ", coloursize ) )
+			{
+				*colourindex = paletteindex;
+			}
+
+			if( ( paletteindex & 0xF ) != 0xF )
+			{
+				igSameLine( 0, -1 );
+			}
+			igPopStyleVar( 1 );
+			igPopStyleColor( 2 );
+
+			igPopID();
+
+			paletteentry += 3;
+		}
+
+		igPopStyleVar( 1 );
+
+		igEndPopup();
+	}
+
+	igPopID();
+}
+
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
@@ -2486,6 +2558,8 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	int32_t index;
 	bool selected;
 	ImVec2 zerosize = { 0, 0 };
+
+	byte* palette = NULL;
 
 	if( igBeginTabBar( "Doom Options tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
@@ -2745,6 +2819,52 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 				message_dontfuckwithme = true;
 			}
 			igPopID();
+
+			igColumns( 1, "", false );
+
+			igEndTabItem();
+		}
+
+		if( igBeginTabItem( "Automap", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			igColumns( 2, "", false );
+			igSetColumnWidth( 0, 200.f );
+
+			igText( "Style" );
+			igNextColumn();
+
+			igPushIDPtr( &map_style );
+			igRadioButtonIntPtr( "Custom", &map_style, MapStyle_Custom );
+			igSameLine( 0, -1 );
+			igRadioButtonIntPtr( "Original", &map_style, MapStyle_Original );
+			igSameLine( 0, -1 );
+			igRadioButtonIntPtr( "ZDoom", &map_style, MapStyle_ZDoom );
+			igPopID();
+
+			if( map_style == MapStyle_Custom )
+			{
+				palette = (byte*)W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE );
+
+				M_DebugMenuDoColour( "Background", &map_styledata[ MapStyle_Custom ].background, palette );
+				M_DebugMenuDoColour( "Grid", &map_styledata[ MapStyle_Custom ].grid, palette );
+				M_DebugMenuDoColour( "Computer Area Map", &map_styledata[ MapStyle_Custom ].areamap, palette );
+				M_DebugMenuDoColour( "Walls", &map_styledata[ MapStyle_Custom ].walls, palette );
+				M_DebugMenuDoColour( "Teleporters", &map_styledata[ MapStyle_Custom ].teleporters, palette );
+				M_DebugMenuDoColour( "Hidden Lines", &map_styledata[ MapStyle_Custom ].linesecrets, palette );
+				M_DebugMenuDoColour( "Secret Sectors", &map_styledata[ MapStyle_Custom ].sectorsecrets, palette );
+				M_DebugMenuDoColour( "Floor Height Diff", &map_styledata[ MapStyle_Custom ].floorchange, palette );
+				M_DebugMenuDoColour( "Ceiling Height Diff", &map_styledata[ MapStyle_Custom ].ceilingchange, palette );
+				M_DebugMenuDoColour( "No Height Diff", &map_styledata[ MapStyle_Custom ].nochange, palette );
+				M_DebugMenuDoColour( "Thing", &map_styledata[ MapStyle_Custom ].things, palette );
+				M_DebugMenuDoColour( "Living Monsters", &map_styledata[ MapStyle_Custom ].monsters_alive, palette );
+				M_DebugMenuDoColour( "Dead Monsters", &map_styledata[ MapStyle_Custom ].monsters_dead, palette );
+				M_DebugMenuDoColour( "Items (Counted)", &map_styledata[ MapStyle_Custom ].items_counted, palette );
+				M_DebugMenuDoColour( "Items (Uncounted)", &map_styledata[ MapStyle_Custom ].items_uncounted, palette );
+				M_DebugMenuDoColour( "Projectiles", &map_styledata[ MapStyle_Custom ].projectiles, palette );
+				M_DebugMenuDoColour( "Puffs", &map_styledata[ MapStyle_Custom ].puffs, palette );
+				M_DebugMenuDoColour( "Player Arrow", &map_styledata[ MapStyle_Custom ].playerarrow, palette );
+				M_DebugMenuDoColour( "Crosshair", &map_styledata[ MapStyle_Custom ].crosshair, palette );
+			}
 
 			igColumns( 1, "", false );
 

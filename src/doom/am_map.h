@@ -42,8 +42,48 @@ void AM_Drawer (void);
 // if the level is completed while it is up.
 void AM_Stop (void);
 
+void AM_BindAutomapVariables( void );
+
 
 extern cheatseq_t cheat_amap;
 
+typedef struct mapstyledata_s
+{
+	int32_t	background;
+	int32_t	grid;
+	int32_t	areamap;
+	int32_t	walls;
+	int32_t	teleporters;
+	int32_t	linesecrets;
+	int32_t	sectorsecrets;
+	int32_t	floorchange;
+	int32_t	ceilingchange;
+	int32_t	nochange;
+	
+	int32_t	things;
+	int32_t	monsters_alive;
+	int32_t	monsters_dead;
+	int32_t	items_counted;
+	int32_t items_uncounted;
+	int32_t	projectiles;
+	int32_t	puffs;
+	
+	int32_t	playerarrow;
+	int32_t	crosshair;
+} mapstyledata_t;
+
+typedef enum mapstyle_e
+{
+	MapStyle_Custom,
+	MapStyle_Original,
+	MapStyle_ZDoom,
+
+	MapStyle_Max,
+} mapstyle_t;
+
+extern int32_t	map_style;
+extern int32_t	map_fill;
+
+extern mapstyledata_t	map_styledata[ MapStyle_Max ];
 
 #endif

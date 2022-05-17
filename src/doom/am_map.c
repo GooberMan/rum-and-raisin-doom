@@ -17,7 +17,6 @@
 // DESCRIPTION:  the automap code
 //
 
-
 #include <stdio.h>
 
 #include "deh_main.h"
@@ -32,6 +31,7 @@
 #include "m_cheat.h"
 #include "m_controls.h"
 #include "m_misc.h"
+#include "m_config.h"
 #include "i_system.h"
 #include "i_timer.h"
 #include "i_video.h"
@@ -48,6 +48,7 @@
 
 #include "am_map.h"
 
+#pragma optimize( "", off )
 
 // For use if I do walls with outsides/insides
 #define REDS		(256-5*16)
@@ -85,6 +86,101 @@
 #define GRIDRANGE	0
 #define XHAIRCOLORS	GRAYS
 
+typedef enum mapfill_e
+{
+	MapFill_None,
+	MapFill_FloorTex,
+	MapFill_CeilTex,
+} mapfill_t;
+
+typedef enum mapmode_e
+{
+	MapMode_Off,
+	MapMode_Overlay,
+	MapMode_Exclusive,
+} mapmode_t;
+
+int32_t	map_style					= MapStyle_Original;
+int32_t	map_fill					= MapFill_None;
+
+mapstyledata_t	map_styledata[ MapStyle_Max ] =
+{
+	// MapStyle_Custom
+	{
+		BACKGROUND,						// background
+		GRIDCOLORS,						// grid
+		GRAYS + 3,						// areamap
+		WALLCOLORS,						// walls
+		WALLCOLORS + WALLRANGE / 2,		// teleporters
+		SECRETWALLCOLORS,				// linesecrets
+		251,							// sectorsecrets
+		FDWALLCOLORS,					// floorchange
+		CDWALLCOLORS,					// ceilingchange
+		TSWALLCOLORS,					// nochange
+
+		THINGCOLORS,					// things
+		214,							// monsters_alive
+		151,							// monsters_dead
+		196,							// items_counted
+		202,							// items_uncounted
+		173,							// projectiles
+		110,							// puffs
+
+		WHITE,							// playerarrow
+		XHAIRCOLORS,					// crosshair
+	},
+
+	// MapStyle_Original
+	{
+		BACKGROUND,						// background
+		GRIDCOLORS,						// grid
+		GRAYS + 3,						// areamap
+		WALLCOLORS,						// walls
+		WALLCOLORS + WALLRANGE / 2,		// teleporters
+		SECRETWALLCOLORS,				// linesecrets
+		-1,								// sectorsecrets
+		FDWALLCOLORS,					// floorchange
+		CDWALLCOLORS,					// ceilingchange
+		TSWALLCOLORS,					// nochange
+
+		THINGCOLORS,					// things
+		THINGCOLORS,					// monsters_alive
+		THINGCOLORS,					// monsters_dead
+		THINGCOLORS,					// items_counted
+		THINGCOLORS,					// items_uncounted
+		THINGCOLORS,					// projectiles
+		THINGCOLORS,					// puffs
+
+		WHITE,							// playerarrow
+		XHAIRCOLORS,					// crosshair
+	},
+
+	// MapStyle_ZDoom
+	{
+		139,							// background
+		GRIDCOLORS,						// grid
+		GRAYS + 3,						// areamap
+		79,								// walls
+		200,							// teleporters
+		SECRETWALLCOLORS,				// linesecrets
+		-1,								// sectorsecrets
+		FDWALLCOLORS,					// floorchange
+		CDWALLCOLORS,					// ceilingchange
+		TSWALLCOLORS,					// nochange
+
+		THINGCOLORS,					// things
+		THINGCOLORS,					// monsters_alive
+		THINGCOLORS,					// monsters_dead
+		THINGCOLORS,					// items_counted
+		THINGCOLORS,					// items_uncounted
+		THINGCOLORS,					// projectiles
+		THINGCOLORS,					// puffs
+
+		WHITE,							// playerarrow
+		XHAIRCOLORS,					// crosshair
+	},
+};
+
 // drawing stuff
 
 #define AM_NUMMARKPOINTS 10
@@ -106,7 +202,7 @@
 #define MTOF(x) (FixedMul((x),scale_mtof)>>FRACBITS)
 // translates between frame-buffer and map coordinates
 #define CXMTOF(x)  (f_x + MTOF((x)-m_x))
-#define CYMTOF(y)  (f_y + (f_h - MTOF((y)-m_y)))
+#define CYMTOF(y)  (f_y + (f_h - MTOF((y)-m_y))) 
 
 // the following is crap
 #define LINE_NEVERSEE ML_DONTDRAW
@@ -192,13 +288,8 @@ mline_t thintriangle_guy[] = {
 };
 #undef R
 
-
-
-
 static int 	cheating = 0;
 static int 	grid = 0;
-
-static int 	leveljuststarted = 1; 	// kluge until AM_LevelInit() is called
 
 boolean    	automapactive = false;
 
@@ -270,6 +361,31 @@ static int followplayer = 1; // specifies whether to follow the player around
 cheatseq_t cheat_amap = CHEAT("iddt", 0);
 
 static boolean stopped = true;
+
+void AM_BindAutomapVariables( void )
+{
+	M_BindIntVariable( "map_style",					&map_style );
+	M_BindIntVariable( "map_fill",					&map_fill );
+	M_BindIntVariable( "mapcolor_background",		&map_styledata[ MapStyle_Custom ].background );
+	M_BindIntVariable( "mapcolor_grid",				&map_styledata[ MapStyle_Custom ].grid );
+	M_BindIntVariable( "mapcolor_areamap",			&map_styledata[ MapStyle_Custom ].areamap );
+	M_BindIntVariable( "mapcolor_walls",			&map_styledata[ MapStyle_Custom ].walls );
+	M_BindIntVariable( "mapcolor_teleporters",		&map_styledata[ MapStyle_Custom ].teleporters );
+	M_BindIntVariable( "mapcolor_linesecrets",		&map_styledata[ MapStyle_Custom ].linesecrets );
+	M_BindIntVariable( "mapcolor_sectorsecrets",	&map_styledata[ MapStyle_Custom ].sectorsecrets );
+	M_BindIntVariable( "mapcolor_floorchange",		&map_styledata[ MapStyle_Custom ].floorchange );
+	M_BindIntVariable( "mapcolor_ceilingchange",	&map_styledata[ MapStyle_Custom ].ceilingchange );
+	M_BindIntVariable( "mapcolor_nochange",			&map_styledata[ MapStyle_Custom ].nochange );
+	M_BindIntVariable( "mapcolor_things",			&map_styledata[ MapStyle_Custom ].things );
+	M_BindIntVariable( "mapcolor_monsters_alive",	&map_styledata[ MapStyle_Custom ].monsters_alive );
+	M_BindIntVariable( "mapcolor_monsters_dead",	&map_styledata[ MapStyle_Custom ].monsters_dead );
+	M_BindIntVariable( "mapcolor_items_counted",	&map_styledata[ MapStyle_Custom ].items_counted );
+	M_BindIntVariable( "mapcolor_items_uncounted",	&map_styledata[ MapStyle_Custom ].items_uncounted );
+	M_BindIntVariable( "mapcolor_projectiles",		&map_styledata[ MapStyle_Custom ].projectiles );
+	M_BindIntVariable( "mapcolor_puffs",			&map_styledata[ MapStyle_Custom ].puffs );
+	M_BindIntVariable( "mapcolor_playerarrow",		&map_styledata[ MapStyle_Custom ].playerarrow );
+	M_BindIntVariable( "mapcolor_crosshair",		&map_styledata[ MapStyle_Custom ].crosshair );
+}
 
 // Calculates the slope and slope according to the x-axis of a line
 // segment in map coordinates (with the upright y-axis n' all) so
@@ -521,8 +637,6 @@ void AM_clearMarks(void)
 //
 void AM_LevelInit(void)
 {
-    leveljuststarted = 0;
-
     f_x = f_y = 0;
 
     AM_clearMarks();
@@ -829,27 +943,35 @@ void AM_updateLightLev(void)
 void AM_Ticker (void)
 {
 
-    if (!automapactive)
-	return;
+	if (!automapactive)
+	{
+		return;
+	}
 
-    amclock++;
+	amclock++;
 
 	// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
 	AM_changeWindowScale();
 
-    if (followplayer)
-	AM_doFollowPlayer();
+	if (followplayer)
+	{
+		AM_doFollowPlayer();
+	}
 
-    // Change the zoom if necessary
-    if (ftom_zoommul != FRACUNIT)
-	AM_changeWindowScale();
+	// Change the zoom if necessary
+	if (ftom_zoommul != FRACUNIT)
+	{
+		AM_changeWindowScale();
+	}
 
-    // Change x,y location
-    if (m_paninc.x || m_paninc.y)
-	AM_changeWindowLoc();
+	// Change x,y location
+	if (m_paninc.x || m_paninc.y)
+	{
+		AM_changeWindowLoc();
+	}
 
-    // Update light level
-    // AM_updateLightLev();
+	// Update light level
+	// AM_updateLightLev();
 
 }
 
@@ -873,18 +995,15 @@ void AM_clearFB(int color)
 // faster reject and precalculated slopes.  If the speed is needed,
 // use a hash algorithm to handle  the common cases.
 //
-boolean
-AM_clipMline
-( mline_t*	ml,
-  fline_t*	fl )
+boolean AM_clipMline( mline_t* ml, fline_t* fl )
 {
-    enum
-    {
-	LEFT	=1,
-	RIGHT	=2,
-	BOTTOM	=4,
-	TOP	=8
-    };
+	enum
+	{
+	LEFT	= 1,
+	RIGHT	= 2,
+	BOTTOM	= 4,
+	TOP		= 8,
+	};
     
     register int	outcode1 = 0;
     register int	outcode2 = 0;
@@ -1149,54 +1268,58 @@ void AM_drawGrid(int color)
 // Determines visible lines, draws them.
 // This is LineDef based, not LineSeg based.
 //
-void AM_drawWalls(void)
+void AM_drawWalls( mapstyledata_t* style )
 {
-    int i;
-    static mline_t l;
+	int i;
+	static mline_t l;
 
-    for (i=0;i<numlines;i++)
-    {
-	l.a.x = lines[i].v1->x;
-	l.a.y = lines[i].v1->y;
-	l.b.x = lines[i].v2->x;
-	l.b.y = lines[i].v2->y;
-	if (cheating || (lines[i].flags & ML_MAPPED))
+	for (i=0;i<numlines;i++)
 	{
-	    if ((lines[i].flags & LINE_NEVERSEE) && !cheating)
-		continue;
-	    if (!lines[i].backsector)
-	    {
-		AM_drawMline(&l, WALLCOLORS+lightlev);
-	    }
-	    else
-	    {
-		if (lines[i].special == 39)
-		{ // teleporters
-		    AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
-		}
-		else if (lines[i].flags & ML_SECRET) // secret door
+		l.a.x = lines[i].v1->x;
+		l.a.y = lines[i].v1->y;
+		l.b.x = lines[i].v2->x;
+		l.b.y = lines[i].v2->y;
+
+		if (cheating || (lines[i].flags & ML_MAPPED))
 		{
-		    if (cheating) AM_drawMline(&l, SECRETWALLCOLORS + lightlev);
-		    else AM_drawMline(&l, WALLCOLORS+lightlev);
+			if ((lines[i].flags & LINE_NEVERSEE) && !cheating)
+			{
+				continue;
+			}
+
+			if (!lines[i].backsector)
+			{
+				AM_drawMline(&l, style->walls + lightlev );
+			}
+			else if (lines[i].special == 39)
+			{ // teleporters
+				AM_drawMline(&l, style->teleporters);
+			}
+			else if (lines[i].flags & ML_SECRET) // secret door
+			{
+				if (cheating) AM_drawMline(&l, style->linesecrets + lightlev);
+				else AM_drawMline(&l, style->walls + lightlev);
+			}
+			else if (lines[i].backsector->floorheight
+					!= lines[i].frontsector->floorheight)
+			{
+				AM_drawMline(&l, style->floorchange + lightlev); // floor level change
+			}
+			else if (lines[i].backsector->ceilingheight
+					!= lines[i].frontsector->ceilingheight)
+			{
+				AM_drawMline(&l, style->ceilingchange + lightlev); // ceiling level change
+			}
+			else if (cheating)
+			{
+				AM_drawMline(&l, style->nochange + lightlev);
+			}
 		}
-		else if (lines[i].backsector->floorheight
-			   != lines[i].frontsector->floorheight) {
-		    AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
+		else if ( plr->powers[ pw_allmap ] )
+		{
+			if ( !(lines[i].flags & LINE_NEVERSEE) ) AM_drawMline(&l, style->areamap );
 		}
-		else if (lines[i].backsector->ceilingheight
-			   != lines[i].frontsector->ceilingheight) {
-		    AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
-		}
-		else if (cheating) {
-		    AM_drawMline(&l, TSWALLCOLORS+lightlev);
-		}
-	    }
 	}
-	else if (plr->powers[pw_allmap])
-	{
-	    if (!(lines[i].flags & LINE_NEVERSEE)) AM_drawMline(&l, GRAYS+3);
-	}
-    }
 }
 
 
@@ -1316,25 +1439,45 @@ void AM_drawPlayers(void)
 
 }
 
-void
-AM_drawThings
-( int	colors,
-  int 	colorrange)
+void AM_drawThings( mapstyledata_t* style )
 {
     int		i;
     mobj_t*	t;
+	int32_t	colour;
 
-    for (i=0;i<numsectors;i++)
-    {
-	t = sectors[i].thinglist;
-	while (t)
+	for (i=0;i<numsectors;i++)
 	{
-	    AM_drawLineCharacter
-		(thintriangle_guy, arrlen(thintriangle_guy),
-		 16<<FRACBITS, t->angle, colors+lightlev, t->x, t->y);
-	    t = t->snext;
+		t = sectors[i].thinglist;
+		while (t)
+		{
+			if( t->flags & MF_CORPSE )
+			{
+				colour = style->monsters_dead;
+			}
+			else if( t->flags & MF_COUNTKILL )
+			{
+				colour = style->monsters_alive;
+			}
+			else if( t->flags & MF_COUNTITEM )
+			{
+				colour =  style->items_counted;
+			}
+			else if( t->flags & MF_SPECIAL )
+			{
+				colour =  style->items_uncounted;
+			}
+			else if( t->flags & MF_MISSILE )
+			{
+				colour = style->projectiles;
+			}
+			else
+			{
+				colour = style->things;
+			}
+			AM_drawLineCharacter( thintriangle_guy, arrlen(thintriangle_guy), 16<<FRACBITS, t->angle, colour + lightlev, t->x, t->y);
+			t = t->snext;
+		}
 	}
-    }
 }
 
 void AM_drawMarks(void)
@@ -1371,17 +1514,21 @@ void AM_Drawer (void)
 	// TODO: FIX THIS HACK
     fb = I_VideoBuffer;
 
-    AM_clearFB(BACKGROUND);
-    if (grid)
-	AM_drawGrid(GRIDCOLORS);
-    AM_drawWalls();
-    AM_drawPlayers();
-    if (cheating==2)
-	AM_drawThings(THINGCOLORS, THINGRANGE);
-    AM_drawCrosshair(XHAIRCOLORS);
+	AM_clearFB( map_styledata[ map_style ].background );
+	if (grid)
+	{
+		AM_drawGrid( map_styledata[ map_style ].grid );
+	}
+	AM_drawWalls( &map_styledata[ map_style ] );
+	AM_drawPlayers();
+	if (cheating==2)
+	{
+		AM_drawThings( &map_styledata[ map_style ] );
+	}
+	AM_drawCrosshair( map_styledata[ map_style ].crosshair );
 
-    AM_drawMarks();
+	AM_drawMarks();
 
-    V_MarkRect(f_x, f_y, f_w, f_h);
+	V_MarkRect(f_x, f_y, f_w, f_h);
 
 }

@@ -1802,6 +1802,176 @@ static default_t extra_defaults_list[] =
 	//
 
 	CONFIG_VARIABLE_INT(debugmenu_pausesplaysim),
+
+	//!
+	// @game doom
+	//
+	// Automap style. 0 = custom; 1 = original Doom; 2 = ZDoom
+	//
+
+	CONFIG_VARIABLE_INT(map_style),
+
+	//!
+	// @game doom
+	//
+	// Automap filling. 0 = blank; 1 = floor texture; 2 = ceiling texture
+	//
+
+	CONFIG_VARIABLE_INT(map_fill),
+
+	//!
+	// @game doom
+	//
+	// Automap background colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_background),
+
+	//!
+	// @game doom
+	//
+	// Automap grid colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_grid),
+
+	//!
+	// @game doom
+	//
+	// Automap powerup colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_areamap),
+
+	//!
+	// @game doom
+	//
+	// Automap walls colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_walls),
+
+	//!
+	// @game doom
+	//
+	// Automap teleporters colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_teleporters),
+
+	//!
+	// @game doom
+	//
+	// Automap hidden/secret walls colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_linesecrets),
+
+	//!
+	// @game doom
+	//
+	// Automap sector-based secrets colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_sectorsecrets),
+
+	//!
+	// @game doom
+	//
+	// Automap floor height difference colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_floorchange),
+
+	//!
+	// @game doom
+	//
+	// Automap ceiling height difference colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_ceilingchange),
+
+	//!
+	// @game doom
+	//
+	// Automap no difference colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_nochange),
+
+
+	//!
+	// @game doom
+	//
+	// Automap things colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_things),
+
+	//!
+	// @game doom
+	//
+	// Automap living monsters colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_monsters_alive),
+
+	//!
+	// @game doom
+	//
+	// Automap dead monsters colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_monsters_dead),
+
+	//!
+	// @game doom
+	//
+	// Automap items (counts towards percentage) colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_items_counted),
+
+	//!
+	// @game doom
+	//
+	// Automap items colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_items_uncounted),
+
+	//!
+	// @game doom
+	//
+	// Automap projectiles colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_projectiles),
+
+	//!
+	// @game doom
+	//
+	// Automap puffs colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_puffs),
+
+
+	//!
+	// @game doom
+	//
+	// Automap player arrow colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_playerarrow),
+
+	//!
+	// @game doom
+	//
+	// Automap crosshair colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_crosshair),
 };
 
 static default_collection_t extra_defaults =
