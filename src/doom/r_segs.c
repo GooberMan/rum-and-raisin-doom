@@ -347,7 +347,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 			wallcolcontext.colfunc = colfuncs[ 15 ];
 #else
-			wallcolcontext.colfunc = colfuncs[ M_MAX( M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ), 15 * (int32_t)!renderSIMDcolumns ) ];
+			wallcolcontext.colfunc = colfuncs[ renderSIMDcolumns ? M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) : 15 ];
 #endif
 	
 		}
