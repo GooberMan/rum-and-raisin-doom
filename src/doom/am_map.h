@@ -50,26 +50,45 @@ extern cheatseq_t cheat_amap;
 typedef struct mapstyledata_s
 {
 	int32_t	background;
+	int32_t	background_blinking;
 	int32_t	grid;
+	int32_t	grid_blinking;
 	int32_t	areamap;
+	int32_t	areamap_blinking;
 	int32_t	walls;
+	int32_t	walls_blinking;
 	int32_t	teleporters;
+	int32_t	teleporters_blinking;
 	int32_t	linesecrets;
+	int32_t	linesecrets_blinking;
 	int32_t	sectorsecrets;
+	int32_t	sectorsecrets_blinking;
 	int32_t	floorchange;
+	int32_t	floorchange_blinking;
 	int32_t	ceilingchange;
+	int32_t	ceilingchange_blinking;
 	int32_t	nochange;
+	int32_t	nochange_blinking;
 	
 	int32_t	things;
+	int32_t	things_blinking;
 	int32_t	monsters_alive;
+	int32_t	monsters_alive_blinking;
 	int32_t	monsters_dead;
+	int32_t	monsters_dead_blinking;
 	int32_t	items_counted;
+	int32_t	items_counted_blinking;
 	int32_t items_uncounted;
+	int32_t items_uncounted_blinking;
 	int32_t	projectiles;
+	int32_t	projectiles_blinking;
 	int32_t	puffs;
+	int32_t	puffs_blinking;
 	
 	int32_t	playerarrow;
+	int32_t	playerarrow_blinking;
 	int32_t	crosshair;
+	int32_t	crosshair_blinking;
 } mapstyledata_t;
 
 typedef enum mapstyle_e

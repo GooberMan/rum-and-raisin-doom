@@ -107,77 +107,77 @@ mapstyledata_t	map_styledata[ MapStyle_Max ] =
 {
 	// MapStyle_Custom
 	{
-		BACKGROUND,						// background
-		GRIDCOLORS,						// grid
-		GRAYS + 3,						// areamap
-		WALLCOLORS,						// walls
-		WALLCOLORS + WALLRANGE / 2,		// teleporters
-		SECRETWALLCOLORS,				// linesecrets
-		251,							// sectorsecrets
-		FDWALLCOLORS,					// floorchange
-		CDWALLCOLORS,					// ceilingchange
-		TSWALLCOLORS,					// nochange
+		BACKGROUND,						0, // background
+		GRIDCOLORS,						0, // grid
+		GRAYS + 3,						0, // areamap
+		WALLCOLORS,						0, // walls
+		WALLCOLORS + WALLRANGE / 2,		0, // teleporters
+		SECRETWALLCOLORS,				0, // linesecrets
+		251,							0, // sectorsecrets
+		FDWALLCOLORS,					0, // floorchange
+		CDWALLCOLORS,					0, // ceilingchange
+		TSWALLCOLORS,					0, // nochange
 
-		THINGCOLORS,					// things
-		214,							// monsters_alive
-		151,							// monsters_dead
-		196,							// items_counted
-		202,							// items_uncounted
-		173,							// projectiles
-		110,							// puffs
+		THINGCOLORS,					0, // things
+		214,							0, // monsters_alive
+		151,							0, // monsters_dead
+		196,							0, // items_counted
+		202,							0, // items_uncounted
+		173,							0, // projectiles
+		110,							0, // puffs
 
-		WHITE,							// playerarrow
-		XHAIRCOLORS,					// crosshair
+		WHITE,							0, // playerarrow
+		XHAIRCOLORS,					0, // crosshair
 	},
 
 	// MapStyle_Original
 	{
-		BACKGROUND,						// background
-		GRIDCOLORS,						// grid
-		GRAYS + 3,						// areamap
-		WALLCOLORS,						// walls
-		WALLCOLORS + WALLRANGE / 2,		// teleporters
-		SECRETWALLCOLORS,				// linesecrets
-		-1,								// sectorsecrets
-		FDWALLCOLORS,					// floorchange
-		CDWALLCOLORS,					// ceilingchange
-		TSWALLCOLORS,					// nochange
+		BACKGROUND,						0, // background
+		GRIDCOLORS,						0, // grid
+		GRAYS + 3,						0, // areamap
+		WALLCOLORS,						0, // walls
+		WALLCOLORS + WALLRANGE / 2,		0, // teleporters
+		SECRETWALLCOLORS,				0, // linesecrets
+		-1,								0, // sectorsecrets
+		FDWALLCOLORS,					0, // floorchange
+		CDWALLCOLORS,					0, // ceilingchange
+		TSWALLCOLORS,					0, // nochange
 
-		THINGCOLORS,					// things
-		THINGCOLORS,					// monsters_alive
-		THINGCOLORS,					// monsters_dead
-		THINGCOLORS,					// items_counted
-		THINGCOLORS,					// items_uncounted
-		THINGCOLORS,					// projectiles
-		THINGCOLORS,					// puffs
+		THINGCOLORS,					0, // things
+		THINGCOLORS,					0, // monsters_alive
+		THINGCOLORS,					0, // monsters_dead
+		THINGCOLORS,					0, // items_counted
+		THINGCOLORS,					0, // items_uncounted
+		THINGCOLORS,					0, // projectiles
+		THINGCOLORS,					0, // puffs
 
-		WHITE,							// playerarrow
-		XHAIRCOLORS,					// crosshair
+		WHITE,							0, // playerarrow
+		XHAIRCOLORS,					0, // crosshair
 	},
 
 	// MapStyle_ZDoom
 	{
-		139,							// background
-		GRIDCOLORS,						// grid
-		GRAYS + 3,						// areamap
-		79,								// walls
-		200,							// teleporters
-		SECRETWALLCOLORS,				// linesecrets
-		-1,								// sectorsecrets
-		FDWALLCOLORS,					// floorchange
-		CDWALLCOLORS,					// ceilingchange
-		TSWALLCOLORS,					// nochange
+		139,							0, // background
+		GRIDCOLORS,						0, // grid
+		GRAYS + 3,						0, // areamap
+		79,								0, // walls
+		200,							0, // teleporters
+		SECRETWALLCOLORS,				0, // linesecrets
+		-1,								0, // sectorsecrets
+		FDWALLCOLORS,					0, // floorchange
+		CDWALLCOLORS,					0, // ceilingchange
+		TSWALLCOLORS,					0, // nochange
 
-		THINGCOLORS,					// things
-		THINGCOLORS,					// monsters_alive
-		THINGCOLORS,					// monsters_dead
-		THINGCOLORS,					// items_counted
-		THINGCOLORS,					// items_uncounted
-		THINGCOLORS,					// projectiles
-		THINGCOLORS,					// puffs
+		THINGCOLORS,					0, // things
+		THINGCOLORS,					0, // monsters_alive
+		THINGCOLORS,					0, // monsters_dead
+		THINGCOLORS,					0, // items_counted
+		THINGCOLORS,					0, // items_uncounted
+		THINGCOLORS,					0, // projectiles
+		THINGCOLORS,					0, // puffs
 
-		WHITE,							// playerarrow
-		XHAIRCOLORS,					// crosshair
+		WHITE,							0, // playerarrow
+		XHAIRCOLORS,					0, // crosshair
 	},
 };
 
@@ -364,27 +364,46 @@ static boolean stopped = true;
 
 void AM_BindAutomapVariables( void )
 {
-	M_BindIntVariable( "map_style",					&map_style );
-	M_BindIntVariable( "map_fill",					&map_fill );
-	M_BindIntVariable( "mapcolor_background",		&map_styledata[ MapStyle_Custom ].background );
-	M_BindIntVariable( "mapcolor_grid",				&map_styledata[ MapStyle_Custom ].grid );
-	M_BindIntVariable( "mapcolor_areamap",			&map_styledata[ MapStyle_Custom ].areamap );
-	M_BindIntVariable( "mapcolor_walls",			&map_styledata[ MapStyle_Custom ].walls );
-	M_BindIntVariable( "mapcolor_teleporters",		&map_styledata[ MapStyle_Custom ].teleporters );
-	M_BindIntVariable( "mapcolor_linesecrets",		&map_styledata[ MapStyle_Custom ].linesecrets );
-	M_BindIntVariable( "mapcolor_sectorsecrets",	&map_styledata[ MapStyle_Custom ].sectorsecrets );
-	M_BindIntVariable( "mapcolor_floorchange",		&map_styledata[ MapStyle_Custom ].floorchange );
-	M_BindIntVariable( "mapcolor_ceilingchange",	&map_styledata[ MapStyle_Custom ].ceilingchange );
-	M_BindIntVariable( "mapcolor_nochange",			&map_styledata[ MapStyle_Custom ].nochange );
-	M_BindIntVariable( "mapcolor_things",			&map_styledata[ MapStyle_Custom ].things );
-	M_BindIntVariable( "mapcolor_monsters_alive",	&map_styledata[ MapStyle_Custom ].monsters_alive );
-	M_BindIntVariable( "mapcolor_monsters_dead",	&map_styledata[ MapStyle_Custom ].monsters_dead );
-	M_BindIntVariable( "mapcolor_items_counted",	&map_styledata[ MapStyle_Custom ].items_counted );
-	M_BindIntVariable( "mapcolor_items_uncounted",	&map_styledata[ MapStyle_Custom ].items_uncounted );
-	M_BindIntVariable( "mapcolor_projectiles",		&map_styledata[ MapStyle_Custom ].projectiles );
-	M_BindIntVariable( "mapcolor_puffs",			&map_styledata[ MapStyle_Custom ].puffs );
-	M_BindIntVariable( "mapcolor_playerarrow",		&map_styledata[ MapStyle_Custom ].playerarrow );
-	M_BindIntVariable( "mapcolor_crosshair",		&map_styledata[ MapStyle_Custom ].crosshair );
+	M_BindIntVariable( "map_style",							&map_style );
+	M_BindIntVariable( "map_fill",							&map_fill );
+	M_BindIntVariable( "mapcolor_background",				&map_styledata[ MapStyle_Custom ].background );
+	M_BindIntVariable( "mapcolor_background_blinking",		&map_styledata[ MapStyle_Custom ].background_blinking );
+	M_BindIntVariable( "mapcolor_grid",						&map_styledata[ MapStyle_Custom ].grid );
+	M_BindIntVariable( "mapcolor_grid_blinking",			&map_styledata[ MapStyle_Custom ].grid_blinking );
+	M_BindIntVariable( "mapcolor_areamap",					&map_styledata[ MapStyle_Custom ].areamap );
+	M_BindIntVariable( "mapcolor_areamap_blinking",			&map_styledata[ MapStyle_Custom ].areamap_blinking );
+	M_BindIntVariable( "mapcolor_walls",					&map_styledata[ MapStyle_Custom ].walls );
+	M_BindIntVariable( "mapcolor_walls_blinking",			&map_styledata[ MapStyle_Custom ].walls_blinking );
+	M_BindIntVariable( "mapcolor_teleporters",				&map_styledata[ MapStyle_Custom ].teleporters );
+	M_BindIntVariable( "mapcolor_teleporters_blinking",		&map_styledata[ MapStyle_Custom ].teleporters_blinking );
+	M_BindIntVariable( "mapcolor_linesecrets",				&map_styledata[ MapStyle_Custom ].linesecrets );
+	M_BindIntVariable( "mapcolor_linesecrets_blinking",		&map_styledata[ MapStyle_Custom ].linesecrets_blinking );
+	M_BindIntVariable( "mapcolor_sectorsecrets",			&map_styledata[ MapStyle_Custom ].sectorsecrets );
+	M_BindIntVariable( "mapcolor_sectorsecrets_blinking",	&map_styledata[ MapStyle_Custom ].sectorsecrets_blinking );
+	M_BindIntVariable( "mapcolor_floorchange",				&map_styledata[ MapStyle_Custom ].floorchange );
+	M_BindIntVariable( "mapcolor_floorchange_blinking",		&map_styledata[ MapStyle_Custom ].floorchange_blinking );
+	M_BindIntVariable( "mapcolor_ceilingchange",			&map_styledata[ MapStyle_Custom ].ceilingchange );
+	M_BindIntVariable( "mapcolor_ceilingchange_blinking",	&map_styledata[ MapStyle_Custom ].ceilingchange_blinking );
+	M_BindIntVariable( "mapcolor_nochange",					&map_styledata[ MapStyle_Custom ].nochange );
+	M_BindIntVariable( "mapcolor_nochange_blinking",		&map_styledata[ MapStyle_Custom ].nochange_blinking );
+	M_BindIntVariable( "mapcolor_things",					&map_styledata[ MapStyle_Custom ].things );
+	M_BindIntVariable( "mapcolor_things_blinking",			&map_styledata[ MapStyle_Custom ].things_blinking );
+	M_BindIntVariable( "mapcolor_monsters_alive",			&map_styledata[ MapStyle_Custom ].monsters_alive );
+	M_BindIntVariable( "mapcolor_monsters_alive_blinking",	&map_styledata[ MapStyle_Custom ].monsters_alive_blinking );
+	M_BindIntVariable( "mapcolor_monsters_dead",			&map_styledata[ MapStyle_Custom ].monsters_dead );
+	M_BindIntVariable( "mapcolor_monsters_dead_blinking",	&map_styledata[ MapStyle_Custom ].monsters_dead_blinking );
+	M_BindIntVariable( "mapcolor_items_counted",			&map_styledata[ MapStyle_Custom ].items_counted );
+	M_BindIntVariable( "mapcolor_items_counted_blinking",	&map_styledata[ MapStyle_Custom ].items_counted_blinking );
+	M_BindIntVariable( "mapcolor_items_uncounted",			&map_styledata[ MapStyle_Custom ].items_uncounted );
+	M_BindIntVariable( "mapcolor_items_uncounted_blinking",	&map_styledata[ MapStyle_Custom ].items_uncounted_blinking );
+	M_BindIntVariable( "mapcolor_projectiles",				&map_styledata[ MapStyle_Custom ].projectiles );
+	M_BindIntVariable( "mapcolor_projectiles_blinking",		&map_styledata[ MapStyle_Custom ].projectiles_blinking );
+	M_BindIntVariable( "mapcolor_puffs",					&map_styledata[ MapStyle_Custom ].puffs );
+	M_BindIntVariable( "mapcolor_puffs_blinking",			&map_styledata[ MapStyle_Custom ].puffs_blinking );
+	M_BindIntVariable( "mapcolor_playerarrow",				&map_styledata[ MapStyle_Custom ].playerarrow );
+	M_BindIntVariable( "mapcolor_playerarrow_blinking",		&map_styledata[ MapStyle_Custom ].playerarrow_blinking );
+	M_BindIntVariable( "mapcolor_crosshair",				&map_styledata[ MapStyle_Custom ].crosshair );
+	M_BindIntVariable( "mapcolor_crosshair_blinking",		&map_styledata[ MapStyle_Custom ].crosshair_blinking );
 }
 
 // Calculates the slope and slope according to the x-axis of a line
@@ -1296,7 +1315,7 @@ void AM_drawWalls( mapstyledata_t* style )
 
 			if (!lines[i].backsector)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->walls, false ) );
+				AM_drawMline(&l, AM_lookupColour( style->walls, style->walls_blinking ) );
 			}
 			else if (lines[i].special == 39)
 			{ // teleporters
@@ -1306,31 +1325,31 @@ void AM_drawWalls( mapstyledata_t* style )
 			{
 				if (cheating)
 				{
-					AM_drawMline(&l, AM_lookupColour( style->linesecrets, false ) );
+					AM_drawMline(&l, AM_lookupColour( style->linesecrets, style->linesecrets_blinking ) );
 				}
 				else
 				{
-					AM_drawMline(&l, AM_lookupColour( style->walls, false ) );
+					AM_drawMline(&l, AM_lookupColour( style->walls, style->walls_blinking ) );
 				}
 			}
 			else if (lines[i].backsector->floorheight
 					!= lines[i].frontsector->floorheight)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->floorchange, false ) ); // floor level change
+				AM_drawMline(&l, AM_lookupColour( style->floorchange, style->floorchange_blinking ) ); // floor level change
 			}
 			else if (lines[i].backsector->ceilingheight
 					!= lines[i].frontsector->ceilingheight)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->ceilingchange, false ) ); // ceiling level change
+				AM_drawMline(&l, AM_lookupColour( style->ceilingchange, style->ceilingchange_blinking ) ); // ceiling level change
 			}
 			else if (cheating)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->nochange, false ) );
+				AM_drawMline(&l, AM_lookupColour( style->nochange, style->nochange_blinking ) );
 			}
 		}
 		else if ( plr->powers[ pw_allmap ] && !(lines[i].flags & LINE_NEVERSEE) )
 		{
-			AM_drawMline(&l, AM_lookupColour( style->areamap, false ) );
+			AM_drawMline(&l, AM_lookupColour( style->areamap, style->areamap_blinking ) );
 		}
 	}
 }
@@ -1408,7 +1427,7 @@ AM_drawLineCharacter
     }
 }
 
-void AM_drawPlayers(void)
+void AM_drawPlayers( mapstyledata_t* style )
 {
     int		i;
     player_t*	p;
@@ -1418,36 +1437,40 @@ void AM_drawPlayers(void)
 
     if (!netgame)
     {
-	if (cheating)
-	    AM_drawLineCharacter
-		(cheat_player_arrow, arrlen(cheat_player_arrow), 0,
-		 plr->mo->angle, AM_lookupColour( WHITE, false ), plr->mo->x, plr->mo->y);
-	else
-	    AM_drawLineCharacter
-		(player_arrow, arrlen(player_arrow), 0, plr->mo->angle,
-		 AM_lookupColour( WHITE, false ), plr->mo->x, plr->mo->y);
-	return;
+		if (cheating)
+		{
+			AM_drawLineCharacter
+			(cheat_player_arrow, arrlen(cheat_player_arrow), 0,
+			 plr->mo->angle, AM_lookupColour( style->playerarrow, style->playerarrow_blinking ), plr->mo->x, plr->mo->y);
+		}
+		else
+		{
+			AM_drawLineCharacter
+			(player_arrow, arrlen(player_arrow), 0, plr->mo->angle,
+			 AM_lookupColour( style->playerarrow, style->playerarrow_blinking ), plr->mo->x, plr->mo->y);
+		}
+		return;
     }
 
     for (i=0;i<MAXPLAYERS;i++)
     {
-	their_color++;
-	p = &players[i];
+		their_color++;
+		p = &players[i];
 
-	if ( (deathmatch && !singledemo) && p != plr)
-	    continue;
+		if ( (deathmatch && !singledemo) && p != plr)
+			continue;
 
-	if (!playeringame[i])
-	    continue;
+		if (!playeringame[i])
+			continue;
 
-	if (p->powers[pw_invisibility])
-	    color = 246; // *close* to black
-	else
-	    color = their_colors[their_color];
+		if (p->powers[pw_invisibility])
+			color = 246; // *close* to black
+		else
+			color = their_colors[their_color];
 	
-	AM_drawLineCharacter
-	    (player_arrow, arrlen(player_arrow), 0, p->mo->angle,
-	     AM_lookupColour( color, false ), p->mo->x, p->mo->y);
+		AM_drawLineCharacter
+			(player_arrow, arrlen(player_arrow), 0, p->mo->angle,
+			 AM_lookupColour( color, style->playerarrow_blinking ), p->mo->x, p->mo->y);
     }
 
 }
@@ -1522,23 +1545,25 @@ void AM_drawCrosshair(int color)
 
 void AM_Drawer (void)
 {
+	mapstyledata_t* style = &map_styledata[ map_style ];
+
     if (!automapactive) return;
 
 	// TODO: FIX THIS HACK
     fb = I_VideoBuffer;
 
-	AM_clearFB( AM_lookupColour( map_styledata[ map_style ].background, false ) );
+	AM_clearFB( AM_lookupColour( style->background, style->background_blinking ) );
 	if (grid)
 	{
-		AM_drawGrid( AM_lookupColour( map_styledata[ map_style ].grid, false ) );
+		AM_drawGrid( AM_lookupColour( style->grid, style->grid_blinking ) );
 	}
-	AM_drawWalls( &map_styledata[ map_style ] );
-	AM_drawPlayers();
+	AM_drawWalls( style );
+	AM_drawPlayers( style );
 	if (cheating==2)
 	{
-		AM_drawThings( &map_styledata[ map_style ] );
+		AM_drawThings( style );
 	}
-	AM_drawCrosshair( AM_lookupColour( map_styledata[ map_style ].crosshair, false ) );
+	AM_drawCrosshair( AM_lookupColour( style->crosshair, style->crosshair_blinking ) );
 
 	AM_drawMarks();
 
