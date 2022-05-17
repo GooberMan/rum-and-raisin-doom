@@ -1317,9 +1317,9 @@ void AM_drawWalls( mapstyledata_t* style )
 			{
 				AM_drawMline(&l, AM_lookupColour( style->walls, style->walls_blinking ) );
 			}
-			else if (lines[i].special == 39)
-			{ // teleporters
-				AM_drawMline(&l, style->teleporters);
+			else if (lines[i].special == 39) // teleporters
+			{
+				AM_drawMline(&l, AM_lookupColour( style->teleporters, style->teleporters_blinking ) );
 			}
 			else if (lines[i].flags & ML_SECRET) // secret door
 			{
@@ -1488,27 +1488,27 @@ void AM_drawThings( mapstyledata_t* style )
 		{
 			if( t->flags & MF_CORPSE )
 			{
-				colour = style->monsters_dead;
+				colour = AM_lookupColour( style->monsters_dead, style->monsters_dead_blinking );
 			}
 			else if( t->flags & MF_COUNTKILL )
 			{
-				colour = style->monsters_alive;
+				colour = AM_lookupColour( style->monsters_alive, style->monsters_alive_blinking );
 			}
 			else if( t->flags & MF_COUNTITEM )
 			{
-				colour =  style->items_counted;
+				colour =  AM_lookupColour( style->items_counted, style->items_counted_blinking );
 			}
 			else if( t->flags & MF_SPECIAL )
 			{
-				colour =  style->items_uncounted;
+				colour =  AM_lookupColour( style->items_uncounted, style->items_uncounted_blinking );
 			}
 			else if( t->flags & MF_MISSILE )
 			{
-				colour = style->projectiles;
+				colour = AM_lookupColour( style->projectiles, style->projectiles_blinking );
 			}
 			else
 			{
-				colour = style->things;
+				colour = AM_lookupColour( style->things, style->things_blinking );
 			}
 			AM_drawLineCharacter( thintriangle_guy, arrlen(thintriangle_guy), 16<<FRACBITS, t->angle, AM_lookupColour( colour, false ), t->x, t->y);
 			t = t->snext;
