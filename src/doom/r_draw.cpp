@@ -271,25 +271,22 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 
 namespace DrawColumn
 {
-	namespace Null
+	struct Null
 	{
-		struct Renderer
+		// Draws exactly the column you give it. No extra colormapping
+		static INLINE void Draw( colcontext_t* context )
 		{
-			// Draws exactly the column you give it. No extra colormapping
-			static INLINE void Draw( colcontext_t* context )
-			{
-			}
+		}
 
-			// Will take the source pixels and remap them with the context's colormap
-			static INLINE void ColormapDraw( colcontext_t* context )
-			{
-			}
-		};
-	}
+		// Will take the source pixels and remap them with the context's colormap
+		static INLINE void ColormapDraw( colcontext_t* context )
+		{
+		}
+	};
 
-	namespace Bytewise
+	struct Bytewise
 	{
-		namespace Sampler
+		struct Sampler
 		{
 			// The 127 here makes it wrap, keeping max height to 128
 			// Need to make that a bit nicer somehow
@@ -324,65 +321,61 @@ namespace DrawColumn
 					return context->colormap[ PaletteSwap::Sample( context, frac ) ];
 				}
 			};
+		};
+
+		template< typename Sampler >
+		static INLINE void DrawWith( colcontext_t* context )
+		{
+			int			count		= context->yh - context->yl;
+
+			// Framebuffer destination address.
+			// Use ylookup LUT to avoid multiply with ScreenWidth.
+			// Use columnofs LUT for subwindows? 
+			pixel_t*	dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
+
+			// Determine scaling, which is the only mapping to be done.
+			fixed_t		fracstep = context->iscale;
+			fixed_t		frac = context->texturemid +  ( context->yl - centery ) * fracstep;
+
+			// Inner loop that does the actual texture mapping,
+			//  e.g. a DDA-lile scaling.
+			// This is as fast as it gets.
+			do 
+			{
+				*dest = Sampler::Sample( context, frac );
+		
+				dest += 1; 
+				frac += fracstep;
+	
+			} while (count--); 
 		}
 
-		struct Renderer
-		{
-			template< typename Sampler >
-			static INLINE void DrawWith( colcontext_t* context )
-			{
-				int			count		= context->yh - context->yl;
-
-				// Framebuffer destination address.
-				// Use ylookup LUT to avoid multiply with ScreenWidth.
-				// Use columnofs LUT for subwindows? 
-				pixel_t*	dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
-
-				// Determine scaling, which is the only mapping to be done.
-				fixed_t		fracstep = context->iscale;
-				fixed_t		frac = context->texturemid +  ( context->yl - centery ) * fracstep;
-
-				// Inner loop that does the actual texture mapping,
-				//  e.g. a DDA-lile scaling.
-				// This is as fast as it gets.
-				do 
-				{
-					*dest = Sampler::Sample( context, frac );
-		
-					dest += 1; 
-					frac += fracstep;
-	
-				} while (count--); 
-			}
-
-			static INLINE void Draw( colcontext_t* context )						{ DrawWith< Sampler::Direct >( context ); }
-			static INLINE void PaletteSwapDraw( colcontext_t* context )				{ DrawWith< Sampler::PaletteSwap >( context ); }
-			static INLINE void ColormapDraw( colcontext_t* context )				{ DrawWith< Sampler::Colormap >( context ); }
-			static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< Sampler::ColormapPaletteSwap >( context ); }
-		};
-	}
-}
+		static INLINE void Draw( colcontext_t* context )						{ DrawWith< Sampler::Direct >( context ); }
+		static INLINE void PaletteSwapDraw( colcontext_t* context )				{ DrawWith< Sampler::PaletteSwap >( context ); }
+		static INLINE void ColormapDraw( colcontext_t* context )				{ DrawWith< Sampler::Colormap >( context ); }
+		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< Sampler::ColormapPaletteSwap >( context ); }
+	};
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
-struct DrawColumn_SIMD
-{
-	static INLINE void Draw( colcontext_t* context )
+	struct SIMD
 	{
-	}
-};
-
+		static INLINE void Draw( colcontext_t* context )
+		{
+		}
+	};
 #else // !R_DRAWCOLUMN_SIMDOPTIMISED
-using DrawColumn_SIMD = DrawColumn_Bytewise;
+	typedef Bytewise SIMD;
 #endif // R_DRAWCOLUMN_SIMDOPTIMISED
+}
 
 void R_DrawColumn( colcontext_t* context ) 
 { 
-	DrawColumn::Bytewise::Renderer::Draw( context );
+	DrawColumn::Bytewise::Draw( context );
 } 
 
 void R_DrawColumn_Untranslated( colcontext_t* context )
 {
-	DrawColumn::Bytewise::Renderer::ColormapDraw( context );
+	DrawColumn::Bytewise::ColormapDraw( context );
 }
 
 void R_DrawColumnLow ( colcontext_t* context ) 
@@ -761,7 +754,7 @@ byte*	translationtables;
 
 void R_DrawTranslatedColumn ( colcontext_t* context ) 
 { 
-   DrawColumn::Bytewise::Renderer::ColormapPaletteSwapDraw( context );
+   DrawColumn::Bytewise::ColormapPaletteSwapDraw( context );
 } 
 
 void R_DrawTranslatedColumnLow ( colcontext_t* context ) 
