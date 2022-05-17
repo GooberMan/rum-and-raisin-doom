@@ -2481,7 +2481,6 @@ static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byt
 
 	igPushIDPtr( colourindex );
 
-	igNextColumn();
 	igText( itemname );
 	igNextColumn();
 
@@ -2537,6 +2536,15 @@ static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byt
 	igPopID();
 }
 
+static void M_DebugMenuDoMapColour( const char* itemname, int32_t* colourindex, int32_t* isblinking, byte* palette )
+{
+	M_DebugMenuDoColour( itemname, colourindex, palette );
+	igSameLine( 0, -1 );
+	igPushIDPtr( colourindex );
+	igCheckboxFlags( "Pulsating", isblinking, 0x1 );
+	igPopID();
+}
+
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
@@ -2560,6 +2568,8 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	ImVec2 zerosize = { 0, 0 };
 
 	byte* palette = NULL;
+
+	mapstyledata_t* style = map_styledata;
 
 	if( igBeginTabBar( "Doom Options tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
@@ -2841,29 +2851,50 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			igRadioButtonIntPtr( "ZDoom", &map_style, MapStyle_ZDoom );
 			igPopID();
 
+			igNextColumn();
+
 			if( map_style == MapStyle_Custom )
 			{
 				palette = (byte*)W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE );
 
-				M_DebugMenuDoColour( "Background", &map_styledata[ MapStyle_Custom ].background, palette );
-				M_DebugMenuDoColour( "Grid", &map_styledata[ MapStyle_Custom ].grid, palette );
-				M_DebugMenuDoColour( "Computer Area Map", &map_styledata[ MapStyle_Custom ].areamap, palette );
-				M_DebugMenuDoColour( "Walls", &map_styledata[ MapStyle_Custom ].walls, palette );
-				M_DebugMenuDoColour( "Teleporters", &map_styledata[ MapStyle_Custom ].teleporters, palette );
-				M_DebugMenuDoColour( "Hidden Lines", &map_styledata[ MapStyle_Custom ].linesecrets, palette );
-				M_DebugMenuDoColour( "Secret Sectors", &map_styledata[ MapStyle_Custom ].sectorsecrets, palette );
-				M_DebugMenuDoColour( "Floor Height Diff", &map_styledata[ MapStyle_Custom ].floorchange, palette );
-				M_DebugMenuDoColour( "Ceiling Height Diff", &map_styledata[ MapStyle_Custom ].ceilingchange, palette );
-				M_DebugMenuDoColour( "No Height Diff", &map_styledata[ MapStyle_Custom ].nochange, palette );
-				M_DebugMenuDoColour( "Thing", &map_styledata[ MapStyle_Custom ].things, palette );
-				M_DebugMenuDoColour( "Living Monsters", &map_styledata[ MapStyle_Custom ].monsters_alive, palette );
-				M_DebugMenuDoColour( "Dead Monsters", &map_styledata[ MapStyle_Custom ].monsters_dead, palette );
-				M_DebugMenuDoColour( "Items (Counted)", &map_styledata[ MapStyle_Custom ].items_counted, palette );
-				M_DebugMenuDoColour( "Items (Uncounted)", &map_styledata[ MapStyle_Custom ].items_uncounted, palette );
-				M_DebugMenuDoColour( "Projectiles", &map_styledata[ MapStyle_Custom ].projectiles, palette );
-				M_DebugMenuDoColour( "Puffs", &map_styledata[ MapStyle_Custom ].puffs, palette );
-				M_DebugMenuDoColour( "Player Arrow", &map_styledata[ MapStyle_Custom ].playerarrow, palette );
-				M_DebugMenuDoColour( "Crosshair", &map_styledata[ MapStyle_Custom ].crosshair, palette );
+				M_DebugMenuDoMapColour( "Background", &style->background, &style->background_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Grid", &style->grid, &style->grid_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Computer Area Map", &style->areamap, &style->areamap_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Walls", &style->walls, &style->walls_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Teleporters", &style->teleporters, &style->teleporters_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Hidden Lines", &style->linesecrets, &style->linesecrets_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Secret Sectors", &style->sectorsecrets, &style->sectorsecrets_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Floor Height Diff", &style->floorchange, &style->floorchange_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Ceiling Height Diff", &style->ceilingchange, &style->ceilingchange_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "No Height Diff", &style->nochange, &style->nochange_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Thing", &style->things, &style->things_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Living Monsters", &style->monsters_alive, &style->monsters_alive_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Dead Monsters", &style->monsters_dead, &style->monsters_dead_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Items (Counted)", &style->items_counted, &style->items_counted_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Items (Uncounted)", &style->items_uncounted, &style->items_uncounted_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Projectiles", &style->projectiles, &style->projectiles_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Puffs", &style->puffs, &style->puffs_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Player Arrow", &style->playerarrow, &style->playerarrow_blinking, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Crosshair", &style->crosshair, &style->crosshair_blinking, palette );
+				igNextColumn();
 			}
 
 			igColumns( 1, "", false );
