@@ -362,6 +362,11 @@ cheatseq_t cheat_amap = CHEAT("iddt", 0);
 
 static boolean stopped = true;
 
+static int32_t lightnexttic = 0;
+static int32_t lightticlength = 6;
+static int32_t lightlevels[] = { 0, 4, 7, 10, 12, 14, 15, 15, 15, 14, 12, 10, 7, 4, 0, 0 };
+static int32_t lightlevelscnt = 0;
+
 void AM_BindAutomapVariables( void )
 {
 	M_BindIntVariable( "map_style",							&map_style );
@@ -556,7 +561,6 @@ void AM_changeWindowLoc(void)
     m_y2 = m_y + m_h;
 }
 
-
 //
 //
 //
@@ -571,6 +575,8 @@ void AM_initVariables(void)
     f_oldloc.x = INT_MAX;
     amclock = 0;
     lightlev = 0;
+	lightnexttic = lightticlength;
+	lightlevelscnt = 0;
 
     m_paninc.x = m_paninc.y = 0;
     ftom_zoommul = FRACUNIT;
@@ -940,19 +946,16 @@ void AM_doFollowPlayer(void)
 //
 void AM_updateLightLev(void)
 {
-	static int nexttic = 0;
-	static int litelevels[] = { 0, 4, 7, 10, 12, 14, 15, 15, 15, 14, 12, 10, 7, 4, 0, 0 };
-	static int litelevelscnt = 0;
    
 	// Change light level
-	if (amclock>nexttic)
+	if (amclock>lightnexttic)
 	{
-		lightlev = litelevels[litelevelscnt++];
-		if (litelevelscnt == arrlen(litelevels))
+		lightlev = lightlevels[lightlevelscnt++];
+		if (lightlevelscnt == arrlen(lightlevels))
 		{
-			litelevelscnt = 0;
+			lightlevelscnt = 0;
 		}
-		nexttic = amclock + 6 - (amclock % 6);
+		lightnexttic = amclock + lightticlength - (amclock % lightticlength);
 	}
 
 }
