@@ -375,43 +375,43 @@ void AM_BindAutomapVariables( void )
 	M_BindIntVariable( "map_style",							&map_style );
 	M_BindIntVariable( "map_fill",							&map_fill );
 	M_BindIntVariable( "mapcolor_background",				&map_styledata[ MapStyle_Custom ].background );
-	M_BindIntVariable( "mapcolor_background_blinking",		&map_styledata[ MapStyle_Custom ].background_blinking );
+	M_BindIntVariable( "mapcolor_background_flags",			&map_styledata[ MapStyle_Custom ].background_flags );
 	M_BindIntVariable( "mapcolor_grid",						&map_styledata[ MapStyle_Custom ].grid );
-	M_BindIntVariable( "mapcolor_grid_blinking",			&map_styledata[ MapStyle_Custom ].grid_blinking );
+	M_BindIntVariable( "mapcolor_grid_flags",				&map_styledata[ MapStyle_Custom ].grid_flags );
 	M_BindIntVariable( "mapcolor_areamap",					&map_styledata[ MapStyle_Custom ].areamap );
-	M_BindIntVariable( "mapcolor_areamap_blinking",			&map_styledata[ MapStyle_Custom ].areamap_blinking );
+	M_BindIntVariable( "mapcolor_areamap_flags",			&map_styledata[ MapStyle_Custom ].areamap_flags );
 	M_BindIntVariable( "mapcolor_walls",					&map_styledata[ MapStyle_Custom ].walls );
-	M_BindIntVariable( "mapcolor_walls_blinking",			&map_styledata[ MapStyle_Custom ].walls_blinking );
+	M_BindIntVariable( "mapcolor_walls_flags",				&map_styledata[ MapStyle_Custom ].walls_flags );
 	M_BindIntVariable( "mapcolor_teleporters",				&map_styledata[ MapStyle_Custom ].teleporters );
-	M_BindIntVariable( "mapcolor_teleporters_blinking",		&map_styledata[ MapStyle_Custom ].teleporters_blinking );
+	M_BindIntVariable( "mapcolor_teleporters_flags",		&map_styledata[ MapStyle_Custom ].teleporters_flags );
 	M_BindIntVariable( "mapcolor_linesecrets",				&map_styledata[ MapStyle_Custom ].linesecrets );
-	M_BindIntVariable( "mapcolor_linesecrets_blinking",		&map_styledata[ MapStyle_Custom ].linesecrets_blinking );
+	M_BindIntVariable( "mapcolor_linesecrets_flags",		&map_styledata[ MapStyle_Custom ].linesecrets_flags );
 	M_BindIntVariable( "mapcolor_sectorsecrets",			&map_styledata[ MapStyle_Custom ].sectorsecrets );
-	M_BindIntVariable( "mapcolor_sectorsecrets_blinking",	&map_styledata[ MapStyle_Custom ].sectorsecrets_blinking );
+	M_BindIntVariable( "mapcolor_sectorsecrets_flags",		&map_styledata[ MapStyle_Custom ].sectorsecrets_flags );
 	M_BindIntVariable( "mapcolor_floorchange",				&map_styledata[ MapStyle_Custom ].floorchange );
-	M_BindIntVariable( "mapcolor_floorchange_blinking",		&map_styledata[ MapStyle_Custom ].floorchange_blinking );
+	M_BindIntVariable( "mapcolor_floorchange_flags",		&map_styledata[ MapStyle_Custom ].floorchange_flags );
 	M_BindIntVariable( "mapcolor_ceilingchange",			&map_styledata[ MapStyle_Custom ].ceilingchange );
-	M_BindIntVariable( "mapcolor_ceilingchange_blinking",	&map_styledata[ MapStyle_Custom ].ceilingchange_blinking );
+	M_BindIntVariable( "mapcolor_ceilingchange_flags",		&map_styledata[ MapStyle_Custom ].ceilingchange_flags );
 	M_BindIntVariable( "mapcolor_nochange",					&map_styledata[ MapStyle_Custom ].nochange );
-	M_BindIntVariable( "mapcolor_nochange_blinking",		&map_styledata[ MapStyle_Custom ].nochange_blinking );
+	M_BindIntVariable( "mapcolor_nochange_flags",			&map_styledata[ MapStyle_Custom ].nochange_flags );
 	M_BindIntVariable( "mapcolor_things",					&map_styledata[ MapStyle_Custom ].things );
-	M_BindIntVariable( "mapcolor_things_blinking",			&map_styledata[ MapStyle_Custom ].things_blinking );
+	M_BindIntVariable( "mapcolor_things_flags",				&map_styledata[ MapStyle_Custom ].things_flags );
 	M_BindIntVariable( "mapcolor_monsters_alive",			&map_styledata[ MapStyle_Custom ].monsters_alive );
-	M_BindIntVariable( "mapcolor_monsters_alive_blinking",	&map_styledata[ MapStyle_Custom ].monsters_alive_blinking );
+	M_BindIntVariable( "mapcolor_monsters_alive_flags",		&map_styledata[ MapStyle_Custom ].monsters_alive_flags );
 	M_BindIntVariable( "mapcolor_monsters_dead",			&map_styledata[ MapStyle_Custom ].monsters_dead );
-	M_BindIntVariable( "mapcolor_monsters_dead_blinking",	&map_styledata[ MapStyle_Custom ].monsters_dead_blinking );
+	M_BindIntVariable( "mapcolor_monsters_dead_flags",		&map_styledata[ MapStyle_Custom ].monsters_dead_flags );
 	M_BindIntVariable( "mapcolor_items_counted",			&map_styledata[ MapStyle_Custom ].items_counted );
-	M_BindIntVariable( "mapcolor_items_counted_blinking",	&map_styledata[ MapStyle_Custom ].items_counted_blinking );
+	M_BindIntVariable( "mapcolor_items_counted_flags",		&map_styledata[ MapStyle_Custom ].items_counted_flags );
 	M_BindIntVariable( "mapcolor_items_uncounted",			&map_styledata[ MapStyle_Custom ].items_uncounted );
-	M_BindIntVariable( "mapcolor_items_uncounted_blinking",	&map_styledata[ MapStyle_Custom ].items_uncounted_blinking );
+	M_BindIntVariable( "mapcolor_items_uncounted_flags",	&map_styledata[ MapStyle_Custom ].items_uncounted_flags );
 	M_BindIntVariable( "mapcolor_projectiles",				&map_styledata[ MapStyle_Custom ].projectiles );
-	M_BindIntVariable( "mapcolor_projectiles_blinking",		&map_styledata[ MapStyle_Custom ].projectiles_blinking );
+	M_BindIntVariable( "mapcolor_projectiles_flags",		&map_styledata[ MapStyle_Custom ].projectiles_flags );
 	M_BindIntVariable( "mapcolor_puffs",					&map_styledata[ MapStyle_Custom ].puffs );
-	M_BindIntVariable( "mapcolor_puffs_blinking",			&map_styledata[ MapStyle_Custom ].puffs_blinking );
+	M_BindIntVariable( "mapcolor_puffs_flags",				&map_styledata[ MapStyle_Custom ].puffs_flags );
 	M_BindIntVariable( "mapcolor_playerarrow",				&map_styledata[ MapStyle_Custom ].playerarrow );
-	M_BindIntVariable( "mapcolor_playerarrow_blinking",		&map_styledata[ MapStyle_Custom ].playerarrow_blinking );
+	M_BindIntVariable( "mapcolor_playerarrow_flags",		&map_styledata[ MapStyle_Custom ].playerarrow_flags );
 	M_BindIntVariable( "mapcolor_crosshair",				&map_styledata[ MapStyle_Custom ].crosshair );
-	M_BindIntVariable( "mapcolor_crosshair_blinking",		&map_styledata[ MapStyle_Custom ].crosshair_blinking );
+	M_BindIntVariable( "mapcolor_crosshair_flags",			&map_styledata[ MapStyle_Custom ].crosshair_flags );
 }
 
 // Calculates the slope and slope according to the x-axis of a line
@@ -1252,12 +1252,12 @@ void AM_drawMline( mline_t* ml, int color )
 		by = fl.b.y;
 		for( loopx = 0; loopx < linewidth; ++loopx )
 		{
-			fl.a.x = ax + loopx;
-			fl.b.x = bx + loopx;
+			fl.a.x = ax + loopx - ( linewidth >> 1 );
+			fl.b.x = bx + loopx - ( linewidth >> 1 );
 			for( loopy = 0; loopy < lineheight; ++loopy )
 			{
-				fl.a.y = ay + loopy;
-				fl.b.y = by + loopy;
+				fl.a.y = ay + loopy - ( lineheight >> 1 );
+				fl.b.y = by + loopy - ( lineheight >> 1 );
 				AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
 			}
 		}
@@ -1339,43 +1339,48 @@ void AM_drawWalls( mapstyledata_t* style )
 				continue;
 			}
 
-			if (!lines[i].backsector)
+			if( style->sectorsecrets != -1 &&	( lines[ i ].frontsector->secretstate != Secret_None
+												|| lines[ i ].backsector && lines[ i ].backsector->secretstate != Secret_None ) )
 			{
-				AM_drawMline(&l, AM_lookupColour( style->walls, style->walls_blinking ) );
+				AM_drawMline(&l, AM_lookupColour( style->sectorsecrets, style->sectorsecrets_flags ) );
+			}
+			else if (!lines[i].backsector)
+			{
+				AM_drawMline(&l, AM_lookupColour( style->walls, style->walls_flags ) );
 			}
 			else if (lines[i].special == 39) // teleporters
 			{
-				AM_drawMline(&l, AM_lookupColour( style->teleporters, style->teleporters_blinking ) );
+				AM_drawMline(&l, AM_lookupColour( style->teleporters, style->teleporters_flags ) );
 			}
 			else if (lines[i].flags & ML_SECRET) // secret door
 			{
 				if (cheating)
 				{
-					AM_drawMline(&l, AM_lookupColour( style->linesecrets, style->linesecrets_blinking ) );
+					AM_drawMline(&l, AM_lookupColour( style->linesecrets, style->linesecrets_flags ) );
 				}
 				else
 				{
-					AM_drawMline(&l, AM_lookupColour( style->walls, style->walls_blinking ) );
+					AM_drawMline(&l, AM_lookupColour( style->walls, style->walls_flags ) );
 				}
 			}
 			else if (lines[i].backsector->floorheight
 					!= lines[i].frontsector->floorheight)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->floorchange, style->floorchange_blinking ) ); // floor level change
+				AM_drawMline(&l, AM_lookupColour( style->floorchange, style->floorchange_flags ) ); // floor level change
 			}
 			else if (lines[i].backsector->ceilingheight
 					!= lines[i].frontsector->ceilingheight)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->ceilingchange, style->ceilingchange_blinking ) ); // ceiling level change
+				AM_drawMline(&l, AM_lookupColour( style->ceilingchange, style->ceilingchange_flags ) ); // ceiling level change
 			}
 			else if (cheating)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->nochange, style->nochange_blinking ) );
+				AM_drawMline(&l, AM_lookupColour( style->nochange, style->nochange_flags ) );
 			}
 		}
 		else if ( plr->powers[ pw_allmap ] && !(lines[i].flags & LINE_NEVERSEE) )
 		{
-			AM_drawMline(&l, AM_lookupColour( style->areamap, style->areamap_blinking ) );
+			AM_drawMline(&l, AM_lookupColour( style->areamap, style->areamap_flags ) );
 		}
 	}
 }
@@ -1467,13 +1472,13 @@ void AM_drawPlayers( mapstyledata_t* style )
 		{
 			AM_drawLineCharacter
 			(cheat_player_arrow, arrlen(cheat_player_arrow), 0,
-			 plr->mo->angle, AM_lookupColour( style->playerarrow, style->playerarrow_blinking ), plr->mo->x, plr->mo->y);
+			 plr->mo->angle, AM_lookupColour( style->playerarrow, style->playerarrow_flags ), plr->mo->x, plr->mo->y);
 		}
 		else
 		{
 			AM_drawLineCharacter
 			(player_arrow, arrlen(player_arrow), 0, plr->mo->angle,
-			 AM_lookupColour( style->playerarrow, style->playerarrow_blinking ), plr->mo->x, plr->mo->y);
+			 AM_lookupColour( style->playerarrow, style->playerarrow_flags ), plr->mo->x, plr->mo->y);
 		}
 		return;
     }
@@ -1496,7 +1501,7 @@ void AM_drawPlayers( mapstyledata_t* style )
 	
 		AM_drawLineCharacter
 			(player_arrow, arrlen(player_arrow), 0, p->mo->angle,
-			 AM_lookupColour( color, style->playerarrow_blinking ), p->mo->x, p->mo->y);
+			 AM_lookupColour( color, style->playerarrow_flags ), p->mo->x, p->mo->y);
     }
 
 }
@@ -1514,27 +1519,27 @@ void AM_drawThings( mapstyledata_t* style )
 		{
 			if( t->flags & MF_CORPSE )
 			{
-				colour = AM_lookupColour( style->monsters_dead, style->monsters_dead_blinking );
+				colour = AM_lookupColour( style->monsters_dead, style->monsters_dead_flags );
 			}
 			else if( t->flags & MF_COUNTKILL )
 			{
-				colour = AM_lookupColour( style->monsters_alive, style->monsters_alive_blinking );
+				colour = AM_lookupColour( style->monsters_alive, style->monsters_alive_flags );
 			}
 			else if( t->flags & MF_COUNTITEM )
 			{
-				colour =  AM_lookupColour( style->items_counted, style->items_counted_blinking );
+				colour =  AM_lookupColour( style->items_counted, style->items_counted_flags );
 			}
 			else if( t->flags & MF_SPECIAL )
 			{
-				colour =  AM_lookupColour( style->items_uncounted, style->items_uncounted_blinking );
+				colour =  AM_lookupColour( style->items_uncounted, style->items_uncounted_flags );
 			}
 			else if( t->flags & MF_MISSILE )
 			{
-				colour = AM_lookupColour( style->projectiles, style->projectiles_blinking );
+				colour = AM_lookupColour( style->projectiles, style->projectiles_flags );
 			}
 			else
 			{
-				colour = AM_lookupColour( style->things, style->things_blinking );
+				colour = AM_lookupColour( style->things, style->things_flags );
 			}
 			AM_drawLineCharacter( thintriangle_guy, arrlen(thintriangle_guy), 16<<FRACBITS, t->angle, AM_lookupColour( colour, false ), t->x, t->y);
 			t = t->snext;
@@ -1571,8 +1576,8 @@ void AM_drawCrosshair(int color)
 
 	int32_t loopx;
 	fline_t fl;
-	fl.a.x = fl.b.x = f_w >> 1;
-	fl.a.y = fl.b.y = f_h >> 1;
+	fl.a.x = fl.b.x = ( f_w >> 1 ) - ( linewidth >> 1 );
+	fl.a.y = fl.b.y = ( f_h >> 1 ) - ( lineheight >> 1 );
 	fl.b.y += lineheight;
 
 	for( loopx = 0; loopx < linewidth; ++loopx )
@@ -1596,10 +1601,10 @@ void AM_Drawer (void)
 	linewidth = FixedDiv( 1 << FRACBITS, V_WIDTHSTEP << FRACBITS );
 	lineheight = FixedDiv( 1 << FRACBITS, V_HEIGHTSTEP << FRACBITS );
 
-	AM_clearFB( AM_lookupColour( style->background, style->background_blinking ) );
+	AM_clearFB( AM_lookupColour( style->background, style->background_flags ) );
 	if (grid)
 	{
-		AM_drawGrid( AM_lookupColour( style->grid, style->grid_blinking ) );
+		AM_drawGrid( AM_lookupColour( style->grid, style->grid_flags ) );
 	}
 	AM_drawWalls( style );
 	AM_drawPlayers( style );
@@ -1607,7 +1612,7 @@ void AM_Drawer (void)
 	{
 		AM_drawThings( style );
 	}
-	AM_drawCrosshair( AM_lookupColour( style->crosshair, style->crosshair_blinking ) );
+	AM_drawCrosshair( AM_lookupColour( style->crosshair, style->crosshair_flags ) );
 
 	AM_drawMarks();
 

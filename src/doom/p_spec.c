@@ -1121,6 +1121,7 @@ void P_PlayerInSpecialSector (player_t* player)
 	// SECRET SECTOR
 	player->secretcount++;
 	sector->special = 0;
+	sector->secretstate = Secret_Discovered;
 	break;
 			
       case 11:

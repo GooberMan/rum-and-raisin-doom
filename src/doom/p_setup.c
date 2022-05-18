@@ -298,6 +298,11 @@ void P_LoadSectors (int lump)
 		ss->special			= SHORT(ms->special);
 		ss->tag				= SHORT(ms->tag);
 		ss->thinglist		= NULL;
+
+		if( ss->special == 9 )
+		{
+			ss->secretstate = Secret_Undiscovered;
+		}
 	}
 
 	W_ReleaseLumpNum(lump);

@@ -118,6 +118,13 @@ typedef struct
 	fixed_t				z;
 } degenmobj_t;
 
+typedef enum secretstate_e
+{
+	Secret_None,
+	Secret_Undiscovered,
+	Secret_Discovered
+} secretstate_t;
+
 //
 // The SECTORS record, at runtime.
 // Stores things/mobjs.
@@ -133,6 +140,8 @@ typedef	struct
 	int16_t				lightlevel;
 	int16_t				special;
 	int16_t				tag;
+
+	int32_t				secretstate;
 
 	// 0 = untraversed, 1,2 = sndlines -1
 	int32_t				soundtraversed;
@@ -419,15 +428,14 @@ typedef struct spriteframe_s
 // A sprite definition:
 //  a number of animation frames.
 //
-typedef struct
+typedef struct spritedef_s
 {
 	int32_t				numframes;
 	spriteframe_t*		spriteframes;
 
 } spritedef_t;
 
-
-typedef struct
+typedef struct visplane_s
 {
 	fixed_t				height;
 	int32_t				picnum;
@@ -456,7 +464,7 @@ typedef struct
 // Clips the given range of columns
 // and includes it in the new clip list.
 //
-typedef	struct
+typedef	struct cliprange_s
 {
 	int32_t				first;
 	int32_t				last;

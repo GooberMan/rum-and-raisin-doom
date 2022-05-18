@@ -1833,7 +1833,7 @@ static default_t extra_defaults_list[] =
 	// Automap background colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_background_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_background_flags),
 
 	//!
 	// @game doom
@@ -1849,7 +1849,7 @@ static default_t extra_defaults_list[] =
 	// Automap grid colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_grid_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_grid_flags),
 
 	//!
 	// @game doom
@@ -1865,7 +1865,7 @@ static default_t extra_defaults_list[] =
 	// Automap powerup colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_areamap_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_areamap_flags),
 
 	//!
 	// @game doom
@@ -1881,7 +1881,7 @@ static default_t extra_defaults_list[] =
 	// Automap walls colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_walls_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_walls_flags),
 
 	//!
 	// @game doom
@@ -1897,7 +1897,7 @@ static default_t extra_defaults_list[] =
 	// Automap teleporters colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_teleporters_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_teleporters_flags),
 
 	//!
 	// @game doom
@@ -1913,7 +1913,7 @@ static default_t extra_defaults_list[] =
 	// Automap hidden/secret walls colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_linesecrets_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_linesecrets_flags),
 
 	//!
 	// @game doom
@@ -1929,7 +1929,7 @@ static default_t extra_defaults_list[] =
 	// Automap sector-based secrets colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_sectorsecrets_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_sectorsecrets_flags),
 
 	//!
 	// @game doom
@@ -1945,7 +1945,7 @@ static default_t extra_defaults_list[] =
 	// Automap floor height difference colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_floorchange_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_floorchange_flags),
 
 	//!
 	// @game doom
@@ -1961,7 +1961,7 @@ static default_t extra_defaults_list[] =
 	// Automap ceiling height difference colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_ceilingchange_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_ceilingchange_flags),
 
 	//!
 	// @game doom
@@ -1977,7 +1977,7 @@ static default_t extra_defaults_list[] =
 	// Automap no difference colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_nochange_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_nochange_flags),
 
 	//!
 	// @game doom
@@ -1993,7 +1993,7 @@ static default_t extra_defaults_list[] =
 	// Automap things colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_things_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_things_flags),
 
 	//!
 	// @game doom
@@ -2009,7 +2009,7 @@ static default_t extra_defaults_list[] =
 	// Automap living monsters colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_monsters_alive_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_monsters_alive_flags),
 
 	//!
 	// @game doom
@@ -2025,7 +2025,7 @@ static default_t extra_defaults_list[] =
 	// Automap dead monsters colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_monsters_dead_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_monsters_dead_flags),
 
 	//!
 	// @game doom
@@ -2041,7 +2041,7 @@ static default_t extra_defaults_list[] =
 	// Automap items (counts towards percentage) colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_items_counted_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_items_counted_flags),
 
 	//!
 	// @game doom
@@ -2057,7 +2057,7 @@ static default_t extra_defaults_list[] =
 	// Automap items colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_items_uncounted_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_items_uncounted_flags),
 
 	//!
 	// @game doom
@@ -2073,7 +2073,7 @@ static default_t extra_defaults_list[] =
 	// Automap projectiles colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_projectiles_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_projectiles_flags),
 
 	//!
 	// @game doom
@@ -2089,7 +2089,7 @@ static default_t extra_defaults_list[] =
 	// Automap puffs colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_puffs_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_puffs_flags),
 
 	//!
 	// @game doom
@@ -2105,7 +2105,7 @@ static default_t extra_defaults_list[] =
 	// Automap player arrow colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_playerarrow_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_playerarrow_flags),
 
 	//!
 	// @game doom
@@ -2121,7 +2121,7 @@ static default_t extra_defaults_list[] =
 	// Automap crosshair colour
 	//
 
-	CONFIG_VARIABLE_INT(mapcolor_crosshair_blinking),
+	CONFIG_VARIABLE_INT(mapcolor_crosshair_flags),
 };
 
 static default_collection_t extra_defaults =
