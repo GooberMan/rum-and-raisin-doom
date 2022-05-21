@@ -600,6 +600,8 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
 } 
  
 
+void P_CalcHeight (player_t* player);
+
 //
 // G_DoLoadLevel 
 //
@@ -673,6 +675,16 @@ void G_DoLoadLevel (void)
     {
         players[consoleplayer].message = "Press escape to quit.";
     }
+
+	// Having the debug UI open means you can start a game when in a paused state.
+	// So we prime the view height to avoid bad visuals on level start.
+	for (i=0 ; i<MAXPLAYERS ; i++) 
+	{
+		if( playeringame[i] )
+		{
+			P_CalcHeight( &players[i] );
+		}
+	}
 } 
 
 static void SetJoyButtons(unsigned int buttons_mask)
