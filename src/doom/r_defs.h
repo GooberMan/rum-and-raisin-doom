@@ -683,6 +683,7 @@ typedef enum voidclear_e
 	Void_NoClear,
 	Void_Black,
 	Void_Whacky,
+	Void_Sky,
 
 	Void_Count,
 } voidclear_t;

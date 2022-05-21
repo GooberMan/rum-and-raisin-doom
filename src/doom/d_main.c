@@ -1799,10 +1799,12 @@ void D_DoomMain (void)
 
 	if( M_ParmExists( "-blackvoid" ) ) voidcleartype = Void_Black;
 	if( M_ParmExists( "-whackyvoid" ) ) voidcleartype = Void_Whacky;
+	if( M_ParmExists( "-skyvoid" ) ) voidcleartype = Void_Sky;
 
 	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
 	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
 	M_RegisterDebugMenuRadioButton( "Render|Clear style|Whacky", NULL, &voidcleartype, Void_Whacky );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Sky", NULL, &voidcleartype, Void_Sky );
 
 	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );

@@ -3059,6 +3059,8 @@ void M_Init (void)
 	};
 	debugmenu_currgameepisodes = workingepisode - debugmenu_currgame->episodes;
 
+	extern int32_t sleeponzerotics;
+
 	M_RegisterDebugMenuCategory( "Game|New" );
 
 	M_RegisterDebugMenuRadioButton( "Game|New|No skill", NULL, &debugmenu_currgameskill, -1 );
@@ -3090,5 +3092,7 @@ void M_Init (void)
 	}
 
 	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", 500, 500, &debugwindow_options, &M_DebugMenuOptionsWindow );
+	M_RegisterDebugMenuCheckboxFlag( "Game|Renderer in lockstep with game", "Just means we can run zero tics really", &sleeponzerotics, 0x1 );
+
 }
 

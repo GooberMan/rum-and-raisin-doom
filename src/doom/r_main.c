@@ -586,6 +586,7 @@ void R_InitPointToAngle (void)
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle)
 {
+	// TODO: Replace this with the scaling function for my visplane renderer
     fixed_t		scale;
     angle_t		anglea;
     angle_t		angleb;
@@ -876,9 +877,13 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 
 void R_RenderViewContext( rendercontext_t* rendercontext )
 {
-	int32_t currtime;
-	byte* output = rendercontext->buffer.data + rendercontext->buffer.pitch * rendercontext->begincolumn;
-	size_t outputsize = rendercontext->buffer.pitch * (rendercontext->endcolumn - rendercontext->begincolumn );
+	colcontext_t	skycontext;
+	int32_t			x;
+	int32_t			angle;
+
+	int32_t			currtime;
+	byte*			output = rendercontext->buffer.data + rendercontext->buffer.pitch * rendercontext->begincolumn;
+	size_t			outputsize = rendercontext->buffer.pitch * (rendercontext->endcolumn - rendercontext->begincolumn );
 
 	rendercontext->starttime = I_GetTimeUS();
 #if RENDER_PERF_GRAPHING
@@ -898,6 +903,25 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	else if( voidcleartype == Void_Whacky )
 	{
 		memset( output, whacky_void_indices[ ( rendercontext->starttime % whacky_void_microseconds ) / ( whacky_void_microseconds / num_whacky_void_indices ) ], outputsize );
+	}
+	else if( voidcleartype == Void_Sky )
+	{
+		skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
+		skycontext.iscale = pspriteiscale>>detailshift;
+		skycontext.scale = pspritescale>>detailshift;
+		skycontext.texturemid = skytexturemid;
+		skycontext.output = rendercontext->buffer;
+		skycontext.yl = 0;
+		skycontext.yh = render_height - ST_BUFFERHEIGHT;
+
+		for ( x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
+		{
+			angle = ( viewangle + xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
+
+			skycontext.x = x;
+			skycontext.source = R_GetColumn( skytexture, angle, 0 );
+			skycontext.colfunc( &skycontext );
+		}
 	}
 		
 	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
