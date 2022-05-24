@@ -436,6 +436,10 @@ boolean			inhelpscreens;
 boolean			menuactive;
 int32_t			debugmenuclosesound = sfx_swtchx;
 
+int32_t			mapkeybuttonvalue = -1;
+
+
+
 #define SKULLXOFF		-32
 #define LINEHEIGHT		16
 
@@ -1668,6 +1672,10 @@ static boolean IsNullKey(int key)
 
 static boolean M_DebugResponder( event_t* ev )
 {
+	if( debugmenuremappingkey && ev->type == ev_keydown )
+	{
+		mapkeybuttonvalue = ev->data1;
+	}
 	return true;
 }
 
@@ -1725,7 +1733,7 @@ boolean M_Responder (event_t* ev)
     }
 
 #if USE_IMGUI
-	if (ev->type == ev_keydown && ev->data1 == key_menu_debug)
+	if (ev->type == ev_keydown && ev->data1 == key_menu_debug && !debugmenuremappingkey)
 	{
 		debugmenuactive = !debugmenuactive;
 		S_StartSound(NULL, debugmenuactive ? sfx_swtchn : sfx_swtchx);
@@ -2545,6 +2553,145 @@ static void M_DebugMenuDoMapColour( const char* itemname, int32_t* colourindex, 
 	igPopID();
 }
 
+typedef struct keyname_s
+{
+	int32_t		key;
+	const char*	name;
+} keyname_t;
+
+static keyname_t keynames[] = KEY_NAMES_ARRAY;
+
+static const char* M_FindKeyName( int32_t key )
+{
+	int32_t index;
+
+	for( index = 0; index < arrlen( keynames ); ++index )
+	{
+		if( keynames[ index ].key == key )
+		{
+			return keynames[ index ].name;
+		}
+	}
+
+	if( key == 0 )
+	{
+		return "<NONE>";
+	}
+
+	return "<UNKNOWN>";
+}
+
+typedef struct controldesc_s
+{
+	const char* name;
+	int32_t*	value;
+} controldesc_t;
+
+typedef struct controlsection_s
+{
+	const char*		name;
+	controldesc_t*	descs;
+} controlsection_t;
+
+static controlsection_t keymappings[] =
+{
+	{
+		"Movement",
+		(controldesc_t[]){	{	"Forward",				&key_up },
+							{	"Back",					&key_down },
+							{	"Turn Left",			&key_left },
+							{	"Turn Right",			&key_right },
+							{	"Strafe Left",			&key_strafeleft },
+							{	"Strafe Right",			&key_straferight },
+							{	"Fire",					&key_fire },
+							{	"Use",					&key_use },
+							{	"Strafe",				&key_strafe },
+							{	"Run",					&key_speed },
+							{	NULL,					NULL }, },
+	},
+	{
+		"Weapons",
+		(controldesc_t[]){	{	"Weapon 1",				&key_weapon1 },
+							{	"Weapon 2",				&key_weapon2 },
+							{	"Weapon 3",				&key_weapon3 },
+							{	"Weapon 4",				&key_weapon4 },
+							{	"Weapon 5",				&key_weapon5 },
+							{	"Weapon 6",				&key_weapon6 },
+							{	"Weapon 7",				&key_weapon7 },
+							{	"Weapon 8",				&key_weapon8 },
+							{	"Previous Weapon",		&key_prevweapon },
+							{	"Next Weapon",			&key_nextweapon },
+							{	NULL,					NULL }, },
+	},
+	{
+		"Automap",
+		(controldesc_t[]){	{	"Toggle Map",			&key_map_toggle },
+							{	"North",				&key_map_north },
+							{	"South",				&key_map_south },
+							{	"East",					&key_map_east },
+							{	"West",					&key_map_west },
+							{	"Zoom In",				&key_map_zoomin },
+							{	"Zoom Out",				&key_map_zoomout },
+							{	"Max zoom",				&key_map_maxzoom },
+							{	"Follow",				&key_map_follow },
+							{	"Toggle Grid",			&key_map_grid },
+							{	"Add Mark",				&key_map_mark },
+							{	"Remove Mark",			&key_map_clearmark },
+							{	NULL,					NULL }, },
+	},
+	{
+		"Menu",
+		(controldesc_t[]){	{	"Toggle menu",			&key_menu_activate },
+							{	"Up",					&key_menu_up },
+							{	"Down",					&key_menu_down },
+							{	"Left",					&key_menu_left },
+							{	"Right",				&key_menu_right },
+							{	"Back",					&key_menu_back },
+							{	"Forward",				&key_menu_forward },
+							{	"Confirm",				&key_menu_confirm },
+							{	"Abort",				&key_menu_abort },
+							{	NULL,					NULL }, },
+	},
+	{
+		"Shortcuts",
+		(controldesc_t[]){	{	"Toggle help screen",	&key_menu_help },
+							{	"Toggle volume screen",	&key_menu_volume },
+							{	"Quit game",			&key_menu_quit },
+							{	"Load game",			&key_menu_load },
+							{	"Save game",			&key_menu_save },
+							{	"Quick load",			&key_menu_qload },
+							{	"Quick save",			&key_menu_qsave },
+							{	"End Game",				&key_menu_endgame },
+							{	"Toggle detail",		&key_menu_detail },
+							{	"Toggle messages",		&key_menu_messages },
+							{	"Toggle gamma",			&key_menu_gamma },
+							{	"Increase screen size",	&key_menu_incscreen },
+							{	"Decrease screen size",	&key_menu_decscreen },
+							{	"Screenshot",			&key_menu_screenshot },
+							{	"Display last message",	&key_message_refresh },
+							{	"Pause",				&key_pause },
+							{	"Toggle debug menu",	&key_menu_debug },
+							{	NULL,					NULL }, },
+	},
+	{	"Demos",
+		(controldesc_t[]){	{	"End demo recording",	&key_demo_quit },
+							{	"Spy on other players",	&key_spy },
+							{	NULL,					NULL }, },
+	},
+	{
+		"Multiplayer",
+		(controldesc_t[]){	{	"Message all",			&key_multi_msg },
+							{	"Message player 1",		&key_multi_msgplayer[0] },
+							{	"Message player 2",		&key_multi_msgplayer[1] },
+							{	"Message player 3",		&key_multi_msgplayer[2] },
+							{	"Message player 4",		&key_multi_msgplayer[3] },
+							{	NULL,					NULL }, },
+	},
+	{ NULL,				NULL }
+};
+
+static float columwidth = 200.f;
+
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
@@ -2557,6 +2704,9 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	extern int32_t fuzz_style;
 	extern int32_t span_override;
 
+	controlsection_t*	currsection;
+	controldesc_t*		currdesc;
+
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
 
@@ -2565,7 +2715,11 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	int32_t currsizeindex = 0;
 	int32_t index;
 	bool selected;
+	bool cancel;
 	ImVec2 zerosize = { 0, 0 };
+	ImVec2 halfsize = { 0.5f, 0.5f };
+	ImVec2 mappingsize = { 60, 22 };
+	ImVec2 unmapbuttonsize = { 22, 22 };
 
 	byte* palette = NULL;
 
@@ -2573,6 +2727,73 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 
 	if( igBeginTabBar( "Doom Options tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
+		if( igBeginTabItem( "Keyboard", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			for( currsection = keymappings; currsection->name != NULL; ++currsection )
+			{
+				igPushIDPtr( currsection );
+				if( igCollapsingHeaderTreeNodeFlags( currsection->name, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+				{
+					igColumns( 2, "", false );
+					igSetColumnWidth( 0, columwidth );
+
+					for( currdesc = currsection->descs; currdesc->name != NULL; ++currdesc )
+					{
+						igPushIDPtr( currdesc->name );
+						igText( currdesc->name );
+						igNextColumn();
+						if( igButton( M_FindKeyName( *currdesc->value ), mappingsize ) )
+						{
+							igOpenPopup( "RemapKey", ImGuiPopupFlags_None );
+							debugmenuremappingkey = true;
+							mapkeybuttonvalue = -1;
+						}
+
+						if( igIsPopupOpenStr( "RemapKey", ImGuiPopupFlags_None ) )
+						{
+							ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
+							WindowPos.x *= 0.5f;
+							WindowPos.y *= 0.5f;
+							igSetNextWindowPos( WindowPos, ImGuiCond_Always, halfsize );
+							if( igBeginPopup( "RemapKey", ImGuiWindowFlags_Modal ) )
+							{
+								igText( "Press new key for \"%s\"...", currdesc->name );
+								cancel = igButton( "Cancel", zerosize );
+								if( mapkeybuttonvalue != -1 )
+								{
+									*currdesc->value = mapkeybuttonvalue;
+									mapkeybuttonvalue = -1;
+									cancel = true;
+								}
+								if( cancel )
+								{
+									igCloseCurrentPopup();
+									debugmenuremappingkey = false;
+								}
+								igEndPopup();
+							}
+						}
+						if( *currdesc->value != 0 && currdesc->value != &key_menu_debug )
+						{
+							igSameLine( 0, -1 );
+							if( igButton( "X", unmapbuttonsize ) )
+							{
+								*currdesc->value = 0;
+							}
+						}
+						igNextColumn();
+						igPopID();
+					}
+
+					igColumns( 1, "", false );
+				}
+
+				igPopID();
+			}
+
+			igEndTabItem();
+		}
+
 		if( igBeginTabItem( "Mouse", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
 			igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
@@ -2590,7 +2811,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 		if( igBeginTabItem( "Screen", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
 			igColumns( 2, "", false );
-			igSetColumnWidth( 0, 200.f );
+			igSetColumnWidth( 0, columwidth );
 
 			igText( "Windowed dimensions" );
 			igNextColumn();
@@ -2674,7 +2895,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			igNewLine();
 
 			igColumns( 2, "", false );
-			igSetColumnWidth( 0, 200.f );
+			igSetColumnWidth( 0, columwidth );
 
 			igText( "Separate backbuffer size" );
 			igNextColumn();
@@ -2730,7 +2951,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 		if( igBeginTabItem( "View", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
 			igColumns( 2, "", false );
-			igSetColumnWidth( 0, 200.f );
+			igSetColumnWidth( 0, columwidth );
 
 			igText( "Screen size" );
 			igNextColumn();
@@ -2838,7 +3059,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 		if( igBeginTabItem( "Automap", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
 			igColumns( 2, "", false );
-			igSetColumnWidth( 0, 200.f );
+			igSetColumnWidth( 0, columwidth );
 
 			igText( "Style" );
 			igNextColumn();

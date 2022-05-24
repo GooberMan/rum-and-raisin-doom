@@ -362,6 +362,7 @@ static void M_RenderSeparator( menuentry_t* cat );
 
 ImGuiContext*			imgui_context;
 boolean					debugmenuactive = false;
+boolean					debugmenuremappingkey = false;
 boolean					debugmenupausesplaysim = true;
 static int32_t			debugmenu_theme = 1;
 
@@ -408,7 +409,7 @@ static void M_AboutWindow( const char* itemname, void* data )
 	igText( "Copyright(C) 1993-1996 Id Software, Inc." );
 	igText( "Copyright(C) 1993-2008 Raven Software" );
 	igText( "Copyright(C) 2005-2014 Simon Howard" );
-	igText( "Copyright(C) 2020 Ethan Watson" );
+	igText( "Copyright(C) 2020-2022 Ethan Watson" );
 	igNewLine();
 	igText( "This program is free software; you can redistribute it and/or" );
 	igText( "modify it under the terms of the GNU General Public License" );
