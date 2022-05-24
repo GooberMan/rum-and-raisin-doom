@@ -2692,6 +2692,20 @@ static controlsection_t keymappings[] =
 
 static float columwidth = 200.f;
 
+static void igPushScrollableArea( const char* ID, ImVec2 size )
+{
+	igPushIDStr( ID );
+	igPushStyleColorU32( ImGuiCol_ChildBg, IM_COL32_BLACK_TRANS );
+	igBeginChildStr( "ScrollArea", size, false, ImGuiWindowFlags_None );
+}
+
+static void igPopScrollableArea()
+{
+	igEndChild();
+	igPopStyleColor( 1 );
+	igPopID();
+}
+
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
 	extern int fullscreen;
@@ -2729,6 +2743,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	{
 		if( igBeginTabItem( "Keyboard", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
+			igPushScrollableArea( "Keyboard", zerosize );
 			for( currsection = keymappings; currsection->name != NULL; ++currsection )
 			{
 				igPushIDPtr( currsection );
@@ -2791,11 +2806,14 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 				igPopID();
 			}
 
+			igPopScrollableArea();
 			igEndTabItem();
 		}
 
 		if( igBeginTabItem( "Mouse", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
+			igPushScrollableArea( "Mouse", zerosize );
+
 			igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 
 			WorkingInt = (int32_t)( mouse_acceleration * 10.f );
@@ -2805,11 +2823,14 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			}
 			igSliderInt( "Threshold", &mouse_threshold, 0, 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 
+			igPopScrollableArea();
 			igEndTabItem();
 		}
 
 		if( igBeginTabItem( "Screen", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
+			igPushScrollableArea( "Screen", zerosize );
+
 			igColumns( 2, "", false );
 			igSetColumnWidth( 0, columwidth );
 
@@ -2931,11 +2952,15 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 
 			igColumns( 1, "", false );
+
+			igPopScrollableArea();
 			igEndTabItem();
 		}
 
 		if( igBeginTabItem( "Sound", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
+			igPushScrollableArea( "Sound", zerosize );
+
 			if( igSliderInt( "Effects", &sfxVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
 				S_SetSfxVolume( sfxVolume * 8 );
@@ -2945,11 +2970,14 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 				S_SetSfxVolume( sfxVolume * 8 );
 			}
 
+			igPopScrollableArea();
 			igEndTabItem();
 		}
 
 		if( igBeginTabItem( "View", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
+			igPushScrollableArea( "View", zerosize );
+
 			igColumns( 2, "", false );
 			igSetColumnWidth( 0, columwidth );
 
@@ -3053,11 +3081,14 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 
 			igColumns( 1, "", false );
 
+			igPopScrollableArea();
 			igEndTabItem();
 		}
 
 		if( igBeginTabItem( "Automap", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
+			igPushScrollableArea( "Automap", zerosize );
+
 			igColumns( 2, "", false );
 			igSetColumnWidth( 0, columwidth );
 
@@ -3120,6 +3151,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 
 			igColumns( 1, "", false );
 
+			igPopScrollableArea();
 			igEndTabItem();
 		}
 
