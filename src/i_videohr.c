@@ -188,8 +188,8 @@ void I_SetPaletteHR(const byte *palette)
 void I_FadeToPaletteHR(const byte *palette)
 {
     byte tmppal[16 * 3];
-    int starttime;
-    int elapsed;
+    uint64_t starttime;
+    uint64_t elapsed;
     int i;
 
     starttime = I_GetTimeMS();

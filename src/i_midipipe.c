@@ -146,7 +146,7 @@ static boolean WritePipe(net_packet_t *packet)
 //
 static boolean ExpectPipe(net_packet_t *packet)
 {
-    int start;
+    uint64_t start;
     BOOL ok;
     CHAR pipe_buffer[8192];
     DWORD pipe_buffer_read = 0;

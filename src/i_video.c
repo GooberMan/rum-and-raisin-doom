@@ -739,9 +739,9 @@ static void CreateUpscaledTexture(boolean force)
 //
 void I_FinishUpdate (void)
 {
-	static int32_t lasttic;
-	int32_t tics;
 #if FPS_DOTS_SUPPORTED
+	static uint32_t lasttic;
+	uint32_t tics;
 	int32_t i;
 #endif // FPS_DOTS_SUPPORTED
 
@@ -1357,7 +1357,7 @@ static void SetVideoMode(void)
 {
 	int32_t w, h;
 	int32_t x, y;
-	int32_t bpp;
+	//int32_t bpp;
 	int32_t window_flags = 0, renderer_flags = 0;
 	int32_t drivercount = SDL_GetNumRenderDrivers();
 	int32_t testdriver = -1;
