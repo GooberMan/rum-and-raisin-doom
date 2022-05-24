@@ -892,11 +892,33 @@ void I_FinishUpdate (void)
 	static float uv1_x = 1;
 	static float uv1_y = 1;
 
+	static float lastwidth = 0;
+	static float lastheight = 0;
+
+	static ImVec2 size = { 640, 480 };
+
 	if( debugmenuactive )
 	{
-		ImVec2 size = { 640, 480 };
-		igSetNextWindowSize( size, ImGuiCond_FirstUseEver );
-		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings ) )
+		if( lastwidth > 0 && lastheight > 0 )
+		{
+			if( lastwidth != render_width || lastheight != actualheight )
+			{
+				size.y = size.x * ( (float)actualheight / (float)render_width );
+				igSetNextWindowSize( size, ImGuiCond_Always );
+				lastwidth = render_width;
+				lastheight = actualheight;
+			}
+		}
+		else
+		{
+			size.x = window_width * 0.5f;
+			size.y = size.x * ( (float)actualheight / (float)render_width );
+			igSetNextWindowSize( size, ImGuiCond_FirstUseEver );
+			lastwidth = render_width;
+			lastheight = actualheight;
+		}
+
+		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
 		{
 			igGetWindowSize( &size );
 			// TODO: Get correct margin sizes
