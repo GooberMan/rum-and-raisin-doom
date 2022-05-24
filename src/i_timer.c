@@ -1,7 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -28,6 +28,8 @@
 #include <string.h>
 #include <time.h>
 
+#pragma optimize( "", off )
+
 typedef struct
 {
 	uint64_t		microseconds;
@@ -45,6 +47,17 @@ static uint64_t currperfframe = 0;
 static uint64_t basecounter = 0;
 static uint64_t basefreq = 0;
 
+// COUNTER_OFFSET is used for testing 64-bit timer support.
+// Signed int32 values for millisecond counters means that
+// wrap-around happens at tic 61,356,676. In real time, less
+// than a day. A large value will ensure that all base ticks
+// are already outside of that range, and thus you can catch
+// any type errors immediately. Might need to tweak yourself
+// according to what the performance counter returns.
+
+//#define COUNTER_OFFSET 0x100000000000ull
+#define COUNTER_OFFSET 0ull
+
 uint64_t I_GetTimeTicks(void)
 {
 	uint64_t counter;
@@ -52,7 +65,7 @@ uint64_t I_GetTimeTicks(void)
 	counter = SDL_GetPerformanceCounter();
 
 	if (basecounter == 0)
-		basecounter = counter;
+		basecounter = counter - COUNTER_OFFSET;
 
 	return ( ( counter - basecounter ) * TICRATE ) / basefreq;
 }
@@ -69,7 +82,7 @@ uint64_t I_GetTimeMS(void)
 	counter = SDL_GetPerformanceCounter();
 
 	if (basecounter == 0)
-		basecounter = counter;
+		basecounter = counter - COUNTER_OFFSET;
 
 	return ( ( counter - basecounter ) * 1000ull ) / basefreq;
 }
@@ -81,7 +94,7 @@ uint64_t I_GetTimeUS(void)
 	counter = SDL_GetPerformanceCounter();
 
 	if (basecounter == 0)
-		basecounter = counter;
+		basecounter = counter - COUNTER_OFFSET;
 
 	return ( ( counter - basecounter ) * 1000000ull ) / basefreq;
 }

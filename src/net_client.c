@@ -185,8 +185,9 @@ static void NET_CL_Disconnected(void)
 static void UpdateClockSync(unsigned int seq,
                             unsigned int remote_latency)
 {
-    static int last_error, cumul_error;
-    int latency, error;
+    static int64_t last_error, cumul_error;
+	int64_t error;
+    uint64_t latency;
 
     if (seq == send_queue[seq % BACKUPTICS].seq)
     {
@@ -393,7 +394,7 @@ static void NET_CL_SendTics(int start, int end)
 
 // Add a new ticcmd to the send queue
 
-void NET_CL_SendTiccmd(ticcmd_t *ticcmd, int maketic)
+void NET_CL_SendTiccmd(ticcmd_t *ticcmd, uint64_t maketic)
 {
     net_ticdiff_t diff;
     net_server_send_t *sendobj;

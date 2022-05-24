@@ -322,7 +322,7 @@ static int G_NextWeapon(int direction)
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
 // 
-void G_BuildTiccmd (ticcmd_t* cmd, int maketic) 
+void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic) 
 { 
     int		i; 
     boolean	strafe;
@@ -842,8 +842,8 @@ boolean G_Responder (event_t* ev)
 		 
       case ev_mouse: 
         SetMouseButtons(ev->data1);
-	mousex = ev->data2*(mouseSensitivity+5)/10; 
-	mousey = ev->data3*(mouseSensitivity+5)/10; 
+	mousex += ev->data2*(mouseSensitivity+5)/10; 
+	mousey += ev->data3*(mouseSensitivity+5)/10; 
 	return true;    // eat events 
  
       case ev_joystick: 

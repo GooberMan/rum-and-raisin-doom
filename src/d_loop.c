@@ -66,15 +66,15 @@ static ticcmd_set_t ticdata[BACKUPTICS];
 
 // The index of the next tic to be made (with a call to BuildTiccmd).
 
-static int maketic;
+static uint64_t maketic;
 
 // The number of complete tics received from the server so far.
 
-static int recvtic;
+static uint64_t recvtic;
 
 // The number of tics that have been run (using RunTic) so far.
 
-int gametic;
+uint64_t gametic;
 
 // When set to true, a single tic is run each time TryRunTics() is called.
 // This is used for -timedemo mode.
@@ -87,12 +87,12 @@ static int localplayer;
 
 // Used for original sync code.
 
-static int      skiptics = 0;
+static uint64_t	skiptics = 0;
 
 // Reduce the bandwidth needed by sampling game input less and transmitting
 // less.  If ticdup is 2, sample half normal, 3 = one third normal, etc.
 
-int		ticdup;
+uint64_t		ticdup;
 
 // Amount to offset the timer for game sync.
 
@@ -121,9 +121,9 @@ static int player_class;
 
 // 35 fps clock adjusted by offsetms milliseconds
 
-static int GetAdjustedTime(void)
+static uint64_t GetAdjustedTime(void)
 {
-    int time_ms;
+    uint64_t time_ms;
 
     time_ms = I_GetTimeMS();
 
@@ -135,12 +135,12 @@ static int GetAdjustedTime(void)
         time_ms += (offsetms / FRACUNIT);
     }
 
-    return (time_ms * TICRATE) / 1000;
+    return (time_ms * TICRATE) / 1000ull;
 }
 
 static boolean BuildNewTic(void)
 {
-    int	gameticdiv;
+    uint64_t	gameticdiv;
     ticcmd_t cmd;
 
     gameticdiv = gametic/ticdup;
@@ -200,12 +200,12 @@ static boolean BuildNewTic(void)
 // Builds ticcmds for console player,
 // sends out a packet
 //
-int      lasttime;
+uint64_t	lasttime;
 
 void NetUpdate (void)
 {
-    int nowtime;
-    int newtics;
+    uint64_t nowtime;
+    uint64_t newtics;
     int	i;
 
     // If we are running with singletics (timing a demo), this
@@ -538,9 +538,9 @@ void D_QuitNetGame (void)
     NET_CL_Disconnect();
 }
 
-static int GetLowTic(void)
+static uint64_t GetLowTic(void)
 {
-    int lowtic;
+    uint64_t lowtic;
 
     lowtic = maketic;
 
@@ -557,7 +557,7 @@ static int GetLowTic(void)
 
 static int frameon;
 static int frameskip[4];
-static int oldnettics;
+static uint64_t oldnettics;
 
 static void OldNetSync(void)
 {
@@ -674,15 +674,15 @@ static void SinglePlayerClear(ticcmd_set_t *set)
 // TryRunTics
 //
 
-void TryRunTics (void)
+boolean TryRunTics (void)
 {
-    int	i;
-    int	lowtic;
-    int	entertic;
-    static int oldentertics;
-    int realtics;
-    int	availabletics;
-    int	counts;
+	int	i;
+	uint64_t			lowtic;
+	uint64_t			entertic;
+	static uint64_t		oldentertics;
+	uint64_t			realtics;
+	uint64_t			availabletics;
+	uint64_t			counts;
 
     // get real tics
     entertic = I_GetTimeTicks() / ticdup;
@@ -754,7 +754,7 @@ void TryRunTics (void)
             // forever - give the menu a chance to work.
             if (I_GetTimeTicks() / ticdup - entertic >= MAX_NETGAME_STALL_TICS)
             {
-                return;
+                return false;
             }
 
             I_Sleep(1);
@@ -768,7 +768,7 @@ void TryRunTics (void)
 
         if (!PlayersInGame())
         {
-            return;
+            return false;
         }
 
         set = &ticdata[(gametic / ticdup) % BACKUPTICS];
@@ -795,6 +795,8 @@ void TryRunTics (void)
 
 	NetUpdate ();	// check for new console commands
     }
+
+	return true;
 }
 
 void D_RegisterLoopCallbacks(loop_interface_t *i)

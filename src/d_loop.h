@@ -37,7 +37,7 @@ typedef struct
     // Given the current input state, fill in the fields of the specified
     // ticcmd_t structure with data for a new tic.
 
-    void (*BuildTiccmd)(ticcmd_t *cmd, int maketic);
+    void (*BuildTiccmd)(ticcmd_t *cmd, uint64_t maketic);
 
     // Advance the game forward one tic, using the specified player input.
 
@@ -59,7 +59,7 @@ void NetUpdate (void);
 void D_QuitNetGame (void);
 
 //? how many ticks to run?
-void TryRunTics (void);
+boolean TryRunTics (void);
 
 // Called at start of game loop to initialize timers
 void D_StartGameLoop(void);
@@ -75,7 +75,7 @@ void D_StartNetGame(net_gamesettings_t *settings,
                     netgame_startup_callback_t callback);
 
 extern boolean singletics;
-extern int gametic, ticdup;
+extern uint64_t gametic, ticdup;
 
 // Check if it is permitted to record a demo with a non-vanilla feature.
 boolean D_NonVanillaRecord(boolean conditional, const char *feature);
