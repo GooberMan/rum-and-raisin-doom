@@ -353,7 +353,9 @@ static void UpdateMouseButtonState(unsigned int button, boolean on)
 
     event.type = ev_mouse;
     event.data1 = mouse_button_state;
-    event.data2 = event.data3 = 0;
+	// R&R - Hijacking data2 and data3 for button and pressed states
+    event.data2 = button;
+	event.data3 = on ? 1 : 0;
     D_PostEvent(&event);
 }
 
@@ -363,7 +365,7 @@ static void MapMouseWheelToButtons(SDL_MouseWheelEvent *wheel)
     // We want to treat the mouse wheel as two buttons, as per
     // SDL1
     static event_t up, down;
-    int button;
+    int32_t button = 0;
 
     if (wheel->y <= 0)
     {   // scroll down
@@ -378,14 +380,16 @@ static void MapMouseWheelToButtons(SDL_MouseWheelEvent *wheel)
     mouse_button_state |= (1 << button);
     down.type = ev_mouse;
     down.data1 = mouse_button_state;
-    down.data2 = down.data3 = 0;
+    down.data2 = button;
+	down.data3 = 1;
     D_PostEvent(&down);
 
     // post a button up event
     mouse_button_state &= ~(1 << button);
     up.type = ev_mouse;
     up.data1 = mouse_button_state;
-    up.data2 = up.data3 = 0;
+    up.data2 = button;
+	up.data3 = 0;
     D_PostEvent(&up);
 }
 
