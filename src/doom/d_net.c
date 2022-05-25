@@ -280,10 +280,7 @@ void D_CheckNetGame (void)
         }
         else
         {
-            DEH_printf("Levels will end after %d minute", timelimit);
-            if (timelimit > 1)
-                printf("s");
-            printf(".\n");
+            DEH_printf("Levels will end after %d minute%s", timelimit, ( timelimit > 1 ? "s.\n" : ".\n" ) );
         }
     }
 }
