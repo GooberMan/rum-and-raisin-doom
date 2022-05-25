@@ -1672,9 +1672,26 @@ static boolean IsNullKey(int key)
 
 static boolean M_DebugResponder( event_t* ev )
 {
-	if( debugmenuremappingkey && ev->type == ev_keydown )
+	int32_t currbutton;
+
+	switch( debugmenuremappingkey )
 	{
-		mapkeybuttonvalue = ev->data1;
+	case Remap_Key:
+		if( ev->type == ev_keydown )
+		{
+			mapkeybuttonvalue = ev->data1;
+		}
+		break;
+
+	case Remap_Mouse:
+		if( ev->type == ev_mouse && ev->data3 != 0 )
+		{
+			mapkeybuttonvalue = ev->data2;
+		}
+		break;
+
+	default:
+		break;
 	}
 	return true;
 }
@@ -1733,7 +1750,7 @@ boolean M_Responder (event_t* ev)
     }
 
 #if USE_IMGUI
-	if (ev->type == ev_keydown && ev->data1 == key_menu_debug && !debugmenuremappingkey)
+	if( ev->type == ev_keydown && ev->data1 == key_menu_debug && debugmenuremappingkey == Remap_None )
 	{
 		debugmenuactive = !debugmenuactive;
 		S_StartSound(NULL, debugmenuactive ? sfx_swtchn : sfx_swtchx);
@@ -2561,19 +2578,32 @@ typedef struct keyname_s
 
 static keyname_t keynames[] = KEY_NAMES_ARRAY;
 
-static const char* M_FindKeyName( int32_t key )
+// Matches up with MAX_MOUSE_BUTTONS
+static keyname_t mousenames[] =
+{
+	{ 0, "LEFT" },
+	{ 1, "RIGHT" },
+	{ 2, "MID" },
+	{ 3, "SCROLL UP" },
+	{ 4, "SCROLL DOWN" },
+	{ 5, "BUTTON #6" },
+	{ 6, "BUTTON #7" },
+	{ 7, "BUTTON #8" },
+};
+
+static const char* M_FindKeyName( keyname_t* keys, size_t numkeys, int32_t unboundkeynum, int32_t keytofind )
 {
 	int32_t index;
 
-	for( index = 0; index < arrlen( keynames ); ++index )
+	for( index = 0; index < numkeys; ++index )
 	{
-		if( keynames[ index ].key == key )
+		if( keys[ index ].key == keytofind )
 		{
-			return keynames[ index ].name;
+			return keys[ index ].name;
 		}
 	}
 
-	if( key == 0 )
+	if( keytofind == unboundkeynum )
 	{
 		return "<NONE>";
 	}
@@ -2690,6 +2720,20 @@ static controlsection_t keymappings[] =
 	{ NULL,				NULL }
 };
 
+controldesc_t mousemappings[] =
+{
+	{ "Fire",			&mousebfire },
+	{ "Enable strafe",	&mousebstrafe },
+	{ "Forward",		&mousebforward },
+	{ "Backward",		&mousebbackward },
+	{ "Use",			&mousebuse },
+	{ "Strafe left",	&mousebstrafeleft },
+	{ "Strafe right",	&mousebstraferight },
+	{ "Prev weapon",	&mousebprevweapon },
+	{ "Next weapon",	&mousebnextweapon },
+	{ NULL,				NULL },
+};
+
 static float columwidth = 200.f;
 
 static void igPushScrollableArea( const char* ID, ImVec2 size )
@@ -2705,6 +2749,94 @@ static void igPopScrollableArea()
 	igPopStyleColor( 1 );
 	igPopID();
 }
+
+static const ImVec2 zerosize = { 0, 0 };
+static const ImVec2 halfsize = { 0.5f, 0.5f };
+static const ImVec2 mappingsize = { 90, 22 };
+static const ImVec2 unmapbuttonsize = { 22, 22 };
+
+static const char* remaptypenames[ Remap_Max ] =
+{
+	"none",
+	"key",
+	"mouse button",
+	"joystick button",
+};
+
+#pragma optimize( "", off )
+static void M_DebugMenuControlsRemapping(	const char* itemname,
+											controldesc_t* descs,
+											keyname_t* lookupnames,
+											size_t lookupnameslength,
+											int32_t unboundkey,
+											int32_t remappingtype
+											)
+{
+	controldesc_t*		currdesc;
+	bool				cancel;
+
+	igPushIDPtr( descs );
+	if( igCollapsingHeaderTreeNodeFlags( itemname, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+	{
+		igColumns( 2, "", false );
+		igSetColumnWidth( 0, columwidth );
+
+		for( currdesc = descs; currdesc->name != NULL; ++currdesc )
+		{
+			igPushIDPtr( currdesc->name );
+			igText( currdesc->name );
+			igNextColumn();
+			if( igButton( M_FindKeyName( lookupnames, lookupnameslength, unboundkey, *currdesc->value ), mappingsize ) )
+			{
+				igOpenPopup( "RemapKey", ImGuiPopupFlags_None );
+				debugmenuremappingkey = remappingtype;
+				mapkeybuttonvalue = -1;
+			}
+
+			if( igIsPopupOpenStr( "RemapKey", ImGuiPopupFlags_None ) )
+			{
+				ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
+				WindowPos.x *= 0.5f;
+				WindowPos.y *= 0.5f;
+				igSetNextWindowPos( WindowPos, ImGuiCond_Always, halfsize );
+				if( igBeginPopup( "RemapKey", ImGuiWindowFlags_Modal ) )
+				{
+					ImGuiContext* context = igGetCurrentContext();
+
+					igText( "Press new %s for \"%s\"...", remaptypenames[ remappingtype ], currdesc->name );
+					cancel = igButtonEx( "Cancel", zerosize, ImGuiButtonFlags_PressedOnClick );
+					if( !cancel && mapkeybuttonvalue != -1 )
+					{
+						*currdesc->value = mapkeybuttonvalue;
+						cancel = true;
+					}
+					if( cancel )
+					{
+						igCloseCurrentPopup();
+						debugmenuremappingkey = Remap_None;
+						mapkeybuttonvalue = -1;
+					}
+					igEndPopup();
+				}
+			}
+			if( *currdesc->value != unboundkey && currdesc->value != &key_menu_debug )
+			{
+				igSameLine( 0, -1 );
+				if( igButton( "X", unmapbuttonsize ) )
+				{
+					*currdesc->value = unboundkey;
+				}
+			}
+			igNextColumn();
+			igPopID();
+		}
+
+		igNewLine();
+		igColumns( 1, "", false );
+	}
+	igPopID();
+}
+#pragma optimize( "", on )
 
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
@@ -2730,10 +2862,6 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	int32_t index;
 	bool selected;
 	bool cancel;
-	ImVec2 zerosize = { 0, 0 };
-	ImVec2 halfsize = { 0.5f, 0.5f };
-	ImVec2 mappingsize = { 60, 22 };
-	ImVec2 unmapbuttonsize = { 22, 22 };
 
 	byte* palette = NULL;
 
@@ -2744,66 +2872,10 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 		if( igBeginTabItem( "Keyboard", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
 			igPushScrollableArea( "Keyboard", zerosize );
+
 			for( currsection = keymappings; currsection->name != NULL; ++currsection )
 			{
-				igPushIDPtr( currsection );
-				if( igCollapsingHeaderTreeNodeFlags( currsection->name, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
-				{
-					igColumns( 2, "", false );
-					igSetColumnWidth( 0, columwidth );
-
-					for( currdesc = currsection->descs; currdesc->name != NULL; ++currdesc )
-					{
-						igPushIDPtr( currdesc->name );
-						igText( currdesc->name );
-						igNextColumn();
-						if( igButton( M_FindKeyName( *currdesc->value ), mappingsize ) )
-						{
-							igOpenPopup( "RemapKey", ImGuiPopupFlags_None );
-							debugmenuremappingkey = true;
-							mapkeybuttonvalue = -1;
-						}
-
-						if( igIsPopupOpenStr( "RemapKey", ImGuiPopupFlags_None ) )
-						{
-							ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
-							WindowPos.x *= 0.5f;
-							WindowPos.y *= 0.5f;
-							igSetNextWindowPos( WindowPos, ImGuiCond_Always, halfsize );
-							if( igBeginPopup( "RemapKey", ImGuiWindowFlags_Modal ) )
-							{
-								igText( "Press new key for \"%s\"...", currdesc->name );
-								cancel = igButton( "Cancel", zerosize );
-								if( mapkeybuttonvalue != -1 )
-								{
-									*currdesc->value = mapkeybuttonvalue;
-									mapkeybuttonvalue = -1;
-									cancel = true;
-								}
-								if( cancel )
-								{
-									igCloseCurrentPopup();
-									debugmenuremappingkey = false;
-								}
-								igEndPopup();
-							}
-						}
-						if( *currdesc->value != 0 && currdesc->value != &key_menu_debug )
-						{
-							igSameLine( 0, -1 );
-							if( igButton( "X", unmapbuttonsize ) )
-							{
-								*currdesc->value = 0;
-							}
-						}
-						igNextColumn();
-						igPopID();
-					}
-
-					igColumns( 1, "", false );
-				}
-
-				igPopID();
+				M_DebugMenuControlsRemapping( currsection->name, currsection->descs, keynames, arrlen( keynames ), 0, Remap_Key );
 			}
 
 			igPopScrollableArea();
@@ -2814,14 +2886,22 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 		{
 			igPushScrollableArea( "Mouse", zerosize );
 
-			igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-
-			WorkingInt = (int32_t)( mouse_acceleration * 10.f );
-			if( igSliderInt( "Acceleration", &WorkingInt, 10, 50, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			igPushIDStr( "Mouse sliders" );
+			if( igCollapsingHeaderTreeNodeFlags( "Sliders", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
-				mouse_acceleration = (float_t)WorkingInt * 0.1f;
+				igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+
+				WorkingInt = (int32_t)( mouse_acceleration * 10.f );
+				if( igSliderInt( "Acceleration", &WorkingInt, 10, 50, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+				{
+					mouse_acceleration = (float_t)WorkingInt * 0.1f;
+				}
+				igSliderInt( "Threshold", &mouse_threshold, 0, 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+				igNewLine();
 			}
-			igSliderInt( "Threshold", &mouse_threshold, 0, 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+			igPopID();
+
+			M_DebugMenuControlsRemapping( "Controls", mousemappings, mousenames, arrlen( mousenames ), -1, Remap_Mouse );
 
 			igPopScrollableArea();
 			igEndTabItem();
