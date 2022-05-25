@@ -905,6 +905,16 @@ void I_FinishUpdate (void)
 	static ImVec2 logpos = { 720, 50 };
 	static ImVec2 zeropivot = { 0, 0 };
 
+	static const ImU32 textcolors[ Log_Max ] =
+	{
+		IM_COL32( 0xd6, 0xcb, 0xac, 0xff ),
+		IM_COL32( 0xbd, 0xbd, 0xbd, 0xff ),
+		IM_COL32( 0x47, 0xae, 0x0e, 0xff ),
+		IM_COL32( 0x11, 0x7e, 0xe3, 0xff ),
+		IM_COL32( 0xee, 0x8e, 0x13, 0xff ),
+		IM_COL32( 0xee, 0x13, 0x13, 0xff ),
+	};
+
 	if( debugmenuactive )
 	{
 		if( lastwidth > 0 && lastheight > 0 )
@@ -919,13 +929,13 @@ void I_FinishUpdate (void)
 		}
 		else
 		{
-			backbuffersize.x = window_width * 0.5f;
+			backbuffersize.x = window_width * 0.6f;
 			backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
 			lastwidth = render_width;
 			lastheight = actualheight;
 
-			logpos.x = backbufferpos.x + backbuffersize.x + 50.f;
-			logpos.y = backbufferpos.y;
+			logpos.x = window_width - logsize.x - 50.f;
+			logpos.y = window_height - logsize.y - 50.f;
 		}
 
 		igSetNextWindowSize( backbuffersize, ImGuiCond_FirstUseEver );
@@ -935,19 +945,16 @@ void I_FinishUpdate (void)
 			igGetWindowSize( &backbuffersize );
 			igGetWindowPos( &backbufferpos );
 			// TODO: Get correct margin sizes
-			backbuffersize.x -= 20;
-			backbuffersize.y -= 40;
-			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_REPEAT );
-			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_REPEAT );
+			ImVec2 size = { backbuffersize.x - 20, backbuffersize.y - 40 };
+			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 			ImVec2 uvtl = { 0, 0 };
 			ImVec2 uvtr = { 0, 1 };
 			ImVec2 uvll = { 1, 0 };
 			ImVec2 uvlr = { 1, 1 };
 			ImVec4 tint = { 1, 1, 1, 1 };
 			ImVec4 border = { 0, 0, 0, 0 };
-			igImageQuad( (ImTextureID)whichID, backbuffersize, uvtl, uvtr, uvlr, uvll, tint, border );
-			backbuffersize.x += 20;
-			backbuffersize.y += 40;
+			igImageQuad( (ImTextureID)whichID, size, uvtl, uvtr, uvlr, uvll, tint, border );
 		}
 		igEnd();
 
@@ -962,10 +969,23 @@ void I_FinishUpdate (void)
 			size_t currentry;
 			size_t numentries = I_LogNumEntries();
 
+			igColumns( 2, "", false );
+			igSetColumnWidth( 0, 70.f );
+			igPushStyleColorU32( ImGuiCol_Text, textcolors[ Log_Normal ] );
+
 			for( currentry = 0; currentry < numentries; ++currentry )
 			{
+				igText( I_LogGetTimestamp( currentry ) );
+				igNextColumn();
+				igPushStyleColorU32( ImGuiCol_Text, textcolors[ I_LogGetEntryType( currentry ) ] );
 				igText( I_LogGetEntryText( currentry ) );
+				igPopStyleColor( 1 );
+				igNextColumn();
 			}
+
+			igPopStyleColor( 1 );
+
+			igColumns( 1, "", false );
 
 			if( igGetScrollY() == igGetScrollMaxY() )
 			{
@@ -974,10 +994,9 @@ void I_FinishUpdate (void)
 		}
 		igEnd();
 		igPopStyleColor( 1 );
-
-		M_RenderDebugMenu();
-
 	}
+
+	M_RenderDebugMenu();
 
 	igRender();
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
