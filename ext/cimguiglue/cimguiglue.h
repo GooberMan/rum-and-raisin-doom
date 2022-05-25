@@ -32,6 +32,7 @@ void CImGui_ImplSDL2_NewFrame( void* window );
 void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data );
 
 void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col);
+bool igButtonEx( const char* label,const ImVec2 size, int32_t flags );
 
 #ifdef __cplusplus
 }

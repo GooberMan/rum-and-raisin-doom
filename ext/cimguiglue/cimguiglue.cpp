@@ -93,3 +93,8 @@ void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl
 		ImDrawList_AddImageQuad( window->DrawList, user_texture_id, tl, tr, lr, ll, uvtl, uvtr, uvlr, uvll, igGetColorU32Vec4(tint_col));
 	}
 }
+
+bool igButtonEx( const char* label,const ImVec2 size, int32_t flags )
+{
+	return ImGui::ButtonEx( label, size, flags );
+}
