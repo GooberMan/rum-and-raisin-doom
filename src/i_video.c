@@ -48,6 +48,7 @@
 #include "doomtype.h"
 #include "i_input.h"
 #include "i_joystick.h"
+#include "i_log.h"
 #include "i_system.h"
 #include "i_timer.h"
 #include "i_video.h"
@@ -737,6 +738,9 @@ static void CreateUpscaledTexture(boolean force)
 //
 // I_FinishUpdate
 //
+
+#pragma optimize( "", off )
+
 void I_FinishUpdate (void)
 {
 #if FPS_DOTS_SUPPORTED
@@ -895,7 +899,11 @@ void I_FinishUpdate (void)
 	static float lastwidth = 0;
 	static float lastheight = 0;
 
-	static ImVec2 size = { 640, 480 };
+	static ImVec2 backbuffersize = { 640, 480 };
+	static ImVec2 backbufferpos = { 50, 50 };
+	static ImVec2 logsize = { 500, 300 };
+	static ImVec2 logpos = { 720, 50 };
+	static ImVec2 zeropivot = { 0, 0 };
 
 	if( debugmenuactive )
 	{
@@ -903,27 +911,32 @@ void I_FinishUpdate (void)
 		{
 			if( lastwidth != render_width || lastheight != actualheight )
 			{
-				size.y = size.x * ( (float)actualheight / (float)render_width );
-				igSetNextWindowSize( size, ImGuiCond_Always );
+				backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
+				igSetNextWindowSize( backbuffersize, ImGuiCond_Always );
 				lastwidth = render_width;
 				lastheight = actualheight;
 			}
 		}
 		else
 		{
-			size.x = window_width * 0.5f;
-			size.y = size.x * ( (float)actualheight / (float)render_width );
-			igSetNextWindowSize( size, ImGuiCond_FirstUseEver );
+			backbuffersize.x = window_width * 0.5f;
+			backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
 			lastwidth = render_width;
 			lastheight = actualheight;
+
+			logpos.x = backbufferpos.x + backbuffersize.x + 50.f;
+			logpos.y = backbufferpos.y;
 		}
 
+		igSetNextWindowSize( backbuffersize, ImGuiCond_FirstUseEver );
+		igSetNextWindowPos( backbufferpos, ImGuiCond_FirstUseEver, zeropivot );
 		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
 		{
-			igGetWindowSize( &size );
+			igGetWindowSize( &backbuffersize );
+			igGetWindowPos( &backbufferpos );
 			// TODO: Get correct margin sizes
-			size.x -= 20;
-			size.y -= 40;
+			backbuffersize.x -= 20;
+			backbuffersize.y -= 40;
 			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_REPEAT );
 			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_REPEAT );
 			ImVec2 uvtl = { 0, 0 };
@@ -932,12 +945,39 @@ void I_FinishUpdate (void)
 			ImVec2 uvlr = { 1, 1 };
 			ImVec4 tint = { 1, 1, 1, 1 };
 			ImVec4 border = { 0, 0, 0, 0 };
-			igImageQuad( (ImTextureID)whichID, size, uvtl, uvtr, uvlr, uvll, tint, border );
+			igImageQuad( (ImTextureID)whichID, backbuffersize, uvtl, uvtr, uvlr, uvll, tint, border );
+			backbuffersize.x += 20;
+			backbuffersize.y += 40;
 		}
 		igEnd();
-	}
 
-	M_RenderDebugMenu();
+		igPushStyleColorU32( ImGuiCol_WindowBg, IM_COL32_BLACK );
+		igSetNextWindowSize( logsize, ImGuiCond_FirstUseEver );
+		igSetNextWindowPos( logpos, ImGuiCond_FirstUseEver, zeropivot );
+		if( igBegin( window_title, NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
+		{
+			igGetWindowSize( &logsize );
+			igGetWindowPos( &logpos );
+
+			size_t currentry;
+			size_t numentries = I_LogNumEntries();
+
+			for( currentry = 0; currentry < numentries; ++currentry )
+			{
+				igText( I_LogGetEntryText( currentry ) );
+			}
+
+			if( igGetScrollY() == igGetScrollMaxY() )
+			{
+				igSetScrollHereY( 1.f );
+			}
+		}
+		igEnd();
+		igPopStyleColor( 1 );
+
+		M_RenderDebugMenu();
+
+	}
 
 	igRender();
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
@@ -946,6 +986,9 @@ void I_FinishUpdate (void)
 
     SDL_RenderPresent(renderer);
 }
+
+#pragma optimize( "", on )
+
 
 
 //
