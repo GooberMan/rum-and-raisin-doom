@@ -24,6 +24,8 @@
 #include "deh_str.h"
 #include "m_misc.h"
 
+#include "i_log.h"
+
 #include "z_zone.h"
 
 typedef struct 
@@ -395,6 +397,8 @@ void DEH_printf(const char *fmt, ...)
     va_start(args, fmt);
 
     vprintf(repl, args);
+	// Tiny hack, these are only used for startup messages
+	I_LogAddEntryVAList( Log_Startup, repl, args );
 
     va_end(args);
 }

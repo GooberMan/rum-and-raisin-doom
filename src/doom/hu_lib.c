@@ -29,6 +29,8 @@
 #include "r_local.h"
 #include "r_draw.h"
 
+#include "i_log.h"
+
 // boolean : whether the screen is always erased
 #define noterased viewwindowx
 
@@ -221,6 +223,8 @@ HUlib_addMessageToSText
 
     while (*msg)
 	HUlib_addCharToTextLine(&s->l[s->cl], *(msg++));
+
+	I_LogAddEntry( Log_InGameMessage, s->l[s->cl].l );
 }
 
 void HUlib_drawSText(hu_stext_t* s)
