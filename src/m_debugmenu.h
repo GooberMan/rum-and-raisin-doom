@@ -24,6 +24,12 @@
 #define USE_IMGUI 1
 #endif
 
+typedef enum menuproperties_e
+{
+	Menu_Normal			= 0x00000000,
+	Menu_Overlay		= 0x00000001,
+} menuproperties_t;
+
 typedef void (*menufunc_t)( const char* itemname, void* data );
 extern int32_t		debugmenuclosesound;
 
@@ -35,7 +41,7 @@ void M_RenderDebugMenu( void );
 
 void M_RegisterDebugMenuCategory( const char* full_path );
 void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata );
-void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menufunc_t callback );
+void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback );
 void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value );
 void M_RegisterDebugMenuCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval );
 void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval );

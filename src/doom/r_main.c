@@ -1428,9 +1428,9 @@ void R_Init (void)
     R_InitTranslationTables ();
     printf (".");
 
-	M_RegisterDebugMenuWindow( "Render|Threading|Options", "Render Threading Options", 500, 500, &debugwindow_renderthreadingoptions, &R_RenderThreadingOptionsWindow );
+	M_RegisterDebugMenuWindow( "Render|Threading|Options", "Render Threading Options", 500, 500, &debugwindow_renderthreadingoptions, Menu_Normal, &R_RenderThreadingOptionsWindow );
 #if RENDER_PERF_GRAPHING
-	M_RegisterDebugMenuWindow( "Render|Threading|Graphs", "Render Graphs", 500, 550, &debugwindow_renderthreadinggraphs, &R_RenderThreadingGraphsWindow );
+	M_RegisterDebugMenuWindow( "Render|Threading|Graphs", "Render Graphs", 500, 550, &debugwindow_renderthreadinggraphs, Menu_Overlay, &R_RenderThreadingGraphsWindow );
 #endif //RENDER_PERF_GRAPHING
 	
     framecount = 0;

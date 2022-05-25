@@ -1991,7 +1991,7 @@ void D_DoomMain (void)
         autostart = true;
         testcontrols = true;
 
-		M_RegisterDebugMenuWindow( "Test|Mouse", "Mouse testing", 400, 200, &testcontrols, &D_TestControls );
+		M_RegisterDebugMenuWindow( "Test|Mouse", "Mouse testing", 400, 200, &testcontrols, Menu_Overlay, &D_TestControls );
     }
 
     // Check for load game parameter

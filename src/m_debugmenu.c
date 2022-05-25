@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef enum
+typedef enum menuentrytype_e
 {
 	MET_Invalid,
 
@@ -36,7 +36,7 @@ typedef enum
 	MET_Separator,
 
 	MET_Max,
-} menuentrytype_e;
+} menuentrytype_t;
 
 typedef struct menuentry_s menuentry_t;
 
@@ -343,7 +343,8 @@ typedef struct menuentry_s
 	ImVec2				dimensions;
 	boolean				enabled;
 	int32_t				comparison;
-	menuentrytype_e		type;
+	menuentrytype_t		type;
+	menuproperties_t	properties;
 	
 } menuentry_t;
 
@@ -465,7 +466,7 @@ void M_InitDebugMenu( void )
 	}
 
 	M_RegisterDebugMenuCheckbox( "Core|Pause While Active", "Multiplayer ignores this", &debugmenupausesplaysim );
-	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, &M_AboutWindow );
+	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, Menu_Normal, &M_AboutWindow );
 	M_RegisterDebugMenuSeparator( "Core" );
 	M_RegisterDebugMenuButton( "Core|Quit", "Yes, this means quit the game", &M_OnDebugMenuCoreQuit, NULL );
 
@@ -576,7 +577,7 @@ void M_RenderDebugMenu( void )
 	{
 		if( thiswindow->type == MET_Window )
 		{
-			isopen = *(boolean*)thiswindow->data;
+			isopen = *(boolean*)thiswindow->data && ( debugmenuactive || ( thiswindow->properties & Menu_Overlay ) == Menu_Overlay );
 			if( isopen )
 			{
 				igPushIDPtr( thiswindow );
@@ -745,7 +746,7 @@ void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menu
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menufunc_t callback )
+void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback )
 {
 	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
@@ -754,6 +755,7 @@ void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int3
 	sprintf( currentry->name, actualname );
 	sprintf( currentry->caption, caption );
 	currentry->type = MET_Window;
+	currentry->properties = properties;
 	currentry->freechild = currentry->children;
 	currentry->data = active;
 	currentry->dimensions.x = (float_t)initialwidth;

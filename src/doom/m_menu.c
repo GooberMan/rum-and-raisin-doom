@@ -3344,7 +3344,7 @@ void M_Init (void)
 		};
 	}
 
-	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", 500, 500, &debugwindow_options, &M_DebugMenuOptionsWindow );
+	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", 500, 500, &debugwindow_options, Menu_Normal, &M_DebugMenuOptionsWindow );
 	M_RegisterDebugMenuCheckboxFlag( "Game|Renderer in lockstep with game", "Just means we can run zero tics really", &sleeponzerotics, 0x1 );
 
 }
