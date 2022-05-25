@@ -552,11 +552,67 @@ static void M_RenderDebugMenuChildren( menuentry_t** children )
 	}
 }
 
+static int32_t M_GetDebugMenuWindowsOpened( menuentry_t** children )
+{
+	menuentry_t* child = NULL;
+	int32_t windowcount = 0;
+
+	while( *children )
+	{
+		child = *children;
+
+		if( child->type == MET_Window && *(boolean*)child->data )
+		{
+			++windowcount;
+		}
+
+		if( child->children[ 0 ] )
+		{
+			windowcount += M_GetDebugMenuWindowsOpened( child->children );
+		}
+
+		++children;
+	}
+
+	return windowcount;
+}
+
+
+static int32_t M_RenderDebugMenuWindowActivationItems( menuentry_t** children )
+{
+	menuentry_t* child = NULL;
+	int32_t windowcount = 0;
+
+	while( *children )
+	{
+		child = *children;
+
+		if( child->type == MET_Window && *(boolean*)child->data )
+		{
+			++windowcount;
+			if( igMenuItemBool( child->caption, "", false, true ) )
+			{
+				igSetWindowFocusStr( child->caption );
+			}
+		}
+
+		if( child->children[ 0 ] )
+		{
+			windowcount += M_RenderDebugMenuWindowActivationItems( child->children );
+		}
+
+		++children;
+	}
+
+	return windowcount;
+}
+
 void M_RenderDebugMenu( void )
 {
 	menuentry_t* thiswindow;
 	menufunc_t callback;
 	boolean isopen;
+	int32_t renderedwindowscount = 0;
 	int32_t windowflags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse;
 	if( !debugmenuactive ) windowflags |= ImGuiWindowFlags_NoInputs;
 
@@ -569,6 +625,21 @@ void M_RenderDebugMenu( void )
 		if( igBeginMainMenuBar() )
 		{
 			M_RenderDebugMenuChildren( rootentry->children );
+
+			if( igBeginMenu( "Windows", true ) )
+			{
+				if( igMenuItemBool( "Backbuffer", "", false, true ) ) igSetWindowFocusStr( "Backbuffer" );
+				if( igMenuItemBool( "Log", "", false, true ) ) igSetWindowFocusStr( "Log" );
+
+				if( M_GetDebugMenuWindowsOpened( rootentry->children ) > 0 )
+				{
+					igSeparator();
+
+					M_RenderDebugMenuWindowActivationItems( rootentry->children );
+				}
+
+				igEndMenu();
+			}
 		}
 		igEndMainMenuBar();
 	}
