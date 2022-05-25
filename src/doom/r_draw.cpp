@@ -267,7 +267,11 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 
+#if defined( _MSC_VER )
 #define INLINE __forceinline
+#else
+#define INLINE inline
+#endif
 
 namespace DrawColumn
 {
