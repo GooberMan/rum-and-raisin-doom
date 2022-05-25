@@ -961,7 +961,7 @@ void I_FinishUpdate (void)
 		igPushStyleColorU32( ImGuiCol_WindowBg, IM_COL32_BLACK );
 		igSetNextWindowSize( logsize, ImGuiCond_FirstUseEver );
 		igSetNextWindowPos( logpos, ImGuiCond_FirstUseEver, zeropivot );
-		if( igBegin( window_title, NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
+		if( igBegin( "Log", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
 		{
 			igGetWindowSize( &logsize );
 			igGetWindowPos( &logpos );
