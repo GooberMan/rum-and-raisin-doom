@@ -146,8 +146,14 @@ int video_display = 0;
 
 // Screen width and height, from configuration file.
 
-int window_width = 800;
-int window_height = 600;
+#define DEFAULT_WINDOW_WIDTH	1280
+#define DEFAULT_WINDOW_HEIGHT	720
+#define DEFAULT_RENDER_WIDTH	1280
+#define DEFAULT_RENDER_HEIGHT	800
+#define DEFAULT_FULLSCREEN		0
+
+int window_width = DEFAULT_WINDOW_WIDTH;
+int window_height = DEFAULT_WINDOW_HEIGHT;
 
 enum renderdimensions_e
 {
@@ -157,14 +163,14 @@ enum renderdimensions_e
 };
 
 int32_t render_dimensions_mode = RMD_Independent;
-int32_t render_width = SCREENWIDTH;
-int32_t render_height = SCREENHEIGHT;
+int32_t render_width = DEFAULT_RENDER_WIDTH;
+int32_t render_height = DEFAULT_RENDER_HEIGHT;
 
-int32_t queued_window_width = 800;
-int32_t queued_window_height = 600;
-int32_t queued_fullscreen = true;
-int32_t queued_render_width = SCREENWIDTH;
-int32_t queued_render_height = SCREENHEIGHT;
+int32_t queued_window_width = DEFAULT_WINDOW_WIDTH;
+int32_t queued_window_height = DEFAULT_WINDOW_HEIGHT;
+int32_t queued_fullscreen = DEFAULT_FULLSCREEN;
+int32_t queued_render_width = DEFAULT_RENDER_WIDTH;
+int32_t queued_render_height = DEFAULT_RENDER_HEIGHT;
 
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
 
@@ -179,7 +185,7 @@ static int max_scaling_buffer_pixels = 16000000;
 
 // Run in full screen mode?  (int type for config code)
 
-int fullscreen = true;
+int fullscreen = DEFAULT_FULLSCREEN;
 
 // Aspect ratio correction mode
 
