@@ -25,6 +25,8 @@ extern "C"
 #include <utility>
 #include <type_traits>
 
+#include <ctime>
+
 #include <vector>
 
 template< typename _ty, int32_t _tag = PU_STATIC >
@@ -108,9 +110,26 @@ using DoomString = std::string;
 
 typedef struct logentry_s
 {
-	uint64_t		timestamp;
-	int32_t			type;
-	DoomString		message;
+	logentry_s()
+		: timestamp( 0 )
+		, type( 0 ) { }
+
+	logentry_s( int32_t t, const char* m )
+		: timestamp( std::time( nullptr ) )
+		, type( t )
+		, message( m )
+	{
+		char output[ 24 ];
+
+		std::tm local = *std::localtime( &timestamp );
+		std::strftime( output, 24, "%H:%M:%S", &local );
+		timestring = output;
+	}
+
+	std::time_t				timestamp;
+	int32_t					type;
+	DoomString				message;
+	DoomString				timestring;
 } logentry_t;
 
 static DoomVector< logentry_t >	logentries;
@@ -128,7 +147,7 @@ void I_LogAddEntry( int32_t type, const char* message )
 		logentries.reserve( logentries.capacity() + 1024 );
 	}
 
-	logentries.push_back( { 0, type, message } );
+	logentries.push_back( logentry_t( type, message ) );
 }
 
 void I_LogAddEntryVAList( int32_t type, const char* message, va_list args )
@@ -162,9 +181,9 @@ int32_t I_LogGetEntryType( size_t index )
 	return logentries[ index ].type;
 }
 
-uint64_t I_LogGetTimestamp( size_t index )
+const char* I_LogGetTimestamp( size_t index )
 {
-	return logentries[ index ].timestamp;
+	return logentries[ index ].timestring.c_str();
 }
 
 }

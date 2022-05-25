@@ -43,7 +43,7 @@ void			I_LogAddEntryVar( int32_t type, const char* message, ... );
 size_t			I_LogNumEntries();
 const char*		I_LogGetEntryText( size_t index );
 int32_t			I_LogGetEntryType( size_t index );
-uint64_t		I_LogGetTimestamp( size_t index );
+const char*		I_LogGetTimestamp( size_t index );
 
 #ifdef __cplusplus
 }
