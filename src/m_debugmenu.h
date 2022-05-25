@@ -24,6 +24,16 @@
 #define USE_IMGUI 1
 #endif
 
+typedef enum remapping_e
+{
+	Remap_None,
+	Remap_Key,
+	Remap_Mouse,
+	Remap_Joystick,
+
+	Remap_Max,
+} remapping_t;
+
 typedef enum menuproperties_e
 {
 	Menu_Normal			= 0x00000000,

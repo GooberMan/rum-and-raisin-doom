@@ -363,7 +363,7 @@ static void M_RenderSeparator( menuentry_t* cat );
 
 ImGuiContext*			imgui_context;
 boolean					debugmenuactive = false;
-boolean					debugmenuremappingkey = false;
+int32_t					debugmenuremappingkey = Remap_None;
 boolean					debugmenupausesplaysim = true;
 static int32_t			debugmenu_theme = 1;
 
