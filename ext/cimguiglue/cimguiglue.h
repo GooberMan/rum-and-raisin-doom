@@ -18,25 +18,18 @@
 #if !defined(_CIMGUIGLUE_H_)
 #define _CIMGUIGLUE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "cimgui.h"
 
-int CImGui_ImplSDL2_InitForOpenGL( void* window, void* sdl_gl_context );
-int CImGui_ImplOpenGL3_Init( const char* glsl_version );
-int CImGui_ImplSDL2_ProcessEvent( void* sdl_event );
+CIMGUI_API int CImGui_ImplSDL2_InitForOpenGL( void* window, void* sdl_gl_context );
+CIMGUI_API int CImGui_ImplOpenGL3_Init( const char* glsl_version );
+CIMGUI_API int CImGui_ImplSDL2_ProcessEvent( void* sdl_event );
 
-void CImGui_ImplOpenGL3_NewFrame( void );
-void CImGui_ImplSDL2_NewFrame( void* window );
+CIMGUI_API void CImGui_ImplOpenGL3_NewFrame( void );
+CIMGUI_API void CImGui_ImplSDL2_NewFrame( void* window );
 
-void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data );
+CIMGUI_API void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data );
 
-void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col);
-bool igButtonEx( const char* label,const ImVec2 size, int32_t flags );
-
-#ifdef __cplusplus
-}
-#endif
+CIMGUI_API void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col);
 
 // Helpers macros to generate 32-bit encoded colors
 #ifdef IMGUI_USE_BGRA_PACKED_COLOR
@@ -56,6 +49,5 @@ bool igButtonEx( const char* label,const ImVec2 size, int32_t flags );
 #define IM_COL32_WHITE       IM_COL32(255,255,255,255)  // Opaque white = 0xFFFFFFFF
 #define IM_COL32_BLACK       IM_COL32(0,0,0,255)        // Opaque black
 #define IM_COL32_BLACK_TRANS IM_COL32(0,0,0,0)          // Transparent black = 0x00000000
-
 
 #endif // _CIMGUIGLUE_H_

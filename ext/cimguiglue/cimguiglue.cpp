@@ -23,37 +23,37 @@
 #include "cimgui.h"
 #include "cimguiglue.h"
 
-int CImGui_ImplSDL2_InitForOpenGL( void* window, void* sdl_gl_context )
+CIMGUI_API int CImGui_ImplSDL2_InitForOpenGL( void* window, void* sdl_gl_context )
 {
 	return ImGui_ImplSDL2_InitForOpenGL( (SDL_Window*)window, sdl_gl_context );
 }
 
-int CImGui_ImplOpenGL3_Init( const char* glsl_version )
+CIMGUI_API int CImGui_ImplOpenGL3_Init( const char* glsl_version )
 {
 	return ImGui_ImplOpenGL3_Init( glsl_version );
 }
 
-int CImGui_ImplSDL2_ProcessEvent( void* sdl_event )
+CIMGUI_API int CImGui_ImplSDL2_ProcessEvent( void* sdl_event )
 {
 	return ImGui_ImplSDL2_ProcessEvent( (SDL_Event*)sdl_event );
 }
 
-void CImGui_ImplOpenGL3_NewFrame( void )
+CIMGUI_API void CImGui_ImplOpenGL3_NewFrame( void )
 {
 	ImGui_ImplOpenGL3_NewFrame();
 }
 
-void CImGui_ImplSDL2_NewFrame( void* window )
+CIMGUI_API void CImGui_ImplSDL2_NewFrame( void* window )
 {
 	ImGui_ImplSDL2_NewFrame( (SDL_Window*) window );
 }
 
-void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data )
+CIMGUI_API void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data )
 {
 	ImGui_ImplOpenGL3_RenderDrawData( draw_data );
 }
 
-void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col)
+CIMGUI_API void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col)
 {
 	ImVec2 tl;
 	ImVec2 tr;
@@ -92,9 +92,4 @@ void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl
 	{
 		ImDrawList_AddImageQuad( window->DrawList, user_texture_id, tl, tr, lr, ll, uvtl, uvtr, uvlr, uvll, igGetColorU32Vec4(tint_col));
 	}
-}
-
-bool igButtonEx( const char* label,const ImVec2 size, int32_t flags )
-{
-	return ImGui::ButtonEx( label, size, flags );
 }
