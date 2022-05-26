@@ -713,4 +713,14 @@ typedef enum fuzzstyle_e
 	Fuzz_Count,
 } fuzzstyle_t;
 
+typedef enum disciconstyle_e
+{
+	Disk_Off,
+	Disk_ByCommandLine,
+	Disk_Floppy,
+	Disk_CD,
+
+	Disk_Count,
+} disciconstyle_t;
+
 #endif
