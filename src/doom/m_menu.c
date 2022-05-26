@@ -2491,7 +2491,16 @@ static const char* span_override_strings[] =
 	"Polyraster Log2(16)",
 	"Polyraster Log2(32)",
 };
-static int32_t span_override_strings_count = sizeof( span_override_strings ) / sizeof( *span_override_strings );
+static int32_t span_override_strings_count = arrlen( span_override_strings );
+
+static const char* disk_icon_strings[] =
+{
+	"Off",
+	"Command line switchable",
+	"Disk",
+	"CD ROM",
+};
+static int32_t disk_icon_strings_count = arrlen( disk_icon_strings );
 
 static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byte* palette )
 {
@@ -2636,7 +2645,8 @@ static controlsection_t keymappings[] =
 							{	"Fire",					&key_fire },
 							{	"Use",					&key_use },
 							{	"Strafe",				&key_strafe },
-							{	"Run",					&key_speed },
+							{	"Run/Walk",				&key_speed },
+							{	"Toggle autorun",		&key_toggle_autorun },
 							{	NULL,					NULL }, },
 	},
 	{
@@ -2799,7 +2809,7 @@ static void M_DebugMenuControlsRemapping(	const char* itemname,
 				WindowPos.x *= 0.5f;
 				WindowPos.y *= 0.5f;
 				igSetNextWindowPos( WindowPos, ImGuiCond_Always, halfsize );
-				if( igBeginPopup( "RemapKey", ImGuiWindowFlags_Modal ) )
+				if( igBeginPopup( "RemapKey", ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoSavedSettings ) )
 				{
 					ImGuiContext* context = igGetCurrentContext();
 
@@ -2849,6 +2859,8 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	extern int border_bezel_style;
 	extern int32_t fuzz_style;
 	extern int32_t span_override;
+	extern int32_t show_endoom;
+	extern int32_t show_diskicon;
 
 	controlsection_t*	currsection;
 	controldesc_t*		currdesc;
@@ -3145,8 +3157,8 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 				R_SetViewSize (screenblocks, detailLevel);
 			}
 			igPopID();
-
 			igNextColumn();
+
 			igText( "Messages" );
 			igNextColumn();
 			WorkingBool = !!showMessages;
@@ -3158,6 +3170,36 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 				message_dontfuckwithme = true;
 			}
 			igPopID();
+			igNextColumn();
+
+			igText( "Disk icon" );
+			igNextColumn();
+			igPushIDPtr( &show_diskicon );
+			if( igBeginCombo( "", disk_icon_strings[ show_diskicon ], ImGuiComboFlags_None ) )
+			{
+				for( index = 0; index < disk_icon_strings_count; ++index )
+				{
+					selected = index == show_diskicon;
+					if( igSelectableBool( disk_icon_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+					{
+						D_SetupLoadingDisk( index );
+					}
+				}
+				igEndCombo();
+			}
+			igPopID();
+			igNextColumn();
+
+			igText( "Show ENDOOM" );
+			igNextColumn();
+			WorkingBool = !!show_endoom;
+			igPushIDPtr( &show_endoom );
+			if( igCheckbox( "", &WorkingBool ) )
+			{
+				show_endoom = (int32_t)WorkingBool;
+			}
+			igPopID();
+			igNextColumn();
 
 			igColumns( 1, "", false );
 
@@ -3425,7 +3467,7 @@ void M_Init (void)
 	}
 
 	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", 500, 500, &debugwindow_options, Menu_Normal, &M_DebugMenuOptionsWindow );
-	M_RegisterDebugMenuCheckboxFlag( "Game|Renderer in lockstep with game", "Just means we can run zero tics really", &sleeponzerotics, 0x1 );
+	M_RegisterDebugMenuCheckboxFlag( "Render|Renderer in lockstep with game", "Just means we can run zero tics really", &sleeponzerotics, 0x1 );
 
 }
 

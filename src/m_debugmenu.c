@@ -46,6 +46,9 @@ typedef struct menuentry_s menuentry_t;
 
 // Filled out on init
 static ImVec4 theme_original[ ImGuiCol_COUNT ];
+static ImVec4 theme_originaldark[ ImGuiCol_COUNT ];
+static ImVec4 theme_originallight[ ImGuiCol_COUNT ];
+
 
 // Colour scheme from https://github.com/ocornut/imgui/issues/707#issuecomment-508691523
 static ImVec4 theme_funkygreenhighlight[ ImGuiCol_COUNT ] =
@@ -146,61 +149,6 @@ static ImVec4 theme_purpleyellowthing[ ImGuiCol_COUNT ] =
 	{ 1.12549, 0.843137, 0.2, 0.8 },				// ImGuiCol_PlotHistogramHovered,
 	{ 0.92549, 0.643137, 0, 0.4 },					// ImGuiCol_TextSelectedBg,
 	{ 0.92549, 0.643137, 0, 0.8 },					// ImGuiCol_DragDropTarget,
-	{ 1, 1, 1, 0.8 },								// ImGuiCol_NavHighlight,
-	{ 1, 1, 1, 0.8 },								// ImGuiCol_NavWindowingHighlight,
-	{ 1, 1, 1, 0.2 },								// ImGuiCol_NavWindowingDimBg,
-	{ 0, 0, 0, 0.6 },								// ImGuiCol_ModalWindowDimBg,
-};
-
-// Also generated with algorithm in above github
-// Color palette at https://coolors.co/069e2d-058e3f-04773b-036016-03440c
-// Modified for white text, and orange buttons etc
-static ImVec4 theme_greenallthewaydown[ ImGuiCol_COUNT ] =
-{
-	{ 1, 1, 1, 0.8 },								// ImGuiCol_Text,
-	{ 0.4, 0.4, 0.4, 0.8 },							// ImGuiCol_TextDisabled,
-	{ 0.0235294, 0.619608, 0.176471, 0.8 },			// ImGuiCol_WindowBg,
-	{ 0, 0, 0, 0.2 },								// ImGuiCol_ChildBg,
-	{ 0.0235294, 0.619608, 0.176471, 0.901961 },	// ImGuiCol_PopupBg,
-	{ 0.423529, 1.01961, 0.576471, 0.8 },			// ImGuiCol_Border,
-	{ 0, 0, 0, 0.8 },								// ImGuiCol_BorderShadow,
-	{ 0.0117647, 0.376471, 0.0862745, 0.4 },		// ImGuiCol_FrameBg,
-	{ 0.211765, 0.576471, 0.286275, 0.4 },			// ImGuiCol_FrameBgHovered,
-	{ 0.111765, 0.476471, 0.186275, 1 },			// ImGuiCol_FrameBgActive,
-	{ 0.0235294, 0.619608, 0.176471, 0.8 },			// ImGuiCol_TitleBg,
-	{ 0.123529, 0.719608, 0.276471, 1 },			// ImGuiCol_TitleBgActive,
-	{ 0, 0.419608, 0, 0.8 },						// ImGuiCol_TitleBgCollapsed,
-	{ 0, 0.419608, 0, 0.8 },						// ImGuiCol_MenuBarBg,
-	{ 0.423529, 1.01961, 0.576471, 0.501961 },		// ImGuiCol_ScrollbarBg,
-	{ 0.323529, 0.919608, 0.476471, 0.8 },			// ImGuiCol_ScrollbarGrab,
-	{ 0.523529, 1.11961, 0.676471, 0.8 },			// ImGuiCol_ScrollbarGrabHovered,
-	{ 0.423529, 1.01961, 0.576471, 1 },				// ImGuiCol_ScrollbarGrabActive,
-	{ 1, 0.623529, 0.262745, 0.8 },					// ImGuiCol_CheckMark,
-	{ 1, 0.623529, 0.262745, 0.8 },					// ImGuiCol_SliderGrab,
-	{ 1.1, 0.723529, 0.362745, 1 },					// ImGuiCol_SliderGrabActive,
-	{ 0.0156863, 0.466667, 0.231373, 0.8 },			// ImGuiCol_Button,
-	{ 0.215686, 0.666667, 0.431373, 0.8 },			// ImGuiCol_ButtonHovered,
-	{ 0.115686, 0.566667, 0.331373, 1 },			// ImGuiCol_ButtonActive,
-	{ 0.0117647, 0.376471, 0.0862745, 0.8 },		// ImGuiCol_Header,
-	{ 0.211765, 0.576471, 0.286275, 0.8 },			// ImGuiCol_HeaderHovered,
-	{ 0.111765, 0.476471, 0.186275, 1 },			// ImGuiCol_HeaderActive,
-	{ 0.423529, 1.01961, 0.576471, 0.8 },			// ImGuiCol_Separator,
-	{ 0.623529, 1.21961, 0.776471, 0.8 },			// ImGuiCol_SeparatorHovered,
-	{ 0.523529, 1.11961, 0.676471, 1 },				// ImGuiCol_SeparatorActive,
-	{ 0.0156863, 0.466667, 0.231373, 0.2 },			// ImGuiCol_ResizeGrip,
-	{ 0.215686, 0.666667, 0.431373, 0.2 },			// ImGuiCol_ResizeGripHovered,
-	{ 0.115686, 0.566667, 0.331373, 1 },			// ImGuiCol_ResizeGripActive,
-	{ 0.0156863, 0.466667, 0.231373, 0.6 },			// ImGuiCol_Tab,
-	{ 0.215686, 0.666667, 0.431373, 0.6 },			// ImGuiCol_TabHovered,
-	{ 0.115686, 0.566667, 0.331373, 1 },			// ImGuiCol_TabActive,
-	{ 0.0156863, 0.466667, 0.231373, 0.6 },			// ImGuiCol_TabUnfocused,
-	{ 0.115686, 0.566667, 0.331373, 1 },			// ImGuiCol_TabUnfocusedActive,
-	{ 1, 0.623529, 0.262745, 0.8 },					// ImGuiCol_PlotLines,
-	{ 1.2, 0.823529, 0.462745, 0.8 },				// ImGuiCol_PlotLinesHovered,
-	{ 1, 0.623529, 0.262745, 0.8 },					// ImGuiCol_PlotHistogram,
-	{ 1.2, 0.823529, 0.462745, 0.8 },				// ImGuiCol_PlotHistogramHovered,
-	{ 1, 0.623529, 0.262745, 0.4 },					// ImGuiCol_TextSelectedBg,
-	{ 1, 0.623529, 0.262745, 0.8 },					// ImGuiCol_DragDropTarget,
 	{ 1, 1, 1, 0.8 },								// ImGuiCol_NavHighlight,
 	{ 1, 1, 1, 0.8 },								// ImGuiCol_NavWindowingHighlight,
 	{ 1, 1, 1, 0.2 },								// ImGuiCol_NavWindowingDimBg,
@@ -313,6 +261,59 @@ static ImVec4 theme_valveclassic[ ImGuiCol_COUNT ] =
 	{ 0.80f, 0.80f, 0.80f, 0.35f },					// ImGuiCol_ModalWindowDimBg,
 };
 
+// https://github.com/ocornut/imgui/issues/707#issuecomment-622934113
+static ImVec4 theme_didntaskforthis[ ImGuiCol_COUNT ] =
+{
+	{ 0.92f, 0.92f, 0.92f, 1.00f },					// ImGuiCol_Text,
+	{ 0.44f, 0.44f, 0.44f, 1.00f },					// ImGuiCol_TextDisabled,
+	{ 0.06f, 0.06f, 0.06f, 1.00f },					// ImGuiCol_WindowBg,
+	{ 0.00f, 0.00f, 0.00f, 0.00f },					// ImGuiCol_ChildBg,
+	{ 0.08f, 0.08f, 0.08f, 0.94f },					// ImGuiCol_PopupBg,
+	{ 0.51f, 0.36f, 0.15f, 1.00f },					// ImGuiCol_Border,
+	{ 0.00f, 0.00f, 0.00f, 0.00f },					// ImGuiCol_BorderShadow,
+	{ 0.11f, 0.11f, 0.11f, 1.00f },					// ImGuiCol_FrameBg,
+	{ 0.51f, 0.36f, 0.15f, 1.00f },					// ImGuiCol_FrameBgHovered,
+	{ 0.78f, 0.55f, 0.21f, 1.00f },					// ImGuiCol_FrameBgActive,
+	{ 0.51f, 0.36f, 0.15f, 1.00f },					// ImGuiCol_TitleBg,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_TitleBgActive,
+	{ 0.00f, 0.00f, 0.00f, 0.51f },					// ImGuiCol_TitleBgCollapsed,
+	{ 0.11f, 0.11f, 0.11f, 1.00f },					// ImGuiCol_MenuBarBg,
+	{ 0.06f, 0.06f, 0.06f, 0.53f },					// ImGuiCol_ScrollbarBg,
+	{ 0.21f, 0.21f, 0.21f, 1.00f },					// ImGuiCol_ScrollbarGrab,
+	{ 0.47f, 0.47f, 0.47f, 1.00f },					// ImGuiCol_ScrollbarGrabHovered,
+	{ 0.81f, 0.83f, 0.81f, 1.00f },					// ImGuiCol_ScrollbarGrabActive,
+	{ 0.78f, 0.55f, 0.21f, 1.00f },					// ImGuiCol_CheckMark,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_SliderGrab,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_SliderGrabActive,
+	{ 0.51f, 0.36f, 0.15f, 1.00f },					// ImGuiCol_Button,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_ButtonHovered,
+	{ 0.78f, 0.55f, 0.21f, 1.00f },					// ImGuiCol_ButtonActive,
+	{ 0.51f, 0.36f, 0.15f, 1.00f },					// ImGuiCol_Header,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_HeaderHovered,
+	{ 0.93f, 0.65f, 0.14f, 1.00f },					// ImGuiCol_HeaderActive,
+	{ 0.21f, 0.21f, 0.21f, 1.00f },					// ImGuiCol_Separator,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_SeparatorHovered,
+	{ 0.78f, 0.55f, 0.21f, 1.00f },					// ImGuiCol_SeparatorActive,
+	{ 0.21f, 0.21f, 0.21f, 1.00f },					// ImGuiCol_ResizeGrip,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_ResizeGripHovered,
+	{ 0.78f, 0.55f, 0.21f, 1.00f },					// ImGuiCol_ResizeGripActive,
+	{ 0.51f, 0.36f, 0.15f, 1.00f },					// ImGuiCol_Tab,
+	{ 0.91f, 0.64f, 0.13f, 1.00f },					// ImGuiCol_TabHovered,
+	{ 0.78f, 0.55f, 0.21f, 1.00f },					// ImGuiCol_TabActive,
+	{ 0.07f, 0.10f, 0.15f, 0.97f },					// ImGuiCol_TabUnfocused,
+	{ 0.14f, 0.26f, 0.42f, 1.00f },					// ImGuiCol_TabUnfocusedActive,
+	{ 0.61f, 0.61f, 0.61f, 1.00f },					// ImGuiCol_PlotLines,
+	{ 1.00f, 0.43f, 0.35f, 1.00f },					// ImGuiCol_PlotLinesHovered,
+	{ 0.90f, 0.70f, 0.00f, 1.00f },					// ImGuiCol_PlotHistogram,
+	{ 1.00f, 0.60f, 0.00f, 1.00f },					// ImGuiCol_PlotHistogramHovered,
+	{ 0.26f, 0.59f, 0.98f, 0.35f },					// ImGuiCol_TextSelectedBg,
+	{ 1.00f, 1.00f, 0.00f, 0.90f },					// ImGuiCol_DragDropTarget,
+	{ 0.26f, 0.59f, 0.98f, 1.00f },					// ImGuiCol_NavHighlight,
+	{ 1.00f, 1.00f, 1.00f, 0.70f },					// ImGuiCol_NavWindowingHighlight
+	{ 0.80f, 0.80f, 0.80f, 0.20f },					// ImGuiCol_NavWindowingDimBg,
+	{ 0.80f, 0.80f, 0.80f, 0.35f },					// ImGuiCol_ModalWindowDimBg,
+};
+
 typedef struct themedata_s
 {
 	const char*		name;
@@ -321,12 +322,14 @@ typedef struct themedata_s
 
 static themedata_t themes[] =
 {
+	{ "Doomed Space Marine",		theme_doomedspacemarine },
 	{ "OG ImGui",					theme_original },
+	{ "OG ImGui Dark",				theme_originaldark },
+	{ "OG ImGui Light",				theme_originallight },
 	{ "Funky Green Highlight",		theme_funkygreenhighlight },
 	{ "Purpley-yellowey Thing",		theme_purpleyellowthing },
-	{ "Green All The Way Down",		theme_greenallthewaydown },
-	{ "Doomed Space Marine",		theme_doomedspacemarine },
 	{ "Valve Classic",				theme_valveclassic },
+	{ "Didn't Ask For This",		theme_didntaskforthis },
 	{ NULL, NULL }
 };
 
@@ -365,7 +368,7 @@ ImGuiContext*			imgui_context;
 boolean					debugmenuactive = false;
 int32_t					debugmenuremappingkey = Remap_None;
 boolean					debugmenupausesplaysim = true;
-static int32_t			debugmenu_theme = 1;
+static int32_t			debugmenu_theme = 0;
 
 static menuentry_t		entries[ MAXENTRIES + 1 ]; // +1 for overflow
 static menuentry_t*		rootentry;
@@ -385,6 +388,7 @@ static renderchild_t	childfuncs[] =
 };
 
 static boolean aboutwindow_open = false;
+static boolean licenseswindow_open = false;
 
 #define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_DebugMenu: More than %d elements total added", MAXENTRIES ); }
 #define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_DebugMenu: Too many child elements added to %s", elem->name ); }
@@ -425,6 +429,80 @@ static void M_AboutWindow( const char* itemname, void* data )
 	igText( "https://github.com/GooberMan/rum-and-raisin-doom" );
 }
 
+typedef struct licenses_s
+{
+	const char* software;
+	const char* license;
+} licenses_t;
+
+static licenses_t licences[] =
+{
+	{ "Dear ImGui",
+		"The MIT License (MIT)\n"
+		"\n"
+		"Copyright (c) 2014-2022 Omar Cornut\n"
+		"\n"
+		"Permission is hereby granted, free of charge, to any person obtaining a copy\n"
+		"of this software and associated documentation files (the \"Software\"), to deal\n"
+		"in the Software without restriction, including without limitation the rights\n"
+		"to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
+		"copies of the Software, and to permit persons to whom the Software is\n"
+		"furnished to do so, subject to the following conditions:\n"
+		"\n"
+		"The above copyright notice and this permission notice shall be included in all\n"
+		"copies or substantial portions of the Software.\n"
+		"\n"
+		"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+		"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
+		"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
+		"AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+		"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
+		"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
+		"SOFTWARE."
+	},
+	{ "cimgui",
+		"The MIT License (MIT)\n"
+		"\n"
+		"Copyright (c) 2015 Stephan Dilly\n"
+		"\n"
+		"Permission is hereby granted, free of charge, to any person obtaining a copy\n"
+		"of this software and associated documentation files (the \"Software\"), to deal\n"
+		"in the Software without restriction, including without limitation the rights\n"
+		"to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
+		"copies of the Software, and to permit persons to whom the Software is\n"
+		"furnished to do so, subject to the following conditions:\n"
+		"\n"
+		"The above copyright notice and this permission notice shall be included in all\n"
+		"copies or substantial portions of the Software.\n"
+		"\n"
+		"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+		"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
+		"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
+		"AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+		"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
+		"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
+		"SOFTWARE."
+	},
+};
+
+static void M_LicensesWindow( void )
+{
+	ImVec2 zerosize = { 0, 0 };
+	int32_t index;
+
+	igPushIDPtr( &licenseswindow_open );
+	for( index = 0; index < arrlen( licences ); ++index )
+	{
+		igPushIDPtr( licences[ index ].software );
+		if( igCollapsingHeaderTreeNodeFlags( licences[ index ].software, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+		{
+			igText( licences[ index ].license );
+		}
+		igPopID();
+	}
+	igPopID();
+}
+
 void M_InitDebugMenu( void )
 {
 	char themefullpath[ MAXNAMELENGTH + 1 ];
@@ -433,7 +511,13 @@ void M_InitDebugMenu( void )
 #if USE_IMGUI
 	imgui_context = igCreateContext( NULL );
 
+	igStyleColorsClassic( NULL );
 	memcpy( theme_original, igGetStyle()->Colors, sizeof( theme_original ) );
+	igStyleColorsDark( NULL );
+	memcpy( theme_originaldark, igGetStyle()->Colors, sizeof( theme_originaldark ) );
+	igStyleColorsLight( NULL );
+	memcpy( theme_originallight, igGetStyle()->Colors, sizeof( theme_originallight ) );
+
 
 	memset( entries, 0, sizeof( entries ) );
 #endif // USE_IMGUI
@@ -467,6 +551,7 @@ void M_InitDebugMenu( void )
 
 	M_RegisterDebugMenuCheckbox( "Core|Pause While Active", "Multiplayer ignores this", &debugmenupausesplaysim );
 	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, Menu_Normal, &M_AboutWindow );
+	M_RegisterDebugMenuWindow( "Core|Licenses", "Licenses", 0, 0, &licenseswindow_open, Menu_Normal, &M_LicensesWindow );
 	M_RegisterDebugMenuSeparator( "Core" );
 	M_RegisterDebugMenuButton( "Core|Quit", "Yes, this means quit the game", &M_OnDebugMenuCoreQuit, NULL );
 
