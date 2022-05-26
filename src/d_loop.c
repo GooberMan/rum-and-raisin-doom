@@ -674,6 +674,8 @@ static void SinglePlayerClear(ticcmd_set_t *set)
 // TryRunTics
 //
 
+int32_t sleeponzerotics = 1;
+
 boolean TryRunTics (void)
 {
 	int	i;
@@ -732,6 +734,12 @@ boolean TryRunTics (void)
 
 	if( I_IsPerfFramesRunning() )
 		counts = 1;
+
+	if( !sleeponzerotics && counts == 0 )
+	{
+		NetUpdate ();
+		return false;
+	}
 
     if (counts < 1)
 		counts = 1;
