@@ -43,6 +43,7 @@ extern int32_t render_height;
 static int32_t loading_disk_xoffs = 0;
 static int32_t loading_disk_yoffs = 0;
 static patch_t* disk_icon_patch = NULL;
+static int32_t disk_icon_lumpnum = -1;
 static size_t recent_bytes_read = 0;
 
 void V_EnableLoadingDisk(const char *lump_name, int xoffs, int yoffs)
@@ -50,7 +51,18 @@ void V_EnableLoadingDisk(const char *lump_name, int xoffs, int yoffs)
 	loading_disk_xoffs = xoffs;
 	loading_disk_yoffs = yoffs;
 
-	disk_icon_patch = W_CacheLumpName( lump_name, PU_STATIC );
+	if( disk_icon_patch != NULL )
+	{
+		W_ReleaseLumpNum( disk_icon_lumpnum );
+		disk_icon_patch = NULL;
+		disk_icon_lumpnum = -1;
+	}
+
+	if( lump_name != NULL )
+	{
+		disk_icon_lumpnum = W_GetNumForName( lump_name );
+		disk_icon_patch = W_CacheLumpNum( disk_icon_lumpnum, PU_STATIC );
+	}
 }
 
 void V_BeginRead(size_t nbytes)

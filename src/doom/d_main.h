@@ -38,7 +38,8 @@ void D_PageDrawer (void);
 void D_AdvanceDemo (void);
 void D_DoAdvanceDemo (void);
 void D_StartTitle (void);
- 
+
+void D_SetupLoadingDisk( int32_t disk_icon_style );
 //
 // GLOBAL VARIABLES
 //

@@ -129,8 +129,8 @@ boolean         main_loop_started = false;
 char		wadfile[1024];		// primary wad file
 char		mapdir[1024];           // directory of development maps
 
-int             show_endoom = 1;
-int             show_diskicon = 1;
+int32_t				show_endoom = 1;
+int32_t				show_diskicon = 1;
 
 extern int32_t		numrendercontexts;
 extern int32_t		numusablerendercontexts;
@@ -357,25 +357,43 @@ boolean D_Display (void)
 	return wipe;
 }
 
-static void EnableLoadingDisk(void)
+void D_SetupLoadingDisk( int32_t disk_icon_style )
 {
-    const char *disk_lump_name;
+	const char *disk_lump_name = NULL;
 
-    if (show_diskicon)
-    {
-        if (M_CheckParm("-cdrom") > 0)
-        {
-            disk_lump_name = DEH_String("STCDROM");
-        }
-        else
-        {
-            disk_lump_name = DEH_String("STDISK");
-        }
+	if( disk_icon_style != Disk_Off )
+	{
+		switch( disk_icon_style )
+		{
+		case Disk_ByCommandLine:
+			if (M_CheckParm("-cdrom") > 0)
+			{
+				disk_lump_name = DEH_String( "STCDROM" );
+			}
+			else
+			{
+				disk_lump_name = DEH_String( "STDISK" );
+			}
+			break;
 
-        V_EnableLoadingDisk(disk_lump_name,
-                            V_VIRTUALWIDTH - LOADING_DISK_W,
-                            V_VIRTUALHEIGHT - LOADING_DISK_H);
-    }
+		case Disk_Floppy:
+			disk_lump_name = DEH_String( "STDISK" );
+			break;
+
+		case Disk_CD:
+			disk_lump_name = DEH_String( "STCDROM" );
+			if( W_CheckNumForName( disk_lump_name ) < 0 )
+			{
+				disk_lump_name = DEH_String( "STDISK" );
+			}
+			break;
+		}
+	}
+
+	show_diskicon = disk_icon_style;
+	V_EnableLoadingDisk(disk_lump_name,
+						V_VIRTUALWIDTH - LOADING_DISK_W,
+						V_VIRTUALHEIGHT - LOADING_DISK_H);
 }
 
 //
@@ -578,7 +596,7 @@ void D_DoomLoop (void)
     I_InitGraphics( 1 );
 	R_InitContexts();
 
-    EnableLoadingDisk();
+    D_SetupLoadingDisk( show_diskicon );
 
     TryRunTics();
 
@@ -1800,11 +1818,6 @@ void D_DoomMain (void)
 	if( M_ParmExists( "-blackvoid" ) ) voidcleartype = Void_Black;
 	if( M_ParmExists( "-whackyvoid" ) ) voidcleartype = Void_Whacky;
 	if( M_ParmExists( "-skyvoid" ) ) voidcleartype = Void_Sky;
-
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Whacky", NULL, &voidcleartype, Void_Whacky );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Sky", NULL, &voidcleartype, Void_Sky );
 
 	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
