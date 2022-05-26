@@ -1792,6 +1792,12 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_KEY(key_multi_msgplayer8),
 
 	//!
+	// Keyboard key to toggle autorunning.
+	//
+
+	CONFIG_VARIABLE_KEY(key_toggle_autorun),
+
+	//!
 	// Tracks the debug menu theme. Nothing more. Integer that maps directly in to the theme array.
 	//
 
