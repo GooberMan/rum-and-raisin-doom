@@ -77,6 +77,9 @@
 #define GAMMALVL4	"Gamma correction level 4"
 #define EMPTYSTRING	"empty slot"
 
+#define AUTORUNON	"Autorun ON"
+#define AUTORUNOFF	"Autorun OFF"	
+
 //
 //	P_inter.C
 //

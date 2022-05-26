@@ -344,9 +344,9 @@ void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic)
     // allowed an autorun effect
 
     speed = key_speed >= NUMKEYS
-         || joybspeed >= MAX_JOY_BUTTONS
-         || gamekeydown[key_speed] 
-         || joybuttons[joybspeed];
+         || ( !gamekeydown[key_speed] && joybspeed >= MAX_JOY_BUTTONS )
+         || ( gamekeydown[key_speed] && joybspeed < MAX_JOY_BUTTONS )
+         || ( joybspeed < MAX_JOY_BUTTONS && joybuttons[joybspeed] );
  
     forward = side = 0;
     
@@ -823,17 +823,31 @@ boolean G_Responder (event_t* ev)
 
     switch (ev->type) 
     { 
-      case ev_keydown: 
-	if (ev->data1 == key_pause) 
-	{ 
-	    sendpause = true; 
-	}
-        else if (ev->data1 <NUMKEYS) 
-        {
-	    gamekeydown[ev->data1] = true; 
-        }
-
-	return true;    // eat key down events 
+	case ev_keydown: 
+		if (ev->data1 == key_pause) 
+		{ 
+			sendpause = true; 
+		}
+		else if( ev->data1 == key_toggle_autorun )
+		{
+			if( joybspeed != 29 )
+			{
+				joybspeed = 29;
+				players[consoleplayer].message = AUTORUNON;
+				S_StartSound( NULL, sfx_swtchn );
+			}
+			else
+			{
+				joybspeed = 2;
+				players[consoleplayer].message = AUTORUNOFF;
+				S_StartSound( NULL, sfx_swtchx );
+			}
+		}
+		else if (ev->data1 <NUMKEYS) 
+		{
+			gamekeydown[ev->data1] = true; 
+		}
+				return true;    // eat key down events 
  
       case ev_keyup: 
 	if (ev->data1 <NUMKEYS) 
