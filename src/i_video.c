@@ -148,7 +148,7 @@ int video_display = 0;
 
 #define DEFAULT_WINDOW_WIDTH	1280
 #define DEFAULT_WINDOW_HEIGHT	720
-#define DEFAULT_RENDER_WIDTH	1280
+#define DEFAULT_RENDER_WIDTH	1706
 #define DEFAULT_RENDER_HEIGHT	800
 #define DEFAULT_FULLSCREEN		0
 
@@ -905,11 +905,16 @@ void I_FinishUpdate (void)
 	static float lastwidth = 0;
 	static float lastheight = 0;
 
+	static int32_t actualwindowwidth = 0;
+	static int32_t actualwindowheight = 0;
+
 	static ImVec2 backbuffersize = { 640, 480 };
 	static ImVec2 backbufferpos = { 50, 50 };
 	static ImVec2 logsize = { 500, 300 };
 	static ImVec2 logpos = { 720, 50 };
 	static ImVec2 zeropivot = { 0, 0 };
+
+	static bool backbuffersizechange = false;
 
 	static const ImU32 textcolors[ Log_Max ] =
 	{
@@ -927,8 +932,8 @@ void I_FinishUpdate (void)
 		{
 			if( lastwidth != render_width || lastheight != actualheight )
 			{
+				backbuffersizechange = true;
 				backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
-				igSetNextWindowSize( backbuffersize, ImGuiCond_Always );
 				lastwidth = render_width;
 				lastheight = actualheight;
 			}
@@ -940,11 +945,13 @@ void I_FinishUpdate (void)
 			lastwidth = render_width;
 			lastheight = actualheight;
 
-			logpos.x = window_width - logsize.x - 50.f;
-			logpos.y = window_height - logsize.y - 50.f;
+			SDL_GetWindowSize( screen, &actualwindowwidth, &actualwindowheight );
+
+			logpos.x = actualwindowwidth - logsize.x - 50.f;
+			logpos.y = actualwindowheight - logsize.y - 50.f;
 		}
 
-		igSetNextWindowSize( backbuffersize, ImGuiCond_FirstUseEver );
+		igSetNextWindowSize( backbuffersize, backbuffersizechange ? ImGuiCond_Always : ImGuiCond_FirstUseEver );
 		igSetNextWindowPos( backbufferpos, ImGuiCond_FirstUseEver, zeropivot );
 		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
 		{
