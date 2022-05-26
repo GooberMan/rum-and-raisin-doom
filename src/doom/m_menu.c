@@ -3047,7 +3047,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			}
 			if( igSliderInt( "Music", &musicVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
-				S_SetSfxVolume( sfxVolume * 8 );
+				S_SetMusicVolume( musicVolume * 8 );
 			}
 
 			igPopScrollableArea();
