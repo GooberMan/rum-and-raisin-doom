@@ -487,12 +487,17 @@ void AM_restoreScaleAndLoc(void)
 //
 // adds a marker at the current location
 //
+#define MARK_BROKEN 1
+
 void AM_addMark(void)
 {
+#if !MARK_BROKEN
     markpoints[markpointnum].x = m_x + m_w/2;
     markpoints[markpointnum].y = m_y + m_h/2;
     markpointnum = (markpointnum + 1) % AM_NUMMARKPOINTS;
-
+#else // MARK_BROKEN
+	players[ consoleplayer ].message = "Markers broken for now. Come back later.";
+#endif // !MARK_BROKEN
 }
 
 //
