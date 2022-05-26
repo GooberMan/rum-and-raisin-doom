@@ -134,7 +134,7 @@ int png_screenshots = 0;
 int border_style = 0;
 
 // 0 = original, 1 = dithered
-int border_bezel_style = 0;
+int border_bezel_style = 1; // Need to default to dithered until I sort out widescreen UI rendering
 
 // Window position:
 
@@ -967,7 +967,7 @@ void I_FinishUpdate (void)
 		igPushStyleColorU32( ImGuiCol_WindowBg, IM_COL32_BLACK );
 		igSetNextWindowSize( logsize, ImGuiCond_FirstUseEver );
 		igSetNextWindowPos( logpos, ImGuiCond_FirstUseEver, zeropivot );
-		if( igBegin( "Log", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
+		if( igBegin( "Log", NULL, ImGuiWindowFlags_NoSavedSettings ) )
 		{
 			igGetWindowSize( &logsize );
 			igGetWindowPos( &logpos );
