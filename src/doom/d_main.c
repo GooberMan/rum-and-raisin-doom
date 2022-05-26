@@ -575,7 +575,7 @@ void D_DoomLoop (void)
     I_SetWindowTitle(gamedescription);
     I_GraphicsCheckCommandLine();
     I_SetGrabMouseCallback(D_GrabMouseCallback);
-    I_InitGraphics( numrendercontexts );
+    I_InitGraphics( 1 );
 	R_InitContexts();
 
     EnableLoadingDisk();

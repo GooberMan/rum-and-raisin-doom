@@ -1068,6 +1068,8 @@ void R_FillBackScreen (void)
 		background_data.magic_value = vbuffer_magic;
     }
 
+	memset( background_data.data, 0, render_width * render_height * sizeof(*background_data.data) );
+
     if (gamemode == commercial)
 	{
 		name = name2;

@@ -85,7 +85,6 @@ boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
 boolean					renderthreaded = true;
 boolean					renderSIMDcolumns = false;
-boolean					rendersinglebuffer = true;
 atomicval_t				renderthreadCPUmelter = 0;
 int32_t					performancegraphscale = 20;
 
@@ -1000,18 +999,8 @@ void R_InitContexts( void )
 
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
-		renderdatas[ currcontext ].context.bufferindex = currcontext;
-
-		if( rendersinglebuffer )
-		{
-			renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
-			I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, 0, currcontext == 0 ? render_width : 0 );
-		}
-		else
-		{
-			renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( currcontext );
-			I_SetRenderBufferValidColumns( currcontext, currstart, currstart + incrementby );
-		}
+		renderdatas[ currcontext ].context.bufferindex = 0;
+		renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
 
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
@@ -1390,7 +1379,6 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 
 	igCheckbox( "Load balancing", &renderloadbalancing );
 	igCheckbox( "SIMD columns", &renderSIMDcolumns );
-	igCheckbox( "Single render buffer", &rendersinglebuffer );
 	igNewLine();
 	igText( "Debug options" );
 	igSeparator();
@@ -1563,27 +1551,11 @@ void R_SetupFrame (player_t* player)
 		desiredwidth = viewwidth / numusablerendercontexts;
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
-			if( rendersinglebuffer )
-			{
-				renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
-				I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, 0, currcontext == 0 ? viewwidth : 0 );
-			}
-			else
-			{
-				renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( renderdatas[ currcontext ].context.bufferindex );
-				I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, currstart, currstart + desiredwidth );
-			}
-
 			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
 			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, viewwidth );
 
 			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
-		}
-
-		for( ; currcontext < numrendercontexts; ++currcontext )
-		{
-			I_SetRenderBufferValidColumns( renderdatas[ currcontext ].context.bufferindex, 0, 0 );
 		}
 
 		renderrebalancecontexts = false;
