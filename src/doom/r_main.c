@@ -1416,6 +1416,11 @@ void R_Init (void)
     R_InitTranslationTables ();
     printf (".");
 
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Whacky", NULL, &voidcleartype, Void_Whacky );
+	M_RegisterDebugMenuRadioButton( "Render|Clear style|Sky", NULL, &voidcleartype, Void_Sky );
+
 	M_RegisterDebugMenuWindow( "Render|Threading|Options", "Render Threading Options", 500, 500, &debugwindow_renderthreadingoptions, Menu_Normal, &R_RenderThreadingOptionsWindow );
 #if RENDER_PERF_GRAPHING
 	M_RegisterDebugMenuWindow( "Render|Threading|Graphs", "Render Graphs", 500, 550, &debugwindow_renderthreadinggraphs, Menu_Overlay, &R_RenderThreadingGraphsWindow );
@@ -1551,6 +1556,7 @@ void R_SetupFrame (player_t* player)
 		desiredwidth = viewwidth / numusablerendercontexts;
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
+			renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
 			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
 			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, viewwidth );
