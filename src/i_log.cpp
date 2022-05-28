@@ -28,6 +28,7 @@ extern "C"
 #include <ctime>
 
 #include <vector>
+#include <string>
 
 template< typename _ty, int32_t _tag = PU_STATIC >
 struct DoomAllocator
