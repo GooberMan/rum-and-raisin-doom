@@ -1096,17 +1096,11 @@ void I_SetWindowTitle(const char *title)
 // the title set with I_SetWindowTitle.
 //
 
-#if !defined( NDEBUG )
-#define EDITION_STRING " THIS IS A DEBUG BUILD STOP PROFILING ON A DEBUG BUILD"
-#else
-#define EDITION_STRING " RELEASE BUILD"
-#endif // !defined( NDEBUG )
-
 void I_InitWindowTitle(void)
 {
     char *buf;
 
-    buf = M_StringJoin(window_title, " - ", PACKAGE_STRING EDITION_STRING, NULL);
+    buf = M_StringJoin(window_title, " - ", EDITION_STRING, NULL);
     SDL_SetWindowTitle(screen, buf);
     free(buf);
 }
