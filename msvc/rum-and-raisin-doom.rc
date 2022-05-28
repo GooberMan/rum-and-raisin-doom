@@ -1,0 +1,30 @@
+1 ICON "../data/doom.ico"
+
+#include <winuser.h>
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "../src/manifest.xml"
+
+1 VERSIONINFO
+PRODUCTVERSION 0, 1, 0, 0
+FILEVERSION 0, 1, 0, 0
+FILETYPE 1
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904E4"
+  {
+   VALUE "FileVersion", "0.1.0.0"
+   VALUE "FileDescription", "Rum and Raisin Doom 0.1.0"
+   VALUE "InternalName", "run-and-raisin-doom"
+   VALUE "CompanyName", "chocolate-doom-dev-list@chocolate-doom.org"
+   VALUE "LegalCopyright", "Copyright (C) 1993-2020. Licensed under GNU General Public License, version 2"
+   VALUE "ProductName", "Rum and Raisin Doom"
+   VALUE "ProductVersion", "0.1.0"
+  }
+ }
+ BLOCK "VarFileInfo"
+ {
+  VALUE "Translation", 0x409, 1252
+ }
+}
+

@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\glad">
+      <UniqueIdentifier>{34d6a36e-a229-4b72-9be6-2b12356515fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cimgui">
+      <UniqueIdentifier>{f2caca81-7079-4af7-bfb1-5d71da175ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui">
+      <UniqueIdentifier>{ae0ed67c-c9a1-4302-bc26-9dc4c218bfa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\glad">
+      <UniqueIdentifier>{70e9d577-bff6-487f-b340-58246246abfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cimgui">
+      <UniqueIdentifier>{b5bc8124-6c21-4708-8cac-d54a35ab2623}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{14d662ad-be13-4955-83f9-3b4f96a294f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\glad\glad">
+      <UniqueIdentifier>{eb7a1ae6-78d0-4132-9a05-fd38b678a4e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\glad\KHR">
+      <UniqueIdentifier>{22f5061d-c6b6-41f1-ae4f-f7d95009bf6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\examples">
+      <UniqueIdentifier>{c5055303-1bbf-4eb3-9c1a-0b4c899089bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui\examples">
+      <UniqueIdentifier>{368ebb46-c6b9-4b95-946d-1a563ed59918}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\ext\glad\src\glad.c">
+      <Filter>Source Files\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\cimgui.cpp">
+      <Filter>Source Files\cimgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimguiglue\cimguiglue.cpp">
+      <Filter>Source Files\cimgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\examples\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\imgui\examples</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\examples\imgui_impl_sdl.cpp">
+      <Filter>Source Files\imgui\examples</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\ext\glad\include\glad\glad.h">
+      <Filter>Header Files\glad\glad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\glad\include\KHR\khrplatform.h">
+      <Filter>Header Files\glad\KHR</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\cimgui\cimgui.h">
+      <Filter>Header Files\cimgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\cimgui\imgui\imgui.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\cimgui\imgui\imgui_internal.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\cimguiglue\cimguiglue.h">
+      <Filter>Header Files\cimgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\cimgui\imgui\examples\imgui_impl_opengl3.h">
+      <Filter>Header Files\imgui\examples</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\cimgui\imgui\examples\imgui_impl_sdl.h">
+      <Filter>Header Files\imgui\examples</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

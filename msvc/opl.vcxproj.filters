@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="\opl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\opl_linux.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\opl_obsd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\opl_queue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\opl_sdl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\opl_timer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\opl_win32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\ioperm_sys.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="\opl3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\opl\opl.c" />
+    <ClCompile Include="..\opl\opl_linux.c" />
+    <ClCompile Include="..\opl\opl_obsd.c" />
+    <ClCompile Include="..\opl\opl_queue.c" />
+    <ClCompile Include="..\opl\opl_sdl.c" />
+    <ClCompile Include="..\opl\opl_timer.c" />
+    <ClCompile Include="..\opl\opl_win32.c" />
+    <ClCompile Include="..\opl\ioperm_sys.c" />
+    <ClCompile Include="..\opl\opl3.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="\opl_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="\opl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="\opl_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="\opl_timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="\ioperm_sys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="\opl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opl\opl_internal.h" />
+    <ClInclude Include="..\opl\opl.h" />
+    <ClInclude Include="..\opl\opl_queue.h" />
+    <ClInclude Include="..\opl\opl_timer.h" />
+    <ClInclude Include="..\opl\ioperm_sys.h" />
+    <ClInclude Include="..\opl\opl3.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{F691BDA7-B1B0-379D-B4F4-95C504AFAC32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{8F35243C-C65B-3F09-9CCA-0E6D144DF7FC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

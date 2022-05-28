@@ -1,0 +1,301 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A5640C82-BC26-3220-B17F-1EFBED351FE1}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>doom</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="include-ext.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="include-sdl.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="include-sdl.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="include-sdl.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="include-sdl.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir>$(SolutionDir)bin\windows\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)intermediate\windows\$(TargetName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <TargetName>doom</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;E:\projects\github\gooberman\rum-and-raisin-doom\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\doom\am_map.c" />
+    <ClInclude Include="..\src\doom\am_map.h" />
+    <ClCompile Include="..\src\doom\deh_ammo.c" />
+    <ClCompile Include="..\src\doom\deh_bexstr.c" />
+    <ClCompile Include="..\src\doom\deh_cheat.c" />
+    <ClCompile Include="..\src\doom\deh_doom.c" />
+    <ClCompile Include="..\src\doom\deh_frame.c" />
+    <ClCompile Include="..\src\doom\deh_misc.c" />
+    <ClInclude Include="..\src\doom\deh_misc.h" />
+    <ClCompile Include="..\src\doom\deh_ptr.c" />
+    <ClCompile Include="..\src\doom\deh_sound.c" />
+    <ClCompile Include="..\src\doom\deh_thing.c" />
+    <ClCompile Include="..\src\doom\deh_weapon.c" />
+    <ClInclude Include="..\src\doom\d_englsh.h" />
+    <ClCompile Include="..\src\doom\d_items.c" />
+    <ClInclude Include="..\src\doom\d_items.h" />
+    <ClCompile Include="..\src\doom\d_main.c" />
+    <ClInclude Include="..\src\doom\d_main.h" />
+    <ClCompile Include="..\src\doom\d_net.c" />
+    <ClInclude Include="..\src\doom\doomdata.h" />
+    <ClCompile Include="..\src\doom\doomdef.c" />
+    <ClInclude Include="..\src\doom\doomdef.h" />
+    <ClCompile Include="..\src\doom\doomstat.c" />
+    <ClInclude Include="..\src\doom\doomstat.h" />
+    <ClInclude Include="..\src\doom\d_player.h" />
+    <ClCompile Include="..\src\doom\dstrings.c" />
+    <ClInclude Include="..\src\doom\dstrings.h" />
+    <ClInclude Include="..\src\doom\d_textur.h" />
+    <ClInclude Include="..\src\doom\d_think.h" />
+    <ClCompile Include="..\src\doom\f_finale.c" />
+    <ClInclude Include="..\src\doom\f_finale.h" />
+    <ClCompile Include="..\src\doom\f_wipe.c" />
+    <ClInclude Include="..\src\doom\f_wipe.h" />
+    <ClCompile Include="..\src\doom\g_game.c" />
+    <ClInclude Include="..\src\doom\g_game.h" />
+    <ClCompile Include="..\src\doom\hu_lib.c" />
+    <ClInclude Include="..\src\doom\hu_lib.h" />
+    <ClCompile Include="..\src\doom\hu_stuff.c" />
+    <ClInclude Include="..\src\doom\hu_stuff.h" />
+    <ClCompile Include="..\src\doom\info.c" />
+    <ClInclude Include="..\src\doom\info.h" />
+    <ClCompile Include="..\src\doom\m_menu.c" />
+    <ClInclude Include="..\src\doom\m_menu.h" />
+    <ClCompile Include="..\src\doom\m_random.c" />
+    <ClInclude Include="..\src\doom\m_random.h" />
+    <ClCompile Include="..\src\doom\p_ceilng.c" />
+    <ClCompile Include="..\src\doom\p_doors.c" />
+    <ClCompile Include="..\src\doom\p_enemy.c" />
+    <ClCompile Include="..\src\doom\p_floor.c" />
+    <ClCompile Include="..\src\doom\p_inter.c" />
+    <ClInclude Include="..\src\doom\p_inter.h" />
+    <ClCompile Include="..\src\doom\p_lights.c" />
+    <ClInclude Include="..\src\doom\p_local.h" />
+    <ClCompile Include="..\src\doom\p_map.c" />
+    <ClCompile Include="..\src\doom\p_maputl.c" />
+    <ClCompile Include="..\src\doom\p_mobj.c" />
+    <ClInclude Include="..\src\doom\p_mobj.h" />
+    <ClCompile Include="..\src\doom\p_plats.c" />
+    <ClCompile Include="..\src\doom\p_pspr.c" />
+    <ClInclude Include="..\src\doom\p_pspr.h" />
+    <ClCompile Include="..\src\doom\p_saveg.c" />
+    <ClInclude Include="..\src\doom\p_saveg.h" />
+    <ClCompile Include="..\src\doom\p_setup.c" />
+    <ClInclude Include="..\src\doom\p_setup.h" />
+    <ClCompile Include="..\src\doom\p_sight.c" />
+    <ClCompile Include="..\src\doom\p_spec.c" />
+    <ClInclude Include="..\src\doom\p_spec.h" />
+    <ClCompile Include="..\src\doom\p_switch.c" />
+    <ClCompile Include="..\src\doom\p_telept.c" />
+    <ClCompile Include="..\src\doom\p_tick.c" />
+    <ClInclude Include="..\src\doom\p_tick.h" />
+    <ClCompile Include="..\src\doom\p_user.c" />
+    <ClCompile Include="..\src\doom\r_bsp.c" />
+    <ClInclude Include="..\src\doom\r_bsp.h" />
+    <ClCompile Include="..\src\doom\r_data.c" />
+    <ClInclude Include="..\src\doom\r_data.h" />
+    <ClInclude Include="..\src\doom\r_defs.h" />
+    <ClCompile Include="..\src\doom\r_draw.cpp" />
+    <ClInclude Include="..\src\doom\r_draw.h" />
+    <ClInclude Include="..\src\doom\r_local.h" />
+    <ClCompile Include="..\src\doom\r_main.c" />
+    <ClInclude Include="..\src\doom\r_main.h" />
+    <ClCompile Include="..\src\doom\r_plane.c" />
+    <ClInclude Include="..\src\doom\r_plane.h" />
+    <ClCompile Include="..\src\doom\r_segs.c" />
+    <ClInclude Include="..\src\doom\r_segs.h" />
+    <ClCompile Include="..\src\doom\r_sky.c" />
+    <ClInclude Include="..\src\doom\r_sky.h" />
+    <ClInclude Include="..\src\doom\r_state.h" />
+    <ClCompile Include="..\src\doom\r_things.c" />
+    <ClInclude Include="..\src\doom\r_things.h" />
+    <ClCompile Include="..\src\doom\s_sound.c" />
+    <ClInclude Include="..\src\doom\s_sound.h" />
+    <ClCompile Include="..\src\doom\sounds.c" />
+    <ClInclude Include="..\src\doom\sounds.h" />
+    <ClCompile Include="..\src\doom\statdump.c" />
+    <ClInclude Include="..\src\doom\statdump.h" />
+    <ClCompile Include="..\src\doom\st_lib.c" />
+    <ClInclude Include="..\src\doom\st_lib.h" />
+    <ClCompile Include="..\src\doom\st_stuff.c" />
+    <ClInclude Include="..\src\doom\st_stuff.h" />
+    <ClCompile Include="..\src\doom\wi_stuff.c" />
+    <ClInclude Include="..\src\doom\wi_stuff.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

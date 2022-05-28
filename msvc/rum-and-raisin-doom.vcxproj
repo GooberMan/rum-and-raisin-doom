@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E82AAA8F-3903-3470-9823-B729466C668B}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>rum-and-raisin-doom</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="include-sdl.props" />
+    <Import Project="include-ext.props" />
+    <Import Project="include-doom.props" />
+    <Import Project="include-opl.props" />
+    <Import Project="include-pcsound.props" />
+    <Import Project="include-textscreen.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir>$(SolutionDir)bin\windows\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)intermediate\windows\$(TargetName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <TargetName>rum-and-raisin-doom</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>
+      </StackReserveSize>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;..\ext\glad\include;..\ext\cimgui;..\ext\cimguiglue;..\ext\cimgui\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\i_log.cpp" />
+    <ClCompile Include="..\src\i_thread.cpp" />
+    <ClCompile Include="..\src\m_debugmenu.c" />
+    <ClCompile Include="..\src\i_main.c" />
+    <ClCompile Include="..\src\i_system.c" />
+    <ClInclude Include="..\src\i_log.h" />
+    <ClInclude Include="..\src\i_thread.h" />
+    <ClInclude Include="..\src\m_debugmenu.h" />
+    <ClInclude Include="..\src\i_system.h" />
+    <ClCompile Include="..\src\m_argv.c" />
+    <ClInclude Include="..\src\m_argv.h" />
+    <ClCompile Include="..\src\m_misc.c" />
+    <ClInclude Include="..\src\m_misc.h" />
+    <ClCompile Include="..\src\aes_prng.c" />
+    <ClInclude Include="..\src\aes_prng.h" />
+    <ClCompile Include="..\src\d_event.c" />
+    <ClInclude Include="..\src\d_event.h" />
+    <ClInclude Include="..\src\doomkeys.h" />
+    <ClInclude Include="..\src\doomtype.h" />
+    <ClCompile Include="..\src\d_iwad.c" />
+    <ClInclude Include="..\src\d_iwad.h" />
+    <ClCompile Include="..\src\d_loop.c" />
+    <ClInclude Include="..\src\d_loop.h" />
+    <ClCompile Include="..\src\d_mode.c" />
+    <ClInclude Include="..\src\d_mode.h" />
+    <ClInclude Include="..\src\d_ticcmd.h" />
+    <ClCompile Include="..\src\deh_str.c" />
+    <ClInclude Include="..\src\deh_str.h" />
+    <ClCompile Include="..\src\gusconf.c" />
+    <ClInclude Include="..\src\gusconf.h" />
+    <ClCompile Include="..\src\i_cdmus.c" />
+    <ClInclude Include="..\src\i_cdmus.h" />
+    <ClCompile Include="..\src\i_endoom.c" />
+    <ClInclude Include="..\src\i_endoom.h" />
+    <ClCompile Include="..\src\i_glob.c" />
+    <ClInclude Include="..\src\i_glob.h" />
+    <ClCompile Include="..\src\i_input.c" />
+    <ClInclude Include="..\src\i_input.h" />
+    <ClCompile Include="..\src\i_joystick.c" />
+    <ClInclude Include="..\src\i_joystick.h" />
+    <ClInclude Include="..\src\i_swap.h" />
+    <ClCompile Include="..\src\i_midipipe.c" />
+    <ClInclude Include="..\src\i_midipipe.h" />
+    <ClCompile Include="..\src\i_musicpack.c" />
+    <ClCompile Include="..\src\i_oplmusic.c" />
+    <ClCompile Include="..\src\i_pcsound.c" />
+    <ClCompile Include="..\src\i_sdlmusic.c" />
+    <ClCompile Include="..\src\i_sdlsound.c" />
+    <ClCompile Include="..\src\i_sound.c" />
+    <ClInclude Include="..\src\i_sound.h" />
+    <ClCompile Include="..\src\i_timer.c" />
+    <ClInclude Include="..\src\i_timer.h" />
+    <ClCompile Include="..\src\i_video.c" />
+    <ClInclude Include="..\src\i_video.h" />
+    <ClCompile Include="..\src\i_videohr.c" />
+    <ClInclude Include="..\src\i_videohr.h" />
+    <ClCompile Include="..\src\midifile.c" />
+    <ClInclude Include="..\src\midifile.h" />
+    <ClCompile Include="..\src\mus2mid.c" />
+    <ClInclude Include="..\src\mus2mid.h" />
+    <ClCompile Include="..\src\m_bbox.c" />
+    <ClInclude Include="..\src\m_bbox.h" />
+    <ClCompile Include="..\src\m_cheat.c" />
+    <ClInclude Include="..\src\m_cheat.h" />
+    <ClCompile Include="..\src\m_config.c" />
+    <ClInclude Include="..\src\m_config.h" />
+    <ClCompile Include="..\src\m_controls.c" />
+    <ClInclude Include="..\src\m_controls.h" />
+    <ClCompile Include="..\src\m_fixed.c" />
+    <ClInclude Include="..\src\m_fixed.h" />
+    <ClCompile Include="..\src\net_client.c" />
+    <ClInclude Include="..\src\net_client.h" />
+    <ClCompile Include="..\src\net_common.c" />
+    <ClInclude Include="..\src\net_common.h" />
+    <ClCompile Include="..\src\net_dedicated.c" />
+    <ClInclude Include="..\src\net_dedicated.h" />
+    <ClInclude Include="..\src\net_defs.h" />
+    <ClCompile Include="..\src\net_gui.c" />
+    <ClInclude Include="..\src\net_gui.h" />
+    <ClCompile Include="..\src\net_io.c" />
+    <ClInclude Include="..\src\net_io.h" />
+    <ClCompile Include="..\src\net_loop.c" />
+    <ClInclude Include="..\src\net_loop.h" />
+    <ClCompile Include="..\src\net_packet.c" />
+    <ClInclude Include="..\src\net_packet.h" />
+    <ClCompile Include="..\src\net_petname.c" />
+    <ClInclude Include="..\src\net_petname.h" />
+    <ClCompile Include="..\src\net_query.c" />
+    <ClInclude Include="..\src\net_query.h" />
+    <ClCompile Include="..\src\net_sdl.c" />
+    <ClInclude Include="..\src\net_sdl.h" />
+    <ClCompile Include="..\src\net_server.c" />
+    <ClInclude Include="..\src\net_server.h" />
+    <ClCompile Include="..\src\net_structrw.c" />
+    <ClInclude Include="..\src\net_structrw.h" />
+    <ClCompile Include="..\src\sha1.c" />
+    <ClInclude Include="..\src\sha1.h" />
+    <ClCompile Include="..\src\memio.c" />
+    <ClInclude Include="..\src\memio.h" />
+    <ClCompile Include="..\src\tables.c" />
+    <ClInclude Include="..\src\tables.h" />
+    <ClCompile Include="..\src\v_diskicon.c" />
+    <ClInclude Include="..\src\v_diskicon.h" />
+    <ClCompile Include="..\src\v_video.c" />
+    <ClInclude Include="..\src\v_video.h" />
+    <ClInclude Include="..\src\v_patch.h" />
+    <ClCompile Include="..\src\w_checksum.c" />
+    <ClInclude Include="..\src\w_checksum.h" />
+    <ClCompile Include="..\src\w_main.c" />
+    <ClInclude Include="..\src\w_main.h" />
+    <ClCompile Include="..\src\w_wad.c" />
+    <ClInclude Include="..\src\w_wad.h" />
+    <ClCompile Include="..\src\w_file.c" />
+    <ClInclude Include="..\src\w_file.h" />
+    <ClCompile Include="..\src\w_file_stdc.c" />
+    <ClCompile Include="..\src\w_file_posix.c" />
+    <ClCompile Include="..\src\w_file_win32.c" />
+    <ClCompile Include="..\src\w_merge.c" />
+    <ClInclude Include="..\src\w_merge.h" />
+    <ClCompile Include="..\src\z_zone.c" />
+    <ClInclude Include="..\src\z_zone.h" />
+    <ClCompile Include="..\win32\win_opendir.c" />
+    <ClInclude Include="..\win32\win_opendir.h" />
+    <ClInclude Include="..\src\deh_defs.h" />
+    <ClCompile Include="..\src\deh_io.c" />
+    <ClInclude Include="..\src\deh_io.h" />
+    <ClCompile Include="..\src\deh_main.c" />
+    <ClInclude Include="..\src\deh_main.h" />
+    <ClCompile Include="..\src\deh_mapping.c" />
+    <ClInclude Include="..\src\deh_mapping.h" />
+    <ClCompile Include="..\src\deh_text.c" />
+    <ResourceCompile Include="rum-and-raisin-doom.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
