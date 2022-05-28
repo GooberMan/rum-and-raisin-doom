@@ -1637,6 +1637,11 @@ static void find_coreGL(void) {
     version = (const char*) glGetString(GL_VERSION);
     if (!version) return;
 
+#if defined( __APPLE__ )
+	major = 4;
+	minor = 6;
+#else // !defined( __APPLE__ )
+
     for (i = 0;  prefixes[i];  i++) {
         const size_t length = strlen(prefixes[i]);
         if (strncmp(version, prefixes[i], length) == 0) {
@@ -1651,6 +1656,8 @@ static void find_coreGL(void) {
 #else
     sscanf(version, "%d.%d", &major, &minor);
 #endif
+
+#endif // defined( __APPLE__ )
 
     GLVersion.major = major; GLVersion.minor = minor;
     max_loaded_major = major; max_loaded_minor = minor;
@@ -1685,7 +1692,7 @@ int gladLoadGLLoader(GLADloadproc load) {
 	load_GL_VERSION_2_1(load);
 	load_GL_VERSION_3_0(load);
 
-	if (!find_extensionsGL()) return 0;
+	//if (!find_extensionsGL()) return 0;
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
 
