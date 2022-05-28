@@ -1,7 +1,7 @@
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 cmake_minimum_required(VERSION 3.7.2)
-project("Rum and Raisin Doom" VERSION 0.1.0 LANGUAGES C)
+project("Rum and Raisin Doom" VERSION 0.1.1 LANGUAGES C)
 
 # Autotools variables
 set(top_srcdir ${CMAKE_CURRENT_SOURCE_DIR})
@@ -16,7 +16,7 @@ set(PACKAGE_BUGREPORT "chocolate-doom-dev-list@chocolate-doom.org")
 
 string(REPLACE " " "-" PACKAGE_NAME_NOSPACES "${PACKAGE_NAME}")
 string(REGEX REPLACE "-Doom$" "" PACKAGE_SHORTNAME "${PACKAGE_NAME_NOSPACES}")
-set(PACKAGE_COPYRIGHT "Copyright (C) 1993-2020")
+set(PACKAGE_COPYRIGHT "Copyright (C) 1993-2022")
 set(PACKAGE_LICENSE "GNU General Public License, version 2")
 
 # Any settings that should apply to all targets in this directory and all

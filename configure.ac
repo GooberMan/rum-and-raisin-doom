@@ -1,9 +1,9 @@
-AC_INIT(Rum and Raisin Doom, 0.1.0,
+AC_INIT(Rum and Raisin Doom, 0.1.1,
         chocolate-doom-dev-list@chocolate-doom.org, rum-and-raisin-doom)
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
 PACKAGE_SHORTDESC="Fork of Chocolate Doom focusing on renderer optimisations"
-PACKAGE_COPYRIGHT="Copyright (C) 1993-2020"
+PACKAGE_COPYRIGHT="Copyright (C) 1993-2022"
 PACKAGE_LICENSE="GNU General Public License, version 2"
 PACKAGE_MAINTAINER="Ethan Watson"
 PACKAGE_URL="https://github.com/GooberMan/rum-and-raisin-doom"
