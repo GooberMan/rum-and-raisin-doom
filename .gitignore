@@ -12,6 +12,7 @@ config.hin
 config.log
 config.status
 configure
+intermediate
 lib
 obj
 rpm.spec
@@ -51,6 +52,7 @@ STRIFE*.pcx
 .#*
 .*.swp
 .DS_store
+*.user
 
 # Ignore GNU Global tags and html files
 GPATH
