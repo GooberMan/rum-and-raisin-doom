@@ -406,7 +406,7 @@ static void M_OnDebugMenuCoreQuit( const char* itemname, void* data )
 
 static void M_AboutWindow( const char* itemname, void* data )
 {
-	igText( PACKAGE_STRING );
+	igText( EDITION_STRING );
 	igText( "\"Haha software render go BRRRRR!\"" );
 	igNewLine();
 	igText( "A fork of Chocolate Doom focused on speed for modern architectures." );
