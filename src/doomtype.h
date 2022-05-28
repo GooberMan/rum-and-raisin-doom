@@ -28,6 +28,38 @@
 #define inline __inline
 #endif
 
+#define PLATFORM_ARCH_NONE          0
+#define PLATFORM_ARCH_x86           1
+#define PLATFORM_ARCH_x64           2
+#define PLATFORM_ARCH_ARM32         3
+#define PLATFORM_ARCH_ARM64         4
+
+#define PLATFORM_ARCHNAME_NONE      "<invalid architecture>"
+#define PLATFORM_ARCHNAME_x86       "x86"
+#define PLATFORM_ARCHNAME_x64       "x64"
+#define PLATFORM_ARCHNAME_ARM32     "ARM 32-bit"
+#define PLATFORM_ARCHNAME_ARM64     "ARM 64-bit"
+
+#if defined(_M_IX86) || defined(__i386) || defined(__i386__)
+#define PLATFORM_ARCH               PLATFORM_ARCH_x86
+#define PLATFORM_ARCHNAME           PLATFORM_ARCHNAME_x86
+#elif defined(_M_X64) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64__)
+#define PLATFORM_ARCH               PLATFORM_ARCH_x64
+#define PLATFORM_ARCHNAME           PLATFORM_ARCHNAME_x64
+#elif ( defined(M_ARM) && !defined(M_ARM64) ) || ( defined(__arm__) && !defined(__aarch64__) )
+#define PLATFORM_ARCH               PLATFORM_ARCH_ARM32
+#define PLATFORM_ARCHNAME           PLATFORM_ARCHNAME_ARM32
+#elif defined(M_ARM64) || defined(__aarch64__)
+#define PLATFORM_ARCH               PLATFORM_ARCH_ARM64
+#define PLATFORM_ARCHNAME           PLATFORM_ARCHNAME_ARM64
+#endif // architecture check
+
+#if !defined( NDEBUG )
+#define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME " THIS IS A DEBUG BUILD STOP PROFILING ON A DEBUG BUILD"
+#else
+#define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME
+#endif // !defined( NDEBUG )
+
 // #define macros to provide functions missing in Windows.
 // Outside Windows, we use strings.h for str[n]casecmp.
 
