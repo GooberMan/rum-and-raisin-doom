@@ -33,12 +33,6 @@ extern "C"
 	extern fixed_t		yslope[ MAXSCREENHEIGHT ];
 }
 
-#if defined( _MSC_VER )
-#define INLINE __forceinline
-#else
-#define INLINE inline
-#endif
-
 INLINE void DoSample( int32_t& spot
 					, int32_t& top
 					, fixed_t& xfrac

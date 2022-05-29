@@ -60,6 +60,12 @@
 #define DOOM_C_API
 #endif // C++ check
 
+#if defined( _MSC_VER )
+#define INLINE __forceinline
+#else
+#define INLINE inline
+#endif
+
 #if !defined( NDEBUG )
 #define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME " THIS IS A DEBUG BUILD STOP PROFILING ON A DEBUG BUILD"
 #else
