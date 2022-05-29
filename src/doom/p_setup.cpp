@@ -18,101 +18,99 @@
 //	set up initial state and misc. LUTs.
 //
 
+extern "C" {
+	#include <math.h>
+	#include <stdlib.h>
+
+	#include "z_zone.h"
+
+	#include "deh_main.h"
+	#include "i_swap.h"
+	#include "m_argv.h"
+	#include "m_bbox.h"
+
+	#include "g_game.h"
+
+	#include "i_system.h"
+	#include "w_wad.h"
+
+	#include "doomdef.h"
+	#include "p_local.h"
+
+	#include "s_sound.h"
+
+	#include "doomstat.h"
+
+	void	P_SpawnMapThing (mapthing_t*	mthing);
+
+	//
+	// MAP related Lookup tables.
+	// Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
+	//
+	int32_t		numvertexes;
+	vertex_t*	vertexes;
+
+	int32_t		numsegs;
+	seg_t*		segs;
+
+	int32_t		numsectors;
+	sector_t*	sectors;
+
+	int32_t		numsubsectors;
+	subsector_t*	subsectors;
+
+	int32_t		numnodes;
+	node_t*		nodes;
+
+	int32_t		numlines;
+	line_t*		lines;
+
+	int32_t		numsides;
+	side_t*		sides;
+
+	static int32_t      totallines;
+
+	// BLOCKMAP
+	// Created from axis aligned bounding box
+	// of the map, a rectangular array of
+	// blocks of size ...
+	// Used to speed up collision detection
+	// by spatial subdivision in 2D.
+	//
+	// Blockmap size.
+	int		bmapwidth;
+	int		bmapheight;	// size in mapblocks
+	short*		blockmap;	// int for larger maps
+	// offsets in blockmap are from here
+	short*		blockmaplump;		
+	// origin of block map
+	fixed_t		bmaporgx;
+	fixed_t		bmaporgy;
+	// for thing chains
+	mobj_t**	blocklinks;		
 
 
-#include <math.h>
-#include <stdlib.h>
-
-#include "z_zone.h"
-
-#include "deh_main.h"
-#include "i_swap.h"
-#include "m_argv.h"
-#include "m_bbox.h"
-
-#include "g_game.h"
-
-#include "i_system.h"
-#include "w_wad.h"
-
-#include "doomdef.h"
-#include "p_local.h"
-
-#include "s_sound.h"
-
-#include "doomstat.h"
+	// REJECT
+	// For fast sight rejection.
+	// Speeds up enemy AI by skipping detailed
+	//  LineOf Sight calculation.
+	// Without special effect, this could be
+	//  used as a PVS lookup as well.
+	//
+	byte*		rejectmatrix;
 
 
-void	P_SpawnMapThing (mapthing_t*	mthing);
+	// Maintain single and multi player starting spots.
+	#define MAX_DEATHMATCH_STARTS	10
 
+	mapthing_t	deathmatchstarts[MAX_DEATHMATCH_STARTS];
+	mapthing_t*	deathmatch_p;
+	mapthing_t	playerstarts[MAXPLAYERS];
+	boolean		playerstartsingame[MAXPLAYERS];
 
-//
-// MAP related Lookup tables.
-// Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
-//
-int32_t		numvertexes;
-vertex_t*	vertexes;
-
-int32_t		numsegs;
-seg_t*		segs;
-
-int32_t		numsectors;
-sector_t*	sectors;
-
-int32_t		numsubsectors;
-subsector_t*	subsectors;
-
-int32_t		numnodes;
-node_t*		nodes;
-
-int32_t		numlines;
-line_t*		lines;
-
-int32_t		numsides;
-side_t*		sides;
-
-static int32_t      totallines;
-
-// BLOCKMAP
-// Created from axis aligned bounding box
-// of the map, a rectangular array of
-// blocks of size ...
-// Used to speed up collision detection
-// by spatial subdivision in 2D.
-//
-// Blockmap size.
-int		bmapwidth;
-int		bmapheight;	// size in mapblocks
-short*		blockmap;	// int for larger maps
-// offsets in blockmap are from here
-short*		blockmaplump;		
-// origin of block map
-fixed_t		bmaporgx;
-fixed_t		bmaporgy;
-// for thing chains
-mobj_t**	blocklinks;		
-
-
-// REJECT
-// For fast sight rejection.
-// Speeds up enemy AI by skipping detailed
-//  LineOf Sight calculation.
-// Without special effect, this could be
-//  used as a PVS lookup as well.
-//
-byte*		rejectmatrix;
-
-
-// Maintain single and multi player starting spots.
-#define MAX_DEATHMATCH_STARTS	10
-
-mapthing_t	deathmatchstarts[MAX_DEATHMATCH_STARTS];
-mapthing_t*	deathmatch_p;
-mapthing_t	playerstarts[MAXPLAYERS];
-boolean     playerstartsingame[MAXPLAYERS];
-
-
-
+	// pointer to the current map lump info struct
+	lumpinfo_t *maplumpinfo;
+}
 
 
 //
@@ -130,10 +128,10 @@ void P_LoadVertexes (int lump)
     numvertexes = W_LumpLength (lump) / sizeof(mapvertex_t);
 
     // Allocate zone memory for buffer.
-    vertexes = Z_Malloc (numvertexes*sizeof(vertex_t),PU_LEVEL,0);	
+    vertexes = (vertex_t*)Z_Malloc (numvertexes*sizeof(vertex_t),PU_LEVEL,0);	
 
     // Load data into cache.
-    data = W_CacheLumpNum (lump, PU_STATIC);
+    data = (byte*)W_CacheLumpNum (lump, PU_STATIC);
 	
     ml = (mapvertex_t *)data;
     li = vertexes;
@@ -184,9 +182,9 @@ void P_LoadSegs (int lump)
     int                 sidenum;
 	
     numsegs = W_LumpLength (lump) / sizeof(mapseg_t);
-    segs = Z_Malloc (numsegs*sizeof(seg_t),PU_LEVEL,0);	
+    segs = (seg_t*)Z_Malloc (numsegs*sizeof(seg_t),PU_LEVEL,0);	
     memset (segs, 0, numsegs*sizeof(seg_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
+    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
 	
     ml = (mapseg_t *)data;
     li = segs;
@@ -252,8 +250,8 @@ void P_LoadSubsectors (int lump)
     subsector_t*	ss;
 	
     numsubsectors = W_LumpLength (lump) / sizeof(mapsubsector_t);
-    subsectors = Z_Malloc (numsubsectors*sizeof(subsector_t),PU_LEVEL,0);	
-    data = W_CacheLumpNum (lump,PU_STATIC);
+    subsectors = (subsector_t*)Z_Malloc (numsubsectors*sizeof(subsector_t),PU_LEVEL,0);	
+    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
 	
     ms = (mapsubsector_t *)data;
     memset (subsectors,0, numsubsectors*sizeof(subsector_t));
@@ -281,9 +279,9 @@ void P_LoadSectors (int lump)
 	sector_t*		ss;
 	
 	numsectors = W_LumpLength (lump) / sizeof(mapsector_t);
-	sectors = Z_Malloc (numsectors*sizeof(sector_t),PU_LEVEL,0);	
+	sectors = (sector_t*)Z_Malloc (numsectors*sizeof(sector_t),PU_LEVEL,0);	
 	memset (sectors, 0, numsectors*sizeof(sector_t));
-	data = W_CacheLumpNum (lump,PU_STATIC);
+	data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
 	
 	ms = (mapsector_t *)data;
 	ss = sectors;
@@ -322,8 +320,8 @@ void P_LoadNodes (int lump)
     node_t*	no;
 	
     numnodes = W_LumpLength (lump) / sizeof(mapnode_t);
-    nodes = Z_Malloc (numnodes*sizeof(node_t),PU_LEVEL,0);	
-    data = W_CacheLumpNum (lump,PU_STATIC);
+    nodes = (node_t*)Z_Malloc (numnodes*sizeof(node_t),PU_LEVEL,0);	
+    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
 	
     mn = (mapnode_t *)data;
     no = nodes;
@@ -358,7 +356,7 @@ void P_LoadThings (int lump)
     int			numthings;
     boolean		spawn;
 
-    data = W_CacheLumpNum (lump,PU_STATIC);
+    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
     numthings = W_LumpLength (lump) / sizeof(mapthing_t);
 	
     mt = (mapthing_t *)data;
@@ -428,9 +426,9 @@ void P_LoadLineDefs (int lump)
     vertex_t*		v2;
 	
     numlines = W_LumpLength (lump) / sizeof(maplinedef_t);
-    lines = Z_Malloc (numlines*sizeof(line_t),PU_LEVEL,0);	
+    lines = (line_t*)Z_Malloc (numlines*sizeof(line_t),PU_LEVEL,0);	
     memset (lines, 0, numlines*sizeof(line_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
+    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
 	
     mld = (maplinedef_t *)data;
     ld = lines;
@@ -507,9 +505,9 @@ void P_LoadSideDefs (int lump)
     side_t*		sd;
 	
     numsides = W_LumpLength (lump) / sizeof(mapsidedef_t);
-    sides = Z_Malloc (numsides*sizeof(side_t),PU_LEVEL,0);	
+    sides = (side_t*)Z_Malloc (numsides*sizeof(side_t),PU_LEVEL,0);	
     memset (sides, 0, numsides*sizeof(side_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
+    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
 	
     msd = (mapsidedef_t *)data;
     sd = sides;
@@ -539,7 +537,7 @@ void P_LoadBlockMap (int lump)
     lumplen = W_LumpLength(lump);
     count = lumplen / 2;
 	
-    blockmaplump = Z_Malloc(lumplen, PU_LEVEL, NULL);
+    blockmaplump = (short*)Z_Malloc(lumplen, PU_LEVEL, NULL);
     W_ReadLump(lump, blockmaplump);
     blockmap = blockmaplump + 4;
 
@@ -560,7 +558,7 @@ void P_LoadBlockMap (int lump)
     // Clear out mobj chains
 
     count = sizeof(*blocklinks) * bmapwidth * bmapheight;
-    blocklinks = Z_Malloc(count, PU_LEVEL, 0);
+    blocklinks = (mobj_t**)Z_Malloc(count, PU_LEVEL, 0);
     memset(blocklinks, 0, count);
 }
 
@@ -607,7 +605,7 @@ void P_GroupLines (void)
     }
 
     // build line tables for each sector	
-    linebuffer = Z_Malloc (totallines*sizeof(line_t *), PU_LEVEL, 0);
+    linebuffer = (line_t**)Z_Malloc (totallines*sizeof(line_t *), PU_LEVEL, 0);
 
     for (i=0; i<numsectors; ++i)
     {
@@ -757,24 +755,21 @@ static void P_LoadReject(int lumpnum)
 
     if (lumplen >= minlength)
     {
-        rejectmatrix = W_CacheLumpNum(lumpnum, PU_LEVEL);
+        rejectmatrix = (byte*)W_CacheLumpNum(lumpnum, PU_LEVEL);
     }
     else
     {
-        rejectmatrix = Z_Malloc(minlength, PU_LEVEL, &rejectmatrix);
+        rejectmatrix = (byte*)Z_Malloc(minlength, PU_LEVEL, &rejectmatrix);
         W_ReadLump(lumpnum, rejectmatrix);
 
         PadRejectArray(rejectmatrix + lumplen, minlength - lumplen);
     }
 }
 
-// pointer to the current map lump info struct
-lumpinfo_t *maplumpinfo;
-
 //
 // P_SetupLevel
 //
-void
+DOOM_C_API void
 P_SetupLevel
 ( int		episode,
   int		map,
@@ -875,7 +870,7 @@ P_SetupLevel
 //
 // P_Init
 //
-void P_Init (void)
+DOOM_C_API void P_Init (void)
 {
     P_InitSwitchList ();
     P_InitPicAnims ();

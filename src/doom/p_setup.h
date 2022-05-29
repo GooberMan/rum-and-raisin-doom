@@ -20,13 +20,21 @@
 #ifndef __P_SETUP__
 #define __P_SETUP__
 
-#include "w_wad.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+	#include "w_wad.h"
 
-extern lumpinfo_t *maplumpinfo;
+	extern lumpinfo_t *maplumpinfo;
+
+#ifdef __cplusplus
+}
+#endif
+
 
 // NOT called by W_Ticker. Fixme.
-void
+DOOM_C_API void
 P_SetupLevel
 ( int		episode,
   int		map,
@@ -34,6 +42,6 @@ P_SetupLevel
   skill_t	skill);
 
 // Called by startup code.
-void P_Init (void);
+DOOM_C_API void P_Init (void);
 
 #endif
