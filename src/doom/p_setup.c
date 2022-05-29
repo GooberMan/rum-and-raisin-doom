@@ -203,10 +203,10 @@ void P_LoadSegs (int lump)
 	side = SHORT(ml->side);
 
         // e6y: check for wrong indexes
-        if ((unsigned)ldef->sidenum[side] >= (unsigned)numsides)
+        if ((uint32_t)ldef->sidenum[side] >= (uint32_t)numsides)
         {
             I_Error("P_LoadSegs: linedef %d for seg %d references a non-existent sidedef %d",
-                    linedef, i, (unsigned)ldef->sidenum[side]);
+                    linedef, i, (uint32_t)ldef->sidenum[side]);
         }
 
 	li->sidedef = &sides[ldef->sidenum[side]];
@@ -687,16 +687,16 @@ void P_GroupLines (void)
 // Pad the REJECT lump with extra data when the lump is too small,
 // to simulate a REJECT buffer overflow in Vanilla Doom.
 
-static void PadRejectArray(byte *array, unsigned int len)
+static void PadRejectArray(byte *array, uint32_t len)
 {
-    unsigned int i;
-    unsigned int byte_num;
+    uint32_t i;
+    uint32_t byte_num;
     byte *dest;
-    unsigned int padvalue;
+    uint32_t padvalue;
 
     // Values to pad the REJECT array with:
 
-    unsigned int rejectpad[4] =
+    uint32_t rejectpad[4] =
     {
         0,                                    // Size
         0,                                    // Part of z_zone block header
