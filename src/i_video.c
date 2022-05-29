@@ -389,9 +389,13 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
 
         case SDL_WINDOWEVENT_MOVED:
             i = SDL_GetWindowDisplayIndex(screen);
-            if (i >= 0)
+            if (i >= 0 && i != video_display)
             {
                 video_display = i;
+                SDL_DisplayMode desktopinfo;
+                SDL_GetDesktopDisplayMode( video_display, &desktopinfo );
+                display_width = desktopinfo.w;
+                display_height = desktopinfo.h;
             }
             break;
 
@@ -412,29 +416,30 @@ static boolean ToggleFullScreenKeyShortcut(SDL_Keysym *sym)
 
 void I_PerformFullscreen(void)
 {
-    unsigned int flags = 0;
-
     fullscreen = queued_fullscreen;
 
     // TODO: Consider implementing fullscreen toggle for SDL_WINDOW_FULLSCREEN
     // (mode-changing) setup. This is hard because we have to shut down and
     // restart again.
-    if (fullscreen_width != 0 || fullscreen_height != 0)
-    {
-        return;
-    }
-
+    //if (fullscreen_width != 0 || fullscreen_height != 0)
+    //{
+    //    return;
+    //}
 
     if (fullscreen)
     {
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        // We should be toggling the SDL_WINDOW_POPUP_MENU flag here to get around GL drivers.
+        // But since SDL_SetWindowFlags isn't exposed to us, well, it's the old +1 hack
+        #define GL_FULLSCREENWINDOWHACK 1
+        SDL_SetWindowBordered( screen, false );
+        SDL_SetWindowSize(screen, display_width + GL_FULLSCREENWINDOWHACK, display_height + GL_FULLSCREENWINDOWHACK);
+        SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
-
-    SDL_SetWindowFullscreen(screen, flags);
-
-    if (!fullscreen)
+    else
     {
         SDL_SetWindowSize(screen, window_width, window_height);
+        SDL_SetWindowBordered( screen, true );
+        SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
 }
 
@@ -1313,7 +1318,12 @@ void I_GetWindowPosition(int *x, int *y, int w, int h)
                 "I_GetWindowPosition: We were configured to run on display #%d, "
                 "but it no longer exists (max %d). Moving to display 0.\n",
                 video_display, SDL_GetNumVideoDisplays() - 1);
+
         video_display = 0;
+        SDL_DisplayMode desktopinfo;
+        SDL_GetDesktopDisplayMode( video_display, &desktopinfo );
+        display_width = desktopinfo.w;
+        display_height = desktopinfo.h;
     }
 
     // in fullscreen mode, the window "position" still matters, because
@@ -1457,6 +1467,15 @@ static void SetVideoMode(void)
 
 	SDL_DisplayMode mode;
 
+    if (SDL_GetCurrentDisplayMode(video_display, &mode) != 0)
+    {
+        I_Error("Could not get display mode for video display #%d: %s",
+        video_display, SDL_GetError());
+    }
+	
+	display_width = mode.w;
+	display_height = mode.h;
+
     w = window_width;
     h = window_height;
 
@@ -1467,32 +1486,6 @@ static void SetVideoMode(void)
     // Set the highdpi flag - this makes a big difference on Macs with
     // retina displays, especially when using small window sizes.
     window_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-
-    if (fullscreen)
-    {
-        if (fullscreen_width == 0 && fullscreen_height == 0)
-        {
-            // This window_flags means "Never change the screen resolution!
-            // Instead, draw to the entire screen by scaling the texture
-            // appropriately".
-            window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-        }
-        else
-        {
-            w = fullscreen_width;
-            h = fullscreen_height;
-            window_flags |= SDL_WINDOW_FULLSCREEN;
-        }
-    }
-
-    // Running without window decorations is potentially useful if you're
-    // playing in three window mode and want to line up three game windows
-    // next to each other on a single desktop.
-    // Deliberately not documented because I'm not sure how useful this is yet.
-    if (M_ParmExists("-borderless"))
-    {
-        window_flags |= SDL_WINDOW_BORDERLESS;
-    }
 
     I_GetWindowPosition(&x, &y, w, h);
 
@@ -1509,6 +1502,12 @@ static void SetVideoMode(void)
         {
             I_Error("Error creating window for video startup: %s",
             SDL_GetError());
+        }
+
+        if( fullscreen )
+        {
+            queued_fullscreen = fullscreen;
+            I_PerformFullscreen();
         }
 
         pixel_format = SDL_GetWindowPixelFormat(screen);
@@ -1535,15 +1534,6 @@ static void SetVideoMode(void)
     // The SDL_RENDERER_TARGETTEXTURE flag is required to render the
     // intermediate texture into the upscaled texture.
     renderer_flags = SDL_RENDERER_TARGETTEXTURE;
-	
-    if (SDL_GetCurrentDisplayMode(video_display, &mode) != 0)
-    {
-        I_Error("Could not get display mode for video display #%d: %s",
-        video_display, SDL_GetError());
-    }
-
-	display_width = mode.w;
-	display_height = mode.h;
 
     // Turn on vsync if we aren't in a -timedemo
     if (!singletics && mode.refresh_rate > 0)
