@@ -112,9 +112,6 @@
     <ClCompile Include="..\src\doom\p_saveg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_setup.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\p_sight.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -176,6 +173,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\r_raster.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_setup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

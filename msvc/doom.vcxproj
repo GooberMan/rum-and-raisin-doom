@@ -255,8 +255,8 @@
     <ClInclude Include="..\src\doom\p_pspr.h" />
     <ClCompile Include="..\src\doom\p_saveg.c" />
     <ClInclude Include="..\src\doom\p_saveg.h" />
-    <ClCompile Include="..\src\doom\p_setup.c" />
     <ClInclude Include="..\src\doom\p_setup.h" />
+    <ClCompile Include="..\src\doom\p_setup.cpp" />
     <ClCompile Include="..\src\doom\p_sight.c" />
     <ClCompile Include="..\src\doom\p_spec.c" />
     <ClInclude Include="..\src\doom\p_spec.h" />
