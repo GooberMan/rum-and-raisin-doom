@@ -35,6 +35,8 @@
 // State.
 #include "r_state.h"
 
+#include "i_system.h"
+
 //
 // P_AproxDistance
 // Gives an estimation of distance (not exact)
@@ -483,9 +485,11 @@ P_BlockLinesIterator
     
     offset = y*bmapwidth+x;
 	
-    offset = *(blockmap+offset);
+	// RUM AND RAISIN: removing the need to track the lump itself.
+	// Offsets are stored from lump start, so remove the header entries.
+    offset = *(blockmap+offset) - 4;
 
-    for ( list = blockmaplump+offset ; *list != -1 ; list++)
+    for ( list = blockmap+offset ; *list != -1 ; list++)
     {
 	ld = &lines[*list];
 
