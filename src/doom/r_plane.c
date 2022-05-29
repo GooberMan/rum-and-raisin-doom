@@ -32,6 +32,7 @@
 
 #include "r_local.h"
 #include "r_sky.h"
+#include "r_raster.h"
 
 #include "m_misc.h"
 
@@ -41,16 +42,6 @@
 
 fixed_t			yslope[ MAXSCREENHEIGHT ];
 fixed_t			distscale[ MAXSCREENWIDTH ];
-
-typedef enum spantype_e
-{
-	Span_None,
-	Span_Original,
-	Span_PolyRaster_Log2_4,
-	Span_PolyRaster_Log2_8,
-	Span_PolyRaster_Log2_16,
-	Span_PolyRaster_Log2_32,
-} spantype_t;
 
 int32_t			span_override = Span_None;
 
@@ -144,7 +135,7 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 	if (spancontext->x2 < spancontext->x1
 		|| spancontext->x1<0
 		|| spancontext->x2>=render_width
-		|| (unsigned)spancontext->y>render_height)
+		|| spancontext->y>render_height)
 	{
 		I_Error( "R_MapPlane: Attempting to draw span %i to %i at %i",
 			 spancontext->x1,spancontext->x2,spancontext->y);
@@ -388,437 +379,26 @@ void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext
 
 	while( y < stop )
 	{
-		if ( planecontext->planeheight != planecontext->raster[ y ].height )
-		{
-			planecontext->raster[ y ].height		= planecontext->planeheight;
-			planecontext->raster[ y ].distance		= FixedMul ( planecontext->planeheight, yslope[ y ] );
-		}
+		planecontext->raster[ y ].distance		= FixedMul ( planecontext->planeheight, yslope[ y ] );
 
 		// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
 		//if( planecontext->planezlight != planecontext->raster[ y ].zlight )
 		{
 			if( fixedcolormapindex )
 			{
-				// TODO: This should be a real define somewhere
-				planecontext->raster[ y ].zlight = NULL;
 				planecontext->raster[ y ].sourceoffset = fixedcolormapindex * 4096;
 			}
 			else
 			{
-				lightindex = M_MAX( 0, M_MIN( ( planecontext->raster[ y ].distance >> LIGHTZSHIFT ), ( MAXLIGHTZ - 1 ) ) );
+				lightindex = M_CLAMP( ( planecontext->raster[ y ].distance >> LIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
 				lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
 				planecontext->raster[ y ].sourceoffset = lightindex * 4096;
-				planecontext->raster[ y ].zlight = zlight[ planecontext->planezlightindex ];
 			}
 
 		}
 
 		++y;
 	};
-}
-
-#define RASTERISE_UNROLLED 1
-
-#define DOSAMPLE() spot = ( (yfrac & 0x3F0000 ) >> 10) | ( (xfrac & 0x3F0000 ) >> 16);\
-source = spancontext->source + planecontext->raster[ ybase++ ].sourceoffset; \
-*dest++ = source[spot]; \
-xfrac += xstep; \
-yfrac += ystep;
-
-// Used http://www.lysator.liu.se/~mikaelk/doc/perspectivetexture/ as reference for how to implement an efficient rasteriser
-// Implemented for several Log2( N ) values, select based on backbuffer width
-
-static void R_RasteriseVisplaneColumn_Log2_32( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
-{
-	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
-	pixel_t*			source			= spancontext->source;
-
-	int32_t				ybase			= visplane->top[ x ];
-	int32_t				ycache			= ybase;
-	int32_t				count			= visplane->bottom[ x ] - ybase;
-
-	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
-	fixed_t				anglecos		= renderfinecosine[ angle ];
-	fixed_t				anglesin		= renderfinesine[ angle ];
-
-	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
-	fixed_t				currlength		= FixedMul( currdistance, distscale[ x ] );
-
-	fixed_t				xfrac		= viewx + FixedMul( anglecos, currlength );
-	fixed_t				yfrac		= -viewy - FixedMul( anglesin, currlength );
-	fixed_t				nextxfrac;
-	fixed_t				nextyfrac;
-
-	fixed_t				xstep;
-	fixed_t				ystep;
-
-	int32_t				spot;
-
-#if RENDER_PERF_GRAPHING
-	uint64_t			starttime = I_GetTimeUS();
-	uint64_t			endtime;
-#endif // RENDER_PERF_GRAPHING
-
-	while( count >= PLANE_PIXELLEAP_32 )
-	{
-		ycache			= ybase + PLANE_PIXELLEAP_32;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_32_LOG2;
-		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_32_LOG2;
-
-#if !RASTERISE_UNROLLED
-		do
-		{
-			DOSAMPLE();
-		} while( ybase < ycache );
-#else // RASTERISE_UNROLLED
-
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-
-#endif // !RASTERISE_UNROLLED
-
-		xfrac = nextxfrac;
-		yfrac = nextyfrac;
-
-		count -= PLANE_PIXELLEAP_32;
-	};
-
-	if( count >= 0 )
-	{
-		ycache			= ybase + count;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
-
-		do
-		{
-			DOSAMPLE();
-		} while( ybase <= ycache );
-	}
-
-#if RENDER_PERF_GRAPHING
-	endtime = I_GetTimeUS();
-	planecontext->flattimetaken += ( endtime - starttime );
-#endif // RENDER_PERF_GRAPHING
-
-}
-
-static void R_RasteriseVisplaneColumn_Log2_16( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
-{
-	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
-	pixel_t*			source			= spancontext->source;
-
-	int32_t				ybase			= visplane->top[ x ];
-	int32_t				ycache			= ybase;
-	int32_t				count			= visplane->bottom[ x ] - ybase;
-
-	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
-	fixed_t				anglecos		= renderfinecosine[ angle ];
-	fixed_t				anglesin		= renderfinesine[ angle ];
-
-	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
-	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
-
-	fixed_t				xfrac			= viewx + FixedMul( anglecos, currlength );
-	fixed_t				yfrac			= -viewy - FixedMul( anglesin, currlength );
-	fixed_t				nextxfrac;
-	fixed_t				nextyfrac;
-
-	fixed_t				xstep;
-	fixed_t				ystep;
-
-	int32_t				spot;
-
-
-#if RENDER_PERF_GRAPHING
-	uint64_t			starttime = I_GetTimeUS();
-	uint64_t			endtime;
-#endif // RENDER_PERF_GRAPHING
-
-	while( count >= PLANE_PIXELLEAP_16 )
-	{
-		ycache			= ybase + PLANE_PIXELLEAP_16;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_16_LOG2;
-		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_16_LOG2;
-
-#if !RASTERISE_UNROLLED
-		do
-		{
-			DOSAMPLE();
-		} while( ybase < ycache );
-#else // RASTERISE_UNROLLED
-
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-
-#endif // !RASTERISE_UNROLLED
-
-		xfrac = nextxfrac;
-		yfrac = nextyfrac;
-
-		count -= PLANE_PIXELLEAP_16;
-	};
-
-	if( count >= 0 )
-	{
-		ycache			= ybase + count;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
-
-		do
-		{
-			DOSAMPLE();
-		} while( ybase <= ycache );
-	}
-
-#if RENDER_PERF_GRAPHING
-	endtime = I_GetTimeUS();
-	planecontext->flattimetaken += ( endtime - starttime );
-#endif // RENDER_PERF_GRAPHING
-
-}
-
-static void R_RasteriseVisplaneColumn_Log2_8( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
-{
-	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
-	pixel_t*			source			= spancontext->source;
-
-	int32_t				ybase			= visplane->top[ x ];
-	int32_t				ycache			= ybase;
-	int32_t				count			= visplane->bottom[ x ] - ybase;
-
-	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
-	fixed_t				anglecos		= renderfinecosine[ angle ];
-	fixed_t				anglesin		= renderfinesine[ angle ];
-
-	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
-	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
-
-	fixed_t				xfrac			= viewx + FixedMul( anglecos, currlength );
-	fixed_t				yfrac			= -viewy - FixedMul( anglesin, currlength );
-	fixed_t				nextxfrac;
-	fixed_t				nextyfrac;
-
-	fixed_t				xstep;
-	fixed_t				ystep;
-
-	int32_t				spot;
-
-#if RENDER_PERF_GRAPHING
-	uint64_t			starttime = I_GetTimeUS();
-	uint64_t			endtime;
-#endif // RENDER_PERF_GRAPHING
-
-	while( count >= PLANE_PIXELLEAP_8 )
-	{
-		ycache			= ybase + PLANE_PIXELLEAP_8;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_8_LOG2;
-		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_8_LOG2;
-
-#if !RASTERISE_UNROLLED
-		do
-		{
-			DOSAMPLE();
-		} while( ybase < ycache );
-#else // RASTERISE_UNROLLED
-
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-
-#endif // !RASTERISE_UNROLLED
-
-		xfrac = nextxfrac;
-		yfrac = nextyfrac;
-
-		count -= PLANE_PIXELLEAP_8;
-	};
-
-	if( count >= 0 )
-	{
-		ycache			= ybase + count;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
-
-		do
-		{
-			DOSAMPLE();
-		} while( ybase <= ycache );
-	}
-
-#if RENDER_PERF_GRAPHING
-	endtime = I_GetTimeUS();
-	planecontext->flattimetaken += ( endtime - starttime );
-#endif // RENDER_PERF_GRAPHING
-
-}
-
-// This is probably the version that will get SIMD'd, with unrolling from there
-static void R_RasteriseVisplaneColumn_Log2_4( planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane, int32_t x )
-{
-	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ visplane->top[ x ] ];
-	pixel_t*			source			= spancontext->source;
-
-	int32_t				ybase			= visplane->top[ x ];
-	int32_t				ycache			= ybase;
-	int32_t				count			= visplane->bottom[ x ] - ybase;
-
-	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
-	fixed_t				anglecos		= renderfinecosine[ angle ];
-	fixed_t				anglesin		= renderfinesine[ angle ];
-
-	fixed_t				currdistance	= planecontext->raster[ ybase ].distance;
-	fixed_t				currlength		= FixedMul ( currdistance, distscale[ x ] );
-
-	fixed_t				xfrac			= viewx + FixedMul( anglecos, currlength );
-	fixed_t				yfrac			= -viewy - FixedMul( anglesin, currlength );
-	fixed_t				nextxfrac;
-	fixed_t				nextyfrac;
-
-	fixed_t				xstep;
-	fixed_t				ystep;
-
-	int32_t				spot;
-
-
-#if RENDER_PERF_GRAPHING
-	uint64_t			starttime = I_GetTimeUS();
-	uint64_t			endtime;
-#endif // RENDER_PERF_GRAPHING
-
-	while( count >= PLANE_PIXELLEAP_4 )
-	{
-		ycache			= ybase + PLANE_PIXELLEAP_4;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xstep =	( nextxfrac - xfrac ) >> PLANE_PIXELLEAP_4_LOG2;
-		ystep =	( nextyfrac - yfrac ) >> PLANE_PIXELLEAP_4_LOG2;
-
-#if !RASTERISE_UNROLLED
-		do
-		{
-			DOSAMPLE();
-		} while( ybase < ycache );
-#else // RASTERISE_UNROLLED
-
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-		DOSAMPLE();
-
-#endif // !RASTERISE_UNROLLED
-
-		xfrac = nextxfrac;
-		yfrac = nextyfrac;
-
-		count -= PLANE_PIXELLEAP_4;
-	};
-
-	if( count >= 0 )
-	{
-		ycache			= ybase + count;
-		currdistance	= planecontext->raster[ ycache ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
-
-		xfrac = xfrac;
-		yfrac = yfrac;
-		xstep =	( nextxfrac - xfrac ) / ( count + 1 );
-		ystep =	( nextyfrac - yfrac ) / ( count + 1 );
-
-		do
-		{
-			DOSAMPLE();
-		} while( ybase <= ycache );
-	}
-
-#if RENDER_PERF_GRAPHING
-	endtime = I_GetTimeUS();
-	planecontext->flattimetaken += ( endtime - starttime );
-#endif // RENDER_PERF_GRAPHING
-
 }
 
 //
@@ -895,13 +475,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		spancontext.source = precachedflats[ lumpnum ];
 
 		planecontext->planeheight = abs(pl->height-viewz);
-		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
-
-		if (light >= LIGHTLEVELS)
-			light = LIGHTLEVELS-1;
-
-		if (light < 0)
-			light = 0;
+		light = M_CLAMP( ( (pl->lightlevel >> LIGHTSEGSHIFT)+extralight ), 0, LIGHTLEVELS - 1 );
 
 		planecontext->planezlightindex = light;
 		planecontext->planezlight = zlight[light];
@@ -920,52 +494,8 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		}
 		else
 		{
-			R_PrepareVisplaneRaster( pl, planecontext );
-
-			switch( span_type )
-			{
-			case Span_PolyRaster_Log2_4:
-				for (x=pl->minx ; x <= stop ; x++)
-				{
-					if( pl->top[ x ] <= pl->bottom[ x ] )
-					{
-						R_RasteriseVisplaneColumn_Log2_4( planecontext, &spancontext, pl, x );
-					}
-				}
-				break;
-
-			case Span_PolyRaster_Log2_8:
-				for (x=pl->minx ; x <= stop ; x++)
-				{
-					if( pl->top[ x ] <= pl->bottom[ x ] )
-					{
-						R_RasteriseVisplaneColumn_Log2_8( planecontext, &spancontext, pl, x );
-					}
-				}
-				break;
-
-			case Span_PolyRaster_Log2_16:
-				for (x=pl->minx ; x <= stop ; x++)
-				{
-					if( pl->top[ x ] <= pl->bottom[ x ] )
-					{
-						R_RasteriseVisplaneColumn_Log2_16( planecontext, &spancontext, pl, x );
-					}
-				}
-				break;
-
-			case Span_PolyRaster_Log2_32:
-				for (x=pl->minx ; x <= stop ; x++)
-				{
-					if( pl->top[ x ] <= pl->bottom[ x ] )
-					{
-						R_RasteriseVisplaneColumn_Log2_32( planecontext, &spancontext, pl, x );
-					}
-				}
-				break;
-
-			}
-
+			//R_PrepareVisplaneRaster( pl, planecontext );
+			R_RasteriseColumns( span_type, planecontext, &spancontext, pl );
 		}
 	}
 }

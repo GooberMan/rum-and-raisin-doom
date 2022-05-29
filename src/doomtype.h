@@ -54,6 +54,12 @@
 #define PLATFORM_ARCHNAME           PLATFORM_ARCHNAME_ARM64
 #endif // architecture check
 
+#ifdef __cplusplus
+#define DOOM_C_API extern "C"
+#else
+#define DOOM_C_API
+#endif // C++ check
+
 #if !defined( NDEBUG )
 #define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME " THIS IS A DEBUG BUILD STOP PROFILING ON A DEBUG BUILD"
 #else

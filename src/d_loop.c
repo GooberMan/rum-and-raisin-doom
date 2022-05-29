@@ -674,7 +674,7 @@ static void SinglePlayerClear(ticcmd_set_t *set)
 // TryRunTics
 //
 
-int32_t sleeponzerotics = 1;
+int32_t sleeponzerotics = 0;
 
 boolean TryRunTics (void)
 {

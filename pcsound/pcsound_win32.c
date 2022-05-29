@@ -24,6 +24,8 @@
 #include "pcsound.h"
 #include "pcsound_internal.h"
 
+#pragma optimize( "", off )
+
 static SDL_Thread *sound_thread_handle;
 static int sound_thread_running;
 static pcsound_callback_func callback;
@@ -32,6 +34,12 @@ static int SoundThread(void *unused)
 {
     int frequency;
     int duration;
+
+	uint64_t startticks;
+	uint64_t nowms;
+	uint64_t freq = SDL_GetPerformanceFrequency();
+
+	SDL_SetThreadPriority( SDL_THREAD_PRIORITY_TIME_CRITICAL );
     
     while (sound_thread_running)
     {
@@ -43,7 +51,11 @@ static int SoundThread(void *unused)
         }
         else
         {
-            Sleep(duration);
+			startticks = SDL_GetPerformanceCounter();
+			do
+			{
+				nowms = ( ( SDL_GetPerformanceCounter() - startticks ) * 1000ull ) / freq;
+			} while( nowms <= duration );
         }
     }
     
@@ -58,7 +70,7 @@ static int PCSound_Win32_Init(pcsound_callback_func callback_func)
     // Temporarily disabled - the Windows scheduler is strange and 
     // stupid.
    
-    return 0;
+    //return 0;
 
     // Find the OS version
 

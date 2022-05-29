@@ -521,6 +521,16 @@ typedef struct bspcontext_s
 #define PLANE_PIXELLEAP_4			( 4 )
 #define PLANE_PIXELLEAP_4_LOG2		( 2 )
 
+typedef enum spantype_e
+{
+	Span_None,
+	Span_Original,
+	Span_PolyRaster_Log2_4,
+	Span_PolyRaster_Log2_8,
+	Span_PolyRaster_Log2_16,
+	Span_PolyRaster_Log2_32,
+} spantype_t;
+
 typedef struct rastercache_s
 {
 	lighttable_t**		zlight;

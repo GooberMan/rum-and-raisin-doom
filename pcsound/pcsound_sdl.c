@@ -27,6 +27,8 @@
 #define MAX_SOUND_SLICE_TIME 70 /* ms */
 #define SQUARE_WAVE_AMP 0x2000
 
+#pragma optimize( "", off )
+
 // If true, we initialized SDL and have the responsibility to shut it 
 // down
 
@@ -235,6 +237,8 @@ static int PCSound_SDL_Init(pcsound_callback_func callback_func)
     callback = callback_func;
     current_freq = 0;
     current_remaining = 0;
+
+    Mix_AllocateChannels(1);
 
     Mix_SetPostMix(PCSound_Mix_Callback, NULL);
 

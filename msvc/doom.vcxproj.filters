@@ -175,6 +175,9 @@
     <ClCompile Include="..\src\doom\r_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\doom\r_raster.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\doom\am_map.h">
@@ -310,6 +313,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\doom\wi_stuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\doom\r_raster.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -29,6 +29,7 @@
 // The ternary actually optimises pretty well on modern architectures, by an order of magnitude compared to bit twiddling operations.
 #define M_MIN( x, y ) ( x < y ? x : y )
 #define M_MAX( x, y ) ( x > y ? x : y )
+#define M_CLAMP( val, minval, maxval ) M_MAX( minval, M_MIN( maxval, val ) )
 
 #define M_BITMASK( numbits ) ( ( 1 << numbits ) - 1 )
 #define M_BITMASK64( numbits ) ( 1ll << numbits ) - 1 )

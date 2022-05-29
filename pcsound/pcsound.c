@@ -23,6 +23,7 @@
 #include "pcsound.h"
 #include "pcsound_internal.h"
 
+#pragma optimize( "", off )
 
 #ifdef HAVE_DEV_ISA_SPKRIO_H
 #define HAVE_BSD_SPEAKER
