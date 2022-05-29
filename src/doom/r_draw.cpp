@@ -43,8 +43,8 @@ extern "C"
 #include "m_misc.h"
 #include "m_random.h"
 
-extern int border_style;
-extern int border_bezel_style;
+extern int32_t border_style;
+extern int32_t border_bezel_style;
 
 extern vbuffer_t* dest_buffer;
 

@@ -124,17 +124,17 @@ static boolean initialized = false;
 // disable mouse?
 
 static boolean nomouse = false;
-int usemouse = 1;
+int32_t usemouse = 1;
 
 // Save screenshots in PNG format.
 
-int png_screenshots = 0;
+int32_t png_screenshots = 0;
 
 // 0 = original, 1 = INTERPIC
-int border_style = 0;
+int32_t border_style = 0;
 
 // 0 = original, 1 = dithered
-int border_bezel_style = 1; // Need to default to dithered until I sort out widescreen UI rendering
+int32_t border_bezel_style = 1; // Need to default to dithered until I sort out widescreen UI rendering
 
 // Window position:
 
@@ -142,7 +142,7 @@ char *window_position = "center";
 
 // SDL display number on which to run.
 
-int video_display = 0;
+int32_t video_display = 0;
 
 // Screen width and height, from configuration file.
 
@@ -152,8 +152,8 @@ int video_display = 0;
 #define DEFAULT_RENDER_HEIGHT	800
 #define DEFAULT_FULLSCREEN		0
 
-int window_width = DEFAULT_WINDOW_WIDTH;
-int window_height = DEFAULT_WINDOW_HEIGHT;
+int32_t window_width = DEFAULT_WINDOW_WIDTH;
+int32_t window_height = DEFAULT_WINDOW_HEIGHT;
 
 enum renderdimensions_e
 {
@@ -174,41 +174,41 @@ int32_t queued_render_height = DEFAULT_RENDER_HEIGHT;
 
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
 
-int fullscreen_width = 0, fullscreen_height = 0;
+int32_t fullscreen_width = 0, fullscreen_height = 0;
 
-int display_width = 0;
-int display_height = 0;
+int32_t display_width = 0;
+int32_t display_height = 0;
 
 // Maximum number of pixels to use for intermediate scale buffer.
 
-static int max_scaling_buffer_pixels = 16000000;
+static int32_t max_scaling_buffer_pixels = 16000000;
 
 // Run in full screen mode?  (int type for config code)
 
-int fullscreen = DEFAULT_FULLSCREEN;
+int32_t fullscreen = DEFAULT_FULLSCREEN;
 
 // Aspect ratio correction mode
 
-int aspect_ratio_correct = true;
-static int actualheight;
+int32_t aspect_ratio_correct = true;
+static int32_t actualheight;
 
 // Force integer scales for resolution-independent rendering
 
-int integer_scaling = false;
+int32_t integer_scaling = false;
 
 // VGA Porch palette change emulation
 
-int vga_porch_flash = false;
+int32_t vga_porch_flash = false;
 
 // Time to wait for the screen to settle on startup before starting the
 // game (ms)
 
-static int startup_delay = 1000;
+static int32_t startup_delay = 1000;
 
 // Grab the mouse? (int type for config code). nograbmouse_override allows
 // this to be temporarily disabled via the command line.
 
-static int grabmouse = true;
+static int32_t grabmouse = true;
 static boolean nograbmouse_override = false;
 
 // If true, game is running as a screensaver
@@ -242,12 +242,12 @@ static boolean window_focused = true;
 // Window resize state.
 
 static boolean need_resize = false;
-static unsigned int last_resize_time;
-#define RESIZE_DELAY 500
+static uint64_t last_resize_time = 0;
+#define RESIZE_DELAY 500ull
 
 // Gamma correction level to use
 
-int usegamma = 0;
+int32_t usegamma = 0;
 
 // Joystick/gamepad hysteresis
 uint64_t joywait = 0;
@@ -354,7 +354,7 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
 
         case SDL_WINDOWEVENT_RESIZED:
             need_resize = true;
-            last_resize_time = SDL_GetTicks();
+            last_resize_time = I_GetTimeMS();
             break;
 
         // Don't render the screen when the window is minimized:
@@ -768,7 +768,7 @@ void I_FinishUpdate (void)
 
     if (need_resize)
     {
-        if (SDL_GetTicks() > last_resize_time + RESIZE_DELAY)
+        if (I_GetTimeMS() > last_resize_time + RESIZE_DELAY)
         {
             int flags;
             // When the window is resized (we're not in fullscreen mode),

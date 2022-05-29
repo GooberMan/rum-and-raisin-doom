@@ -118,17 +118,17 @@ void I_EnableLoadingDisk(int xoffs, int yoffs);
 
 extern boolean screenvisible;
 
-extern int vanilla_keyboard_mapping;
+extern int32_t vanilla_keyboard_mapping;
 extern boolean screensaver_mode;
-extern int usegamma;
+extern int32_t usegamma;
 extern pixel_t *I_VideoBuffer;
 
-extern int screen_width;
-extern int screen_height;
-extern int fullscreen;
-extern int aspect_ratio_correct;
-extern int integer_scaling;
-extern int vga_porch_flash;
+extern int32_t screen_width;
+extern int32_t screen_height;
+extern int32_t fullscreen;
+extern int32_t aspect_ratio_correct;
+extern int32_t integer_scaling;
+extern int32_t vga_porch_flash;
 
 extern char *window_position;
 void I_GetWindowPosition(int *x, int *y, int w, int h);

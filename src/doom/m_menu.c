@@ -2850,13 +2850,13 @@ static void M_DebugMenuControlsRemapping(	const char* itemname,
 
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
-	extern int fullscreen;
-	extern int window_width;
-	extern int window_height;
-	extern int display_width;
-	extern int display_height;
-	extern int border_style;
-	extern int border_bezel_style;
+	extern int32_t fullscreen;
+	extern int32_t window_width;
+	extern int32_t window_height;
+	extern int32_t display_width;
+	extern int32_t display_height;
+	extern int32_t border_style;
+	extern int32_t border_bezel_style;
 	extern int32_t fuzz_style;
 	extern int32_t span_override;
 	extern int32_t show_endoom;
