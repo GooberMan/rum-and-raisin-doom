@@ -143,20 +143,23 @@
 
 #if defined(__cplusplus) || defined(__bool_true_false_are_defined)
 
-// Use builtin bool type with C++.
+// Using the built-in type for boolean in C++ causes size mismatches in C code.
+// Need to go whole hog on the C++ conversion to deal with this effectively.
 
-typedef bool boolean;
+typedef int32_t boolean;
 
 #else
 
 // [R&R] TODO: Switching to stdbool.h breaks clang.
 // Some structs store booleans. This could be why.
 // Investigate further.
-typedef enum 
+typedef enum boolean_s
 {
     false, 
     true
-} boolean;
+} boolean_t;
+
+typedef int32_t boolean;
 
 //#include <stdbool.h>
 //typedef bool boolean;
