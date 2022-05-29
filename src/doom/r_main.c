@@ -1392,8 +1392,6 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 //
 // R_Init
 //
-int32_t do_func = 0;
-
 void R_Init (void)
 {
 	R_InitAspectAdjustedValues();
@@ -1416,8 +1414,6 @@ void R_Init (void)
     R_InitSkyMap ();
     R_InitTranslationTables ();
     printf (".");
-
-	M_RegisterDebugMenuCheckbox( "Render|Func call instead", NULL, (boolean*)&do_func );
 
 	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
 	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
