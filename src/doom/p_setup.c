@@ -50,28 +50,28 @@ void	P_SpawnMapThing (mapthing_t*	mthing);
 // MAP related Lookup tables.
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
-int		numvertexes;
+int32_t		numvertexes;
 vertex_t*	vertexes;
 
-int		numsegs;
+int32_t		numsegs;
 seg_t*		segs;
 
-int		numsectors;
+int32_t		numsectors;
 sector_t*	sectors;
 
-int		numsubsectors;
+int32_t		numsubsectors;
 subsector_t*	subsectors;
 
-int		numnodes;
+int32_t		numnodes;
 node_t*		nodes;
 
-int		numlines;
+int32_t		numlines;
 line_t*		lines;
 
-int		numsides;
+int32_t		numsides;
 side_t*		sides;
 
-static int      totallines;
+static int32_t      totallines;
 
 // BLOCKMAP
 // Created from axis aligned bounding box
