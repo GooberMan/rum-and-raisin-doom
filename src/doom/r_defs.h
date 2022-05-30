@@ -178,6 +178,8 @@ typedef	struct
 
 typedef struct
 {
+	int32_t				index;
+
 	// add this to the calculated texture column
 	fixed_t				textureoffset;
 
@@ -186,9 +188,9 @@ typedef struct
 
 	// Texture indices.
 	// We do not maintain names here. 
-	int32_t				toptexture;
-	int32_t				bottomtexture;
-	int32_t				midtexture;
+	int16_t				toptexture;
+	int16_t				bottomtexture;
+	int16_t				midtexture;
 
 	// Sector the SideDef is facing.
 	sector_t*			sector;
@@ -229,7 +231,7 @@ typedef struct line_s
 
 	// Visual appearance: SideDefs.
 	//  sidenum[1] will be -1 if one sided
-	int32_t				sidenum[2];
+	int16_t				sidenum[2];
 
 	// Neat. Another bounding box, for the extent
 	//  of the LineDef.
@@ -263,6 +265,7 @@ typedef struct line_s
 typedef struct subsector_s
 {
 	sector_t*			sector;
+	int32_t				index;
 	uint16_t			numlines;
 	uint16_t			firstline;
 } subsector_t;
@@ -298,6 +301,7 @@ typedef struct
 //
 typedef struct node_s
 {
+	int32_t				index;
 	// Partition line.
 	fixed_t				x;
 	fixed_t				y;
