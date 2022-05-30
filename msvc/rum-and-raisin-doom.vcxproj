@@ -94,6 +94,7 @@
       <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.lib</ImportLibrary>
       <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
+      <StackReserveSize>4194304</StackReserveSize>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -138,8 +139,7 @@
       <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.lib</ImportLibrary>
       <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
-      <StackReserveSize>
-      </StackReserveSize>
+      <StackReserveSize>4194304</StackReserveSize>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -183,6 +183,7 @@
       <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
       <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
+      <StackReserveSize>4194304</StackReserveSize>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -227,6 +228,7 @@
       <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
       <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
+      <StackReserveSize>4194304</StackReserveSize>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
