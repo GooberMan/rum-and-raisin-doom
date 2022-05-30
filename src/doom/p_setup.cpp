@@ -45,25 +45,52 @@ struct ReadVal_Vanilla
 	template< typename _ty >
 	static INLINE int16_t Short( const _ty& val )
 	{
-		return SHORT( val );
+		return SDL_SwapLE16( val );
 	}
 
 	template< typename _ty >
-	static INLINE int16_t UShort( const _ty& val )
+	static INLINE uint16_t UShort( const _ty& val )
 	{
-		return USHORT( val );
+		return SDL_SwapLE16( val );
 	}
 
 	template< typename _ty >
 	static INLINE int32_t Long( const _ty& val )
 	{
-		return LONG( val );
+		return SDL_SwapLE32( val );
 	}
 
 	template< typename _ty >
-	static INLINE int32_t ULong( const _ty& val )
+	static INLINE uint32_t ULong( const _ty& val )
 	{
-		return ULONG( val );
+		return SDL_SwapLE32( val );
+	}
+};
+
+struct ReadVal_LimitRemoving
+{
+	template< typename _ty >
+	static INLINE uint16_t Short( const _ty& val )
+	{
+		return SDL_SwapLE16( *(uint16_t*)&val );
+	}
+
+	template< typename _ty >
+	static INLINE uint16_t UShort( const _ty& val )
+	{
+		return SDL_SwapLE16( *(uint16_t*)&val );
+	}
+
+	template< typename _ty >
+	static INLINE int32_t Long( const _ty& val )
+	{
+		return SDL_SwapLE32( val );
+	}
+
+	template< typename _ty >
+	static INLINE uint32_t ULong( const _ty& val )
+	{
+		return SDL_SwapLE32( val );
 	}
 };
 
@@ -95,8 +122,7 @@ auto WadDataConvert( int32_t lumpnum, _functor&& func )
 	return data;
 }
 
-#define NOINLINE __declspec( noinline )
-
+#pragma optimize( "", off )
 template< typename _reader >
 struct DoomMapLoader
 {
@@ -149,7 +175,7 @@ struct DoomMapLoader
 	constexpr auto	Lines() const noexcept		{ return std::span( lines, numlines ); }
 	constexpr auto	Sides() const noexcept		{ return std::span( sides, numsides ); }
 
-	void NOINLINE LoadBlockmap( int32_t lumpnum )
+	void INLINE LoadBlockmap( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< int16_t, int16_t >( lumpnum, []( int32_t index, int16_t& out, const int16_t& in )
 		{
@@ -168,7 +194,7 @@ struct DoomMapLoader
 		memset( blocklinks, 0, linkssize );
 	}
 
-	void NOINLINE LoadVertices( int32_t lumpnum )
+	void INLINE LoadVertices( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< mapvertex_t, vertex_t >( lumpnum, []( int32_t index, vertex_t& out, const mapvertex_t& in )
 		{
@@ -180,7 +206,7 @@ struct DoomMapLoader
 		vertices			= data.output;
 	}
 
-	void NOINLINE LoadSectors( int32_t lumpnum )
+	void INLINE LoadSectors( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< mapsector_t, sector_t >( lumpnum, []( int32_t index, sector_t& out, const mapsector_t& in )
 		{
@@ -200,7 +226,7 @@ struct DoomMapLoader
 		sectors					= data.output;
 	}
 
-	void NOINLINE LoadSidedefs( int32_t lumpnum )
+	void INLINE LoadSidedefs( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< mapsidedef_t, side_t >( lumpnum, [ this ]( int32_t index, side_t& out, const mapsidedef_t& in )
 		{
@@ -216,10 +242,11 @@ struct DoomMapLoader
 		sides = data.output;
 	}
 
-	void NOINLINE LoadLinedefs( int32_t lumpnum )
+	void INLINE LoadLinedefs( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< maplinedef_t, line_t >( lumpnum, [ this ]( int32_t index, line_t& out, const maplinedef_t& in )
 		{
+			out.index			= index;
 			out.flags			= Read::Short( in.flags );
 			out.special			= Read::Short( in.special );
 			out.tag				= Read::Short( in.tag );
@@ -267,8 +294,17 @@ struct DoomMapLoader
 				out.bbox[ BOXTOP ]		= out.v1->y;
 			}
 
-			out.sidenum[ 0 ] = Read::Short( in.sidenum[ 0 ] );
-			out.sidenum[ 1 ] = Read::Short( in.sidenum[ 1 ] );
+			// Bit of fiddling, but handling the side loading this
+			// way and making line_t's sidenums int32s means we
+			// keep vanilla compatibilty as well as limit removing
+			// just by chaning the reader type. No other code will
+			// need to change.
+			auto side0 = Read::Short( in.sidenum[ 0 ] );
+			auto side1 = Read::Short( in.sidenum[ 1 ] );
+			constexpr auto INVALID_LINE = ( ( decltype( side0 ) )~0 );
+
+			out.sidenum[ 0 ] = side0 != INVALID_LINE ? side0 : -1;
+			out.sidenum[ 1 ] = side1 != INVALID_LINE ? side1 : -1;
 
 			if( out.sidenum[ 0 ] != -1 )
 			{
@@ -293,7 +329,7 @@ struct DoomMapLoader
 		lines = data.output;
 	}
 
-	void NOINLINE LoadSubsectors( int32_t lumpnum )
+	void INLINE LoadSubsectors( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< mapsubsector_t, subsector_t >( lumpnum, []( int32_t index, subsector_t& out, const mapsubsector_t& in )
 		{
@@ -305,7 +341,7 @@ struct DoomMapLoader
 		subsectors = data.output;
 	}
 
-	void NOINLINE LoadNodes( int32_t lumpnum )
+	void INLINE LoadNodes( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< mapnode_t, node_t >( lumpnum, []( int32_t index, node_t& out, const mapnode_t& in )
 		{
@@ -327,7 +363,7 @@ struct DoomMapLoader
 		nodes = data.output;
 	}
 
-	void NOINLINE LoadSegs( int32_t lumpnum )
+	void INLINE LoadSegs( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< mapseg_t, seg_t >( lumpnum, [ this ]( int32_t index, seg_t& out, const mapseg_t& in )
 		{
@@ -380,7 +416,7 @@ struct DoomMapLoader
 		segs = data.output;
 	}
 
-	void NOINLINE GroupLines()
+	void INLINE GroupLines()
 	{
 		// look up sector number for each subsector
 		for ( subsector_t& subsector : SubSectors() )
@@ -469,7 +505,7 @@ struct DoomMapLoader
 
 	}
 
-	void NOINLINE LoadReject( int32_t lumpnum )
+	void INLINE LoadReject( int32_t lumpnum )
 	{
 		// Calculate the size that the REJECT lump *should* be.
 		int32_t minlength = (numsectors * numsectors + 7) / 8;
@@ -1330,8 +1366,6 @@ P_SetupLevel
 
     leveltime = 0;
 	
-	DoomMapLoader< ReadVal_Vanilla > loader = DoomMapLoader< ReadVal_Vanilla >();
-
 	switch( loading_code )
 	{
 	using enum LoadingCode;
@@ -1351,27 +1385,54 @@ P_SetupLevel
 
 	case RnRVanilla:
 		{
-			bmaporgx		= 0;
-			bmaporgy		= 0;
-			bmapwidth		= 0;
-			bmapheight		= 0;
-			blockmap		= 0;
-			blocklinks		= 0;
-			numvertexes		= 0;
-			vertexes		= 0;
-			numsectors		= 0;
-			sectors			= 0;
-			numsides		= 0;
-			sides			= 0;
-			numlines		= 0;
-			lines			= 0;
-			numsubsectors	= 0;
-			subsectors		= 0;
-			numnodes		= 0;
-			nodes			= 0;
-			numsegs			= 0;
-			segs			= 0;
-			rejectmatrix	= 0;
+			DoomMapLoader< ReadVal_Vanilla > loader = DoomMapLoader< ReadVal_Vanilla >();
+
+			loader.LoadBlockmap( lumpnum + ML_BLOCKMAP );
+			loader.LoadVertices( lumpnum + ML_VERTEXES );
+			loader.LoadSectors( lumpnum + ML_SECTORS );
+			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
+			loader.LoadLinedefs( lumpnum + ML_LINEDEFS );
+			loader.LoadSubsectors( lumpnum + ML_SSECTORS );
+			loader.LoadNodes( lumpnum + ML_NODES );
+			loader.LoadSegs( lumpnum + ML_SEGS );
+			loader.GroupLines();
+			loader.LoadReject( lumpnum + ML_REJECT );
+
+			bmaporgx		= loader.blockmaporgx;
+			bmaporgy		= loader.blockmaporgy;
+			bmapwidth		= loader.blockmapwidth;
+			bmapheight		= loader.blockmapheight;
+			blockmap		= loader.blockmap;
+			blocklinks		= loader.blocklinks;
+
+			numvertexes		= loader.numvertices;
+			vertexes		= loader.vertices;
+
+			numsectors		= loader.numsectors;
+			sectors			= loader.sectors;
+
+			numsides		= loader.numsides;
+			sides			= loader.sides;
+
+			numlines		= loader.numlines;
+			lines			= loader.lines;
+
+			numsubsectors	= loader.numsubsectors;
+			subsectors		= loader.subsectors;
+
+			numnodes		= loader.numnodes;
+			nodes			= loader.nodes;
+
+			numsegs			= loader.numsegs;
+			segs			= loader.segs;
+
+			rejectmatrix	= loader.rejectmatrix;
+		}
+		break;
+
+	case RnRLimitRemoving:
+		{
+			DoomMapLoader< ReadVal_LimitRemoving > loader = DoomMapLoader< ReadVal_LimitRemoving >();
 
 			loader.LoadBlockmap( lumpnum + ML_BLOCKMAP );
 			loader.LoadVertices( lumpnum + ML_VERTEXES );
@@ -1462,8 +1523,14 @@ DOOM_C_API void P_Init (void)
     P_InitPicAnims ();
     R_InitSprites (sprnames);
 
-	M_RegisterDebugMenuRadioButton( "Game|Loading|Original", NULL, &loading_code, LoadingCode::Original );
-	M_RegisterDebugMenuRadioButton( "Game|Loading|R&R Vanilla", NULL, &loading_code, LoadingCode::RnRVanilla );
+	if( M_CheckParm( "-removelimits" ) )
+	{
+		loading_code = LoadingCode::RnRLimitRemoving;
+	}
+
+	M_RegisterDebugMenuRadioButton( "Map|Load Path|Original", NULL, &loading_code, LoadingCode::Original );
+	M_RegisterDebugMenuRadioButton( "Map|Load Path|R&R Vanilla", NULL, &loading_code, LoadingCode::RnRVanilla );
+	M_RegisterDebugMenuRadioButton( "Map|Load Path|R&R Limit Removing", NULL, &loading_code, LoadingCode::RnRLimitRemoving );
 }
 
 
