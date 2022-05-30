@@ -123,57 +123,60 @@ auto WadDataConvert( int32_t lumpnum, _functor&& func )
 }
 
 #pragma optimize( "", off )
+#undef INLINE
+#define INLINE __declspec( noinline )
+
 template< typename _reader >
 struct DoomMapLoader
 {
 	using Read = _reader;
 
-	int32_t			numvertices;
-	vertex_t*		vertices;
+	int32_t			_numvertices;
+	vertex_t*		_vertices;
 
-	int32_t			numsegs;
-	seg_t*			segs;
+	int32_t			_numsegs;
+	seg_t*			_segs;
 
-	int32_t			numsectors;
-	sector_t*		sectors;
+	int32_t			_numsectors;
+	sector_t*		_sectors;
 
-	int32_t			numsubsectors;
-	subsector_t*	subsectors;
+	int32_t			_numsubsectors;
+	subsector_t*	_subsectors;
 
-	int32_t			numnodes;
-	node_t*			nodes;
+	int32_t			_numnodes;
+	node_t*			_nodes;
 
-	int32_t			numlines;
-	line_t*			lines;
+	int32_t			_numlines;
+	line_t*			_lines;
 
-	int32_t			numsides;
-	side_t*			sides;
+	int32_t			_numsides;
+	side_t*			_sides;
 
-	int32_t			totallines;
+	int32_t			_totallines;
 
-	fixed_t			blockmaporgx;
-	fixed_t			blockmaporgy;
-	int32_t			blockmapwidth;
-	int32_t			blockmapheight;
-	int16_t*		blockmap;
-	mobj_t**		blocklinks;
+	fixed_t			_blockmaporgx;
+	fixed_t			_blockmaporgy;
+	int32_t			_blockmapwidth;
+	int32_t			_blockmapheight;
+	int16_t*		_blockmap;
+	mobj_t**		_blocklinks;
 
-	byte*			rejectmatrix;
+	byte*			_rejectmatrix;
 
-	mapthing_t		deathmatchstarts[MAX_DEATHMATCH_STARTS];
-	mapthing_t*		deathmatch_p;
-	mapthing_t		playerstarts[MAXPLAYERS];
-	boolean			playerstartsingame[MAXPLAYERS];
+	mapthing_t		_deathmatchstarts[MAX_DEATHMATCH_STARTS];
+	mapthing_t*		_deathmatch_p;
+	mapthing_t		_playerstarts[MAXPLAYERS];
+	boolean			_playerstartsingame[MAXPLAYERS];
 
-	lumpinfo_t*		maplumpinfo;
+	lumpinfo_t*		_maplumpinfo;
 
-	constexpr auto	Vertices() const noexcept	{ return std::span( vertices, numvertices ); }
-	constexpr auto	Segs() const noexcept		{ return std::span( segs, numsegs ); }
-	constexpr auto	Sectors() const noexcept	{ return std::span( sectors, numsectors ); }
-	constexpr auto	SubSectors() const noexcept	{ return std::span( subsectors, numsubsectors ); }
-	constexpr auto	Nodes() const noexcept		{ return std::span( nodes, numnodes ); }
-	constexpr auto	Lines() const noexcept		{ return std::span( lines, numlines ); }
-	constexpr auto	Sides() const noexcept		{ return std::span( sides, numsides ); }
+	constexpr auto	Vertices() const noexcept	{ return std::span( _vertices,		_numvertices ); }
+	constexpr auto	Segs() const noexcept		{ return std::span( _segs,			_numsegs ); }
+	constexpr auto	Sectors() const noexcept	{ return std::span( _sectors,		_numsectors ); }
+	constexpr auto	SubSectors() const noexcept	{ return std::span( _subsectors,	_numsubsectors ); }
+	constexpr auto	Nodes() const noexcept		{ return std::span( _nodes,			_numnodes ); }
+	constexpr auto	Lines() const noexcept		{ return std::span( _lines,			_numlines ); }
+	constexpr auto	Sides() const noexcept		{ return std::span( _sides,			_numsides ); }
 
 	void INLINE LoadBlockmap( int32_t lumpnum )
 	{
@@ -182,16 +185,16 @@ struct DoomMapLoader
 			out = Read::Short( in );
 		} );
 
-		blockmap			= data.output;
+		_blockmap			= data.output;
 
-		blockmaporgx		= *blockmap++ << FRACBITS;
-		blockmaporgy		= *blockmap++ << FRACBITS;
-		blockmapwidth		= *blockmap++;
-		blockmapheight		= *blockmap++;
+		_blockmaporgx		= *_blockmap++ << FRACBITS;
+		_blockmaporgy		= *_blockmap++ << FRACBITS;
+		_blockmapwidth		= *_blockmap++;
+		_blockmapheight		= *_blockmap++;
 
-		int32_t linkssize = sizeof(*blocklinks) * blockmapwidth * blockmapheight;
-		blocklinks = (mobj_t**)Z_Malloc( linkssize, PU_LEVEL, 0 );
-		memset( blocklinks, 0, linkssize );
+		int32_t linkssize = sizeof(*_blocklinks) * _blockmapwidth * _blockmapheight;
+		_blocklinks = (mobj_t**)Z_Malloc( linkssize, PU_LEVEL, 0 );
+		memset( _blocklinks, 0, linkssize );
 	}
 
 	void INLINE LoadVertices( int32_t lumpnum )
@@ -202,8 +205,8 @@ struct DoomMapLoader
 			out.y			= Read::Short( in.y ) << FRACBITS;
 		} );
 
-		numvertices		= data.count;
-		vertices			= data.output;
+		_numvertices		= data.count;
+		_vertices			= data.output;
 	}
 
 	void INLINE LoadSectors( int32_t lumpnum )
@@ -222,8 +225,8 @@ struct DoomMapLoader
 			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
 		} );
 
-		numsectors				= data.count;
-		sectors					= data.output;
+		_numsectors				= data.count;
+		_sectors				= data.output;
 	}
 
 	void INLINE LoadSidedefs( int32_t lumpnum )
@@ -235,11 +238,11 @@ struct DoomMapLoader
 			out.toptexture		= R_TextureNumForName( in.toptexture );
 			out.bottomtexture	= R_TextureNumForName( in.bottomtexture );
 			out.midtexture		= R_TextureNumForName( in.midtexture );
-			out.sector			= &sectors[ Read::Short( in.sector ) ];
+			out.sector			= &Sectors()[ Read::Short( in.sector ) ];
 		} );
 
-		numsides = data.count;
-		sides = data.output;
+		_numsides = data.count;
+		_sides = data.output;
 	}
 
 	void INLINE LoadLinedefs( int32_t lumpnum )
@@ -250,8 +253,8 @@ struct DoomMapLoader
 			out.flags			= Read::Short( in.flags );
 			out.special			= Read::Short( in.special );
 			out.tag				= Read::Short( in.tag );
-			out.v1				= &vertices[ Read::Short( in.v1 ) ];
-			out.v2				= &vertices[ Read::Short( in.v2 ) ];
+			out.v1				= &Vertices()[ Read::Short( in.v1 ) ];
+			out.v2				= &Vertices()[ Read::Short( in.v2 ) ];
 			out.dx				= out.v2->x - out.v1->x;
 			out.dy				= out.v2->y - out.v1->y;
 	
@@ -308,7 +311,7 @@ struct DoomMapLoader
 
 			if( out.sidenum[ 0 ] != -1 )
 			{
-				out.frontsector = sides[ out.sidenum[ 0 ] ].sector;
+				out.frontsector = Sides()[ out.sidenum[ 0 ] ].sector;
 			}
 			else
 			{
@@ -317,7 +320,7 @@ struct DoomMapLoader
 
 			if( out.sidenum[ 1 ] != -1 )
 			{
-				out.backsector = sides[ out.sidenum[ 1 ] ].sector;
+				out.backsector = Sides()[ out.sidenum[ 1 ] ].sector;
 			}
 			else
 			{
@@ -325,8 +328,8 @@ struct DoomMapLoader
 			}
 		} );
 
-		numlines = data.count;
-		lines = data.output;
+		_numlines = data.count;
+		_lines = data.output;
 	}
 
 	void INLINE LoadSubsectors( int32_t lumpnum )
@@ -337,8 +340,8 @@ struct DoomMapLoader
 			out.firstline	= Read::Short( in.firstseg );
 		} );
 
-		numsubsectors = data.count;
-		subsectors = data.output;
+		_numsubsectors = data.count;
+		_subsectors = data.output;
 	}
 
 	void INLINE LoadNodes( int32_t lumpnum )
@@ -359,33 +362,33 @@ struct DoomMapLoader
 			}
 		} );
 
-		numnodes = data.count;
-		nodes = data.output;
+		_numnodes = data.count;
+		_nodes = data.output;
 	}
 
 	void INLINE LoadSegs( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< mapseg_t, seg_t >( lumpnum, [ this ]( int32_t index, seg_t& out, const mapseg_t& in )
 		{
-			out.v1			= &vertices[ Read::Short( in.v1 ) ];
-			out.v2			= &vertices[ Read::Short( in.v2 ) ];
+			out.v1			= &Vertices()[ Read::Short( in.v1 ) ];
+			out.v2			= &Vertices()[ Read::Short( in.v2 ) ];
 
 			out.angle		= Read::Short( in.angle ) << FRACBITS;
 			out.offset		= Read::Short( in.offset ) << FRACBITS;
 			int32_t linenum	= Read::Short( in.linedef );
-			line_t* linedef	= &lines[ linenum ];
+			line_t* linedef	= &Lines()[ linenum ];
 			out.linedef		= linedef;
 			int32_t side	= Read::Short( in.side );
 
 			// e6y: check for wrong indexes
-			if ( (uint32_t)linedef->sidenum[ side ] >= (uint32_t)numsides)
+			if ( (uint32_t)linedef->sidenum[ side ] >= (uint32_t)Sides().size())
 			{
-				I_Error("P_LoadSegs: linedef %d for seg %d references a non-existent sidedef %d",
-						linenum, index, (uint32_t)linedef->sidenum[ side ] );
+				I_Error("P_LoadSegs: linedef %d for seg %d references a non-existent sidedef %d (out of %d)",
+						linenum, index, (uint32_t)linedef->sidenum[ side ], (int32_t)Sides().size() );
 			}
 
-			out.sidedef		= &sides[ linedef->sidenum[ side ] ];
-			out.frontsector	= sides[ linedef->sidenum[ side ] ].sector;
+			out.sidedef		= &Sides()[ linedef->sidenum[ side ] ];
+			out.frontsector	= Sides()[ linedef->sidenum[ side ] ].sector;
 
 			if( linedef->flags & ML_TWOSIDED )
 			{
@@ -397,13 +400,13 @@ struct DoomMapLoader
 				// OTTAWAU.WAD, which is the one place I've seen this trick
 				// used).
 
-				if ( sidenum < 0 || sidenum >= numsides )
+				if ( sidenum < 0 || sidenum >= Sides().size() )
 				{
 					out.backsector = GetSectorAtNullAddress();
 				}
 				else
 				{
-					out.backsector = sides[ sidenum ].sector;
+					out.backsector = Sides()[ sidenum ].sector;
 				}
 			}
 			else
@@ -412,8 +415,8 @@ struct DoomMapLoader
 			}
 		} );
 
-		numsegs = data.count;
-		segs = data.output;
+		_numsegs = data.count;
+		_segs = data.output;
 	}
 
 	void INLINE GroupLines()
@@ -421,24 +424,24 @@ struct DoomMapLoader
 		// look up sector number for each subsector
 		for ( subsector_t& subsector : SubSectors() )
 		{
-			subsector.sector = segs[ subsector.firstline ].sidedef->sector;
+			subsector.sector = Segs()[ subsector.firstline ].sidedef->sector;
 		}
 
 		// count number of lines in each sector
 		for( line_t& line : Lines() )
 		{
-			++totallines;
+			++_totallines;
 			++line.frontsector->linecount;
 
 			if (line.backsector && line.backsector != line.frontsector)
 			{
 				line.backsector->linecount++;
-				totallines++;
+				_totallines++;
 			}
 		}
 
 		// build line tables for each sector
-		line_t** linebuffer = (line_t**)Z_Malloc( totallines * sizeof( line_t*), PU_LEVEL, 0 );
+		line_t** linebuffer = (line_t**)Z_Malloc( _totallines * sizeof( line_t*), PU_LEVEL, 0 );
 
 		for( sector_t& sector : Sectors() )
 		{
@@ -486,19 +489,19 @@ struct DoomMapLoader
 			sector.soundorg.y = ( bbox[ BOXTOP ] + bbox[ BOXBOTTOM ] ) / 2;
 		
 			// adjust bounding box to map blocks
-			block = ( bbox[ BOXTOP ] - blockmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
-			block = block >= blockmapheight ? blockmapheight - 1 : block;
+			block = ( bbox[ BOXTOP ] - _blockmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
+			block = block >= _blockmapheight ? _blockmapheight - 1 : block;
 			sector.blockbox[ BOXTOP ] = block;
 
-			block = ( bbox[ BOXBOTTOM ] - blockmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
+			block = ( bbox[ BOXBOTTOM ] - _blockmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
 			block = block < 0 ? 0 : block;
 			sector.blockbox[ BOXBOTTOM ] = block;
 
-			block = ( bbox[ BOXRIGHT ] - blockmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-			block = block >= blockmapwidth ? blockmapwidth - 1 : block;
+			block = ( bbox[ BOXRIGHT ] - _blockmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
+			block = block >= _blockmapwidth ? _blockmapwidth - 1 : block;
 			sector.blockbox[ BOXRIGHT ] = block;
 
-			block = ( bbox[ BOXLEFT ] - blockmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
+			block = ( bbox[ BOXLEFT ] - _blockmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
 			block = block < 0 ? 0 : block;
 			sector.blockbox[ BOXLEFT ] = block;
 		}
@@ -508,7 +511,7 @@ struct DoomMapLoader
 	void INLINE LoadReject( int32_t lumpnum )
 	{
 		// Calculate the size that the REJECT lump *should* be.
-		int32_t minlength = (numsectors * numsectors + 7) / 8;
+		int32_t minlength = (Sectors().size() * Sectors().size() + 7) / 8;
 
 		// If the lump meets the minimum length, it can be loaded directly.
 		// Otherwise, we need to allocate a buffer of the correct size
@@ -517,24 +520,24 @@ struct DoomMapLoader
 
 		if( lumplen >= minlength )
 		{
-			rejectmatrix = ( byte* )W_CacheLumpNum( lumpnum, PU_LEVEL );
+			_rejectmatrix = ( byte* )W_CacheLumpNum( lumpnum, PU_LEVEL );
 		}
 		else
 		{
-			rejectmatrix = ( byte* )Z_Malloc( minlength, PU_LEVEL, &rejectmatrix );
-			W_ReadLump( lumpnum, rejectmatrix );
+			_rejectmatrix = ( byte* )Z_Malloc( minlength, PU_LEVEL, nullptr );
+			W_ReadLump( lumpnum, _rejectmatrix );
 
 			//PadRejectArray(rejectmatrix + lumplen, minlength - lumplen);
 
 			uint32_t rejectpad[4] =
 			{
-				( ( (uint32_t)totallines * 4 + 3 ) & ~3 ) + 24,		// Size
+				( ( (uint32_t)_totallines * 4 + 3 ) & ~3 ) + 24,		// Size
 				0,													// Part of z_zone block header
 				50,													// PU_LEVEL
 				0x1d4a11											// DOOM_CONST_ZONEID
 			};
 
-			byte* dest = rejectmatrix + lumplen;
+			byte* dest = _rejectmatrix + lumplen;
 			int32_t length = minlength - lumplen;
 #ifdef SYS_BIG_ENDIAN
 			for( int32_t index : std::iota( 0, M_MIN( length, sizeof( rejectpad ) ) ) )
@@ -1398,35 +1401,35 @@ P_SetupLevel
 			loader.GroupLines();
 			loader.LoadReject( lumpnum + ML_REJECT );
 
-			bmaporgx		= loader.blockmaporgx;
-			bmaporgy		= loader.blockmaporgy;
-			bmapwidth		= loader.blockmapwidth;
-			bmapheight		= loader.blockmapheight;
-			blockmap		= loader.blockmap;
-			blocklinks		= loader.blocklinks;
+			bmaporgx		= loader._blockmaporgx;
+			bmaporgy		= loader._blockmaporgy;
+			bmapwidth		= loader._blockmapwidth;
+			bmapheight		= loader._blockmapheight;
+			blockmap		= loader._blockmap;
+			blocklinks		= loader._blocklinks;
 
-			numvertexes		= loader.numvertices;
-			vertexes		= loader.vertices;
+			numvertexes		= loader._numvertices;
+			vertexes		= loader._vertices;
 
-			numsectors		= loader.numsectors;
-			sectors			= loader.sectors;
+			numsectors		= loader._numsectors;
+			sectors			= loader._sectors;
 
-			numsides		= loader.numsides;
-			sides			= loader.sides;
+			numsides		= loader._numsides;
+			sides			= loader._sides;
 
-			numlines		= loader.numlines;
-			lines			= loader.lines;
+			numlines		= loader._numlines;
+			lines			= loader._lines;
 
-			numsubsectors	= loader.numsubsectors;
-			subsectors		= loader.subsectors;
+			numsubsectors	= loader._numsubsectors;
+			subsectors		= loader._subsectors;
 
-			numnodes		= loader.numnodes;
-			nodes			= loader.nodes;
+			numnodes		= loader._numnodes;
+			nodes			= loader._nodes;
 
-			numsegs			= loader.numsegs;
-			segs			= loader.segs;
+			numsegs			= loader._numsegs;
+			segs			= loader._segs;
 
-			rejectmatrix	= loader.rejectmatrix;
+			rejectmatrix	= loader._rejectmatrix;
 		}
 		break;
 
@@ -1445,35 +1448,35 @@ P_SetupLevel
 			loader.GroupLines();
 			loader.LoadReject( lumpnum + ML_REJECT );
 
-			bmaporgx		= loader.blockmaporgx;
-			bmaporgy		= loader.blockmaporgy;
-			bmapwidth		= loader.blockmapwidth;
-			bmapheight		= loader.blockmapheight;
-			blockmap		= loader.blockmap;
-			blocklinks		= loader.blocklinks;
+			bmaporgx		= loader._blockmaporgx;
+			bmaporgy		= loader._blockmaporgy;
+			bmapwidth		= loader._blockmapwidth;
+			bmapheight		= loader._blockmapheight;
+			blockmap		= loader._blockmap;
+			blocklinks		= loader._blocklinks;
 
-			numvertexes		= loader.numvertices;
-			vertexes		= loader.vertices;
+			numvertexes		= loader._numvertices;
+			vertexes		= loader._vertices;
 
-			numsectors		= loader.numsectors;
-			sectors			= loader.sectors;
+			numsectors		= loader._numsectors;
+			sectors			= loader._sectors;
 
-			numsides		= loader.numsides;
-			sides			= loader.sides;
+			numsides		= loader._numsides;
+			sides			= loader._sides;
 
-			numlines		= loader.numlines;
-			lines			= loader.lines;
+			numlines		= loader._numlines;
+			lines			= loader._lines;
 
-			numsubsectors	= loader.numsubsectors;
-			subsectors		= loader.subsectors;
+			numsubsectors	= loader._numsubsectors;
+			subsectors		= loader._subsectors;
 
-			numnodes		= loader.numnodes;
-			nodes			= loader.nodes;
+			numnodes		= loader._numnodes;
+			nodes			= loader._nodes;
 
-			numsegs			= loader.numsegs;
-			segs			= loader.segs;
+			numsegs			= loader._numsegs;
+			segs			= loader._segs;
 
-			rejectmatrix	= loader.rejectmatrix;
+			rejectmatrix	= loader._rejectmatrix;
 		}
 		break;
 
