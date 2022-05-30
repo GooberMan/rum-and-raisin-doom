@@ -53,7 +53,7 @@
 #define SIL_BOTH				3
 
 #define VANILLA_MAXVISPLANES	128
-#define MAXVISPLANES			256
+#define MAXVISPLANES			2048
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
 #define MAXOPENINGS				( MAXSCREENWIDTH*32 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
@@ -186,9 +186,9 @@ typedef struct
 
 	// Texture indices.
 	// We do not maintain names here. 
-	int16_t				toptexture;
-	int16_t				bottomtexture;
-	int16_t				midtexture;
+	int32_t				toptexture;
+	int32_t				bottomtexture;
+	int32_t				midtexture;
 
 	// Sector the SideDef is facing.
 	sector_t*			sector;
@@ -212,6 +212,8 @@ typedef enum
 
 typedef struct line_s
 {
+	int32_t				index;
+
 	// Vertices, from v1 to v2.
 	vertex_t*			v1;
 	vertex_t*			v2;
@@ -227,7 +229,7 @@ typedef struct line_s
 
 	// Visual appearance: SideDefs.
 	//  sidenum[1] will be -1 if one sided
-	int16_t				sidenum[2];			
+	int32_t				sidenum[2];
 
 	// Neat. Another bounding box, for the extent
 	//  of the LineDef.

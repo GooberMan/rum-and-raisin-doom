@@ -293,15 +293,15 @@ visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start
 		return pl;
 	}
 	
-	// make a new visplane
-	context->lastvisplane->height = pl->height;
-	context->lastvisplane->picnum = pl->picnum;
-	context->lastvisplane->lightlevel = pl->lightlevel;
-    
 	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
 	{
 		I_Error ("R_CheckPlane: no more visplanes");
 	}
+
+	// make a new visplane
+	context->lastvisplane->height = pl->height;
+	context->lastvisplane->picnum = pl->picnum;
+	context->lastvisplane->lightlevel = pl->lightlevel;
 
 	pl = context->lastvisplane++;
 	pl->minx = start;
