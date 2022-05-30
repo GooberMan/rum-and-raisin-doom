@@ -39,63 +39,136 @@ sector_t* GetSectorAtNullAddress(void);
 
 #include <ranges>
 #include <span>
+#include <type_traits>
 
 struct ReadVal_Vanilla
 {
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 2 )
 	static INLINE int16_t Short( const _ty& val )
 	{
 		return SDL_SwapLE16( val );
 	}
 
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 2 )
 	static INLINE uint16_t UShort( const _ty& val )
 	{
 		return SDL_SwapLE16( val );
 	}
 
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 4 )
 	static INLINE int32_t Long( const _ty& val )
 	{
 		return SDL_SwapLE32( val );
 	}
 
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 4 )
 	static INLINE uint32_t ULong( const _ty& val )
 	{
 		return SDL_SwapLE32( val );
+	}
+
+	template< typename _ty >
+	requires ( std::is_integral_v< _ty > )
+	static INLINE auto AsIs( const _ty& val )
+	{
+		if constexpr( sizeof( _ty ) == 2 )
+		{
+			if constexpr( std::is_unsigned_v< _ty > )
+			{
+				return UShort( val );
+			}
+			else
+			{
+				return Short( val );
+			}
+		}
+		else if constexpr( sizeof( _ty ) == 4 )
+		{
+			if constexpr( std::is_unsigned_v< _ty > )
+			{
+				return UInt( val );
+			}
+			else
+			{
+				return Int( val );
+			}
+		}
+		else
+		{
+			return;
+		}
 	}
 };
 
 struct ReadVal_LimitRemoving
 {
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 2 )
 	static INLINE uint16_t Short( const _ty& val )
 	{
 		return SDL_SwapLE16( *(uint16_t*)&val );
 	}
 
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 2 )
 	static INLINE uint16_t UShort( const _ty& val )
 	{
 		return SDL_SwapLE16( *(uint16_t*)&val );
 	}
 
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 4 )
 	static INLINE int32_t Long( const _ty& val )
 	{
 		return SDL_SwapLE32( val );
 	}
 
 	template< typename _ty >
+	requires ( std::is_integral_v< _ty > && sizeof( _ty ) == 4 )
 	static INLINE uint32_t ULong( const _ty& val )
 	{
 		return SDL_SwapLE32( val );
 	}
+
+	template< typename _ty >
+	requires ( std::is_integral_v< _ty > )
+	static INLINE auto AsIs( const _ty& val )
+	{
+		if constexpr( sizeof( _ty ) == 2 )
+		{
+			if constexpr( std::is_unsigned_v< _ty > )
+			{
+				return UShort( val );
+			}
+			else
+			{
+				return Short( val );
+			}
+		}
+		else if constexpr( sizeof( _ty ) == 4 )
+		{
+			if constexpr( std::is_unsigned_v< _ty > )
+			{
+				return UInt( val );
+			}
+			else
+			{
+				return Int( val );
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
 };
 
 template< typename _from, typename _to, typename _functor >
-auto WadDataConvert( int32_t lumpnum, _functor&& func )
+auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
 {
 	struct
 	{
@@ -103,11 +176,11 @@ auto WadDataConvert( int32_t lumpnum, _functor&& func )
 		int32_t		count;
 	} data;
 
-	data.count = W_LumpLength( lumpnum ) / sizeof( _from );
+	data.count = (int32_t)( ( W_LumpLength( lumpnum ) - dataoffset ) / sizeof( _from ) );
 	data.output = (_to*)Z_Malloc( data.count * sizeof( _to ), PU_LEVEL, 0 );
 	memset( data.output, 0, data.count * sizeof( _to ) );
 
-	_from* rhs = ( _from* )W_CacheLumpNum( lumpnum, PU_STATIC );
+	_from* rhs = ( _from* )( (byte*)W_CacheLumpNum( lumpnum, PU_STATIC ) + dataoffset );
 	_to* lhs = data.output;
 
 	for( int32_t curr : std::ranges::views::iota( 0, data.count ) )
@@ -125,6 +198,13 @@ auto WadDataConvert( int32_t lumpnum, _functor&& func )
 #pragma optimize( "", off )
 #undef INLINE
 #define INLINE __declspec( noinline )
+
+typedef enum class NodeFormat : int32_t
+{
+	None,
+	Vanilla,
+	DeepBSP,
+} nodeformat_t;
 
 template< typename _reader >
 struct DoomMapLoader
@@ -144,6 +224,7 @@ struct DoomMapLoader
 	subsector_t*	_subsectors;
 
 	int32_t			_numnodes;
+	nodeformat_t	_nodeformat;
 	node_t*			_nodes;
 
 	int32_t			_numlines;
@@ -180,7 +261,7 @@ struct DoomMapLoader
 
 	void INLINE LoadBlockmap( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< int16_t, int16_t >( lumpnum, []( int32_t index, int16_t& out, const int16_t& in )
+		auto data = WadDataConvert< int16_t, int16_t >( lumpnum, 0, []( int32_t index, int16_t& out, const int16_t& in )
 		{
 			out = Read::Short( in );
 		} );
@@ -199,7 +280,7 @@ struct DoomMapLoader
 
 	void INLINE LoadVertices( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< mapvertex_t, vertex_t >( lumpnum, []( int32_t index, vertex_t& out, const mapvertex_t& in )
+		auto data = WadDataConvert< mapvertex_t, vertex_t >( lumpnum, 0, []( int32_t index, vertex_t& out, const mapvertex_t& in )
 		{
 			out.x			= Read::Short( in.x ) << FRACBITS;
 			out.y			= Read::Short( in.y ) << FRACBITS;
@@ -211,7 +292,7 @@ struct DoomMapLoader
 
 	void INLINE LoadSectors( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< mapsector_t, sector_t >( lumpnum, []( int32_t index, sector_t& out, const mapsector_t& in )
+		auto data = WadDataConvert< mapsector_t, sector_t >( lumpnum, 0, []( int32_t index, sector_t& out, const mapsector_t& in )
 		{
 			out.index			= index;
 			out.floorheight		= Read::Short( in.floorheight ) << FRACBITS;
@@ -231,7 +312,7 @@ struct DoomMapLoader
 
 	void INLINE LoadSidedefs( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< mapsidedef_t, side_t >( lumpnum, [ this ]( int32_t index, side_t& out, const mapsidedef_t& in )
+		auto data = WadDataConvert< mapsidedef_t, side_t >( lumpnum, 0, [ this ]( int32_t index, side_t& out, const mapsidedef_t& in )
 		{
 			out.textureoffset	= Read::Short( in.textureoffset ) << FRACBITS;
 			out.rowoffset		= Read::Short( in.rowoffset ) << FRACBITS;
@@ -247,7 +328,7 @@ struct DoomMapLoader
 
 	void INLINE LoadLinedefs( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< maplinedef_t, line_t >( lumpnum, [ this ]( int32_t index, line_t& out, const maplinedef_t& in )
+		auto data = WadDataConvert< maplinedef_t, line_t >( lumpnum, 0, [ this ]( int32_t index, line_t& out, const maplinedef_t& in )
 		{
 			out.index			= index;
 			out.flags			= Read::Short( in.flags );
@@ -334,7 +415,7 @@ struct DoomMapLoader
 
 	void INLINE LoadSubsectors( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< mapsubsector_t, subsector_t >( lumpnum, []( int32_t index, subsector_t& out, const mapsubsector_t& in )
+		auto data = WadDataConvert< mapsubsector_t, subsector_t >( lumpnum, 0, []( int32_t index, subsector_t& out, const mapsubsector_t& in )
 		{
 			out.numlines	= Read::Short( in.numsegs );
 			out.firstline	= Read::Short( in.firstseg );
@@ -344,9 +425,9 @@ struct DoomMapLoader
 		_subsectors = data.output;
 	}
 
-	void INLINE LoadNodes( int32_t lumpnum )
+	void INLINE LoadNodes( int32_t lumpnum, size_t offset = 0 )
 	{
-		auto data = WadDataConvert< mapnode_t, node_t >( lumpnum, []( int32_t index, node_t& out, const mapnode_t& in )
+		auto data = WadDataConvert< mapnode_t, node_t >( lumpnum, offset, []( int32_t index, node_t& out, const mapnode_t& in )
 		{
 			out.x			= Read::Short( in.x ) << FRACBITS;
 			out.y			= Read::Short( in.y ) << FRACBITS;
@@ -362,13 +443,33 @@ struct DoomMapLoader
 			}
 		} );
 
-		_numnodes = data.count;
-		_nodes = data.output;
+		_numnodes		= data.count;
+		_nodes			= data.output;
+		_nodeformat		= NodeFormat::Vanilla;
+	}
+
+	void INLINE LoadExtendedNodes( int32_t lumpnum )
+	{
+		constexpr uint64_t Magic = 0x0000000034644E78ull;
+
+		uint64_t offset = 0;
+		nodeformat_t format = NodeFormat::Vanilla;
+
+		uint64_t* data = (uint64_t*)W_CacheLumpNum( lumpnum, PU_STATIC );
+
+		if( *data == Magic )
+		{
+			offset = 8;
+			format = NodeFormat::DeepBSP;
+		}
+
+		LoadNodes( lumpnum, offset );
+		_nodeformat = format;
 	}
 
 	void INLINE LoadSegs( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< mapseg_t, seg_t >( lumpnum, [ this ]( int32_t index, seg_t& out, const mapseg_t& in )
+		auto data = WadDataConvert< mapseg_t, seg_t >( lumpnum, 0, [ this ]( int32_t index, seg_t& out, const mapseg_t& in )
 		{
 			out.v1			= &Vertices()[ Read::Short( in.v1 ) ];
 			out.v2			= &Vertices()[ Read::Short( in.v2 ) ];
@@ -511,7 +612,7 @@ struct DoomMapLoader
 	void INLINE LoadReject( int32_t lumpnum )
 	{
 		// Calculate the size that the REJECT lump *should* be.
-		int32_t minlength = (Sectors().size() * Sectors().size() + 7) / 8;
+		int32_t minlength = (int32_t)( (Sectors().size() * Sectors().size() + 7) / 8 );
 
 		// If the lump meets the minimum length, it can be loaded directly.
 		// Otherwise, we need to allocate a buffer of the correct size
@@ -1443,7 +1544,7 @@ P_SetupLevel
 			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
 			loader.LoadLinedefs( lumpnum + ML_LINEDEFS );
 			loader.LoadSubsectors( lumpnum + ML_SSECTORS );
-			loader.LoadNodes( lumpnum + ML_NODES );
+			loader.LoadExtendedNodes( lumpnum + ML_NODES );
 			loader.LoadSegs( lumpnum + ML_SEGS );
 			loader.GroupLines();
 			loader.LoadReject( lumpnum + ML_REJECT );
