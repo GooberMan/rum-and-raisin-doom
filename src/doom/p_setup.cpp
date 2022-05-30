@@ -176,7 +176,7 @@ struct DoomMapLoader
 	fixed_t			_blockmaporgy;
 	int32_t			_blockmapwidth;
 	int32_t			_blockmapheight;
-	int16_t*		_blockmap;
+	blockmap_t*		_blockmap;
 	mobj_t**		_blocklinks;
 
 	byte*			_rejectmatrix;
@@ -198,7 +198,7 @@ struct DoomMapLoader
 
 	void INLINE LoadBlockmap( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< int16_t, int16_t >( lumpnum, 0, []( int32_t index, int16_t& out, const int16_t& in )
+		auto data = WadDataConvert< blockmap_t, blockmap_t >( lumpnum, 0, []( int32_t index, blockmap_t& out, const blockmap_t& in )
 		{
 			out = Read::AsIs( in );
 		} );
@@ -268,6 +268,7 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< _maptype, line_t >( lumpnum, 0, [ this ]( int32_t index, line_t& out, const _maptype& in )
 		{
+			out.index			= index;
 			out.flags			= Read::AsIs( in.flags );
 			out.special			= Read::AsIs( in.special );
 			out.tag				= Read::AsIs( in.tag );
@@ -388,7 +389,24 @@ struct DoomMapLoader
 			out.dy			= Read::AsIs( in.dy ) << FRACBITS;
 			for( int32_t child : std::ranges::views::iota( 0, 2 ) )
 			{
-				out.children[ child ] = Read::AsIs( in.children[ child ] );
+				auto childval = Read::AsIs( in.children[ child ] );
+
+				if constexpr( sizeof( decltype( childval ) ) == 2 )
+				{
+					if( childval & NF_SUBSECTOR_VANILLA )
+					{
+						out.children[ child ] = ( childval & ~NF_SUBSECTOR_VANILLA );
+						out.children[ child ] |= NF_SUBSECTOR;
+					}
+					else
+					{
+						out.children[ child ] = childval;
+					}
+				}
+				else
+				{
+					out.children[ child ] = childval;
+				}
 				for ( int32_t corner : std::ranges::views::iota( 0, 4 ) )
 				{
 					out.bbox[ child ][ corner ] = Read::AsIs( in.bbox[ child ][ corner ] ) << FRACBITS;
@@ -684,16 +702,16 @@ extern "C"
 	// by spatial subdivision in 2D.
 	//
 	// Blockmap size.
-	int		bmapwidth;
-	int		bmapheight;	// size in mapblocks
-	short*		blockmap;	// int for larger maps
+	int				bmapwidth;
+	int				bmapheight;	// size in mapblocks
+	blockmap_t*		blockmap;	// int for larger maps
 	// offsets in blockmap are from here
-	short*		blockmaplump;		
+	blockmap_t*		blockmaplump;		
 	// origin of block map
-	fixed_t		bmaporgx;
-	fixed_t		bmaporgy;
+	fixed_t			bmaporgx;
+	fixed_t			bmaporgy;
 	// for thing chains
-	mobj_t**	blocklinks;		
+	mobj_t**		blocklinks;		
 
 
 	// REJECT
@@ -939,6 +957,12 @@ void P_LoadNodes (int lump)
 	for (j=0 ; j<2 ; j++)
 	{
 	    no->children[j] = SHORT(mn->children[j]);
+		if( no->children[j] & NF_SUBSECTOR_VANILLA )
+		{
+			no->children[j] &= ~NF_SUBSECTOR_VANILLA;
+			no->children[j] |= NF_SUBSECTOR;
+		}
+
 	    for (k=0 ; k<4 ; k++)
 		no->bbox[j][k] = SHORT(mn->bbox[j][k])<<FRACBITS;
 	}
@@ -1141,7 +1165,7 @@ void P_LoadBlockMap (int lump)
     lumplen = W_LumpLength(lump);
     count = lumplen / 2;
 	
-    blockmaplump = (short*)Z_Malloc(lumplen, PU_LEVEL, NULL);
+    blockmaplump = (blockmap_t*)Z_Malloc(lumplen, PU_LEVEL, NULL);
     W_ReadLump(lump, blockmaplump);
     blockmap = blockmaplump + 4;
 
@@ -1377,7 +1401,7 @@ enum LoadingCode : int32_t
 	RnRLimitRemoving
 };
 
-int32_t loading_code = LoadingCode::Original;
+int32_t loading_code = LoadingCode::RnRVanilla;
 
 //
 // P_SetupLevel
@@ -1595,9 +1619,10 @@ DOOM_C_API void P_Init (void)
 		loading_code = LoadingCode::RnRLimitRemoving;
 	}
 
-	M_RegisterDebugMenuRadioButton( "Map|Load Path|Original", NULL, &loading_code, LoadingCode::Original );
-	M_RegisterDebugMenuRadioButton( "Map|Load Path|R&R Vanilla", NULL, &loading_code, LoadingCode::RnRVanilla );
-	M_RegisterDebugMenuRadioButton( "Map|Load Path|R&R Limit Removing", NULL, &loading_code, LoadingCode::RnRLimitRemoving );
+	// The original code officially doesn't work right now. But it's about time to delete it anyway...
+	//M_RegisterDebugMenuRadioButton( "Map|Load Path|Original", NULL, &loading_code, LoadingCode::Original );
+	M_RegisterDebugMenuRadioButton( "Map|Load Path|Vanilla", NULL, &loading_code, LoadingCode::RnRVanilla );
+	M_RegisterDebugMenuRadioButton( "Map|Load Path|Limit Removing", NULL, &loading_code, LoadingCode::RnRLimitRemoving );
 }
 
 

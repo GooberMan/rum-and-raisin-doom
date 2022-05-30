@@ -471,9 +471,9 @@ P_BlockLinesIterator
   int			y,
   boolean(*func)(line_t*) )
 {
-    int			offset;
-    short*		list;
-    line_t*		ld;
+    int				offset;
+    blockmap_t*		list;
+    line_t*			ld;
 	
     if (x<0
 	|| y<0
@@ -489,7 +489,7 @@ P_BlockLinesIterator
 	// Offsets are stored from lump start, so remove the header entries.
     offset = *(blockmap+offset) - 4;
 
-    for ( list = blockmap+offset ; *list != -1 ; list++)
+    for ( list = blockmap+offset ; *list != BLOCKMAP_INVALID ; list++)
     {
 	ld = &lines[*list];
 

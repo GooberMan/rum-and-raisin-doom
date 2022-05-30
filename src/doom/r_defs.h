@@ -53,7 +53,7 @@
 #define SIL_BOTH				3
 
 #define VANILLA_MAXVISPLANES	128
-#define MAXVISPLANES			2048
+#define MAXVISPLANES			6144
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
 #define MAXOPENINGS				( MAXSCREENWIDTH*32 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
@@ -212,6 +212,8 @@ typedef enum
 
 typedef struct line_s
 {
+	int32_t				index;
+
 	// Vertices, from v1 to v2.
 	vertex_t*			v1;
 	vertex_t*			v2;
@@ -227,7 +229,7 @@ typedef struct line_s
 
 	// Visual appearance: SideDefs.
 	//  sidenum[1] will be -1 if one sided
-	int16_t				sidenum[2];
+	int32_t				sidenum[2]; // originally int16_t
 
 	// Neat. Another bounding box, for the extent
 	//  of the LineDef.
@@ -306,9 +308,13 @@ typedef struct node_s
 	fixed_t				bbox[2][4];
 
 	// If NF_SUBSECTOR its a subsector.
-	uint16_t			children[2];
+	uint32_t			children[2]; // originally uint16_t
 } node_t;
 
+
+// Blockmap entries
+typedef uint16_t			blockmap_t;
+#define BLOCKMAP_INVALID	0xFFFF
 
 //
 // OTHER TYPES
