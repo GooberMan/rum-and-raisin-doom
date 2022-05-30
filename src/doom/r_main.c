@@ -76,7 +76,7 @@ typedef struct renderdata_s
 
 renderdata_t*			renderdatas;
 
-#define DEFAULT_RENDERCONTEXTS 4
+#define DEFAULT_RENDERCONTEXTS 8
 
 int32_t					numrendercontexts = DEFAULT_RENDERCONTEXTS;
 int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
