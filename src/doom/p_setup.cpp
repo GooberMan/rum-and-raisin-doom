@@ -251,7 +251,6 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< mapsidedef_t, side_t >( lumpnum, 0, [ this ]( int32_t index, side_t& out, const mapsidedef_t& in )
 		{
-			out.index			= index;
 			out.textureoffset	= Read::AsIs( in.textureoffset ) << FRACBITS;
 			out.rowoffset		= Read::AsIs( in.rowoffset ) << FRACBITS;
 			out.toptexture		= R_TextureNumForName( in.toptexture );
@@ -269,7 +268,6 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< _maptype, line_t >( lumpnum, 0, [ this ]( int32_t index, line_t& out, const _maptype& in )
 		{
-			out.index			= index;
 			out.flags			= Read::AsIs( in.flags );
 			out.special			= Read::AsIs( in.special );
 			out.tag				= Read::AsIs( in.tag );
@@ -359,7 +357,6 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< _maptype, subsector_t >( lumpnum, 0, []( int32_t index, subsector_t& out, const _maptype& in )
 		{
-			out.index		= index;
 			out.numlines	= Read::AsIs( in.numsegs );
 			out.firstline	= Read::AsIs( in.firstseg );
 		} );
@@ -385,7 +382,6 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< _maptype, node_t >( lumpnum, offset, []( int32_t index, node_t& out, const _maptype& in )
 		{
-			out.index		= index;
 			out.x			= Read::AsIs( in.x ) << FRACBITS;
 			out.y			= Read::AsIs( in.y ) << FRACBITS;
 			out.dx			= Read::AsIs( in.dx ) << FRACBITS;

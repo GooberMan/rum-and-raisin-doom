@@ -178,8 +178,6 @@ typedef	struct
 
 typedef struct
 {
-	int32_t				index;
-
 	// add this to the calculated texture column
 	fixed_t				textureoffset;
 
@@ -214,8 +212,6 @@ typedef enum
 
 typedef struct line_s
 {
-	int32_t				index;
-
 	// Vertices, from v1 to v2.
 	vertex_t*			v1;
 	vertex_t*			v2;
@@ -265,7 +261,6 @@ typedef struct line_s
 typedef struct subsector_s
 {
 	sector_t*			sector;
-	int32_t				index;
 	uint16_t			numlines;
 	uint16_t			firstline;
 } subsector_t;
@@ -301,7 +296,6 @@ typedef struct
 //
 typedef struct node_s
 {
-	int32_t				index;
 	// Partition line.
 	fixed_t				x;
 	fixed_t				y;
