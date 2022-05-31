@@ -81,7 +81,7 @@ static unsigned int mouse_button_state = 0;
 // Disallow mouse and joystick movement to cause forward/backward
 // motion.  Specified with the '-novert' command line parameter.
 // This is an int to allow saving to config file
-int novert = 0;
+int32_t novert = 0;
 
 // If true, keyboard mapping is ignored, like in Vanilla Doom.
 // The sensible thing to do is to disable this if you have a non-US

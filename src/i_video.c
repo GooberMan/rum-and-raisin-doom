@@ -131,7 +131,7 @@ int32_t usemouse = 1;
 int32_t png_screenshots = 0;
 
 // 0 = original, 1 = INTERPIC
-int32_t border_style = 0;
+int32_t border_style = 1;
 
 // 0 = original, 1 = dithered
 int32_t border_bezel_style = 1; // Need to default to dithered until I sort out widescreen UI rendering
@@ -208,7 +208,7 @@ static int32_t startup_delay = 1000;
 // Grab the mouse? (int type for config code). nograbmouse_override allows
 // this to be temporarily disabled via the command line.
 
-static int32_t grabmouse = true;
+int32_t grabmouse = true;
 static boolean nograbmouse_override = false;
 
 // If true, game is running as a screensaver

@@ -154,7 +154,7 @@ colfunc_t			transcolfunc;
 
 spanfunc_t			spanfunc;
 
-int32_t				fuzz_style = Fuzz_Original;
+int32_t				fuzz_style = Fuzz_Adjusted;
 
 const byte whacky_void_indices[] =
 {

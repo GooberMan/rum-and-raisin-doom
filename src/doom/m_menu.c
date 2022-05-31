@@ -2861,6 +2861,8 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	extern int32_t span_override;
 	extern int32_t show_endoom;
 	extern int32_t show_diskicon;
+	extern int32_t grabmouse;
+	extern int32_t novert;
 
 	controlsection_t*	currsection;
 	controldesc_t*		currdesc;
@@ -2898,9 +2900,13 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 		{
 			igPushScrollableArea( "Mouse", zerosize );
 
-			igPushIDStr( "Mouse sliders" );
-			if( igCollapsingHeaderTreeNodeFlags( "Sliders", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+			igPushIDStr( "Mouse settings" );
+			if( igCollapsingHeaderTreeNodeFlags( "Settings", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
+				igCheckbox( "Grab in windowed mode", &grabmouse );
+				igCheckbox( "Disallow vertical movement", &novert );
+				igNewLine();
+
 				igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 
 				WorkingInt = (int32_t)( mouse_acceleration * 10.f );
@@ -2913,7 +2919,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			}
 			igPopID();
 
-			M_DebugMenuControlsRemapping( "Controls", mousemappings, mousenames, arrlen( mousenames ), -1, Remap_Mouse );
+			M_DebugMenuControlsRemapping( "Bindings", mousemappings, mousenames, arrlen( mousenames ), -1, Remap_Mouse );
 
 			igPopScrollableArea();
 			igEndTabItem();
