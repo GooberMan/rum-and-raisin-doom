@@ -21,7 +21,7 @@ CC="clang"
 CXX="clang++"
 
 AM_PROG_AR
-CXXFLAGS="$CXXFLAGS -std=c++17"
+CXXFLAGS="$CXXFLAGS -std=c++20 -Wc++20-extensions"
 AC_PROG_CC( [clang gcc])
 AC_PROG_CXX( [clang++ g++])
 AC_PROG_RANLIB

@@ -40,7 +40,7 @@ void R_DrawColumnLow ( colcontext_t* context );
 	#define R_DRAWCOLUMN_SIMDOPTIMISED 1
 	#define R_SIMD R_SIMD_AVX
 #elif defined( __ARM_NEON__ ) || defined( __ARM_NEON )
-	#define R_DRAWCOLUMN_SIMDOPTIMISED 1
+	#define R_DRAWCOLUMN_SIMDOPTIMISED 0
 	#define R_SIMD R_SIMD_NEON
 #else
 	#define R_DRAWCOLUMN_SIMDOPTIMISED 0

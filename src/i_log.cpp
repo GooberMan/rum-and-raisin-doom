@@ -38,14 +38,14 @@ struct DoomAllocator
 	typedef value_type*									pointer;
 	typedef const pointer								const_pointer;
 	typedef value_type&									reference;
-	typedef const reference								const_reference;
+	typedef const value_type&							const_reference;
 	typedef size_t										size_type;
 	typedef ptrdiff_t									difference_type;
 	typedef std::true_type								propagate_on_container_move_assignment;
-	template< typename _ty >
+	template< typename _newty >
 	struct rebind
 	{
-		typedef DoomAllocator< _ty, tag >				other;
+		typedef DoomAllocator< _newty, tag >			other;
 	};
 	typedef std::true_type								is_always_equal;
 

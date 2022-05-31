@@ -6,7 +6,8 @@ AM_CFLAGS = -I$(top_srcdir)/src \
             -I$(top_srcdir)/ext/glad/include               \
             @SDL_CFLAGS@ @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
 
-AM_CXXFLAGS = -I$(top_srcdir)/ext/cimgui                     \
+AM_CXXFLAGS = -I$(top_srcdir)/src                            \
+              -I$(top_srcdir)/ext/cimgui                     \
               -I$(top_srcdir)/ext/cimguiglue                 \
               -I$(top_srcdir)/ext/cimgui/imgui               \
               -I$(top_srcdir)/ext/cimgui/imgui/examples      \
@@ -71,10 +72,11 @@ p_user.c                        \
 r_bsp.c            r_bsp.h      \
 r_data.c           r_data.h     \
                    r_defs.h     \
-r_draw.c           r_draw.h     \
+r_draw.cpp         r_draw.h     \
                    r_local.h    \
 r_main.c           r_main.h     \
 r_plane.c          r_plane.h    \
+r_raster.cpp       r_raster.h   \
 r_segs.c           r_segs.h     \
 r_sky.c            r_sky.h      \
                    r_state.h    \

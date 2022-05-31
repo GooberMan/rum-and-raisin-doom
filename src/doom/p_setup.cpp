@@ -41,6 +41,30 @@ sector_t* GetSectorAtNullAddress(void);
 #include <span>
 #include <type_traits>
 
+// Support for something as simple as iota is incomplete in Clang hahaha
+struct iota
+{
+	struct iterator
+	{
+		int32_t val;
+		constexpr int32_t operator*() noexcept			{ return val; }
+		bool INLINE operator!=( const iterator& rhs ) 	{ return val != rhs.val; }
+		int32_t INLINE operator++()						{ return ++val; }
+	};
+
+	iota( int32_t b, int32_t e )
+	{
+		_begin = { b };
+		_end = { e };
+	}
+
+	constexpr iterator begin() noexcept { return _begin; }
+	constexpr iterator end() noexcept { return _end; }
+
+	iterator _begin;
+	iterator _end;
+};
+
 struct ReadVal
 {
 	template< typename _ty >
@@ -121,7 +145,7 @@ auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
 	_from* rhs = (_from*)( rawlump + dataoffset );
 	_to* lhs = data.output;
 
-	for( int32_t curr : std::ranges::views::iota( 0, data.count ) )
+	for( int32_t curr : iota( 0, data.count ) )
 	{
 		func( curr, *lhs, *rhs );
 		++lhs;
@@ -132,10 +156,6 @@ auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
 
 	return data;
 }
-
-#pragma optimize( "", off )
-#undef INLINE
-#define INLINE __declspec( noinline )
 
 typedef enum class NodeFormat : int32_t
 {
@@ -387,7 +407,7 @@ struct DoomMapLoader
 			out.y			= Read::AsIs( in.y ) << FRACBITS;
 			out.dx			= Read::AsIs( in.dx ) << FRACBITS;
 			out.dy			= Read::AsIs( in.dy ) << FRACBITS;
-			for( int32_t child : std::ranges::views::iota( 0, 2 ) )
+			for( int32_t child : iota( 0, 2 ) )
 			{
 				auto childval = Read::AsIs( in.children[ child ] );
 
@@ -407,7 +427,7 @@ struct DoomMapLoader
 				{
 					out.children[ child ] = childval;
 				}
-				for ( int32_t corner : std::ranges::views::iota( 0, 4 ) )
+				for ( int32_t corner : iota( 0, 4 ) )
 				{
 					out.bbox[ child ][ corner ] = Read::AsIs( in.bbox[ child ][ corner ] ) << FRACBITS;
 				}
