@@ -76,13 +76,15 @@ typedef struct renderdata_s
 
 renderdata_t*			renderdatas;
 
-#define DEFAULT_RENDERCONTEXTS 8
+#define DEFAULT_RENDERCONTEXTS 4
+#define DEFAULT_MAXRENDERCONTEXTS 8
 
-int32_t					numrendercontexts = DEFAULT_RENDERCONTEXTS;
+int32_t					numrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
 int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
 boolean					renderloadbalancing = false;
 boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
+float_t					rebalancescale = 0.025;
 boolean					renderthreaded = true;
 boolean					renderSIMDcolumns = false;
 atomicval_t				renderthreadCPUmelter = 0;
@@ -1352,6 +1354,7 @@ static void R_RenderThreadingGraphsWindow( const char* name, void* data )
 }
 #endif // RENDER_PERF_GRAPHING
 
+#pragma optimize( "", off )
 static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 {
 	boolean WorkingBool = I_AtomicLoad( &renderthreadCPUmelter ) != 0;
@@ -1378,6 +1381,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igPopID();
 
 	igCheckbox( "Load balancing", &renderloadbalancing );
+	igSliderFloat( "Balancing scale", &rebalancescale, 0.001, 0.1, "%0.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 	igCheckbox( "SIMD columns", &renderSIMDcolumns );
 	igNewLine();
 	igText( "Debug options" );
@@ -1475,6 +1479,13 @@ R_PointInSubsector
 //
 // R_SetupFrame
 //
+#pragma optimize( "", off )
+
+double_t Lerp( double_t from, double_t to, double_t percent )
+{
+	return from + ( to - from ) * percent;
+}
+
 void R_SetupFrame (player_t* player)
 {		
 	int32_t		i;
@@ -1527,25 +1538,52 @@ void R_SetupFrame (player_t* player)
 			lastframetime += renderdatas[ currcontext ].context.timetaken;
 		}
 
+		double_t average = lastframetime / numusablerendercontexts;
+		double_t timepercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		double_t oldwidthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		double_t growth[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		double_t widthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+		double_t total = 0;
+
+		int32_t overbudgetcount = 0;
+		int32_t underbudgetcount = 0;
+
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
-			currpercentage = renderdatas[ currcontext ].context.timetaken / lastframetime;
-			if( currpercentage > idealpercentage )
-			{
-				currpercentage -= 0.05f;
-				percentagedebt += 0.05f;
-			}
-			else if( currpercentage < idealpercentage && percentagedebt > 0 )
-			{
-				currpercentage += percentagedebt;
-				percentagedebt = 0;
-			}
+			timepercentages[ currcontext ] = renderdatas[ currcontext ].context.timetaken / lastframetime;
+			if( timepercentages[ currcontext ] > idealpercentage ) ++overbudgetcount;
+			else ++underbudgetcount;
+		}
 
-			desiredwidth = (int32_t)( viewwidth * currpercentage );
+		double_t totalshuffle = idealpercentage * (double_t)rebalancescale * numusablerendercontexts;
+		double_t removeamount = ( totalshuffle / ( numusablerendercontexts - 2 ) ) * ( numusablerendercontexts - 3 );
+		double_t addamount = totalshuffle - removeamount;
+
+		removeamount /= overbudgetcount;
+		addamount /= underbudgetcount;
+
+		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+		{
+			oldwidthpercentages[ currcontext ] = (double_t)( renderdatas[ currcontext ].context.endcolumn - renderdatas[ currcontext ].context.begincolumn ) / viewwidth;
+
+			double_t growamount = timepercentages[ currcontext ] > idealpercentage	? -removeamount
+																					: addamount;
+			growth[ currcontext ] = growamount;
+			widthpercentages[ currcontext ] = oldwidthpercentages[ currcontext ] + growamount;
+
+			total += widthpercentages[ currcontext ];
+		}
+
+		for( currcontext = 0; currcontext < numusablerendercontexts - 1; ++currcontext )
+		{
+			desiredwidth = (int32_t)( viewwidth * widthpercentages[ currcontext ] );
 
 			R_ResetContext( &renderdatas[ currcontext ].context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );
 			currstart += desiredwidth;
 		}
+
+		R_ResetContext( &renderdatas[ numusablerendercontexts - 1 ].context, M_MAX( currstart, 0 ), viewwidth );
 	}
 
 	if( !renderloadbalancing || renderrebalancecontexts )
@@ -1646,38 +1684,15 @@ void R_RenderPlayerView (player_t* player)
 	{
 		looptimeend = I_GetTimeUS();
 
-		memset( outputbuffer, 0, sizeof( outputbuffer ) );
-		sprintf( outputbuffer, "Loop time: %0.1fms", (looptimeend - looptimestart ) / 1000.0 );
-		R_DrawMsg( outputbuffer, &debugtotaltime );
-
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+		for( currcontext = 1; currcontext < numusablerendercontexts; ++currcontext )
 		{
-			totaltime += renderdatas[ currcontext ].context.timetaken;
-		}
+			outputcolumn = I_VideoBuffer + xlookup[ renderdatas[ currcontext ].context.begincolumn + 1 ] + rowofs[ 0 ];
+			endcolumn = outputcolumn + viewheight;
 
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
-		{
-			debugtime = (hu_textline_t*)renderdatas[ currcontext ].context.debugtime;
-			debugpercent = (hu_textline_t*)renderdatas[ currcontext ].context.debugpercent;
-
-			memset( outputbuffer, 0, sizeof( outputbuffer ) );
-			sprintf( outputbuffer, "%0.1fms", ( renderdatas[ currcontext ].context.timetaken / 1000.0 ) );
-			R_DrawMsg( outputbuffer, debugtime );
-
-			memset( outputbuffer, 0, sizeof( outputbuffer ) );
-			sprintf( outputbuffer, "%0.1f%%", ( renderdatas[ currcontext ].context.timetaken / totaltime ) * 100.0 );
-			R_DrawMsg( outputbuffer, debugpercent );
-
-			if( currcontext > 0 )
+			while( outputcolumn != endcolumn )
 			{
-				outputcolumn = I_VideoBuffer + xlookup[ renderdatas[ currcontext ].context.begincolumn + 1 ] + rowofs[ 0 ];
-				endcolumn = outputcolumn + viewheight;
-
-				while( outputcolumn != endcolumn )
-				{
-					*outputcolumn = 249;
-					++outputcolumn;
-				}
+				*outputcolumn = 249;
+				++outputcolumn;
 			}
 		}
 	}
