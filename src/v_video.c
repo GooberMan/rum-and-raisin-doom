@@ -46,7 +46,7 @@
 
 // TODO: There are separate RANGECHECK defines for different games, but this
 // is common code. Fix this.
-#define RANGECHECK
+#define RANGECHECK 1
 
 // Blending table used for fuzzpatch, etc.
 // Only used in Heretic/Hexen
