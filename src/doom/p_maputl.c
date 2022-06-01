@@ -471,7 +471,7 @@ P_BlockLinesIterator
   int			y,
   boolean(*func)(line_t*) )
 {
-    int				offset;
+    int32_t			offset;
     blockmap_t*		list;
     line_t*			ld;
 	
@@ -487,10 +487,17 @@ P_BlockLinesIterator
 	
 	// RUM AND RAISIN: removing the need to track the lump itself.
 	// Offsets are stored from lump start, so remove the header entries.
-    offset = *(blockmap+offset) - 4;
+    offset = *(blockmap + offset);
 
-    for ( list = blockmap+offset ; *list != BLOCKMAP_INVALID ; list++)
+    for ( list = blockmapbase+offset ; *list != BLOCKMAP_INVALID ; ++list)
     {
+	blockmap_t val = *list;
+#ifdef RANGECHECK
+	if( val != BLOCKMAP_INVALID && val >= numlines )
+	{
+		I_Error( "P_BlockLinesIterator: %d out of range", (int32_t)*list );
+	}
+#endif
 	ld = &lines[*list];
 
 	if (ld->validcount == validcount)

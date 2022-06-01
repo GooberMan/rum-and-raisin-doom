@@ -40,6 +40,7 @@ sector_t* GetSectorAtNullAddress(void);
 #include <ranges>
 #include <span>
 #include <type_traits>
+#include <vector>
 
 // Support for something as simple as iota is incomplete in Clang hahaha
 struct iota
@@ -159,8 +160,8 @@ auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
 
 typedef enum class NodeFormat : int32_t
 {
-	None,
 	Vanilla,
+	Extended,
 	DeepBSP,
 } nodeformat_t;
 
@@ -197,6 +198,8 @@ struct DoomMapLoader
 	int32_t			_blockmapwidth;
 	int32_t			_blockmapheight;
 	blockmap_t*		_blockmap;
+	blockmap_t*		_blockmapend;
+	blockmap_t*		_blockmapbase;
 	mobj_t**		_blocklinks;
 
 	byte*			_rejectmatrix;
@@ -216,14 +219,33 @@ struct DoomMapLoader
 	constexpr auto	Lines() const noexcept		{ return std::span( _lines,			_numlines ); }
 	constexpr auto	Sides() const noexcept		{ return std::span( _sides,			_numsides ); }
 
+	void INLINE DetermineExtendedFormat( int32_t rootlump )
+	{
+		constexpr uint64_t Magic = 0x0000000034644E78ull;
+		byte* data = (byte*)W_CacheLumpNum( rootlump + ML_NODES, PU_STATIC );
+
+		if( *(uint64_t*)data == Magic )
+		{
+			_nodeformat = NodeFormat::DeepBSP;
+		}
+		else
+		{
+			_nodeformat = NodeFormat::Extended;
+		}
+	}
+
+	template< typename _maptype = blockmap_vanilla_t >
 	void INLINE LoadBlockmap( int32_t lumpnum )
 	{
-		auto data = WadDataConvert< blockmap_t, blockmap_t >( lumpnum, 0, []( int32_t index, blockmap_t& out, const blockmap_t& in )
+		auto data = WadDataConvert< _maptype, blockmap_t >( lumpnum, 0, []( int32_t index, blockmap_t& out, const _maptype& in )
 		{
-			out = Read::AsIs( in );
+			auto val = Read::AsIs( in );
+			out = ( val == BLOCKMAP_INVALID_VANILLA ? BLOCKMAP_INVALID : val );
 		} );
 
 		_blockmap			= data.output;
+		_blockmapend		= data.output + data.count;
+		_blockmapbase		= _blockmap;
 
 		_blockmaporgx		= *_blockmap++ << FRACBITS;
 		_blockmaporgy		= *_blockmap++ << FRACBITS;
@@ -233,6 +255,53 @@ struct DoomMapLoader
 		int32_t linkssize = sizeof(*_blocklinks) * _blockmapwidth * _blockmapheight;
 		_blocklinks = (mobj_t**)Z_Malloc( linkssize, PU_LEVEL, 0 );
 		memset( _blocklinks, 0, linkssize );
+	}
+
+	void INLINE LoadExtendedBlockmap( int32_t lumpnum )
+	{
+		switch( _nodeformat )
+		{
+		using enum NodeFormat;
+		case Extended:
+			LoadBlockmap< blockmap_extended_t >( lumpnum );
+			break;
+		case DeepBSP:
+			LoadBlockmap< blockmap_extended_t >( lumpnum );
+			if( _blockmapwidth * _blockmapheight > 0xFFFF )
+			{
+				int32_t numindices = _blockmapwidth * _blockmapheight;
+				_blockmapbase = _blockmap + numindices;
+
+//#define DOING_REVERSE_ENGINEERING
+#ifdef DOING_REVERSE_ENGINEERING
+				ptrdiff_t listentries = _blockmapend - _blockmap;
+				int32_t numactualentries = 0;
+				for( blockmap_t* curr = _blockmapbase, *end = _blockmapend; curr != end; ++curr )
+				{
+					if( *curr == BLOCKMAP_INVALID )
+					{
+						++numactualentries;
+					}
+				}
+				int32_t numuniqueentries = 0;
+				std::vector< int32_t > found;
+				found.reserve( numindices );
+				for( blockmap_t* curr = _blockmap, *end = _blockmap + numindices; curr != end; ++curr )
+				{
+					if( std::find( found.begin(), found.end(), *curr ) == found.end() )
+					{
+						found.push_back( *curr );
+						++numuniqueentries;
+					}
+				}
+#endif
+			}
+			break;
+		case Vanilla:
+		default:
+			LoadBlockmap( lumpnum );
+			break;
+		}
 	}
 
 	void INLINE LoadVertices( int32_t lumpnum )
@@ -380,6 +449,7 @@ struct DoomMapLoader
 		{
 			out.numlines	= Read::AsIs( in.numsegs );
 			out.firstline	= Read::AsIs( in.firstseg );
+			out.index		= index;
 		} );
 
 		_numsubsectors = data.count;
@@ -398,7 +468,7 @@ struct DoomMapLoader
 		}
 	}
 
-	template< typename _maptype = mapnode_t, NodeFormat _format = NodeFormat::Vanilla >
+	template< typename _maptype = mapnode_t >
 	void INLINE LoadNodes( int32_t lumpnum, size_t offset = 0 )
 	{
 		auto data = WadDataConvert< _maptype, node_t >( lumpnum, offset, []( int32_t index, node_t& out, const _maptype& in )
@@ -436,7 +506,6 @@ struct DoomMapLoader
 
 		_numnodes		= data.count;
 		_nodes			= data.output;
-		_nodeformat		= _format;
 	}
 
 	void INLINE LoadExtendedNodes( int32_t lumpnum )
@@ -444,9 +513,9 @@ struct DoomMapLoader
 		constexpr uint64_t Magic = 0x0000000034644E78ull;
 		byte* data = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC );
 
-		if( *(uint64_t*)data == Magic )
+		if( _nodeformat == NodeFormat::DeepBSP )
 		{
-			LoadNodes< mapnode_deepbsp_t, NodeFormat::DeepBSP >( lumpnum, 8 );
+			LoadNodes< mapnode_deepbsp_t >( lumpnum, 8 );
 		}
 		else
 		{
@@ -722,11 +791,11 @@ extern "C"
 	// by spatial subdivision in 2D.
 	//
 	// Blockmap size.
-	int				bmapwidth;
-	int				bmapheight;	// size in mapblocks
+	int32_t			bmapwidth;
+	int32_t			bmapheight;	// size in mapblocks
 	blockmap_t*		blockmap;	// int for larger maps
 	// offsets in blockmap are from here
-	blockmap_t*		blockmaplump;		
+	blockmap_t*		blockmapbase;
 	// origin of block map
 	fixed_t			bmaporgx;
 	fixed_t			bmaporgy;
@@ -1185,23 +1254,25 @@ void P_LoadBlockMap (int lump)
     lumplen = W_LumpLength(lump);
     count = lumplen / 2;
 	
-    blockmaplump = (blockmap_t*)Z_Malloc(lumplen, PU_LEVEL, NULL);
-    W_ReadLump(lump, blockmaplump);
-    blockmap = blockmaplump + 4;
+	// This code just won't work any more
+	I_Error( "Don't use this code" );
+    blockmapbase = (blockmap_t*)Z_Malloc(lumplen, PU_LEVEL, NULL);
+    W_ReadLump(lump, blockmapbase);
+    blockmap = (blockmap_t*)Z_Malloc(lumplen - 8, PU_LEVEL, NULL);
 
     // Swap all short integers to native byte ordering.
   
     for (i=0; i<count; i++)
     {
-	blockmaplump[i] = SHORT(blockmaplump[i]);
+		blockmapbase[i] = SHORT(blockmapbase[i]);
     }
 		
     // Read the header
 
-    bmaporgx = blockmaplump[0]<<FRACBITS;
-    bmaporgy = blockmaplump[1]<<FRACBITS;
-    bmapwidth = blockmaplump[2];
-    bmapheight = blockmaplump[3];
+    bmaporgx = blockmapbase[0]<<FRACBITS;
+    bmaporgy = blockmapbase[1]<<FRACBITS;
+    bmapwidth = blockmapbase[2];
+    bmapheight = blockmapbase[3];
 	
     // Clear out mobj chains
 
@@ -1513,6 +1584,7 @@ P_SetupLevel
 			bmapwidth		= loader._blockmapwidth;
 			bmapheight		= loader._blockmapheight;
 			blockmap		= loader._blockmap;
+			blockmapbase	= loader._blockmapbase;
 			blocklinks		= loader._blocklinks;
 
 			numvertexes		= loader._numvertices;
@@ -1542,7 +1614,8 @@ P_SetupLevel
 
 	case RnRLimitRemoving:
 		{
-			loader.LoadBlockmap( lumpnum + ML_BLOCKMAP );
+			loader.DetermineExtendedFormat( lumpnum );
+			loader.LoadExtendedBlockmap( lumpnum + ML_BLOCKMAP );
 			loader.LoadVertices( lumpnum + ML_VERTEXES );
 			loader.LoadSectors( lumpnum + ML_SECTORS );
 			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
@@ -1550,8 +1623,8 @@ P_SetupLevel
 			// Reordering for limit removing, subsectors are independent
 			// of other data but need different structs depending on
 			// extended node type.
-			loader.LoadExtendedNodes( lumpnum + ML_NODES );
 			loader.LoadExtendedSubsectors( lumpnum + ML_SSECTORS );
+			loader.LoadExtendedNodes( lumpnum + ML_NODES );
 			loader.LoadExtendedSegs( lumpnum + ML_SEGS );
 			loader.GroupLines();
 			loader.LoadReject( lumpnum + ML_REJECT );
@@ -1561,6 +1634,7 @@ P_SetupLevel
 			bmapwidth		= loader._blockmapwidth;
 			bmapheight		= loader._blockmapheight;
 			blockmap		= loader._blockmap;
+			blockmapbase	= loader._blockmapbase;
 			blocklinks		= loader._blocklinks;
 
 			numvertexes		= loader._numvertices;
