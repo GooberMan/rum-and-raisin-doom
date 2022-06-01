@@ -55,7 +55,7 @@
 #define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			6144
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
-#define MAXOPENINGS				( MAXSCREENWIDTH*32 )
+#define MAXOPENINGS				( MAXSCREENWIDTH*48 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
 #define MAXDRAWSEGS				( MAXVISPLANES << 2 )
 
@@ -265,6 +265,7 @@ typedef struct subsector_s
 	sector_t*			sector;
 	uint16_t			numlines;
 	uint16_t			firstline;
+	int32_t				index;
 } subsector_t;
 
 
@@ -313,8 +314,11 @@ typedef struct node_s
 
 
 // Blockmap entries
-typedef uint16_t			blockmap_t;
-#define BLOCKMAP_INVALID	0xFFFF
+typedef int32_t						blockmap_t;
+typedef int16_t						blockmap_vanilla_t;
+typedef uint16_t					blockmap_extended_t;
+#define BLOCKMAP_INVALID_VANILLA	0xFFFF
+#define BLOCKMAP_INVALID			-1
 
 //
 // OTHER TYPES
