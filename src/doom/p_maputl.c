@@ -485,8 +485,6 @@ P_BlockLinesIterator
     
     offset = y*bmapwidth+x;
 	
-	// RUM AND RAISIN: removing the need to track the lump itself.
-	// Offsets are stored from lump start, so remove the header entries.
     offset = *(blockmap + offset);
 
     for ( list = blockmapbase+offset ; *list != BLOCKMAP_INVALID ; ++list)

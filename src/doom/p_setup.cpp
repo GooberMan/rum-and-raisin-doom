@@ -35,7 +35,22 @@ extern "C"
 }
 
 #define MAX_DEATHMATCH_STARTS	10
-sector_t* GetSectorAtNullAddress(void);
+
+static sector_t* GetSectorAtNullAddress(void)
+{
+    static boolean null_sector_is_initialized = false;
+    static sector_t null_sector;
+
+    if (!null_sector_is_initialized)
+    {
+        memset(&null_sector, 0, sizeof(null_sector));
+        I_GetMemoryValue(0, &null_sector.floorheight, 4);
+        I_GetMemoryValue(4, &null_sector.ceilingheight, 4);
+        null_sector_is_initialized = true;
+    }
+
+    return &null_sector;
+}
 
 #include <ranges>
 #include <span>
@@ -50,7 +65,7 @@ struct iota
 		int32_t val;
 		constexpr int32_t operator*() noexcept			{ return val; }
 		bool INLINE operator!=( const iterator& rhs ) 	{ return val != rhs.val; }
-		int32_t INLINE operator++()						{ return ++val; }
+		INLINE iterator& operator++()					{ ++val; return *this; }
 	};
 
 	iota( int32_t b, int32_t e )
@@ -234,7 +249,7 @@ struct DoomMapLoader
 		}
 	}
 
-	template< typename _maptype = blockmap_vanilla_t >
+	template< typename _maptype = mapblockmap_t >
 	void INLINE LoadBlockmap( int32_t lumpnum )
 	{
 		auto data = WadDataConvert< _maptype, blockmap_t >( lumpnum, 0, []( int32_t index, blockmap_t& out, const _maptype& in )
@@ -263,10 +278,8 @@ struct DoomMapLoader
 		{
 		using enum NodeFormat;
 		case Extended:
-			LoadBlockmap< blockmap_extended_t >( lumpnum );
-			break;
 		case DeepBSP:
-			LoadBlockmap< blockmap_extended_t >( lumpnum );
+			LoadBlockmap< mapblockmap_t >( lumpnum );
 			if( _blockmapwidth * _blockmapheight > 0xFFFF )
 			{
 				int32_t numindices = _blockmapwidth * _blockmapheight;
@@ -824,247 +837,18 @@ extern "C"
 	lumpinfo_t *maplumpinfo;
 }
 
-//
-// P_LoadVertexes
-//
-void P_LoadVertexes (int lump)
+enum LoadingCode : int32_t
 {
-    byte*		data;
-    int			i;
-    mapvertex_t*	ml;
-    vertex_t*		li;
+	RnRVanilla,
+	RnRLimitRemoving
+};
 
-    // Determine number of lumps:
-    //  total lump length / vertex record length.
-    numvertexes = W_LumpLength (lump) / sizeof(mapvertex_t);
-
-    // Allocate zone memory for buffer.
-    vertexes = (vertex_t*)Z_Malloc (numvertexes*sizeof(vertex_t),PU_LEVEL,0);	
-
-    // Load data into cache.
-    data = (byte*)W_CacheLumpNum (lump, PU_STATIC);
-	
-    ml = (mapvertex_t *)data;
-    li = vertexes;
-
-    // Copy and convert vertex coordinates,
-    // internal representation as fixed.
-    for (i=0 ; i<numvertexes ; i++, li++, ml++)
-    {
-	li->x = SHORT(ml->x)<<FRACBITS;
-	li->y = SHORT(ml->y)<<FRACBITS;
-    }
-
-    // Free buffer memory.
-    W_ReleaseLumpNum(lump);
-}
-
-//
-// GetSectorAtNullAddress
-//
-sector_t* GetSectorAtNullAddress(void)
-{
-    static boolean null_sector_is_initialized = false;
-    static sector_t null_sector;
-
-    if (!null_sector_is_initialized)
-    {
-        memset(&null_sector, 0, sizeof(null_sector));
-        I_GetMemoryValue(0, &null_sector.floorheight, 4);
-        I_GetMemoryValue(4, &null_sector.ceilingheight, 4);
-        null_sector_is_initialized = true;
-    }
-
-    return &null_sector;
-}
-
-//
-// P_LoadSegs
-//
-void P_LoadSegs (int lump)
-{
-    byte*		data;
-    int			i;
-    mapseg_t*		ml;
-    seg_t*		li;
-    line_t*		ldef;
-    int			linedef;
-    int			side;
-    int                 sidenum;
-	
-    numsegs = W_LumpLength (lump) / sizeof(mapseg_t);
-    segs = (seg_t*)Z_Malloc (numsegs*sizeof(seg_t),PU_LEVEL,0);	
-    memset (segs, 0, numsegs*sizeof(seg_t));
-    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
-	
-    ml = (mapseg_t *)data;
-    li = segs;
-    for (i=0 ; i<numsegs ; i++, li++, ml++)
-    {
-	li->v1 = &vertexes[SHORT(ml->v1)];
-	li->v2 = &vertexes[SHORT(ml->v2)];
-
-	li->angle = (SHORT(ml->angle))<<FRACBITS;
-	li->offset = (SHORT(ml->offset))<<FRACBITS;
-	linedef = SHORT(ml->linedef);
-	ldef = &lines[linedef];
-	li->linedef = ldef;
-	side = SHORT(ml->side);
-
-        // e6y: check for wrong indexes
-        if ((uint32_t)ldef->sidenum[side] >= (uint32_t)numsides)
-        {
-            I_Error("P_LoadSegs: linedef %d for seg %d references a non-existent sidedef %d",
-                    linedef, i, (uint32_t)ldef->sidenum[side]);
-        }
-
-	li->sidedef = &sides[ldef->sidenum[side]];
-	li->frontsector = sides[ldef->sidenum[side]].sector;
-
-        if (ldef-> flags & ML_TWOSIDED)
-        {
-            sidenum = ldef->sidenum[side ^ 1];
-
-            // If the sidenum is out of range, this may be a "glass hack"
-            // impassible window.  Point at side #0 (this may not be
-            // the correct Vanilla behavior; however, it seems to work for
-            // OTTAWAU.WAD, which is the one place I've seen this trick
-            // used).
-
-            if (sidenum < 0 || sidenum >= numsides)
-            {
-                li->backsector = GetSectorAtNullAddress();
-            }
-            else
-            {
-                li->backsector = sides[sidenum].sector;
-            }
-        }
-        else
-        {
-	    li->backsector = 0;
-        }
-    }
-	
-    W_ReleaseLumpNum(lump);
-}
-
-
-//
-// P_LoadSubsectors
-//
-void P_LoadSubsectors (int lump)
-{
-    byte*		data;
-    int			i;
-    mapsubsector_t*	ms;
-    subsector_t*	ss;
-	
-    numsubsectors = W_LumpLength (lump) / sizeof(mapsubsector_t);
-    subsectors = (subsector_t*)Z_Malloc (numsubsectors*sizeof(subsector_t),PU_LEVEL,0);	
-    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
-	
-    ms = (mapsubsector_t *)data;
-    memset (subsectors,0, numsubsectors*sizeof(subsector_t));
-    ss = subsectors;
-    
-    for (i=0 ; i<numsubsectors ; i++, ss++, ms++)
-    {
-	ss->numlines = SHORT(ms->numsegs);
-	ss->firstline = SHORT(ms->firstseg);
-    }
-	
-    W_ReleaseLumpNum(lump);
-}
-
-
-
-//
-// P_LoadSectors
-//
-void P_LoadSectors (int lump)
-{
-	byte*			data;
-	int32_t			index;
-	mapsector_t*	ms;
-	sector_t*		ss;
-	
-	numsectors = W_LumpLength (lump) / sizeof(mapsector_t);
-	sectors = (sector_t*)Z_Malloc (numsectors*sizeof(sector_t),PU_LEVEL,0);	
-	memset (sectors, 0, numsectors*sizeof(sector_t));
-	data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
-	
-	ms = (mapsector_t *)data;
-	ss = sectors;
-	for (index=0 ; index<numsectors ; index++, ss++, ms++)
-	{
-		ss->index			= index;
-		ss->floorheight		= SHORT(ms->floorheight)<<FRACBITS;
-		ss->ceilingheight	= SHORT(ms->ceilingheight)<<FRACBITS;
-		ss->floorpic		= R_FlatNumForName(ms->floorpic);
-		ss->ceilingpic		= R_FlatNumForName(ms->ceilingpic);
-		ss->lightlevel		= SHORT(ms->lightlevel);
-		ss->special			= SHORT(ms->special);
-		ss->tag				= SHORT(ms->tag);
-		ss->thinglist		= NULL;
-
-		if( ss->special == 9 )
-		{
-			ss->secretstate = Secret_Undiscovered;
-		}
-	}
-
-	W_ReleaseLumpNum(lump);
-}
-
-
-//
-// P_LoadNodes
-//
-void P_LoadNodes (int lump)
-{
-    byte*	data;
-    int		i;
-    int		j;
-    int		k;
-    mapnode_t*	mn;
-    node_t*	no;
-	
-    numnodes = W_LumpLength (lump) / sizeof(mapnode_t);
-    nodes = (node_t*)Z_Malloc (numnodes*sizeof(node_t),PU_LEVEL,0);	
-    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
-	
-    mn = (mapnode_t *)data;
-    no = nodes;
-    
-    for (i=0 ; i<numnodes ; i++, no++, mn++)
-    {
-	no->x = SHORT(mn->x)<<FRACBITS;
-	no->y = SHORT(mn->y)<<FRACBITS;
-	no->dx = SHORT(mn->dx)<<FRACBITS;
-	no->dy = SHORT(mn->dy)<<FRACBITS;
-	for (j=0 ; j<2 ; j++)
-	{
-	    no->children[j] = SHORT(mn->children[j]);
-		if( no->children[j] & NF_SUBSECTOR_VANILLA )
-		{
-			no->children[j] &= ~NF_SUBSECTOR_VANILLA;
-			no->children[j] |= NF_SUBSECTOR;
-		}
-
-	    for (k=0 ; k<4 ; k++)
-		no->bbox[j][k] = SHORT(mn->bbox[j][k])<<FRACBITS;
-	}
-    }
-	
-    W_ReleaseLumpNum(lump);
-}
-
+int32_t loading_code = LoadingCode::RnRVanilla;
 
 //
 // P_LoadThings
 //
-void P_LoadThings (int lump)
+static void P_LoadThings (int lump)
 {
     byte               *data;
     int			i;
@@ -1128,372 +912,6 @@ void P_LoadThings (int lump)
     W_ReleaseLumpNum(lump);
 }
 
-
-//
-// P_LoadLineDefs
-// Also counts secret lines for intermissions.
-//
-void P_LoadLineDefs (int lump)
-{
-    byte*		data;
-    int			i;
-    maplinedef_t*	mld;
-    line_t*		ld;
-    vertex_t*		v1;
-    vertex_t*		v2;
-	
-    numlines = W_LumpLength (lump) / sizeof(maplinedef_t);
-    lines = (line_t*)Z_Malloc (numlines*sizeof(line_t),PU_LEVEL,0);	
-    memset (lines, 0, numlines*sizeof(line_t));
-    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
-	
-    mld = (maplinedef_t *)data;
-    ld = lines;
-    for (i=0 ; i<numlines ; i++, mld++, ld++)
-    {
-	ld->flags = SHORT(mld->flags);
-	ld->special = SHORT(mld->special);
-	ld->tag = SHORT(mld->tag);
-	v1 = ld->v1 = &vertexes[SHORT(mld->v1)];
-	v2 = ld->v2 = &vertexes[SHORT(mld->v2)];
-	ld->dx = v2->x - v1->x;
-	ld->dy = v2->y - v1->y;
-	
-	if (!ld->dx)
-	    ld->slopetype = ST_VERTICAL;
-	else if (!ld->dy)
-	    ld->slopetype = ST_HORIZONTAL;
-	else
-	{
-	    if (FixedDiv (ld->dy , ld->dx) > 0)
-		ld->slopetype = ST_POSITIVE;
-	    else
-		ld->slopetype = ST_NEGATIVE;
-	}
-		
-	if (v1->x < v2->x)
-	{
-	    ld->bbox[BOXLEFT] = v1->x;
-	    ld->bbox[BOXRIGHT] = v2->x;
-	}
-	else
-	{
-	    ld->bbox[BOXLEFT] = v2->x;
-	    ld->bbox[BOXRIGHT] = v1->x;
-	}
-
-	if (v1->y < v2->y)
-	{
-	    ld->bbox[BOXBOTTOM] = v1->y;
-	    ld->bbox[BOXTOP] = v2->y;
-	}
-	else
-	{
-	    ld->bbox[BOXBOTTOM] = v2->y;
-	    ld->bbox[BOXTOP] = v1->y;
-	}
-
-	ld->sidenum[0] = SHORT(mld->sidenum[0]);
-	ld->sidenum[1] = SHORT(mld->sidenum[1]);
-
-	if (ld->sidenum[0] != -1)
-	    ld->frontsector = sides[ld->sidenum[0]].sector;
-	else
-	    ld->frontsector = 0;
-
-	if (ld->sidenum[1] != -1)
-	    ld->backsector = sides[ld->sidenum[1]].sector;
-	else
-	    ld->backsector = 0;
-    }
-
-    W_ReleaseLumpNum(lump);
-}
-
-
-//
-// P_LoadSideDefs
-//
-void P_LoadSideDefs (int lump)
-{
-    byte*		data;
-    int			i;
-    mapsidedef_t*	msd;
-    side_t*		sd;
-	
-    numsides = W_LumpLength (lump) / sizeof(mapsidedef_t);
-    sides = (side_t*)Z_Malloc (numsides*sizeof(side_t),PU_LEVEL,0);	
-    memset (sides, 0, numsides*sizeof(side_t));
-    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
-	
-    msd = (mapsidedef_t *)data;
-    sd = sides;
-    for (i=0 ; i<numsides ; i++, msd++, sd++)
-    {
-	sd->textureoffset = SHORT(msd->textureoffset)<<FRACBITS;
-	sd->rowoffset = SHORT(msd->rowoffset)<<FRACBITS;
-	sd->toptexture = R_TextureNumForName(msd->toptexture);
-	sd->bottomtexture = R_TextureNumForName(msd->bottomtexture);
-	sd->midtexture = R_TextureNumForName(msd->midtexture);
-	sd->sector = &sectors[SHORT(msd->sector)];
-    }
-
-    W_ReleaseLumpNum(lump);
-}
-
-
-//
-// P_LoadBlockMap
-//
-void P_LoadBlockMap (int lump)
-{
-    int i;
-    int count;
-    int lumplen;
-
-    lumplen = W_LumpLength(lump);
-    count = lumplen / 2;
-	
-	// This code just won't work any more
-	I_Error( "Don't use this code" );
-    blockmapbase = (blockmap_t*)Z_Malloc(lumplen, PU_LEVEL, NULL);
-    W_ReadLump(lump, blockmapbase);
-    blockmap = (blockmap_t*)Z_Malloc(lumplen - 8, PU_LEVEL, NULL);
-
-    // Swap all short integers to native byte ordering.
-  
-    for (i=0; i<count; i++)
-    {
-		blockmapbase[i] = SHORT(blockmapbase[i]);
-    }
-		
-    // Read the header
-
-    bmaporgx = blockmapbase[0]<<FRACBITS;
-    bmaporgy = blockmapbase[1]<<FRACBITS;
-    bmapwidth = blockmapbase[2];
-    bmapheight = blockmapbase[3];
-	
-    // Clear out mobj chains
-
-    count = sizeof(*blocklinks) * bmapwidth * bmapheight;
-    blocklinks = (mobj_t**)Z_Malloc(count, PU_LEVEL, 0);
-    memset(blocklinks, 0, count);
-}
-
-
-
-//
-// P_GroupLines
-// Builds sector line lists and subsector sector numbers.
-// Finds block bounding boxes for sectors.
-//
-void P_GroupLines (void)
-{
-    line_t**		linebuffer;
-    int			i;
-    int			j;
-    line_t*		li;
-    sector_t*		sector;
-    subsector_t*	ss;
-    seg_t*		seg;
-    fixed_t		bbox[4];
-    int			block;
-	
-    // look up sector number for each subsector
-    ss = subsectors;
-    for (i=0 ; i<numsubsectors ; i++, ss++)
-    {
-	seg = &segs[ss->firstline];
-	ss->sector = seg->sidedef->sector;
-    }
-
-    // count number of lines in each sector
-    li = lines;
-    totallines = 0;
-    for (i=0 ; i<numlines ; i++, li++)
-    {
-	totallines++;
-	li->frontsector->linecount++;
-
-	if (li->backsector && li->backsector != li->frontsector)
-	{
-	    li->backsector->linecount++;
-	    totallines++;
-	}
-    }
-
-    // build line tables for each sector	
-    linebuffer = (line_t**)Z_Malloc (totallines*sizeof(line_t *), PU_LEVEL, 0);
-
-    for (i=0; i<numsectors; ++i)
-    {
-        // Assign the line buffer for this sector
-
-        sectors[i].lines = linebuffer;
-        linebuffer += sectors[i].linecount;
-
-        // Reset linecount to zero so in the next stage we can count
-        // lines into the list.
-
-        sectors[i].linecount = 0;
-    }
-
-    // Assign lines to sectors
-
-    for (i=0; i<numlines; ++i)
-    { 
-        li = &lines[i];
-
-        if (li->frontsector != NULL)
-        {
-            sector = li->frontsector;
-
-            sector->lines[sector->linecount] = li;
-            ++sector->linecount;
-        }
-
-        if (li->backsector != NULL && li->frontsector != li->backsector)
-        {
-            sector = li->backsector;
-
-            sector->lines[sector->linecount] = li;
-            ++sector->linecount;
-        }
-    }
-    
-    // Generate bounding boxes for sectors
-	
-    sector = sectors;
-    for (i=0 ; i<numsectors ; i++, sector++)
-    {
-	M_ClearBox (bbox);
-
-	for (j=0 ; j<sector->linecount; j++)
-	{
-            li = sector->lines[j];
-
-            M_AddToBox (bbox, li->v1->x, li->v1->y);
-            M_AddToBox (bbox, li->v2->x, li->v2->y);
-	}
-
-	// set the degenmobj_t to the middle of the bounding box
-	sector->soundorg.x = (bbox[BOXRIGHT]+bbox[BOXLEFT])/2;
-	sector->soundorg.y = (bbox[BOXTOP]+bbox[BOXBOTTOM])/2;
-		
-	// adjust bounding box to map blocks
-	block = (bbox[BOXTOP]-bmaporgy+MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block >= bmapheight ? bmapheight-1 : block;
-	sector->blockbox[BOXTOP]=block;
-
-	block = (bbox[BOXBOTTOM]-bmaporgy-MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block < 0 ? 0 : block;
-	sector->blockbox[BOXBOTTOM]=block;
-
-	block = (bbox[BOXRIGHT]-bmaporgx+MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block >= bmapwidth ? bmapwidth-1 : block;
-	sector->blockbox[BOXRIGHT]=block;
-
-	block = (bbox[BOXLEFT]-bmaporgx-MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block < 0 ? 0 : block;
-	sector->blockbox[BOXLEFT]=block;
-    }
-	
-}
-
-// Pad the REJECT lump with extra data when the lump is too small,
-// to simulate a REJECT buffer overflow in Vanilla Doom.
-
-static void PadRejectArray(byte *array, uint32_t len)
-{
-    uint32_t i;
-    uint32_t byte_num;
-    byte *dest;
-    uint32_t padvalue;
-
-    // Values to pad the REJECT array with:
-
-    uint32_t rejectpad[4] =
-    {
-        0,                                    // Size
-        0,                                    // Part of z_zone block header
-        50,                                   // PU_LEVEL
-        0x1d4a11                              // DOOM_CONST_ZONEID
-    };
-
-    rejectpad[0] = ((totallines * 4 + 3) & ~3) + 24;
-
-    // Copy values from rejectpad into the destination array.
-
-    dest = array;
-
-    for (i=0; i<len && i<sizeof(rejectpad); ++i)
-    {
-        byte_num = i % 4;
-        *dest = (rejectpad[i / 4] >> (byte_num * 8)) & 0xff;
-        ++dest;
-    }
-
-    // We only have a limited pad size.  Print a warning if the
-    // REJECT lump is too small.
-
-    if (len > sizeof(rejectpad))
-    {
-        fprintf(stderr, "PadRejectArray: REJECT lump too short to pad! (%u > %i)\n",
-                        len, (int) sizeof(rejectpad));
-
-        // Pad remaining space with 0 (or 0xff, if specified on command line).
-
-        if (M_CheckParm("-reject_pad_with_ff"))
-        {
-            padvalue = 0xff;
-        }
-        else
-        {
-            padvalue = 0xf00;
-        }
-
-        memset(array + sizeof(rejectpad), padvalue, len - sizeof(rejectpad));
-    }
-}
-
-static void P_LoadReject(int lumpnum)
-{
-    int minlength;
-    int lumplen;
-
-    // Calculate the size that the REJECT lump *should* be.
-
-    minlength = (numsectors * numsectors + 7) / 8;
-
-    // If the lump meets the minimum length, it can be loaded directly.
-    // Otherwise, we need to allocate a buffer of the correct size
-    // and pad it with appropriate data.
-
-    lumplen = W_LumpLength(lumpnum);
-
-    if (lumplen >= minlength)
-    {
-        rejectmatrix = (byte*)W_CacheLumpNum(lumpnum, PU_LEVEL);
-    }
-    else
-    {
-        rejectmatrix = (byte*)Z_Malloc(minlength, PU_LEVEL, &rejectmatrix);
-        W_ReadLump(lumpnum, rejectmatrix);
-
-        PadRejectArray(rejectmatrix + lumplen, minlength - lumplen);
-    }
-}
-
-enum LoadingCode : int32_t
-{
-	Original,
-	RnRVanilla,
-	RnRLimitRemoving
-};
-
-int32_t loading_code = LoadingCode::RnRVanilla;
-
 //
 // P_SetupLevel
 //
@@ -1552,20 +970,6 @@ P_SetupLevel
 	switch( loading_code )
 	{
 	using enum LoadingCode;
-	case Original:
-		// note: most of this ordering is important	
-		P_LoadBlockMap (lumpnum+ML_BLOCKMAP);
-		P_LoadVertexes (lumpnum+ML_VERTEXES);
-		P_LoadSectors (lumpnum+ML_SECTORS);
-		P_LoadSideDefs (lumpnum+ML_SIDEDEFS);
-		P_LoadLineDefs (lumpnum+ML_LINEDEFS);
-		P_LoadSubsectors (lumpnum+ML_SSECTORS);
-		P_LoadNodes (lumpnum+ML_NODES);
-		P_LoadSegs (lumpnum+ML_SEGS);
-		P_GroupLines ();
-		P_LoadReject (lumpnum+ML_REJECT);
-		break;
-
 	case RnRVanilla:
 		{
 			loader.LoadBlockmap( lumpnum + ML_BLOCKMAP );
@@ -1578,37 +982,6 @@ P_SetupLevel
 			loader.LoadSegs( lumpnum + ML_SEGS );
 			loader.GroupLines();
 			loader.LoadReject( lumpnum + ML_REJECT );
-
-			bmaporgx		= loader._blockmaporgx;
-			bmaporgy		= loader._blockmaporgy;
-			bmapwidth		= loader._blockmapwidth;
-			bmapheight		= loader._blockmapheight;
-			blockmap		= loader._blockmap;
-			blockmapbase	= loader._blockmapbase;
-			blocklinks		= loader._blocklinks;
-
-			numvertexes		= loader._numvertices;
-			vertexes		= loader._vertices;
-
-			numsectors		= loader._numsectors;
-			sectors			= loader._sectors;
-
-			numsides		= loader._numsides;
-			sides			= loader._sides;
-
-			numlines		= loader._numlines;
-			lines			= loader._lines;
-
-			numsubsectors	= loader._numsubsectors;
-			subsectors		= loader._subsectors;
-
-			numnodes		= loader._numnodes;
-			nodes			= loader._nodes;
-
-			numsegs			= loader._numsegs;
-			segs			= loader._segs;
-
-			rejectmatrix	= loader._rejectmatrix;
 		}
 		break;
 
@@ -1628,43 +1001,44 @@ P_SetupLevel
 			loader.LoadExtendedSegs( lumpnum + ML_SEGS );
 			loader.GroupLines();
 			loader.LoadReject( lumpnum + ML_REJECT );
-
-			bmaporgx		= loader._blockmaporgx;
-			bmaporgy		= loader._blockmaporgy;
-			bmapwidth		= loader._blockmapwidth;
-			bmapheight		= loader._blockmapheight;
-			blockmap		= loader._blockmap;
-			blockmapbase	= loader._blockmapbase;
-			blocklinks		= loader._blocklinks;
-
-			numvertexes		= loader._numvertices;
-			vertexes		= loader._vertices;
-
-			numsectors		= loader._numsectors;
-			sectors			= loader._sectors;
-
-			numsides		= loader._numsides;
-			sides			= loader._sides;
-
-			numlines		= loader._numlines;
-			lines			= loader._lines;
-
-			numsubsectors	= loader._numsubsectors;
-			subsectors		= loader._subsectors;
-
-			numnodes		= loader._numnodes;
-			nodes			= loader._nodes;
-
-			numsegs			= loader._numsegs;
-			segs			= loader._segs;
-
-			rejectmatrix	= loader._rejectmatrix;
 		}
 		break;
 
 	default:
+		I_Error( "Unknown loading path for map" );
 		break;
 	}
+
+	bmaporgx		= loader._blockmaporgx;
+	bmaporgy		= loader._blockmaporgy;
+	bmapwidth		= loader._blockmapwidth;
+	bmapheight		= loader._blockmapheight;
+	blockmap		= loader._blockmap;
+	blockmapbase	= loader._blockmapbase;
+	blocklinks		= loader._blocklinks;
+
+	numvertexes		= loader._numvertices;
+	vertexes		= loader._vertices;
+
+	numsectors		= loader._numsectors;
+	sectors			= loader._sectors;
+
+	numsides		= loader._numsides;
+	sides			= loader._sides;
+
+	numlines		= loader._numlines;
+	lines			= loader._lines;
+
+	numsubsectors	= loader._numsubsectors;
+	subsectors		= loader._subsectors;
+
+	numnodes		= loader._numnodes;
+	nodes			= loader._nodes;
+
+	numsegs			= loader._numsegs;
+	segs			= loader._segs;
+
+	rejectmatrix	= loader._rejectmatrix;
 
     bodyqueslot = 0;
     deathmatch_p = deathmatchstarts;
