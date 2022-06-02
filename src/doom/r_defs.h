@@ -316,6 +316,8 @@ typedef struct node_s
 // Blockmap entries
 typedef int32_t						blockmap_t;
 typedef int16_t						mapblockmap_t;
+typedef uint16_t					mapblockmap_extended_t;
+
 #define BLOCKMAP_INVALID_VANILLA	0xFFFF
 #define BLOCKMAP_INVALID			-1
 

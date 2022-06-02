@@ -279,7 +279,7 @@ struct DoomMapLoader
 		using enum NodeFormat;
 		case Extended:
 		case DeepBSP:
-			LoadBlockmap< mapblockmap_t >( lumpnum );
+			LoadBlockmap< mapblockmap_extended_t >( lumpnum );
 			if( _blockmapwidth * _blockmapheight > 0xFFFF )
 			{
 				int32_t numindices = _blockmapwidth * _blockmapheight;
