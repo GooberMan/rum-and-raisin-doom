@@ -13,7 +13,7 @@ FILETYPE 1
  {
   BLOCK "040904E4"
   {
-   VALUE "FileVersion", "0.1.1.0"
+   VALUE "FileVersion", "0.1.1"
    VALUE "FileDescription", "Rum and Raisin Doom 0.1.1"
    VALUE "InternalName", "run-and-raisin-doom"
    VALUE "CompanyName", "chocolate-doom-dev-list@chocolate-doom.org"

@@ -401,16 +401,24 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="rum-and-raisin-doom.rc">
-      <Filter>Source Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Header Files">
       <UniqueIdentifier>{F691BDA7-B1B0-379D-B4F4-95C504AFAC32}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{8F35243C-C65B-3F09-9CCA-0E6D144DF7FC}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{37d5ae5d-0e33-46d9-b9a9-56702b59da0b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="rum-and-raisin-doom.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\src\manifest.xml">
+      <Filter>Resources</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
