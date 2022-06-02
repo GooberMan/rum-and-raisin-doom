@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="FixedPoint&lt;*&gt;">
+    <DisplayString>{((double)(storage >> fractional_bits)+(double)(storage&amp;fractional_mask)/(double)one),g}</DisplayString>
+  </Type>
+</AutoVisualizer>

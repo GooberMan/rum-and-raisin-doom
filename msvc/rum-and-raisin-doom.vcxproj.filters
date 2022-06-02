@@ -421,4 +421,9 @@
       <Filter>Resources</Filter>
     </Xml>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="rum-and-raisin-doom.natvis">
+      <Filter>Resources</Filter>
+    </Natvis>
+  </ItemGroup>
 </Project>

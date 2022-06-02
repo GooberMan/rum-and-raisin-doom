@@ -372,6 +372,9 @@
   <ItemGroup>
     <Xml Include="..\src\manifest.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="rum-and-raisin-doom.natvis" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
