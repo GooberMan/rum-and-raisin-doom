@@ -962,8 +962,13 @@ void I_FinishUpdate (void)
 		{
 			igGetWindowSize( &backbuffersize );
 			igGetWindowPos( &backbufferpos );
+
 			// TODO: Get correct margin sizes
 			ImVec2 size = { backbuffersize.x - 20, backbuffersize.y - 40 };
+
+			ImVec2 imagepos;
+			igGetCursorScreenPos( &imagepos );
+
 			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 			ImVec2 uvtl = { 0, 0 };
@@ -973,6 +978,59 @@ void I_FinishUpdate (void)
 			ImVec4 tint = { 1, 1, 1, 1 };
 			ImVec4 border = { 0, 0, 0, 0 };
 			igImageQuad( (ImTextureID)whichID, size, uvtl, uvtr, uvlr, uvll, tint, border );
+
+#if 0
+			ImVec2 actualmousepos;
+			igGetMousePos( &actualmousepos );
+
+			ImVec2 relativemousepos = { actualmousepos.x - imagepos.x, actualmousepos.y - imagepos.y };
+
+			int32_t lookupx = -1;
+			int32_t lookupy = -1;
+
+			if( relativemousepos.x >= 0 && relativemousepos.x < size.x 
+				&& relativemousepos.y >= 0 && relativemousepos.y < size.y )
+			{
+				float_t xpercent = relativemousepos.x / size.x;
+				float_t ypercent = relativemousepos.y / size.y;
+
+				lookupx = M_MIN( render_width * xpercent, render_width - 1 );
+				lookupy = M_MIN( render_height * ypercent, render_height - 1 );
+
+				igOpenPopup( "inspector", ImGuiPopupFlags_None );
+
+				actualmousepos.x += 10;
+
+				igSetNextWindowPos( actualmousepos, ImGuiCond_Always, zeropivot );
+			}
+
+			if( igBeginPopup( "inspector", ImGuiWindowFlags_None ) )
+			{
+				if( lookupx < 0 || lookupy < 0 )
+				{
+					igCloseCurrentPopup();
+				}
+				else
+				{
+					ImVec2 buttonsize = { 40, 40 };
+					vbuffer_t* buffer = &renderbuffers[ 0 ].screenbuffer;
+
+					int32_t colourentry = buffer->data[ lookupx * buffer->pitch + lookupy ];
+					SDL_Color* palentry = &palette[ colourentry ];
+
+					ImU32 colour = IM_COL32( palentry->r, palentry->g, palentry->b, 255 );
+
+					igPushStyleColorU32( ImGuiCol_Button, colour );
+					igPushStyleColorU32( ImGuiCol_Border, IM_COL32_BLACK );
+					igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 2.f );
+					igButton( " ", buttonsize );
+					igPopStyleVar( 1 );
+					igPopStyleColor( 2 );
+				}
+
+				igEndPopup();
+			}
+#endif
 		}
 		igEnd();
 
