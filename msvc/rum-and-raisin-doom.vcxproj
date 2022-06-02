@@ -235,6 +235,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\icon.c" />
     <ClCompile Include="..\src\i_log.cpp" />
     <ClCompile Include="..\src\i_thread.cpp" />
     <ClCompile Include="..\src\m_debugmenu.c" />
