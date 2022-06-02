@@ -55,6 +55,7 @@ INLINE void DoSample( int32_t& spot
 // Implemented for several Log2( N ) values, select based on backbuffer width
 
 template< int32_t Leap, int32_t LeapLog2 >
+requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
 INLINE void R_RasteriseColumnImpl( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t top, int32_t count )
 {
 	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ top ];
