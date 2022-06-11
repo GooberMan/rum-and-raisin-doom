@@ -609,12 +609,7 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view
 
     if (den >= 0 && den > num>>FRACBITS)
     {
-		scale = FixedDiv (num, den);
-
-		if (scale > MAXSCALE_FIXED)
-			scale = MAXSCALE_FIXED;
-		else if (scale < 256)
-			scale = 256;
+		scale = M_CLAMP( FixedDiv(num, den), 256, MAXSCALE_FIXED );
     }
 	
     return scale;
