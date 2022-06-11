@@ -57,3 +57,21 @@ DOOM_C_API fixed_t FixedDiv(fixed_t a, fixed_t b)
     }
 }
 
+
+DOOM_C_API rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b )
+{
+    rend_fixed_t result = ( a * b );
+
+	return RENDFRACFILL( result >> RENDFRACBITS );
+}
+
+DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b )
+{
+	if ( ( llabs( a ) >> 22 ) >= llabs( b ) )
+	{
+		return ( a ^ b ) < 0 ? LONG_MIN : LONG_MAX;
+	}
+	rend_fixed_t result = ( a << RENDFRACBITS ) / b;
+	return (rend_fixed_t) result;
+}
+
