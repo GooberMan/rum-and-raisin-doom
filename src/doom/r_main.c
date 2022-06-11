@@ -582,7 +582,7 @@ void R_InitPointToAngle (void)
 // Defining the original maximum as a function of your
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
-#define MAXSCALE ( 64 * ( render_width / 320 ) )
+#define MAXSCALE ( 128 * ( render_width / 320 ) )
 #define MAXSCALE_FIXED IntToFixed( MAXSCALE )
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle)
@@ -903,8 +903,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	else if( voidcleartype == Void_Sky )
 	{
 		skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
-		skycontext.iscale = pspriteiscale>>detailshift;
-		skycontext.scale = pspritescale>>detailshift;
+		skycontext.iscale = FixedToRendFixed( pspriteiscale>>detailshift );
+		skycontext.scale = FixedToRendFixed( pspritescale>>detailshift );
 		skycontext.texturemid = skytexturemid;
 		skycontext.output = rendercontext->buffer;
 		skycontext.yl = 0;
@@ -1198,7 +1198,7 @@ void R_ExecuteSetViewSize (void)
 	{
 		dy = IntToFixed( i- viewheight / 2 ) + FRACUNIT / 2;
 		dy = abs( dy );
-		yslope[ i ] = FixedMul( FixedDiv ( ( viewwidth << detailshift ) / 2 * FRACUNIT, dy ), perspective_mul );
+		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( ( viewwidth << detailshift ) / 2 ), FixedToRendFixed( dy ) ), FixedToRendFixed( perspective_mul ) );
 	}
 	
 	for ( i=0 ; i<viewwidth ; i++ )

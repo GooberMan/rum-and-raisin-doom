@@ -40,7 +40,7 @@
 // Constants. Don't need to be in a context. Will get them off the stack at some point though.
 //
 
-fixed_t			yslope[ MAXSCREENHEIGHT ];
+rend_fixed_t			yslope[ MAXSCREENHEIGHT ];
 rend_fixed_t	distscale[ MAXSCREENWIDTH ];
 
 int32_t			span_override = Span_None;
@@ -95,7 +95,7 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 	if (planecontext->planeheight != planecontext->cachedheight[y])
 	{
 		planecontext->cachedheight[y] = planecontext->planeheight;
-		distance = planecontext->cacheddistance[y] = FixedMul (planecontext->planeheight, yslope[y]);
+		distance = planecontext->cacheddistance[y] = FixedMul (planecontext->planeheight, RendFixedToFixed( yslope[y] ));
 		spancontext->xstep = planecontext->cachedxstep[y] = FixedMul (distance, planecontext->basexscale);
 		spancontext->ystep = planecontext->cachedystep[y] = FixedMul (distance, planecontext->baseyscale);
 	}
@@ -370,37 +370,6 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 extern size_t			xlookup[MAXWIDTH];
 extern size_t			rowofs[MAXHEIGHT];
 
-// TODO: Sort visplanes by height
-void R_PrepareVisplaneRaster( visplane_t* visplane, planecontext_t* planecontext )
-{
-	int32_t y = visplane->miny;
-	int32_t stop = visplane->maxy + 1;
-	int32_t lightindex;
-
-	while( y < stop )
-	{
-		planecontext->raster[ y ].distance		= FixedMul ( planecontext->planeheight, yslope[ y ] );
-
-		// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
-		//if( planecontext->planezlight != planecontext->raster[ y ].zlight )
-		{
-			if( fixedcolormapindex )
-			{
-				planecontext->raster[ y ].sourceoffset = fixedcolormapindex * 4096;
-			}
-			else
-			{
-				lightindex = M_CLAMP( ( planecontext->raster[ y ].distance >> LIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
-				lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
-				planecontext->raster[ y ].sourceoffset = lightindex * 4096;
-			}
-
-		}
-
-		++y;
-	};
-}
-
 //
 // R_DrawPlanes
 // At the end of each frame.
@@ -434,8 +403,8 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
-	skycontext.iscale = pspriteiscale>>detailshift;
-	skycontext.scale = pspritescale>>detailshift;
+	skycontext.iscale = FixedToRendFixed( pspriteiscale>>detailshift );
+	skycontext.scale = FixedToRendFixed( pspritescale>>detailshift );
 	skycontext.texturemid = skytexturemid;
 
 	// This isn't a constant though...
@@ -494,7 +463,6 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		}
 		else
 		{
-			//R_PrepareVisplaneRaster( pl, planecontext );
 			R_RasteriseColumns( span_type, planecontext, &spancontext, pl );
 		}
 	}

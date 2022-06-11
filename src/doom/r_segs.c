@@ -103,7 +103,7 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 	column_t*			col;
 	int32_t				lightnum;
 	int32_t				texnum;
-	int32_t				scalestep;
+	rend_fixed_t		scalestep;
 	vertclip_t*			maskedtexturecol;
 
 	lighttable_t**		walllights;
@@ -148,8 +148,8 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 
 	maskedtexturecol = ds->maskedtexturecol;
 
-	scalestep = ds->scalestep;
-	spritecontext->spryscale = ds->scale1 + (x1 - ds->x1)*scalestep;
+	scalestep = FixedToRendFixed( ds->scalestep );
+	spritecontext->spryscale = FixedToRendFixed( ds->scale1 ) + (x1 - ds->x1) * scalestep;
 	spritecontext->mfloorclip = ds->sprbottomclip;
 	spritecontext->mceilingclip = ds->sprtopclip;
 
@@ -159,16 +159,18 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 		spritecolcontext.texturemid = bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight
 									? bspcontext->frontsector->floorheight
 									: bspcontext->backsector->floorheight;
-		spritecolcontext.texturemid = spritecolcontext.texturemid + textureheight[texnum] - viewz;
+		spritecolcontext.texturemid = FixedToRendFixed( spritecolcontext.texturemid );
+		spritecolcontext.texturemid = spritecolcontext.texturemid + FixedToRendFixed( textureheight[texnum] - viewz );
 	}
 	else
 	{
 		spritecolcontext.texturemid = bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight
 									? bspcontext->frontsector->ceilingheight
 									: bspcontext->backsector->ceilingheight;
-		spritecolcontext.texturemid = spritecolcontext.texturemid - viewz;
+		spritecolcontext.texturemid = FixedToRendFixed( spritecolcontext.texturemid );
+		spritecolcontext.texturemid = spritecolcontext.texturemid - FixedToRendFixed( viewz );
 	}
-	spritecolcontext.texturemid += bspcontext->curline->sidedef->rowoffset;
+	spritecolcontext.texturemid += bspcontext->curline->sidedef->rend.rowoffset;
 
 	if (fixedcolormap)
 	{
@@ -183,7 +185,7 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 		{
 			if (!fixedcolormap)
 			{
-				index = spritecontext->spryscale>>LIGHTSCALESHIFT;
+				index = spritecontext->spryscale>>RENDLIGHTSCALESHIFT;
 				if( LIGHTSCALEMUL != FRACUNIT )
 				{
 					index = FixedToInt( FixedMul( IntToFixed( index ), LIGHTSCALEMUL ) );
@@ -195,9 +197,9 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 				spritecolcontext.colormap = walllights[index];
 			}
 			
-			spritecontext->sprtopscreen = centeryfrac - FixedMul(spritecolcontext.texturemid, spritecontext->spryscale);
+			spritecontext->sprtopscreen = FixedToRendFixed( centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
 			spritecolcontext.scale = spritecontext->spryscale;
-			spritecolcontext.iscale = 0xffffffffu / (unsigned)spritecontext->spryscale;
+			spritecolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), spritecolcontext.scale );
 
 			// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
 			// spritecolcontext.colfunc = colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
@@ -340,13 +342,13 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 				colormapindex = wallcontext->lightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ wallcontext->lightsindex ][ index ] : wallcontext->lightsindex;
 			}
 			wallcolcontext.x = currx;
-			wallcolcontext.scale = wallcontext->scale;
-			wallcolcontext.iscale = 0xffffffffu / (unsigned)wallcontext->scale;
+			wallcolcontext.scale = FixedToRendFixed( wallcontext->scale );
+			wallcolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), wallcolcontext.scale );
 
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 			wallcolcontext.colfunc = colfuncs[ 15 ];
 #else
-			wallcolcontext.colfunc = colfuncs[ renderSIMDcolumns ? M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) : 15 ];
+			wallcolcontext.colfunc = colfuncs[ renderSIMDcolumns ? M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) : 15 ];
 #endif
 	
 		}
@@ -362,11 +364,11 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			// single sided line
 			wallcolcontext.yl = yl;
 			wallcolcontext.yh = yh;
-			wallcolcontext.texturemid = wallcontext->midtexturemid;
+			wallcolcontext.texturemid = FixedToRendFixed( wallcontext->midtexturemid );
 #if R_DRAWCOLUMN_LIGHTLEVELS
 			wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
-			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
+			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
 #endif
 			R_RangeCheck();
 			wallcolcontext.colfunc( &wallcolcontext );
@@ -391,11 +393,11 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 				{
 					wallcolcontext.yl = yl;
 					wallcolcontext.yh = mid;
-					wallcolcontext.texturemid = wallcontext->toptexturemid;
+					wallcolcontext.texturemid = FixedToRendFixed( wallcontext->toptexturemid );
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
-					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
+					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
 #endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
@@ -429,11 +431,11 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 				{
 					wallcolcontext.yl = mid;
 					wallcolcontext.yh = yh;
-					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
+					wallcolcontext.texturemid = FixedToRendFixed( wallcontext->bottomtexturemid );
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
-					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> 12 ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
+					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
 #endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );

@@ -192,8 +192,16 @@ typedef	struct
 // The SideDef.
 //
 
+typedef struct rend_side_s
+{
+	rend_fixed_t		textureoffset;
+	rend_fixed_t		rowoffset;
+} rend_side_t;
+
 typedef struct
 {
+	rend_side_t			rend;
+
 	// add this to the calculated texture column
 	fixed_t				textureoffset;
 
@@ -646,8 +654,8 @@ typedef struct spritecontext_s
 
 	vertclip_t*			mfloorclip;
 	vertclip_t*			mceilingclip;
-	fixed_t				spryscale;
-	fixed_t				sprtopscreen;
+	rend_fixed_t		spryscale;
+	rend_fixed_t		sprtopscreen;
 
 	lighttable_t**		spritelights;
 	
@@ -683,9 +691,9 @@ typedef struct colcontext_s
 	int32_t				x;
 	int32_t				yl;
 	int32_t				yh;
-	fixed_t				scale;
-	fixed_t				iscale;
-	fixed_t				texturemid;
+	rend_fixed_t		scale;
+	rend_fixed_t		iscale;
+	rend_fixed_t		texturemid;
 } colcontext_t;
 
 typedef struct spancontext_s

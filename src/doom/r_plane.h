@@ -27,7 +27,7 @@
 
 
 // Visplane related.
-extern fixed_t		yslope[ MAXSCREENHEIGHT ];
+extern rend_fixed_t		yslope[ MAXSCREENHEIGHT ];
 extern rend_fixed_t		distscale[ MAXSCREENWIDTH ];
 
 void R_InitPlanes (void);

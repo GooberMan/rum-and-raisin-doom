@@ -290,15 +290,15 @@ namespace DrawColumn
 			// Need to make that a bit nicer somehow
 			struct Direct
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
 				{
-					return context->source[ (frac >> FRACBITS ) & 127 ];
+					return context->source[ (frac >> RENDFRACBITS ) & 127 ];
 				}
 			};
 
 			struct PaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
 				{
 					return context->translation[ Direct::Sample( context, frac ) ];
 				}
@@ -306,7 +306,7 @@ namespace DrawColumn
 
 			struct Colormap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
 				{
 					return context->colormap[ Direct::Sample( context, frac ) ];
 				}
@@ -314,7 +314,7 @@ namespace DrawColumn
 
 			struct ColormapPaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
 				{
 					return context->colormap[ PaletteSwap::Sample( context, frac ) ];
 				}
@@ -332,8 +332,8 @@ namespace DrawColumn
 			pixel_t*	dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
 
 			// Determine scaling, which is the only mapping to be done.
-			fixed_t		fracstep = context->iscale;
-			fixed_t		frac = context->texturemid +  ( context->yl - centery ) * fracstep;
+			rend_fixed_t		fracstep = context->iscale;
+			rend_fixed_t		frac = context->texturemid +  ( context->yl - centery ) * fracstep;
 
 			// Inner loop that does the actual texture mapping,
 			//  e.g. a DDA-lile scaling.
@@ -378,12 +378,12 @@ void R_DrawColumn_Untranslated( colcontext_t* context )
 
 void R_DrawColumnLow ( colcontext_t* context ) 
 { 
-    int			count; 
-    pixel_t*	dest;
-    pixel_t*	dest2;
-    fixed_t		frac;
-    fixed_t		fracstep;
-	byte		sample;
+    int					count; 
+    pixel_t*			dest;
+    pixel_t*			dest2;
+    rend_fixed_t		frac;
+    rend_fixed_t		fracstep;
+	byte				sample;
 
 	count = context->yh - context->yl;
 
@@ -405,7 +405,7 @@ void R_DrawColumnLow ( colcontext_t* context )
     {
 		// Re-map color indices from wall texture column
 		//  using a lighting/special effects LUT.
-		sample = context->colormap[context->source[(frac>>FRACBITS)&127]];
+		sample = context->colormap[ context->source[ RendFixedToInt( frac ) & 127 ] ];
 		*dest++ = sample; 
 		*dest2++ = sample; 
 		frac += fracstep;
@@ -560,14 +560,14 @@ void R_CacheFuzzColumn (void)
 
 void R_DrawFuzzColumn ( colcontext_t* context ) 
 { 
-    int			count; 
-    pixel_t*	dest;
-	pixel_t*	start;
-    fixed_t		frac;
-	fixed_t		lastfrac;
-    fixed_t		fracstep;
-	int32_t		fuzzposbase;
-	int32_t		fuzzposadd;
+    int					count; 
+    pixel_t*			dest;
+	pixel_t*			start;
+    rend_fixed_t		frac;
+	rend_fixed_t		lastfrac;
+    rend_fixed_t		fracstep;
+	int32_t				fuzzposbase;
+	int32_t				fuzzposadd;
 
 	fuzzposbase = fuzzpos;
 	fuzzposadd = fuzzposbase;
@@ -607,22 +607,22 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 
 void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 {
-    int			count; 
-    pixel_t*	dest;
-    fixed_t		frac;
-    fixed_t		fracstep;
-	int32_t		fuzzposadd;
-	int32_t		fuzzpossample;
+    int					count; 
+    pixel_t*			dest;
+    rend_fixed_t		frac;
+    rend_fixed_t		fracstep;
+	int32_t				fuzzposadd;
+	int32_t				fuzzpossample;
 
-	pixel_t*	src;
-	pixel_t		srcbuffer[ MAXSCREENHEIGHT ];
-	pixel_t*	basecolorpmap = colormaps + 6*256;
-	pixel_t*	darkercolormap = colormaps + 12*256;
-	pixel_t*	samplecolormap;
+	pixel_t*			src;
+	pixel_t				srcbuffer[ MAXSCREENHEIGHT ];
+	pixel_t*			basecolorpmap = colormaps + 6*256;
+	pixel_t*			darkercolormap = colormaps + 12*256;
+	pixel_t*			samplecolormap;
 
-	fixed_t		originalcolfrac = FixedDiv( IntToFixed( 200 ), IntToFixed( viewheight ) );
-	fixed_t		oldfrac = 0;
-	fixed_t		newfrac = 0;
+	rend_fixed_t		originalcolfrac = RendFixedDiv( IntToRendFixed( 200 ), IntToRendFixed( viewheight ) );
+	rend_fixed_t		oldfrac = 0;
+	rend_fixed_t		newfrac = 0;
 
 	fuzzpos			= fuzzposadd = cachedfuzzpos;
 	fuzzpossample	= adjustedfuzzoffset[ fuzzposadd % ADJUSTEDFUZZTABLE ];
@@ -655,7 +655,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 		oldfrac = newfrac;
 		newfrac += originalcolfrac;
 
-		if( FixedToInt( newfrac ) > FixedToInt( oldfrac ) )
+		if( RendFixedToInt( newfrac ) > RendFixedToInt( oldfrac ) )
 		{
 			// Clamp table lookup index.
 			++fuzzposadd;
@@ -678,67 +678,6 @@ void R_DrawHeatwaveFuzzColumn( colcontext_t* context )
 	R_DrawAdjustedFuzzColumn( context );
 }
 
-// low detail mode version
- 
-void R_DrawFuzzColumnLow ( colcontext_t* context ) 
-{ 
-#if 0
-    int			count; 
-    pixel_t*		dest;
-    pixel_t*		dest2;
-    fixed_t		frac;
-    fixed_t		fracstep;	 
-    int x;
-
-    // Adjust borders. Low... 
-    if (!dc_yl) 
-	dc_yl = 1;
-
-    // .. and high.
-    if (dc_yh == viewheight-1) 
-	dc_yh = viewheight - 2; 
-		 
-    count = dc_yh - dc_yl; 
-
-    // low detail mode, need to multiply by 2
-    
-    x = dc_x << 1;
-    
-    dest = ylookup[dc_yl] + columnofs[x];
-    dest2 = ylookup[dc_yl] + columnofs[x+1];
-
-    // Looks familiar.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
-
-    // Looks like an attempt at dithering,
-    //  using the colormap #6 (of 0-31, a bit
-    //  brighter than average).
-    do 
-    {
-	// Lookup framebuffer, and retrieve
-	//  a pixel that is either one column
-	//  left or right of the current one.
-	// Add index from colormap to index.
-	*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]]; 
-	*dest2 = colormaps[6*256+dest2[fuzzoffset[fuzzpos]]]; 
-
-	// Clamp table lookup index.
-	if (++fuzzpos == FUZZTABLE) 
-	    fuzzpos = 0;
-	
-	++dest;
-	++dest2;
-
-	frac += fracstep; 
-    } while (count--); 
-#endif
-} 
- 
-  
-  
- 
-
 //
 // R_DrawTranslatedColumn
 // Used to draw player sprites
@@ -754,49 +693,6 @@ void R_DrawTranslatedColumn ( colcontext_t* context )
 { 
    DrawColumn::Bytewise::ColormapPaletteSwapDraw( context );
 } 
-
-void R_DrawTranslatedColumnLow ( colcontext_t* context ) 
-{ 
-#if 0
-    int			count; 
-    pixel_t*		dest;
-    pixel_t*		dest2;
-    fixed_t		frac;
-    fixed_t		fracstep;	 
-    int                 x;
- 
-    count = dc_yh - dc_yl; 
-
-    // low detail, need to scale by 2
-    x = dc_x << 1;
-				 
-    dest = ylookup[dc_yl] + columnofs[x]; 
-    dest2 = ylookup[dc_yl] + columnofs[x+1]; 
-
-    // Looks familiar.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
-
-    // Here we do an additional index re-mapping.
-    do 
-    {
-	// Translation tables are used
-	//  to map certain colorramps to other ones,
-	//  used with PLAY sprites.
-	// Thus the "green" ramp of the player 0 sprite
-	//  is mapped to gray, red, black/indigo. 
-	*dest = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-	*dest2 = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-	++dest;
-	++dest2;
-	
-	frac += fracstep; 
-    } while (count--); 
-#endif
-} 
-
-
-
 
 //
 // R_InitTranslationTables

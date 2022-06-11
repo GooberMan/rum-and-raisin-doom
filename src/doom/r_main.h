@@ -63,10 +63,12 @@ extern fixed_t		aspect_adjusted_scaled_mul;
 
 #define MAXLIGHTSCALE		48
 #define LIGHTSCALESHIFT		12
+#define RENDLIGHTSCALESHIFT	( RENDFRACBITS - 4 )
 #define LIGHTSCALEDIVIDE	aspect_adjusted_scaled_divide
 #define LIGHTSCALEMUL		aspect_adjusted_scaled_mul
 #define MAXLIGHTZ			128
 #define LIGHTZSHIFT			20
+#define RENDLIGHTZSHIFT		( RENDFRACBITS + 4 )
 
 extern lighttable_t*	scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 extern int32_t			scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];

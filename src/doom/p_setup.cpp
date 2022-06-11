@@ -368,6 +368,9 @@ struct DoomMapLoader
 			out.bottomtexture	= R_TextureNumForName( in.bottomtexture );
 			out.midtexture		= R_TextureNumForName( in.midtexture );
 			out.sector			= &Sectors()[ Read::AsIs( in.sector ) ];
+
+			out.rend.textureoffset = FixedToRendFixed( out.textureoffset );
+			out.rend.rowoffset = FixedToRendFixed( out.rowoffset );
 		} );
 
 		_numsides = data.count;

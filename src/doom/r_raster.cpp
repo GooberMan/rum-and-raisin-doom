@@ -30,7 +30,7 @@ extern "C"
 	extern size_t		xlookup[ MAXWIDTH ];
 	extern size_t		rowofs[ MAXHEIGHT ];
 	extern rend_fixed_t	distscale[ MAXSCREENWIDTH ];
-	extern fixed_t		yslope[ MAXSCREENHEIGHT ];
+	extern rend_fixed_t	yslope[ MAXSCREENHEIGHT ];
 }
 
 INLINE void DoSample( int32_t& spot
@@ -44,7 +44,11 @@ INLINE void DoSample( int32_t& spot
 					, planecontext_t*& planecontext
 					, spancontext_t*& spancontext )
 {
-	spot = ( (yfrac & 0x3F000000 ) >> 18) | ( (xfrac & 0x3F000000 ) >> 24);
+	constexpr int64_t FracMask = 63 * RENDFRACUNIT;
+	constexpr int64_t XShift = RENDFRACBITS;
+	constexpr int64_t YShift = RENDFRACBITS - 6;
+
+	spot = ( (yfrac & FracMask ) >> YShift ) | ( (xfrac & FracMask ) >> XShift );
 	source = spancontext->source + planecontext->raster[ top++ ].sourceoffset;
 	*dest++ = source[spot];
 	xfrac += xstep;
@@ -174,7 +178,7 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 
 INLINE void R_Prepare( int32_t y, visplane_t* visplane, planecontext_t* planecontext )
 {
-	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), FixedToRendFixed( yslope[ y ] ) );
+	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), yslope[ y ] );
 
 	// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
 	//if( planecontext->planezlight != planecontext->raster[ y ].zlight )
@@ -185,7 +189,7 @@ INLINE void R_Prepare( int32_t y, visplane_t* visplane, planecontext_t* planecon
 		}
 		else
 		{
-			int32_t lightindex = M_CLAMP( ( planecontext->raster[ y ].distance >> ( LIGHTZSHIFT + RENDFRACBITS - FRACBITS ) ), 0, ( MAXLIGHTZ - 1 ) );
+			int32_t lightindex = M_CLAMP( ( planecontext->raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
 			lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
 			planecontext->raster[ y ].sourceoffset = lightindex * 4096;
 		}

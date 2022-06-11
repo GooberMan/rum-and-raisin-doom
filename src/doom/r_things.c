@@ -295,10 +295,10 @@ vissprite_t* R_NewVisSprite ( spritecontext_t* spritecontext )
 
 void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontext, column_t* column )
 {
-	fixed_t		topscreen;
-	fixed_t		bottomscreen;
-	fixed_t		basetexturemid;
-	boolean		isfuzz = colcontext->colormap == NULL;
+	rend_fixed_t		topscreen;
+	rend_fixed_t		bottomscreen;
+	rend_fixed_t		basetexturemid;
+	boolean				isfuzz = colcontext->colormap == NULL;
 	
 	basetexturemid = colcontext->texturemid;
 	
@@ -309,8 +309,8 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 		topscreen = spritecontext->sprtopscreen + spritecontext->spryscale*column->topdelta;
 		bottomscreen = topscreen + spritecontext->spryscale*column->length;
 
-		colcontext->yl = FixedToInt( topscreen + FRACUNIT - 1 );
-		colcontext->yh = FixedToInt( bottomscreen - 1 );
+		colcontext->yl = RendFixedToInt( topscreen + FRACUNIT - 1 );
+		colcontext->yh = RendFixedToInt( bottomscreen - 1 );
 
 		if( isfuzz )
 		{
@@ -326,7 +326,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 		if (colcontext->yl < colcontext->yh)
 		{
 			colcontext->source = (byte *)column + 3;
-			colcontext->texturemid = basetexturemid - IntToFixed( column->topdelta );
+			colcontext->texturemid = basetexturemid - IntToRendFixed( column->topdelta );
 			// colcontext->source = (byte *)column + 3 - column->topdelta;
 
 			// Drawn by either R_DrawColumn
@@ -376,12 +376,12 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
 	
-	spritecolcontext.scale = abs(vis->xscale)>>detailshift;
-	spritecolcontext.iscale = abs(vis->xiscale)>>detailshift;
-	spritecolcontext.texturemid = vis->texturemid;
+	spritecolcontext.scale = FixedToRendFixed( abs(vis->xscale)>>detailshift );
+	spritecolcontext.iscale = FixedToRendFixed( abs(vis->xiscale)>>detailshift );
+	spritecolcontext.texturemid = FixedToRendFixed( vis->texturemid );
 	frac = vis->startfrac;
-	spritecontext->spryscale = vis->scale;
-	spritecontext->sprtopscreen = centeryfrac - FixedMul(spritecolcontext.texturemid, spritecontext->spryscale);
+	spritecontext->spryscale = FixedToRendFixed( vis->scale );
+	spritecontext->sprtopscreen = FixedToRendFixed( centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
 	
 	prevfuzzcolumn = -1;
 	for (spritecolcontext.x=vis->x1 ; spritecolcontext.x<=vis->x2 ; spritecolcontext.x++, frac += vis->xiscale)
