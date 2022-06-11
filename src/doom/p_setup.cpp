@@ -326,6 +326,9 @@ struct DoomMapLoader
 		{
 			out.x			= IntToFixed( Read::AsIs( in.x ) );
 			out.y			= IntToFixed( Read::AsIs( in.y ) );
+
+			out.rend.x		= FixedToRendFixed( out.x );
+			out.rend.y		= FixedToRendFixed( out.y );
 		} );
 
 		_numvertices		= data.count;
@@ -346,6 +349,9 @@ struct DoomMapLoader
 			out.tag				= Read::AsIs( in.tag );
 			out.thinglist		= NULL;
 			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
+
+			out.rend.floorheight = FixedToRendFixed( out.floorheight );
+			out.rend.ceilingheight = FixedToRendFixed( out.ceilingheight );
 		} );
 
 		_numsectors				= data.count;
@@ -447,6 +453,13 @@ struct DoomMapLoader
 			{
 				out.backsector = 0;
 			}
+
+			out.rend.dx = FixedToRendFixed( out.dx );
+			out.rend.dy = FixedToRendFixed( out.dy );
+			out.rend.bbox[ 0 ] = FixedToRendFixed( out.bbox[ 0 ] );
+			out.rend.bbox[ 1 ] = FixedToRendFixed( out.bbox[ 1 ] );
+			out.rend.bbox[ 2 ] = FixedToRendFixed( out.bbox[ 2 ] );
+			out.rend.bbox[ 3 ] = FixedToRendFixed( out.bbox[ 3 ] );
 		} );
 
 		_numlines = data.count;
@@ -518,6 +531,19 @@ struct DoomMapLoader
 					out.bbox[ child ][ corner ] = IntToFixed( Read::AsIs( in.bbox[ child ][ corner ] ) );
 				}
 			}
+
+			//out.rend.x = FixedToRendFixed( out.x );
+			//out.rend.y = FixedToRendFixed( out.y );
+			//out.rend.dx = FixedToRendFixed( out.dx );
+			//out.rend.dy = FixedToRendFixed( out.dy );
+			//for( int32_t child : iota( 0, 2 ) )
+			//{
+			//	for ( int32_t corner : iota( 0, 4 ) )
+			//	{
+			//		out.rend.bbox[ child ][ corner ] = FixedToRendFixed( out.bbox[ child ][ corner ] );
+			//	}
+			//}
+
 		} );
 
 		_numnodes		= data.count;
@@ -587,6 +613,8 @@ struct DoomMapLoader
 			{
 				out.backsector = 0;
 			}
+
+			out.rend.offset = FixedToRendFixed( out.offset );
 		} );
 
 		_numsegs = data.count;

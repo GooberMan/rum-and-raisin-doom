@@ -93,8 +93,16 @@ typedef int32_t					vertclip_t;
 // Note: transformed values not buffered locally,
 //  like some DOOM-alikes ("wt", "WebView") did.
 //
+typedef struct rend_vertex_s
+{
+	rend_fixed_t		x;
+	rend_fixed_t		y;
+} rend_vertex_t;
+
 typedef struct
 {
+	rend_vertex_t		rend;
+
 	fixed_t				x;
 	fixed_t				y;
 
@@ -129,8 +137,16 @@ typedef enum secretstate_e
 // The SECTORS record, at runtime.
 // Stores things/mobjs.
 //
+typedef struct rend_sector_s
+{
+	rend_fixed_t		floorheight;
+	rend_fixed_t		ceilingheight;
+} rend_sector_t;
+
 typedef	struct
 {
+	rend_sector_t		rend;
+
 	int32_t				index;
 
 	fixed_t				floorheight;
@@ -208,10 +224,18 @@ typedef enum
 	ST_NEGATIVE
 } slopetype_t;
 
+typedef struct rend_line_s
+{
+	rend_fixed_t		dx;
+	rend_fixed_t		dy;
 
+	rend_fixed_t		bbox[ 4 ];
+} rend_line_t;
 
 typedef struct line_s
 {
+	rend_line_t			rend;
+
 	int32_t				index;
 
 	// Vertices, from v1 to v2.
@@ -273,8 +297,16 @@ typedef struct subsector_s
 //
 // The LineSeg.
 //
-typedef struct
+
+typedef struct rend_seg_s
 {
+	rend_fixed_t		offset;
+} rend_seg_t;
+
+typedef struct seg_e
+{
+	rend_seg_t			rend;
+
 	vertex_t*			v1;
 	vertex_t*			v2;
 
@@ -297,9 +329,21 @@ typedef struct
 //
 // BSP node.
 //
+typedef struct rend_node_s
+{
+	rend_fixed_t		x;
+	rend_fixed_t		y;
+	rend_fixed_t		dx;
+	rend_fixed_t		dy;
+	rend_fixed_t		bbox[ 2 ][ 4 ];
+} rend_node_t;
+
 typedef struct node_s
 {
+	rend_node_t			rend;
+
 	// Partition line.
+	// Rum and Raisin - expected to match up with divline_t. Should move that in here
 	fixed_t				x;
 	fixed_t				y;
 	fixed_t				dx;

@@ -37,7 +37,7 @@
 
 #include "doomstat.h"
 
-#define MINZ				(FRACUNIT*4)
+#define MINZ				( IntToFixed( 4 ) )
 #define BASEYCENTER			(V_VIRTUALHEIGHT/2)
 
 // Constant arrays, don't need to live in a context
@@ -295,8 +295,8 @@ vissprite_t* R_NewVisSprite ( spritecontext_t* spritecontext )
 
 void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontext, column_t* column )
 {
-	int32_t		topscreen;
-	int32_t		bottomscreen;
+	fixed_t		topscreen;
+	fixed_t		bottomscreen;
 	fixed_t		basetexturemid;
 	boolean		isfuzz = colcontext->colormap == NULL;
 	
@@ -309,8 +309,8 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 		topscreen = spritecontext->sprtopscreen + spritecontext->spryscale*column->topdelta;
 		bottomscreen = topscreen + spritecontext->spryscale*column->length;
 
-		colcontext->yl = (topscreen+FRACUNIT-1)>>FRACBITS;
-		colcontext->yh = (bottomscreen-1)>>FRACBITS;
+		colcontext->yl = FixedToInt( topscreen + FRACUNIT - 1 );
+		colcontext->yh = FixedToInt( bottomscreen - 1 );
 
 		if( isfuzz )
 		{
@@ -326,7 +326,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 		if (colcontext->yl < colcontext->yh)
 		{
 			colcontext->source = (byte *)column + 3;
-			colcontext->texturemid = basetexturemid - (column->topdelta<<FRACBITS);
+			colcontext->texturemid = basetexturemid - IntToFixed( column->topdelta );
 			// colcontext->source = (byte *)column + 3 - column->topdelta;
 
 			// Drawn by either R_DrawColumn
@@ -386,7 +386,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	prevfuzzcolumn = -1;
 	for (spritecolcontext.x=vis->x1 ; spritecolcontext.x<=vis->x2 ; spritecolcontext.x++, frac += vis->xiscale)
 	{
-		texturecolumn = frac>>FRACBITS;
+		texturecolumn = FixedToInt( frac );
 #ifdef RANGECHECK
 		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
 			I_Error ("R_DrawSpriteRange: bad texturecolumn");
@@ -509,7 +509,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 
 	// calculate edges of the shape
 	tx -= spriteoffset[lump];
-	x1 = (centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS;
+	x1 = FixedToInt( centerxfrac + FixedMul( tx, xscale ) );
 
 	// off the right side?
 	if (x1 > spritecontext->rightclip)
@@ -518,7 +518,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	}
 
 	tx += spritewidth[lump];
-	x2 = ((centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS) - 1;
+	x2 = FixedToInt( centerxfrac + FixedMul( tx, xscale) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -580,7 +580,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		index = xscale>>(LIGHTSCALESHIFT-detailshift);
 		if( LIGHTSCALEMUL != FRACUNIT )
 		{
-			index = FixedMul( index << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
+			index = FixedToInt( FixedMul( IntToFixed( index ), LIGHTSCALEMUL ) );
 		}
 
 		if (index >= MAXLIGHTSCALE) 
@@ -672,10 +672,10 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	flip = (boolean)sprframe->flip[0];
 
 	// calculate edges of the shape
-	tx = psp->sx-(V_VIRTUALWIDTH/2)*FRACUNIT;
+	tx = psp->sx - IntToFixed( V_VIRTUALWIDTH / 2 );
 	
 	tx -= spriteoffset[lump];	
-	x1 = (centerxfrac + FixedMul (tx, pspritescale) ) >>FRACBITS;
+	x1 = FixedToInt( centerxfrac + FixedMul( tx, pspritescale ) );
 
 	// off the right side
 	if (x1 > spritecontext->rightclip)
@@ -684,7 +684,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	}
 
 	tx +=  spritewidth[lump];
-	x2 = ((centerxfrac + FixedMul (tx, pspritescale) ) >>FRACBITS) - 1;
+	x2 = FixedToInt( centerxfrac + FixedMul( tx, pspritescale ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -695,7 +695,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	// store information in a vissprite
 	vis = &avis;
 	vis->mobjflags = 0;
-	vis->texturemid = (BASEYCENTER<<FRACBITS)+FRACUNIT/2-(psp->sy-spritetopoffset[lump]);
+	vis->texturemid = IntToFixed( BASEYCENTER ) + FRACUNIT / 2 -( psp->sy - spritetopoffset[ lump ] );
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
 	vis->scale = pspritescale<<detailshift;

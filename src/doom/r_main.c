@@ -583,7 +583,7 @@ void R_InitPointToAngle (void)
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
 #define MAXSCALE ( 64 * ( render_width / 320 ) )
-#define MAXSCALE_FIXED ( MAXSCALE << FRACBITS )
+#define MAXSCALE_FIXED IntToFixed( MAXSCALE )
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle)
 {
@@ -672,14 +672,14 @@ void R_InitTextureMapping (void)
 	
     for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
     {
-		if (renderfinetangent[i] > FRACUNIT*8)
+		if ( renderfinetangent[i] > IntToFixed( 8 ) )
 			t = -1;
-		else if (renderfinetangent[i] < -FRACUNIT*8)
+		else if ( renderfinetangent[i] < IntToFixed( -8 ) )
 			t = viewwidth+1;
 		else
 		{
 			t = FixedMul (renderfinetangent[i], focallength);
-			t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
+			t = FixedToInt( (centerxfrac - t+FRACUNIT-1) );
 
 			if (t < -1)
 			t = -1;
@@ -719,13 +719,13 @@ fixed_t aspect_adjusted_scaled_mul = FRACUNIT;
 
 void R_InitAspectAdjustedValues()
 {
-	fixed_t		original_perspective = FixedDiv( 16 * FRACUNIT, 10 * FRACUNIT );
-	fixed_t		current_perspective = FixedDiv( render_width << FRACBITS, render_height << FRACBITS );
+	fixed_t		original_perspective = FixedDiv( IntToFixed( 16 ), IntToFixed( 10 ) );
+	fixed_t		current_perspective = FixedDiv( IntToFixed( render_width ), IntToFixed( render_height ) );
 	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
 
-	fixed_t		intermediate_width = FixedMul( render_width << FRACBITS, perspective_mul );
-	aspect_adjusted_render_width = ( intermediate_width >> FRACBITS ) + ( ( intermediate_width & 0x00008000 ) >> 15 ) * 1;
-	aspect_adjusted_scaled_divide = ( aspect_adjusted_render_width << FRACBITS ) / 320;
+	fixed_t		intermediate_width = FixedMul( IntToFixed( render_width ), perspective_mul );
+	aspect_adjusted_render_width = FixedToInt( intermediate_width ) + ( ( intermediate_width & 0x00008000 ) >> 15 );
+	aspect_adjusted_scaled_divide = IntToFixed( aspect_adjusted_render_width ) / 320;
 	aspect_adjusted_scaled_mul = FixedDiv( FRACUNIT, aspect_adjusted_scaled_divide );
 }
 
@@ -752,11 +752,11 @@ void R_InitLightTables (void)
 		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
 		for (j=0 ; j<MAXLIGHTZ ; j++)
 		{
-			scale = FixedDiv ( ( aspect_adjusted_render_width / 2 * FRACUNIT ), ( j + 1 ) << LIGHTZSHIFT );
+			scale = FixedDiv( IntToFixed( aspect_adjusted_render_width / 2 ), ( j + 1 ) << LIGHTZSHIFT );
 			scale >>= LIGHTSCALESHIFT;
 			if( LIGHTSCALEMUL != FRACUNIT )
 			{
-				scale = FixedMul( scale << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
+				scale = FixedToInt( FixedMul( IntToFixed( scale ), LIGHTSCALEMUL ) );
 			}
 
 			level = startmap - scale/DISTMAP;
@@ -1012,8 +1012,8 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.debugtime = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
 		renderdatas[ currcontext ].context.debugpercent = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
 
-		HUlib_initTextLine( renderdatas[ currcontext ].context.debugtime, ( FixedDiv( renderdatas[ currcontext ].context.begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 17, hu_font, HU_FONTSTART);
-		HUlib_initTextLine( renderdatas[ currcontext ].context.debugpercent, ( FixedDiv( renderdatas[ currcontext ].context.begincolumn << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
+		HUlib_initTextLine( renderdatas[ currcontext ].context.debugtime,		FixedToInt( FixedDiv( IntToFixed( renderdatas[ currcontext ].context.begincolumn ), V_WIDTHMULTIPLIER ) ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 17, hu_font, HU_FONTSTART);
+		HUlib_initTextLine( renderdatas[ currcontext ].context.debugpercent,	FixedToInt( FixedDiv( IntToFixed( renderdatas[ currcontext ].context.begincolumn ), V_WIDTHMULTIPLIER ) ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
 
 		if( renderthreaded && currcontext < numrendercontexts - 1 )
 		{
@@ -1098,8 +1098,8 @@ void R_ExecuteSetViewSize (void)
 	int32_t		startmap;
 	int32_t		colfuncbase;
 
-	fixed_t		original_perspective = FixedDiv( 16 * FRACUNIT, 10 * FRACUNIT );
-	fixed_t		current_perspective = FixedDiv( render_width << FRACBITS, render_height << FRACBITS );
+	fixed_t		original_perspective = FixedDiv( IntToFixed( 16 ), IntToFixed( 10 ) );
+	fixed_t		current_perspective = FixedDiv( IntToFixed( render_width ), IntToFixed( render_height ) );
 	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
 
 	fixed_t		perspectivecorrectscale;
@@ -1108,7 +1108,7 @@ void R_ExecuteSetViewSize (void)
 	float_t		float_tan_fov = (float)tan_fov / 65536.f;
 	float_t		float_fov = ( atanf( float_tan_fov ) * 2.f ) / 3.1415926f * 180.f;
 	field_of_view_degrees = (int32_t)float_fov;
-	//int32_t		new_fov = ( rendertantoangle[ tan_fov >> RENDERDBITS ] ) >> FRACBITS;
+	//int32_t		new_fov = FixedToInt( rendertantoangle[ tan_fov >> RENDERDBITS ] );
 
 	R_InitAspectAdjustedValues();
 
@@ -1162,8 +1162,8 @@ void R_ExecuteSetViewSize (void)
 
 	centery = viewheight /2;
 	centerx = viewwidth /2;
-	centerxfrac = centerx << FRACBITS;
-	centeryfrac = centery << FRACBITS;
+	centerxfrac = IntToFixed( centerx );
+	centeryfrac = IntToFixed( centery );
 	projection = FixedMul( centerxfrac, perspective_mul );
 
 	colfuncbase = COLFUNC_NUM * ( detailshift );
@@ -1183,7 +1183,7 @@ void R_ExecuteSetViewSize (void)
 	R_InitTextureMapping ();
 
 	// psprite scales
-	perspectivecorrectscale = ( FixedMul( render_width << FRACBITS, perspective_mul ) / V_VIRTUALWIDTH );
+	perspectivecorrectscale = ( FixedMul( IntToFixed( render_width ), perspective_mul ) / V_VIRTUALWIDTH );
 
 	pspritescale = FixedMul( FRACUNIT * viewwidth / render_width, perspectivecorrectscale );
 	pspriteiscale = FixedDiv( FRACUNIT * render_width / viewwidth, perspectivecorrectscale );
@@ -1197,7 +1197,7 @@ void R_ExecuteSetViewSize (void)
 	// planes
 	for (i=0 ; i<viewheight ; i++)
 	{
-		dy = ( ( i- viewheight / 2 ) << FRACBITS ) + FRACUNIT / 2;
+		dy = IntToFixed( i- viewheight / 2 ) + FRACUNIT / 2;
 		dy = abs( dy );
 		yslope[ i ] = FixedMul( FixedDiv ( ( viewwidth << detailshift ) / 2 * FRACUNIT, dy ), perspective_mul );
 	}

@@ -661,7 +661,7 @@ void R_InitTextures (void)
 	    j<<=1;
 
 	texturewidthmask[i] = j-1;
-	textureheight[i] = texture->height<<FRACBITS;
+	textureheight[i] = IntToFixed( texture->height );
 		
 	totalwidth += texture->width;
     }
@@ -735,9 +735,9 @@ void R_InitSpriteLumps (void)
 			printf (".");
 
 		patch = W_CacheLumpNum (firstspritelump+i, PU_STATIC);
-		spritewidth[i] = SHORT(patch->width)<<FRACBITS;
-		spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
-		spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
+		spritewidth[i] = IntToFixed( SHORT(patch->width) );
+		spriteoffset[i] = IntToFixed( SHORT(patch->leftoffset) );
+		spritetopoffset[i] = IntToFixed( SHORT(patch->topoffset) );
 
 		spritepatches[i] = patch;
     }

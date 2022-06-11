@@ -186,7 +186,7 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 				index = spritecontext->spryscale>>LIGHTSCALESHIFT;
 				if( LIGHTSCALEMUL != FRACUNIT )
 				{
-					index = FixedMul( index << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
+					index = FixedToInt( FixedMul( IntToFixed( index ), LIGHTSCALEMUL ) );
 				}
 
 				if (index >=  MAXLIGHTSCALE )
@@ -244,7 +244,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 	int32_t 		yl;
 	int32_t 		yh;
 	int32_t 		mid;
-	fixed_t			texturecolumn;
+	int32_t			texturecolumn;
 	int32_t			top;
 	int32_t			bottom;
 	int32_t			currx = segcontext->startx;
@@ -320,14 +320,13 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 		{
 			// calculate texture offset
 			angle = (wallcontext->centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
-			texturecolumn = wallcontext->offset-FixedMul(renderfinetangent[angle],wallcontext->distance);
-			texturecolumn >>= FRACBITS;
+			texturecolumn = FixedToInt( wallcontext->offset -FixedMul( renderfinetangent[angle], wallcontext->distance ) );
 			// calculate lighting
 			index = wallcontext->scale>>LIGHTSCALESHIFT;
 
 			if( LIGHTSCALEMUL != FRACUNIT )
 			{
-				index = FixedMul( index << FRACBITS, LIGHTSCALEMUL ) >> FRACBITS;
+				index = FixedToInt( FixedMul( IntToFixed( index ), LIGHTSCALEMUL ) );
 			}
 
 			if (index >=  MAXLIGHTSCALE ) index = MAXLIGHTSCALE-1;

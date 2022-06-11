@@ -655,7 +655,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 		oldfrac = newfrac;
 		newfrac += originalcolfrac;
 
-		if( ( newfrac & ~( FRACUNIT - 1 ) ) > ( oldfrac & ~( FRACUNIT - 1 ) ) )
+		if( FixedToInt( newfrac ) > FixedToInt( oldfrac ) )
 		{
 			// Clamp table lookup index.
 			++fuzzposadd;
@@ -1013,10 +1013,10 @@ void R_FillBackScreen (void)
 	vbuffer_t src;
 	vbuffer_t inflated;
 
-	int32_t viewx = FixedDiv( viewwindowx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
-	int32_t viewy = FixedDiv( viewwindowy << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
-	int32_t vieww = FixedDiv( scaledviewwidth << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
-	int32_t viewh = FixedDiv( viewheight << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+	int32_t viewx = FixedToInt( FixedDiv( IntToFixed( viewwindowx ),		V_WIDTHMULTIPLIER ) );
+	int32_t viewy = FixedToInt( FixedDiv( IntToFixed( viewwindowy ),		V_HEIGHTMULTIPLIER ) );
+	int32_t vieww = FixedToInt( FixedDiv( IntToFixed( scaledviewwidth ),	V_WIDTHMULTIPLIER ) );
+	int32_t viewh = FixedToInt( FixedDiv( IntToFixed( viewheight ),			V_HEIGHTMULTIPLIER ) );
 
     int		x;
     int		y; 
