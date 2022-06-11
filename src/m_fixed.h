@@ -40,7 +40,7 @@
 #define FRACMASK						( FRACUNIT - 1 )
 #define FRACFILL( x, o )				( ( x ) | ( ( o ) < 0 ? ( FRACMASK << ( 32 - FRACBITS ) ) : 0 ) )
 
-#define RENDFRACBITS					24ll
+#define RENDFRACBITS					20ll
 #define RENDFRACUNIT					( 1ll << RENDFRACBITS )
 #define RENDFRACMASK					( RENDFRACUNIT - 1ll )
 #define RENDFRACFILL( x, o )			( ( x ) | ( ( o ) < 0 ? ( RENDFRACMASK << ( 64 - RENDFRACBITS ) ) : 0 ) )
