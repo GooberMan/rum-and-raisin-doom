@@ -620,7 +620,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 	pixel_t*	darkercolormap = colormaps + 12*256;
 	pixel_t*	samplecolormap;
 
-	fixed_t		originalcolfrac = FixedDiv( 200 << FRACBITS, viewheight << FRACBITS );
+	fixed_t		originalcolfrac = FixedDiv( IntToFixed( 200 ), IntToFixed( viewheight ) );
 	fixed_t		oldfrac = 0;
 	fixed_t		newfrac = 0;
 
@@ -980,17 +980,17 @@ R_InitBuffer
  
 static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtualwidth, int32_t virtualheight, lighttable_t* colormap )
 {
-	int32_t numcols = FixedMul( virtualwidth << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS;
+	int32_t numcols = FixedToInt( FixedMul( IntToFixed( virtualwidth ), V_WIDTHMULTIPLIER ) );
 	int32_t numrows;
 
-	byte* outputbase = dest_buffer->data + ( FixedMul( virtualx << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS ) * dest_buffer->pitch
-										+ ( FixedMul( virtualy << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS );
+	byte* outputbase = dest_buffer->data	+ FixedToInt( FixedMul( IntToFixed( virtualx ), V_WIDTHMULTIPLIER ) ) * dest_buffer->pitch
+											+ FixedToInt( FixedMul( IntToFixed( virtualy ), V_HEIGHTMULTIPLIER ) );
 	byte* output;
 
 	for( ; numcols > 0; --numcols )
 	{
 		output = outputbase;
-		numrows = FixedMul( virtualheight << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS;
+		numrows = FixedToInt( FixedMul( IntToFixed( virtualheight ), V_HEIGHTMULTIPLIER ) );
 
 		for( ; numrows > 0; --numrows )
 		{
