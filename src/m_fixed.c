@@ -62,7 +62,7 @@ DOOM_C_API rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b )
 {
     rend_fixed_t result = ( a * b );
 
-	return RENDFRACFILL( result >> RENDFRACBITS );
+	return RENDFRACFILL( result >> RENDFRACBITS, result );
 }
 
 DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b )

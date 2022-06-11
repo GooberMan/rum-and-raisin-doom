@@ -35,16 +35,16 @@
 //
 // Fixed point, 32bit as 16.16.
 //
-#define FRACBITS				16
-#define FRACUNIT				(1<<FRACBITS)
-#define FRACMASK				( FRACUNIT - 1 )
-#define FRACFILL( x )			( ( x ) | ( ( x ) < 0 ? ( FRACMASK << ( 32 - FRACBITS ) ) : 0 ) )
+#define FRACBITS						16
+#define FRACUNIT						(1<<FRACBITS)
+#define FRACMASK						( FRACUNIT - 1 )
+#define FRACFILL( x, o )				( ( x ) | ( ( o ) < 0 ? ( FRACMASK << ( 32 - FRACBITS ) ) : 0 ) )
 
-#define RENDFRACBITS			24ll
-#define RENDFRACUNIT			( 1ll << RENDFRACBITS )
-#define RENDFRACMASK			( RENDFRACUNIT - 1ll )
-#define RENDFRACFILL( x )		( ( x ) | ( ( x ) < 0 ? ( RENDFRACMASK << ( 64 - RENDFRACBITS ) ) : 0 ) )
-#define RENDFRACFILLFIXED( x )	( ( x ) | ( ( x ) < 0 ? ( RENDFRACMASK << ( 64 - ( RENDFRACBITS - FRACBITS ) ) ) : 0 ) )
+#define RENDFRACBITS					24ll
+#define RENDFRACUNIT					( 1ll << RENDFRACBITS )
+#define RENDFRACMASK					( RENDFRACUNIT - 1ll )
+#define RENDFRACFILL( x, o )			( ( x ) | ( ( o ) < 0 ? ( RENDFRACMASK << ( 64 - RENDFRACBITS ) ) : 0 ) )
+#define RENDFRACFILLFIXED( x, o )		( ( x ) | ( ( o ) < 0 ? ( RENDFRACMASK << ( 64 - ( RENDFRACBITS - FRACBITS ) ) ) : 0 ) )
 
 typedef int32_t fixed_t;
 typedef int64_t rend_fixed_t;
@@ -56,13 +56,13 @@ DOOM_C_API rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b );
 DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
 
 #define IntToFixed( x ) ( x << FRACBITS )
-#define FixedToInt( x ) FRACFILL( x >> FRACBITS )
+#define FixedToInt( x ) FRACFILL( x >> FRACBITS, x )
 
 #define IntToRendFixed( x ) ( (rend_fixed_t)x << RENDFRACBITS )
-#define RendFixedToInt( x ) RENDFRACFILL( x >> RENDFRACBITS )
+#define RendFixedToInt( x ) RENDFRACFILL( x >> RENDFRACBITS, x )
 
 #define FixedToRendFixed( x ) ( (rend_fixed_t)x << ( RENDFRACBITS - FRACBITS ) )
-#define RendFixedToFixed( x ) RENDFRACFILLFIXED( x >> ( RENDFRACBITS - FRACBITS ) )
+#define RendFixedToFixed( x ) RENDFRACFILLFIXED( x >> ( RENDFRACBITS - FRACBITS ), x )
 
 #else // USED_FIXED_T_TYPE
 
