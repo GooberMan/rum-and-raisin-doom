@@ -55,13 +55,13 @@ DOOM_C_API fixed_t FixedDiv	(fixed_t a, fixed_t b);
 DOOM_C_API rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b );
 DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
 
-#define IntToFixed( x ) ( x << FRACBITS );
-#define FixedToInt( x ) FRACFILL( x >> FRACBITS );
+#define IntToFixed( x ) ( x << FRACBITS )
+#define FixedToInt( x ) FRACFILL( x >> FRACBITS )
 
 #define IntToRendFixed( x ) ( (rend_fixed_t)x << RENDFRACBITS )
 #define RendFixedToInt( x ) RENDFRACFILL( x >> RENDFRACBITS )
 
-#define FixedToRendFixed( x ) ( x << ( RENDFRACBITS - FRACBITS ) )
+#define FixedToRendFixed( x ) ( (rend_fixed_t)x << ( RENDFRACBITS - FRACBITS ) )
 #define RendFixedToFixed( x ) RENDFRACFILLFIXED( x >> ( RENDFRACBITS - FRACBITS ) )
 
 #else // USED_FIXED_T_TYPE
