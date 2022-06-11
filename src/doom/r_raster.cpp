@@ -29,22 +29,22 @@ extern "C"
 
 	extern size_t		xlookup[ MAXWIDTH ];
 	extern size_t		rowofs[ MAXHEIGHT ];
-	extern fixed_t		distscale[ MAXSCREENWIDTH ];
+	extern rend_fixed_t	distscale[ MAXSCREENWIDTH ];
 	extern fixed_t		yslope[ MAXSCREENHEIGHT ];
 }
 
 INLINE void DoSample( int32_t& spot
 					, int32_t& top
-					, fixed_t& xfrac
-					, fixed_t& xstep
-					, fixed_t& yfrac
-					, fixed_t& ystep
+					, rend_fixed_t& xfrac
+					, rend_fixed_t& xstep
+					, rend_fixed_t& yfrac
+					, rend_fixed_t& ystep
 					, pixel_t*& source
 					, pixel_t*& dest
 					, planecontext_t*& planecontext
 					, spancontext_t*& spancontext )
 {
-	spot = ( (yfrac & 0x3F0000 ) >> 10) | ( (xfrac & 0x3F0000 ) >> 16);
+	spot = ( (yfrac & 0x3F000000 ) >> 18) | ( (xfrac & 0x3F000000 ) >> 24);
 	source = spancontext->source + planecontext->raster[ top++ ].sourceoffset;
 	*dest++ = source[spot];
 	xfrac += xstep;
@@ -56,7 +56,7 @@ INLINE void DoSample( int32_t& spot
 
 template< int32_t Leap, int32_t LeapLog2 >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void R_RasteriseColumnImpl( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t top, int32_t count )
+INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t top, int32_t count )
 {
 	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ top ];
 	pixel_t*			source			= spancontext->source;
@@ -64,19 +64,19 @@ INLINE void R_RasteriseColumnImpl( planecontext_t* planecontext, spancontext_t* 
 	int32_t				nexty			= top;
 
 	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
-	fixed_t				anglecos		= renderfinecosine[ angle ];
-	fixed_t				anglesin		= renderfinesine[ angle ];
+	rend_fixed_t		anglecos		= FixedToRendFixed( renderfinecosine[ angle ] );
+	rend_fixed_t		anglesin		= FixedToRendFixed( renderfinesine[ angle ] );
 
-	fixed_t				currdistance	= planecontext->raster[ top ].distance;
-	fixed_t				currlength		= FixedMul( currdistance, distscale[ x ] );
+	rend_fixed_t		currdistance	= planecontext->raster[ nexty ].distance;
+	rend_fixed_t		currlength		= RendFixedMul( currdistance, distscale[ x ] );
 
-	fixed_t				xfrac			= viewx + FixedMul( anglecos, currlength );
-	fixed_t				yfrac			= -viewy - FixedMul( anglesin, currlength );
-	fixed_t				nextxfrac;
-	fixed_t				nextyfrac;
+	rend_fixed_t		xfrac			= view_x + RendFixedMul( anglecos, currlength );
+	rend_fixed_t		yfrac			= -view_y - RendFixedMul( anglesin, currlength );
+	rend_fixed_t		nextxfrac;
+	rend_fixed_t		nextyfrac;
 
-	fixed_t				xstep;
-	fixed_t				ystep;
+	rend_fixed_t		xstep;
+	rend_fixed_t		ystep;
 
 	int32_t				spot;
 
@@ -89,9 +89,9 @@ INLINE void R_RasteriseColumnImpl( planecontext_t* planecontext, spancontext_t* 
 	{
 		nexty			+= Leap;
 		currdistance	= planecontext->raster[ nexty ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
+		currlength		= RendFixedMul( currdistance, distscale[ x ] );
+		nextxfrac		= view_x + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -view_y - RendFixedMul( anglesin, currlength );
 
 		xstep =	( nextxfrac - xfrac ) >> LeapLog2;
 		ystep =	( nextyfrac - yfrac ) >> LeapLog2;
@@ -150,9 +150,9 @@ INLINE void R_RasteriseColumnImpl( planecontext_t* planecontext, spancontext_t* 
 	{
 		nexty			+= count;
 		currdistance	= planecontext->raster[ nexty ].distance;
-		currlength		= FixedMul ( currdistance, distscale[ x ] );
-		nextxfrac		= viewx + FixedMul( anglecos, currlength );
-		nextyfrac		= -viewy - FixedMul( anglesin, currlength );
+		currlength		= RendFixedMul( currdistance, distscale[ x ] );
+		nextxfrac		= view_x + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -view_y - RendFixedMul( anglesin, currlength );
 
 		++count;
 
@@ -174,7 +174,7 @@ INLINE void R_RasteriseColumnImpl( planecontext_t* planecontext, spancontext_t* 
 
 INLINE void R_Prepare( int32_t y, visplane_t* visplane, planecontext_t* planecontext )
 {
-	planecontext->raster[ y ].distance		= FixedMul ( planecontext->planeheight, yslope[ y ] );
+	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), FixedToRendFixed( yslope[ y ] ) );
 
 	// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
 	//if( planecontext->planezlight != planecontext->raster[ y ].zlight )
@@ -185,7 +185,7 @@ INLINE void R_Prepare( int32_t y, visplane_t* visplane, planecontext_t* planecon
 		}
 		else
 		{
-			int32_t lightindex = M_CLAMP( ( planecontext->raster[ y ].distance >> LIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
+			int32_t lightindex = M_CLAMP( ( planecontext->raster[ y ].distance >> ( LIGHTZSHIFT + RENDFRACBITS - FRACBITS ) ), 0, ( MAXLIGHTZ - 1 ) );
 			lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
 			planecontext->raster[ y ].sourceoffset = lightindex * 4096;
 		}
@@ -206,6 +206,9 @@ INLINE void R_Prepare( visplane_t* visplane, planecontext_t* planecontext )
 
 DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane )
 {
+	rend_fixed_t view_x = FixedToRendFixed( viewx );
+	rend_fixed_t view_y = FixedToRendFixed( viewy );
+
 	int32_t stop = visplane->maxx + 1;
 
 	R_Prepare( visplane, planecontext );
@@ -216,7 +219,7 @@ DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planeco
 		{
 			if( visplane->top[ x ] <= visplane->bottom[ x ] )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
 			}
 		}
 		break;
@@ -226,7 +229,7 @@ DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planeco
 		{
 			if( visplane->top[ x ] <= visplane->bottom[ x ] )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
 			}
 		}
 		break;
@@ -236,7 +239,7 @@ DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planeco
 		{
 			if( visplane->top[ x ] <= visplane->bottom[ x ] )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
 			}
 		}
 		break;
@@ -246,7 +249,7 @@ DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planeco
 		{
 			if( visplane->top[ x ] <= visplane->bottom[ x ] )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
 			}
 		}
 		break;

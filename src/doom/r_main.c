@@ -1090,7 +1090,6 @@ typedef enum detail_e
 
 void R_ExecuteSetViewSize (void)
 {
-	fixed_t		cosadj;
 	fixed_t		dy;
 	int32_t		i;
 	int32_t		j;
@@ -1204,8 +1203,8 @@ void R_ExecuteSetViewSize (void)
 	
 	for ( i=0 ; i<viewwidth ; i++ )
 	{
-		cosadj = abs( renderfinecosine[ xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] );
-		distscale[ i ] = FixedDiv ( FRACUNIT, cosadj );
+		rend_fixed_t cosadj = FixedToRendFixed( abs( renderfinecosine[ xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] ) );
+		distscale[ i ] = RendFixedDiv( RENDFRACUNIT, cosadj );
 	}
 
 	// Calculate the light levels to use

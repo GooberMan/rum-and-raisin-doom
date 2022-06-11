@@ -591,7 +591,7 @@ typedef struct rastercache_s
 	lighttable_t**		zlight;
 	size_t				sourceoffset;
 	fixed_t				height;
-	fixed_t				distance;
+	rend_fixed_t		distance;
 } rastercache_t;
 
 typedef struct planecontext_s

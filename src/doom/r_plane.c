@@ -41,7 +41,7 @@
 //
 
 fixed_t			yslope[ MAXSCREENHEIGHT ];
-fixed_t			distscale[ MAXSCREENWIDTH ];
+rend_fixed_t	distscale[ MAXSCREENWIDTH ];
 
 int32_t			span_override = Span_None;
 
@@ -106,7 +106,7 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 		spancontext->ystep = planecontext->cachedystep[y];
 	}
 	
-	length = FixedMul (distance,distscale[x1]);
+	length = FixedMul (distance,RendFixedToFixed(distscale[x1]));
 	angle = (viewangle + xtoviewangle[x1])>>RENDERANGLETOFINESHIFT;
 	spancontext->xfrac = viewx + FixedMul(renderfinecosine[angle], length);
 	spancontext->yfrac = -viewy - FixedMul(renderfinesine[angle], length);
