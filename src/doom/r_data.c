@@ -108,23 +108,23 @@ typedef struct texture_s texture_t;
 
 struct texture_s
 {
+    // Next in hash table chain
+    texture_t  *next;
+
     // Keep name for switch changing, etc.
-    char	name[8];		
-    short	width;
-    short	height;
+    char		name[8];
+	int32_t		padding;
+	int16_t		width;
+	int16_t		height;
 
     // Index in textures list
 
-    int         index;
+    int32_t		index;
 
-    // Next in hash table chain
-
-    texture_t  *next;
-    
     // All the patches[patchcount]
     //  are drawn back to front into the cached texture.
-    short	patchcount;
-    texpatch_t	patches[1];		
+    int32_t		patchcount;
+    texpatch_t	patches[1];
 };
 
 
@@ -637,6 +637,7 @@ void R_InitTextures (void)
 	texture->patchcount = SHORT(mtexture->patchcount);
 	
 	memcpy (texture->name, mtexture->name, sizeof(texture->name));
+	texture->padding = 0;
 	mpatch = &mtexture->patches[0];
 	patch = &texture->patches[0];
 
