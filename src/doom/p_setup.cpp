@@ -20,6 +20,9 @@
 #include <math.h>
 #include <stdlib.h>
 
+// Abusing include guards to get the types I want
+//#include "m_fixed.h"
+
 extern "C"
 {
 	#include "doomdata.h"
@@ -262,8 +265,8 @@ struct DoomMapLoader
 		_blockmapend		= data.output + data.count;
 		_blockmapbase		= _blockmap;
 
-		_blockmaporgx		= *_blockmap++ << FRACBITS;
-		_blockmaporgy		= *_blockmap++ << FRACBITS;
+		_blockmaporgx		= IntToFixed( *_blockmap++ );
+		_blockmaporgy		= IntToFixed( *_blockmap++ );
 		_blockmapwidth		= *_blockmap++;
 		_blockmapheight		= *_blockmap++;
 
@@ -321,8 +324,8 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< mapvertex_t, vertex_t >( lumpnum, 0, []( int32_t index, vertex_t& out, const mapvertex_t& in )
 		{
-			out.x			= Read::AsIs( in.x ) << FRACBITS;
-			out.y			= Read::AsIs( in.y ) << FRACBITS;
+			out.x			= IntToFixed( Read::AsIs( in.x ) );
+			out.y			= IntToFixed( Read::AsIs( in.y ) );
 		} );
 
 		_numvertices		= data.count;
@@ -334,8 +337,8 @@ struct DoomMapLoader
 		auto data = WadDataConvert< mapsector_t, sector_t >( lumpnum, 0, []( int32_t index, sector_t& out, const mapsector_t& in )
 		{
 			out.index			= index;
-			out.floorheight		= Read::AsIs( in.floorheight ) << FRACBITS;
-			out.ceilingheight	= Read::AsIs( in.ceilingheight ) << FRACBITS;
+			out.floorheight		= IntToFixed( Read::AsIs( in.floorheight ) );
+			out.ceilingheight	= IntToFixed( Read::AsIs( in.ceilingheight ) );
 			out.floorpic		= R_FlatNumForName( in.floorpic );
 			out.ceilingpic		= R_FlatNumForName( in.ceilingpic );
 			out.lightlevel		= Read::AsIs( in.lightlevel );
@@ -353,8 +356,8 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< mapsidedef_t, side_t >( lumpnum, 0, [ this ]( int32_t index, side_t& out, const mapsidedef_t& in )
 		{
-			out.textureoffset	= Read::AsIs( in.textureoffset ) << FRACBITS;
-			out.rowoffset		= Read::AsIs( in.rowoffset ) << FRACBITS;
+			out.textureoffset	= IntToFixed( Read::AsIs( in.textureoffset ) );
+			out.rowoffset		= IntToFixed( Read::AsIs( in.rowoffset ) );
 			out.toptexture		= R_TextureNumForName( in.toptexture );
 			out.bottomtexture	= R_TextureNumForName( in.bottomtexture );
 			out.midtexture		= R_TextureNumForName( in.midtexture );
@@ -486,10 +489,10 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< _maptype, node_t >( lumpnum, offset, []( int32_t index, node_t& out, const _maptype& in )
 		{
-			out.x			= Read::AsIs( in.x ) << FRACBITS;
-			out.y			= Read::AsIs( in.y ) << FRACBITS;
-			out.dx			= Read::AsIs( in.dx ) << FRACBITS;
-			out.dy			= Read::AsIs( in.dy ) << FRACBITS;
+			out.x			= IntToFixed( Read::AsIs( in.x ) );
+			out.y			= IntToFixed( Read::AsIs( in.y ) );
+			out.dx			= IntToFixed( Read::AsIs( in.dx ) );
+			out.dy			= IntToFixed( Read::AsIs( in.dy ) );
 			for( int32_t child : iota( 0, 2 ) )
 			{
 				auto childval = Read::AsIs( in.children[ child ] );
@@ -512,7 +515,7 @@ struct DoomMapLoader
 				}
 				for ( int32_t corner : iota( 0, 4 ) )
 				{
-					out.bbox[ child ][ corner ] = Read::AsIs( in.bbox[ child ][ corner ] ) << FRACBITS;
+					out.bbox[ child ][ corner ] = IntToFixed( Read::AsIs( in.bbox[ child ][ corner ] ) );
 				}
 			}
 		} );
@@ -544,8 +547,8 @@ struct DoomMapLoader
 			out.v1			= &Vertices()[ Read::AsIs( in.v1 ) ];
 			out.v2			= &Vertices()[ Read::AsIs( in.v2 ) ];
 
-			out.angle		= Read::AsIs( in.angle ) << FRACBITS;
-			out.offset		= Read::AsIs( in.offset ) << FRACBITS;
+			out.angle		= IntToFixed( Read::AsIs( in.angle ) );
+			out.offset		= IntToFixed( Read::AsIs( in.offset ) );
 			int32_t linenum	= Read::AsIs( in.linedef );
 			line_t* linedef	= &Lines()[ linenum ];
 			out.linedef		= linedef;
