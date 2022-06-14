@@ -46,6 +46,8 @@
 #define RENDFRACFILL( x, o )			( ( x ) | ( ( o ) < 0 ? ( RENDFRACMASK << ( 64 - RENDFRACBITS ) ) : 0 ) )
 #define RENDFRACFILLFIXED( x, o )		( ( x ) | ( ( o ) < 0 ? ( RENDFRACMASK << ( 64 - ( RENDFRACBITS - FRACBITS ) ) ) : 0 ) )
 
+#define RENDFRACTOFRACBITS				( RENDFRACBITS - FRACBITS )
+
 typedef int32_t fixed_t;
 typedef int64_t rend_fixed_t;
 
@@ -61,8 +63,8 @@ DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
 #define IntToRendFixed( x ) ( (rend_fixed_t)x << RENDFRACBITS )
 #define RendFixedToInt( x ) RENDFRACFILL( x >> RENDFRACBITS, x )
 
-#define FixedToRendFixed( x ) ( (rend_fixed_t)x << ( RENDFRACBITS - FRACBITS ) )
-#define RendFixedToFixed( x ) RENDFRACFILLFIXED( x >> ( RENDFRACBITS - FRACBITS ), x )
+#define FixedToRendFixed( x ) ( (rend_fixed_t)x << RENDFRACTOFRACBITS )
+#define RendFixedToFixed( x ) RENDFRACFILLFIXED( x >> RENDFRACTOFRACBITS, x )
 
 #else // USED_FIXED_T_TYPE
 

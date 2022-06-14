@@ -67,7 +67,7 @@ DOOM_C_API rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b )
 
 DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b )
 {
-	if ( ( llabs( a ) >> 22 ) >= llabs( b ) )
+	if ( ( llabs( a ) >> ( RENDFRACBITS - 2 ) ) >= llabs( b ) )
 	{
 		return ( a ^ b ) < 0 ? LONG_MIN : LONG_MAX;
 	}
