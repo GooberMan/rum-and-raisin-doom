@@ -139,11 +139,7 @@ R_PointToAngle2
   fixed_t	x2,
   fixed_t	y2 );
 
-fixed_t
-R_PointToDist
-( fixed_t	x,
-  fixed_t	y );
-
+rend_fixed_t R_PointToDist( rend_fixed_t x, rend_fixed_t y );
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle);
 

@@ -238,6 +238,7 @@ void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* plane
 
 	// Global angle needed by segcalc.
 	wallcontext.angle1 = angle1;
+	wallcontext.angle2 = angle2;
 	angle1 -= viewangle;
 	angle2 -= viewangle;
 	

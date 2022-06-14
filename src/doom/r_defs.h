@@ -537,6 +537,7 @@ typedef struct wallcontext_s
 {
 	angle_t				normalangle;
 	angle_t				angle1;
+	angle_t				angle2;
 	angle_t				centerangle;
 	fixed_t				offset;
 	fixed_t				distance;

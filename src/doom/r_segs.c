@@ -530,7 +530,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	offsetangle = M_MIN( offsetangle, ANG90 );
 
 	distangle = ANG90 - offsetangle;
-	hyp = R_PointToDist (bspcontext->curline->v1->x, bspcontext->curline->v1->y);
+	hyp = RendFixedToFixed( R_PointToDist( bspcontext->curline->v1->rend.x, bspcontext->curline->v1->rend.y ) );
 	sineval = renderfinesine[distangle>>RENDERANGLETOFINESHIFT];
 	// If this value blows out, renderer go boom. Need to increase resolution of this thing
 	wallcontext->distance = FixedMul (hyp, sineval);

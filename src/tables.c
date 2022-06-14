@@ -32,6 +32,7 @@
 //    
 
 #include "tables.h"
+#include "m_misc.h"
 
 // to get a global angle from cartesian coordinates, the coordinates are
 // flipped until they are in the first octant of the coordinate system, then
@@ -49,9 +50,9 @@
 	angle_t rendertantoangle[ RENDERTANTOANGLECOUNT ];
 #endif // RENDERSLOPEQUALITYSHIFT > 0
 
-int SlopeDiv_Render(unsigned int num, unsigned int den)
+int SlopeDiv_Render(rend_fixed_t num, rend_fixed_t den)
 {
-    unsigned ans;
+    rend_fixed_t ans;
     
     if (den < ( RENDERSLOPERANGE >> 2 ) ) // 512 originally, hopefully it's good...
     {
@@ -61,14 +62,7 @@ int SlopeDiv_Render(unsigned int num, unsigned int den)
     {
         ans = ( num << 3 ) / ( den >> (8 + RENDERSLOPEQUALITYSHIFT ) );
 
-        if (ans <= RENDERSLOPERANGE)
-        {
-            return ans;
-        }
-        else
-        {
-            return RENDERSLOPERANGE;
-        }
+		return M_CLAMP( ans, 0, RENDERSLOPERANGE );
     }
 }
 

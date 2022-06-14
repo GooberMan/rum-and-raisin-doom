@@ -328,11 +328,11 @@ R_PointOnSegSide
 
 angle_t
 R_PointToAngle
-( fixed_t	x,
-  fixed_t	y )
+( fixed_t	fixed_x,
+  fixed_t	fixed_y )
 {	
-    x -= viewx;
-    y -= viewy;
+    rend_fixed_t x = FixedToRendFixed( fixed_x - viewx );
+    rend_fixed_t y = FixedToRendFixed( fixed_y - viewy );
     
     if ( (!x) && (!y) )
 	return 0;
@@ -500,45 +500,45 @@ R_PointToAngle2
 }
 
 
-fixed_t
-R_PointToDist
-( fixed_t	x,
-  fixed_t	y )
+rend_fixed_t R_PointToDist( rend_fixed_t x, rend_fixed_t y )
 {
-    int		angle;
-    fixed_t	dx;
-    fixed_t	dy;
-    fixed_t	temp;
-    fixed_t	dist;
-    fixed_t     frac;
+	angle_t			angle;
+	rend_fixed_t	dx;
+	rend_fixed_t	dy;
+	rend_fixed_t	temp;
+	rend_fixed_t	dist;
+	rend_fixed_t	frac;
 	
-    dx = abs(x - viewx);
-    dy = abs(y - viewy);
+	dx = llabs( x - FixedToRendFixed( viewx ) );
+	dy = llabs( y - FixedToRendFixed( viewy ) );
 	
-    if (dy>dx)
-    {
-	temp = dx;
-	dx = dy;
-	dy = temp;
-    }
+	if (dy>dx)
+	{
+		temp = dx;
+		dx = dy;
+		dy = temp;
+	}
 
-    // Fix crashes in udm1.wad
+	// Fix crashes in udm1.wad
 
-    if (dx != 0)
-    {
-        frac = FixedDiv(dy, dx);
-    }
-    else
-    {
-	frac = 0;
-    }
-	
-    angle = (rendertantoangle[frac>>RENDERDBITS]+ANG90) >> RENDERANGLETOFINESHIFT;
+	if (dx != 0)
+	{
+		frac = RendFixedDiv( dy, dx );
+	}
+	else
+	{
+		frac = 0;
+	}
 
-    // use as cosine
-    dist = FixedDiv (dx, renderfinesine[angle] );	
+	rend_fixed_t lookup = frac >> ( RENDERDBITS + RENDFRACTOFRACBITS );
 	
-    return dist;
+	angle = rendertantoangle[ lookup ] + ANG90;
+	rend_fixed_t sine = FixedToRendFixed( renderfinesine[ angle  >> RENDERANGLETOFINESHIFT ] );
+
+	// use as cosine
+	dist = RendFixedDiv( dx, sine );
+	
+	return dist;
 }
 
 void R_BindRenderVariables( void )
