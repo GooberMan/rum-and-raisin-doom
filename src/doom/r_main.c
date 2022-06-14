@@ -104,7 +104,7 @@ int32_t					centery;
 
 fixed_t					centerxfrac;
 fixed_t					centeryfrac;
-fixed_t					projection;
+rend_fixed_t			projection;
 
 // just for profiling purposes
 int32_t					framecount;	
@@ -583,36 +583,36 @@ void R_InitPointToAngle (void)
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
 #define MAXSCALE ( 128 * ( render_width / 320 ) )
-#define MAXSCALE_FIXED IntToFixed( MAXSCALE )
+#define MAXSCALE_FIXED IntToRendFixed( MAXSCALE )
 
-fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle)
+rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle )
 {
 	// TODO: Replace this with the scaling function for my visplane renderer
-    fixed_t		scale;
-    angle_t		anglea;
-    angle_t		angleb;
-    int32_t		sinea;
-    int32_t		sineb;
-    fixed_t		num;
-    int32_t		den;
+	rend_fixed_t	scale;
+	angle_t			anglea;
+	angle_t			angleb;
+	rend_fixed_t	sinea;
+	rend_fixed_t	sineb;
+	rend_fixed_t	num;
+	rend_fixed_t	den;
 
 	scale = MAXSCALE_FIXED;
 
-    anglea = ANG90 + (visangle - view_angle);
-    angleb = ANG90 + (visangle - normal_angle);
+	anglea = ANG90 + ( visangle - view_angle );
+	angleb = ANG90 + ( visangle - normal_angle );
 
-    // both sines are allways positive
-    sinea = renderfinesine[anglea>>RENDERANGLETOFINESHIFT];
-    sineb = renderfinesine[angleb>>RENDERANGLETOFINESHIFT];
-    num = FixedMul(projection,sineb)<<detailshift;
-    den = FixedMul(distance,sinea);
+	// both sines are allways positive
+	sinea = FixedToRendFixed( renderfinesine[ anglea >> RENDERANGLETOFINESHIFT ] );
+	sineb = FixedToRendFixed( renderfinesine[ angleb >> RENDERANGLETOFINESHIFT ] );
+	num = RendFixedMul( projection, sineb ) << detailshift;
+	den = RendFixedMul( distance, sinea );
 
-    if (den >= 0 && den > num>>FRACBITS)
-    {
-		scale = M_CLAMP( FixedDiv(num, den), 256, MAXSCALE_FIXED );
-    }
+	if (den >= 0 && den > RendFixedToInt( num ) )
+	{
+		scale = M_CLAMP( RendFixedDiv( num, den ), 256, MAXSCALE_FIXED );
+	}
 	
-    return scale;
+	return scale;
 }
 
 
@@ -714,19 +714,19 @@ void R_InitTextureMapping (void)
 
 
 int32_t aspect_adjusted_render_width = 0;
-fixed_t aspect_adjusted_scaled_divide = 0;
-fixed_t aspect_adjusted_scaled_mul = FRACUNIT;
+rend_fixed_t aspect_adjusted_scaled_divide = 0;
+rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
 
 void R_InitAspectAdjustedValues()
 {
-	fixed_t		original_perspective = FixedDiv( IntToFixed( 16 ), IntToFixed( 10 ) );
-	fixed_t		current_perspective = FixedDiv( IntToFixed( render_width ), IntToFixed( render_height ) );
-	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
+	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
+	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_height ) );
+	rend_fixed_t		perspective_mul = RendFixedDiv( original_perspective, current_perspective );
 
-	fixed_t		intermediate_width = FixedMul( IntToFixed( render_width ), perspective_mul );
-	aspect_adjusted_render_width = FixedToInt( intermediate_width ) + ( ( intermediate_width & 0x00008000 ) >> 15 );
-	aspect_adjusted_scaled_divide = IntToFixed( aspect_adjusted_render_width ) / 320;
-	aspect_adjusted_scaled_mul = FixedDiv( FRACUNIT, aspect_adjusted_scaled_divide );
+	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( render_width ), perspective_mul );
+	aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
+	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / 320;
+	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
 }
 
 
@@ -754,9 +754,9 @@ void R_InitLightTables (void)
 		{
 			scale = FixedDiv( IntToFixed( aspect_adjusted_render_width / 2 ), ( j + 1 ) << LIGHTZSHIFT );
 			scale >>= LIGHTSCALESHIFT;
-			if( LIGHTSCALEMUL != FRACUNIT )
+			if( LIGHTSCALEMUL != RENDFRACUNIT )
 			{
-				scale = FixedToInt( FixedMul( IntToFixed( scale ), LIGHTSCALEMUL ) );
+				scale = RendFixedToInt( RendFixedMul( IntToRendFixed( scale ), LIGHTSCALEMUL ) );
 			}
 
 			level = startmap - scale/DISTMAP;
@@ -1090,22 +1090,24 @@ typedef enum detail_e
 
 void R_ExecuteSetViewSize (void)
 {
-	fixed_t		dy;
-	int32_t		i;
-	int32_t		j;
-	int32_t		level;
-	int32_t		startmap;
-	int32_t		colfuncbase;
+	int32_t				i;
+	int32_t				j;
+	int32_t				level;
+	int32_t				startmap;
+	int32_t				colfuncbase;
 
-	fixed_t		original_perspective = FixedDiv( IntToFixed( 16 ), IntToFixed( 10 ) );
-	fixed_t		current_perspective = FixedDiv( IntToFixed( render_width ), IntToFixed( render_height ) );
-	fixed_t		perspective_mul = FixedDiv( original_perspective, current_perspective );
+	rend_fixed_t		original_perspective	= RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
+	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_height ) );
+	rend_fixed_t		perspective_mul			= RendFixedDiv( original_perspective, current_perspective );
 
-	fixed_t		perspectivecorrectscale;
+	rend_fixed_t		perspectivecorrectscale;
 
-	fixed_t		tan_fov = FixedDiv( current_perspective >> 1, original_perspective >> 1 );
-	float_t		float_tan_fov = (float)tan_fov / 65536.f;
+	rend_fixed_t		tan_fov = RendFixedDiv( current_perspective >> 1, original_perspective >> 1 );
+
+	// Widescreen support needs this
+	float_t		float_tan_fov = (float)tan_fov / (float)RENDFRACUNIT;
 	float_t		float_fov = ( atanf( float_tan_fov ) * 2.f ) / 3.1415926f * 180.f;
+
 	field_of_view_degrees = (int32_t)float_fov;
 	//int32_t		new_fov = FixedToInt( rendertantoangle[ tan_fov >> RENDERDBITS ] );
 
@@ -1163,7 +1165,7 @@ void R_ExecuteSetViewSize (void)
 	centerx = viewwidth /2;
 	centerxfrac = IntToFixed( centerx );
 	centeryfrac = IntToFixed( centery );
-	projection = FixedMul( centerxfrac, perspective_mul );
+	projection = RendFixedMul( FixedToRendFixed( centerxfrac ), perspective_mul );
 
 	colfuncbase = COLFUNC_NUM * ( detailshift );
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
@@ -1182,10 +1184,10 @@ void R_ExecuteSetViewSize (void)
 	R_InitTextureMapping ();
 
 	// psprite scales
-	perspectivecorrectscale = ( FixedMul( IntToFixed( render_width ), perspective_mul ) / V_VIRTUALWIDTH );
+	perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( render_width ), perspective_mul ) / V_VIRTUALWIDTH );
 
-	pspritescale = FixedMul( FRACUNIT * viewwidth / render_width, perspectivecorrectscale );
-	pspriteiscale = FixedDiv( FRACUNIT * render_width / viewwidth, perspectivecorrectscale );
+	pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( viewwidth ) / render_width, perspectivecorrectscale ) );
+	pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( render_width ) / viewwidth, perspectivecorrectscale ) );
 
 	// thing clipping
 	for (i=0 ; i<viewwidth ; i++)
@@ -1196,9 +1198,9 @@ void R_ExecuteSetViewSize (void)
 	// planes
 	for (i=0 ; i<viewheight ; i++)
 	{
-		dy = IntToFixed( i- viewheight / 2 ) + FRACUNIT / 2;
-		dy = abs( dy );
-		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( ( viewwidth << detailshift ) / 2 ), FixedToRendFixed( dy ) ), FixedToRendFixed( perspective_mul ) );
+		rend_fixed_t dy = IntToRendFixed( i- viewheight / 2 ) + RENDFRACUNIT / 2;
+		dy = llabs( dy );
+		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( ( viewwidth << detailshift ) / 2 ), dy ), perspective_mul );
 	}
 	
 	for ( i=0 ; i<viewwidth ; i++ )

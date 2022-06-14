@@ -41,13 +41,12 @@ extern int32_t		centery;
 
 extern fixed_t		centerxfrac;
 extern fixed_t		centeryfrac;
-extern fixed_t		projection;
+extern rend_fixed_t		projection;
 
 extern int32_t		validcount;
 
-extern int32_t		aspect_adjusted_render_width;
-extern fixed_t		aspect_adjusted_scaled_divide;
-extern fixed_t		aspect_adjusted_scaled_mul;
+extern int32_t			aspect_adjusted_render_width;
+extern rend_fixed_t		aspect_adjusted_scaled_mul;
 
 
 //
@@ -64,7 +63,6 @@ extern fixed_t		aspect_adjusted_scaled_mul;
 #define MAXLIGHTSCALE		48
 #define LIGHTSCALESHIFT		12
 #define RENDLIGHTSCALESHIFT	( RENDFRACBITS - 4 )
-#define LIGHTSCALEDIVIDE	aspect_adjusted_scaled_divide
 #define LIGHTSCALEMUL		aspect_adjusted_scaled_mul
 #define MAXLIGHTZ			128
 #define LIGHTZSHIFT			20
@@ -141,7 +139,7 @@ R_PointToAngle2
 
 rend_fixed_t R_PointToDist( rend_fixed_t x, rend_fixed_t y );
 
-fixed_t R_ScaleFromGlobalAngle (angle_t visangle, fixed_t distance, fixed_t view_angle, fixed_t normal_angle);
+rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle );
 
 subsector_t*
 R_PointInSubsector

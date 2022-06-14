@@ -40,7 +40,7 @@
 // Constants. Don't need to be in a context. Will get them off the stack at some point though.
 //
 
-rend_fixed_t			yslope[ MAXSCREENHEIGHT ];
+rend_fixed_t	yslope[ MAXSCREENHEIGHT ];
 rend_fixed_t	distscale[ MAXSCREENWIDTH ];
 
 int32_t			span_override = Span_None;

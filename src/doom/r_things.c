@@ -459,7 +459,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		return;
 	}
 
-	xscale = FixedDiv(projection, tz);
+	xscale = FixedDiv( RendFixedToFixed( projection ), tz);
 	
 	gxt = -FixedMul(tr_x,viewsin); 
 	gyt = FixedMul(tr_y,viewcos); 
@@ -580,7 +580,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		index = xscale>>(LIGHTSCALESHIFT-detailshift);
 		if( LIGHTSCALEMUL != FRACUNIT )
 		{
-			index = FixedToInt( FixedMul( IntToFixed( index ), LIGHTSCALEMUL ) );
+			index = RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
 		}
 
 		if (index >= MAXLIGHTSCALE) 

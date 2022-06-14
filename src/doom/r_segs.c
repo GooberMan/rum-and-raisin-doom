@@ -186,9 +186,9 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 			if (!fixedcolormap)
 			{
 				index = spritecontext->spryscale>>RENDLIGHTSCALESHIFT;
-				if( LIGHTSCALEMUL != FRACUNIT )
+				if( LIGHTSCALEMUL != RENDFRACUNIT )
 				{
-					index = FixedToInt( FixedMul( IntToFixed( index ), LIGHTSCALEMUL ) );
+					index = RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
 				}
 
 				if (index >=  MAXLIGHTSCALE )
@@ -322,13 +322,13 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 		{
 			// calculate texture offset
 			angle = (wallcontext->centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
-			texturecolumn = FixedToInt( wallcontext->offset -FixedMul( renderfinetangent[angle], wallcontext->distance ) );
+			texturecolumn = RendFixedToInt( FixedToRendFixed( wallcontext->offset ) - RendFixedMul( FixedToRendFixed( renderfinetangent[angle] ), wallcontext->distance ) );
 			// calculate lighting
 			index = wallcontext->scale>>LIGHTSCALESHIFT;
 
-			if( LIGHTSCALEMUL != FRACUNIT )
+			if( LIGHTSCALEMUL != RENDFRACUNIT )
 			{
-				index = FixedToInt( FixedMul( IntToFixed( index ), LIGHTSCALEMUL ) );
+				index = RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
 			}
 
 			if (index >=  MAXLIGHTSCALE ) index = MAXLIGHTSCALE-1;
@@ -487,8 +487,8 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 //
 void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
 {
-	fixed_t				hyp;
-	fixed_t				sineval;
+	rend_fixed_t		hyp;
+	rend_fixed_t		sineval;
 	angle_t				distangle, offsetangle;
 	fixed_t				vtop;
 	int32_t				lightnum;
@@ -530,10 +530,10 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	offsetangle = M_MIN( offsetangle, ANG90 );
 
 	distangle = ANG90 - offsetangle;
-	hyp = RendFixedToFixed( R_PointToDist( bspcontext->curline->v1->rend.x, bspcontext->curline->v1->rend.y ) );
-	sineval = renderfinesine[distangle>>RENDERANGLETOFINESHIFT];
+	hyp = R_PointToDist( bspcontext->curline->v1->rend.x, bspcontext->curline->v1->rend.y );
+	sineval = FixedToRendFixed( renderfinesine[ distangle >> RENDERANGLETOFINESHIFT ] );
 	// If this value blows out, renderer go boom. Need to increase resolution of this thing
-	wallcontext->distance = FixedMul (hyp, sineval);
+	wallcontext->distance = RendFixedMul( hyp, sineval );
 	
 	bspcontext->thisdrawseg->x1 = loopcontext.startx = start;
 	bspcontext->thisdrawseg->x2 = stop;
@@ -542,14 +542,14 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 
 	// calculate scale at both ends and step
 	bspcontext->thisdrawseg->scale1 = wallcontext->scale = 
-	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle);
+	RendFixedToFixed( R_ScaleFromGlobalAngle( viewangle + xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle ) );
 
 	if (stop > start )
 	{
 		// TODO: calculate second distance? Maybe?
 		//wallcontext->distance = FixedMul( R_PointToDist (curline->v2->x, curline->v2->y), sineval );
 
-		bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle );
+		bspcontext->thisdrawseg->scale2 = RendFixedToFixed( R_ScaleFromGlobalAngle( viewangle + xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle ) );
 		bspcontext->thisdrawseg->scalestep = wallcontext->scalestep = 
 			(bspcontext->thisdrawseg->scale2 - wallcontext->scale) / (stop-start);
 	}
@@ -761,8 +761,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			offsetangle = ANG90;
 		}
 
-		sineval = finesine[offsetangle >>ANGLETOFINESHIFT];
-		wallcontext->offset = FixedMul (hyp, sineval);
+		sineval = FixedToRendFixed( finesine[ offsetangle >>ANGLETOFINESHIFT ] );
+		wallcontext->offset = RendFixedToFixed( RendFixedMul(hyp, sineval) );
 
 		if (wallcontext->normalangle-wallcontext->angle1 < ANG180)
 			wallcontext->offset = -wallcontext->offset;

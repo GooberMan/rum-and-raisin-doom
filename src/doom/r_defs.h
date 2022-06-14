@@ -540,7 +540,7 @@ typedef struct wallcontext_s
 	angle_t				angle2;
 	angle_t				centerangle;
 	fixed_t				offset;
-	fixed_t				distance;
+	rend_fixed_t		distance;
 	fixed_t				scale;
 	fixed_t				scalestep;
 	fixed_t				midtexturemid;
