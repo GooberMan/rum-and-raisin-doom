@@ -35,6 +35,7 @@
 #include "doomstat.h"
 #include "r_state.h"
 #include "m_misc.h"
+#include "m_argv.h"
 
 
 //
@@ -42,10 +43,10 @@
 //
 void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
 {
-	context->solidsegs[0].first		= -0x7fffffff;
+	context->solidsegs[0].first		= INT_MIN;
 	context->solidsegs[0].last		= mincol - 1;
 	context->solidsegs[1].first		= maxcol;
-	context->solidsegs[1].last		= 0x7fffffff;
+	context->solidsegs[1].last		= INT_MAX;
 	context->solidsegsend = context->solidsegs + 2;
 }
 
@@ -434,8 +435,8 @@ boolean R_CheckBBox( bspcontext_t* context, rend_fixed_t* bspcoord )
 	// Find the first clippost
 	//  that touches the source post
 	//  (adjacent pixels are touching).
-	angle1 = ( angle1 + ANG90) >> RENDERANGLETOFINESHIFT;
-	angle2 = ( angle2 + ANG90) >> RENDERANGLETOFINESHIFT;
+	angle1 = ( angle1 + ANG90 ) >> RENDERANGLETOFINESHIFT;
+	angle2 = ( angle2 + ANG90 ) >> RENDERANGLETOFINESHIFT;
 	sx1 = viewangletox[ angle1 ];
 	sx2 = viewangletox[ angle2 ];
 
@@ -535,27 +536,27 @@ void R_RenderBSPNode ( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	int32_t		side;
 
 	// Found a subsector?
-	if (bspnum & NF_SUBSECTOR)
+	if( bspnum & NF_SUBSECTOR )
 	{
-		if (bspnum == -1)
+		if( bspnum == -1 )
 			R_Subsector ( dest, bspcontext, planecontext, spritecontext, 0 );
 		else
-			R_Subsector ( dest, bspcontext, planecontext, spritecontext, bspnum&(~NF_SUBSECTOR) );
+			R_Subsector ( dest, bspcontext, planecontext, spritecontext, bspnum & ( ~NF_SUBSECTOR ) );
 		return;
 	}
 		
-	bsp = &nodes[bspnum];
+	bsp = &nodes[ bspnum ];
 
 	// Decide which side the view point is on.
 	side = R_PointOnSide( FixedToRendFixed( viewx ), FixedToRendFixed( viewy ), bsp);
 
 	// Recursively divide front space.
-	R_RenderBSPNode ( dest, bspcontext, planecontext, spritecontext, bsp->children[side]);
+	R_RenderBSPNode( dest, bspcontext, planecontext, spritecontext, bsp->children[ side ] );
 
 	// Possibly divide back space.
 	if ( R_CheckBBox( bspcontext, bsp->rend.bbox[ side ^ LS_Back ] ) )
 	{
-		R_RenderBSPNode ( dest, bspcontext, planecontext, spritecontext, bsp->children[side^1]);
+		R_RenderBSPNode( dest, bspcontext, planecontext, spritecontext, bsp->children[ side ^ 1 ] );
 	}
 }
 
