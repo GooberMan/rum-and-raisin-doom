@@ -397,9 +397,9 @@ typedef struct drawseg_s
 	int32_t				x1;
 	int32_t				x2;
 
-	fixed_t				scale1;
-	fixed_t				scale2;
-	fixed_t				scalestep;
+	rend_fixed_t		scale1;
+	rend_fixed_t		scale2;
+	rend_fixed_t		scalestep;
 
 	// 0=none, 1=bottom, 2=top, 3=both
 	int32_t				silhouette;
@@ -544,13 +544,13 @@ typedef struct wallcontext_s
 	angle_t				angle1;
 	angle_t				angle2;
 	angle_t				centerangle;
-	fixed_t				offset;
+	rend_fixed_t		offset;
 	rend_fixed_t		distance;
-	fixed_t				scale;
-	fixed_t				scalestep;
-	fixed_t				midtexturemid;
-	fixed_t				toptexturemid;
-	fixed_t				bottomtexturemid;
+	rend_fixed_t		scale;
+	rend_fixed_t		scalestep;
+	rend_fixed_t		midtexturemid;
+	rend_fixed_t		toptexturemid;
+	rend_fixed_t		bottomtexturemid;
 
 	lighttable_t**		lights;
 	int32_t				lightsindex;

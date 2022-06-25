@@ -54,16 +54,16 @@ typedef struct segloopcontext_s
 	boolean			markfloor;	
 	boolean			markceiling;
 
-	fixed_t			pixhigh;
-	fixed_t			pixlow;
-	fixed_t			pixhighstep;
-	fixed_t			pixlowstep;
+	rend_fixed_t	pixhigh;
+	rend_fixed_t	pixlow;
+	rend_fixed_t	pixhighstep;
+	rend_fixed_t	pixlowstep;
 
-	fixed_t			topfrac;
-	fixed_t			topstep;
+	rend_fixed_t	topfrac;
+	rend_fixed_t	topstep;
 
-	fixed_t			bottomfrac;
-	fixed_t			bottomstep;
+	rend_fixed_t	bottomfrac;
+	rend_fixed_t	bottomstep;
 
 	vertclip_t*		maskedtexturecol;
 
@@ -148,8 +148,8 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 
 	maskedtexturecol = ds->maskedtexturecol;
 
-	scalestep = FixedToRendFixed( ds->scalestep );
-	spritecontext->spryscale = FixedToRendFixed( ds->scale1 ) + (x1 - ds->x1) * scalestep;
+	scalestep = ds->scalestep;
+	spritecontext->spryscale = ds->scale1 + ( x1 - ds->x1 ) * scalestep;
 	spritecontext->mfloorclip = ds->sprbottomclip;
 	spritecontext->mceilingclip = ds->sprtopclip;
 
@@ -181,10 +181,10 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 		{
 			if (!fixedcolormap)
 			{
-				index = spritecontext->spryscale>>RENDLIGHTSCALESHIFT;
+				index = (uint32_t)( spritecontext->spryscale >> RENDLIGHTSCALESHIFT );
 				if( LIGHTSCALEMUL != RENDFRACUNIT )
 				{
-					index = RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
+					index = (uint32_t)RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
 				}
 
 				if (index >=  MAXLIGHTSCALE )
@@ -227,8 +227,8 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 //  textures.
 // CALLED: CORE LOOPING ROUTINE.
 //
-#define HEIGHTBITS		12
-#define HEIGHTUNIT		(1<<HEIGHTBITS)
+#define HEIGHTBITS		( RENDFRACBITS - 4 )
+#define HEIGHTUNIT		( 1 << HEIGHTBITS )
 
 // Detail maps show me how may reads are going to happen in any 16-byte block.
 extern byte detailmaps[16][256];
@@ -260,7 +260,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 	for ( ; currx < segcontext->stopx ; currx++)
 	{
 		// mark floor / ceiling areas
-		yl = (segcontext->topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
+		yl = (segcontext->topfrac + HEIGHTUNIT - 1 ) >> HEIGHTBITS;
 
 		// no space above wall?
 		if (yl < planecontext->ceilingclip[currx]+1)
@@ -288,7 +288,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			}
 		}
 		
-		yh = segcontext->bottomfrac>>HEIGHTBITS;
+		yh = segcontext->bottomfrac >> HEIGHTBITS;
 
 		if (yh >= planecontext->floorclip[currx])
 		{
@@ -318,9 +318,9 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 		{
 			// calculate texture offset
 			angle = (wallcontext->centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
-			texturecolumn = RendFixedToInt( FixedToRendFixed( wallcontext->offset ) - RendFixedMul( FixedToRendFixed( renderfinetangent[angle] ), wallcontext->distance ) );
+			texturecolumn = RendFixedToInt( wallcontext->offset - RendFixedMul( FixedToRendFixed( renderfinetangent[angle] ), wallcontext->distance ) );
 			// calculate lighting
-			index = wallcontext->scale>>LIGHTSCALESHIFT;
+			index = wallcontext->scale >> RENDLIGHTSCALESHIFT;
 
 			if( LIGHTSCALEMUL != RENDFRACUNIT )
 			{
@@ -338,8 +338,8 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 				colormapindex = wallcontext->lightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ wallcontext->lightsindex ][ index ] : wallcontext->lightsindex;
 			}
 			wallcolcontext.x = currx;
-			wallcolcontext.scale = FixedToRendFixed( wallcontext->scale );
-			wallcolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), wallcolcontext.scale );
+			wallcolcontext.scale = wallcontext->scale;
+			wallcolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), wallcontext->scale );
 
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 			wallcolcontext.colfunc = colfuncs[ 15 ];
@@ -355,7 +355,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			// single sided line
 			wallcolcontext.yl = yl;
 			wallcolcontext.yh = yh;
-			wallcolcontext.texturemid = FixedToRendFixed( wallcontext->midtexturemid );
+			wallcolcontext.texturemid = wallcontext->midtexturemid;
 #if R_DRAWCOLUMN_LIGHTLEVELS
 			wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
@@ -372,7 +372,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			if (segcontext->toptexture)
 			{
 				// top wall
-				mid = segcontext->pixhigh>>HEIGHTBITS;
+				mid = segcontext->pixhigh >> HEIGHTBITS;
 				segcontext->pixhigh += segcontext->pixhighstep;
 
 				if (mid >= planecontext->floorclip[currx])
@@ -384,7 +384,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 				{
 					wallcolcontext.yl = yl;
 					wallcolcontext.yh = mid;
-					wallcolcontext.texturemid = FixedToRendFixed( wallcontext->toptexturemid );
+					wallcolcontext.texturemid = wallcontext->toptexturemid;
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
@@ -411,7 +411,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			if (segcontext->bottomtexture)
 			{
 				// bottom wall
-				mid = (segcontext->pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
+				mid = (segcontext->pixlow + HEIGHTUNIT - 1 ) >> HEIGHTBITS;
 				segcontext->pixlow += segcontext->pixlowstep;
 
 				// no space above wall?
@@ -422,7 +422,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 				{
 					wallcolcontext.yl = mid;
 					wallcolcontext.yh = yh;
-					wallcolcontext.texturemid = FixedToRendFixed( wallcontext->bottomtexturemid );
+					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
@@ -481,12 +481,13 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	rend_fixed_t		hyp;
 	rend_fixed_t		sineval;
 	angle_t				distangle, offsetangle;
-	fixed_t				vtop;
 	int32_t				lightnum;
-	fixed_t				worldtop;
-	fixed_t				worldbottom;
-	fixed_t				worldhigh;
-	fixed_t				worldlow;
+	
+	rend_fixed_t		vtop;
+	rend_fixed_t		worldtop;
+	rend_fixed_t		worldbottom;
+	rend_fixed_t		worldhigh;
+	rend_fixed_t		worldlow;
 
 	segloopcontext_t	loopcontext;
 
@@ -533,27 +534,27 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	loopcontext.stopx = stop+1;
 
 	// calculate scale at both ends and step
-	bspcontext->thisdrawseg->scale1 = wallcontext->scale = 
-	RendFixedToFixed( R_ScaleFromGlobalAngle( viewangle + xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle ) );
+	bspcontext->thisdrawseg->scale1 = wallcontext->scale = R_ScaleFromGlobalAngle( viewangle + xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle );
 
 	if( stop > start )
 	{
 		// TODO: calculate second distance? Maybe?
 		//wallcontext->distance = FixedMul( R_PointToDist( curline->v2->rend.x, curline->v2->rend.y ), sineval );
 
-		bspcontext->thisdrawseg->scale2 = RendFixedToFixed( R_ScaleFromGlobalAngle( viewangle + xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle ) );
+		bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle( viewangle + xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle );
 		bspcontext->thisdrawseg->scalestep = wallcontext->scalestep = 
-			(bspcontext->thisdrawseg->scale2 - wallcontext->scale) / (stop-start);
+			( bspcontext->thisdrawseg->scale2 - wallcontext->scale ) / ( stop - start );
 	}
 	else
 	{
 		bspcontext->thisdrawseg->scale2 = bspcontext->thisdrawseg->scale1;
+		bspcontext->thisdrawseg->scalestep = wallcontext->scalestep = 0;
 	}
 
 	// calculate texture boundaries
 	//  and decide if floor / ceiling marks are needed
-	worldtop = bspcontext->frontsector->ceilingheight - viewz;
-	worldbottom = bspcontext->frontsector->floorheight - viewz;
+	worldtop = FixedToRendFixed( bspcontext->frontsector->ceilingheight - viewz );
+	worldbottom = FixedToRendFixed( bspcontext->frontsector->floorheight - viewz );
 	
 	loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
 	bspcontext->thisdrawseg->maskedtexturecol = NULL;
@@ -566,17 +567,16 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		loopcontext.markfloor = loopcontext.markceiling = true;
 		if (bspcontext->linedef->flags & ML_DONTPEGBOTTOM)
 		{
-			vtop = bspcontext->frontsector->floorheight +
-			textureheight[bspcontext->sidedef->midtexture];
+			vtop = FixedToRendFixed( bspcontext->frontsector->floorheight + textureheight[ bspcontext->sidedef->midtexture ] );
 			// bottom of texture at bottom
-			wallcontext->midtexturemid = vtop - viewz;	
+			wallcontext->midtexturemid = vtop - FixedToRendFixed( viewz );
 		}
 		else
 		{
 			// top of texture at top
 			wallcontext->midtexturemid = worldtop;
 		}
-		wallcontext->midtexturemid += bspcontext->sidedef->rowoffset;
+		wallcontext->midtexturemid += FixedToRendFixed( bspcontext->sidedef->rowoffset );
 
 		bspcontext->thisdrawseg->silhouette = SIL_BOTH;
 		bspcontext->thisdrawseg->sprtopclip = screenheightarray;
@@ -628,8 +628,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 		}
 	
-		worldhigh = bspcontext->backsector->ceilingheight - viewz;
-		worldlow = bspcontext->backsector->floorheight - viewz;
+		worldhigh = FixedToRendFixed( bspcontext->backsector->ceilingheight - viewz );
+		worldlow = FixedToRendFixed( bspcontext->backsector->floorheight - viewz );
 		
 		// hack to allow height changes in outdoor areas
 		if (bspcontext->frontsector->ceilingpic == skyflatnum 
@@ -683,12 +683,10 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			}
 			else
 			{
-				vtop =
-					bspcontext->backsector->ceilingheight
-					+ textureheight[bspcontext->sidedef->toptexture];
+				vtop = FixedToRendFixed( bspcontext->backsector->ceilingheight + textureheight[ bspcontext->sidedef->toptexture ] );
 		
 				// bottom of texture
-				wallcontext->toptexturemid = vtop - viewz;	
+				wallcontext->toptexturemid = vtop - FixedToRendFixed( viewz );
 			}
 		}
 		if (worldlow > worldbottom)
@@ -707,8 +705,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				wallcontext->bottomtexturemid = worldlow;
 			}
 		}
-		wallcontext->toptexturemid += bspcontext->sidedef->rowoffset;
-		wallcontext->bottomtexturemid += bspcontext->sidedef->rowoffset;
+		wallcontext->toptexturemid += FixedToRendFixed( bspcontext->sidedef->rowoffset );
+		wallcontext->bottomtexturemid += FixedToRendFixed( bspcontext->sidedef->rowoffset );
 	
 		// allocate space for masked texture tables
 		if (bspcontext->sidedef->midtexture)
@@ -739,12 +737,12 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		}
 
 		sineval = FixedToRendFixed( renderfinesine[ offsetangle >> RENDERANGLETOFINESHIFT ] );
-		wallcontext->offset = RendFixedToFixed( RendFixedMul(hyp, sineval) );
+		wallcontext->offset = RendFixedMul(hyp, sineval);
 
 		if (wallcontext->normalangle-wallcontext->angle1 < ANG180)
 			wallcontext->offset = -wallcontext->offset;
 
-		wallcontext->offset += bspcontext->sidedef->textureoffset + bspcontext->curline->offset;
+		wallcontext->offset += FixedToRendFixed( bspcontext->sidedef->textureoffset + bspcontext->curline->offset );
 		wallcontext->centerangle = ANG90 + viewangle - wallcontext->normalangle;
 	
 		// calculate light table
@@ -797,11 +795,11 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	worldtop >>= 4;
 	worldbottom >>= 4;
 	
-	loopcontext.topstep = -FixedMul (wallcontext->scalestep, worldtop);
-	loopcontext.topfrac = (centeryfrac>>4) - FixedMul (worldtop, wallcontext->scale);
+	loopcontext.topstep = -RendFixedMul( wallcontext->scalestep, worldtop );
+	loopcontext.topfrac = FixedToRendFixed( centeryfrac >> 4 ) - RendFixedMul( worldtop, wallcontext->scale );
 
-	loopcontext.bottomstep = -FixedMul (wallcontext->scalestep,worldbottom);
-	loopcontext.bottomfrac = (centeryfrac>>4) - FixedMul (worldbottom, wallcontext->scale);
+	loopcontext.bottomstep = -RendFixedMul( wallcontext->scalestep, worldbottom );
+	loopcontext.bottomfrac = FixedToRendFixed( centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext->scale );
 	
 	if (bspcontext->backsector)
 	{	
@@ -810,26 +808,26 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 
 		if (worldhigh < worldtop)
 		{
-			loopcontext.pixhigh = (centeryfrac>>4) - FixedMul (worldhigh, wallcontext->scale);
-			loopcontext.pixhighstep = -FixedMul (wallcontext->scalestep,worldhigh);
+			loopcontext.pixhigh = FixedToRendFixed( centeryfrac >> 4 ) - RendFixedMul( worldhigh, wallcontext->scale );
+			loopcontext.pixhighstep = -RendFixedMul( wallcontext->scalestep, worldhigh );
 		}
 	
 		if (worldlow > worldbottom)
 		{
-			loopcontext.pixlow = (centeryfrac>>4) - FixedMul (worldlow, wallcontext->scale);
-			loopcontext.pixlowstep = -FixedMul (wallcontext->scalestep,worldlow);
+			loopcontext.pixlow = FixedToRendFixed( centeryfrac >> 4) - RendFixedMul( worldlow, wallcontext->scale );
+			loopcontext.pixlowstep = -RendFixedMul( wallcontext->scalestep, worldlow );
 		}
 	}
 
 	// render it
 	if (loopcontext.markceiling)
 	{
-		planecontext->ceilingplane = R_CheckPlane ( planecontext, planecontext->ceilingplane, loopcontext.startx, loopcontext.stopx-1 );
+		planecontext->ceilingplane = R_CheckPlane( planecontext, planecontext->ceilingplane, loopcontext.startx, loopcontext.stopx-1 );
 	}
 
 	if (loopcontext.markfloor)
 	{
-		planecontext->floorplane = R_CheckPlane ( planecontext, planecontext->floorplane, loopcontext.startx, loopcontext.stopx-1 );
+		planecontext->floorplane = R_CheckPlane( planecontext, planecontext->floorplane, loopcontext.startx, loopcontext.stopx-1 );
 	}
 
 	walltime = R_RenderSegLoop( dest, planecontext, wallcontext, &loopcontext );

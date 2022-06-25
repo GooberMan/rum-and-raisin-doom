@@ -856,8 +856,8 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	int32_t			x;
 	int32_t			r1;
 	int32_t			r2;
-	fixed_t			scale;
-	fixed_t			lowscale;
+	rend_fixed_t	scale;
+	rend_fixed_t	lowscale;
 	int32_t			silhouette;
 
 #if RENDER_PERF_GRAPHING
@@ -900,8 +900,8 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 			scale = ds->scale2;
 		}
 		
-		if (scale < spr->scale
-			|| ( lowscale < spr->scale
+		if (scale < FixedToRendFixed( spr->scale )
+			|| ( lowscale < FixedToRendFixed( spr->scale )
 				&& !R_PointOnSegSide (spr->gx, spr->gy, ds->curline) ) )
 		{
 			// masked mid texture?
