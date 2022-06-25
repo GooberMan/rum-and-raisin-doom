@@ -1532,8 +1532,8 @@ void R_SetupFrame (player_t* player)
 
 	viewz = player->viewz;
 
-	viewsin = renderfinesine[viewangle>>RENDERANGLETOFINESHIFT];
-	viewcos = renderfinecosine[viewangle>>RENDERANGLETOFINESHIFT];
+	viewsin = renderfinesine[ viewangle >> RENDERANGLETOFINESHIFT ];
+	viewcos = renderfinecosine[ viewangle >> RENDERANGLETOFINESHIFT ];
 	
 	fixedcolormapindex = player->fixedcolormap;
 	if (player->fixedcolormap)

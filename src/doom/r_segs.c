@@ -156,17 +156,13 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 	// find positioning
 	if (bspcontext->curline->linedef->flags & ML_DONTPEGBOTTOM)
 	{
-		spritecolcontext.texturemid = bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight
-									? bspcontext->frontsector->floorheight
-									: bspcontext->backsector->floorheight;
+		spritecolcontext.texturemid = M_MAX( bspcontext->frontsector->floorheight, bspcontext->backsector->floorheight );
 		spritecolcontext.texturemid = FixedToRendFixed( spritecolcontext.texturemid );
 		spritecolcontext.texturemid = spritecolcontext.texturemid + FixedToRendFixed( textureheight[texnum] - viewz );
 	}
 	else
 	{
-		spritecolcontext.texturemid = bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight
-									? bspcontext->frontsector->ceilingheight
-									: bspcontext->backsector->ceilingheight;
+		spritecolcontext.texturemid = M_MIN( bspcontext->frontsector->ceilingheight, bspcontext->backsector->ceilingheight );
 		spritecolcontext.texturemid = FixedToRendFixed( spritecolcontext.texturemid );
 		spritecolcontext.texturemid = spritecolcontext.texturemid - FixedToRendFixed( viewz );
 	}
@@ -246,7 +242,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 	int32_t 		yl;
 	int32_t 		yh;
 	int32_t 		mid;
-	int32_t			texturecolumn;
+	int32_t			texturecolumn = 0;
 	int32_t			top;
 	int32_t			bottom;
 	int32_t			currx = segcontext->startx;
@@ -351,11 +347,6 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			wallcolcontext.colfunc = colfuncs[ renderSIMDcolumns ? M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) : 15 ];
 #endif
 	
-		}
-		else
-		{
-			// purely to shut up the compiler
-			texturecolumn = 0;
 		}
 
 		// draw the wall tiers
@@ -545,10 +536,10 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	bspcontext->thisdrawseg->scale1 = wallcontext->scale = 
 	RendFixedToFixed( R_ScaleFromGlobalAngle( viewangle + xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle ) );
 
-	if (stop > start )
+	if( stop > start )
 	{
 		// TODO: calculate second distance? Maybe?
-		//wallcontext->distance = FixedMul( R_PointToDist (curline->v2->x, curline->v2->y), sineval );
+		//wallcontext->distance = FixedMul( R_PointToDist( curline->v2->rend.x, curline->v2->rend.y ), sineval );
 
 		bspcontext->thisdrawseg->scale2 = RendFixedToFixed( R_ScaleFromGlobalAngle( viewangle + xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle ) );
 		bspcontext->thisdrawseg->scalestep = wallcontext->scalestep = 
@@ -556,21 +547,6 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	}
 	else
 	{
-	// UNUSED: try to fix the stretched line bug
-#if 0
-		if (wallcontext->distance < FRACUNIT/2)
-		{
-			fixed_t		trx,try;
-			fixed_t		gxt,gyt;
-
-			trx = curline->v1->x - viewx;
-			try = curline->v1->y - viewy;
-			
-			gxt = FixedMul(trx,viewcos); 
-			gyt = -FixedMul(try,viewsin); 
-			bspcontext->thisdrawseg->scale1 = FixedDiv(projection, gxt-gyt)<<detailshift;
-		}
-#endif
 		bspcontext->thisdrawseg->scale2 = bspcontext->thisdrawseg->scale1;
 	}
 
@@ -762,7 +738,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			offsetangle = ANG90;
 		}
 
-		sineval = FixedToRendFixed( finesine[ offsetangle >>ANGLETOFINESHIFT ] );
+		sineval = FixedToRendFixed( renderfinesine[ offsetangle >> RENDERANGLETOFINESHIFT ] );
 		wallcontext->offset = RendFixedToFixed( RendFixedMul(hyp, sineval) );
 
 		if (wallcontext->normalangle-wallcontext->angle1 < ANG180)
