@@ -209,27 +209,22 @@ visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum
 		lightlevel = 0;
 	}
 	
-	for (check= context->visplanes; check< context->lastvisplane; check++)
+	for( check = context->lastvisplane - 1; check >= context->visplanes; --check )
 	{
 		if (height == check->height
 			&& picnum == check->picnum
 			&& lightlevel == check->lightlevel)
 		{
-			break;
+			return check;
 		}
 	}
 			
-	if (check < context->lastvisplane)
-	{
-		return check;
-	}
-		
 	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
 	{
 		I_Error ("R_FindPlane: no more visplanes");
 	}
 		
-	context->lastvisplane++;
+	check = context->lastvisplane++;
 
 	check->height = height;
 	check->picnum = picnum;
@@ -239,7 +234,7 @@ visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum
 	check->miny = render_height;
 	check->maxy = -1;
 
-	memset (check->top,VPINDEX_INVALID,sizeof(check->top));
+	memset( check->top, VPINDEX_INVALID, sizeof( check->top ) );
 		
 	return check;
 }
