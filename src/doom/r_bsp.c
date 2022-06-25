@@ -211,24 +211,17 @@ void R_ClipPassWallSegment( vbuffer_t* dest, bspcontext_t* bspcontext, planecont
 
 void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* line )
 {
-	int32_t			x1;
-	int32_t			x2;
-	angle_t			angle1;
-	angle_t			angle2;
-	angle_t			span;
-	angle_t			tspan;
-
 	wallcontext_t	wallcontext;
 
 	bspcontext->curline = line;
 
 	// OPTIMIZE: quickly reject orthogonal back sides.
-	angle1 = R_PointToAngle (line->v1->x, line->v1->y);
-	angle2 = R_PointToAngle (line->v2->x, line->v2->y);
+	angle_t angle1 = R_PointToAngle( line->v1->rend.x, line->v1->rend.y );
+	angle_t angle2 = R_PointToAngle( line->v2->rend.x, line->v2->rend.y );
 
 	// Clip to view edges.
 	// OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
-	span = angle1 - angle2;
+	angle_t span = angle1 - angle2;
 
 	// Back side? I.e. backface culling?
 	if (span >= ANG180)
@@ -242,7 +235,7 @@ void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* plane
 	angle1 -= viewangle;
 	angle2 -= viewangle;
 	
-	tspan = angle1 + clipangle;
+	angle_t tspan = angle1 + clipangle;
 	if (tspan > 2*clipangle)
 	{
 		tspan -= 2*clipangle;
@@ -266,10 +259,10 @@ void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* plane
 
 	// The seg is in the view range,
 	// but not necessarily visible.
-	angle1 = (angle1+ANG90)>>RENDERANGLETOFINESHIFT;
-	angle2 = (angle2+ANG90)>>RENDERANGLETOFINESHIFT;
-	x1 = viewangletox[angle1];
-	x2 = viewangletox[angle2];
+	angle1 = ( angle1 + ANG90 ) >> RENDERANGLETOFINESHIFT;
+	angle2 = ( angle2 + ANG90 ) >> RENDERANGLETOFINESHIFT;
+	int32_t x1 = viewangletox[ angle1 ];
+	int32_t x2 = viewangletox[ angle2 ];
 
 	// Does not cross a pixel?
 	if (x1 == x2)
@@ -343,21 +336,21 @@ int32_t	checkcoord[12][4] =
 };
 
 
-boolean R_CheckBBox( bspcontext_t* context, fixed_t* bspcoord )
+boolean R_CheckBBox( bspcontext_t* context, rend_fixed_t* bspcoord )
 {
-	int32_t		boxx;
-	int32_t		boxy;
-	int32_t		boxpos;
+	int32_t			boxx;
+	int32_t			boxy;
+	int32_t			boxpos;
 
-	fixed_t		x1;
-	fixed_t		y1;
-	fixed_t		x2;
-	fixed_t		y2;
+	rend_fixed_t	x1;
+	rend_fixed_t	y1;
+	rend_fixed_t	x2;
+	rend_fixed_t	y2;
 
-	angle_t		angle1;
-	angle_t		angle2;
-	angle_t		span;
-	angle_t		tspan;
+	angle_t			angle1;
+	angle_t			angle2;
+	angle_t			span;
+	angle_t			tspan;
 
 	cliprange_t*	start;
 
@@ -366,87 +359,98 @@ boolean R_CheckBBox( bspcontext_t* context, fixed_t* bspcoord )
 
 	// Find the corners of the box
 	// that define the edges from current viewpoint.
-	if (viewx <= bspcoord[BOXLEFT])
+	if( FixedToRendFixed( viewx ) <= bspcoord[ BOXLEFT ] )
+	{
 		boxx = 0;
-	else if (viewx < bspcoord[BOXRIGHT])
+	}
+	else if( FixedToRendFixed( viewx ) < bspcoord[ BOXRIGHT ] )
+	{
 		boxx = 1;
+	}
 	else
+	{
 		boxx = 2;
+	}
 		
-	if (viewy >= bspcoord[BOXTOP])
+	if( FixedToRendFixed( viewy ) >= bspcoord[ BOXTOP ] )
+	{
 		boxy = 0;
-	else if (viewy > bspcoord[BOXBOTTOM])
+	}
+	else if( FixedToRendFixed( viewy ) > bspcoord[ BOXBOTTOM ] )
+	{
 		boxy = 1;
+	}
 	else
+	{
 		boxy = 2;
+	}
 		
-	boxpos = (boxy<<2)+boxx;
-	if (boxpos == 5)
+	boxpos = ( boxy << 2 ) + boxx;
+	if ( boxpos == 5 )
 	{
 		return true;
 	}
 	
-	x1 = bspcoord[checkcoord[boxpos][0]];
-	y1 = bspcoord[checkcoord[boxpos][1]];
-	x2 = bspcoord[checkcoord[boxpos][2]];
-	y2 = bspcoord[checkcoord[boxpos][3]];
+	x1 = bspcoord[ checkcoord[ boxpos ][ 0 ] ];
+	y1 = bspcoord[ checkcoord[ boxpos ][ 1 ] ];
+	x2 = bspcoord[ checkcoord[ boxpos ][ 2 ] ];
+	y2 = bspcoord[ checkcoord[ boxpos ][ 3 ] ];
 
 	// check clip list for an open space
-	angle1 = R_PointToAngle (x1, y1) - viewangle;
-	angle2 = R_PointToAngle (x2, y2) - viewangle;
+	angle1 = R_PointToAngle( x1, y1 ) - viewangle;
+	angle2 = R_PointToAngle( x2, y2 ) - viewangle;
 	
 	span = angle1 - angle2;
 
 	// Sitting on a line?
-	if (span >= ANG180)
+	if( span >= ANG180 )
 		return true;
 
 	tspan = angle1 + clipangle;
 
-	if (tspan > 2*clipangle)
+	if( tspan > 2 * clipangle )
 	{
-		tspan -= 2*clipangle;
+		tspan -= 2 * clipangle;
 
 		// Totally off the left edge?
-		if (tspan >= span)
-			return false;	
+		if( tspan >= span )
+			return false;
 
 		angle1 = clipangle;
 	}
+
 	tspan = clipangle - angle2;
-	if (tspan > 2*clipangle)
+	if( tspan > 2 * clipangle )
 	{
-		tspan -= 2*clipangle;
+		tspan -= 2 * clipangle;
 
 		// Totally off the left edge?
-		if (tspan >= span)
+		if( tspan >= span )
 			return false;
 	
 		angle2 = M_NEGATE( clipangle );
 	}
 
-
 	// Find the first clippost
 	//  that touches the source post
 	//  (adjacent pixels are touching).
-	angle1 = (angle1+ANG90)>>RENDERANGLETOFINESHIFT;
-	angle2 = (angle2+ANG90)>>RENDERANGLETOFINESHIFT;
-	sx1 = viewangletox[angle1];
-	sx2 = viewangletox[angle2];
+	angle1 = ( angle1 + ANG90) >> RENDERANGLETOFINESHIFT;
+	angle2 = ( angle2 + ANG90) >> RENDERANGLETOFINESHIFT;
+	sx1 = viewangletox[ angle1 ];
+	sx2 = viewangletox[ angle2 ];
 
 	// Does not cross a pixel.
-	if (sx1 == sx2)
+	if( sx1 == sx2 )
 		return false;
-	sx2--;
+	--sx2;
 	
 	start = context->solidsegs;
-	while (start->last < sx2)
+	while( start->last < sx2 )
 	{
 		start++;
 	}
 
-	if (sx1 >= start->first
-		&& sx2 <= start->last)
+	if( sx1 >= start->first && sx2 <= start->last )
 	{
 		// The clippost contains the new span.
 		return false;
@@ -543,13 +547,13 @@ void R_RenderBSPNode ( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	bsp = &nodes[bspnum];
 
 	// Decide which side the view point is on.
-	side = R_PointOnSide (viewx, viewy, bsp);
+	side = R_PointOnSide( FixedToRendFixed( viewx ), FixedToRendFixed( viewy ), bsp);
 
 	// Recursively divide front space.
 	R_RenderBSPNode ( dest, bspcontext, planecontext, spritecontext, bsp->children[side]);
 
 	// Possibly divide back space.
-	if ( R_CheckBBox( bspcontext, bsp->bbox[side^1] ) )
+	if ( R_CheckBBox( bspcontext, bsp->rend.bbox[ side ^ LS_Back ] ) )
 	{
 		R_RenderBSPNode ( dest, bspcontext, planecontext, spritecontext, bsp->children[side^1]);
 	}

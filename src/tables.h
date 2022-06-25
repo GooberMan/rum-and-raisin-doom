@@ -91,11 +91,11 @@ extern const angle_t tantoangle[TANTOANGLECOUNT];
 
 // Utility function, called by R_PointToAngle.
 int SlopeDiv_Render(rend_fixed_t num, rend_fixed_t den);
-// R_PointToAngle2 calls this. Search reveals it was only called by playsim, so we drop back to normal for it.
+// BSP_PointToAngle calls this. Search reveals it was only called by playsim, so we drop back to normal for it.
 int SlopeDiv_Playsim(unsigned int num, unsigned int den);
 
 // Quick hack to get Heretic/Hexen/Strife running again
-#define SlopeDiv( x, y ) SlopeDiv_Playsim( x, y )
+//#define SlopeDiv( x, y ) SlopeDiv_Playsim( x, y )
 
 // Separate render tables are wanted, since altering the other tables
 // will immediately break vanilla compatibility.

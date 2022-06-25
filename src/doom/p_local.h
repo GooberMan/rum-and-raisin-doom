@@ -130,14 +130,6 @@ void P_NoiseAlert (mobj_t* target, mobj_t* emmiter);
 //
 // P_MAPUTL
 //
-typedef struct
-{
-    fixed_t	x;
-    fixed_t	y;
-    fixed_t	dx;
-    fixed_t	dy;
-    
-} divline_t;
 
 typedef struct
 {

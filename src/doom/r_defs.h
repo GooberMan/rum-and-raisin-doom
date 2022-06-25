@@ -346,16 +346,21 @@ typedef struct rend_node_s
 	rend_fixed_t		bbox[ 2 ][ 4 ];
 } rend_node_t;
 
+typedef struct divline_s
+{
+	fixed_t	x;
+	fixed_t	y;
+	fixed_t	dx;
+	fixed_t	dy;
+} divline_t;
+
 typedef struct node_s
 {
 	rend_node_t			rend;
 
 	// Partition line.
 	// Rum and Raisin - expected to match up with divline_t. Should move that in here
-	fixed_t				x;
-	fixed_t				y;
-	fixed_t				dx;
-	fixed_t				dy;
+	divline_t			divline;
 
 	// Bounding box for each child.
 	fixed_t				bbox[2][4];

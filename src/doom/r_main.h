@@ -110,14 +110,19 @@ extern colfunc_t transcolfunc;
 // No shadow effects on floors.
 extern spanfunc_t spanfunc;
 
+typedef enum lineside_e
+{
+	LS_Front,
+	LS_Back,
+} lineside_t;
 
-//
 // Utility functions.
-int
-R_PointOnSide
-( fixed_t	x,
-  fixed_t	y,
-  node_t*	node );
+//
+// Any function starting with BSP_ is used by the playsim.
+// R_ functions are used by the renderer and operate in higher precision.
+
+lineside_t BSP_PointOnSide( fixed_t x, fixed_t y, node_t* node );
+lineside_t R_PointOnSide( rend_fixed_t x, rend_fixed_t y, node_t* node );
 
 int
 R_PointOnSegSide
@@ -125,26 +130,14 @@ R_PointOnSegSide
   fixed_t	y,
   seg_t*	line );
 
-angle_t
-R_PointToAngle
-( fixed_t	x,
-  fixed_t	y );
-
-angle_t
-R_PointToAngle2
-( fixed_t	x1,
-  fixed_t	y1,
-  fixed_t	x2,
-  fixed_t	y2 );
+angle_t R_PointToAngle( rend_fixed_t fixed_x, rend_fixed_t fixed_y );
+angle_t BSP_PointToAngle( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2 );
 
 rend_fixed_t R_PointToDist( rend_fixed_t x, rend_fixed_t y );
 
 rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle );
 
-subsector_t*
-R_PointInSubsector
-( fixed_t	x,
-  fixed_t	y );
+subsector_t* BSP_PointInSubsector( fixed_t x, fixed_t y );
 
 void
 R_AddPointToBox

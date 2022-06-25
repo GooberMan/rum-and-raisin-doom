@@ -400,7 +400,7 @@ P_SetThingPosition (mobj_t* thing)
 
     
     // link into subsector
-    ss = R_PointInSubsector (thing->x,thing->y);
+    ss = BSP_PointInSubsector( thing->x, thing->y );
     thing->subsector = ss;
     
     if ( ! (thing->flags & MF_NOSECTOR) )

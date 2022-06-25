@@ -417,7 +417,7 @@ P_NightmareRespawn (mobj_t* mobj)
     S_StartSound (mo, sfx_telept);
 
     // spawn a teleport fog at the new spot
-    ss = R_PointInSubsector (x,y); 
+    ss = BSP_PointInSubsector( x, y );
 
     mo = P_SpawnMobj (x, y, ss->sector->floorheight , MT_TFOG); 
 
@@ -643,7 +643,7 @@ void P_RespawnSpecials (void)
     y = mthing->y << FRACBITS; 
 	  
     // spawn a teleport fog at the new spot
-    ss = R_PointInSubsector (x,y); 
+    ss = BSP_PointInSubsector( x, y );
     mo = P_SpawnMobj (x, y, ss->sector->floorheight , MT_IFOG); 
     S_StartSound (mo, sfx_itmbk);
 
@@ -984,7 +984,7 @@ P_SpawnMissile
 	S_StartSound (th, th->info->seesound);
 
     th->target = source;	// where it came from
-    an = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
+    an = BSP_PointToAngle (source->x, source->y, dest->x, dest->y);
 
     // fuzzy player
     if (dest->flags & MF_SHADOW)

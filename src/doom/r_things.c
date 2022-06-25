@@ -495,7 +495,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	if (sprframe->rotate)
 	{
 		// choose a different rotation based on player view
-		ang = R_PointToAngle (thing->x, thing->y);
+		ang = R_PointToAngle( FixedToRendFixed( thing->x ), FixedToRendFixed( thing->y ) );
 		rot = (ang-thing->angle+(unsigned)(ANG45/2)*9)>>29;
 		lump = sprframe->lump[rot];
 		flip = (boolean)sprframe->flip[rot];

@@ -312,7 +312,7 @@ boolean P_CrossBSPNode (int bspnum)
 	// Redo this at some reasonable point please.
 
     // decide which side the start point is on
-    side = P_DivlineSide (strace.x, strace.y, (divline_t *)&bsp->x);
+    side = P_DivlineSide (strace.x, strace.y, &bsp->divline);
     if (side == 2)
 	side = 0;	// an "on" should cross both sides
 
@@ -321,7 +321,7 @@ boolean P_CrossBSPNode (int bspnum)
 	return false;
 	
     // the partition plane is crossed here
-    if (side == P_DivlineSide (t2x, t2y,(divline_t *)&bsp->x))
+    if (side == P_DivlineSide (t2x, t2y,&bsp->divline))
     {
 	// the line doesn't touch the other side
 	return true;

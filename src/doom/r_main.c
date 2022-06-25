@@ -84,7 +84,7 @@ int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
 boolean					renderloadbalancing = false;
 boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
-float_t					rebalancescale = 0.025;
+float_t					rebalancescale = 0.025f;
 boolean					renderthreaded = true;
 boolean					renderSIMDcolumns = false;
 atomicval_t				renderthreadCPUmelter = 0;
@@ -190,62 +190,104 @@ R_AddPointToBox
 }
 
 
-//
-// R_PointOnSide
-// Traverse BSP (sub) tree,
-//  check point against partition plane.
-// Returns side 0 (front) or 1 (back).
-//
-int
-R_PointOnSide
-( fixed_t	x,
-  fixed_t	y,
-  node_t*	node )
+lineside_t BSP_PointOnSide( fixed_t x, fixed_t y, node_t* node )
 {
-    fixed_t	dx;
-    fixed_t	dy;
-    fixed_t	left;
-    fixed_t	right;
-	
-    if (!node->dx)
-    {
-	if (x <= node->x)
-	    return node->dy > 0;
-	
-	return node->dy < 0;
-    }
-    if (!node->dy)
-    {
-	if (y <= node->y)
-	    return node->dx < 0;
-	
-	return node->dx > 0;
-    }
-	
-    dx = (x - node->x);
-    dy = (y - node->y);
-	
-    // Try to quickly decide by looking at sign bits.
-    if ( (node->dy ^ node->dx ^ dx ^ dy)&0x80000000 )
-    {
-	if  ( (node->dy ^ dx) & 0x80000000 )
+	if ( !node->divline.dx )
 	{
-	    // (left is negative)
-	    return 1;
-	}
-	return 0;
-    }
-
-    left = FixedMul ( node->dy>>FRACBITS , dx );
-    right = FixedMul ( dy , node->dx>>FRACBITS );
+		if ( x <= node->divline.x )
+		{
+			return node->divline.dy > 0 ? LS_Back : LS_Front;
+		}
 	
-    if (right < left)
-    {
-	// front side
-	return 0;
-    }
-    // back side
-    return 1;			
+		return node->divline.dy < 0 ? LS_Back : LS_Front;
+	}
+	if ( !node->divline.dy )
+	{
+		if ( y <= node->divline.y )
+		{
+			return node->divline.dx < 0 ? LS_Back : LS_Front;
+		}
+	
+		return node->divline.dx > 0 ? LS_Back : LS_Front;
+	}
+	
+	fixed_t dx		= x - node->divline.x;
+	fixed_t dy		= y - node->divline.y;
+
+	#define SIGNBIT 0x80000000
+	
+	// Try to quickly decide by looking at sign bits.
+	if( ( node->divline.dy ^ node->divline.dx ^ dx ^ dy ) & SIGNBIT )
+	{
+		if( (node->divline.dy ^ dx ) & SIGNBIT )
+		{
+			// (left is negative)
+			return LS_Back;
+		}
+		return LS_Front;
+	}
+
+	rend_fixed_t left	= FixedMul( FixedToInt( node->divline.dy ), dx );
+	rend_fixed_t right	= FixedMul( dy , FixedToInt( node->divline.dx ) );
+	
+	if (right < left)
+	{
+		// front side
+		return LS_Front;
+	}
+
+	// back side
+	return LS_Back;
+}
+
+lineside_t R_PointOnSide( rend_fixed_t x, rend_fixed_t y, node_t* node )
+{
+	if ( !node->rend.dx )
+	{
+		if ( x <= node->rend.x )
+		{
+			return node->rend.dy > 0 ? LS_Back : LS_Front;
+		}
+	
+		return node->rend.dy < 0 ? LS_Back : LS_Front;
+	}
+	if ( !node->rend.dy )
+	{
+		if ( y <= node->rend.y )
+		{
+			return node->rend.dx < 0 ? LS_Back : LS_Front;
+		}
+	
+		return node->rend.dx > 0 ? LS_Back : LS_Front;
+	}
+	
+	rend_fixed_t dx		= x - node->rend.x;
+	rend_fixed_t dy		= y - node->rend.y;
+
+	#define RENDSIGNBIT 0x8000000000000000ll
+	
+	// Try to quickly decide by looking at sign bits.
+	if( ( node->rend.dy ^ node->rend.dx ^ dx ^ dy ) & RENDSIGNBIT )
+	{
+		if( (node->rend.dy ^ dx ) & RENDSIGNBIT )
+		{
+			// (left is negative)
+			return LS_Back;
+		}
+		return LS_Front;
+	}
+
+	rend_fixed_t left	= RendFixedMul( RendFixedToInt( node->rend.dy ), dx );
+	rend_fixed_t right	= RendFixedMul( dy , RendFixedToInt( node->rend.dx ) );
+	
+	if (right < left)
+	{
+		// front side
+		return LS_Front;
+	}
+
+	// back side
+	return LS_Back;
 }
 
 
@@ -326,98 +368,92 @@ R_PointOnSegSide
 
 
 
-angle_t
-R_PointToAngle
-( fixed_t	fixed_x,
-  fixed_t	fixed_y )
-{	
-    rend_fixed_t x = FixedToRendFixed( fixed_x - viewx );
-    rend_fixed_t y = FixedToRendFixed( fixed_y - viewy );
-    
-    if ( (!x) && (!y) )
+angle_t R_PointToAngle( rend_fixed_t fixed_x, rend_fixed_t fixed_y )
+{
+	rend_fixed_t x = fixed_x - FixedToRendFixed( viewx );
+	rend_fixed_t y = fixed_y - FixedToRendFixed( viewy );
+
+	if ( !x && !y )
+	{
+		return 0;
+	}
+
+	if (x>= 0)
+	{
+		// x >=0
+		if (y>= 0)
+		{
+			// y>= 0
+
+			if (x>y)
+			{
+				// octant 0
+				return rendertantoangle[ SlopeDiv_Render(y,x) ];
+			}
+			else
+			{
+				// octant 1
+				return ANG90-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
+			}
+		}
+		else
+		{
+			// y<0
+			y = -y;
+
+			if (x>y)
+			{
+				// octant 8
+				return M_NEGATE(rendertantoangle[ SlopeDiv_Render(y,x) ]);
+			}
+			else
+			{
+				// octant 7
+				return ANG270+rendertantoangle[ SlopeDiv_Render(x,y) ];
+			}
+		}
+	}
+	else
+	{
+		// x<0
+		x = -x;
+
+		if (y>= 0)
+		{
+			// y>= 0
+			if (x>y)
+			{
+				// octant 3
+				return ANG180-1-rendertantoangle[ SlopeDiv_Render(y,x) ];
+			}
+			else
+			{
+				// octant 2
+				return ANG90+ rendertantoangle[ SlopeDiv_Render(x,y) ];
+			}
+		}
+		else
+		{
+			// y<0
+			y = -y;
+
+			if (x>y)
+			{
+				// octant 4
+				return ANG180+rendertantoangle[ SlopeDiv_Render(y,x) ];
+			}
+			else
+			{
+				// octant 5
+				return ANG270-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
+			}
+		}
+	}
 	return 0;
-
-    if (x>= 0)
-    {
-	// x >=0
-	if (y>= 0)
-	{
-	    // y>= 0
-
-	    if (x>y)
-	    {
-		// octant 0
-		return rendertantoangle[ SlopeDiv_Render(y,x) ];
-	    }
-	    else
-	    {
-		// octant 1
-		return ANG90-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
-	    }
-	}
-	else
-	{
-	    // y<0
-	    y = -y;
-
-	    if (x>y)
-	    {
-		// octant 8
-			return M_NEGATE(rendertantoangle[ SlopeDiv_Render(y,x) ]);
-	    }
-	    else
-	    {
-		// octant 7
-		return ANG270+rendertantoangle[ SlopeDiv_Render(x,y) ];
-	    }
-	}
-    }
-    else
-    {
-	// x<0
-	x = -x;
-
-	if (y>= 0)
-	{
-	    // y>= 0
-	    if (x>y)
-	    {
-		// octant 3
-		return ANG180-1-rendertantoangle[ SlopeDiv_Render(y,x) ];
-	    }
-	    else
-	    {
-		// octant 2
-		return ANG90+ rendertantoangle[ SlopeDiv_Render(x,y) ];
-	    }
-	}
-	else
-	{
-	    // y<0
-	    y = -y;
-
-	    if (x>y)
-	    {
-		// octant 4
-		return ANG180+rendertantoangle[ SlopeDiv_Render(y,x) ];
-	    }
-	    else
-	    {
-		 // octant 5
-		return ANG270-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
-	    }
-	}
-    }
-    return 0;
 }
 
 // Called by playsim. Let's bring it back to normal tantoangle
-angle_t
-R_PointToAngle2
-( fixed_t	x1,
-  fixed_t	y1,
-  fixed_t	x2,
-  fixed_t	y2 )
+angle_t BSP_PointToAngle( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2 )
 {	
     int32_t x = x2 - x1;
     int32_t y = y2 - y1;
@@ -1350,7 +1386,6 @@ static void R_RenderThreadingGraphsWindow( const char* name, void* data )
 }
 #endif // RENDER_PERF_GRAPHING
 
-#pragma optimize( "", off )
 static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 {
 	boolean WorkingBool = I_AtomicLoad( &renderthreadCPUmelter ) != 0;
@@ -1377,7 +1412,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igPopID();
 
 	igCheckbox( "Load balancing", &renderloadbalancing );
-	igSliderFloat( "Balancing scale", &rebalancescale, 0.001, 0.1, "%0.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+	igSliderFloat( "Balancing scale", &rebalancescale, 0.001f, 0.1f, "%0.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 	igCheckbox( "SIMD columns", &renderSIMDcolumns );
 	igNewLine();
 	igText( "Debug options" );
@@ -1447,36 +1482,31 @@ void R_RenderDimensionsChanged( void )
 //
 // R_PointInSubsector
 //
-subsector_t*
-R_PointInSubsector
-( fixed_t	x,
-  fixed_t	y )
+subsector_t* BSP_PointInSubsector( fixed_t x, fixed_t y )
 {
-    node_t*	node;
-    int		side;
-    int		nodenum;
+	node_t*		node;
+	int32_t		nodenum;
 
-    // single subsector is a special case
-    if (!numnodes)				
-	return subsectors;
-		
-    nodenum = numnodes-1;
+	// single subsector is a special case
+	if ( !numnodes )
+	{
+		return subsectors;
+	}
 
-    while (! (nodenum & NF_SUBSECTOR) )
-    {
-	node = &nodes[nodenum];
-	side = R_PointOnSide (x, y, node);
-	nodenum = node->children[side];
-    }
-	
-    return &subsectors[nodenum & ~NF_SUBSECTOR];
+	nodenum = numnodes - 1;
+
+	while ( !( nodenum & NF_SUBSECTOR ) )
+	{
+		node = &nodes[ nodenum ];
+		nodenum = node->children[ BSP_PointOnSide( x, y, node ) ];
+	}
+
+	return &subsectors[ nodenum & ~NF_SUBSECTOR ];
 }
 
 //
 // R_SetupFrame
 //
-#pragma optimize( "", off )
-
 double_t Lerp( double_t from, double_t to, double_t percent )
 {
 	return from + ( to - from ) * percent;
@@ -1490,7 +1520,6 @@ void R_SetupFrame (player_t* player)
 	int32_t		desiredwidth;
 
 	double_t	lastframetime;
-	double_t	currpercentage;
 	double_t	percentagedebt;
 
 	double_t	idealpercentage = 1.0 / (double_t)numusablerendercontexts;
@@ -1632,15 +1661,6 @@ void R_RenderPlayerView (player_t* player)
 
 	byte* outputcolumn;
 	byte* endcolumn;
-
-	double_t totaltime = 0;
-	hu_textline_t* debugtime;
-	hu_textline_t* debugpercent;
-
-	hu_textline_t debugtotaltime;
-	HUlib_initTextLine( &debugtotaltime, 1, V_VIRTUALHEIGHT - ST_HEIGHT - 30, hu_font, HU_FONTSTART);
-
-	char outputbuffer[ HU_MAXLINELENGTH+1 ];
 
 	R_SetupFrame (player);
 

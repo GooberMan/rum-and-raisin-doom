@@ -492,10 +492,10 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	angle_t				distangle, offsetangle;
 	fixed_t				vtop;
 	int32_t				lightnum;
-	int32_t				worldtop;
-	int32_t				worldbottom;
-	int32_t				worldhigh;
-	int32_t				worldlow;
+	fixed_t				worldtop;
+	fixed_t				worldbottom;
+	fixed_t				worldhigh;
+	fixed_t				worldlow;
 
 	segloopcontext_t	loopcontext;
 
@@ -522,11 +522,12 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	bspcontext->linedef = bspcontext->curline->linedef;
 
 	// mark the segment as visible for auto map
+	// Rum and Raisin - This should actually be atomic.
 	bspcontext->linedef->flags |= ML_MAPPED;
 
 	// calculate wallcontext->distance for scale calculation
 	wallcontext->normalangle = bspcontext->curline->angle + ANG90;
-	offsetangle = abs((int)wallcontext->normalangle-(int)wallcontext->angle1);
+	offsetangle = abs((int32_t)wallcontext->normalangle-(int32_t)wallcontext->angle1);
 	offsetangle = M_MIN( offsetangle, ANG90 );
 
 	distangle = ANG90 - offsetangle;

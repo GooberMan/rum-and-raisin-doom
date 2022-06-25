@@ -505,10 +505,10 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< _maptype, node_t >( lumpnum, offset, []( int32_t index, node_t& out, const _maptype& in )
 		{
-			out.x			= IntToFixed( Read::AsIs( in.x ) );
-			out.y			= IntToFixed( Read::AsIs( in.y ) );
-			out.dx			= IntToFixed( Read::AsIs( in.dx ) );
-			out.dy			= IntToFixed( Read::AsIs( in.dy ) );
+			out.divline.x			= IntToFixed( Read::AsIs( in.x ) );
+			out.divline.y			= IntToFixed( Read::AsIs( in.y ) );
+			out.divline.dx			= IntToFixed( Read::AsIs( in.dx ) );
+			out.divline.dy			= IntToFixed( Read::AsIs( in.dy ) );
 			for( int32_t child : iota( 0, 2 ) )
 			{
 				auto childval = Read::AsIs( in.children[ child ] );
@@ -529,23 +529,24 @@ struct DoomMapLoader
 				{
 					out.children[ child ] = childval;
 				}
+
 				for ( int32_t corner : iota( 0, 4 ) )
 				{
 					out.bbox[ child ][ corner ] = IntToFixed( Read::AsIs( in.bbox[ child ][ corner ] ) );
 				}
 			}
 
-			//out.rend.x = FixedToRendFixed( out.x );
-			//out.rend.y = FixedToRendFixed( out.y );
-			//out.rend.dx = FixedToRendFixed( out.dx );
-			//out.rend.dy = FixedToRendFixed( out.dy );
-			//for( int32_t child : iota( 0, 2 ) )
-			//{
-			//	for ( int32_t corner : iota( 0, 4 ) )
-			//	{
-			//		out.rend.bbox[ child ][ corner ] = FixedToRendFixed( out.bbox[ child ][ corner ] );
-			//	}
-			//}
+			out.rend.x			= FixedToRendFixed( out.divline.x );
+			out.rend.y			= FixedToRendFixed( out.divline.y );
+			out.rend.dx			= FixedToRendFixed( out.divline.dx );
+			out.rend.dy			= FixedToRendFixed( out.divline.dy );
+			for( int32_t child : iota( 0, 2 ) )
+			{
+				for ( int32_t corner : iota( 0, 4 ) )
+				{
+					out.rend.bbox[ child ][ corner ] = FixedToRendFixed( out.bbox[ child ][ corner ] );
+				}
+			}
 
 		} );
 

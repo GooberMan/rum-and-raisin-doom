@@ -1179,9 +1179,8 @@ G_CheckSpot
     bodyque[bodyqueslot%BODYQUESIZE] = players[playernum].mo; 
     bodyqueslot++; 
 
-    // spawn a teleport fog
-    ss = R_PointInSubsector (x,y);
-
+	// spawn a teleport fog
+	ss = BSP_PointInSubsector( x, y );
 
     // The code in the released source looks like this:
     //

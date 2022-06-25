@@ -154,7 +154,7 @@ P_TeleportMove
     tmbbox[BOXRIGHT] = x + tmthing->radius;
     tmbbox[BOXLEFT] = x - tmthing->radius;
 
-    newsubsec = R_PointInSubsector (x,y);
+    newsubsec = BSP_PointInSubsector( x, y );
     ceilingline = NULL;
     
     // The base floor/ceiling is from the subsector
@@ -423,7 +423,7 @@ P_CheckPosition
     tmbbox[BOXRIGHT] = x + tmthing->radius;
     tmbbox[BOXLEFT] = x - tmthing->radius;
 
-    newsubsec = R_PointInSubsector (x,y);
+    newsubsec = BSP_PointInSubsector( x, y );
     ceilingline = NULL;
     
     // The base floor / ceiling is from the subsector
@@ -634,12 +634,12 @@ void P_HitSlideLine (line_t* ld)
 	
     side = P_PointOnLineSide (slidemo->x, slidemo->y, ld);
 	
-    lineangle = R_PointToAngle2 (0,0, ld->dx, ld->dy);
+    lineangle = BSP_PointToAngle (0,0, ld->dx, ld->dy);
 
     if (side == 1)
 	lineangle += ANG180;
 
-    moveangle = R_PointToAngle2 (0,0, tmxmove, tmymove);
+    moveangle = BSP_PointToAngle (0,0, tmxmove, tmymove);
     deltaangle = moveangle-lineangle;
 
     if (deltaangle > ANG180)

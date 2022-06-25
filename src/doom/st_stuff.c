@@ -766,7 +766,7 @@ void ST_updateFaceWidget(void)
 	    }
 	    else
 	    {
-		badguyangle = R_PointToAngle2(plyr->mo->x,
+		badguyangle = BSP_PointToAngle(plyr->mo->x,
 					      plyr->mo->y,
 					      plyr->attacker->x,
 					      plyr->attacker->y);
