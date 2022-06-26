@@ -260,7 +260,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 	for ( ; currx < segcontext->stopx ; currx++)
 	{
 		// mark floor / ceiling areas
-		yl = (segcontext->topfrac + HEIGHTUNIT - 1 ) >> HEIGHTBITS;
+		yl = (int32_t)( (segcontext->topfrac + HEIGHTUNIT - 1 ) >> HEIGHTBITS );
 
 		// no space above wall?
 		if (yl < planecontext->ceilingclip[currx]+1)
@@ -288,7 +288,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			}
 		}
 		
-		yh = segcontext->bottomfrac >> HEIGHTBITS;
+		yh = (int32_t)( segcontext->bottomfrac >> HEIGHTBITS );
 
 		if (yh >= planecontext->floorclip[currx])
 		{
@@ -320,7 +320,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			angle = (wallcontext->centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
 			texturecolumn = RendFixedToInt( wallcontext->offset - RendFixedMul( FixedToRendFixed( renderfinetangent[angle] ), wallcontext->distance ) );
 			// calculate lighting
-			index = wallcontext->scale >> RENDLIGHTSCALESHIFT;
+			index = (int32_t)( wallcontext->scale >> RENDLIGHTSCALESHIFT );
 
 			if( LIGHTSCALEMUL != RENDFRACUNIT )
 			{
@@ -372,7 +372,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			if (segcontext->toptexture)
 			{
 				// top wall
-				mid = segcontext->pixhigh >> HEIGHTBITS;
+				mid = (int32_t)( segcontext->pixhigh >> HEIGHTBITS );
 				segcontext->pixhigh += segcontext->pixhighstep;
 
 				if (mid >= planecontext->floorclip[currx])
@@ -411,7 +411,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			if (segcontext->bottomtexture)
 			{
 				// bottom wall
-				mid = (segcontext->pixlow + HEIGHTUNIT - 1 ) >> HEIGHTBITS;
+				mid = (int32_t)( ( segcontext->pixlow + HEIGHTUNIT - 1 ) >> HEIGHTBITS );
 				segcontext->pixlow += segcontext->pixlowstep;
 
 				// no space above wall?
@@ -581,8 +581,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		bspcontext->thisdrawseg->silhouette = SIL_BOTH;
 		bspcontext->thisdrawseg->sprtopclip = screenheightarray;
 		bspcontext->thisdrawseg->sprbottomclip = negonearray;
-		bspcontext->thisdrawseg->bsilheight = INT_MAX;
-		bspcontext->thisdrawseg->tsilheight = INT_MIN;
+		bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
+		bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
 	}
 	else
 	{
@@ -593,38 +593,38 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		if (bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight)
 		{
 			bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
-			bspcontext->thisdrawseg->bsilheight = bspcontext->frontsector->floorheight;
+			bspcontext->thisdrawseg->bsilheight = FixedToRendFixed( bspcontext->frontsector->floorheight );
 		}
 		else if (bspcontext->backsector->floorheight > viewz)
 		{
 			bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
-			bspcontext->thisdrawseg->bsilheight = INT_MAX;
+			bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
 			// bspcontext->thisdrawseg->sprbottomclip = negonearray;
 		}
 	
 		if (bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight)
 		{
 			bspcontext->thisdrawseg->silhouette |= SIL_TOP;
-			bspcontext->thisdrawseg->tsilheight = bspcontext->frontsector->ceilingheight;
+			bspcontext->thisdrawseg->tsilheight = FixedToRendFixed( bspcontext->frontsector->ceilingheight );
 		}
 		else if (bspcontext->backsector->ceilingheight < viewz)
 		{
 			bspcontext->thisdrawseg->silhouette |= SIL_TOP;
-			bspcontext->thisdrawseg->tsilheight = INT_MIN;
+			bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
 			// bspcontext->thisdrawseg->sprtopclip = screenheightarray;
 		}
 		
 		if (bspcontext->backsector->ceilingheight <= bspcontext->frontsector->floorheight)
 		{
 			bspcontext->thisdrawseg->sprbottomclip = negonearray;
-			bspcontext->thisdrawseg->bsilheight = INT_MAX;
+			bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
 			bspcontext->thisdrawseg->silhouette |= SIL_BOTTOM;
 		}
 	
 		if (bspcontext->backsector->floorheight >= bspcontext->frontsector->ceilingheight)
 		{
 			bspcontext->thisdrawseg->sprtopclip = screenheightarray;
-			bspcontext->thisdrawseg->tsilheight = INT_MIN;
+			bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
 			bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 		}
 	
@@ -867,12 +867,12 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	if (loopcontext.maskedtexture && !(bspcontext->thisdrawseg->silhouette&SIL_TOP))
 	{
 		bspcontext->thisdrawseg->silhouette |= SIL_TOP;
-		bspcontext->thisdrawseg->tsilheight = INT_MIN;
+		bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
 	}
 	if (loopcontext.maskedtexture && !(bspcontext->thisdrawseg->silhouette&SIL_BOTTOM))
 	{
 		bspcontext->thisdrawseg->silhouette |= SIL_BOTTOM;
-		bspcontext->thisdrawseg->bsilheight = INT_MAX;
+		bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
 	}
 	bspcontext->thisdrawseg++;
 

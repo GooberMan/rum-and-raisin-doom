@@ -924,10 +924,10 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 		// clip this piece of the sprite
 		silhouette = ds->silhouette;
 	
-		if (spr->gz >= ds->bsilheight)
+		if( FixedToRendFixed( spr->gz ) >= ds->bsilheight )
 			silhouette &= ~SIL_BOTTOM;
 
-		if (spr->gzt <= ds->tsilheight)
+		if( FixedToRendFixed( spr->gzt ) <= ds->tsilheight )
 			silhouette &= ~SIL_TOP;
 			
 		if (silhouette == 1)

@@ -405,10 +405,10 @@ typedef struct drawseg_s
 	int32_t				silhouette;
 
 	// do not clip sprites above this
-	fixed_t				bsilheight;
+	rend_fixed_t		bsilheight;
 
 	// do not clip sprites below this
-	fixed_t				tsilheight;
+	rend_fixed_t		tsilheight;
 
 	// Pointers to lists for sprite clipping,
 	//  all three adjusted so [x1] is first value.
