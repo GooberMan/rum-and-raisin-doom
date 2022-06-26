@@ -1,6 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -40,6 +41,7 @@
 #define FRACMASK						( FRACUNIT - 1 )
 #define FRACFILL( x, o )				( ( x ) | ( ( o ) < 0 ? ( FRACMASK << ( 32 - FRACBITS ) ) : 0 ) )
 
+// 64 bit as 44.20
 #define RENDFRACBITS					20ll
 #define RENDFRACUNIT					( 1ll << RENDFRACBITS )
 #define RENDFRACMASK					( RENDFRACUNIT - 1ll )
@@ -60,10 +62,10 @@ DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
 #define IntToFixed( x ) ( ( x ) << FRACBITS )
 #define FixedToInt( x ) FRACFILL( ( x ) >> FRACBITS, ( x ) )
 
-#define IntToRendFixed( x ) ( ( (rend_fixed_t)x ) << RENDFRACBITS )
-#define RendFixedToInt( x ) RENDFRACFILL( ( x ) >> RENDFRACBITS, ( x ) )
+#define IntToRendFixed( x ) ( (rend_fixed_t)( x ) << RENDFRACBITS )
+#define RendFixedToInt( x ) ( (int32_t)RENDFRACFILL( ( x ) >> RENDFRACBITS, ( x ) ) )
 
-#define FixedToRendFixed( x ) ( ( (rend_fixed_t)x ) << RENDFRACTOFRACBITS )
+#define FixedToRendFixed( x ) ( (rend_fixed_t)( x ) << RENDFRACTOFRACBITS )
 #define RendFixedToFixed( x ) RENDFRACFILLFIXED( ( x ) >> RENDFRACTOFRACBITS, ( x ) )
 
 #else // USED_FIXED_T_TYPE
@@ -100,8 +102,19 @@ struct IntegralType< 64, Signed >
 	using type = std::conditional_t< Signed, int64_t, uint64_t >;
 };
 
+consteval bool IsPowerOf2( size_t val )
+{
+	return val != 0 && ( val & ( val - 1 ) ) == 0;
+}
+
+consteval bool IsValidBitCount( size_t val )
+{
+	return	val <= _INTEGRAL_MAX_BITS
+			&& IsPowerOf2( val );
+}
+
 template< size_t IntegralBits, size_t FractionalBits >
-requires ( IntegralBits + FractionalBits <= _INTEGRAL_MAX_BITS )
+requires IsValidBitCount( IntegralBits + FractionalBits )
 class FixedPoint
 {
 public:
@@ -110,7 +123,7 @@ public:
 	static constexpr size_t total_bits				= IntegralBits + FractionalBits;
 
 	using value_type								= IntegralType< total_bits, true >::type;
-	using working_type								= IntegralType< ( integral_bits << 1 > 64 ? 64 : integral_bits ), true >::type;
+	using working_type								= IntegralType< ( total_bits << 1 > 64 ? 64 : total_bits << 1 ), true >::type;
 
 	static constexpr value_type one					= (value_type)1 << FractionalBits;
 	static constexpr value_type fractional_mask		= one - 1;
@@ -176,7 +189,7 @@ private:
 };
 
 using fixed_t = FixedPoint< 16, 16 >;
-using rend_fixed_t = FixedPoint< 40, 24 >;
+using rend_fixed_t = FixedPoint< 44, 20 >;
 
 #endif // USE_FIXED_T_TYPE
 
