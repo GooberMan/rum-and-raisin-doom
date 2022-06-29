@@ -47,50 +47,36 @@ void AM_BindAutomapVariables( void );
 
 extern cheatseq_t cheat_amap;
 
+typedef struct mapstyleentry_s
+{
+	int32_t val;
+	int32_t flags;
+} mapstyleentry_t;
+
 typedef struct mapstyledata_s
 {
-	int32_t	background;
-	int32_t	background_flags;
-	int32_t	grid;
-	int32_t	grid_flags;
-	int32_t	areamap;
-	int32_t	areamap_flags;
-	int32_t	walls;
-	int32_t	walls_flags;
-	int32_t	teleporters;
-	int32_t	teleporters_flags;
-	int32_t	linesecrets;
-	int32_t	linesecrets_flags;
-	int32_t	sectorsecrets;
-	int32_t	sectorsecrets_flags;
-	int32_t	sectorsecretsundiscovered;
-	int32_t	sectorsecretsundiscovered_flags;
-	int32_t	floorchange;
-	int32_t	floorchange_flags;
-	int32_t	ceilingchange;
-	int32_t	ceilingchange_flags;
-	int32_t	nochange;
-	int32_t	nochange_flags;
+	mapstyleentry_t	background;
+	mapstyleentry_t	grid;
+	mapstyleentry_t	areamap;
+	mapstyleentry_t	walls;
+	mapstyleentry_t	teleporters;
+	mapstyleentry_t	linesecrets;
+	mapstyleentry_t	sectorsecrets;
+	mapstyleentry_t	sectorsecretsundiscovered;
+	mapstyleentry_t	floorchange;
+	mapstyleentry_t	ceilingchange;
+	mapstyleentry_t	nochange;
 	
-	int32_t	things;
-	int32_t	things_flags;
-	int32_t	monsters_alive;
-	int32_t	monsters_alive_flags;
-	int32_t	monsters_dead;
-	int32_t	monsters_dead_flags;
-	int32_t	items_counted;
-	int32_t	items_counted_flags;
-	int32_t items_uncounted;
-	int32_t items_uncounted_flags;
-	int32_t	projectiles;
-	int32_t	projectiles_flags;
-	int32_t	puffs;
-	int32_t	puffs_flags;
+	mapstyleentry_t	things;
+	mapstyleentry_t	monsters_alive;
+	mapstyleentry_t	monsters_dead;
+	mapstyleentry_t	items_counted;
+	mapstyleentry_t items_uncounted;
+	mapstyleentry_t	projectiles;
+	mapstyleentry_t	puffs;
 	
-	int32_t	playerarrow;
-	int32_t	playerarrow_flags;
-	int32_t	crosshair;
-	int32_t	crosshair_flags;
+	mapstyleentry_t	playerarrow;
+	mapstyleentry_t	crosshair;
 } mapstyledata_t;
 
 typedef enum mapstyle_e

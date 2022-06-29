@@ -1672,8 +1672,6 @@ static boolean IsNullKey(int key)
 
 static boolean M_DebugResponder( event_t* ev )
 {
-	int32_t currbutton;
-
 	switch( debugmenuremappingkey )
 	{
 	case Remap_Key:
@@ -2502,12 +2500,18 @@ static const char* disk_icon_strings[] =
 };
 static int32_t disk_icon_strings_count = arrlen( disk_icon_strings );
 
-static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byte* palette )
+static const ImVec2 zerosize = { 0, 0 };
+static const ImVec2 halfsize = { 0.5f, 0.5f };
+static const ImVec2 mappingsize = { 90, 22 };
+static const ImVec2 unmapbuttonsize = { 22, 22 };
+
+static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, int32_t defaultval, byte* palette )
 {
 	byte* paletteentry;
 	ImU32 colour;
 	ImVec2 coloursize;
 	ImVec2 popupspacing;
+	ImVec2 cursorpos;
 	int32_t paletteindex;
 
 	coloursize.x = coloursize.y = 22.f;
@@ -2518,9 +2522,17 @@ static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byt
 	igText( itemname );
 	igNextColumn();
 
-	paletteentry = palette + *colourindex * 3;
-	colour = IM_COL32( paletteentry[ 0 ], paletteentry[ 1 ], paletteentry[ 2 ], 255 );
+	if( *colourindex != -1 )
+	{
+		paletteentry = palette + *colourindex * 3;
+		colour = IM_COL32( paletteentry[ 0 ], paletteentry[ 1 ], paletteentry[ 2 ], 255 );
+	}
+	else
+	{
+		colour = IM_COL32_BLACK;
+	}
 
+	igGetCursorScreenPos( &cursorpos );
 	igPushStyleColorU32( ImGuiCol_Button, colour );
 	igPushStyleColorU32( ImGuiCol_Border, IM_COL32_BLACK );
 	igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 2.f );
@@ -2528,12 +2540,35 @@ static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byt
 	{
 		igOpenPopup( "colorpicker", ImGuiPopupFlags_None );
 	}
+	if( *colourindex == -1 )
+	{
+		ImGuiWindow* window = igGetCurrentWindow();
+		ImVec2 start = { cursorpos.x + 1, cursorpos.y + 1 };
+		ImVec2 end = { cursorpos.x + coloursize.x - 2, cursorpos.y + coloursize.y - 2 };
+		ImDrawList_AddLine( window->DrawList, start, end, IM_COL32( 255, 0, 0, 255 ), 2.f );
+
+		float_t temp = end.y;
+		end.y = start.y;
+		start.y = temp;
+		ImDrawList_AddLine( window->DrawList, start, end, IM_COL32( 255, 0, 0, 255 ), 2.f );
+	}
+
 	igPopStyleVar( 1 );
 	igPopStyleColor( 2 );
 
 	if( igBeginPopup( "colorpicker", ImGuiWindowFlags_None ) )
 	{
 		paletteentry = palette;
+
+		if( igButton( "Clear", zerosize ) )
+		{
+			*colourindex = -1;
+		}
+		igSameLine( 0, -1 );
+		if( igButton( "Default", zerosize ) )
+		{
+			*colourindex = defaultval;
+		}
 
 		igPushStyleVarVec2( ImGuiStyleVar_ItemSpacing, popupspacing );
 
@@ -2570,12 +2605,12 @@ static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, byt
 	igPopID();
 }
 
-static void M_DebugMenuDoMapColour( const char* itemname, int32_t* colourindex, int32_t* isblinking, byte* palette )
+static void M_DebugMenuDoMapColour( const char* itemname, mapstyleentry_t* curr, mapstyleentry_t* defaultval, byte* palette )
 {
-	M_DebugMenuDoColour( itemname, colourindex, palette );
+	M_DebugMenuDoColour( itemname, &curr->val, defaultval->val, palette );
 	igSameLine( 0, -1 );
-	igPushIDPtr( colourindex );
-	igCheckboxFlags( "Pulsating", isblinking, 0x1 );
+	igPushIDPtr( curr );
+	igCheckboxFlags( "Pulsating", &curr->flags, 0x1 );
 	igPopID();
 }
 
@@ -2760,11 +2795,6 @@ static void igPopScrollableArea()
 	igPopID();
 }
 
-static const ImVec2 zerosize = { 0, 0 };
-static const ImVec2 halfsize = { 0.5f, 0.5f };
-static const ImVec2 mappingsize = { 90, 22 };
-static const ImVec2 unmapbuttonsize = { 22, 22 };
-
 static const char* remaptypenames[ Remap_Max ] =
 {
 	"none",
@@ -2773,7 +2803,6 @@ static const char* remaptypenames[ Remap_Max ] =
 	"joystick button",
 };
 
-#pragma optimize( "", off )
 static void M_DebugMenuControlsRemapping(	const char* itemname,
 											controldesc_t* descs,
 											keyname_t* lookupnames,
@@ -2865,7 +2894,6 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	extern int32_t novert;
 
 	controlsection_t*	currsection;
-	controldesc_t*		currdesc;
 
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
@@ -2875,7 +2903,6 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	int32_t currsizeindex = 0;
 	int32_t index;
 	bool selected;
-	bool cancel;
 
 	byte* palette = NULL;
 
@@ -3237,45 +3264,47 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			{
 				palette = (byte*)W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE );
 
-				M_DebugMenuDoMapColour( "Background", &style->background, &style->background_flags, palette );
+				extern mapstyledata_t map_styledatacustomdefault;
+
+				M_DebugMenuDoMapColour( "Background", &style->background, &map_styledatacustomdefault.background, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Grid", &style->grid, &style->grid_flags, palette );
+				M_DebugMenuDoMapColour( "Grid", &style->grid, &map_styledatacustomdefault.grid, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Computer Area Map", &style->areamap, &style->areamap_flags, palette );
+				M_DebugMenuDoMapColour( "Computer Area Map", &style->areamap, &map_styledatacustomdefault.areamap, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Walls", &style->walls, &style->walls_flags, palette );
+				M_DebugMenuDoMapColour( "Walls", &style->walls, &map_styledatacustomdefault.walls, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Teleporters", &style->teleporters, &style->teleporters_flags, palette );
+				M_DebugMenuDoMapColour( "Teleporters", &style->teleporters, &map_styledatacustomdefault.teleporters, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Hidden Lines", &style->linesecrets, &style->linesecrets_flags, palette );
+				M_DebugMenuDoMapColour( "Hidden Lines", &style->linesecrets, &map_styledatacustomdefault.linesecrets, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Secrets (found)", &style->sectorsecrets, &style->sectorsecrets_flags, palette );
+				M_DebugMenuDoMapColour( "Secrets (found)", &style->sectorsecrets, &map_styledatacustomdefault.sectorsecrets, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Secrets (undiscovered)", &style->sectorsecretsundiscovered, &style->sectorsecretsundiscovered_flags, palette );
+				M_DebugMenuDoMapColour( "Secrets (undiscovered)", &style->sectorsecretsundiscovered, &map_styledatacustomdefault.sectorsecretsundiscovered, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Floor Height Diff", &style->floorchange, &style->floorchange_flags, palette );
+				M_DebugMenuDoMapColour( "Floor Height Diff", &style->floorchange, &map_styledatacustomdefault.floorchange, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Ceiling Height Diff", &style->ceilingchange, &style->ceilingchange_flags, palette );
+				M_DebugMenuDoMapColour( "Ceiling Height Diff", &style->ceilingchange, &map_styledatacustomdefault.ceilingchange, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "No Height Diff", &style->nochange, &style->nochange_flags, palette );
+				M_DebugMenuDoMapColour( "No Height Diff", &style->nochange, &map_styledatacustomdefault.nochange, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Thing", &style->things, &style->things_flags, palette );
+				M_DebugMenuDoMapColour( "Thing", &style->things, &map_styledatacustomdefault.things, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Living Monsters", &style->monsters_alive, &style->monsters_alive_flags, palette );
+				M_DebugMenuDoMapColour( "Living Monsters", &style->monsters_alive, &map_styledatacustomdefault.monsters_alive, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Dead Monsters", &style->monsters_dead, &style->monsters_dead_flags, palette );
+				M_DebugMenuDoMapColour( "Dead Monsters", &style->monsters_dead, &map_styledatacustomdefault.monsters_dead, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Items (Counted)", &style->items_counted, &style->items_counted_flags, palette );
+				M_DebugMenuDoMapColour( "Items (Counted)", &style->items_counted, &map_styledatacustomdefault.items_counted, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Items (Uncounted)", &style->items_uncounted, &style->items_uncounted_flags, palette );
+				M_DebugMenuDoMapColour( "Items (Uncounted)", &style->items_uncounted, &map_styledatacustomdefault.items_uncounted, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Projectiles", &style->projectiles, &style->projectiles_flags, palette );
+				M_DebugMenuDoMapColour( "Projectiles", &style->projectiles, &map_styledatacustomdefault.projectiles, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Puffs", &style->puffs, &style->puffs_flags, palette );
+				M_DebugMenuDoMapColour( "Puffs", &style->puffs, &map_styledatacustomdefault.puffs, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Player Arrow", &style->playerarrow, &style->playerarrow_flags, palette );
+				M_DebugMenuDoMapColour( "Player Arrow", &style->playerarrow, &map_styledatacustomdefault.playerarrow, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Crosshair", &style->crosshair, &style->crosshair_flags, palette );
+				M_DebugMenuDoMapColour( "Crosshair", &style->crosshair, &map_styledatacustomdefault.crosshair, palette );
 				igNextColumn();
 			}
 
