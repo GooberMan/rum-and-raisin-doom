@@ -565,6 +565,9 @@ typedef struct bspcontext_s
 	uint64_t			storetimetaken;
 	uint64_t			solidtimetaken;
 	uint64_t			maskedtimetaken;
+	uint64_t			findvisplanetimetaken;
+	uint64_t			addspritestimetaken;
+	uint64_t			addlinestimetaken;
 #endif // RENDER_PERF_GRAPHING
 } bspcontext_t;
 
@@ -725,6 +728,9 @@ typedef struct rendercontext_s
 	float_t				walltimes[ MAXPROFILETIMES ];
 	float_t				flattimes[ MAXPROFILETIMES ];
 	float_t				spritetimes[ MAXPROFILETIMES ];
+	float_t				findvisplanetimes[ MAXPROFILETIMES ];
+	float_t				addspritestimes[ MAXPROFILETIMES ];
+	float_t				addlinestimes[ MAXPROFILETIMES ];
 	float_t				everythingelsetimes[ MAXPROFILETIMES ];
 	float_t				frameaverage;
 	uint64_t			nextframetime;

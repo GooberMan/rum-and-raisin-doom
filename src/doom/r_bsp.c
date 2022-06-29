@@ -488,6 +488,10 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 	count = sub->numlines;
 	line = &segs[sub->firstline];
 
+#if RENDER_PERF_GRAPHING
+	uint64_t		startplanefind = I_GetTimeUS();
+#endif // RENDER_PERF_GRAPHING
+
 	if (bspcontext->frontsector->floorheight < viewz)
 	{
 		planecontext->floorplane = R_FindPlane( planecontext, bspcontext->frontsector->floorheight, bspcontext->frontsector->floorpic, bspcontext->frontsector->lightlevel);
@@ -506,14 +510,33 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 	{
 		planecontext->ceilingplane = NULL;
 	}
+
+#if RENDER_PERF_GRAPHING
+	uint64_t		endplanefind = I_GetTimeUS();
+	bspcontext->findvisplanetimetaken += ( endplanefind - startplanefind );
+
+	uint64_t		startaddsprites = I_GetTimeUS();
+#endif // RENDER_PERF_GRAPHING
 		
 	R_AddSprites( spritecontext, bspcontext->frontsector );
+
+#if RENDER_PERF_GRAPHING
+	uint64_t		endaddsprites = I_GetTimeUS();
+	bspcontext->addspritestimetaken += ( endaddsprites - startaddsprites );
+
+	uint64_t		startaddlines = I_GetTimeUS();
+#endif // RENDER_PERF_GRAPHIC
 
 	while (count--)
 	{
 		R_AddLine( dest, bspcontext, planecontext, line );
 		line++;
 	}
+
+#if RENDER_PERF_GRAPHING
+	uint64_t		endaddlines = I_GetTimeUS();
+	bspcontext->addlinestimetaken += ( endaddlines - startaddlines );
+#endif // RENDER_PERF_GRAPHING
 
 	// check for solidsegs overflow - extremely unsatisfactory!
 	if( !M_CheckParm( "-removelimits" ) && bspcontext->solidsegsend > &bspcontext->solidsegs[ VANILLA_MAXSEGS ] )

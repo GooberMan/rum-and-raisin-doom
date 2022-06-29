@@ -819,6 +819,10 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		}
 	}
 
+#if RENDER_PERF_GRAPHING
+	uint64_t visplanestart = I_GetTimeUS();
+#endif // RENDER_PERF_GRAPHING
+
 	// render it
 	if (loopcontext.markceiling)
 	{
@@ -829,6 +833,10 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	{
 		planecontext->floorplane = R_CheckPlane( planecontext, planecontext->floorplane, loopcontext.startx, loopcontext.stopx-1 );
 	}
+#if RENDER_PERF_GRAPHING
+	uint64_t visplaneend = I_GetTimeUS();
+	bspcontext->findvisplanetimetaken += ( visplaneend - visplanestart );
+#endif // RENDER_PERF_GRAPHING
 
 	walltime = R_RenderSegLoop( dest, planecontext, wallcontext, &loopcontext );
 #if RENDER_PERF_GRAPHING
@@ -879,7 +887,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 #if RENDER_PERF_GRAPHING
 	endtime = I_GetTimeUS();
 
-	bspcontext->storetimetaken += (endtime - starttime);
+	bspcontext->storetimetaken += ( ( endtime - starttime ) - ( visplaneend - visplanestart ) );
 #endif // RENDER_PERF_GRAPHING
 
 }

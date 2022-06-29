@@ -922,6 +922,9 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	rendercontext->bspcontext.storetimetaken = 0;
 	rendercontext->bspcontext.solidtimetaken = 0;
 	rendercontext->bspcontext.maskedtimetaken = 0;
+	rendercontext->bspcontext.findvisplanetimetaken = 0;
+	rendercontext->bspcontext.addspritestimetaken = 0;
+	rendercontext->bspcontext.addlinestimetaken = 0;
 
 	rendercontext->planecontext.flattimetaken = 0;
 
@@ -967,13 +970,21 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
 
 #if RENDER_PERF_GRAPHING
+	rendercontext->bspcontext.addlinestimetaken -= rendercontext->bspcontext.solidtimetaken;
+
 	rendercontext->frametimes[ rendercontext->nextframetime ] = (float_t)rendercontext->timetaken / 1000.f;
 	rendercontext->walltimes[ rendercontext->nextframetime ] = (float_t)( rendercontext->bspcontext.solidtimetaken + rendercontext->bspcontext.maskedtimetaken ) / 1000.f;
 	rendercontext->flattimes[ rendercontext->nextframetime ] = (float_t)rendercontext->planecontext.flattimetaken / 1000.f;
 	rendercontext->spritetimes[ rendercontext->nextframetime ] = (float_t)rendercontext->spritecontext.maskedtimetaken / 1000.f;
+	rendercontext->findvisplanetimes[ rendercontext->nextframetime ] = (float_t)rendercontext->bspcontext.findvisplanetimetaken / 1000.f;
+	rendercontext->addspritestimes[ rendercontext->nextframetime ] = (float_t)rendercontext->bspcontext.addspritestimetaken / 1000.f;
+	rendercontext->addlinestimes[ rendercontext->nextframetime ] = (float_t)rendercontext->bspcontext.addlinestimetaken / 1000.f;
 	rendercontext->everythingelsetimes[ rendercontext->nextframetime ] = (float_t)( rendercontext->timetaken
 																					- rendercontext->bspcontext.solidtimetaken 
 																					- rendercontext->bspcontext.maskedtimetaken
+																					- rendercontext->bspcontext.findvisplanetimetaken
+																					- rendercontext->bspcontext.addspritestimetaken
+																					- rendercontext->bspcontext.addlinestimetaken
 																					- rendercontext->planecontext.flattimetaken
 																					- rendercontext->spritecontext.maskedtimetaken ) / 1000.f;
 
@@ -1076,6 +1087,9 @@ void R_RefreshContexts( void )
 			memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
 			memset( renderdatas[ currcontext ].context.flattimes, 0, sizeof( renderdatas[ currcontext ].context.flattimes) );
 			memset( renderdatas[ currcontext ].context.spritetimes, 0, sizeof( renderdatas[ currcontext ].context.spritetimes) );
+			memset( renderdatas[ currcontext ].context.findvisplanetimes, 0, sizeof( renderdatas[ currcontext ].context.findvisplanetimes) );
+			memset( renderdatas[ currcontext ].context.addspritestimes, 0, sizeof( renderdatas[ currcontext ].context.addspritestimes) );
+			memset( renderdatas[ currcontext ].context.addlinestimes, 0, sizeof( renderdatas[ currcontext ].context.addlinestimes) );
 			memset( renderdatas[ currcontext ].context.everythingelsetimes, 0, sizeof( renderdatas[ currcontext ].context.everythingelsetimes) );
 #endif // RENDER_PERF_GRAPHING
 		}
@@ -1369,17 +1383,23 @@ static void R_RenderThreadingGraphsWindow( const char* name, void* data )
 	ptrdiff_t walltimesoff = offsetof( renderdata_t, context.walltimes );
 	ptrdiff_t flattimesoff = offsetof( renderdata_t, context.flattimes );
 	ptrdiff_t spritetimesoff = offsetof( renderdata_t, context.spritetimes );
+	ptrdiff_t findvisplanetimesoff = offsetof( renderdata_t, context.findvisplanetimes );
+	ptrdiff_t addspritestimesoff = offsetof( renderdata_t, context.addspritestimes );
+	ptrdiff_t addlinestimesoff = offsetof( renderdata_t, context.addlinestimes );
 	ptrdiff_t elsetimesoff = offsetof( renderdata_t, context.everythingelsetimes );
 	ptrdiff_t avgtimeoff = offsetof( renderdata_t, context.frameaverage );
 	ptrdiff_t nexttimeoff = offsetof( renderdata_t, context.nextframetime );
 
 	if( igBeginTabBar( "Threading tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
-		R_RenderGraphTab( "Overall",			-1,				-1,					frametimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Walls",				avgtimeoff,		frametimesoff,		walltimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Flats",				avgtimeoff,		frametimesoff,		flattimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Sprites",			avgtimeoff,		frametimesoff,		spritetimesoff,		MAXPROFILETIMES,	nexttimeoff );
-		R_RenderGraphTab( "Everything else",	avgtimeoff,		frametimesoff,		elsetimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Overall",			-1,				-1,					frametimesoff,				MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Walls",				avgtimeoff,		frametimesoff,		walltimesoff,				MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Flats",				avgtimeoff,		frametimesoff,		flattimesoff,				MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Sprites",			avgtimeoff,		frametimesoff,		spritetimesoff,				MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Find Visplanes",		avgtimeoff,		frametimesoff,		findvisplanetimesoff,		MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Add Lines",			avgtimeoff,		frametimesoff,		addlinestimesoff,			MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Add Sprites",		avgtimeoff,		frametimesoff,		addspritestimesoff,			MAXPROFILETIMES,	nexttimeoff );
+		R_RenderGraphTab( "Everything else",	avgtimeoff,		frametimesoff,		elsetimesoff,				MAXPROFILETIMES,	nexttimeoff );
 
 		igEndTabBar();
 	}
