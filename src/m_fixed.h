@@ -66,7 +66,7 @@ DOOM_C_API rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
 #define RendFixedToInt( x ) ( (int32_t)RENDFRACFILL( ( x ) >> RENDFRACBITS, ( x ) ) )
 
 #define FixedToRendFixed( x ) ( (rend_fixed_t)( x ) << RENDFRACTOFRACBITS )
-#define RendFixedToFixed( x ) RENDFRACFILLFIXED( ( x ) >> RENDFRACTOFRACBITS, ( x ) )
+#define RendFixedToFixed( x ) ( (fixed_t)RENDFRACFILLFIXED( ( x ) >> RENDFRACTOFRACBITS, ( x ) ) )
 
 #else // USED_FIXED_T_TYPE
 
