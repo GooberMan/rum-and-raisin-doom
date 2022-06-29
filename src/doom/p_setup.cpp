@@ -17,6 +17,7 @@
 //	Do all the WAD I/O, get map description,
 //	set up initial state and misc. LUTs.
 //
+
 #include <math.h>
 #include <stdlib.h>
 
@@ -456,13 +457,6 @@ struct DoomMapLoader
 			{
 				out.backsector = 0;
 			}
-
-			out.rend.dx = FixedToRendFixed( out.dx );
-			out.rend.dy = FixedToRendFixed( out.dy );
-			out.rend.bbox[ 0 ] = FixedToRendFixed( out.bbox[ 0 ] );
-			out.rend.bbox[ 1 ] = FixedToRendFixed( out.bbox[ 1 ] );
-			out.rend.bbox[ 2 ] = FixedToRendFixed( out.bbox[ 2 ] );
-			out.rend.bbox[ 3 ] = FixedToRendFixed( out.bbox[ 3 ] );
 		} );
 
 		_numlines = data.count;

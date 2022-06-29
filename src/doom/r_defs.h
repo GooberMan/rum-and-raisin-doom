@@ -198,7 +198,7 @@ typedef struct rend_side_s
 	rend_fixed_t		rowoffset;
 } rend_side_t;
 
-typedef struct
+typedef struct side_s
 {
 	rend_side_t			rend;
 
@@ -232,18 +232,8 @@ typedef enum
 	ST_NEGATIVE
 } slopetype_t;
 
-typedef struct rend_line_s
-{
-	rend_fixed_t		dx;
-	rend_fixed_t		dy;
-
-	rend_fixed_t		bbox[ 4 ];
-} rend_line_t;
-
 typedef struct line_s
 {
-	rend_line_t			rend;
-
 	int32_t				index;
 
 	// Vertices, from v1 to v2.
