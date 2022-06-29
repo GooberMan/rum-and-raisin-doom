@@ -285,8 +285,8 @@ typedef struct line_s
 typedef struct subsector_s
 {
 	sector_t*			sector;
-	uint16_t			numlines;
-	uint16_t			firstline;
+	uint32_t			numlines;
+	uint32_t			firstline;
 	int32_t				index;
 } subsector_t;
 
