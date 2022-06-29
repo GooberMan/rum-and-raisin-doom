@@ -40,7 +40,8 @@
 
 
 // player radius for movement checking
-#define PLAYERRADIUS	16*FRACUNIT
+#define PLAYERRADIUS		16 * FRACUNIT
+#define RENDPLAYERRADIUS	16 * RENDFRACUNIT
 
 // MAXRADIUS is for precalculated sector block boxes
 // the spider demon is larger,

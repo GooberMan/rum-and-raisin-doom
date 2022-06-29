@@ -3249,7 +3249,9 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 				igNextColumn();
 				M_DebugMenuDoMapColour( "Hidden Lines", &style->linesecrets, &style->linesecrets_flags, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Secret Sectors", &style->sectorsecrets, &style->sectorsecrets_flags, palette );
+				M_DebugMenuDoMapColour( "Secrets (found)", &style->sectorsecrets, &style->sectorsecrets_flags, palette );
+				igNextColumn();
+				M_DebugMenuDoMapColour( "Secrets (undiscovered)", &style->sectorsecretsundiscovered, &style->sectorsecretsundiscovered_flags, palette );
 				igNextColumn();
 				M_DebugMenuDoMapColour( "Floor Height Diff", &style->floorchange, &style->floorchange_flags, palette );
 				igNextColumn();

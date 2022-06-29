@@ -63,6 +63,8 @@ typedef struct mapstyledata_s
 	int32_t	linesecrets_flags;
 	int32_t	sectorsecrets;
 	int32_t	sectorsecrets_flags;
+	int32_t	sectorsecretsundiscovered;
+	int32_t	sectorsecretsundiscovered_flags;
 	int32_t	floorchange;
 	int32_t	floorchange_flags;
 	int32_t	ceilingchange;

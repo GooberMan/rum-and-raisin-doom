@@ -114,6 +114,7 @@ mapstyledata_t	map_styledata[ MapStyle_Max ] =
 		WALLCOLORS + WALLRANGE / 2,		0, // teleporters
 		SECRETWALLCOLORS,				0, // linesecrets
 		251,							0, // sectorsecrets
+		251,							0, // sectorsecretsundiscovered
 		FDWALLCOLORS,					0, // floorchange
 		CDWALLCOLORS,					0, // ceilingchange
 		TSWALLCOLORS,					0, // nochange
@@ -139,6 +140,7 @@ mapstyledata_t	map_styledata[ MapStyle_Max ] =
 		WALLCOLORS + WALLRANGE / 2,		0, // teleporters
 		SECRETWALLCOLORS,				0, // linesecrets
 		-1,								0, // sectorsecrets
+		-1,								0, // sectorsecretsundiscovered
 		FDWALLCOLORS,					0, // floorchange
 		CDWALLCOLORS,					0, // ceilingchange
 		TSWALLCOLORS,					0, // nochange
@@ -164,6 +166,7 @@ mapstyledata_t	map_styledata[ MapStyle_Max ] =
 		200,							0, // teleporters
 		SECRETWALLCOLORS,				0, // linesecrets
 		-1,								0, // sectorsecrets
+		-1,								0, // sectorsecretsundiscovered
 		FDWALLCOLORS,					0, // floorchange
 		CDWALLCOLORS,					0, // ceilingchange
 		TSWALLCOLORS,					0, // nochange
@@ -186,20 +189,20 @@ mapstyledata_t	map_styledata[ MapStyle_Max ] =
 #define AM_NUMMARKPOINTS 10
 
 // scale on entry
-#define INITSCALEMTOF (.2*FRACUNIT)
+#define INITSCALEMTOF (.2*RENDFRACUNIT)
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
 #define F_PANINC	( 4 * render_width / 320 )
 // how much zoom-in per tic
 // goes to 2x in 1 second
-#define M_ZOOMIN        ((int) (1.02*FRACUNIT))
+#define M_ZOOMIN        ((int) (1.02*RENDFRACUNIT))
 // how much zoom-out per tic
 // pulls out to 0.5x in 1 second
-#define M_ZOOMOUT       ((int) (FRACUNIT/1.02))
+#define M_ZOOMOUT       ((int) (RENDFRACUNIT/1.02))
 
 // translates between frame-buffer and map distances
-#define FTOM(x) FixedMul(((x)<<FRACBITS),scale_ftom)
-#define MTOF(x) (FixedMul((x),scale_mtof)>>FRACBITS)
+#define FTOM(x) RendFixedMul( IntToRendFixed(x), scale_ftom )
+#define MTOF(x) RendFixedToInt( RendFixedMul( (x) ,scale_mtof ) )
 // translates between frame-buffer and map coordinates
 #define CXMTOF(x)  (f_x + MTOF((x)-m_x))
 #define CYMTOF(y)  (f_y + (f_h - MTOF((y)-m_y))) 
@@ -219,7 +222,7 @@ typedef struct
 
 typedef struct
 {
-    fixed_t		x,y;
+    rend_fixed_t		x,y;
 } mpoint_t;
 
 typedef struct
@@ -229,7 +232,7 @@ typedef struct
 
 typedef struct
 {
-    fixed_t slp, islp;
+    rend_fixed_t slp, islp;
 } islope_t;
 
 
@@ -239,7 +242,7 @@ typedef struct
 //  A line drawing of the player pointing right,
 //   starting from the middle.
 //
-#define R ((8*PLAYERRADIUS)/7)
+#define R ((8*RENDPLAYERRADIUS)/7)
 mline_t player_arrow[] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/4 } },  // ----->
@@ -251,7 +254,7 @@ mline_t player_arrow[] = {
 };
 #undef R
 
-#define R ((8*PLAYERRADIUS)/7)
+#define R ((8*RENDPLAYERRADIUS)/7)
 mline_t cheat_player_arrow[] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/6 } },  // ----->
@@ -272,19 +275,19 @@ mline_t cheat_player_arrow[] = {
 };
 #undef R
 
-#define R (FRACUNIT)
+#define R (RENDFRACUNIT)
 mline_t triangle_guy[] = {
-    { { (fixed_t)(-.867*R), (fixed_t)(-.5*R) }, { (fixed_t)(.867*R ), (fixed_t)(-.5*R) } },
-    { { (fixed_t)(.867*R ), (fixed_t)(-.5*R) }, { (fixed_t)(0      ), (fixed_t)(R    ) } },
-    { { (fixed_t)(0      ), (fixed_t)(R    ) }, { (fixed_t)(-.867*R), (fixed_t)(-.5*R) } }
+    { { (rend_fixed_t)(-.867*R), (rend_fixed_t)(-.5*R) }, { (rend_fixed_t)(.867*R ), (rend_fixed_t)(-.5*R) } },
+    { { (rend_fixed_t)(.867*R ), (rend_fixed_t)(-.5*R) }, { (rend_fixed_t)(0      ), (rend_fixed_t)(R    ) } },
+    { { (rend_fixed_t)(0      ), (rend_fixed_t)(R    ) }, { (rend_fixed_t)(-.867*R), (rend_fixed_t)(-.5*R) } }
 };
 #undef R
 
-#define R (FRACUNIT)
+#define R (RENDFRACUNIT)
 mline_t thintriangle_guy[] = {
-    { { (fixed_t)(-.5*R), (fixed_t)(-.7*R) }, { (fixed_t)(R    ), (fixed_t)(0    ) } },
-    { { (fixed_t)(R    ), (fixed_t)(0    ) }, { (fixed_t)(-.5*R), (fixed_t)(.7*R ) } },
-    { { (fixed_t)(-.5*R), (fixed_t)(.7*R ) }, { (fixed_t)(-.5*R), (fixed_t)(-.7*R) } }
+    { { (rend_fixed_t)(-.5*R), (rend_fixed_t)(-.7*R) }, { (rend_fixed_t)(R    ), (rend_fixed_t)(0    ) } },
+    { { (rend_fixed_t)(R    ), (rend_fixed_t)(0    ) }, { (rend_fixed_t)(-.5*R), (rend_fixed_t)(.7*R ) } },
+    { { (rend_fixed_t)(-.5*R), (rend_fixed_t)(.7*R ) }, { (rend_fixed_t)(-.5*R), (rend_fixed_t)(-.7*R) } }
 };
 #undef R
 
@@ -309,46 +312,46 @@ static pixel_t*	fb; 			// pseudo-frame buffer
 static int 	amclock;
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)
-static fixed_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
-static fixed_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
+static rend_fixed_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
+static rend_fixed_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
 
-static fixed_t 	m_x, m_y;   // LL x,y where the window is on the map (map coords)
-static fixed_t 	m_x2, m_y2; // UR x,y where the window is on the map (map coords)
+static rend_fixed_t 	m_x, m_y;   // LL x,y where the window is on the map (map coords)
+static rend_fixed_t 	m_x2, m_y2; // UR x,y where the window is on the map (map coords)
 
 //
 // width/height of window on map (map coords)
 //
-static fixed_t 	m_w;
-static fixed_t	m_h;
+static rend_fixed_t		m_w;
+static rend_fixed_t		m_h;
 
 // based on level size
-static fixed_t 	min_x;
-static fixed_t	min_y; 
-static fixed_t 	max_x;
-static fixed_t  max_y;
+static rend_fixed_t		min_x;
+static rend_fixed_t		min_y; 
+static rend_fixed_t		max_x;
+static rend_fixed_t		max_y;
 
-static fixed_t 	max_w; // max_x-min_x,
-static fixed_t  max_h; // max_y-min_y
+static rend_fixed_t		max_w; // max_x-min_x,
+static rend_fixed_t		max_h; // max_y-min_y
 
 // based on player size
-static fixed_t 	min_w;
-static fixed_t  min_h;
+static rend_fixed_t		min_w;
+static rend_fixed_t		min_h;
 
 
-static fixed_t 	min_scale_mtof; // used to tell when to stop zooming out
-static fixed_t 	max_scale_mtof; // used to tell when to stop zooming in
+static rend_fixed_t 	min_scale_mtof; // used to tell when to stop zooming out
+static rend_fixed_t 	max_scale_mtof; // used to tell when to stop zooming in
 
 // old stuff for recovery later
-static fixed_t old_m_w, old_m_h;
-static fixed_t old_m_x, old_m_y;
+static rend_fixed_t old_m_w, old_m_h;
+static rend_fixed_t old_m_x, old_m_y;
 
 // old location used by the Follower routine
 static mpoint_t f_oldloc;
 
 // used by MTOF to scale from map-to-frame-buffer coords
-static fixed_t scale_mtof = (fixed_t)INITSCALEMTOF;
+static rend_fixed_t scale_mtof = (rend_fixed_t)INITSCALEMTOF;
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
-static fixed_t scale_ftom;
+static rend_fixed_t scale_ftom;
 
 static player_t *plr; // the player represented by an arrow
 
@@ -372,46 +375,48 @@ static int32_t lineheight = 1;
 
 void AM_BindAutomapVariables( void )
 {
-	M_BindIntVariable( "map_style",							&map_style );
-	M_BindIntVariable( "map_fill",							&map_fill );
-	M_BindIntVariable( "mapcolor_background",				&map_styledata[ MapStyle_Custom ].background );
-	M_BindIntVariable( "mapcolor_background_flags",			&map_styledata[ MapStyle_Custom ].background_flags );
-	M_BindIntVariable( "mapcolor_grid",						&map_styledata[ MapStyle_Custom ].grid );
-	M_BindIntVariable( "mapcolor_grid_flags",				&map_styledata[ MapStyle_Custom ].grid_flags );
-	M_BindIntVariable( "mapcolor_areamap",					&map_styledata[ MapStyle_Custom ].areamap );
-	M_BindIntVariable( "mapcolor_areamap_flags",			&map_styledata[ MapStyle_Custom ].areamap_flags );
-	M_BindIntVariable( "mapcolor_walls",					&map_styledata[ MapStyle_Custom ].walls );
-	M_BindIntVariable( "mapcolor_walls_flags",				&map_styledata[ MapStyle_Custom ].walls_flags );
-	M_BindIntVariable( "mapcolor_teleporters",				&map_styledata[ MapStyle_Custom ].teleporters );
-	M_BindIntVariable( "mapcolor_teleporters_flags",		&map_styledata[ MapStyle_Custom ].teleporters_flags );
-	M_BindIntVariable( "mapcolor_linesecrets",				&map_styledata[ MapStyle_Custom ].linesecrets );
-	M_BindIntVariable( "mapcolor_linesecrets_flags",		&map_styledata[ MapStyle_Custom ].linesecrets_flags );
-	M_BindIntVariable( "mapcolor_sectorsecrets",			&map_styledata[ MapStyle_Custom ].sectorsecrets );
-	M_BindIntVariable( "mapcolor_sectorsecrets_flags",		&map_styledata[ MapStyle_Custom ].sectorsecrets_flags );
-	M_BindIntVariable( "mapcolor_floorchange",				&map_styledata[ MapStyle_Custom ].floorchange );
-	M_BindIntVariable( "mapcolor_floorchange_flags",		&map_styledata[ MapStyle_Custom ].floorchange_flags );
-	M_BindIntVariable( "mapcolor_ceilingchange",			&map_styledata[ MapStyle_Custom ].ceilingchange );
-	M_BindIntVariable( "mapcolor_ceilingchange_flags",		&map_styledata[ MapStyle_Custom ].ceilingchange_flags );
-	M_BindIntVariable( "mapcolor_nochange",					&map_styledata[ MapStyle_Custom ].nochange );
-	M_BindIntVariable( "mapcolor_nochange_flags",			&map_styledata[ MapStyle_Custom ].nochange_flags );
-	M_BindIntVariable( "mapcolor_things",					&map_styledata[ MapStyle_Custom ].things );
-	M_BindIntVariable( "mapcolor_things_flags",				&map_styledata[ MapStyle_Custom ].things_flags );
-	M_BindIntVariable( "mapcolor_monsters_alive",			&map_styledata[ MapStyle_Custom ].monsters_alive );
-	M_BindIntVariable( "mapcolor_monsters_alive_flags",		&map_styledata[ MapStyle_Custom ].monsters_alive_flags );
-	M_BindIntVariable( "mapcolor_monsters_dead",			&map_styledata[ MapStyle_Custom ].monsters_dead );
-	M_BindIntVariable( "mapcolor_monsters_dead_flags",		&map_styledata[ MapStyle_Custom ].monsters_dead_flags );
-	M_BindIntVariable( "mapcolor_items_counted",			&map_styledata[ MapStyle_Custom ].items_counted );
-	M_BindIntVariable( "mapcolor_items_counted_flags",		&map_styledata[ MapStyle_Custom ].items_counted_flags );
-	M_BindIntVariable( "mapcolor_items_uncounted",			&map_styledata[ MapStyle_Custom ].items_uncounted );
-	M_BindIntVariable( "mapcolor_items_uncounted_flags",	&map_styledata[ MapStyle_Custom ].items_uncounted_flags );
-	M_BindIntVariable( "mapcolor_projectiles",				&map_styledata[ MapStyle_Custom ].projectiles );
-	M_BindIntVariable( "mapcolor_projectiles_flags",		&map_styledata[ MapStyle_Custom ].projectiles_flags );
-	M_BindIntVariable( "mapcolor_puffs",					&map_styledata[ MapStyle_Custom ].puffs );
-	M_BindIntVariable( "mapcolor_puffs_flags",				&map_styledata[ MapStyle_Custom ].puffs_flags );
-	M_BindIntVariable( "mapcolor_playerarrow",				&map_styledata[ MapStyle_Custom ].playerarrow );
-	M_BindIntVariable( "mapcolor_playerarrow_flags",		&map_styledata[ MapStyle_Custom ].playerarrow_flags );
-	M_BindIntVariable( "mapcolor_crosshair",				&map_styledata[ MapStyle_Custom ].crosshair );
-	M_BindIntVariable( "mapcolor_crosshair_flags",			&map_styledata[ MapStyle_Custom ].crosshair_flags );
+	M_BindIntVariable( "map_style",										&map_style );
+	M_BindIntVariable( "map_fill",										&map_fill );
+	M_BindIntVariable( "mapcolor_background",							&map_styledata[ MapStyle_Custom ].background );
+	M_BindIntVariable( "mapcolor_background_flags",						&map_styledata[ MapStyle_Custom ].background_flags );
+	M_BindIntVariable( "mapcolor_grid",									&map_styledata[ MapStyle_Custom ].grid );
+	M_BindIntVariable( "mapcolor_grid_flags",							&map_styledata[ MapStyle_Custom ].grid_flags );
+	M_BindIntVariable( "mapcolor_areamap",								&map_styledata[ MapStyle_Custom ].areamap );
+	M_BindIntVariable( "mapcolor_areamap_flags",						&map_styledata[ MapStyle_Custom ].areamap_flags );
+	M_BindIntVariable( "mapcolor_walls",								&map_styledata[ MapStyle_Custom ].walls );
+	M_BindIntVariable( "mapcolor_walls_flags",							&map_styledata[ MapStyle_Custom ].walls_flags );
+	M_BindIntVariable( "mapcolor_teleporters",							&map_styledata[ MapStyle_Custom ].teleporters );
+	M_BindIntVariable( "mapcolor_teleporters_flags",					&map_styledata[ MapStyle_Custom ].teleporters_flags );
+	M_BindIntVariable( "mapcolor_linesecrets",							&map_styledata[ MapStyle_Custom ].linesecrets );
+	M_BindIntVariable( "mapcolor_linesecrets_flags",					&map_styledata[ MapStyle_Custom ].linesecrets_flags );
+	M_BindIntVariable( "mapcolor_sectorsecrets",						&map_styledata[ MapStyle_Custom ].sectorsecrets );
+	M_BindIntVariable( "mapcolor_sectorsecrets_flags",					&map_styledata[ MapStyle_Custom ].sectorsecrets_flags );
+	M_BindIntVariable( "mapcolor_sectorsecretsundiscovered",			&map_styledata[ MapStyle_Custom ].sectorsecretsundiscovered );
+	M_BindIntVariable( "mapcolor_sectorsecretsundiscovered_flags",		&map_styledata[ MapStyle_Custom ].sectorsecretsundiscovered_flags );
+	M_BindIntVariable( "mapcolor_floorchange",							&map_styledata[ MapStyle_Custom ].floorchange );
+	M_BindIntVariable( "mapcolor_floorchange_flags",					&map_styledata[ MapStyle_Custom ].floorchange_flags );
+	M_BindIntVariable( "mapcolor_ceilingchange",						&map_styledata[ MapStyle_Custom ].ceilingchange );
+	M_BindIntVariable( "mapcolor_ceilingchange_flags",					&map_styledata[ MapStyle_Custom ].ceilingchange_flags );
+	M_BindIntVariable( "mapcolor_nochange",								&map_styledata[ MapStyle_Custom ].nochange );
+	M_BindIntVariable( "mapcolor_nochange_flags",						&map_styledata[ MapStyle_Custom ].nochange_flags );
+	M_BindIntVariable( "mapcolor_things",								&map_styledata[ MapStyle_Custom ].things );
+	M_BindIntVariable( "mapcolor_things_flags",							&map_styledata[ MapStyle_Custom ].things_flags );
+	M_BindIntVariable( "mapcolor_monsters_alive",						&map_styledata[ MapStyle_Custom ].monsters_alive );
+	M_BindIntVariable( "mapcolor_monsters_alive_flags",					&map_styledata[ MapStyle_Custom ].monsters_alive_flags );
+	M_BindIntVariable( "mapcolor_monsters_dead",						&map_styledata[ MapStyle_Custom ].monsters_dead );
+	M_BindIntVariable( "mapcolor_monsters_dead_flags",					&map_styledata[ MapStyle_Custom ].monsters_dead_flags );
+	M_BindIntVariable( "mapcolor_items_counted",						&map_styledata[ MapStyle_Custom ].items_counted );
+	M_BindIntVariable( "mapcolor_items_counted_flags",					&map_styledata[ MapStyle_Custom ].items_counted_flags );
+	M_BindIntVariable( "mapcolor_items_uncounted",						&map_styledata[ MapStyle_Custom ].items_uncounted );
+	M_BindIntVariable( "mapcolor_items_uncounted_flags",				&map_styledata[ MapStyle_Custom ].items_uncounted_flags );
+	M_BindIntVariable( "mapcolor_projectiles",							&map_styledata[ MapStyle_Custom ].projectiles );
+	M_BindIntVariable( "mapcolor_projectiles_flags",					&map_styledata[ MapStyle_Custom ].projectiles_flags );
+	M_BindIntVariable( "mapcolor_puffs",								&map_styledata[ MapStyle_Custom ].puffs );
+	M_BindIntVariable( "mapcolor_puffs_flags",							&map_styledata[ MapStyle_Custom ].puffs_flags );
+	M_BindIntVariable( "mapcolor_playerarrow",							&map_styledata[ MapStyle_Custom ].playerarrow );
+	M_BindIntVariable( "mapcolor_playerarrow_flags",					&map_styledata[ MapStyle_Custom ].playerarrow_flags );
+	M_BindIntVariable( "mapcolor_crosshair",							&map_styledata[ MapStyle_Custom ].crosshair );
+	M_BindIntVariable( "mapcolor_crosshair_flags",						&map_styledata[ MapStyle_Custom ].crosshair_flags );
 }
 
 // Calculates the slope and slope according to the x-axis of a line
@@ -423,14 +428,14 @@ AM_getIslope
 ( mline_t*	ml,
   islope_t*	is )
 {
-    int dx, dy;
+    rend_fixed_t dx, dy;
 
     dy = ml->a.y - ml->b.y;
     dx = ml->b.x - ml->a.x;
-    if (!dy) is->islp = (dx<0?-INT_MAX:INT_MAX);
-    else is->islp = FixedDiv(dx, dy);
-    if (!dx) is->slp = (dy<0?-INT_MAX:INT_MAX);
-    else is->slp = FixedDiv(dy, dx);
+    if (!dy) is->islp = (dx<0?-LLONG_MAX:LLONG_MAX);
+    else is->islp = RendFixedDiv(dx, dy);
+    if (!dx) is->slp = (dy<0?-LLONG_MAX:LLONG_MAX);
+    else is->slp = RendFixedDiv(dy, dx);
 
 }
 
@@ -473,15 +478,15 @@ void AM_restoreScaleAndLoc(void)
 	m_x = old_m_x;
 	m_y = old_m_y;
     } else {
-	m_x = plr->mo->x - m_w/2;
-	m_y = plr->mo->y - m_h/2;
+	m_x = FixedToRendFixed( plr->mo->x ) - m_w/2;
+	m_y = FixedToRendFixed( plr->mo->y ) - m_h/2;
     }
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;
 
     // Change the scaling multipliers
-    scale_mtof = FixedDiv(f_w<<FRACBITS, m_w);
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_mtof = RendFixedDiv( IntToRendFixed( f_w ), m_w);
+    scale_ftom = RendFixedDiv( RENDFRACUNIT, scale_mtof );
 }
 
 //
@@ -507,23 +512,23 @@ void AM_addMark(void)
 void AM_findMinMaxBoundaries(void)
 {
     int i;
-    fixed_t a;
-    fixed_t b;
+    rend_fixed_t a;
+    rend_fixed_t b;
 
-    min_x = min_y =  INT_MAX;
-    max_x = max_y = -INT_MAX;
+    min_x = min_y =  LLONG_MAX;
+    max_x = max_y = -LLONG_MAX;
   
     for (i=0;i<numvertexes;i++)
     {
-	if (vertexes[i].x < min_x)
-	    min_x = vertexes[i].x;
-	else if (vertexes[i].x > max_x)
-	    max_x = vertexes[i].x;
+	if (vertexes[i].rend.x < min_x)
+	    min_x = vertexes[i].rend.x;
+	else if (vertexes[i].rend.x > max_x)
+	    max_x = vertexes[i].rend.x;
     
-	if (vertexes[i].y < min_y)
-	    min_y = vertexes[i].y;
-	else if (vertexes[i].y > max_y)
-	    max_y = vertexes[i].y;
+	if (vertexes[i].rend.y < min_y)
+	    min_y = vertexes[i].rend.y;
+	else if (vertexes[i].rend.y > max_y)
+	    max_y = vertexes[i].rend.y;
     }
   
     max_w = max_x - min_x;
@@ -532,11 +537,11 @@ void AM_findMinMaxBoundaries(void)
     min_w = 2*PLAYERRADIUS; // const? never changed?
     min_h = 2*PLAYERRADIUS;
 
-    a = FixedDiv(f_w<<FRACBITS, max_w);
-    b = FixedDiv(f_h<<FRACBITS, max_h);
+    a = RendFixedDiv( IntToRendFixed( f_w ), max_w);
+    b = RendFixedDiv( IntToRendFixed( f_h ), max_h);
   
     min_scale_mtof = a < b ? a : b;
-    max_scale_mtof = FixedDiv(f_h<<FRACBITS, 2*PLAYERRADIUS);
+    max_scale_mtof = RendFixedDiv( IntToRendFixed( f_h ), 2*PLAYERRADIUS);
 
 }
 
@@ -549,7 +554,7 @@ void AM_changeWindowLoc(void)
     if (m_paninc.x || m_paninc.y)
     {
 	followplayer = 0;
-	f_oldloc.x = INT_MAX;
+	f_oldloc.x = LLONG_MAX;
     }
 
     m_x += m_paninc.x;
@@ -580,15 +585,15 @@ void AM_initVariables(void)
     automapactive = true;
     fb = I_VideoBuffer;
 
-    f_oldloc.x = INT_MAX;
+    f_oldloc.x = LLONG_MAX;
     amclock = 0;
     lightlev = 0;
 	lightnexttic = lightticlength;
 	lightlevelscnt = 0;
 
     m_paninc.x = m_paninc.y = 0;
-    ftom_zoommul = FRACUNIT;
-    mtof_zoommul = FRACUNIT;
+    ftom_zoommul = RENDFRACUNIT;
+    mtof_zoommul = RENDFRACUNIT;
 
     m_w = FTOM(f_w);
     m_h = FTOM(f_h);
@@ -612,8 +617,8 @@ void AM_initVariables(void)
         }
     }
 
-    m_x = plr->mo->x - m_w/2;
-    m_y = plr->mo->y - m_h/2;
+    m_x = FixedToRendFixed( plr->mo->x ) - m_w/2;
+    m_y = FixedToRendFixed( plr->mo->y ) - m_h/2;
     AM_changeWindowLoc();
 
     // for saving & restoring
@@ -675,10 +680,10 @@ void AM_LevelInit(void)
     AM_clearMarks();
 
     AM_findMinMaxBoundaries();
-    scale_mtof = FixedDiv(min_scale_mtof, (int) (0.7*FRACUNIT));
+    scale_mtof = RendFixedDiv(min_scale_mtof, (int) (0.7*RENDFRACUNIT));
     if (scale_mtof > max_scale_mtof)
 	scale_mtof = min_scale_mtof;
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_ftom = RendFixedDiv(RENDFRACUNIT, scale_mtof);
 }
 
 
@@ -722,7 +727,7 @@ void AM_Start (void)
 void AM_minOutWindowScale(void)
 {
     scale_mtof = min_scale_mtof;
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_ftom = RendFixedDiv(RENDFRACUNIT, scale_mtof);
     AM_activateNewScale();
 }
 
@@ -732,7 +737,7 @@ void AM_minOutWindowScale(void)
 void AM_maxOutWindowScale(void)
 {
     scale_mtof = max_scale_mtof;
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_ftom = RendFixedDiv(RENDFRACUNIT, scale_mtof);
     AM_activateNewScale();
 }
 
@@ -835,7 +840,7 @@ AM_Responder
         else if (key == key_map_follow)
         {
             followplayer = !followplayer;
-            f_oldloc.x = INT_MAX;
+            f_oldloc.x = LLONG_MAX;
             if (followplayer)
                 plr->message = DEH_String(AMSTR_FOLLOWON);
             else
@@ -896,8 +901,8 @@ AM_Responder
         }
         else if (key == key_map_zoomout || key == key_map_zoomin)
         {
-            mtof_zoommul = FRACUNIT;
-            ftom_zoommul = FRACUNIT;
+            mtof_zoommul = RENDFRACUNIT;
+            ftom_zoommul = RENDFRACUNIT;
         }
     }
 
@@ -913,8 +918,8 @@ void AM_changeWindowScale(void)
 {
 
     // Change the scaling multipliers
-    scale_mtof = FixedMul(scale_mtof, mtof_zoommul);
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_mtof = RendFixedMul(scale_mtof, mtof_zoommul);
+    scale_ftom = RendFixedDiv(RENDFRACUNIT, scale_mtof);
 
     if (scale_mtof < min_scale_mtof)
 	AM_minOutWindowScale();
@@ -931,14 +936,14 @@ void AM_changeWindowScale(void)
 void AM_doFollowPlayer(void)
 {
 
-    if (f_oldloc.x != plr->mo->x || f_oldloc.y != plr->mo->y)
+    if (f_oldloc.x != FixedToRendFixed( plr->mo->x ) || f_oldloc.y != FixedToRendFixed( plr->mo->y ) )
     {
-	m_x = FTOM(MTOF(plr->mo->x)) - m_w/2;
-	m_y = FTOM(MTOF(plr->mo->y)) - m_h/2;
+	m_x = FTOM( MTOF( FixedToRendFixed( plr->mo->x ) ) ) - m_w/2;
+	m_y = FTOM( MTOF( FixedToRendFixed( plr->mo->y ) ) ) - m_h/2;
 	m_x2 = m_x + m_w;
 	m_y2 = m_y + m_h;
-	f_oldloc.x = plr->mo->x;
-	f_oldloc.y = plr->mo->y;
+	f_oldloc.x = FixedToRendFixed( plr->mo->x );
+	f_oldloc.y = FixedToRendFixed( plr->mo->y );
 
 	//  m_x = FTOM(MTOF(plr->mo->x - m_w/2));
 	//  m_y = FTOM(MTOF(plr->mo->y - m_h/2));
@@ -991,7 +996,7 @@ void AM_Ticker (void)
 	}
 
 	// Change the zoom if necessary
-	if (ftom_zoommul != FRACUNIT)
+	if (ftom_zoommul != RENDFRACUNIT)
 	{
 		AM_changeWindowScale();
 	}
@@ -1276,43 +1281,43 @@ void AM_drawMline( mline_t* ml, int color )
 //
 void AM_drawGrid(int color)
 {
-    fixed_t x, y;
-    fixed_t start, end;
-    mline_t ml;
+	rend_fixed_t x, y;
+	rend_fixed_t start, end;
+	mline_t ml;
 
-    // Figure out start of vertical gridlines
-    start = m_x;
-    if ((start-bmaporgx)%(MAPBLOCKUNITS<<FRACBITS))
-	start += (MAPBLOCKUNITS<<FRACBITS)
-	    - ((start-bmaporgx)%(MAPBLOCKUNITS<<FRACBITS));
-    end = m_x + m_w;
+	// Figure out start of vertical gridlines
+	start = m_x;
+	if ( ( start - FixedToRendFixed( bmaporgx ) ) % ( IntToRendFixed( MAPBLOCKUNITS ) ) )
+		start += ( IntToRendFixed( MAPBLOCKUNITS ) )
+			- ( (start- FixedToRendFixed( bmaporgx ) ) % ( IntToRendFixed( MAPBLOCKUNITS ) ) );
+	end = m_x + m_w;
 
-    // draw vertical gridlines
-    ml.a.y = m_y;
-    ml.b.y = m_y+m_h;
-    for (x=start; x<end; x+=(MAPBLOCKUNITS<<FRACBITS))
-    {
-	ml.a.x = x;
-	ml.b.x = x;
-	AM_drawMline(&ml, color);
-    }
+	// draw vertical gridlines
+	ml.a.y = m_y;
+	ml.b.y = m_y+m_h;
+	for (x=start; x<end; x+=( IntToRendFixed( MAPBLOCKUNITS ) ) )
+	{
+		ml.a.x = x;
+		ml.b.x = x;
+		AM_drawMline(&ml, color);
+	}
 
-    // Figure out start of horizontal gridlines
-    start = m_y;
-    if ((start-bmaporgy)%(MAPBLOCKUNITS<<FRACBITS))
-	start += (MAPBLOCKUNITS<<FRACBITS)
-	    - ((start-bmaporgy)%(MAPBLOCKUNITS<<FRACBITS));
-    end = m_y + m_h;
+	// Figure out start of horizontal gridlines
+	start = m_y;
+	if ( ( start - FixedToRendFixed( bmaporgy ) ) % ( IntToRendFixed( MAPBLOCKUNITS ) ) )
+		start += ( IntToRendFixed( MAPBLOCKUNITS ) )
+			- ( ( start - FixedToRendFixed( bmaporgy ) ) % ( IntToRendFixed( MAPBLOCKUNITS ) ) );
+	end = m_y + m_h;
 
-    // draw horizontal gridlines
-    ml.a.x = m_x;
-    ml.b.x = m_x + m_w;
-    for (y=start; y<end; y+=(MAPBLOCKUNITS<<FRACBITS))
-    {
-	ml.a.y = y;
-	ml.b.y = y;
-	AM_drawMline(&ml, color);
-    }
+	// draw horizontal gridlines
+	ml.a.x = m_x;
+	ml.b.x = m_x + m_w;
+	for (y=start; y<end; y+=( IntToRendFixed( MAPBLOCKUNITS ) ) )
+	{
+		ml.a.y = y;
+		ml.b.y = y;
+		AM_drawMline(&ml, color);
+	}
 
 }
 
@@ -1332,10 +1337,10 @@ void AM_drawWalls( mapstyledata_t* style )
 
 	for (i=0;i<numlines;i++)
 	{
-		l.a.x = lines[i].v1->x;
-		l.a.y = lines[i].v1->y;
-		l.b.x = lines[i].v2->x;
-		l.b.y = lines[i].v2->y;
+		l.a.x = lines[i].v1->rend.x;
+		l.a.y = lines[i].v1->rend.y;
+		l.b.x = lines[i].v2->rend.x;
+		l.b.y = lines[i].v2->rend.y;
 
 		if (cheating || (lines[i].flags & ML_MAPPED))
 		{
@@ -1344,8 +1349,13 @@ void AM_drawWalls( mapstyledata_t* style )
 				continue;
 			}
 
-			if( style->sectorsecrets != -1 &&	( lines[ i ].frontsector->secretstate != Secret_None
-												|| lines[ i ].backsector && lines[ i ].backsector->secretstate != Secret_None ) )
+			if( style->sectorsecretsundiscovered != -1 &&	( lines[ i ].frontsector->secretstate == Secret_Undiscovered
+															|| lines[ i ].backsector && lines[ i ].backsector->secretstate == Secret_Undiscovered ) )
+			{
+				AM_drawMline(&l, AM_lookupColour( style->sectorsecretsundiscovered, style->sectorsecretsundiscovered_flags ) );
+			}
+			else if( style->sectorsecrets != -1 &&	( lines[ i ].frontsector->secretstate == Secret_Discovered
+													|| lines[ i ].backsector && lines[ i ].backsector->secretstate == Secret_Discovered ) )
 			{
 				AM_drawMline(&l, AM_lookupColour( style->sectorsecrets, style->sectorsecrets_flags ) );
 			}
@@ -1397,19 +1407,19 @@ void AM_drawWalls( mapstyledata_t* style )
 //
 void
 AM_rotate
-( fixed_t*	x,
-  fixed_t*	y,
+( rend_fixed_t*	x,
+  rend_fixed_t*	y,
   angle_t	a )
 {
-    fixed_t tmpx;
+    rend_fixed_t tmpx;
 
     tmpx =
-	FixedMul(*x,finecosine[a>>ANGLETOFINESHIFT])
-	- FixedMul(*y,finesine[a>>ANGLETOFINESHIFT]);
+	RendFixedMul(*x, FixedToRendFixed( renderfinecosine[a>>RENDERANGLETOFINESHIFT] ))
+	- RendFixedMul(*y, FixedToRendFixed( renderfinesine[a>>RENDERANGLETOFINESHIFT] ));
     
     *y   =
-	FixedMul(*x,finesine[a>>ANGLETOFINESHIFT])
-	+ FixedMul(*y,finecosine[a>>ANGLETOFINESHIFT]);
+	RendFixedMul(*x, FixedToRendFixed( renderfinesine[a>>RENDERANGLETOFINESHIFT] ))
+	+ RendFixedMul(*y, FixedToRendFixed( renderfinecosine[a>>RENDERANGLETOFINESHIFT] ));
 
     *x = tmpx;
 }
@@ -1418,11 +1428,11 @@ void
 AM_drawLineCharacter
 ( mline_t*	lineguy,
   int		lineguylines,
-  fixed_t	scale,
+  rend_fixed_t	scale,
   angle_t	angle,
   int		color,
-  fixed_t	x,
-  fixed_t	y )
+  rend_fixed_t	x,
+  rend_fixed_t	y )
 {
     int		i;
     mline_t	l;
@@ -1434,8 +1444,8 @@ AM_drawLineCharacter
 
 	if (scale)
 	{
-	    l.a.x = FixedMul(scale, l.a.x);
-	    l.a.y = FixedMul(scale, l.a.y);
+	    l.a.x = RendFixedMul(scale, l.a.x);
+	    l.a.y = RendFixedMul(scale, l.a.y);
 	}
 
 	if (angle)
@@ -1449,8 +1459,8 @@ AM_drawLineCharacter
 
 	if (scale)
 	{
-	    l.b.x = FixedMul(scale, l.b.x);
-	    l.b.y = FixedMul(scale, l.b.y);
+	    l.b.x = RendFixedMul(scale, l.b.x);
+	    l.b.y = RendFixedMul(scale, l.b.y);
 	}
 
 	if (angle)
@@ -1477,13 +1487,13 @@ void AM_drawPlayers( mapstyledata_t* style )
 		{
 			AM_drawLineCharacter
 			(cheat_player_arrow, arrlen(cheat_player_arrow), 0,
-			 plr->mo->angle, AM_lookupColour( style->playerarrow, style->playerarrow_flags ), plr->mo->x, plr->mo->y);
+			 plr->mo->angle, AM_lookupColour( style->playerarrow, style->playerarrow_flags ), FixedToRendFixed( plr->mo->x ), FixedToRendFixed( plr->mo->y ) );
 		}
 		else
 		{
 			AM_drawLineCharacter
 			(player_arrow, arrlen(player_arrow), 0, plr->mo->angle,
-			 AM_lookupColour( style->playerarrow, style->playerarrow_flags ), plr->mo->x, plr->mo->y);
+			 AM_lookupColour( style->playerarrow, style->playerarrow_flags ), FixedToRendFixed( plr->mo->x ), FixedToRendFixed( plr->mo->y ) );
 		}
 		return;
     }
@@ -1506,7 +1516,7 @@ void AM_drawPlayers( mapstyledata_t* style )
 	
 		AM_drawLineCharacter
 			(player_arrow, arrlen(player_arrow), 0, p->mo->angle,
-			 AM_lookupColour( color, style->playerarrow_flags ), p->mo->x, p->mo->y);
+			 AM_lookupColour( color, style->playerarrow_flags ), FixedToRendFixed( p->mo->x ), FixedToRendFixed( p->mo->y ) );
     }
 
 }
@@ -1546,7 +1556,7 @@ void AM_drawThings( mapstyledata_t* style )
 			{
 				colour = AM_lookupColour( style->things, style->things_flags );
 			}
-			AM_drawLineCharacter( thintriangle_guy, arrlen(thintriangle_guy), 16<<FRACBITS, t->angle, AM_lookupColour( colour, false ), t->x, t->y);
+			AM_drawLineCharacter( thintriangle_guy, arrlen(thintriangle_guy), IntToRendFixed( 16 ), t->angle, AM_lookupColour( colour, false ), FixedToRendFixed( t->x ), FixedToRendFixed( t->y ) );
 			t = t->snext;
 		}
 	}
@@ -1618,7 +1628,7 @@ void AM_Drawer (void)
 		AM_drawThings( style );
 	}
 	AM_drawCrosshair( AM_lookupColour( style->crosshair, style->crosshair_flags ) );
-
+	
 	AM_drawMarks();
 
 	V_MarkRect(f_x, f_y, f_w, f_h);

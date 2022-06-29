@@ -1940,6 +1940,22 @@ static default_t extra_defaults_list[] =
 	//!
 	// @game doom
 	//
+	// Automap sector-based undiscovered secrets colour
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_sectorsecretsundiscovered),
+
+	//!
+	// @game doom
+	//
+	// Automap sector-based undiscovered secrets flags
+	//
+
+	CONFIG_VARIABLE_INT(mapcolor_sectorsecretsundiscovered_flags),
+
+	//!
+	// @game doom
+	//
 	// Automap floor height difference colour
 	//
 
