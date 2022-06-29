@@ -231,9 +231,6 @@ mapstyledata_t	map_styledata[ MapStyle_Max ] =
 #define CXMTOF(x)  (f_x + MTOF((x)-m_x))
 #define CYMTOF(y)  (f_y + (f_h - MTOF((y)-m_y))) 
 
-// the following is crap
-#define LINE_NEVERSEE ML_DONTDRAW
-
 typedef struct
 {
     int x, y;
@@ -561,11 +558,11 @@ void AM_findMinMaxBoundaries(void)
     min_w = 2*PLAYERRADIUS; // const? never changed?
     min_h = 2*PLAYERRADIUS;
 
-    a = RendFixedDiv( IntToRendFixed( f_w ), max_w);
-    b = RendFixedDiv( IntToRendFixed( f_h ), max_h);
+    a = RendFixedDiv( IntToRendFixed( f_w ), max_w );
+    b = RendFixedDiv( IntToRendFixed( f_h ), max_h );
   
     min_scale_mtof = a < b ? a : b;
-    max_scale_mtof = RendFixedDiv( IntToRendFixed( f_h ), 2*PLAYERRADIUS);
+    max_scale_mtof = RendFixedDiv( IntToRendFixed( f_h ), 2 * RENDPLAYERRADIUS);
 
 }
 
@@ -1013,6 +1010,7 @@ void AM_Ticker (void)
 
 	// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
 	AM_changeWindowScale();
+	AM_findMinMaxBoundaries();
 
 	if (followplayer)
 	{
@@ -1286,12 +1284,13 @@ void AM_drawMline( mline_t* ml, int color )
 		by = fl.b.y;
 		for( loopx = 0; loopx < linewidth; ++loopx )
 		{
-			fl.a.x = ax + loopx - ( linewidth >> 1 );
-			fl.b.x = bx + loopx - ( linewidth >> 1 );
+			// Need to clamp to frame buffer thanks to line thickness
+			fl.a.x = M_CLAMP( ax + loopx - ( linewidth >> 1 ), 0, f_w - 1 );
+			fl.b.x = M_CLAMP( bx + loopx - ( linewidth >> 1 ), 0, f_w - 1 );
 			for( loopy = 0; loopy < lineheight; ++loopy )
 			{
-				fl.a.y = ay + loopy - ( lineheight >> 1 );
-				fl.b.y = by + loopy - ( lineheight >> 1 );
+				fl.a.y = M_CLAMP( ay + loopy - ( lineheight >> 1 ), 0, f_h - 1 );
+				fl.b.y = M_CLAMP( by + loopy - ( lineheight >> 1 ), 0, f_h - 1 );
 				AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
 			}
 		}
@@ -1359,8 +1358,8 @@ int32_t AM_lookupColour( int32_t paletteindex, boolean blinking )
 
 void AM_drawWalls( mapstyledata_t* style )
 {
-	int i;
-	static mline_t l;
+	int32_t i;
+	mline_t l;
 
 	for (i=0;i<numlines;i++)
 	{
@@ -1371,7 +1370,7 @@ void AM_drawWalls( mapstyledata_t* style )
 
 		if (cheating || (lines[i].flags & ML_MAPPED))
 		{
-			if ((lines[i].flags & LINE_NEVERSEE) && !cheating)
+			if ((lines[i].flags & ML_DONTDRAW) && !cheating)
 			{
 				continue;
 			}
@@ -1418,7 +1417,7 @@ void AM_drawWalls( mapstyledata_t* style )
 				if( AM_CanDraw( style->nochange ) ) AM_drawMline(&l, AM_lookupColour( style->nochange.val, style->nochange.flags ) );
 			}
 		}
-		else if ( AM_CanDraw( style->areamap ) && plr->powers[ pw_allmap ] && !(lines[i].flags & LINE_NEVERSEE) )
+		else if ( AM_CanDraw( style->areamap ) && plr->powers[ pw_allmap ] && !(lines[i].flags & ML_DONTDRAW) )
 		{
 			AM_drawMline(&l, AM_lookupColour( style->areamap.val, style->areamap.flags ) );
 		}
@@ -1620,8 +1619,6 @@ void AM_drawMarks(void)
 
 void AM_drawCrosshair(int color)
 {
-	// fb[(render_pitch*(f_w>>1) + (f_h>>1))] = color; // single point for now
-
 	// HACK to give us a dot at proper scale
 
 	int32_t loopx;
@@ -1648,8 +1645,8 @@ void AM_Drawer (void)
 	// TODO: FIX THIS HACK
 	fb = I_VideoBuffer;
 
-	linewidth = FixedDiv( 1 << FRACBITS, V_WIDTHSTEP << FRACBITS );
-	lineheight = FixedDiv( 1 << FRACBITS, V_HEIGHTSTEP << FRACBITS );
+	linewidth = RendFixedToInt( RendFixedDiv( IntToRendFixed( 1 ), FixedToRendFixed( V_WIDTHSTEP ) ) );
+	lineheight = RendFixedToInt( RendFixedDiv( IntToRendFixed( 1 ), FixedToRendFixed( V_HEIGHTSTEP ) ) );
 
 	AM_clearFB( AM_CanDraw( style->background ) ? AM_lookupColour( style->background.val, style->background.flags )
 												: AM_lookupColour( map_styledata[ MapStyle_Original ].background.val, map_styledata[ MapStyle_Original ].background.flags ) );
