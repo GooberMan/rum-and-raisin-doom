@@ -1683,9 +1683,9 @@ static boolean M_DebugResponder( event_t* ev )
 		break;
 
 	case Remap_Mouse:
-		if( ev->type == ev_mouse && ev->data3 != 0 )
+		if( ev->type == ev_mouse && ev->data5 != 0 )
 		{
-			mapkeybuttonvalue = ev->data2;
+			mapkeybuttonvalue = ev->data4;
 		}
 		break;
 

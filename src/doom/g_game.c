@@ -321,284 +321,290 @@ static int G_NextWeapon(int direction)
 // Builds a ticcmd from all of the available inputs
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
-// 
+//
+
+#define IsBound( key ) ( key >= 0 )
+#define GameKeyDown( key ) ( IsBound( key ) && gamekeydown[ key ] )
+#define MouseButtonDown( button ) ( IsBound( button ) && mousebuttons[ button ] )
+#define JoyButtonDown( button ) ( IsBound( button ) && joybuttons[ button ] )
+
 void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic) 
 { 
-    int		i; 
-    boolean	strafe;
-    boolean	bstrafe; 
-    int		speed;
-    int		tspeed; 
-    int		forward;
-    int		side;
+	int		i;
+	boolean	strafe;
+	boolean	bstrafe;
+	int		speed;
+	int		tspeed;
+	int		forward;
+	int		side;
 
-    memset(cmd, 0, sizeof(ticcmd_t));
+	memset( cmd, 0, sizeof( ticcmd_t ) );
 
-    cmd->consistancy = 
-	consistancy[consoleplayer][maketic%BACKUPTICS]; 
+	cmd->consistancy =  consistancy[ consoleplayer ][ maketic % BACKUPTICS ]; 
  
-    strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe] 
-	|| joybuttons[joybstrafe]; 
+	strafe = GameKeyDown( key_strafe ) || MouseButtonDown( mousebstrafe ) || JoyButtonDown( joybstrafe );
 
-    // fraggle: support the old "joyb_speed = 31" hack which
-    // allowed an autorun effect
+	// fraggle: support the old "joyb_speed = 31" hack which
+	// allowed an autorun effect
 
-    speed = key_speed >= NUMKEYS
-         || ( !gamekeydown[key_speed] && joybspeed >= MAX_JOY_BUTTONS )
-         || ( gamekeydown[key_speed] && joybspeed < MAX_JOY_BUTTONS )
-         || ( joybspeed < MAX_JOY_BUTTONS && joybuttons[joybspeed] );
+	speed = key_speed >= NUMKEYS
+			|| ( !GameKeyDown( key_speed ) && joybspeed >= MAX_JOY_BUTTONS )
+			|| ( GameKeyDown( key_speed ) && joybspeed < MAX_JOY_BUTTONS )
+			|| ( joybspeed < MAX_JOY_BUTTONS && JoyButtonDown( joybspeed ) );
  
-    forward = side = 0;
-    
-    // use two stage accelerative turning
-    // on the keyboard and joystick
-    if (joyxmove < 0
-	|| joyxmove > 0  
-	|| gamekeydown[key_right]
-	|| gamekeydown[key_left]) 
-	turnheld += ticdup; 
-    else 
-	turnheld = 0; 
+	forward = side = 0;
 
-    if (turnheld < SLOWTURNTICS) 
-	tspeed = 2;             // slow turn 
-    else 
-	tspeed = speed;
-    
-    // let movement keys cancel each other out
-    if (strafe) 
-    { 
-	if (gamekeydown[key_right]) 
+	// use two stage accelerative turning
+	// on the keyboard and joystick
+	if ( joyxmove < 0
+		|| joyxmove > 0
+		|| GameKeyDown( key_right )
+		|| GameKeyDown( key_left ) )
 	{
-	    // fprintf(stderr, "strafe right\n");
-	    side += sidemove[speed]; 
+		turnheld += ticdup;
 	}
-	if (gamekeydown[key_left]) 
+	else
 	{
-	    //	fprintf(stderr, "strafe left\n");
-	    side -= sidemove[speed]; 
+		turnheld = 0;
 	}
-	if (joyxmove > 0) 
-	    side += sidemove[speed]; 
-	if (joyxmove < 0) 
-	    side -= sidemove[speed]; 
+
+	if( turnheld < SLOWTURNTICS )
+	{
+		tspeed = 2;		// slow turn
+	}
+	else
+	{
+		tspeed = speed;
+	}
+
+	// let movement keys cancel each other out
+	if( strafe )
+	{
+		if( GameKeyDown( key_right ) || joyxmove > 0 )
+		{
+			side += sidemove[ speed ];
+		}
+		if( GameKeyDown( key_left ) || joyxmove < 0 )
+		{
+			side -= sidemove[ speed ];
+		}
+	}
+	else
+	{
+		if( GameKeyDown(  key_right ) || joyxmove > 0 )
+		{
+			cmd->angleturn -= angleturn[ tspeed ];
+		}
+		if( GameKeyDown( key_left ) || joyxmove < 0 )
+		{
+			cmd->angleturn += angleturn[ tspeed ];
+		}
+	}
  
-    } 
-    else 
-    { 
-	if (gamekeydown[key_right]) 
-	    cmd->angleturn -= angleturn[tspeed]; 
-	if (gamekeydown[key_left]) 
-	    cmd->angleturn += angleturn[tspeed]; 
-	if (joyxmove > 0) 
-	    cmd->angleturn -= angleturn[tspeed]; 
-	if (joyxmove < 0) 
-	    cmd->angleturn += angleturn[tspeed]; 
-    } 
+	if( GameKeyDown( key_up )
+		|| MouseButtonDown( mousebforward )
+		|| joyymove < 0 )
+	{
+		forward += forwardmove[ speed ];
+	}
+	if( GameKeyDown( key_down )
+		|| MouseButtonDown( mousebbackward )
+		|| joyymove > 0 )
+	{
+		forward -= forwardmove[ speed ];
+	}
+
+	if ( GameKeyDown( key_strafeleft )
+		|| JoyButtonDown( joybstrafeleft )
+		|| MouseButtonDown( mousebstrafeleft )
+		|| joystrafemove < 0 )
+	{
+		side -= sidemove[ speed ];
+	}
+
+	if ( GameKeyDown( key_straferight )
+		|| JoyButtonDown( joybstraferight )
+		|| MouseButtonDown( mousebstraferight )
+		|| joystrafemove > 0 )
+	{
+		side += sidemove[ speed ];
+	}
+
+	// buttons
+	cmd->chatchar = HU_dequeueChatChar();
  
-    if (gamekeydown[key_up]) 
-    {
-	// fprintf(stderr, "up\n");
-	forward += forwardmove[speed]; 
-    }
-    if (gamekeydown[key_down]) 
-    {
-	// fprintf(stderr, "down\n");
-	forward -= forwardmove[speed]; 
-    }
-
-    if (joyymove < 0) 
-        forward += forwardmove[speed]; 
-    if (joyymove > 0) 
-        forward -= forwardmove[speed]; 
-
-    if (gamekeydown[key_strafeleft]
-     || joybuttons[joybstrafeleft]
-     || mousebuttons[mousebstrafeleft]
-     || joystrafemove < 0)
-    {
-        side -= sidemove[speed];
-    }
-
-    if (gamekeydown[key_straferight]
-     || joybuttons[joybstraferight]
-     || mousebuttons[mousebstraferight]
-     || joystrafemove > 0)
-    {
-        side += sidemove[speed]; 
-    }
-
-    // buttons
-    cmd->chatchar = HU_dequeueChatChar(); 
+	if ( GameKeyDown( key_fire )
+		|| MouseButtonDown( mousebfire )
+		|| JoyButtonDown( joybfire ) )
+	{
+		cmd->buttons |= BT_ATTACK;
+	}
  
-    if (gamekeydown[key_fire] || mousebuttons[mousebfire] 
-	|| joybuttons[joybfire]) 
-	cmd->buttons |= BT_ATTACK; 
+	if ( GameKeyDown( key_use )
+		|| JoyButtonDown( joybuse )
+		|| MouseButtonDown( mousebuse ) )
+	{
+		cmd->buttons |= BT_USE;
+		// clear double clicks if hit use button
+		dclicks = 0;
+	}
+
+	// If the previous or next weapon button is pressed, the
+	// next_weapon variable is set to change weapons when
+	// we generate a ticcmd.  Choose a new weapon.
+
+	if( gamestate == GS_LEVEL && next_weapon != 0 )
+	{
+		i = G_NextWeapon( next_weapon );
+		cmd->buttons |= BT_CHANGE;
+		cmd->buttons |= i << BT_WEAPONSHIFT;
+	}
+	else
+	{
+		// Check weapon keys.
+		for ( i = 0; i < arrlen( weapon_keys ); ++i )
+		{
+			int key = *weapon_keys[i];
+
+			if( GameKeyDown( key ) )
+			{
+				cmd->buttons |= BT_CHANGE;
+				cmd->buttons |= i << BT_WEAPONSHIFT;
+				break;
+			}
+		}
+	}
+
+	next_weapon = 0;
+
+	// Mouse stuff
+	if( dclick_use )
+	{
+		// forward double click
+		if( IsBound( mousebforward ) )
+		{
+			if ( mousebuttons[ mousebforward ] != dclickstate && dclicktime > 1 ) 
+			{ 
+				dclickstate = mousebuttons[ mousebforward ];
+				if( dclickstate )
+				{ 
+					++dclicks;
+				}
+				if( dclicks == 2 )
+				{
+					cmd->buttons |= BT_USE;
+					dclicks = 0;
+				}
+				else
+				{
+					dclicktime = 0;
+				}
+			}
+			else
+			{
+				dclicktime += ticdup;
+				if (dclicktime > 20)
+				{
+					dclicks = 0;
+					dclickstate = 0;
+				}
+			}
+		}
+
+		// strafe double click
+		bstrafe = MouseButtonDown( mousebstrafe ) || JoyButtonDown( joybstrafe );
+
+		if( bstrafe != dclickstate2 && dclicktime2 > 1 )
+		{
+			dclickstate2 = bstrafe;
+			if( dclickstate2 )
+			{
+				dclicks2++;
+			}
+			if( dclicks2 == 2 )
+			{
+				cmd->buttons |= BT_USE;
+				dclicks2 = 0;
+			}
+			else
+			{
+				dclicktime2 = 0;
+			}
+		}
+		else
+		{
+			dclicktime2 += ticdup;
+			if( dclicktime2 > 20 )
+			{
+				dclicks2 = 0;
+				dclickstate2 = 0;
+			}
+		}
+	}
+
+	forward += mousey;
+	if( mousey != 0 )
+	{
+		int foo = 0;
+	}
+
+	if (strafe)
+	{
+		side += mousex*2;
+	}
+	else
+	{
+		cmd->angleturn -= mousex*0x8;
+	}
+
+	if (mousex == 0)
+	{
+		// No movement in the previous frame
+		testcontrols_mousespeed = 0;
+	}
+
+	mousex = mousey = 0; 
+
+	forward = M_CLAMP( forward, -MAXPLMOVE, MAXPLMOVE );
+	side = M_CLAMP( side, -MAXPLMOVE, MAXPLMOVE );
+
+	cmd->forwardmove += forward;
+	cmd->sidemove += side;
+
+	// special buttons
+	if( sendpause )
+	{
+		sendpause = false;
+		cmd->buttons = BT_SPECIAL | BTS_PAUSE;
+	}
  
-    if (gamekeydown[key_use]
-     || joybuttons[joybuse]
-     || mousebuttons[mousebuse])
-    { 
-	cmd->buttons |= BT_USE;
-	// clear double clicks if hit use button 
-	dclicks = 0;                   
-    } 
+	if (sendsave)
+	{
+		sendsave = false;
+		cmd->buttons = BT_SPECIAL | BTS_SAVEGAME | ( savegameslot << BTS_SAVESHIFT );
+	}
 
-    // If the previous or next weapon button is pressed, the
-    // next_weapon variable is set to change weapons when
-    // we generate a ticcmd.  Choose a new weapon.
+	// low-res turning
 
-    if (gamestate == GS_LEVEL && next_weapon != 0)
-    {
-        i = G_NextWeapon(next_weapon);
-        cmd->buttons |= BT_CHANGE;
-        cmd->buttons |= i << BT_WEAPONSHIFT;
-    }
-    else
-    {
-        // Check weapon keys.
+	if( lowres_turn )
+	{
+		static signed short carry = 0;
+		signed short desired_angleturn;
 
-        for (i=0; i<arrlen(weapon_keys); ++i)
-        {
-            int key = *weapon_keys[i];
+		desired_angleturn = cmd->angleturn + carry;
 
-            if (gamekeydown[key])
-            {
-                cmd->buttons |= BT_CHANGE;
-                cmd->buttons |= i<<BT_WEAPONSHIFT;
-                break;
-            }
-        }
-    }
+		// round angleturn to the nearest 256 unit boundary
+		// for recording demos with single byte values for turn
 
-    next_weapon = 0;
+		cmd->angleturn = ( desired_angleturn + 128 ) & 0xff00;
 
-    // mouse
-    if (mousebuttons[mousebforward]) 
-    {
-	forward += forwardmove[speed];
-    }
-    if (mousebuttons[mousebbackward])
-    {
-        forward -= forwardmove[speed];
-    }
+		// Carry forward the error from the reduced resolution to the
+		// next tic, so that successive small movements can accumulate.
 
-    if (dclick_use)
-    {
-        // forward double click
-        if (mousebuttons[mousebforward] != dclickstate && dclicktime > 1 ) 
-        { 
-            dclickstate = mousebuttons[mousebforward]; 
-            if (dclickstate) 
-                dclicks++; 
-            if (dclicks == 2) 
-            { 
-                cmd->buttons |= BT_USE; 
-                dclicks = 0; 
-            } 
-            else 
-                dclicktime = 0; 
-        } 
-        else 
-        { 
-            dclicktime += ticdup; 
-            if (dclicktime > 20) 
-            { 
-                dclicks = 0; 
-                dclickstate = 0; 
-            } 
-        }
-        
-        // strafe double click
-        bstrafe =
-            mousebuttons[mousebstrafe] 
-            || joybuttons[joybstrafe]; 
-        if (bstrafe != dclickstate2 && dclicktime2 > 1 ) 
-        { 
-            dclickstate2 = bstrafe; 
-            if (dclickstate2) 
-                dclicks2++; 
-            if (dclicks2 == 2) 
-            { 
-                cmd->buttons |= BT_USE; 
-                dclicks2 = 0; 
-            } 
-            else 
-                dclicktime2 = 0; 
-        } 
-        else 
-        { 
-            dclicktime2 += ticdup; 
-            if (dclicktime2 > 20) 
-            { 
-                dclicks2 = 0; 
-                dclickstate2 = 0; 
-            } 
-        } 
-    }
+		carry = desired_angleturn - cmd->angleturn;
+	}
+}
 
-    forward += mousey; 
-
-    if (strafe) 
-	side += mousex*2; 
-    else 
-	cmd->angleturn -= mousex*0x8; 
-
-    if (mousex == 0)
-    {
-        // No movement in the previous frame
-
-        testcontrols_mousespeed = 0;
-    }
-    
-    mousex = mousey = 0; 
-	 
-    if (forward > MAXPLMOVE) 
-	forward = MAXPLMOVE; 
-    else if (forward < -MAXPLMOVE) 
-	forward = -MAXPLMOVE; 
-    if (side > MAXPLMOVE) 
-	side = MAXPLMOVE; 
-    else if (side < -MAXPLMOVE) 
-	side = -MAXPLMOVE; 
- 
-    cmd->forwardmove += forward; 
-    cmd->sidemove += side;
-    
-    // special buttons
-    if (sendpause) 
-    { 
-	sendpause = false; 
-	cmd->buttons = BT_SPECIAL | BTS_PAUSE; 
-    } 
- 
-    if (sendsave) 
-    { 
-	sendsave = false; 
-	cmd->buttons = BT_SPECIAL | BTS_SAVEGAME | (savegameslot<<BTS_SAVESHIFT); 
-    } 
-
-    // low-res turning
-
-    if (lowres_turn)
-    {
-        static signed short carry = 0;
-        signed short desired_angleturn;
-
-        desired_angleturn = cmd->angleturn + carry;
-
-        // round angleturn to the nearest 256 unit boundary
-        // for recording demos with single byte values for turn
-
-        cmd->angleturn = (desired_angleturn + 128) & 0xff00;
-
-        // Carry forward the error from the reduced resolution to the
-        // next tic, so that successive small movements can accumulate.
-
-        carry = desired_angleturn - cmd->angleturn;
-    }
-} 
- 
 
 void P_CalcHeight (player_t* player);
 

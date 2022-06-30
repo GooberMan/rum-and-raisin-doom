@@ -353,9 +353,9 @@ static void UpdateMouseButtonState(unsigned int button, boolean on)
 
     event.type = ev_mouse;
     event.data1 = mouse_button_state;
-	// R&R - Hijacking data2 and data3 for button and pressed states
-    event.data2 = button;
-	event.data3 = on ? 1 : 0;
+	// R&R - Hijacking data4 and data5 for button and pressed states
+    event.data4 = button;
+	event.data5 = on ? 1 : 0;
     D_PostEvent(&event);
 }
 
@@ -380,16 +380,20 @@ static void MapMouseWheelToButtons(SDL_MouseWheelEvent *wheel)
     mouse_button_state |= (1 << button);
     down.type = ev_mouse;
     down.data1 = mouse_button_state;
-    down.data2 = button;
-	down.data3 = 1;
+	down.data2 = 0;
+	down.data3 = 0;
+    down.data4 = button;
+	down.data5 = 1;
     D_PostEvent(&down);
 
     // post a button up event
     mouse_button_state &= ~(1 << button);
     up.type = ev_mouse;
     up.data1 = mouse_button_state;
-    up.data2 = button;
+	up.data2 = 0;
 	up.data3 = 0;
+    up.data4 = button;
+	up.data5 = 0;
     D_PostEvent(&up);
 }
 
@@ -455,6 +459,9 @@ void I_ReadMouse(void)
         {
             ev.data3 = 0;
         }
+
+		ev.data4 = 0;
+		ev.data5 = 0;
 
         // XXX: undefined behaviour since event is scoped to
         // this function
