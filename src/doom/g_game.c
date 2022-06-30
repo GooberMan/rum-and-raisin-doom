@@ -543,10 +543,6 @@ void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic)
 	}
 
 	forward += mousey;
-	if( mousey != 0 )
-	{
-		int foo = 0;
-	}
 
 	if (strafe)
 	{
