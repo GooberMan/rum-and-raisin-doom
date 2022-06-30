@@ -241,6 +241,9 @@ struct DoomMapLoader
 	void INLINE DetermineExtendedFormat( int32_t rootlump )
 	{
 		constexpr uint64_t Magic = 0x0000000034644E78ull;
+		// Note: We're abusing the fact that the nodes lump will get loaded as static
+		// and released after conversion here, so we don't need to free the lump and
+		// thus cause it to be loaded twice.
 		byte* data = (byte*)W_CacheLumpNum( rootlump + ML_NODES, PU_STATIC );
 
 		if( *(uint64_t*)data == Magic )
@@ -1022,9 +1025,6 @@ P_SetupLevel
 			loader.LoadSectors( lumpnum + ML_SECTORS );
 			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
 			loader.LoadExtendedLinedefs( lumpnum + ML_LINEDEFS );
-			// Reordering for limit removing, subsectors are independent
-			// of other data but need different structs depending on
-			// extended node type.
 			loader.LoadExtendedSubsectors( lumpnum + ML_SSECTORS );
 			loader.LoadExtendedNodes( lumpnum + ML_NODES );
 			loader.LoadExtendedSegs( lumpnum + ML_SEGS );
