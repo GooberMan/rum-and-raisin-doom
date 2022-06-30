@@ -393,9 +393,12 @@ static boolean licenseswindow_open = false;
 #define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_DebugMenu: More than %d elements total added", MAXENTRIES ); }
 #define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_DebugMenu: Too many child elements added to %s", elem->name ); }
 
+// Blatantly assuming this will get linked in just fine
+void S_StartSound( void *origin, int sound_id );
+
 static void M_OnDebugMenuCloseButton( const char* itemname, void* data )
 {
-	//S_StartSound(NULL, debugmenuclosesound);
+	S_StartSound(NULL, debugmenuclosesound);
 	debugmenuactive = false;
 }
 
@@ -612,6 +615,7 @@ static void M_RenderCheckboxItem( menuentry_t* cat )
 static void M_RenderCheckboxFlagItem( menuentry_t* cat )
 {
 	igCheckboxFlags( cat->name, cat->data, *(uint32_t*)&cat->comparison );
+	M_RenderTooltip( cat );
 }
 
 static void M_RenderRadioButtonItem( menuentry_t* cat )

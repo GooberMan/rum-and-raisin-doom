@@ -434,6 +434,7 @@ char			saveOldString[SAVESTRINGSIZE];
 
 boolean			inhelpscreens;
 boolean			menuactive;
+int32_t			debugmenuopensound = sfx_swtchn;
 int32_t			debugmenuclosesound = sfx_swtchx;
 
 int32_t			mapkeybuttonvalue = -1;
@@ -1751,15 +1752,15 @@ boolean M_Responder (event_t* ev)
 	if( ev->type == ev_keydown && ev->data1 == key_menu_debug && debugmenuremappingkey == Remap_None )
 	{
 		debugmenuactive = !debugmenuactive;
-		S_StartSound(NULL, debugmenuactive ? sfx_swtchn : sfx_swtchx);
+		S_StartSound(NULL, debugmenuactive ? debugmenuopensound : debugmenuclosesound);
 		return true;
 	}
-#endif // USE_IMGUI
 
 	if( debugmenuactive )
 	{
 		return M_DebugResponder( ev );
 	}
+#endif // USE_IMGUI
 
     // key is the key pressed, ch is the actual character typed
   
@@ -2875,7 +2876,6 @@ static void M_DebugMenuControlsRemapping(	const char* itemname,
 	}
 	igPopID();
 }
-#pragma optimize( "", on )
 
 static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 {
