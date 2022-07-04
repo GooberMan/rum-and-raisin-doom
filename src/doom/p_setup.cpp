@@ -216,6 +216,7 @@ struct DoomMapLoader
 	fixed_t			_blockmaporgy;
 	int32_t			_blockmapwidth;
 	int32_t			_blockmapheight;
+	int32_t			_blockmaplength;
 	blockmap_t*		_blockmap;
 	blockmap_t*		_blockmapend;
 	blockmap_t*		_blockmapbase;
@@ -268,6 +269,7 @@ struct DoomMapLoader
 		_blockmap			= data.output;
 		_blockmapend		= data.output + data.count;
 		_blockmapbase		= _blockmap;
+		_blockmaplength		= data.count;
 
 		_blockmaporgx		= IntToFixed( *_blockmap++ );
 		_blockmaporgy		= IntToFixed( *_blockmap++ );
@@ -281,17 +283,41 @@ struct DoomMapLoader
 
 	void INLINE LoadExtendedBlockmap( int32_t lumpnum )
 	{
+		constexpr int32_t ByteBoundary16bit = 0x10000;
+		constexpr int32_t MaxEntries16bit = ByteBoundary16bit / sizeof( mapblockmap_t );
+
 		switch( _nodeformat )
 		{
 		using enum NodeFormat;
 		case Extended:
 		case DeepBSP:
 			LoadBlockmap< mapblockmap_extended_t >( lumpnum );
-			if( _blockmapwidth * _blockmapheight > 0xFFFF )
+
+			if( _blockmapend - _blockmap >= MaxEntries16bit )
 			{
 				int32_t numindices = _blockmapwidth * _blockmapheight;
-				_blockmapbase = _blockmap + numindices;
-
+				int32_t baseoffset = ( numindices + 4 );
+				int32_t firstentry = baseoffset % MaxEntries16bit;
+				int32_t offsetaddition = baseoffset & ~( MaxEntries16bit - 1 );
+				int32_t lastindex = 0;
+				int32_t count = 0;
+				for( int32_t& currindex : std::span( _blockmap, numindices ) )
+				{
+					if( currindex == firstentry )
+					{
+						currindex = baseoffset;
+					}
+					else
+					{
+						if( currindex < lastindex )
+						{
+							offsetaddition += MaxEntries16bit;
+						}
+						lastindex = currindex;
+						currindex += offsetaddition;
+						++count;
+					}
+				}
 //#define DOING_REVERSE_ENGINEERING
 #ifdef DOING_REVERSE_ENGINEERING
 				ptrdiff_t listentries = _blockmapend - _blockmap;
