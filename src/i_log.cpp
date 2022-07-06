@@ -135,8 +135,6 @@ typedef struct logentry_s
 
 static DoomVector< logentry_t >	logentries;
 
-#pragma optimize( "", off )
-
 extern "C" {
 
 #define BUFFER_LENGTH 1024

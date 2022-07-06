@@ -27,6 +27,7 @@ extern "C" {
 enum LogType
 {
 	Log_Normal,
+	Log_System,
 	Log_Startup,
 	Log_InGameMessage,
 	Log_Chat,
