@@ -732,9 +732,6 @@ boolean TryRunTics (void)
         }
     }
 
-	if( I_IsPerfFramesRunning() )
-		counts = 1;
-
 	if( !sleeponzerotics && counts == 0 )
 	{
 		NetUpdate ();

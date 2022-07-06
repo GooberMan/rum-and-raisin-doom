@@ -27,29 +27,22 @@
 
 // Called by D_DoomLoop,
 // returns current time in tics.
-uint64_t I_GetTimeTicks (void);
+uint64_t I_GetTimeTicks( void );
 
 // returns current time in ms
-uint64_t I_GetTimeMS (void);
+uint64_t I_GetTimeMS( void );
 
 // returns current time in microseconds
-uint64_t I_GetTimeUS (void);
+uint64_t I_GetTimeUS( void );
 
 // Pause for a specified number of ms
-void I_Sleep(uint64_t ms);
+void I_Sleep( uint64_t ms );
 
 // Initialize timer
-void I_InitTimer(void);
+void I_InitTimer( void );
 
 // Wait for vertical retrace or pause a bit.
-void I_WaitVBL(int count);
-
-void I_InitPerfFrames( uint64_t count );
-
-boolean I_IsPerfFramesRunning(void);
-
-// If -perf is specified on command line, this will fill that buffer
-void I_LogPerfFrame( uint64_t microseconds, const char* description );
+void I_WaitVBL( uint64_t count );
 
 #endif
 

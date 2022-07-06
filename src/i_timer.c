@@ -28,17 +28,27 @@
 #include <string.h>
 #include <time.h>
 
-#pragma optimize( "", off )
+#if defined( _WIN32 )
 
-typedef struct
-{
-	uint64_t		microseconds;
-	const char*		description;
-} perfframe_t;
+#define TIMER_USE_SDL 0
 
-static perfframe_t* perfframes = NULL;
-static uint64_t numperfframes = 0;
-static uint64_t currperfframe = 0;
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#define GetPerfCounter( val ) QueryPerformanceCounter( (LARGE_INTEGER*)&val )
+#define GetPerfFreq( val ) QueryPerformanceFrequency( (LARGE_INTEGER*)&val )
+#define DoSleep( val ) SDL_Delay( (Uint32)val )
+
+#else // Non-Windows platforms
+
+#define TIMER_USE_SDL 1
+
+#define GetPerfCounter( val ) val = SDL_GetPerformanceCounter()
+#define GetPerfFreq( val ) val = SDL_GetPerformanceFrequency()
+#define DoSleep( val ) Sleep( val )
+
+#endif // Platform checks
 
 //
 // I_GetTime
@@ -52,126 +62,63 @@ static uint64_t basefreq = 0;
 // wrap-around happens at tic 61,356,676. In real time, less
 // than a day. A large value will ensure that all base ticks
 // are already outside of that range, and thus you can catch
-// any type errors immediately. Might need to tweak yourself
+// any time errors immediately. Might need to tweak yourself
 // according to what the performance counter returns.
 
 //#define COUNTER_OFFSET 0x100000000000ull
 #define COUNTER_OFFSET 0ull
 
-uint64_t I_GetTimeTicks(void)
+uint64_t I_GetTimeTicks( void )
 {
 	uint64_t counter;
-
-	counter = SDL_GetPerformanceCounter();
-
-	if (basecounter == 0)
-		basecounter = counter - COUNTER_OFFSET;
+	GetPerfCounter( counter );
 
 	return ( ( counter - basecounter ) * TICRATE ) / basefreq;
 }
 
-//
-// Same as I_GetTime, but returns time in milliseconds
-//
-
-
-uint64_t I_GetTimeMS(void)
+uint64_t I_GetTimeMS( void )
 {
 	uint64_t counter;
-
-	counter = SDL_GetPerformanceCounter();
-
-	if (basecounter == 0)
-		basecounter = counter - COUNTER_OFFSET;
+	GetPerfCounter( counter );
 
 	return ( ( counter - basecounter ) * 1000ull ) / basefreq;
 }
 
-uint64_t I_GetTimeUS(void)
+uint64_t I_GetTimeUS( void )
 {
 	uint64_t counter;
-
-	counter = SDL_GetPerformanceCounter();
-
-	if (basecounter == 0)
-		basecounter = counter - COUNTER_OFFSET;
+	GetPerfCounter( counter );
 
 	return ( ( counter - basecounter ) * 1000000ull ) / basefreq;
 }
 
 // Sleep for a specified number of ms
 
-void I_Sleep(uint64_t ms)
+void I_Sleep( uint64_t ms )
 {
-    SDL_Delay((Uint32)ms);
+	DoSleep( ms );
 }
 
-void I_WaitVBL(int count)
+void I_WaitVBL( uint64_t count )
 {
-    I_Sleep((count * 1000) / 70);
+	I_Sleep( ( count * 1000 ) / 70 );
 }
 
-
-void I_InitTimer(void)
+void I_InitTimer( void )
 {
-    // initialize timer
+	// initialize timer
+	uint64_t counter;
+
+#if TIMER_USE_SDL
 
 #if SDL_VERSION_ATLEAST(2, 0, 5)
     SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
 #endif
     SDL_Init(SDL_INIT_TIMER);
-	basefreq = SDL_GetPerformanceFrequency();
-}
 
-void I_InitPerfFrames( uint64_t count )
-{
-	if( count > 0 )
-	{
-		perfframes = (perfframe_t*)Z_Malloc( sizeof( perfframe_t ) * count, PU_STATIC, NULL );
-		numperfframes = count;
-		currperfframe = 0;
-	}
-}
+#endif // TIMER_USE_SDL
 
-boolean I_IsPerfFramesRunning(void)
-{
-	return numperfframes > 0;
-}
-
-void I_LogPerfFrame( uint64_t microseconds, const char* reason )
-{
-	uint64_t thisperf;
-	FILE* of;
-
-	if( numperfframes > 0 )
-	{
-		perfframes[ currperfframe ].microseconds = microseconds;
-		perfframes[ currperfframe ].description = reason;
-
-		if( ++currperfframe >= numperfframes )
-		{
-			time_t currtime = time( NULL );
-			struct tm* local = localtime( &currtime );
-
-			char filename[ 512 ];
-			sprintf( filename, "%d%02d%02d_%02d.%02d.%02d_perfframe.csv", 1900 + local->tm_year, local->tm_mon + 1, local->tm_mday, local->tm_hour, local->tm_min, local->tm_sec );
-
-			of = fopen( filename, "w" );
-			if( of != NULL )
-			{
-				fprintf( of, "frame,microseconds,description\n" );
-				for( thisperf = 0; thisperf < numperfframes; ++thisperf )
-				{
-					fprintf( of, "%d,%d,%s\n", (int)thisperf, (int)perfframes[ thisperf ].microseconds, perfframes[ thisperf ].description );
-				}
-				fclose( of );
-			}
-
-			Z_Free( perfframes );
-			perfframes = NULL;
-			numperfframes = currperfframe = 0;
-
-			exit(0);
-		}
-	}
+	GetPerfFreq( basefreq );
+	GetPerfCounter( counter );
+	basecounter = counter - COUNTER_OFFSET;
 }

@@ -214,14 +214,6 @@ boolean D_Display (void)
 		|| 	( gamestate == GS_LEVEL && !demoplayback && debugmenuactive && debugmenupausesplaysim && ( solonetgame || !netgame ) );
 
 
-	const char* framereason = reasons[ gamestate ];
-
-	uint64_t start;
-	uint64_t end;
-	uint64_t total;
-
-	start = I_GetTimeUS();
-
 	redrawsbar = refreshstatusbar || voidcleartype != Void_NoClear;
 	refreshstatusbar = false;
 
@@ -348,11 +340,6 @@ boolean D_Display (void)
 	M_Drawer (); // menu is drawn even on top of everything
 
 	NetUpdate (); // send out any new accumulation
-
-	end = I_GetTimeUS();
-	total = end - start;
-
-	I_LogPerfFrame( total, framereason );
 
 	return wipe;
 }
@@ -506,10 +493,6 @@ void D_RunFrame()
 	int32_t prev_render_width = render_width;
 	int32_t prev_render_height = render_height;
 
-	uint64_t start;
-	uint64_t end;
-	uint64_t total;
-
     if (wipe)
     {
         do
@@ -519,23 +502,11 @@ void D_RunFrame()
             I_Sleep(1);
         } while (tics <= 0);
 
-		if( I_IsPerfFramesRunning() )
-		{
-			tics = 1;
-		}
-
-		start = I_GetTimeUS();
-
         wipestart = nowtime;
         wipe = !wipe_ScreenWipe(wipe_Melt
                                , 0, 0, render_width, render_height, tics);
         I_UpdateNoBlit ();
         M_Drawer ();                            // menu is drawn even on top of wipes
-
-		end = I_GetTimeUS();
-		total = end - start;
-
-		I_LogPerfFrame( total, "wipe" );
 
         I_FinishUpdate ();                      // page flip or blit buffer
 
@@ -1374,7 +1345,6 @@ static void G_CheckDemoStatusAtExit (void)
 void D_DoomMain (void)
 {
     int32_t p;
-	int32_t count;
     char file[256];
     char demolumpname[9];
     uint32_t numiwadlumps;
@@ -1808,18 +1778,10 @@ void D_DoomMain (void)
         printf("  loaded %i DEHACKED lumps from PWAD files.\n", loaded);
     }
 
-	p = M_CheckParmWithArgs( "-perf", 1 );
-	if( p )
-	{
-		M_StrToInt( myargv[p + 1], &count );
-		I_InitPerfFrames( count );
-	}
-
 	if( M_ParmExists( "-blackvoid" ) ) voidcleartype = Void_Black;
 	if( M_ParmExists( "-whackyvoid" ) ) voidcleartype = Void_Whacky;
 	if( M_ParmExists( "-skyvoid" ) ) voidcleartype = Void_Sky;
 
-	renderloadbalancing = M_ParmExists( "-renderloadbalance" );
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
 	renderthreaded  = !M_ParmExists( "-norenderthreaded" );
 	if( M_ParmExists( "-cpumelter" ) )
