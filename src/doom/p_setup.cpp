@@ -27,6 +27,7 @@
 extern "C"
 {
 	#include "doomdata.h"
+	#include "i_log.h"
 	#include "i_system.h"
 	#include "i_swap.h"
 	#include "m_argv.h"
@@ -55,6 +56,14 @@ static sector_t* GetSectorAtNullAddress(void)
 
     return &null_sector;
 }
+
+enum LoadingCode : int32_t
+{
+	RnRVanilla,
+	RnRLimitRemoving
+};
+
+static int32_t loading_code = LoadingCode::RnRVanilla;
 
 #include <ranges>
 #include <span>
@@ -119,7 +128,11 @@ struct ReadVal
 	requires ( std::is_integral_v< _ty > )
 	static INLINE auto AsIs( const _ty& val )
 	{
-		if constexpr( sizeof( _ty ) == 2 )
+		if constexpr( sizeof( _ty ) == 1 )
+		{
+			return val;
+		}
+		else if constexpr( sizeof( _ty ) == 2 )
 		{
 			if constexpr( std::is_unsigned_v< _ty > )
 			{
@@ -146,10 +159,24 @@ struct ReadVal
 			return;
 		}
 	}
+
+	template< typename _consume_as >
+	static INLINE _consume_as Consume( byte*& buffer )
+	{
+		_consume_as val = AsIs( *(_consume_as*)buffer );
+		buffer += sizeof( _consume_as );
+		return val;
+	}
+
+	template< typename _advance_as >
+	static INLINE void Advance( byte*& buffer, size_t amount )
+	{
+		buffer += amount * sizeof( _advance_as );
+	}
 };
 
 template< typename _from, typename _to, typename _functor >
-auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
+auto WadDataConvert( byte* rawdata, size_t rawlength, _functor&& func )
 {
 	struct
 	{
@@ -157,12 +184,11 @@ auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
 		int32_t		count;
 	} data;
 
-	data.count = (int32_t)( ( W_LumpLength( lumpnum ) - dataoffset ) / sizeof( _from ) );
+	data.count = (int32_t)( rawlength / sizeof( _from ) );
 	data.output = (_to*)Z_Malloc( data.count * sizeof( _to ), PU_LEVEL, 0 );
 	memset( data.output, 0, data.count * sizeof( _to ) );
 
-	byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC );
-	_from* rhs = (_from*)( rawlump + dataoffset );
+	_from* rhs = (_from*)rawdata;
 	_to* lhs = data.output;
 
 	for( int32_t curr : iota( 0, data.count ) )
@@ -171,6 +197,18 @@ auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
 		++lhs;
 		++rhs;
 	}
+
+	return data;
+}
+
+
+template< typename _from, typename _to, typename _functor >
+auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
+{
+	byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC ) + dataoffset;
+	size_t rawlength = W_LumpLength( lumpnum ) - dataoffset;
+
+	auto data = WadDataConvert< _from, _to >( rawlump, rawlength, std::move( func ) );
 
 	W_ReleaseLumpNum( lumpnum );
 
@@ -182,6 +220,8 @@ typedef enum class NodeFormat : int32_t
 	Vanilla,
 	Extended,
 	DeepBSP,
+	ZNodeNormal,
+	ZNodeCompressed,
 } nodeformat_t;
 
 struct DoomMapLoader
@@ -190,6 +230,9 @@ struct DoomMapLoader
 
 	int32_t			_numvertices;
 	vertex_t*		_vertices;
+
+	int32_t			_numsegvertices;
+	vertex_t*		_segvertices;
 
 	int32_t			_numsegs;
 	seg_t*			_segs;
@@ -231,29 +274,57 @@ struct DoomMapLoader
 
 	lumpinfo_t*		_maplumpinfo;
 
-	constexpr auto	Vertices() const noexcept	{ return std::span( _vertices,		_numvertices ); }
-	constexpr auto	Segs() const noexcept		{ return std::span( _segs,			_numsegs ); }
-	constexpr auto	Sectors() const noexcept	{ return std::span( _sectors,		_numsectors ); }
-	constexpr auto	SubSectors() const noexcept	{ return std::span( _subsectors,	_numsubsectors ); }
-	constexpr auto	Nodes() const noexcept		{ return std::span( _nodes,			_numnodes ); }
-	constexpr auto	Lines() const noexcept		{ return std::span( _lines,			_numlines ); }
-	constexpr auto	Sides() const noexcept		{ return std::span( _sides,			_numsides ); }
+	constexpr auto	Vertices() const noexcept		{ return std::span( _vertices,		_numvertices ); }
+	constexpr auto	SegVertices() const noexcept	{ return std::span( _segvertices,	_numsegvertices ); }
+	constexpr auto	Segs() const noexcept			{ return std::span( _segs,			_numsegs ); }
+	constexpr auto	Sectors() const noexcept		{ return std::span( _sectors,		_numsectors ); }
+	constexpr auto	SubSectors() const noexcept		{ return std::span( _subsectors,	_numsubsectors ); }
+	constexpr auto	Nodes() const noexcept			{ return std::span( _nodes,			_numnodes ); }
+	constexpr auto	Lines() const noexcept			{ return std::span( _lines,			_numlines ); }
+	constexpr auto	Sides() const noexcept			{ return std::span( _sides,			_numsides ); }
 
 	void INLINE DetermineExtendedFormat( int32_t rootlump )
 	{
-		constexpr uint64_t Magic = 0x0000000034644E78ull;
+		constexpr uint64_t DeepBSPMagic = 0x0000000034644E78ull;
+		constexpr uint32_t ZNodeNormalMagic = 0x444F4E58;
+		constexpr uint32_t ZNodeCompressedMagic = 0x444F4E5A;
+
+		bool IsVanilla = loading_code == RnRVanilla;
+
 		// Note: We're abusing the fact that the nodes lump will get loaded as static
 		// and released after conversion here, so we don't need to free the lump and
 		// thus cause it to be loaded twice.
 		byte* data = (byte*)W_CacheLumpNum( rootlump + ML_NODES, PU_STATIC );
 
-		if( *(uint64_t*)data == Magic )
+		if( SDL_SwapLE64( *(uint64_t*)data ) == DeepBSPMagic )
 		{
 			_nodeformat = NodeFormat::DeepBSP;
+			I_LogAddEntry( Log_System, "Detected DeepBSP nodes" );
+		}
+		else if( SDL_SwapLE32( *(uint32_t*)data ) == ZNodeNormalMagic )
+		{
+			_nodeformat = NodeFormat::ZNodeNormal;
+			I_LogAddEntry( Log_System, "Detected uncompressed ZDoom nodes" );
+		}
+		else if( SDL_SwapLE32( *(uint32_t*)data ) == ZNodeCompressedMagic )
+		{
+			_nodeformat = NodeFormat::ZNodeCompressed;
+			I_LogAddEntry( Log_System, "Detected compressed ZDoom nodes" );
+			I_Error( "Compressed ZDoom nodes currently unsupported" );
+		}
+		else if( !IsVanilla )
+		{
+			I_LogAddEntry( Log_System, "No node format detected, using limit-removing structures" );
+			_nodeformat = NodeFormat::Extended;
 		}
 		else
 		{
-			_nodeformat = NodeFormat::Extended;
+			_nodeformat = NodeFormat::Vanilla;
+		}
+
+		if( IsVanilla && _nodeformat != NodeFormat::Vanilla )
+		{
+			I_Error( "Non-vanilla node format detected, use the -removelimits command line" );
 		}
 	}
 
@@ -283,8 +354,7 @@ struct DoomMapLoader
 
 	void INLINE LoadExtendedBlockmap( int32_t lumpnum )
 	{
-		constexpr int32_t ByteBoundary16bit = 0x10000;
-		constexpr int32_t MaxEntries16bit = ByteBoundary16bit / sizeof( mapblockmap_t );
+		constexpr int32_t MaxEntries16bit = 0x10000;
 
 		switch( _nodeformat )
 		{
@@ -293,6 +363,7 @@ struct DoomMapLoader
 		case DeepBSP:
 			LoadBlockmap< mapblockmap_extended_t >( lumpnum );
 
+			// Fixing bad blockmaps that indiscriminately built with integer wraparounds
 			if( _blockmapend - _blockmap >= MaxEntries16bit )
 			{
 				int32_t numindices = _blockmapwidth * _blockmapheight;
@@ -315,32 +386,9 @@ struct DoomMapLoader
 						}
 						lastindex = currindex;
 						currindex += offsetaddition;
-						++count;
 					}
+					++count;
 				}
-//#define DOING_REVERSE_ENGINEERING
-#ifdef DOING_REVERSE_ENGINEERING
-				ptrdiff_t listentries = _blockmapend - _blockmap;
-				int32_t numactualentries = 0;
-				for( blockmap_t* curr = _blockmapbase, *end = _blockmapend; curr != end; ++curr )
-				{
-					if( *curr == BLOCKMAP_INVALID )
-					{
-						++numactualentries;
-					}
-				}
-				int32_t numuniqueentries = 0;
-				std::vector< int32_t > found;
-				found.reserve( numindices );
-				for( blockmap_t* curr = _blockmap, *end = _blockmap + numindices; curr != end; ++curr )
-				{
-					if( std::find( found.begin(), found.end(), *curr ) == found.end() )
-					{
-						found.push_back( *curr );
-						++numuniqueentries;
-					}
-				}
-#endif
 			}
 			break;
 		case Vanilla:
@@ -363,6 +411,9 @@ struct DoomMapLoader
 
 		_numvertices		= data.count;
 		_vertices			= data.output;
+
+		_numsegvertices		= data.count;
+		_segvertices		= data.output;
 	}
 
 	void INLINE LoadSectors( int32_t lumpnum )
@@ -517,6 +568,13 @@ struct DoomMapLoader
 		{
 			LoadSubsectors< mapsubsector_deepbsp_t >( lumpnum );
 		}
+		else if( _nodeformat == NodeFormat::ZNodeNormal )
+		{
+		}
+		else if( _nodeformat == NodeFormat::ZNodeCompressed )
+		{
+			I_Error( "Compressed ZDoom nodes currently unsupported" );
+		}
 		else
 		{
 			LoadSubsectors< mapsubsector_limitremoving_t >( lumpnum );
@@ -577,14 +635,153 @@ struct DoomMapLoader
 		_nodes			= data.output;
 	}
 
+	void INLINE LoadZDoomNodes( byte* lumpdata, size_t datalength )
+	{
+		// Implemented entirely by referring to https://zdoom.org/wiki/Node#ZDoom_extended_nodes
+		byte* working = lumpdata;
+
+		int32_t origverts = Read::Consume< int32_t >( working );
+		int32_t newverts = Read::Consume< int32_t >( working );
+
+		auto verts = WadDataConvert< mapvertex_zdoom_t, vertex_t >( working, newverts * sizeof( mapvertex_zdoom_t ), []( int32_t index, vertex_t& out, const mapvertex_zdoom_t& in )
+		{
+			out.x = in.x;
+			out.y = in.y;
+
+			out.rend.x = FixedToRendFixed( out.x );
+			out.rend.y = FixedToRendFixed( out.y );
+		} );
+
+		_numsegvertices = origverts + newverts;
+		_segvertices = (vertex_t*)Z_Malloc( _numsegvertices * sizeof( vertex_t ), PU_LEVEL, 0 );
+
+		vertex_t* workingvert = _segvertices;
+		memcpy( workingvert, _vertices, sizeof( vertex_t ) * origverts );
+		workingvert += _numvertices;
+		memcpy( workingvert, verts.output, sizeof( vertex_t ) * newverts );
+
+		Read::Advance< mapvertex_zdoom_t >( working, newverts );
+
+		int32_t newsubsectors = Read::Consume< int32_t >( working );
+
+		int32_t currseg = 0;
+		auto subsecs = WadDataConvert< mapsubsector_zdoom_t, subsector_t >( working, newsubsectors * sizeof( mapsubsector_zdoom_t ), [ &currseg ]( int32_t index, subsector_t& out, const mapsubsector_zdoom_t& in )
+		{
+			out.numlines	= Read::AsIs( in.numsegs );
+			out.firstline	= currseg;
+			out.index		= index;
+
+			currseg += out.numlines;
+		} );
+
+		_numsubsectors = subsecs.count;
+		_subsectors = subsecs.output;
+
+		Read::Advance< mapsubsector_zdoom_t >( working, newsubsectors );
+
+		int32_t newsegs = Read::Consume< int32_t >( working );
+		auto segs = WadDataConvert< mapseg_zdoom_t, seg_t >( working, newsegs * sizeof( mapseg_zdoom_t ), [ this ]( int32_t index, seg_t& out, const mapseg_zdoom_t& in )
+		{
+			out.v1			= &SegVertices()[ Read::AsIs( in.v1 ) ];
+			out.v2			= &SegVertices()[ Read::AsIs( in.v2 ) ];
+			out.linedef		= &Lines()[ Read::AsIs( in.linedef ) ];
+
+			out.offset		= P_AproxDistance( out.v1->x - out.linedef->v1->x, out.v1->y - out.linedef->v1->y );
+			out.angle		= BSP_PointToAngle( out.v1->x, out.v1->y, out.v2->x, out.v2->y );
+
+			uint8_t side = Read::AsIs( in.side );
+			out.sidedef = &Sides()[ out.linedef->sidenum[ side ] ];
+			if( side == 0 )
+			{
+				out.frontsector = out.linedef->frontsector;
+				out.backsector = out.linedef->backsector;
+			}
+			else
+			{
+				out.frontsector = out.linedef->backsector;
+				out.backsector = out.linedef->frontsector;
+			}
+			
+			out.rend.offset	= FixedToRendFixed( out.offset );
+		} );
+
+		_numsegs = segs.count;
+		_segs = segs.output;
+
+		Read::Advance< mapseg_zdoom_t >( working, newsegs );
+
+		int32_t newnodes = Read::Consume< int32_t >( working );
+		auto nodes = WadDataConvert< mapnode_zdoom_t, node_t >( working, newnodes * sizeof( mapnode_zdoom_t ), []( int32_t index, node_t& out, const mapnode_zdoom_t& in )
+		{
+			out.divline.x			= IntToFixed( Read::AsIs( in.x ) );
+			out.divline.y			= IntToFixed( Read::AsIs( in.y ) );
+			out.divline.dx			= IntToFixed( Read::AsIs( in.dx ) );
+			out.divline.dy			= IntToFixed( Read::AsIs( in.dy ) );
+			for( int32_t child : iota( 0, 2 ) )
+			{
+				out.children[ child ] = Read::AsIs( in.children[ child ] );
+				for ( int32_t corner : iota( 0, 4 ) )
+				{
+					out.bbox[ child ][ corner ] = IntToFixed( Read::AsIs( in.bbox[ child ][ corner ] ) );
+				}
+			}
+
+			out.rend.x			= FixedToRendFixed( out.divline.x );
+			out.rend.y			= FixedToRendFixed( out.divline.y );
+			out.rend.dx			= FixedToRendFixed( out.divline.dx );
+			out.rend.dy			= FixedToRendFixed( out.divline.dy );
+			for( int32_t child : iota( 0, 2 ) )
+			{
+				for ( int32_t corner : iota( 0, 4 ) )
+				{
+					out.rend.bbox[ child ][ corner ] = FixedToRendFixed( out.bbox[ child ][ corner ] );
+				}
+			}
+
+		} );
+
+		_numnodes = nodes.count;
+		_nodes = nodes.output;
+
+	}
+
 	void INLINE LoadExtendedNodes( int32_t lumpnum )
 	{
-		constexpr uint64_t Magic = 0x0000000034644E78ull;
-		byte* data = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC );
-
 		if( _nodeformat == NodeFormat::DeepBSP )
 		{
 			LoadNodes< mapnode_deepbsp_t >( lumpnum, 8 );
+		}
+		else if( _nodeformat == NodeFormat::ZNodeNormal )
+		{
+			byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC );
+			size_t rawlength = W_LumpLength( lumpnum );
+
+			// Advancing past the identifier
+			Read::Consume< int32_t >( rawlump );
+			rawlength -= sizeof( int32_t );
+
+			LoadZDoomNodes( rawlump, rawlength );
+
+			W_ReleaseLumpNum( lumpnum );
+		}
+		else if( _nodeformat == NodeFormat::ZNodeCompressed )
+		{
+			// Need to get zlib and libpng in here
+			I_Error( "Compressed ZDoom nodes currently unsupported" );
+
+#ifdef HAVE_LIBPNG
+			byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC );
+			size_t rawlength = W_LumpLength( lumpnum );
+
+			// Advancing past the identifier
+			Read::Consume< int32_t >( rawlump );
+			rawlength -= sizeof( int32_t );
+
+			// Decompress data here
+			//LoadZDoomNodes( rawlump, rawlength );
+#endif // HAVE_LIBPNG
+
+			W_ReleaseLumpNum( lumpnum );
 		}
 		else
 		{
@@ -654,9 +851,16 @@ struct DoomMapLoader
 		{
 			LoadSegs< mapseg_deepbsp_t >( lumpnum );
 		}
+		else if( _nodeformat == NodeFormat::ZNodeNormal )
+		{
+		}
+		else if( _nodeformat == NodeFormat::ZNodeCompressed )
+		{
+			I_Error( "Compressed ZDoom nodes currently unsupported" );
+		}
 		else
 		{
-			LoadSegs( lumpnum );
+			LoadSegs< mapseg_limitremoving_t >( lumpnum );
 		}
 	}
 
@@ -895,14 +1099,6 @@ extern "C"
 	lumpinfo_t *maplumpinfo;
 }
 
-enum LoadingCode : int32_t
-{
-	RnRVanilla,
-	RnRLimitRemoving
-};
-
-int32_t loading_code = LoadingCode::RnRVanilla;
-
 //
 // P_LoadThings
 //
@@ -970,6 +1166,47 @@ static void P_LoadThings (int lump)
     W_ReleaseLumpNum(lump);
 }
 
+DOOM_C_API extern const char *mapnames[];
+DOOM_C_API extern const char *mapnames_chex[];
+DOOM_C_API extern const char *mapnames_commercial[];
+
+const char* P_GetMapTitle()
+{
+	const char* s = "Unknown level";
+
+	switch ( logical_gamemission )
+	{
+	case doom:
+		if( gameversion == exe_chex )
+		{
+			s = mapnames_chex[ ( gameepisode - 1 ) * 9 + gamemap - 1 ];
+		}
+		else
+		{
+			s = mapnames[ ( gameepisode - 1 ) * 9 + gamemap - 1 ];
+		}
+		break;
+	case doom2:
+		s = mapnames_commercial[ gamemap - 1 ];
+		// Pre-Final Doom compatibility: map33-map35 names don't spill over
+		if (gameversion <= exe_doom_1_9 && gamemap >= 33)
+		{
+			s = "";
+		}
+		break;
+	case pack_plut:
+		s = mapnames_commercial[ gamemap - 1 + 32 ];
+		break;
+	case pack_tnt:
+		s = mapnames_commercial[ gamemap - 1 + 64 ];
+		break;
+	default:
+		break;
+	}
+
+	return DEH_String(s);
+}
+
 //
 // P_SetupLevel
 //
@@ -1017,6 +1254,8 @@ P_SetupLevel
 		DEH_snprintf( lumpname, 9, "E%dM%d", episode, map );
 	}
 
+	I_LogAddEntryVar( Log_System, "Loading %s: (%s)", lumpname, P_GetMapTitle() );
+
     lumpnum = W_GetNumForName (lumpname);
 	
     maplumpinfo = lumpinfo[lumpnum];
@@ -1051,8 +1290,10 @@ P_SetupLevel
 			loader.LoadSectors( lumpnum + ML_SECTORS );
 			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
 			loader.LoadExtendedLinedefs( lumpnum + ML_LINEDEFS );
-			loader.LoadExtendedSubsectors( lumpnum + ML_SSECTORS );
+			// We're going to switch the order of nodes and subsectors
+			// loading for limit removing maps.
 			loader.LoadExtendedNodes( lumpnum + ML_NODES );
+			loader.LoadExtendedSubsectors( lumpnum + ML_SSECTORS );
 			loader.LoadExtendedSegs( lumpnum + ML_SEGS );
 			loader.GroupLines();
 			loader.LoadReject( lumpnum + ML_REJECT );

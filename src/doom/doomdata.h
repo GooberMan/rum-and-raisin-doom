@@ -62,6 +62,12 @@ typedef PACKED_STRUCT (
 }) mapvertex_t;
 
 
+typedef PACKED_STRUCT (
+{
+	int32_t		x;
+	int32_t		y;
+}) mapvertex_zdoom_t;
+
 // A SideDef, defining the visual appearance of a wall,
 // by setting textures and offsets.
 typedef PACKED_STRUCT (
@@ -92,8 +98,8 @@ typedef PACKED_STRUCT (
 
 typedef PACKED_STRUCT (
 {
-	int16_t		v1;
-	int16_t		v2;
+	uint16_t	v1;
+	uint16_t	v2;
 	int16_t		flags;
 	int16_t		special;
 	int16_t		tag;
@@ -169,11 +175,17 @@ typedef PACKED_STRUCT (
 typedef PACKED_STRUCT (
 {
 	int16_t		numsegs;
-  // Index of first one, segs are stored sequentially.
+	// Index of first one, segs are stored sequentially.
 	uint16_t	firstseg;
 }) mapsubsector_limitremoving_t;
 
-
+typedef PACKED_STRUCT (
+{
+	int32_t		numsegs;
+	// ZDoom format relies on rebuilding the seg index at runtime
+	// and ensures that the segs are in the correct order required
+	// for this work.
+}) mapsubsector_zdoom_t;
 
 typedef PACKED_STRUCT(
 {
@@ -195,6 +207,16 @@ typedef PACKED_STRUCT (
 
 typedef PACKED_STRUCT (
 {
+	uint16_t	v1;
+	uint16_t	v2;
+	int16_t		angle;
+	uint16_t	linedef;
+	uint16_t	side;
+	int16_t		offset;
+}) mapseg_limitremoving_t;
+
+typedef PACKED_STRUCT (
+{
 	int32_t		v1;
 	int32_t		v2;
 	uint16_t	angle;
@@ -202,6 +224,14 @@ typedef PACKED_STRUCT (
 	int16_t		side;
 	uint16_t	offset;
 }) mapseg_deepbsp_t;
+
+typedef PACKED_STRUCT (
+{
+	int32_t		v1;
+	int32_t		v2;
+	uint16_t	linedef;
+	uint8_t		side;
+}) mapseg_zdoom_t;
 
 // BSP node structure.
 
@@ -237,6 +267,7 @@ typedef PACKED_STRUCT (
 	int32_t		children[2];
 }) mapnode_deepbsp_t;
 
+typedef mapnode_deepbsp_t mapnode_zdoom_t;
 
 
 
