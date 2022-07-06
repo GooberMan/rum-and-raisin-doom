@@ -539,7 +539,7 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 #endif // RENDER_PERF_GRAPHING
 
 	// check for solidsegs overflow - extremely unsatisfactory!
-	if( !M_CheckParm( "-removelimits" ) && bspcontext->solidsegsend > &bspcontext->solidsegs[ VANILLA_MAXSEGS ] )
+	if( !remove_limits && bspcontext->solidsegsend > &bspcontext->solidsegs[ VANILLA_MAXSEGS ] )
 	{
 		I_Error("R_Subsector: solidsegs overflow (vanilla may crash here)\n");
 	}
