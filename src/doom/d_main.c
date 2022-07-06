@@ -131,6 +131,7 @@ char		mapdir[1024];           // directory of development maps
 
 int32_t				show_endoom = 1;
 int32_t				show_diskicon = 1;
+int32_t				remove_limits = 0;
 
 extern int32_t		numrendercontexts;
 extern int32_t		numusablerendercontexts;
@@ -1794,6 +1795,11 @@ void D_DoomMain (void)
 	{
 		M_StrToInt( myargv[p + 1], &numrendercontexts );
 		numusablerendercontexts = numrendercontexts;
+	}
+
+	if( M_CheckParm( "-removelimits" ) )
+	{
+		remove_limits = 1;
 	}
 
     // Set the gamedescription string. This is only possible now that

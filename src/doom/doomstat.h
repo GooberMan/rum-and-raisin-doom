@@ -278,5 +278,6 @@ extern	int		rndindex;
 
 extern  ticcmd_t       *netcmds;
 
+extern int32_t remove_limits;
 
 #endif
