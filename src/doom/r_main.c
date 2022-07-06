@@ -81,7 +81,7 @@ renderdata_t*			renderdatas;
 
 int32_t					numrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
 int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
-boolean					renderloadbalancing = false;
+boolean					renderloadbalancing = true;
 boolean					rendersplitvisualise = false;
 boolean					renderrebalancecontexts = false;
 float_t					rebalancescale = 0.025f;
@@ -1505,7 +1505,7 @@ void R_RenderDimensionsChanged( void )
 subsector_t* BSP_PointInSubsector( fixed_t x, fixed_t y )
 {
 	node_t*		node;
-	int32_t		nodenum;
+	uint32_t	nodenum;
 
 	// single subsector is a special case
 	if ( !numnodes )
