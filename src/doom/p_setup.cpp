@@ -355,23 +355,29 @@ struct DoomMapLoader
 	void INLINE LoadExtendedBlockmap( int32_t lumpnum )
 	{
 		constexpr int32_t MaxEntries16bit = 0x10000;
+		constexpr int32_t Bias16bit = 0x200;
 
 		switch( _nodeformat )
 		{
-		using enum NodeFormat;
-		case Extended:
-		case DeepBSP:
+		case NodeFormat::Vanilla:
+			LoadBlockmap( lumpnum );
+			break;
+
+		default:
 			LoadBlockmap< mapblockmap_extended_t >( lumpnum );
 
 			// Fixing bad blockmaps that indiscriminately built with integer wraparounds
 			if( _blockmapend - _blockmap >= MaxEntries16bit )
 			{
+				I_LogAddEntry( Log_System, "Detected blockmap overflow, attempting correction" );
+
 				int32_t numindices = _blockmapwidth * _blockmapheight;
 				int32_t baseoffset = ( numindices + 4 );
 				int32_t firstentry = baseoffset % MaxEntries16bit;
 				int32_t offsetaddition = baseoffset & ~( MaxEntries16bit - 1 );
 				int32_t lastindex = 0;
 				int32_t count = 0;
+				boolean foundproblem = false;
 				for( int32_t& currindex : std::span( _blockmap, numindices ) )
 				{
 					if( currindex == firstentry )
@@ -380,9 +386,16 @@ struct DoomMapLoader
 					}
 					else
 					{
-						if( currindex < lastindex )
+						if( lastindex >= ( MaxEntries16bit - Bias16bit ) && currindex < Bias16bit )
 						{
 							offsetaddition += MaxEntries16bit;
+						}
+						else if( currindex >= ( MaxEntries16bit - Bias16bit ) && lastindex < Bias16bit )
+						{
+							if( !foundproblem ) I_LogAddEntry( Log_Warning, "Blockmap correction has potential problems around 16-bit boundary" );
+							foundproblem = true;
+
+							offsetaddition -= MaxEntries16bit;
 						}
 						lastindex = currindex;
 						currindex += offsetaddition;
@@ -390,10 +403,6 @@ struct DoomMapLoader
 					++count;
 				}
 			}
-			break;
-		case Vanilla:
-		default:
-			LoadBlockmap( lumpnum );
 			break;
 		}
 	}
