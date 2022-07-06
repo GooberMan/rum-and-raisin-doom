@@ -1038,6 +1038,9 @@ extern "C"
 	int32_t		numvertexes;
 	vertex_t*	vertexes;
 
+	int32_t		numsegvertexes;
+	vertex_t*	segvertexes;
+
 	int32_t		numsegs;
 	seg_t*		segs;
 
@@ -1315,6 +1318,8 @@ P_SetupLevel
 
 	numvertexes		= loader._numvertices;
 	vertexes		= loader._vertices;
+	numsegvertexes	= loader._numsegvertices;
+	segvertexes		= loader._segvertices;
 
 	numsectors		= loader._numsectors;
 	sectors			= loader._sectors;
