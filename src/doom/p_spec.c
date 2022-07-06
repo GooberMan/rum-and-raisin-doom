@@ -135,11 +135,10 @@ anim_t*		lastanim;
 //
 //      Animating line specials
 //
-#define MAXLINEANIMS            64
+#define VANILLA_MAXLINEANIMS	64
 
-extern  short	numlinespecials;
-extern  line_t*	linespeciallist[MAXLINEANIMS];
-
+int32_t		numlinespecials;
+line_t**	linespeciallist;
 
 
 void P_InitPicAnims (void)
@@ -1430,8 +1429,6 @@ int EV_DoDonut(line_t*	line)
 // After the map has been loaded, scan for specials
 //  that spawn thinkers
 //
-short		numlinespecials;
-line_t*		linespeciallist[MAXLINEANIMS];
 
 static unsigned int NumScrollers()
 {
@@ -1532,24 +1529,25 @@ void P_SpawnSpecials (void)
     }
 
     
-    //	Init line EFFECTs
-    numlinespecials = 0;
-    for (i = 0;i < numlines; i++)
-    {
-	switch(lines[i].special)
+	//	Init line EFFECTs
+	int32_t scrollcount = NumScrollers();
+	if( !remove_limits && scrollcount > VANILLA_MAXLINEANIMS )
 	{
-	  case 48:
-            if (numlinespecials >= MAXLINEANIMS)
-            {
-                I_Error("Too many scrolling wall linedefs (%d)! "
-                        "(Vanilla limit is 64)", NumScrollers());
-            }
-	    // EFFECT FIRSTCOL SCROLL+
-	    linespeciallist[numlinespecials] = &lines[i];
-	    numlinespecials++;
-	    break;
+		I_Error( "Too many scrolling wall linedefs (%d)! (Vanilla limit is %d)", scrollcount, VANILLA_MAXLINEANIMS );
 	}
-    }
+
+	linespeciallist = Z_Malloc( sizeof( line_t* ) * scrollcount, PU_LEVEL, NULL );
+	numlinespecials = 0;
+	for (i = 0;i < numlines; i++)
+	{
+		switch(lines[i].special)
+		{
+		case 48:
+			// EFFECT FIRSTCOL SCROLL+
+			linespeciallist[ numlinespecials++ ] = &lines[ i ];
+			break;
+		}
+	}
 
     
     //	Init other misc stuff
