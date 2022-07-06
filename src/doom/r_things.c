@@ -485,6 +485,8 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 #ifdef RANGECHECK
 	if ( (thing->frame&FF_FRAMEMASK) >= sprdef->numframes )
 	{
+		if( remove_limits ) return;
+
 		I_Error ("R_ProjectSprite: invalid sprite frame %i : %i ",
 				thing->sprite, thing->frame);
 	}
