@@ -117,6 +117,7 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
 			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
 			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
+			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
 		}
 		if constexpr( LeapLog2 >= 4 )
 		{
