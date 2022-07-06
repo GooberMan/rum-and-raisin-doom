@@ -1392,7 +1392,7 @@ DOOM_C_API void P_Init (void)
     P_InitPicAnims ();
     R_InitSprites (sprnames);
 
-	if( M_CheckParm( "-removelimits" ) )
+	if( remove_limits )
 	{
 		loading_code = LoadingCode::RnRLimitRemoving;
 	}
