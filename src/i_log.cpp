@@ -24,6 +24,7 @@ extern "C"
 #include <limits>
 #include <utility>
 #include <type_traits>
+#include <algorithm>
 
 #include <ctime>
 
@@ -43,6 +44,9 @@ typedef struct logentry_s
 		, type( t )
 		, message( m )
 	{
+		message.erase( std::remove( message.begin(), message.end(), '\n' ), message.end() );
+		std::replace( message.begin(), message.end(), '\t', ' ' );
+
 		char output[ 24 ];
 
 		std::tm local = *std::localtime( &timestamp );
