@@ -309,7 +309,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 		topscreen = spritecontext->sprtopscreen + spritecontext->spryscale*column->topdelta;
 		bottomscreen = topscreen + spritecontext->spryscale*column->length;
 
-		colcontext->yl = RendFixedToInt( topscreen + FRACUNIT - 1 );
+		colcontext->yl = RendFixedToInt( topscreen + RENDFRACUNIT - 1 );
 		colcontext->yh = RendFixedToInt( bottomscreen - 1 );
 
 		if( isfuzz )
