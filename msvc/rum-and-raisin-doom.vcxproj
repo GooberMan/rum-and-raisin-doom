@@ -243,6 +243,7 @@
     <ClCompile Include="..\src\i_system.c" />
     <ClInclude Include="..\src\i_log.h" />
     <ClInclude Include="..\src\i_thread.h" />
+    <ClInclude Include="..\src\m_container.h" />
     <ClInclude Include="..\src\m_debugmenu.h" />
     <ClInclude Include="..\src\i_system.h" />
     <ClCompile Include="..\src\m_argv.c" />
