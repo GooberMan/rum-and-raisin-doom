@@ -135,7 +135,7 @@ extern int key_menu_incscreen;
 extern int key_menu_decscreen;
 extern int key_menu_screenshot;
 
-extern int key_menu_debug;
+extern int key_menu_dashboard;
 
 extern int mousebfire;
 extern int mousebstrafe;

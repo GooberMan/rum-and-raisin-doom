@@ -1439,7 +1439,7 @@ static default_t extra_defaults_list[] =
     // Keyboard shortcut bring up the ImGui debug menus.
     //
 
-    CONFIG_VARIABLE_KEY(key_menu_debug),
+    CONFIG_VARIABLE_KEY(key_menu_dashboard),
 
     //!
     // Key to toggle the map view.
@@ -1801,13 +1801,13 @@ static default_t extra_defaults_list[] =
 	// Tracks the debug menu theme. Nothing more. Integer that maps directly in to the theme array.
 	//
 
-	CONFIG_VARIABLE_INT(debugmenu_theme),
+	CONFIG_VARIABLE_INT(dashboard_theme),
 
 	//!
 	// Debug menu can let the playsim run ahead while it's active. Or not. Up to you.
 	//
 
-	CONFIG_VARIABLE_INT(debugmenu_pausesplaysim),
+	CONFIG_VARIABLE_INT(dashboard_pausesplaysim),
 
 	//!
 	// @game doom

@@ -51,7 +51,7 @@
 #include "m_controls.h"
 #include "m_misc.h"
 #include "m_menu.h"
-#include "m_debugmenu.h"
+#include "m_dashboard.h"
 #include "p_saveg.h"
 
 #include "i_endoom.h"
@@ -212,7 +212,7 @@ boolean D_Display (void)
 	patch_t*		pausepatch;
 
 	boolean ispaused = paused
-		|| 	( gamestate == GS_LEVEL && !demoplayback && debugmenuactive && debugmenupausesplaysim && ( solonetgame || !netgame ) );
+		|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
 
 
 	redrawsbar = refreshstatusbar || voidcleartype != Void_NoClear;
@@ -420,7 +420,7 @@ void D_BindVariables(void)
     M_BindMapControls();
     M_BindMenuControls();
     M_BindChatControls(MAXPLAYERS);
-	M_BindDebugMenuVariables();
+	M_BindDashboardVariables();
 
 	R_BindRenderVariables();
 
@@ -1357,7 +1357,7 @@ void D_DoomMain (void)
 	blackedges.pixel_size_bytes = 1;
 	blackedges.magic_value = vbuffer_magic;
 
-	M_InitDebugMenu();
+	M_InitDashboard();
 
     I_AtExit(D_Endoom, false);
 
@@ -1972,7 +1972,7 @@ void D_DoomMain (void)
         autostart = true;
         testcontrols = true;
 
-		M_RegisterDebugMenuWindow( "Test|Mouse", "Mouse testing", 400, 200, &testcontrols, Menu_Overlay, &D_TestControls );
+		M_RegisterDashboardWindow( "Test|Mouse", "Mouse testing", 400, 200, &testcontrols, Menu_Overlay, &D_TestControls );
     }
 
     // Check for load game parameter

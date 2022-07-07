@@ -1036,7 +1036,7 @@ extern "C"
 
 	#include "doomstat.h"
 
-	#include "m_debugmenu.h"
+	#include "m_dashboard.h"
 
 	void	P_SpawnMapThing (mapthing_t*	mthing);
 
@@ -1398,9 +1398,9 @@ DOOM_C_API void P_Init (void)
 	}
 
 	// The original code officially doesn't work right now. But it's about time to delete it anyway...
-	//M_RegisterDebugMenuRadioButton( "Map|Load Path|Original", NULL, &loading_code, LoadingCode::Original );
-	M_RegisterDebugMenuRadioButton( "Map|Load Path|Vanilla", NULL, &loading_code, LoadingCode::RnRVanilla );
-	M_RegisterDebugMenuRadioButton( "Map|Load Path|Limit Removing", NULL, &loading_code, LoadingCode::RnRLimitRemoving );
+	//M_RegisterDashboardRadioButton( "Map|Load Path|Original", NULL, &loading_code, LoadingCode::Original );
+	M_RegisterDashboardRadioButton( "Map|Load Path|Vanilla", NULL, &loading_code, LoadingCode::RnRVanilla );
+	M_RegisterDashboardRadioButton( "Map|Load Path|Limit Removing", NULL, &loading_code, LoadingCode::RnRLimitRemoving );
 }
 
 

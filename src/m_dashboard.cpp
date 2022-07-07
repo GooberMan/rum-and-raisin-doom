@@ -1,5 +1,5 @@
 //
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -12,15 +12,18 @@
 // GNU General Public License for more details.
 //
 
-#include "m_debugmenu.h"
-#include "i_system.h"
-#include "m_config.h"
+extern "C"
+{
+	#include "m_dashboard.h"
+	#include "i_system.h"
+	#include "m_config.h"
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui.h"
+	#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+	#include "cimgui.h"
 
-#include <stdio.h>
-#include <string.h>
+	#include <stdio.h>
+	#include <string.h>
+}
 
 typedef enum menuentrytype_e
 {
@@ -353,8 +356,8 @@ typedef struct menuentry_s
 
 typedef void (*renderchild_t)( menuentry_t* );
 
-static menuentry_t* M_FindDebugMenuCategory( const char* category_name );
-static void M_RenderDebugMenuChildren( menuentry_t** children );
+static menuentry_t* M_FindDashboardCategory( const char* category_name );
+static void M_RenderDashboardChildren( menuentry_t** children );
 static void M_ThrowAnErrorBecauseThisIsInvalid( menuentry_t* cat );
 static void M_RenderWindowItem( menuentry_t* cat );
 static void M_RenderCategoryItem( menuentry_t* cat );
@@ -364,11 +367,17 @@ static void M_RenderCheckboxFlagItem( menuentry_t* cat );
 static void M_RenderRadioButtonItem( menuentry_t* cat );
 static void M_RenderSeparator( menuentry_t* cat );
 
-ImGuiContext*			imgui_context;
-boolean					debugmenuactive = false;
-int32_t					debugmenuremappingkey = Remap_None;
-int32_t					debugmenupausesplaysim = true;
-static int32_t			debugmenu_theme = 0;
+extern "C"
+{
+	ImGuiContext*			imgui_context;
+	boolean					dashboardactive = false;
+	int32_t					dashboardremappingkey = Remap_None;
+	int32_t					dashboardpausesplaysim = true;
+	int32_t					dashboardopensound = 0;
+	int32_t					dashboardclosesound = 0;
+}
+
+static int32_t			dashboard_theme = 0;
 
 static menuentry_t		entries[ MAXENTRIES + 1 ]; // +1 for overflow
 static menuentry_t*		rootentry;
@@ -390,19 +399,19 @@ static renderchild_t	childfuncs[] =
 static boolean aboutwindow_open = false;
 static boolean licenseswindow_open = false;
 
-#define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_DebugMenu: More than %d elements total added", MAXENTRIES ); }
-#define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_DebugMenu: Too many child elements added to %s", elem->name ); }
+#define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_Dashboard: More than %d elements total added", MAXENTRIES ); }
+#define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_Dashboard: Too many child elements added to %s", elem->name ); }
 
 // Blatantly assuming this will get linked in just fine
-void S_StartSound( void *origin, int sound_id );
+DOOM_C_API void S_StartSound( void *origin, int sound_id );
 
-static void M_OnDebugMenuCloseButton( const char* itemname, void* data )
+static void M_OnDashboardCloseButton( const char* itemname, void* data )
 {
-	S_StartSound(NULL, debugmenuclosesound);
-	debugmenuactive = false;
+	S_StartSound( NULL, dashboardclosesound );
+	dashboardactive = false;
 }
 
-static void M_OnDebugMenuCoreQuit( const char* itemname, void* data )
+static void M_OnDashboardCoreQuit( const char* itemname, void* data )
 {
 	I_Quit();
 }
@@ -506,7 +515,7 @@ static void M_LicensesWindow( const char* itemname, void* data )
 	igPopID();
 }
 
-void M_InitDebugMenu( void )
+void M_InitDashboard( void )
 {
 	char themefullpath[ MAXNAMELENGTH + 1 ];
 	themedata_t* thistheme;
@@ -528,7 +537,7 @@ void M_InitDebugMenu( void )
 	nextentry = entries;
 	rootentry = nextentry++;
 
-	sprintf( rootentry->name, "Rum and Raisin Doom Debug menu" );
+	sprintf( rootentry->name, "Rum and Raisin Doom Dashboard" );
 	rootentry->type = MET_Category;
 	rootentry->freechild = rootentry->children;
 	rootentry->enabled = true;
@@ -536,11 +545,11 @@ void M_InitDebugMenu( void )
 
 	// Core layout. Add top level categories here
 	{
-		M_RegisterDebugMenuButton( "Close debug", NULL, &M_OnDebugMenuCloseButton, NULL );
-		M_FindDebugMenuCategory( "Core" );
-		M_FindDebugMenuCategory( "Game" );
-		M_FindDebugMenuCategory( "Render" );
-		M_FindDebugMenuCategory( "Map" );
+		M_RegisterDashboardButton( "Close dashboard", NULL, &M_OnDashboardCloseButton, NULL );
+		M_FindDashboardCategory( "Core" );
+		M_FindDashboardCategory( "Game" );
+		M_FindDashboardCategory( "Render" );
+		M_FindDashboardCategory( "Map" );
 	}
 
 	thistheme = themes;
@@ -548,22 +557,22 @@ void M_InitDebugMenu( void )
 	{
 		memset( themefullpath, 0, sizeof( themefullpath ) );
 		sprintf( themefullpath, "Core|Theme|%s", thistheme->name );
-		M_RegisterDebugMenuRadioButton( themefullpath, NULL, &debugmenu_theme, (int32_t)( thistheme - themes ) );
+		M_RegisterDashboardRadioButton( themefullpath, NULL, &dashboard_theme, (int32_t)( thistheme - themes ) );
 		++thistheme;
 	}
 
-	M_RegisterDebugMenuCheckbox( "Core|Pause While Active", "Multiplayer ignores this", (boolean*)&debugmenupausesplaysim );
-	M_RegisterDebugMenuWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, Menu_Normal, &M_AboutWindow );
-	M_RegisterDebugMenuWindow( "Core|Licenses", "Licenses", 0, 0, &licenseswindow_open, Menu_Normal, &M_LicensesWindow );
-	M_RegisterDebugMenuSeparator( "Core" );
-	M_RegisterDebugMenuButton( "Core|Quit", "Yes, this means quit the game", &M_OnDebugMenuCoreQuit, NULL );
+	M_RegisterDashboardCheckbox( "Core|Pause While Active", "Multiplayer ignores this", (boolean*)&dashboardpausesplaysim );
+	M_RegisterDashboardWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, Menu_Normal, &M_AboutWindow );
+	M_RegisterDashboardWindow( "Core|Licenses", "Licenses", 0, 0, &licenseswindow_open, Menu_Normal, &M_LicensesWindow );
+	M_RegisterDashboardSeparator( "Core" );
+	M_RegisterDashboardButton( "Core|Quit", "Yes, this means quit the game", &M_OnDashboardCoreQuit, NULL );
 
 }
 
-void M_BindDebugMenuVariables( void )
+void M_BindDashboardVariables( void )
 {
-	M_BindIntVariable("debugmenu_theme",			&debugmenu_theme);
-	M_BindIntVariable("debugmenu_pausesplaysim",	&debugmenupausesplaysim );
+	M_BindIntVariable("dashboard_theme",			&dashboard_theme);
+	M_BindIntVariable("dashboard_pausesplaysim",	&dashboardpausesplaysim );
 }
 
 static void M_RenderTooltip( menuentry_t* cat )
@@ -583,14 +592,14 @@ static void M_ThrowAnErrorBecauseThisIsInvalid( menuentry_t* cat )
 
 static void M_RenderWindowItem( menuentry_t* cat )
 {
-	igCheckbox( cat->name, cat->data );
+	igCheckbox( cat->name, (bool*)cat->data );
 }
 
 static void M_RenderCategoryItem( menuentry_t* cat )
 {
 	if( igBeginMenu( cat->name, true ) )
 	{
-		M_RenderDebugMenuChildren( cat->children );
+		M_RenderDashboardChildren( cat->children );
 		igEndMenu();
 	}
 }
@@ -608,13 +617,13 @@ static void M_RenderButtonItem( menuentry_t* cat )
 
 static void M_RenderCheckboxItem( menuentry_t* cat )
 {
-	igCheckbox( cat->name, cat->data );
+	igCheckbox( cat->name, (bool*)cat->data );
 	M_RenderTooltip( cat );
 }
 
 static void M_RenderCheckboxFlagItem( menuentry_t* cat )
 {
-	igCheckboxFlags( cat->name, cat->data, *(uint32_t*)&cat->comparison );
+	igCheckboxFlags( cat->name, (uint32_t*)cat->data, *(uint32_t*)&cat->comparison );
 	M_RenderTooltip( cat );
 }
 
@@ -629,7 +638,7 @@ static void M_RenderSeparator( menuentry_t* cat )
 	igSeparator( );
 }
 
-static void M_RenderDebugMenuChildren( menuentry_t** children )
+static void M_RenderDashboardChildren( menuentry_t** children )
 {
 	menuentry_t* child;
 
@@ -641,7 +650,7 @@ static void M_RenderDebugMenuChildren( menuentry_t** children )
 	}
 }
 
-static int32_t M_GetDebugMenuWindowsOpened( menuentry_t** children )
+static int32_t M_GetDashboardWindowsOpened( menuentry_t** children )
 {
 	menuentry_t* child = NULL;
 	int32_t windowcount = 0;
@@ -657,7 +666,7 @@ static int32_t M_GetDebugMenuWindowsOpened( menuentry_t** children )
 
 		if( child->children[ 0 ] )
 		{
-			windowcount += M_GetDebugMenuWindowsOpened( child->children );
+			windowcount += M_GetDashboardWindowsOpened( child->children );
 		}
 
 		++children;
@@ -667,7 +676,7 @@ static int32_t M_GetDebugMenuWindowsOpened( menuentry_t** children )
 }
 
 
-static int32_t M_RenderDebugMenuWindowActivationItems( menuentry_t** children )
+static int32_t M_RenderDashboardWindowActivationItems( menuentry_t** children )
 {
 	menuentry_t* child = NULL;
 	int32_t windowcount = 0;
@@ -687,7 +696,7 @@ static int32_t M_RenderDebugMenuWindowActivationItems( menuentry_t** children )
 
 		if( child->children[ 0 ] )
 		{
-			windowcount += M_RenderDebugMenuWindowActivationItems( child->children );
+			windowcount += M_RenderDashboardWindowActivationItems( child->children );
 		}
 
 		++children;
@@ -696,35 +705,34 @@ static int32_t M_RenderDebugMenuWindowActivationItems( menuentry_t** children )
 	return windowcount;
 }
 
-void M_RenderDebugMenu( void )
+void M_RenderDashboard( void )
 {
 	menuentry_t* thiswindow;
 	menufunc_t callback;
-	boolean isopen;
 	int32_t renderedwindowscount = 0;
 	int32_t windowflags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse;
-	if( !debugmenuactive ) windowflags |= ImGuiWindowFlags_NoInputs;
+	if( !dashboardactive ) windowflags |= ImGuiWindowFlags_NoInputs;
 
-	memcpy( igGetStyle()->Colors, themes[ debugmenu_theme ].colors, sizeof( igGetStyle()->Colors ) );
+	memcpy( igGetStyle()->Colors, themes[ dashboard_theme ].colors, sizeof( igGetStyle()->Colors ) );
 
 	thiswindow = entries;
 
-	if( debugmenuactive )
+	if( dashboardactive )
 	{
 		if( igBeginMainMenuBar() )
 		{
-			M_RenderDebugMenuChildren( rootentry->children );
+			M_RenderDashboardChildren( rootentry->children );
 
 			if( igBeginMenu( "Windows", true ) )
 			{
 				if( igMenuItemBool( "Backbuffer", "", false, true ) ) igSetWindowFocusStr( "Backbuffer" );
 				if( igMenuItemBool( "Log", "", false, true ) ) igSetWindowFocusStr( "Log" );
 
-				if( M_GetDebugMenuWindowsOpened( rootentry->children ) > 0 )
+				if( M_GetDashboardWindowsOpened( rootentry->children ) > 0 )
 				{
 					igSeparator();
 
-					M_RenderDebugMenuWindowActivationItems( rootentry->children );
+					M_RenderDashboardWindowActivationItems( rootentry->children );
 				}
 
 				igEndMenu();
@@ -737,13 +745,13 @@ void M_RenderDebugMenu( void )
 	{
 		if( thiswindow->type == MET_Window )
 		{
-			isopen = *(boolean*)thiswindow->data && ( debugmenuactive || ( thiswindow->properties & Menu_Overlay ) == Menu_Overlay );
+			bool isopen = *(bool*)thiswindow->data && ( dashboardactive || ( thiswindow->properties & Menu_Overlay ) == Menu_Overlay );
 			if( isopen )
 			{
 				igPushIDPtr( thiswindow );
 				{
 					igSetNextWindowSize( thiswindow->dimensions, ImGuiCond_FirstUseEver );
-					if( igBegin( thiswindow->caption, thiswindow->data, windowflags ) )
+					if( igBegin( thiswindow->caption, (bool*)thiswindow->data, windowflags ) )
 					{
 						callback = thiswindow->callback;
 						callback( thiswindow->name, NULL );
@@ -758,7 +766,7 @@ void M_RenderDebugMenu( void )
 	}
 }
 
-static menuentry_t* M_FindOrCreateDebugMenuCategory( const char* category_name, menuentry_t* potential_parent )
+static menuentry_t* M_FindOrCreateDashboardCategory( const char* category_name, menuentry_t* potential_parent )
 {
 	menuentry_t* currentry = entries;
 	size_t len = strlen( category_name );
@@ -787,7 +795,7 @@ static menuentry_t* M_FindOrCreateDebugMenuCategory( const char* category_name, 
 	return currentry;
 }
 
-static menuentry_t* M_FindDebugMenuCategory( const char* category_name )
+static menuentry_t* M_FindDashboardCategory( const char* category_name )
 {
 	size_t start = 0;
 	size_t curr = 0;
@@ -810,7 +818,7 @@ static menuentry_t* M_FindDebugMenuCategory( const char* category_name )
 			if( curr != start )
 			{
 				strncpy( tokbuffer, &category_name[ start ], ( curr - start ) );
-				currcategory = M_FindOrCreateDebugMenuCategory( tokbuffer, currcategory );
+				currcategory = M_FindOrCreateDashboardCategory( tokbuffer, currcategory );
 				memset( tokbuffer, 0, sizeof( tokbuffer ) );
 			}
 			start = curr + 1;
@@ -821,13 +829,13 @@ static menuentry_t* M_FindDebugMenuCategory( const char* category_name )
 	if( curr != start )
 	{
 		strncpy( tokbuffer, &category_name[ start ], ( curr - start ) );
-		currcategory = M_FindOrCreateDebugMenuCategory( tokbuffer, currcategory );
+		currcategory = M_FindOrCreateDashboardCategory( tokbuffer, currcategory );
 	}
 
 	return currcategory;
 }
 
-static menuentry_t* M_FindDebugMenuCategoryFromFullPath( const char* full_path )
+static menuentry_t* M_FindDashboardCategoryFromFullPath( const char* full_path )
 {
 	char categoryname[ MAXNAMELENGTH + 1 ];
 	menuentry_t* category = NULL;
@@ -853,7 +861,7 @@ static menuentry_t* M_FindDebugMenuCategoryFromFullPath( const char* full_path )
 		strncpy( categoryname, full_path, (size_t)( actualname - full_path - 1 ) );
 	}
 
-	category = M_FindDebugMenuCategory( categoryname );
+	category = M_FindDashboardCategory( categoryname );
 
 	return category;
 }
@@ -876,16 +884,16 @@ static const char* M_GetActualName( const char* full_path )
 	return actualname;
 }
 
-void M_RegisterDebugMenuCategory( const char* full_path )
+void M_RegisterDashboardCategory( const char* full_path )
 {
-	M_FindDebugMenuCategory( full_path );
+	M_FindDashboardCategory( full_path );
 
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata )
+void M_RegisterDashboardButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata )
 {
-	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
+	menuentry_t* category = M_FindDashboardCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
@@ -906,9 +914,9 @@ void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menu
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback )
+void M_RegisterDashboardWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback )
 {
-	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
+	menuentry_t* category = M_FindDashboardCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
@@ -932,9 +940,9 @@ void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int3
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value )
+void M_RegisterDashboardCheckbox( const char* full_path, const char* tooltip, boolean* value )
 {
-	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
+	menuentry_t* category = M_FindDashboardCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
@@ -954,9 +962,9 @@ void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, bo
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval )
+void M_RegisterDashboardCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval )
 {
-	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
+	menuentry_t* category = M_FindDashboardCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
@@ -976,9 +984,9 @@ void M_RegisterDebugMenuCheckboxFlag( const char* full_path, const char* tooltip
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval )
+void M_RegisterDashboardRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval )
 {
-	menuentry_t* category = M_FindDebugMenuCategoryFromFullPath( full_path );
+	menuentry_t* category = M_FindDashboardCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
 	const char* actualname = M_GetActualName( full_path );
 
@@ -998,12 +1006,12 @@ void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip,
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDebugMenuSeparator( const char* category_path )
+void M_RegisterDashboardSeparator( const char* category_path )
 {
-	menuentry_t* category = M_FindDebugMenuCategory( category_path );
+	menuentry_t* category = M_FindDashboardCategory( category_path );
 	menuentry_t* currentry = nextentry++;
 
-	sprintf( currentry->name, "__separator__%d", ( currentry - entries ) );
+	sprintf( currentry->name, "__separator__%" PRId64, ( currentry - entries ) );
 	currentry->type = MET_Separator;
 	currentry->freechild = currentry->children;
 	currentry->enabled = true;

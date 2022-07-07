@@ -22,7 +22,7 @@
 
 #include "SDL.h"
 
-#include "m_debugmenu.h"
+#include "m_dashboard.h"
 
 #define USE_GLAD ( USE_IMGUI )
 #include <glad/glad.h>
@@ -252,7 +252,7 @@ int32_t usegamma = 0;
 // Joystick/gamepad hysteresis
 uint64_t joywait = 0;
 
-extern boolean debugmenuactive;
+extern boolean dashboardactive;
 
 static boolean MouseShouldBeGrabbed()
 {
@@ -267,7 +267,7 @@ static boolean MouseShouldBeGrabbed()
         return false;
 
 	// Debug menu needs mouse. Ergo, don't grab mouse.
-	if( debugmenuactive )
+	if( dashboardactive )
 		return false;
 
     // always grab the mouse when full screen (dont want to 
@@ -881,7 +881,7 @@ void I_FinishUpdate (void)
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichID);
 	SDL_GL_UnbindTexture( texture );
 
-	if( USE_IMGUI && !debugmenuactive )
+	if( USE_IMGUI && !dashboardactive )
 	{
 		// Better transormation courtesy of Altazimuth
 		Target.x = (render_width - actualheight) / 2;
@@ -897,8 +897,8 @@ void I_FinishUpdate (void)
 	CImGui_ImplOpenGL3_NewFrame();
 	CImGui_ImplSDL2_NewFrame( screen );
 
-	igGetIO()->WantCaptureKeyboard = debugmenuactive;
-	igGetIO()->WantCaptureMouse = debugmenuactive;
+	igGetIO()->WantCaptureKeyboard = dashboardactive;
+	igGetIO()->WantCaptureMouse = dashboardactive;
 
 	igNewFrame();
 
@@ -932,7 +932,7 @@ void I_FinishUpdate (void)
 		IM_COL32( 0xee, 0x13, 0x13, 0xff ), // Log_Error
 	};
 
-	if( debugmenuactive )
+	if( dashboardactive )
 	{
 		if( lastwidth > 0 && lastheight > 0 )
 		{
@@ -1073,7 +1073,7 @@ void I_FinishUpdate (void)
 		igPopStyleColor( 1 );
 	}
 
-	M_RenderDebugMenu();
+	M_RenderDashboard();
 
 	igRender();
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );

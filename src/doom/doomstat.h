@@ -141,9 +141,9 @@ extern  boolean statusbaractive;
 
 extern  boolean automapactive;	// In AutoMap mode?
 extern  boolean	menuactive;	// Menu overlayed?
-extern  boolean debugmenuactive; // ImGui debug menu
-extern  int32_t debugmenuremappingkey;
-extern  int32_t debugmenupausesplaysim;
+extern  boolean dashboardactive; // ImGui debug menu
+extern  int32_t dashboardremappingkey;
+extern  int32_t dashboardpausesplaysim;
 extern  boolean	paused;		// Game Pause?
 
 

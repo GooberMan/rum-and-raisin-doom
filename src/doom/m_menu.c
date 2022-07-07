@@ -66,7 +66,7 @@
 
 #include "am_map.h"
 
-#include "m_debugmenu.h"
+#include "m_dashboard.h"
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
 #include "cimguiglue.h"
@@ -371,10 +371,10 @@ static gamedetails_t game_plutonia =
 	}
 };
 
-static gamedetails_t*	debugmenu_currgame			= NULL;
-static int32_t			debugmenu_currgameepisodes	= 0;
-static int32_t			debugmenu_currgameskill		= sk_medium;
-static int32_t			debugmenu_currgameflags		= GF_None;
+static gamedetails_t*	dashboard_currgame			= NULL;
+static int32_t			dashboard_currgameepisodes	= 0;
+static int32_t			dashboard_currgameskill		= sk_medium;
+static int32_t			dashboard_currgameflags		= GF_None;
 
 extern patch_t*		hu_font[HU_FONTSIZE];
 extern boolean		message_dontfuckwithme;
@@ -434,8 +434,8 @@ char			saveOldString[SAVESTRINGSIZE];
 
 boolean			inhelpscreens;
 boolean			menuactive;
-int32_t			debugmenuopensound = sfx_swtchn;
-int32_t			debugmenuclosesound = sfx_swtchx;
+extern int32_t	dashboardopensound;
+extern int32_t	dashboardclosesound;
 
 int32_t			mapkeybuttonvalue = -1;
 
@@ -1671,9 +1671,9 @@ static boolean IsNullKey(int key)
 // CONTROL PANEL
 //
 
-static boolean M_DebugResponder( event_t* ev )
+static boolean M_DashboardResponder( event_t* ev )
 {
-	switch( debugmenuremappingkey )
+	switch( dashboardremappingkey )
 	{
 	case Remap_Key:
 		if( ev->type == ev_keydown )
@@ -1731,7 +1731,7 @@ boolean M_Responder (event_t* ev)
         // First click on close button = bring up quit confirm message.
         // Second click on close button = confirm quit
 
-		if( debugmenuactive )
+		if( dashboardactive )
 		{
 			I_Quit();
 		}
@@ -1749,16 +1749,16 @@ boolean M_Responder (event_t* ev)
     }
 
 #if USE_IMGUI
-	if( ev->type == ev_keydown && ev->data1 == key_menu_debug && debugmenuremappingkey == Remap_None )
+	if( ev->type == ev_keydown && ev->data1 == key_menu_dashboard && dashboardremappingkey == Remap_None )
 	{
-		debugmenuactive = !debugmenuactive;
-		S_StartSound(NULL, debugmenuactive ? debugmenuopensound : debugmenuclosesound);
+		dashboardactive = !dashboardactive;
+		S_StartSound(NULL, dashboardactive ? dashboardopensound : dashboardclosesound);
 		return true;
 	}
 
-	if( debugmenuactive )
+	if( dashboardactive )
 	{
-		return M_DebugResponder( ev );
+		return M_DashboardResponder( ev );
 	}
 #endif // USE_IMGUI
 
@@ -2506,7 +2506,7 @@ static const ImVec2 halfsize = { 0.5f, 0.5f };
 static const ImVec2 mappingsize = { 90, 22 };
 static const ImVec2 unmapbuttonsize = { 22, 22 };
 
-static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, int32_t defaultval, byte* palette )
+static void M_DashboardDoColour( const char* itemname, int32_t* colourindex, int32_t defaultval, byte* palette )
 {
 	byte* paletteentry;
 	ImU32 colour;
@@ -2606,9 +2606,9 @@ static void M_DebugMenuDoColour( const char* itemname, int32_t* colourindex, int
 	igPopID();
 }
 
-static void M_DebugMenuDoMapColour( const char* itemname, mapstyleentry_t* curr, mapstyleentry_t* defaultval, byte* palette )
+static void M_DashboardDoMapColour( const char* itemname, mapstyleentry_t* curr, mapstyleentry_t* defaultval, byte* palette )
 {
-	M_DebugMenuDoColour( itemname, &curr->val, defaultval->val, palette );
+	M_DashboardDoColour( itemname, &curr->val, defaultval->val, palette );
 	igSameLine( 0, -1 );
 	igPushIDPtr( curr );
 	igCheckboxFlags( "Pulsating", &curr->flags, 0x1 );
@@ -2746,7 +2746,7 @@ static controlsection_t keymappings[] =
 							{	"Screenshot",			&key_menu_screenshot },
 							{	"Display last message",	&key_message_refresh },
 							{	"Pause",				&key_pause },
-							{	"Toggle debug menu",	&key_menu_debug },
+							{	"Toggle dashboard",		&key_menu_dashboard },
 							{	NULL,					NULL }, },
 	},
 	{	"Demos",
@@ -2804,7 +2804,7 @@ static const char* remaptypenames[ Remap_Max ] =
 	"joystick button",
 };
 
-static void M_DebugMenuControlsRemapping(	const char* itemname,
+static void M_DashboardControlsRemapping(	const char* itemname,
 											controldesc_t* descs,
 											keyname_t* lookupnames,
 											size_t lookupnameslength,
@@ -2829,7 +2829,7 @@ static void M_DebugMenuControlsRemapping(	const char* itemname,
 			if( igButton( M_FindKeyName( lookupnames, lookupnameslength, unboundkey, *currdesc->value ), mappingsize ) )
 			{
 				igOpenPopup( "RemapKey", ImGuiPopupFlags_None );
-				debugmenuremappingkey = remappingtype;
+				dashboardremappingkey = remappingtype;
 				mapkeybuttonvalue = -1;
 			}
 
@@ -2853,13 +2853,13 @@ static void M_DebugMenuControlsRemapping(	const char* itemname,
 					if( cancel )
 					{
 						igCloseCurrentPopup();
-						debugmenuremappingkey = Remap_None;
+						dashboardremappingkey = Remap_None;
 						mapkeybuttonvalue = -1;
 					}
 					igEndPopup();
 				}
 			}
-			if( *currdesc->value != unboundkey && currdesc->value != &key_menu_debug )
+			if( *currdesc->value != unboundkey && currdesc->value != &key_menu_dashboard )
 			{
 				igSameLine( 0, -1 );
 				if( igButton( "X", unmapbuttonsize ) )
@@ -2877,7 +2877,7 @@ static void M_DebugMenuControlsRemapping(	const char* itemname,
 	igPopID();
 }
 
-static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
+static void M_DashboardOptionsWindow( const char* itemname, void* data )
 {
 	extern int32_t fullscreen;
 	extern int32_t window_width;
@@ -2916,7 +2916,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 
 			for( currsection = keymappings; currsection->name != NULL; ++currsection )
 			{
-				M_DebugMenuControlsRemapping( currsection->name, currsection->descs, keynames, arrlen( keynames ), 0, Remap_Key );
+				M_DashboardControlsRemapping( currsection->name, currsection->descs, keynames, arrlen( keynames ), 0, Remap_Key );
 			}
 
 			igPopScrollableArea();
@@ -2946,7 +2946,7 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 			}
 			igPopID();
 
-			M_DebugMenuControlsRemapping( "Bindings", mousemappings, mousenames, arrlen( mousenames ), -1, Remap_Mouse );
+			M_DashboardControlsRemapping( "Bindings", mousemappings, mousenames, arrlen( mousenames ), -1, Remap_Mouse );
 
 			igPopScrollableArea();
 			igEndTabItem();
@@ -3266,45 +3266,45 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 
 				extern mapstyledata_t map_styledatacustomdefault;
 
-				M_DebugMenuDoMapColour( "Background", &style->background, &map_styledatacustomdefault.background, palette );
+				M_DashboardDoMapColour( "Background", &style->background, &map_styledatacustomdefault.background, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Grid", &style->grid, &map_styledatacustomdefault.grid, palette );
+				M_DashboardDoMapColour( "Grid", &style->grid, &map_styledatacustomdefault.grid, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Computer Area Map", &style->areamap, &map_styledatacustomdefault.areamap, palette );
+				M_DashboardDoMapColour( "Computer Area Map", &style->areamap, &map_styledatacustomdefault.areamap, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Walls", &style->walls, &map_styledatacustomdefault.walls, palette );
+				M_DashboardDoMapColour( "Walls", &style->walls, &map_styledatacustomdefault.walls, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Teleporters", &style->teleporters, &map_styledatacustomdefault.teleporters, palette );
+				M_DashboardDoMapColour( "Teleporters", &style->teleporters, &map_styledatacustomdefault.teleporters, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Hidden Lines", &style->linesecrets, &map_styledatacustomdefault.linesecrets, palette );
+				M_DashboardDoMapColour( "Hidden Lines", &style->linesecrets, &map_styledatacustomdefault.linesecrets, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Secrets (found)", &style->sectorsecrets, &map_styledatacustomdefault.sectorsecrets, palette );
+				M_DashboardDoMapColour( "Secrets (found)", &style->sectorsecrets, &map_styledatacustomdefault.sectorsecrets, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Secrets (undiscovered)", &style->sectorsecretsundiscovered, &map_styledatacustomdefault.sectorsecretsundiscovered, palette );
+				M_DashboardDoMapColour( "Secrets (undiscovered)", &style->sectorsecretsundiscovered, &map_styledatacustomdefault.sectorsecretsundiscovered, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Floor Height Diff", &style->floorchange, &map_styledatacustomdefault.floorchange, palette );
+				M_DashboardDoMapColour( "Floor Height Diff", &style->floorchange, &map_styledatacustomdefault.floorchange, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Ceiling Height Diff", &style->ceilingchange, &map_styledatacustomdefault.ceilingchange, palette );
+				M_DashboardDoMapColour( "Ceiling Height Diff", &style->ceilingchange, &map_styledatacustomdefault.ceilingchange, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "No Height Diff", &style->nochange, &map_styledatacustomdefault.nochange, palette );
+				M_DashboardDoMapColour( "No Height Diff", &style->nochange, &map_styledatacustomdefault.nochange, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Thing", &style->things, &map_styledatacustomdefault.things, palette );
+				M_DashboardDoMapColour( "Thing", &style->things, &map_styledatacustomdefault.things, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Living Monsters", &style->monsters_alive, &map_styledatacustomdefault.monsters_alive, palette );
+				M_DashboardDoMapColour( "Living Monsters", &style->monsters_alive, &map_styledatacustomdefault.monsters_alive, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Dead Monsters", &style->monsters_dead, &map_styledatacustomdefault.monsters_dead, palette );
+				M_DashboardDoMapColour( "Dead Monsters", &style->monsters_dead, &map_styledatacustomdefault.monsters_dead, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Items (Counted)", &style->items_counted, &map_styledatacustomdefault.items_counted, palette );
+				M_DashboardDoMapColour( "Items (Counted)", &style->items_counted, &map_styledatacustomdefault.items_counted, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Items (Uncounted)", &style->items_uncounted, &map_styledatacustomdefault.items_uncounted, palette );
+				M_DashboardDoMapColour( "Items (Uncounted)", &style->items_uncounted, &map_styledatacustomdefault.items_uncounted, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Projectiles", &style->projectiles, &map_styledatacustomdefault.projectiles, palette );
+				M_DashboardDoMapColour( "Projectiles", &style->projectiles, &map_styledatacustomdefault.projectiles, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Puffs", &style->puffs, &map_styledatacustomdefault.puffs, palette );
+				M_DashboardDoMapColour( "Puffs", &style->puffs, &map_styledatacustomdefault.puffs, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Player Arrow", &style->playerarrow, &map_styledatacustomdefault.playerarrow, palette );
+				M_DashboardDoMapColour( "Player Arrow", &style->playerarrow, &map_styledatacustomdefault.playerarrow, palette );
 				igNextColumn();
-				M_DebugMenuDoMapColour( "Crosshair", &style->crosshair, &map_styledatacustomdefault.crosshair, palette );
+				M_DashboardDoMapColour( "Crosshair", &style->crosshair, &map_styledatacustomdefault.crosshair, palette );
 				igNextColumn();
 			}
 
@@ -3318,14 +3318,14 @@ static void M_DebugMenuOptionsWindow( const char* itemname, void* data )
 	}
 }
 
-static void M_DebugMenuNewGame( const char* itemname, void* data )
+static void M_DashboardNewGame( const char* itemname, void* data )
 {
 	mapdetails_t* map = (mapdetails_t*)data;
 
-	G_DeferedInitNew( debugmenu_currgameskill, map->episodenum, map->mapnum, debugmenu_currgameflags );
+	G_DeferedInitNew( dashboard_currgameskill, map->episodenum, map->mapnum, dashboard_currgameflags );
 }
 
-static void M_DebugMenuRegisterEpisodeMaps( const char* category, episodedetails_t* episode, menufunc_t callback )
+static void M_DashboardRegisterEpisodeMaps( const char* category, episodedetails_t* episode, menufunc_t callback )
 {
 	char namebuffer[ 128 ];
 
@@ -3335,7 +3335,7 @@ static void M_DebugMenuRegisterEpisodeMaps( const char* category, episodedetails
 	{
 		memset( namebuffer, 0, sizeof( namebuffer ) );
 		sprintf( namebuffer, "%s|%s", category, DEH_String( curr->name ) );
-		M_RegisterDebugMenuButton( namebuffer, NULL, callback, curr );
+		M_RegisterDashboardButton( namebuffer, NULL, callback, curr );
 		++curr;
 	}
 }
@@ -3435,76 +3435,79 @@ void M_Init (void)
 		switch( gamemode )
 		{
 		case shareware:
-			debugmenu_currgame = &game_doomshareware;
+			dashboard_currgame = &game_doomshareware;
 			break;
 		case registered:
-			debugmenu_currgame = &game_doomregistered;
+			dashboard_currgame = &game_doomregistered;
 			break;
 		default:
 			// Just assume full range for everything else
-			debugmenu_currgame = &game_doomultimate;
+			dashboard_currgame = &game_doomultimate;
 			break;
 		}
 		break;
 	case doom2:
-		debugmenu_currgame = &game_doom2;
+		dashboard_currgame = &game_doom2;
 		break;
 	case pack_tnt:
-		debugmenu_currgame = &game_evilution;
+		dashboard_currgame = &game_evilution;
 		break;
 	case pack_plut:
-		debugmenu_currgame = &game_plutonia;
+		dashboard_currgame = &game_plutonia;
 		break;
 	case pack_chex:
-		debugmenu_currgame = &game_chexquest;
+		dashboard_currgame = &game_chexquest;
 		break;
 	default:
 		// Just assume Doom 2 style for everything else
-		debugmenu_currgame = &game_doom2;
+		dashboard_currgame = &game_doom2;
 		break;
 	}
 
-	workingepisode = debugmenu_currgame->episodes;
+	workingepisode = dashboard_currgame->episodes;
 	while( workingepisode->num != -1 )
 	{
 		++workingepisode;
 	};
-	debugmenu_currgameepisodes = workingepisode - debugmenu_currgame->episodes;
+	dashboard_currgameepisodes = workingepisode - dashboard_currgame->episodes;
 
 	extern int32_t sleeponzerotics;
 
-	M_RegisterDebugMenuCategory( "Game|New" );
+	dashboardopensound = sfx_swtchn;
+	dashboardclosesound = sfx_swtchx;
 
-	M_RegisterDebugMenuRadioButton( "Game|New|No skill", NULL, &debugmenu_currgameskill, -1 );
-	M_RegisterDebugMenuRadioButton( "Game|New|I'm too young to die", NULL, &debugmenu_currgameskill, 0 );
-	M_RegisterDebugMenuRadioButton( "Game|New|Hey, not too rough", NULL, &debugmenu_currgameskill, 1 );
-	M_RegisterDebugMenuRadioButton( "Game|New|Hurt me plenty", NULL, &debugmenu_currgameskill, 2 );
-	M_RegisterDebugMenuRadioButton( "Game|New|Ultra violence", NULL, &debugmenu_currgameskill, 3 );
-	M_RegisterDebugMenuRadioButton( "Game|New|Nightmare", NULL, &debugmenu_currgameskill, 4 );
-	M_RegisterDebugMenuSeparator( "Game|New" );
-	M_RegisterDebugMenuCheckboxFlag( "Game|New|Pistol Starts", NULL, &debugmenu_currgameflags, GF_PistolStarts );
-	M_RegisterDebugMenuCheckboxFlag( "Game|New|Loop one level", NULL, &debugmenu_currgameflags, GF_LoopOneLevel );
-	M_RegisterDebugMenuSeparator( "Game|New" );
+	M_RegisterDashboardCategory( "Game|New" );
 
-	if( debugmenu_currgameepisodes == 1 )
+	M_RegisterDashboardRadioButton( "Game|New|No skill", NULL, &dashboard_currgameskill, -1 );
+	M_RegisterDashboardRadioButton( "Game|New|I'm too young to die", NULL, &dashboard_currgameskill, 0 );
+	M_RegisterDashboardRadioButton( "Game|New|Hey, not too rough", NULL, &dashboard_currgameskill, 1 );
+	M_RegisterDashboardRadioButton( "Game|New|Hurt me plenty", NULL, &dashboard_currgameskill, 2 );
+	M_RegisterDashboardRadioButton( "Game|New|Ultra violence", NULL, &dashboard_currgameskill, 3 );
+	M_RegisterDashboardRadioButton( "Game|New|Nightmare", NULL, &dashboard_currgameskill, 4 );
+	M_RegisterDashboardSeparator( "Game|New" );
+	M_RegisterDashboardCheckboxFlag( "Game|New|Pistol Starts", NULL, &dashboard_currgameflags, GF_PistolStarts );
+	M_RegisterDashboardCheckboxFlag( "Game|New|Loop one level", NULL, &dashboard_currgameflags, GF_LoopOneLevel );
+	M_RegisterDashboardSeparator( "Game|New" );
+
+	if( dashboard_currgameepisodes == 1 )
 	{
-		M_DebugMenuRegisterEpisodeMaps( "Game|New", debugmenu_currgame->episodes, &M_DebugMenuNewGame );
+		M_DashboardRegisterEpisodeMaps( "Game|New", dashboard_currgame->episodes, &M_DashboardNewGame );
 	}
 	else
 	{
-		workingepisode = debugmenu_currgame->episodes;
+		workingepisode = dashboard_currgame->episodes;
 		while( workingepisode->num != -1 )
 		{
 			memset( episodestem, 0, sizeof( episodestem ) );
 			sprintf( episodestem, "Game|New|%s", workingepisode->name );
-			M_DebugMenuRegisterEpisodeMaps( episodestem, workingepisode, &M_DebugMenuNewGame );
+			M_DashboardRegisterEpisodeMaps( episodestem, workingepisode, &M_DashboardNewGame );
 
 			++workingepisode;
 		};
 	}
 
-	M_RegisterDebugMenuWindow( "Game|Options", "Game Options", 500, 500, &debugwindow_options, Menu_Normal, &M_DebugMenuOptionsWindow );
-	M_RegisterDebugMenuCheckboxFlag( "Render|Renderer in lockstep with game", "Just means we can run zero tics really", &sleeponzerotics, 0x1 );
+	M_RegisterDashboardWindow( "Game|Options", "Game Options", 500, 500, &debugwindow_options, Menu_Normal, &M_DashboardOptionsWindow );
+	M_RegisterDashboardCheckboxFlag( "Render|Renderer in lockstep with game", "Just means we can run zero tics really", &sleeponzerotics, 0x1 );
 
 }
 

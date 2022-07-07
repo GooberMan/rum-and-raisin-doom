@@ -188,7 +188,7 @@ int key_menu_incscreen = KEY_EQUALS;
 int key_menu_decscreen = KEY_MINUS;
 int key_menu_screenshot = 0;
 
-int key_menu_debug     = KEY_TILDE;
+int key_menu_dashboard     = KEY_TILDE;
 
 //
 // Joystick controls
@@ -403,7 +403,7 @@ void M_BindMenuControls(void)
     M_BindIntVariable("key_menu_decscreen", &key_menu_decscreen);
     M_BindIntVariable("key_menu_screenshot",&key_menu_screenshot);
 
-    M_BindIntVariable("key_menu_debug",		&key_menu_debug);
+    M_BindIntVariable("key_menu_dashboard",		&key_menu_dashboard);
 
 	M_BindIntVariable("key_demo_quit",      &key_demo_quit);
     M_BindIntVariable("key_spy",            &key_spy);

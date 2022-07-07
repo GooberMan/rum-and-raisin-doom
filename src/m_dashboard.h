@@ -12,8 +12,8 @@
 // GNU General Public License for more details.
 //
 
-#ifndef __M_DEBUGMENU_H__
-#define __M_DEBUGMENU_H__
+#ifndef __M_DASHBOARD_H__
+#define __M_DASHBOARD_H__
 
 #include "doomtype.h"
 
@@ -22,6 +22,10 @@
 #define USE_IMGUI 0
 #else
 #define USE_IMGUI 1
+#endif
+
+#if defined( __cplusplus )
+extern "C" {
 #endif
 
 typedef enum remapping_e
@@ -41,20 +45,23 @@ typedef enum menuproperties_e
 } menuproperties_t;
 
 typedef void (*menufunc_t)( const char* itemname, void* data );
-extern int32_t		debugmenuclosesound;
 
-void M_InitDebugMenu( void );
-void M_BindDebugMenuVariables( void );
-void M_RenderDebugMenu( void );
+void M_InitDashboard( void );
+void M_BindDashboardVariables( void );
+void M_RenderDashboard( void );
 
 // menuname can be categorised with pipes, ie Edit|Preferences|Some pref category
 
-void M_RegisterDebugMenuCategory( const char* full_path );
-void M_RegisterDebugMenuButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata );
-void M_RegisterDebugMenuWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback );
-void M_RegisterDebugMenuCheckbox( const char* full_path, const char* tooltip, boolean* value );
-void M_RegisterDebugMenuCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval );
-void M_RegisterDebugMenuRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval );
-void M_RegisterDebugMenuSeparator( const char* category_path );
+void M_RegisterDashboardCategory( const char* full_path );
+void M_RegisterDashboardButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata );
+void M_RegisterDashboardWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback );
+void M_RegisterDashboardCheckbox( const char* full_path, const char* tooltip, boolean* value );
+void M_RegisterDashboardCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval );
+void M_RegisterDashboardRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval );
+void M_RegisterDashboardSeparator( const char* category_path );
 
-#endif // !defined( __M_DEBUGMENU_H__ )
+#if defined( __cplusplus )
+}
+#endif
+
+#endif // !defined( __M_DASHBOARD_H__ )

@@ -33,7 +33,7 @@
 #include "m_bbox.h"
 #include "m_config.h"
 #include "m_menu.h"
-#include "m_debugmenu.h"
+#include "m_dashboard.h"
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
@@ -1472,14 +1472,14 @@ void R_Init (void)
     R_InitTranslationTables ();
     printf (".");
 
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Whacky", NULL, &voidcleartype, Void_Whacky );
-	M_RegisterDebugMenuRadioButton( "Render|Clear style|Sky", NULL, &voidcleartype, Void_Sky );
+	M_RegisterDashboardRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
+	M_RegisterDashboardRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
+	M_RegisterDashboardRadioButton( "Render|Clear style|Whacky", NULL, &voidcleartype, Void_Whacky );
+	M_RegisterDashboardRadioButton( "Render|Clear style|Sky", NULL, &voidcleartype, Void_Sky );
 
-	M_RegisterDebugMenuWindow( "Render|Threading|Options", "Render Threading Options", 500, 500, &debugwindow_renderthreadingoptions, Menu_Normal, &R_RenderThreadingOptionsWindow );
+	M_RegisterDashboardWindow( "Render|Threading|Options", "Render Threading Options", 500, 500, &debugwindow_renderthreadingoptions, Menu_Normal, &R_RenderThreadingOptionsWindow );
 #if RENDER_PERF_GRAPHING
-	M_RegisterDebugMenuWindow( "Render|Threading|Graphs", "Render Graphs", 500, 550, &debugwindow_renderthreadinggraphs, Menu_Overlay, &R_RenderThreadingGraphsWindow );
+	M_RegisterDashboardWindow( "Render|Threading|Graphs", "Render Graphs", 500, 550, &debugwindow_renderthreadinggraphs, Menu_Overlay, &R_RenderThreadingGraphsWindow );
 #endif //RENDER_PERF_GRAPHING
 	
     framecount = 0;

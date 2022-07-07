@@ -128,7 +128,7 @@ void P_Ticker (void)
     int		i;
     
 	boolean ispaused = paused
-		|| 	( !demoplayback && debugmenuactive && debugmenupausesplaysim && ( solonetgame || !netgame ) );
+		|| 	( !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
 
     // run the tic
     if (ispaused)
