@@ -1054,6 +1054,8 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.endtime = 1;
 		renderdatas[ currcontext ].context.timetaken = 1;
 
+		R_InitPlaneLookup( &renderdatas[ currcontext ].context.planecontext );
+
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
 		renderdatas[ currcontext ].context.debugtime = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );

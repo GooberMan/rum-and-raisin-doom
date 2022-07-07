@@ -52,6 +52,31 @@ extern "C"
 	extern size_t		rowofs[MAXHEIGHT];
 }
 
+#include <unordered_map>
+
+typedef struct viskeylayout_s
+{
+	fixed_t		height;
+	uint16_t	picnum;
+	uint8_t		lightlevel;
+	int8_t		padding;
+} viskeylayout_t;
+
+static_assert( sizeof( viskeylayout_t ) == sizeof( uint64_t ), "viskeylayout_t exceeds 8 bytes!" );
+
+using visplanelookup_t = std::unordered_map< uint64_t, visplane_t* >;
+
+constexpr visplanelookup_t& PlaneLookup( planecontext_t* context )
+{
+	return *(visplanelookup_t*)context->visplanelookup;
+}
+
+INLINE uint64_t PlaneKey( fixed_t& height, int32_t& picnum, int32_t& lightlevel )
+{
+	viskeylayout_t val = { height, (uint16_t)picnum, (uint8_t)lightlevel, 0 };
+	return *(uint64_t*)&val;
+}
+
 //
 // R_InitPlanes
 // Only at game startup.
@@ -179,6 +204,8 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	context->lastvisplane = context->visplanes;
 	context->lastopening = context->openings;
+	PlaneLookup( context ).clear();
+	PlaneLookup( context ).reserve( MAXVISPLANES );
 
 	// texture calculation
 	if( span_override == Span_Original )
@@ -198,8 +225,11 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 	context->baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
 }
 
-
-
+DOOM_C_API void R_InitPlaneLookup( planecontext_t* context )
+{
+	context->visplanelookup = Z_Malloc( sizeof( visplanelookup_t ), PU_STATIC, NULL );
+	new( context->visplanelookup ) visplanelookup_t;
+}
 
 //
 // R_FindPlane
@@ -209,22 +239,29 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel )
 {
 	visplane_t*	check;
-	
+
 	if (picnum == skyflatnum)
 	{
 		height = 0;			// all skys map together
 		lightlevel = 0;
 	}
-	
-	for( check = context->lastvisplane - 1; check >= context->visplanes; --check )
+	uint64_t key = PlaneKey( height, picnum, lightlevel );
+
+	auto found = PlaneLookup( context ).find( key );
+	if ( found != PlaneLookup( context ).end() )
 	{
-		if (height == check->height
-			&& picnum == check->picnum
-			&& lightlevel == check->lightlevel)
-		{
-			return check;
-		}
+		return found->second;
 	}
+	
+	//for( check = context->lastvisplane - 1; check >= context->visplanes; --check )
+	//{
+	//	if (height == check->height
+	//		&& picnum == check->picnum
+	//		&& lightlevel == check->lightlevel)
+	//	{
+	//		return check;
+	//	}
+	//}
 			
 	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
 	{
@@ -242,6 +279,8 @@ DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int
 	check->maxy = -1;
 
 	memset( check->top, VPINDEX_INVALID, sizeof( check->top ) );
+
+	PlaneLookup( context ).insert( visplanelookup_t::value_type( key, check ) );
 		
 	return check;
 }

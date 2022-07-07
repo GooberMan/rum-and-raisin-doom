@@ -55,7 +55,7 @@
 #define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			6144
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
-#define MAXOPENINGS				( MAXSCREENWIDTH*48 )
+#define MAXOPENINGS				( MAXSCREENWIDTH*64 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
 #define MAXDRAWSEGS				( MAXVISPLANES << 2 )
 
@@ -603,6 +603,8 @@ typedef struct rastercache_s
 
 typedef struct planecontext_s
 {
+	void*				visplanelookup;
+
 	visplane_t			visplanes[MAXVISPLANES];
 	visplane_t*			lastvisplane;
 	visplane_t*			floorplane;
