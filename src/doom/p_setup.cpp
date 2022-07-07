@@ -1266,7 +1266,7 @@ P_SetupLevel
 		DEH_snprintf( lumpname, 9, "E%dM%d", episode, map );
 	}
 
-	I_LogAddEntryVar( Log_System, "Loading %s: (%s)", lumpname, P_GetMapTitle() );
+	I_LogAddEntryVar( Log_System, "Loading %s: %s", lumpname, P_GetMapTitle() );
 
     lumpnum = W_GetNumForName (lumpname);
 	
