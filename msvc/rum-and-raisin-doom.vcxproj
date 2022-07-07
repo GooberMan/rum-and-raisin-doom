@@ -367,6 +367,7 @@
     <ClCompile Include="..\src\deh_mapping.c" />
     <ClInclude Include="..\src\deh_mapping.h" />
     <ClCompile Include="..\src\deh_text.c" />
+    <ClInclude Include="config.h" />
     <ResourceCompile Include="rum-and-raisin-doom.rc" />
   </ItemGroup>
   <ItemGroup>
