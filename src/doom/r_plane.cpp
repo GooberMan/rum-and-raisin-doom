@@ -19,37 +19,44 @@
 //	Moreover, the sky areas have to be determined.
 //
 
+extern "C"
+{
+	#include <stdio.h>
+	#include <stdlib.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+	#include "i_system.h"
+	#include "z_zone.h"
+	#include "w_wad.h"
 
-#include "i_system.h"
-#include "z_zone.h"
-#include "w_wad.h"
+	#include "doomdef.h"
+	#include "doomstat.h"
 
-#include "doomdef.h"
-#include "doomstat.h"
+	#include "r_local.h"
+	#include "r_sky.h"
+	#include "r_raster.h"
 
-#include "r_local.h"
-#include "r_sky.h"
-#include "r_raster.h"
+	#include "m_misc.h"
 
-#include "m_misc.h"
+	//
+	// Constants. Don't need to be in a context. Will get them off the stack at some point though.
+	//
+	#define MAXWIDTH	( MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
+	#define MAXHEIGHT	( MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
 
-//
-// Constants. Don't need to be in a context. Will get them off the stack at some point though.
-//
+	rend_fixed_t		yslope[ MAXSCREENHEIGHT ];
+	rend_fixed_t		distscale[ MAXSCREENWIDTH ];
 
-rend_fixed_t	yslope[ MAXSCREENHEIGHT ];
-rend_fixed_t	distscale[ MAXSCREENWIDTH ];
+	int32_t				span_override = Span_None;
 
-int32_t			span_override = Span_None;
+	extern size_t		xlookup[MAXWIDTH];
+	extern size_t		rowofs[MAXHEIGHT];
+}
 
 //
 // R_InitPlanes
 // Only at game startup.
 //
-void R_InitPlanes (void)
+DOOM_C_API void R_InitPlanes (void)
 {
   // Doh!
 }
@@ -68,7 +75,7 @@ void R_InitPlanes (void)
 //
 // BASIC PRIMITIVE
 //
-void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32_t y, int32_t x1, int32_t x2 )
+DOOM_C_API void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32_t y, int32_t x1, int32_t x2 )
 {
 	angle_t		angle;
 	fixed_t		distance;
@@ -158,7 +165,7 @@ void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32
 // R_ClearPlanes
 // At begining of frame.
 //
-void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle )
+DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle )
 {
 	int32_t	i;
 	angle_t	angle;
@@ -199,7 +206,7 @@ void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, ang
 //
 
 // R&R TODO: Optimize this wow linear search this will ruin lives
-visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel )
+DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel )
 {
 	visplane_t*	check;
 	
@@ -243,7 +250,7 @@ visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum
 //
 // R_CheckPlane
 //
-visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start, int32_t stop )
+DOOM_C_API visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start, int32_t stop )
 {
 	int32_t		intrl;
 	int32_t		intrh;
@@ -311,7 +318,7 @@ visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start
 //
 // R_MakeSpans
 //
-void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t b2 )
+DOOM_C_API void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t b2 )
 {
 	while (t1 < t2 && t1<=b1)
 	{
@@ -337,7 +344,7 @@ void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spancontext, int3
 }
 
 #ifdef RANGECHECK
-void R_ErrorCheckPlanes( rendercontext_t* context )
+DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context )
 {
 	if ( context->bspcontext.thisdrawseg - context->bspcontext.drawsegs > MAXDRAWSEGS)
 	{
@@ -359,20 +366,11 @@ void R_ErrorCheckPlanes( rendercontext_t* context )
 }
 #endif
 
-#define MAXWIDTH			(MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
-#define MAXHEIGHT			(MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
-
-extern size_t			xlookup[MAXWIDTH];
-extern size_t			rowofs[MAXHEIGHT];
-
 //
 // R_DrawPlanes
 // At the end of each frame.
 //
-
-
-
-void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
+DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	visplane_t*		pl;
 	int32_t			light;
@@ -458,7 +456,7 @@ void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		}
 		else
 		{
-			R_RasteriseColumns( span_type, planecontext, &spancontext, pl );
+			R_RasteriseColumns( (spantype_t)span_type, planecontext, &spancontext, pl );
 		}
 	}
 }
