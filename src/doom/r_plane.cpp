@@ -52,7 +52,7 @@ extern "C"
 	extern size_t		rowofs[MAXHEIGHT];
 }
 
-#include <unordered_map>
+#include "m_container.h"
 
 typedef struct viskeylayout_s
 {
@@ -64,7 +64,7 @@ typedef struct viskeylayout_s
 
 static_assert( sizeof( viskeylayout_t ) == sizeof( uint64_t ), "viskeylayout_t exceeds 8 bytes!" );
 
-using visplanelookup_t = std::unordered_map< uint64_t, visplane_t* >;
+using visplanelookup_t = DoomUnorderedMap< uint64_t, visplane_t* >;
 
 constexpr visplanelookup_t& PlaneLookup( planecontext_t* context )
 {
@@ -204,8 +204,10 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	context->lastvisplane = context->visplanes;
 	context->lastopening = context->openings;
-	PlaneLookup( context ).clear();
-	PlaneLookup( context ).reserve( MAXVISPLANES );
+	if( PlaneLookup( context ).size() > 0 )
+	{
+		PlaneLookup( context ).clear();
+	}
 
 	// texture calculation
 	if( span_override == Span_Original )
@@ -229,6 +231,7 @@ DOOM_C_API void R_InitPlaneLookup( planecontext_t* context )
 {
 	context->visplanelookup = Z_Malloc( sizeof( visplanelookup_t ), PU_STATIC, NULL );
 	new( context->visplanelookup ) visplanelookup_t;
+	PlaneLookup( context ).reserve( MAXVISPLANES );
 }
 
 //
@@ -248,7 +251,7 @@ DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int
 	uint64_t key = PlaneKey( height, picnum, lightlevel );
 
 	auto found = PlaneLookup( context ).find( key );
-	if ( found != PlaneLookup( context ).end() )
+	if( found != PlaneLookup( context ).end() )
 	{
 		return found->second;
 	}
