@@ -284,13 +284,13 @@ namespace DrawColumn
 
 	struct Bytewise
 	{
-		struct Sampler
+		struct SamplerOriginal
 		{
 			// The 127 here makes it wrap, keeping max height to 128
 			// Need to make that a bit nicer somehow
 			struct Direct
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
 				{
 					return context->source[ (frac >> RENDFRACBITS ) & 127 ];
 				}
@@ -298,7 +298,7 @@ namespace DrawColumn
 
 			struct PaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
 				{
 					return context->translation[ Direct::Sample( context, frac ) ];
 				}
@@ -306,7 +306,7 @@ namespace DrawColumn
 
 			struct Colormap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
 				{
 					return context->colormap[ Direct::Sample( context, frac ) ];
 				}
@@ -314,9 +314,46 @@ namespace DrawColumn
 
 			struct ColormapPaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
 				{
 					return context->colormap[ PaletteSwap::Sample( context, frac ) ];
+				}
+			};
+		};
+
+		struct SamplerLimitRemoving
+		{
+			// The 127 here makes it wrap, keeping max height to 128
+			// Need to make that a bit nicer somehow
+			struct Direct
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				{
+					return context->source[ (frac >> RENDFRACBITS ) % textureheight ];
+				}
+			};
+
+			struct PaletteSwap
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				{
+					return context->translation[ Direct::Sample( context, frac, textureheight ) ];
+				}
+			};
+
+			struct Colormap
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				{
+					return context->colormap[ Direct::Sample( context, frac, textureheight ) ];
+				}
+			};
+
+			struct ColormapPaletteSwap
+			{
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				{
+					return context->colormap[ PaletteSwap::Sample( context, frac, textureheight ) ];
 				}
 			};
 		};
@@ -340,7 +377,7 @@ namespace DrawColumn
 			// This is as fast as it gets.
 			do 
 			{
-				*dest = Sampler::Sample( context, frac );
+				*dest = Sampler::Sample( context, frac, context->sourceheight );
 		
 				dest += 1; 
 				frac += fracstep;
@@ -348,10 +385,15 @@ namespace DrawColumn
 			} while (count--); 
 		}
 
-		static INLINE void Draw( colcontext_t* context )						{ DrawWith< Sampler::Direct >( context ); }
-		static INLINE void PaletteSwapDraw( colcontext_t* context )				{ DrawWith< Sampler::PaletteSwap >( context ); }
-		static INLINE void ColormapDraw( colcontext_t* context )				{ DrawWith< Sampler::Colormap >( context ); }
-		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< Sampler::ColormapPaletteSwap >( context ); }
+		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal::Direct >( context ); }
+		static INLINE void PaletteSwapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal::PaletteSwap >( context ); }
+		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal::Colormap >( context ); }
+		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal::ColormapPaletteSwap >( context ); }
+
+		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct >( context ); }
+		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap >( context ); }
+		static INLINE void LimitRemovingColormapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::Colormap >( context ); }
+		static INLINE void LimitRemovingColormapPaletteSwapDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap >( context ); }
 	};
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
@@ -375,6 +417,17 @@ void R_DrawColumn_Untranslated( colcontext_t* context )
 {
 	DrawColumn::Bytewise::ColormapDraw( context );
 }
+
+void R_LimitRemovingDrawColumn( colcontext_t* context ) 
+{ 
+	DrawColumn::Bytewise::LimitRemovingDraw( context );
+} 
+
+void R_LimitRemovingDrawColumn_Untranslated( colcontext_t* context )
+{
+	DrawColumn::Bytewise::LimitRemovingColormapDraw( context );
+}
+
 
 void R_DrawColumnLow ( colcontext_t* context ) 
 { 

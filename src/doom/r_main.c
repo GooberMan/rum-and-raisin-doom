@@ -815,6 +815,8 @@ byte lightlevelmaps[32][256];
 #define HAX 0
 void R_InitColFuncs( void )
 {
+	extern int32_t remove_limits;
+
 	int32_t lightlevel = 0;
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
@@ -837,21 +839,21 @@ void R_InitColFuncs( void )
 	colfuncs[ 14 ] = &R_DrawColumn_OneSample;
 	colfuncs[ 15 ] = &R_DrawColumn;
 #else //!HAX
-	colfuncs[ 1 ] = &R_DrawColumn;
-	colfuncs[ 2 ] = &R_DrawColumn;
-	colfuncs[ 3 ] = &R_DrawColumn;
-	colfuncs[ 4 ] = &R_DrawColumn;
-	colfuncs[ 5 ] = &R_DrawColumn;
-	colfuncs[ 6 ] = &R_DrawColumn;
-	colfuncs[ 7 ] = &R_DrawColumn;
-	colfuncs[ 8 ] = &R_DrawColumn;
-	colfuncs[ 9 ] = &R_DrawColumn;
-	colfuncs[ 10 ] = &R_DrawColumn;
-	colfuncs[ 11 ] = &R_DrawColumn;
-	colfuncs[ 12 ] = &R_DrawColumn;
-	colfuncs[ 13 ] = &R_DrawColumn;
-	colfuncs[ 14 ] = &R_DrawColumn;
-	colfuncs[ 15 ] = &R_DrawColumn;
+	colfuncs[ 1 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 2 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 3 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 4 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 5 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 6 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 7 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 8 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 9 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 10 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 11 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 12 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 13 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 14 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
+	colfuncs[ 15 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
 #endif
 #endif //R_DRAWCOLUMN_SIMDOPTIMISED
 
@@ -861,7 +863,7 @@ void R_InitColFuncs( void )
 	{
 		--currexpand;
 #if !R_DRAWCOLUMN_SIMDOPTIMISED
-		colfuncs[ currexpand ] = &R_DrawColumn;
+		colfuncs[ currexpand ] = remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
 #endif // R_DRAWCOLUMN_SIMDOPTIMISED
 		colfuncs[ COLFUNC_NUM + currexpand ] = &R_DrawColumnLow;
 	}

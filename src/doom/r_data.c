@@ -268,7 +268,7 @@ void R_GenerateComposite (int texnum)
 	block = Z_Malloc (texturecompositesize[texnum] * COMPOSITE_MULTIPLIER,
 						COMPOSITE_ZONE, 
 						&texturecomposite[texnum]);	
-	memset( block, 0xFB, texturecompositesize[texnum] * COMPOSITE_MULTIPLIER );
+	memset( block, remove_limits ? 0 : 0xFB, texturecompositesize[texnum] * COMPOSITE_MULTIPLIER );
 
     collump = texturecolumnlump[texnum];
     colofs = texturecompositecolumnofs[texnum];
