@@ -112,6 +112,7 @@ static vbuffer_t background_data;
 
 	#define _set_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p )		_mm_set_epi8( p, o, n, m, l, k, j, i, h, g, f, e, d, c, b, a )
 	#define literal_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p )	{ a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
+	#define literal1_int8x16( a )												{ a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a }
 #elif R_SIMD_TYPE( NEON )
 	#define COLUMN_AVX 0
 	#define COLUMN_NEON 1
@@ -137,9 +138,9 @@ static vbuffer_t background_data;
 	#define _zero_int8x16()			zero_int8x16_v
 	#define _store_int8x16			vst1q_s8
 
-	#define _set_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p ) { a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
-	#define literal_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p ) { a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
-
+	#define _set_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p )		{ a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
+	#define literal_int8x16( a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p )	{ a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
+	#define literal1_int8x16( a )												{ a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a }
 #else
 	#define COLUMN_AVX 0
 	#define COLUMN_NEON 0
@@ -148,7 +149,7 @@ static vbuffer_t background_data;
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 
-const simd_int8x16_t MergeLookup[ 32 ] =
+constexpr simd_int8x16_t MergeLookup[ 32 ] =
 {
 	literal_int8x16( -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ),
 	literal_int8x16(  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1 ),
@@ -187,21 +188,20 @@ const simd_int8x16_t MergeLookup[ 32 ] =
 // Introduce another branch in this function, and I will find you
 void R_DrawColumn_OneSample( colcontext_t* context )
 {
-	int32_t				curr;
 	size_t				basedest;
 	size_t				enddest;
 	ptrdiff_t			overlap;
 	simd_int8x16_t*		simddest;
-	fixed_t				frac;
-	fixed_t				fracbase;
-	fixed_t				fracstep;
+	rend_fixed_t		frac;
+	rend_fixed_t		fracbase;
+	rend_fixed_t		fracstep;
 
 	simd_int8x16_t		prevsample;
 	simd_int8x16_t		currsample;
 	simd_int8x16_t		writesample;
 	simd_int8x16_t		selectmask;
 
-	const simd_int8x16_t fullmask = _set1_int8x16(   -1 );
+	constexpr simd_int8x16_t fullmask = literal1_int8x16( -1 );
 
 	basedest	= (size_t)context->output.data + xlookup[context->x] + rowofs[context->yl];
 	enddest		= basedest + ( context->yh - context->yl);
@@ -209,7 +209,6 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 
 	// HACK FOR NOW
 	simddest	= ( simd_int8x16_t* )( basedest - overlap );
-	curr		= context->yl - overlap;
 
 	fracstep	= context->iscale << 4;
 	frac		= context->texturemid + ( context->yl - centery ) * context->iscale;
@@ -227,12 +226,12 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 		selectmask = _xor_int8x16( selectmask, fullmask );
 
 		// ...with the first valid output texel...
-		currsample = _set1_int8x16( context->source[ ( frac >> FRACBITS ) & 127 ] );
+		currsample = _set1_int8x16( context->source[ ( frac >> RENDFRACBITS ) & 127 ] );
 		prevsample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		// ...then advance to where the algorithm expects to be and continue with the rest
 		frac		= fracbase + context->iscale * 15;
-		selectmask	= MergeLookup[ ( frac & 0x1F000 ) >> 12 ];
+		selectmask	= MergeLookup[ ( frac & 0x1F0000 ) >> 12 ];
 	}
 	else
 	{
@@ -243,12 +242,12 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 
 	do
 	{
-		currsample = _set1_int8x16( context->source[ ( frac >> FRACBITS ) & 127 ] );
+		currsample = _set1_int8x16( context->source[ ( frac >> RENDFRACBITS ) & 127 ] );
 		writesample = _or_int8x16( prevsample, _and_int8x16( currsample, selectmask ) );
 
 		frac		+= fracstep;
 
-		selectmask	= MergeLookup[ ( frac & 0x1F000 ) >> 12 ];
+		selectmask	= MergeLookup[ ( frac & 0x1F0000 ) >> 12 ];
 		_store_int8x16( simddest, writesample );
 		++simddest;
 
