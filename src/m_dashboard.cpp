@@ -15,15 +15,19 @@
 extern "C"
 {
 	#include "m_dashboard.h"
+	#include "i_log.h"
 	#include "i_system.h"
 	#include "m_config.h"
 
 	#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 	#include "cimgui.h"
+	#include "cimguiglue.h"
 
 	#include <stdio.h>
 	#include <string.h>
 }
+
+#include "m_container.h"
 
 typedef enum menuentrytype_e
 {
@@ -51,7 +55,6 @@ typedef struct menuentry_s menuentry_t;
 static ImVec4 theme_original[ ImGuiCol_COUNT ];
 static ImVec4 theme_originaldark[ ImGuiCol_COUNT ];
 static ImVec4 theme_originallight[ ImGuiCol_COUNT ];
-
 
 // Colour scheme from https://github.com/ocornut/imgui/issues/707#issuecomment-508691523
 static ImVec4 theme_funkygreenhighlight[ ImGuiCol_COUNT ] =
@@ -323,7 +326,7 @@ typedef struct themedata_s
 	ImVec4*			colors;
 } themedata_t;
 
-static themedata_t themes[] =
+static constexpr themedata_t themes[] =
 {
 	{ "Doomed Space Marine",		theme_doomedspacemarine },
 	{ "OG ImGui",					theme_original },
@@ -333,121 +336,26 @@ static themedata_t themes[] =
 	{ "Purpley-yellowey Thing",		theme_purpleyellowthing },
 	{ "Valve Classic",				theme_valveclassic },
 	{ "Didn't Ask For This",		theme_didntaskforthis },
-	{ NULL, NULL }
 };
 
-typedef struct menuentry_s
+static constexpr ImU32 logcolours[] =
 {
-	char				name[ MAXNAMELENGTH + 1 ]; // +1 for overflow
-	char				caption[ MAXNAMELENGTH + 1 ]; // +1 for overflow
-	char				tooltip[ MAXNAMELENGTH + 1 ]; // +1 for overflow
-	menuentry_t*		parent;
-	menuentry_t*		children[ MAXCHILDREN + 1 ]; // +1 for overflow
-	menuentry_t**		freechild;
-	menufunc_t			callback;
-	void*				data;
-	ImVec2				dimensions;
-	boolean				enabled;
-	int32_t				comparison;
-	menuentrytype_t		type;
-	menuproperties_t	properties;
-	
-} menuentry_t;
-
-typedef void (*renderchild_t)( menuentry_t* );
-
-static menuentry_t* M_FindDashboardCategory( const char* category_name );
-static void M_RenderDashboardChildren( menuentry_t** children );
-static void M_ThrowAnErrorBecauseThisIsInvalid( menuentry_t* cat );
-static void M_RenderWindowItem( menuentry_t* cat );
-static void M_RenderCategoryItem( menuentry_t* cat );
-static void M_RenderButtonItem( menuentry_t* cat );
-static void M_RenderCheckboxItem( menuentry_t* cat );
-static void M_RenderCheckboxFlagItem( menuentry_t* cat );
-static void M_RenderRadioButtonItem( menuentry_t* cat );
-static void M_RenderSeparator( menuentry_t* cat );
-
-extern "C"
-{
-	ImGuiContext*			imgui_context;
-	boolean					dashboardactive = false;
-	int32_t					dashboardremappingkey = Remap_None;
-	int32_t					dashboardpausesplaysim = true;
-	int32_t					dashboardopensound = 0;
-	int32_t					dashboardclosesound = 0;
-}
-
-static int32_t			dashboard_theme = 0;
-
-static menuentry_t		entries[ MAXENTRIES + 1 ]; // +1 for overflow
-static menuentry_t*		rootentry;
-static menuentry_t*		nextentry;
-
-static renderchild_t	childfuncs[] =
-{
-	&M_ThrowAnErrorBecauseThisIsInvalid,
-	&M_RenderWindowItem,
-	&M_RenderCategoryItem,
-	&M_RenderButtonItem,
-	&M_RenderCheckboxItem,
-	&M_RenderCheckboxFlagItem,
-	&M_RenderRadioButtonItem,
-	&M_RenderSeparator,
-	&M_ThrowAnErrorBecauseThisIsInvalid,
+	IM_COL32( 0xd6, 0xcb, 0xac, 0xff ), // Log_Normal
+	IM_COL32( 0xa3, 0x98, 0xff, 0xff ), // Log_System
+	IM_COL32( 0xbd, 0xbd, 0xbd, 0xff ), // Log_Startup
+	IM_COL32( 0x47, 0xae, 0x0e, 0xff ), // Log_InGameMessage
+	IM_COL32( 0x11, 0x7e, 0xe3, 0xff ), // Log_Chat
+	IM_COL32( 0xee, 0x8e, 0x13, 0xff ), // Log_Warning
+	IM_COL32( 0xee, 0x13, 0x13, 0xff ), // Log_Error
 };
 
-static boolean aboutwindow_open = false;
-static boolean licenseswindow_open = false;
-
-#define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_Dashboard: More than %d elements total added", MAXENTRIES ); }
-#define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_Dashboard: Too many child elements added to %s", elem->name ); }
-
-// Blatantly assuming this will get linked in just fine
-DOOM_C_API void S_StartSound( void *origin, int sound_id );
-
-static void M_OnDashboardCloseButton( const char* itemname, void* data )
-{
-	S_StartSound( NULL, dashboardclosesound );
-	dashboardactive = false;
-}
-
-static void M_OnDashboardCoreQuit( const char* itemname, void* data )
-{
-	I_Quit();
-}
-
-static void M_AboutWindow( const char* itemname, void* data )
-{
-	igText( EDITION_STRING );
-	igText( "\"Haha software render go BRRRRR!\"" );
-	igNewLine();
-	igText( "A fork of Chocolate Doom focused on speed for modern architectures." );
-	igNewLine();
-	igText( "Copyright(C) 1993-1996 Id Software, Inc." );
-	igText( "Copyright(C) 1993-2008 Raven Software" );
-	igText( "Copyright(C) 2005-2014 Simon Howard" );
-	igText( "Copyright(C) 2020-2022 Ethan Watson" );
-	igNewLine();
-	igText( "This program is free software; you can redistribute it and/or" );
-	igText( "modify it under the terms of the GNU General Public License" );
-	igText( "as published by the Free Software Foundation; either version 2" );
-	igText( "of the License, or (at your option) any later version." );
-	igNewLine();
-	igText( "This program is distributed in the hope that it will be useful," );
-	igText( "but WITHOUT ANY WARRANTY; without even the implied warranty of" );
-	igText( "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the" );
-	igText( "GNU General Public License for more details." );
-	igNewLine();
-	igText( "https://github.com/GooberMan/rum-and-raisin-doom" );
-}
-
-typedef struct licenses_s
+typedef struct licences_s
 {
 	const char* software;
 	const char* license;
-} licenses_t;
+} licences_t;
 
-static licenses_t licences[] =
+static licences_t licences[] =
 {
 	{ "Simple DirectMedia Layer",
 		"zlib license\n"
@@ -518,18 +426,148 @@ static licenses_t licences[] =
 	},
 };
 
-static void M_LicensesWindow( const char* itemname, void* data )
+constexpr auto Themes()
 {
-	ImVec2 zerosize = { 0, 0 };
-	int32_t index;
+	return std::span( themes, arrlen( themes ) );
+}
 
-	igPushIDPtr( &licenseswindow_open );
-	for( index = 0; index < arrlen( licences ); ++index )
+constexpr auto LogColours()
+{
+	return std::span( logcolours, arrlen( logcolours ) );
+}
+
+constexpr auto Licences()
+{
+	return std::span( licences, arrlen( licences ) );
+}
+
+typedef struct menuentry_s
+{
+	char				name[ MAXNAMELENGTH + 1 ]; // +1 for overflow
+	char				caption[ MAXNAMELENGTH + 1 ]; // +1 for overflow
+	char				tooltip[ MAXNAMELENGTH + 1 ]; // +1 for overflow
+	menuentry_t*		parent;
+	menuentry_t*		children[ MAXCHILDREN + 1 ]; // +1 for overflow
+	menuentry_t**		freechild;
+	menufunc_t			callback;
+	void*				data;
+	ImVec2				dimensions;
+	boolean				enabled;
+	int32_t				comparison;
+	menuentrytype_t		type;
+	menuproperties_t	properties;
+	
+} menuentry_t;
+
+typedef void (*renderchild_t)( menuentry_t* );
+
+static menuentry_t* M_FindDashboardCategory( const char* category_name );
+static void M_RenderDashboardChildren( menuentry_t** children );
+static void M_ThrowAnErrorBecauseThisIsInvalid( menuentry_t* cat );
+static void M_RenderWindowItem( menuentry_t* cat );
+static void M_RenderCategoryItem( menuentry_t* cat );
+static void M_RenderButtonItem( menuentry_t* cat );
+static void M_RenderCheckboxItem( menuentry_t* cat );
+static void M_RenderCheckboxFlagItem( menuentry_t* cat );
+static void M_RenderRadioButtonItem( menuentry_t* cat );
+static void M_RenderSeparator( menuentry_t* cat );
+
+extern "C"
+{
+	ImGuiContext*			imgui_context;
+	int32_t					dashboardactive = Dash_Inactive;
+	int32_t					dashboardremappingkey = Remap_None;
+	int32_t					dashboardpausesplaysim = true;
+	int32_t					dashboardopensound = 0;
+	int32_t					dashboardclosesound = 0;
+
+	extern int32_t			render_width;
+	extern int32_t			actualheight;
+	extern int32_t			window_width;
+
+}
+
+static int32_t			dashboard_theme = 0;
+
+static menuentry_t		entries[ MAXENTRIES + 1 ]; // +1 for overflow
+static menuentry_t*		rootentry;
+static menuentry_t*		nextentry;
+
+static renderchild_t	childfuncs[] =
+{
+	&M_ThrowAnErrorBecauseThisIsInvalid,
+	&M_RenderWindowItem,
+	&M_RenderCategoryItem,
+	&M_RenderButtonItem,
+	&M_RenderCheckboxItem,
+	&M_RenderCheckboxFlagItem,
+	&M_RenderRadioButtonItem,
+	&M_RenderSeparator,
+	&M_ThrowAnErrorBecauseThisIsInvalid,
+};
+
+static boolean aboutwindow_open = false;
+static boolean licenceswindow_open = false;
+
+static int32_t lastrenderwidth = 0;
+static int32_t lastrenderheight = 0;
+static ImVec2 backbuffersize = { 640, 480 };
+static ImVec2 backbufferpos = { 50, 50 };
+static ImVec2 logsize = { 500, 300 };
+static ImVec2 logpos = { 720, 50 };
+static ImVec2 zeropivot = { 0, 0 };
+
+#define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_Dashboard: More than %d elements total added", MAXENTRIES ); }
+#define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_Dashboard: Too many child elements added to %s", elem->name ); }
+
+// Blatantly assuming this will get linked in just fine
+DOOM_C_API void S_StartSound( void *origin, int sound_id );
+
+static void M_OnDashboardCloseButton( const char* itemname, void* data )
+{
+	S_StartSound( NULL, dashboardclosesound );
+	dashboardactive = Dash_Inactive;
+}
+
+static void M_OnDashboardCoreQuit( const char* itemname, void* data )
+{
+	I_Quit();
+}
+
+static void M_AboutWindow( const char* itemname, void* data )
+{
+	igText( EDITION_STRING );
+	igText( "\"Haha software render go BRRRRR!\"" );
+	igNewLine();
+	igText( "A fork of Chocolate Doom focused on speed for modern architectures." );
+	igNewLine();
+	igText( "Copyright(C) 1993-1996 Id Software, Inc." );
+	igText( "Copyright(C) 1993-2008 Raven Software" );
+	igText( "Copyright(C) 2005-2014 Simon Howard" );
+	igText( "Copyright(C) 2020-2022 Ethan Watson" );
+	igNewLine();
+	igText( "This program is free software; you can redistribute it and/or" );
+	igText( "modify it under the terms of the GNU General Public License" );
+	igText( "as published by the Free Software Foundation; either version 2" );
+	igText( "of the License, or (at your option) any later version." );
+	igNewLine();
+	igText( "This program is distributed in the hope that it will be useful," );
+	igText( "but WITHOUT ANY WARRANTY; without even the implied warranty of" );
+	igText( "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the" );
+	igText( "GNU General Public License for more details." );
+	igNewLine();
+	igText( "https://github.com/GooberMan/rum-and-raisin-doom" );
+}
+
+static void M_LicencesWindow( const char* itemname, void* data )
+{
+	igPushIDPtr( &licenceswindow_open );
+	for( const licences_t& currlicence : Licences() )
 	{
-		igPushIDPtr( licences[ index ].software );
-		if( igCollapsingHeaderTreeNodeFlags( licences[ index ].software, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+		igPushIDPtr( currlicence.software );
+		if( igCollapsingHeaderTreeNodeFlags( currlicence.software, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 		{
-			igText( licences[ index ].license );
+			igText( currlicence.license );
 		}
 		igPopID();
 	}
@@ -539,7 +577,6 @@ static void M_LicensesWindow( const char* itemname, void* data )
 void M_InitDashboard( void )
 {
 	char themefullpath[ MAXNAMELENGTH + 1 ];
-	themedata_t* thistheme;
 
 #if USE_IMGUI
 	imgui_context = igCreateContext( NULL );
@@ -573,18 +610,17 @@ void M_InitDashboard( void )
 		M_FindDashboardCategory( "Map" );
 	}
 
-	thistheme = themes;
-	while( thistheme->name != NULL && thistheme->colors != NULL )
+	int32_t index = 0;
+	for( const themedata_t& thistheme : Themes() )
 	{
 		memset( themefullpath, 0, sizeof( themefullpath ) );
-		sprintf( themefullpath, "Core|Theme|%s", thistheme->name );
-		M_RegisterDashboardRadioButton( themefullpath, NULL, &dashboard_theme, (int32_t)( thistheme - themes ) );
-		++thistheme;
+		sprintf( themefullpath, "Core|Theme|%s", thistheme.name );
+		M_RegisterDashboardRadioButton( themefullpath, NULL, &dashboard_theme, index++ );
 	}
 
 	M_RegisterDashboardCheckbox( "Core|Pause While Active", "Multiplayer ignores this", (boolean*)&dashboardpausesplaysim );
 	M_RegisterDashboardWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, Menu_Normal, &M_AboutWindow );
-	M_RegisterDashboardWindow( "Core|Licenses", "Licenses", 0, 0, &licenseswindow_open, Menu_Normal, &M_LicensesWindow );
+	M_RegisterDashboardWindow( "Core|licences", "licences", 0, 0, &licenceswindow_open, Menu_Normal, &M_LicencesWindow );
 	M_RegisterDashboardSeparator( "Core" );
 	M_RegisterDashboardButton( "Core|Quit", "Yes, this means quit the game", &M_OnDashboardCoreQuit, NULL );
 
@@ -726,7 +762,134 @@ static int32_t M_RenderDashboardWindowActivationItems( menuentry_t** children )
 	return windowcount;
 }
 
-void M_RenderDashboard( void )
+static bool M_DashboardUpdateSizes( int32_t windowwidth, int32_t windowheight )
+{
+	bool backbuffersizechange = false;
+
+	if( lastrenderwidth > 0 && lastrenderheight > 0 )
+	{
+		if( lastrenderwidth != render_width || lastrenderheight != actualheight )
+		{
+			backbuffersizechange = true;
+			backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
+			lastrenderwidth = render_width;
+			lastrenderheight = actualheight;
+		}
+	}
+	else
+	{
+		backbuffersize.x = window_width * 0.6f;
+		backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
+		lastrenderwidth = render_width;
+		lastrenderheight = actualheight;
+
+		logpos.x = windowwidth - logsize.x - 50.f;
+		logpos.y = windowheight - logsize.y - 50.f;
+	}
+
+	return backbuffersizechange;
+}
+
+void M_RenderDashboardLogContents( void )
+{
+	size_t currentry;
+	size_t numentries = I_LogNumEntries();
+
+	igColumns( 2, "", false );
+	igSetColumnWidth( 0, 70.f );
+	igPushStyleColorU32( ImGuiCol_Text, LogColours()[ Log_Normal ] );
+
+	for( currentry = 0; currentry < numentries; ++currentry )
+	{
+		igText( I_LogGetTimestamp( currentry ) );
+		igNextColumn();
+		igPushStyleColorU32( ImGuiCol_Text, LogColours()[ I_LogGetEntryType( currentry ) ] );
+		igText( I_LogGetEntryText( currentry ) );
+		igPopStyleColor( 1 );
+		igNextColumn();
+	}
+
+	igPopStyleColor( 1 );
+
+	igColumns( 1, "", false );
+
+	if( igGetScrollY() == igGetScrollMaxY() )
+	{
+		igSetScrollHereY( 1.f );
+	}
+}
+
+void M_RenderDashboardBackbufferContents( int32_t backbufferid )
+{
+	// TODO: Get correct margin sizes
+	ImVec2 size = { backbuffersize.x - 20, backbuffersize.y - 40 };
+
+	ImVec2 imagepos;
+	igGetCursorScreenPos( &imagepos );
+
+	ImVec2 uvtl = { 0, 0 };
+	ImVec2 uvtr = { 0, 1 };
+	ImVec2 uvll = { 1, 0 };
+	ImVec2 uvlr = { 1, 1 };
+	ImVec4 tint = { 1, 1, 1, 1 };
+	ImVec4 border = { 0, 0, 0, 0 };
+	igImageQuad( (ImTextureID)backbufferid, size, uvtl, uvtr, uvlr, uvll, tint, border );
+
+#if 0
+	ImVec2 actualmousepos;
+	igGetMousePos( &actualmousepos );
+
+	ImVec2 relativemousepos = { actualmousepos.x - imagepos.x, actualmousepos.y - imagepos.y };
+
+	int32_t lookupx = -1;
+	int32_t lookupy = -1;
+
+	if( relativemousepos.x >= 0 && relativemousepos.x < size.x 
+		&& relativemousepos.y >= 0 && relativemousepos.y < size.y )
+	{
+		float_t xpercent = relativemousepos.x / size.x;
+		float_t ypercent = relativemousepos.y / size.y;
+
+		lookupx = M_MIN( render_width * xpercent, render_width - 1 );
+		lookupy = M_MIN( render_height * ypercent, render_height - 1 );
+
+		igOpenPopup( "inspector", ImGuiPopupFlags_None );
+
+		actualmousepos.x += 10;
+
+		igSetNextWindowPos( actualmousepos, ImGuiCond_Always, zeropivot );
+	}
+
+	if( igBeginPopup( "inspector", ImGuiWindowFlags_None ) )
+	{
+		if( lookupx < 0 || lookupy < 0 )
+		{
+			igCloseCurrentPopup();
+		}
+		else
+		{
+			ImVec2 buttonsize = { 40, 40 };
+			vbuffer_t* buffer = &renderbuffers[ 0 ].screenbuffer;
+
+			int32_t colourentry = buffer->data[ lookupx * buffer->pitch + lookupy ];
+			SDL_Color* palentry = &palette[ colourentry ];
+
+			ImU32 colour = IM_COL32( palentry->r, palentry->g, palentry->b, 255 );
+
+			igPushStyleColorU32( ImGuiCol_Button, colour );
+			igPushStyleColorU32( ImGuiCol_Border, IM_COL32_BLACK );
+			igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 2.f );
+			igButton( " ", buttonsize );
+			igPopStyleVar( 1 );
+			igPopStyleColor( 2 );
+		}
+
+		igEndPopup();
+	}
+#endif
+}
+
+void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backbufferid )
 {
 	menuentry_t* thiswindow;
 	menufunc_t callback;
@@ -740,6 +903,8 @@ void M_RenderDashboard( void )
 
 	if( dashboardactive )
 	{
+		bool changed = M_DashboardUpdateSizes( windowwidth, windowheight );
+
 		if( igBeginMainMenuBar() )
 		{
 			M_RenderDashboardChildren( rootentry->children );
@@ -760,6 +925,29 @@ void M_RenderDashboard( void )
 			}
 		}
 		igEndMainMenuBar();
+
+		igSetNextWindowSize( backbuffersize, changed ? ImGuiCond_Always : ImGuiCond_FirstUseEver );
+		igSetNextWindowPos( backbufferpos, ImGuiCond_FirstUseEver, zeropivot );
+		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
+		{
+			igGetWindowSize( &backbuffersize );
+			igGetWindowPos( &backbufferpos );
+			M_RenderDashboardBackbufferContents( backbufferid );
+		}
+		igEnd();
+
+		igPushStyleColorU32( ImGuiCol_WindowBg, IM_COL32_BLACK );
+		igSetNextWindowSize( logsize, ImGuiCond_FirstUseEver );
+		igSetNextWindowPos( logpos, ImGuiCond_FirstUseEver, zeropivot );
+		if( igBegin( "Log", NULL, ImGuiWindowFlags_NoSavedSettings ) )
+		{
+			igGetWindowSize( &logsize );
+			igGetWindowPos( &logpos );
+
+			M_RenderDashboardLogContents();
+		}
+		igEnd();
+		igPopStyleColor( 1 );
 	}
 
 	while( thiswindow != nextentry )

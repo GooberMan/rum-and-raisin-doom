@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// DESCRIPTION: Log library. Wraps some STL containers.
+// DESCRIPTION: Container library. Wraps some STL containers.
 //
 
 
@@ -26,6 +26,7 @@ extern "C"
 	#include "z_zone.h"
 }
 
+#include <span>
 #include <vector>
 #include <string>
 #include <map>

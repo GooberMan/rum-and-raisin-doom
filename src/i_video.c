@@ -190,7 +190,7 @@ int32_t fullscreen = DEFAULT_FULLSCREEN;
 // Aspect ratio correction mode
 
 int32_t aspect_ratio_correct = true;
-static int32_t actualheight;
+int32_t actualheight;
 
 // Force integer scales for resolution-independent rendering
 
@@ -252,7 +252,7 @@ int32_t usegamma = 0;
 // Joystick/gamepad hysteresis
 uint64_t joywait = 0;
 
-extern boolean dashboardactive;
+extern int32_t dashboardactive;
 
 static boolean MouseShouldBeGrabbed()
 {
@@ -750,8 +750,6 @@ static void CreateUpscaledTexture(boolean force)
 // I_FinishUpdate
 //
 
-#pragma optimize( "", off )
-
 void I_FinishUpdate (void)
 {
 #if FPS_DOTS_SUPPORTED
@@ -876,11 +874,6 @@ void I_FinishUpdate (void)
 
 	SDL_SetRenderTarget(renderer, NULL);
 
-	SDL_GL_BindTexture( texture_upscaled, NULL, NULL );
-	GLint whichID;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichID);
-	SDL_GL_UnbindTexture( texture );
-
 	if( USE_IMGUI && !dashboardactive )
 	{
 		// Better transormation courtesy of Altazimuth
@@ -902,178 +895,20 @@ void I_FinishUpdate (void)
 
 	igNewFrame();
 
-	static float uv0_x = 0;
-	static float uv0_y = 0;
-	static float uv1_x = 1;
-	static float uv1_y = 1;
+	int32_t actualwindowwidth = 0;
+	int32_t actualwindowheight = 0;
+	GLint whichID = 0;
 
-	static float lastwidth = 0;
-	static float lastheight = 0;
+	SDL_GL_BindTexture( texture_upscaled, NULL, NULL );
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichID);
+	SDL_GL_UnbindTexture( texture );
 
-	static int32_t actualwindowwidth = 0;
-	static int32_t actualwindowheight = 0;
+	SDL_GetWindowSize( screen, &actualwindowwidth, &actualwindowheight );
 
-	static ImVec2 backbuffersize = { 640, 480 };
-	static ImVec2 backbufferpos = { 50, 50 };
-	static ImVec2 logsize = { 500, 300 };
-	static ImVec2 logpos = { 720, 50 };
-	static ImVec2 zeropivot = { 0, 0 };
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
-	static bool backbuffersizechange = false;
-
-	static const ImU32 textcolors[ Log_Max ] =
-	{
-		IM_COL32( 0xd6, 0xcb, 0xac, 0xff ), // Log_Normal
-		IM_COL32( 0xa3, 0x98, 0xff, 0xff ), // Log_System
-		IM_COL32( 0xbd, 0xbd, 0xbd, 0xff ), // Log_Startup
-		IM_COL32( 0x47, 0xae, 0x0e, 0xff ), // Log_InGameMessage
-		IM_COL32( 0x11, 0x7e, 0xe3, 0xff ), // Log_Chat
-		IM_COL32( 0xee, 0x8e, 0x13, 0xff ), // Log_Warning
-		IM_COL32( 0xee, 0x13, 0x13, 0xff ), // Log_Error
-	};
-
-	if( dashboardactive )
-	{
-		if( lastwidth > 0 && lastheight > 0 )
-		{
-			if( lastwidth != render_width || lastheight != actualheight )
-			{
-				backbuffersizechange = true;
-				backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
-				lastwidth = render_width;
-				lastheight = actualheight;
-			}
-		}
-		else
-		{
-			backbuffersize.x = window_width * 0.6f;
-			backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
-			lastwidth = render_width;
-			lastheight = actualheight;
-
-			SDL_GetWindowSize( screen, &actualwindowwidth, &actualwindowheight );
-
-			logpos.x = actualwindowwidth - logsize.x - 50.f;
-			logpos.y = actualwindowheight - logsize.y - 50.f;
-		}
-
-		igSetNextWindowSize( backbuffersize, backbuffersizechange ? ImGuiCond_Always : ImGuiCond_FirstUseEver );
-		igSetNextWindowPos( backbufferpos, ImGuiCond_FirstUseEver, zeropivot );
-		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
-		{
-			igGetWindowSize( &backbuffersize );
-			igGetWindowPos( &backbufferpos );
-
-			// TODO: Get correct margin sizes
-			ImVec2 size = { backbuffersize.x - 20, backbuffersize.y - 40 };
-
-			ImVec2 imagepos;
-			igGetCursorScreenPos( &imagepos );
-
-			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-			glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-			ImVec2 uvtl = { 0, 0 };
-			ImVec2 uvtr = { 0, 1 };
-			ImVec2 uvll = { 1, 0 };
-			ImVec2 uvlr = { 1, 1 };
-			ImVec4 tint = { 1, 1, 1, 1 };
-			ImVec4 border = { 0, 0, 0, 0 };
-			igImageQuad( (ImTextureID)whichID, size, uvtl, uvtr, uvlr, uvll, tint, border );
-
-#if 0
-			ImVec2 actualmousepos;
-			igGetMousePos( &actualmousepos );
-
-			ImVec2 relativemousepos = { actualmousepos.x - imagepos.x, actualmousepos.y - imagepos.y };
-
-			int32_t lookupx = -1;
-			int32_t lookupy = -1;
-
-			if( relativemousepos.x >= 0 && relativemousepos.x < size.x 
-				&& relativemousepos.y >= 0 && relativemousepos.y < size.y )
-			{
-				float_t xpercent = relativemousepos.x / size.x;
-				float_t ypercent = relativemousepos.y / size.y;
-
-				lookupx = M_MIN( render_width * xpercent, render_width - 1 );
-				lookupy = M_MIN( render_height * ypercent, render_height - 1 );
-
-				igOpenPopup( "inspector", ImGuiPopupFlags_None );
-
-				actualmousepos.x += 10;
-
-				igSetNextWindowPos( actualmousepos, ImGuiCond_Always, zeropivot );
-			}
-
-			if( igBeginPopup( "inspector", ImGuiWindowFlags_None ) )
-			{
-				if( lookupx < 0 || lookupy < 0 )
-				{
-					igCloseCurrentPopup();
-				}
-				else
-				{
-					ImVec2 buttonsize = { 40, 40 };
-					vbuffer_t* buffer = &renderbuffers[ 0 ].screenbuffer;
-
-					int32_t colourentry = buffer->data[ lookupx * buffer->pitch + lookupy ];
-					SDL_Color* palentry = &palette[ colourentry ];
-
-					ImU32 colour = IM_COL32( palentry->r, palentry->g, palentry->b, 255 );
-
-					igPushStyleColorU32( ImGuiCol_Button, colour );
-					igPushStyleColorU32( ImGuiCol_Border, IM_COL32_BLACK );
-					igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 2.f );
-					igButton( " ", buttonsize );
-					igPopStyleVar( 1 );
-					igPopStyleColor( 2 );
-				}
-
-				igEndPopup();
-			}
-#endif
-		}
-		igEnd();
-
-		igPushStyleColorU32( ImGuiCol_WindowBg, IM_COL32_BLACK );
-		igSetNextWindowSize( logsize, ImGuiCond_FirstUseEver );
-		igSetNextWindowPos( logpos, ImGuiCond_FirstUseEver, zeropivot );
-		if( igBegin( "Log", NULL, ImGuiWindowFlags_NoSavedSettings ) )
-		{
-			igGetWindowSize( &logsize );
-			igGetWindowPos( &logpos );
-
-			size_t currentry;
-			size_t numentries = I_LogNumEntries();
-
-			igColumns( 2, "", false );
-			igSetColumnWidth( 0, 70.f );
-			igPushStyleColorU32( ImGuiCol_Text, textcolors[ Log_Normal ] );
-
-			for( currentry = 0; currentry < numentries; ++currentry )
-			{
-				igText( I_LogGetTimestamp( currentry ) );
-				igNextColumn();
-				igPushStyleColorU32( ImGuiCol_Text, textcolors[ I_LogGetEntryType( currentry ) ] );
-				igText( I_LogGetEntryText( currentry ) );
-				igPopStyleColor( 1 );
-				igNextColumn();
-			}
-
-			igPopStyleColor( 1 );
-
-			igColumns( 1, "", false );
-
-			if( igGetScrollY() == igGetScrollMaxY() )
-			{
-				igSetScrollHereY( 1.f );
-			}
-		}
-		igEnd();
-		igPopStyleColor( 1 );
-	}
-
-	M_RenderDashboard();
+	M_RenderDashboard( actualwindowwidth, actualwindowheight, whichID );
 
 	igRender();
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
@@ -1082,9 +917,6 @@ void I_FinishUpdate (void)
 
     SDL_RenderPresent(renderer);
 }
-
-#pragma optimize( "", on )
-
 
 
 //

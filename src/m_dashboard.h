@@ -44,11 +44,19 @@ typedef enum menuproperties_e
 	Menu_Overlay		= 0x00000001,
 } menuproperties_t;
 
+typedef enum dashboardmode_e
+{
+	Dash_Inactive,
+	Dash_Normal,
+	Dash_FirstSession,
+} dashboardmode_t;
+
 typedef void (*menufunc_t)( const char* itemname, void* data );
 
 void M_InitDashboard( void );
 void M_BindDashboardVariables( void );
-void M_RenderDashboard( void );
+void M_RenderDashboardLogContents( void );
+void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backbufferid );
 
 // menuname can be categorised with pipes, ie Edit|Preferences|Some pref category
 
