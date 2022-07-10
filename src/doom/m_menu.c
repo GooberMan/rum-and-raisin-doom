@@ -2782,20 +2782,6 @@ controldesc_t mousemappings[] =
 
 static float columwidth = 200.f;
 
-static void igPushScrollableArea( const char* ID, ImVec2 size )
-{
-	igPushIDStr( ID );
-	igPushStyleColorU32( ImGuiCol_ChildBg, IM_COL32_BLACK_TRANS );
-	igBeginChildStr( "ScrollArea", size, false, ImGuiWindowFlags_None );
-}
-
-static void igPopScrollableArea()
-{
-	igEndChild();
-	igPopStyleColor( 1 );
-	igPopID();
-}
-
 static const char* remaptypenames[ Remap_Max ] =
 {
 	"none",
