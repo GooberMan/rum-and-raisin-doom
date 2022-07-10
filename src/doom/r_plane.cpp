@@ -444,6 +444,7 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	// This isn't a constant though...
 	skycontext.output = *dest;
+	skycontext.sourceheight = FixedToInt( textureheight[ skytexture ] );
 
 	// TODO: Sort visplanes by height
 	for (pl = planecontext->visplanes ; pl < planecontext->lastvisplane ; pl++)
