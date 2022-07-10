@@ -136,7 +136,7 @@
     <ClCompile Include="..\src\doom\r_data.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\r_main.c">
+    <ClCompile Include="..\src\doom\r_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\r_segs.c">

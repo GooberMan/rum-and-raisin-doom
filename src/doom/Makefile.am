@@ -74,7 +74,7 @@ r_data.c           r_data.h     \
                    r_defs.h     \
 r_draw.cpp         r_draw.h     \
                    r_local.h    \
-r_main.c           r_main.h     \
+r_main.cpp         r_main.h     \
 r_plane.cpp        r_plane.h    \
 r_raster.cpp       r_raster.h   \
 r_segs.c           r_segs.h     \

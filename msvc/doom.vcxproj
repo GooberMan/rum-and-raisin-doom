@@ -273,7 +273,7 @@
     <ClCompile Include="..\src\doom\r_draw.cpp" />
     <ClInclude Include="..\src\doom\r_draw.h" />
     <ClInclude Include="..\src\doom\r_local.h" />
-    <ClCompile Include="..\src\doom\r_main.c" />
+    <ClCompile Include="..\src\doom\r_main.cpp" />
     <ClInclude Include="..\src\doom\r_main.h" />
     <ClInclude Include="..\src\doom\r_plane.h" />
     <ClCompile Include="..\src\doom\r_plane.cpp" />
