@@ -15,8 +15,6 @@
 #ifndef __M_DASHBOARD_H__
 #define __M_DASHBOARD_H__
 
-#include "doomtype.h"
-
 #if defined( __APPLE__ )
 // And you can come back out after you think about what you've done.
 #define USE_IMGUI 0
@@ -27,6 +25,8 @@
 #if defined( __cplusplus )
 extern "C" {
 #endif
+
+#include "doomtype.h"
 
 typedef enum remapping_e
 {

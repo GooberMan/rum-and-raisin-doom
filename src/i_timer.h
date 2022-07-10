@@ -21,6 +21,10 @@
 #ifndef __I_TIMER__
 #define __I_TIMER__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "doomtype.h"
 
 #define TICRATE 35
@@ -43,6 +47,11 @@ void I_InitTimer( void );
 
 // Wait for vertical retrace or pause a bit.
 void I_WaitVBL( uint64_t count );
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif
 

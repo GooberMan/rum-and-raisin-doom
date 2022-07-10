@@ -15,9 +15,10 @@
 // C++11 threaded primitives
 //
 
+#include "i_thread.h"
+
 extern "C"
 {
-	#include "i_thread.h"
 	#include "z_zone.h"
 }
 
