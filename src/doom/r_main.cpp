@@ -983,14 +983,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
 		R_RenderBSPNode( &rendercontext->buffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
 	}
-	{
-		M_PROFILE_NAMED( "R_ErrorCheckPlanes" );
-		R_ErrorCheckPlanes( rendercontext );
-	}
-	{
-		M_PROFILE_NAMED( "R_DrawPlanes" );
-		R_DrawPlanes( &rendercontext->buffer, &rendercontext->planecontext );
-	}
+	R_ErrorCheckPlanes( rendercontext );
+	R_DrawPlanes( &rendercontext->buffer, &rendercontext->planecontext );
 	{
 		M_PROFILE_NAMED( "R_DrawMasked" );
 		R_DrawMasked( &rendercontext->buffer, &rendercontext->spritecontext, &rendercontext->bspcontext );

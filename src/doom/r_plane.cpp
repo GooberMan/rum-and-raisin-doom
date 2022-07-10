@@ -53,6 +53,7 @@ extern "C"
 }
 
 #include "m_container.h"
+#include "m_profile.h"
 
 typedef struct viskeylayout_s
 {
@@ -241,6 +242,8 @@ DOOM_C_API void R_InitPlaneLookup( planecontext_t* context )
 // R&R TODO: Optimize this wow linear search this will ruin lives
 DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel )
 {
+	M_PROFILE_FUNC();
+
 	visplane_t*	check;
 
 	if (picnum == skyflatnum)
@@ -294,6 +297,8 @@ DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int
 //
 DOOM_C_API visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start, int32_t stop )
 {
+	M_PROFILE_FUNC();
+
 	int32_t		intrl;
 	int32_t		intrh;
 	int32_t		unionl;
@@ -388,6 +393,8 @@ DOOM_C_API void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spanco
 #ifdef RANGECHECK
 DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context )
 {
+	M_PROFILE_FUNC();
+
 	if ( context->bspcontext.thisdrawseg - context->bspcontext.drawsegs > MAXDRAWSEGS)
 	{
 		I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
@@ -414,6 +421,8 @@ DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context )
 //
 DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
+	M_PROFILE_FUNC();
+
 	visplane_t*		pl;
 	int32_t			light;
 	int32_t			x;
