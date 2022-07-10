@@ -24,8 +24,6 @@
 #include "pcsound.h"
 #include "pcsound_internal.h"
 
-#pragma optimize( "", off )
-
 static SDL_Thread *sound_thread_handle;
 static int sound_thread_running;
 static pcsound_callback_func callback;
