@@ -18,7 +18,17 @@
 #if !defined(_CIMGUIGLUE_H_)
 #define _CIMGUIGLUE_H_
 
+#ifndef CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+	#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#endif // CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+
+#if defined( __cplusplus )
+extern "C" {
+#endif
 #include "cimgui.h"
+#if defined( __cplusplus )
+}
+#endif
 
 CIMGUI_API int CImGui_ImplSDL2_InitForOpenGL( void* window, void* sdl_gl_context );
 CIMGUI_API int CImGui_ImplOpenGL3_Init( const char* glsl_version );
@@ -29,7 +39,10 @@ CIMGUI_API void CImGui_ImplSDL2_NewFrame( void* window );
 
 CIMGUI_API void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data );
 
-CIMGUI_API void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col);
+CIMGUI_API void igImageQuad( ImTextureID user_texture_id, const ImVec2 size, const ImVec2 uvtl, const ImVec2 uvtr, const ImVec2 uvlr, const ImVec2 uvll, const ImVec4 tint_col, const ImVec4 border_col );
+
+CIMGUI_API void igPushScrollableArea( const char* ID, ImVec2 size );
+CIMGUI_API void igPopScrollableArea( void );
 
 // Helpers macros to generate 32-bit encoded colors
 #ifdef IMGUI_USE_BGRA_PACKED_COLOR

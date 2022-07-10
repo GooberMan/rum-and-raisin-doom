@@ -53,7 +53,7 @@ CIMGUI_API void CImGui_ImplOpenGL3_RenderDrawData( ImDrawData* draw_data )
 	ImGui_ImplOpenGL3_RenderDrawData( draw_data );
 }
 
-CIMGUI_API void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uvtl,const ImVec2 uvtr,const ImVec2 uvlr,const ImVec2 uvll,const ImVec4 tint_col,const ImVec4 border_col)
+CIMGUI_API void igImageQuad( ImTextureID user_texture_id, const ImVec2 size, const ImVec2 uvtl, const ImVec2 uvtr, const ImVec2 uvlr, const ImVec2 uvll, const ImVec4 tint_col, const ImVec4 border_col )
 {
 	ImVec2 tl;
 	ImVec2 tr;
@@ -93,3 +93,18 @@ CIMGUI_API void igImageQuad(ImTextureID user_texture_id,const ImVec2 size,const 
 		ImDrawList_AddImageQuad( window->DrawList, user_texture_id, tl, tr, lr, ll, uvtl, uvtr, uvlr, uvll, igGetColorU32Vec4(tint_col));
 	}
 }
+
+CIMGUI_API void igPushScrollableArea( const char* ID, ImVec2 size )
+{
+	igPushIDStr( ID );
+	igPushStyleColorU32( ImGuiCol_ChildBg, IM_COL32_BLACK_TRANS );
+	igBeginChildStr( "ScrollArea", size, false, ImGuiWindowFlags_None );
+}
+
+CIMGUI_API void igPopScrollableArea( void )
+{
+	igEndChild();
+	igPopStyleColor( 1 );
+	igPopID();
+}
+
