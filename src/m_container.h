@@ -31,6 +31,7 @@ extern "C"
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <algorithm>
 
 template< typename _ty, int32_t _tag = PU_STATIC >
 struct DoomAllocator
@@ -119,6 +120,21 @@ template< typename _key, typename _val, int32_t _tag = PU_STATIC >
 using DoomMap = std::map< _key, _val, std::less< _key > >; //, DoomAllocator< std::pair< const _key, _val >, _tag > >;
 
 using DoomString = std::basic_string< char, std::char_traits< char > >; //, DoomAllocator< char, PU_STATIC > >;
+
+// Reformatted copypasta from https://ctrpeach.io/posts/cpp20-string-literal-template-parameters/
+template< size_t _length >
+struct StringLiteral
+{
+	constexpr StringLiteral( const char( &str )[ _length ] )
+	{
+		std::copy_n( str, _length, value );
+	}
+
+	constexpr const char* c_str() const { return value; }
+	constexpr size_t size() const		{ return _length; }
+
+	char value[ _length ];
+};
 
 #endif // __cplusplus
 
