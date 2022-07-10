@@ -20,156 +20,172 @@
 //
 
 
+extern "C"
+{
+
+	#include <stdlib.h>
+	#include <math.h>
+	#include <stddef.h>
+
+	#include "doomdef.h"
+	#include "d_loop.h"
+
+	#include "m_bbox.h"
+	#include "m_config.h"
+	#include "m_menu.h"
+
+	#include "cimguiglue.h"
+
+	#include "r_local.h"
+	#include "r_sky.h"
+
+	// Need ST_HEIGHT
+	#include "st_stuff.h"
+	#include "m_misc.h"
+	#include "w_wad.h"
+
+	#include "z_zone.h"
+
+	#include "i_thread.h"
+
+	#include "tables.h"
+
+	#define SBARHEIGHT				( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
+
+	// Fineangles in the SCREENWIDTH wide window.
+	// If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
+	#define FIELDOFVIEW				( FINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
+	#define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
+
+	#define MAXWIDTH				(MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
+	#define MAXHEIGHT				(MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
+
+	#define DEFAULT_RENDERCONTEXTS 4
+	#define DEFAULT_MAXRENDERCONTEXTS 8
+
+	typedef struct renderdata_s
+	{
+		rendercontext_t		context;
+		threadhandle_t		thread;
+		atomicval_t			running;
+		atomicval_t			shouldquit;
+		atomicval_t			framewaiting;
+		atomicval_t			framefinished;
+		int32_t				index;
+	} renderdata_t;
+
+	renderdata_t*			renderdatas;
+
+	int32_t					field_of_view_degrees = 90;
+
+	int32_t					numrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
+	int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
+	boolean					renderloadbalancing = true;
+	boolean					rendersplitvisualise = false;
+	boolean					renderrebalancecontexts = false;
+	float_t					rebalancescale = 0.025f;
+	boolean					renderthreaded = true;
+	boolean					renderSIMDcolumns = false;
+	atomicval_t				renderthreadCPUmelter = 0;
+	int32_t					performancegraphscale = 20;
+
+	int32_t					viewangleoffset;
+
+	// increment every time a check is made
+	int32_t					validcount = 1;		
 
 
+	lighttable_t*			fixedcolormap;
+	int32_t					fixedcolormapindex;
 
-#include <stdlib.h>
-#include <math.h>
-#include <stddef.h>
+	int32_t					centerx;
+	int32_t					centery;
 
-#include "doomdef.h"
-#include "d_loop.h"
+	fixed_t					centerxfrac;
+	fixed_t					centeryfrac;
+	rend_fixed_t			projection;
 
-#include "m_bbox.h"
-#include "m_config.h"
-#include "m_menu.h"
+	// just for profiling purposes
+	int32_t					framecount;	
+
+	fixed_t					viewx;
+	fixed_t					viewy;
+	fixed_t					viewz;
+
+	angle_t					viewangle;
+
+	fixed_t					viewcos;
+	fixed_t					viewsin;
+
+	player_t*				viewplayer;
+
+	// 0 = high, 1 = low
+	int32_t					detailshift;	
+
+	//
+	// precalculated math tables
+	//
+	angle_t					clipangle;
+
+	// The viewangletox[viewangle + FINEANGLES/4] lookup
+	// maps the visible view angles to screen X coordinates,
+	// flattening the arc to a flat projection plane.
+	// There will be many angles mapped to the same X. 
+
+	int32_t				viewangletox[RENDERFINEANGLES/2];
+
+	// The xtoviewangleangle[] table maps a screen pixel
+	// to the lowest viewangle that maps back to x ranges
+	// from clipangle to -clipangle.
+	angle_t				xtoviewangle[MAXSCREENWIDTH+1];
+
+	lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
+	lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
+	int32_t				scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];
+	lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
+	int32_t				zlightindex[LIGHTLEVELS][MAXLIGHTZ];
+	colfunc_t			colfuncs[ COLFUNC_COUNT ];
+
+	// bumped light from gun blasts
+	int32_t				extralight;
+
+	colfunc_t			transcolfunc;
+
+	spanfunc_t			spanfunc;
+
+	int32_t				fuzz_style = Fuzz_Adjusted;
+
+	const byte whacky_void_indices[] =
+	{
+		251,
+		249,
+		118,
+		200,
+	};
+	const int32_t num_whacky_void_indices = sizeof( whacky_void_indices ) / sizeof( *whacky_void_indices );
+	const uint64_t whacky_void_microseconds = 1200000;
+	int32_t voidcleartype = Void_NoClear;
+
+	int32_t aspect_adjusted_render_width = 0;
+	rend_fixed_t aspect_adjusted_scaled_divide = 0;
+	rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
+
+	boolean		setsizeneeded;
+	int		setblocks;
+	int		setdetail;
+
+	extern int32_t remove_limits;
+	extern int detailLevel;
+	extern int screenblocks;
+	extern boolean refreshstatusbar;
+
+	extern size_t			xlookup[MAXWIDTH];
+	extern size_t			rowofs[MAXHEIGHT];
+
+}
+
 #include "m_dashboard.h"
 #include "m_profile.h"
-
-#include "cimguiglue.h"
-
-#include "r_local.h"
-#include "r_sky.h"
-
-// Need ST_HEIGHT
-#include "st_stuff.h"
-#include "m_misc.h"
-#include "w_wad.h"
-
-#include "z_zone.h"
-
-#include "i_thread.h"
-
-#include "tables.h"
-
-#define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
-
-
-// Fineangles in the SCREENWIDTH wide window.
-// If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
-#define FIELDOFVIEW				( FINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
-#define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
-
-#define DEFAULT_RENDERCONTEXTS 4
-#define DEFAULT_MAXRENDERCONTEXTS 8
-
-typedef struct renderdata_s
-{
-	rendercontext_t		context;
-	threadhandle_t		thread;
-	atomicval_t			running;
-	atomicval_t			shouldquit;
-	atomicval_t			framewaiting;
-	atomicval_t			framefinished;
-	int32_t				index;
-} renderdata_t;
-
-renderdata_t*			renderdatas;
-
-int32_t					field_of_view_degrees = 90;
-
-int32_t					numrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
-int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
-boolean					renderloadbalancing = true;
-boolean					rendersplitvisualise = false;
-boolean					renderrebalancecontexts = false;
-float_t					rebalancescale = 0.025f;
-boolean					renderthreaded = true;
-boolean					renderSIMDcolumns = false;
-atomicval_t				renderthreadCPUmelter = 0;
-int32_t					performancegraphscale = 20;
-
-int32_t					viewangleoffset;
-
-// increment every time a check is made
-int32_t					validcount = 1;		
-
-
-lighttable_t*			fixedcolormap;
-int32_t					fixedcolormapindex;
-
-int32_t					centerx;
-int32_t					centery;
-
-fixed_t					centerxfrac;
-fixed_t					centeryfrac;
-rend_fixed_t			projection;
-
-// just for profiling purposes
-int32_t					framecount;	
-
-fixed_t					viewx;
-fixed_t					viewy;
-fixed_t					viewz;
-
-angle_t					viewangle;
-
-fixed_t					viewcos;
-fixed_t					viewsin;
-
-player_t*				viewplayer;
-
-// 0 = high, 1 = low
-int32_t					detailshift;	
-
-//
-// precalculated math tables
-//
-angle_t					clipangle;
-
-// The viewangletox[viewangle + FINEANGLES/4] lookup
-// maps the visible view angles to screen X coordinates,
-// flattening the arc to a flat projection plane.
-// There will be many angles mapped to the same X. 
-
-int32_t				viewangletox[RENDERFINEANGLES/2];
-
-// The xtoviewangleangle[] table maps a screen pixel
-// to the lowest viewangle that maps back to x ranges
-// from clipangle to -clipangle.
-angle_t				xtoviewangle[MAXSCREENWIDTH+1];
-
-lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
-lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
-int32_t				scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];
-lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
-int32_t				zlightindex[LIGHTLEVELS][MAXLIGHTZ];
-colfunc_t			colfuncs[ COLFUNC_COUNT ];
-
-// bumped light from gun blasts
-int32_t				extralight;
-
-colfunc_t			transcolfunc;
-
-spanfunc_t			spanfunc;
-
-int32_t				fuzz_style = Fuzz_Adjusted;
-
-const byte whacky_void_indices[] =
-{
-	251,
-	249,
-	118,
-	200,
-};
-const int32_t num_whacky_void_indices = sizeof( whacky_void_indices ) / sizeof( *whacky_void_indices );
-const uint64_t whacky_void_microseconds = 1200000;
-int32_t voidcleartype = Void_NoClear;
-
-int32_t aspect_adjusted_render_width = 0;
-rend_fixed_t aspect_adjusted_scaled_divide = 0;
-rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
-
 
 //
 // R_AddPointToBox
@@ -814,8 +830,6 @@ byte lightlevelmaps[32][256];
 #define HAX 0
 void R_InitColFuncs( void )
 {
-	extern int32_t remove_limits;
-
 	int32_t lightlevel = 0;
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
@@ -910,6 +924,8 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 
 void R_RenderViewContext( rendercontext_t* rendercontext )
 {
+	M_PROFILE_FUNC();
+
 	colcontext_t	skycontext;
 	int32_t			x;
 	int32_t			angle;
@@ -962,10 +978,22 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		
 	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
 
-	R_RenderBSPNode( &rendercontext->buffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
-	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes( &rendercontext->buffer, &rendercontext->planecontext );
-	R_DrawMasked( &rendercontext->buffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
+	{
+		M_PROFILE_NAMED( "R_RenderBSPNode" );
+		R_RenderBSPNode( &rendercontext->buffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
+	}
+	{
+		M_PROFILE_NAMED( "R_ErrorCheckPlanes" );
+		R_ErrorCheckPlanes( rendercontext );
+	}
+	{
+		M_PROFILE_NAMED( "R_DrawPlanes" );
+		R_DrawPlanes( &rendercontext->buffer, &rendercontext->planecontext );
+	}
+	{
+		M_PROFILE_NAMED( "R_DrawMasked" );
+		R_DrawMasked( &rendercontext->buffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
+	}
 
 	rendercontext->endtime = I_GetTimeUS();
 	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
@@ -1021,9 +1049,7 @@ int32_t R_ContextThreadFunc( void* userdata )
 		{
 			M_ProfileNewFrame();
 
-			M_ProfilePushMarker( "R_RenderViewContext", __FILE__, __LINE__ );
 			R_RenderViewContext( &data->context );
-			M_ProfilePopMarker( "R_RenderViewContext" );
 
 			I_AtomicExchange( &data->framefinished, 1 );
 		}
@@ -1048,7 +1074,7 @@ void R_InitContexts( void )
 	currstart = 0;
 	incrementby = render_width / numrendercontexts;
 
-	renderdatas = Z_Malloc( sizeof( renderdata_t ) * numrendercontexts, PU_STATIC, NULL );
+	renderdatas = (renderdata_t*)Z_Malloc( sizeof( renderdata_t ) * numrendercontexts, PU_STATIC, NULL );
 	memset( renderdatas, 0, sizeof( renderdata_t ) * numrendercontexts );
 
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
@@ -1069,12 +1095,6 @@ void R_InitContexts( void )
 
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
-		renderdatas[ currcontext ].context.debugtime = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
-		renderdatas[ currcontext ].context.debugpercent = Z_Malloc( sizeof( hu_textline_t ), PU_STATIC, NULL );
-
-		HUlib_initTextLine( renderdatas[ currcontext ].context.debugtime,		FixedToInt( FixedDiv( IntToFixed( renderdatas[ currcontext ].context.begincolumn ), V_WIDTHMULTIPLIER ) ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 17, hu_font, HU_FONTSTART);
-		HUlib_initTextLine( renderdatas[ currcontext ].context.debugpercent,	FixedToInt( FixedDiv( IntToFixed( renderdatas[ currcontext ].context.begincolumn ), V_WIDTHMULTIPLIER ) ) + 4, V_VIRTUALHEIGHT - ST_HEIGHT - 9, hu_font, HU_FONTSTART);
-
 		if( renderthreaded && currcontext < numrendercontexts - 1 )
 		{
 			renderdatas[ currcontext ].thread = I_ThreadCreate( &R_ContextThreadFunc, &renderdatas[ currcontext ] );
@@ -1082,7 +1102,7 @@ void R_InitContexts( void )
 
 		if( numsectors > 0 )
 		{
-			renderdatas[ currcontext ].context.spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
 		}
 	}
 }
@@ -1094,7 +1114,7 @@ void R_RefreshContexts( void )
 	{
 		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 		{
-			renderdatas[ currcontext ].context.spritecontext.sectorvisited = Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
 #if RENDER_PERF_GRAPHING
 			memset( renderdatas[ currcontext ].context.frametimes, 0, sizeof( renderdatas[ currcontext ].context.frametimes) );
 			memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
@@ -1121,10 +1141,6 @@ void R_RebalanceContexts( void )
 //  because it might be in the middle of a refresh.
 // The change will take effect next refresh.
 //
-boolean		setsizeneeded;
-int		setblocks;
-int		setdetail;
-
 
 void
 R_SetViewSize
@@ -1151,7 +1167,7 @@ typedef enum detail_e
 // R_ExecuteSetViewSize
 //
 
-void R_ExecuteSetViewSize (void)
+DOOM_C_API void R_ExecuteSetViewSize (void)
 {
 	int32_t				i;
 	int32_t				j;
@@ -1421,7 +1437,7 @@ static void R_RenderThreadingGraphsWindow( const char* name, void* data )
 
 static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 {
-	boolean WorkingBool = I_AtomicLoad( &renderthreadCPUmelter ) != 0;
+	bool WorkingBool = I_AtomicLoad( &renderthreadCPUmelter ) != 0;
 
 	igText( "Performance options" );
 	igSeparator();
@@ -1444,13 +1460,13 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	}
 	igPopID();
 
-	igCheckbox( "Load balancing", &renderloadbalancing );
+	igCheckbox( "Load balancing", (bool*)&renderloadbalancing );
 	igSliderFloat( "Balancing scale", &rebalancescale, 0.001f, 0.1f, "%0.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-	igCheckbox( "SIMD columns", &renderSIMDcolumns );
+	igCheckbox( "SIMD columns", (bool*)&renderSIMDcolumns );
 	igNewLine();
 	igText( "Debug options" );
 	igSeparator();
-	igCheckbox( "Visualise split", &rendersplitvisualise );
+	igCheckbox( "Visualise split", (bool*)&rendersplitvisualise );
 	if( igSliderInt( "Horizontal FOV", &field_of_view_degrees, 60, 160, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 	{
 		R_ExecuteSetViewSize();
@@ -1498,10 +1514,6 @@ void R_Init (void)
 
 void R_RenderDimensionsChanged( void )
 {
-	extern int detailLevel;
-	extern int screenblocks;
-	extern boolean refreshstatusbar;
-
 	refreshstatusbar = true;
 	V_RestoreBuffer();
 	R_InitLightTables();
@@ -1546,7 +1558,9 @@ double_t Lerp( double_t from, double_t to, double_t percent )
 }
 
 void R_SetupFrame (player_t* player)
-{		
+{
+	M_PROFILE_FUNC();
+
 	int32_t		i;
 	int32_t		currcontext;
 	int32_t		currstart;
@@ -1668,11 +1682,6 @@ void R_SetupFrame (player_t* player)
 //
 // R_RenderView
 //
-#define MAXWIDTH			(MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
-#define MAXHEIGHT			(MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
-
-extern size_t			xlookup[MAXWIDTH];
-extern size_t			rowofs[MAXHEIGHT];
 
 static void R_DrawMsg( const char* msg, hu_textline_t* line )
 {
@@ -1686,9 +1695,10 @@ static void R_DrawMsg( const char* msg, hu_textline_t* line )
 }
 
 void R_RenderPlayerView (player_t* player)
-{	
+{
+	M_PROFILE_FUNC();
+
 	int32_t currcontext;
-	int32_t finishedcontexts;
 	uint64_t looptimestart;
 	uint64_t looptimeend;
 
@@ -1705,7 +1715,7 @@ void R_RenderPlayerView (player_t* player)
 
 	if( rendersplitvisualise ) looptimestart = I_GetTimeUS();
 
-	finishedcontexts = 0;
+	atomicval_t finishedcontexts = 0;
 
 	for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 	{
@@ -1715,9 +1725,7 @@ void R_RenderPlayerView (player_t* player)
 		}
 		else
 		{
-			M_ProfilePushMarker( "R_RenderViewContext", __FILE__, __LINE__ );
 			R_RenderViewContext( &renderdatas[ currcontext ].context );
-			M_ProfilePopMarker( "R_RenderViewContext" );
 			++finishedcontexts;
 		}
 	}

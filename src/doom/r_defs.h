@@ -750,10 +750,6 @@ typedef struct rendercontext_s
 	
 	spanfunc_t			spanfunc;
 
-	// Debug
-	void*				debugtime;
-	void*				debugpercent;
-
 } rendercontext_t;
 
 typedef enum voidclear_e

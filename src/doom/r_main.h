@@ -21,6 +21,10 @@
 #ifndef __R_MAIN__
 #define __R_MAIN__
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // __cplusplus
+
 #include "d_player.h"
 #include "r_data.h"
 
@@ -172,5 +176,9 @@ void R_RebalanceContexts( void );
 
 // Called by M_Responder.
 void R_SetViewSize (int blocks, int detail);
+
+#if defined( __cplusplus )
+}
+#endif // __cplusplus
 
 #endif

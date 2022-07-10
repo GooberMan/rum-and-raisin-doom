@@ -42,6 +42,8 @@
 
 #include "doomstat.h"
 
+#include "m_profile.h"
+
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
@@ -437,12 +439,14 @@ void HU_Start(void)
 
 void HU_Drawer(void)
 {
+	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
 
     HUlib_drawSText(&w_message);
     HUlib_drawIText(&w_chat);
     if (automapactive)
 	HUlib_drawTextLine(&w_title, false);
 
+	M_ProfilePopMarker( __FUNCTION__ );
 }
 
 void HU_Erase(void)

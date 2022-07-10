@@ -60,6 +60,8 @@
 #include "dstrings.h"
 #include "sounds.h"
 
+#include "m_profile.h"
+
 //
 // STATUS BAR DATA
 //
@@ -1073,7 +1075,8 @@ void ST_diffDraw(void)
 
 void ST_Drawer (boolean fullscreen, boolean refresh)
 {
-  
+	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
+
     st_statusbaron = (!fullscreen) || automapactive;
     st_firsttime = st_firsttime || refresh;
 
@@ -1086,6 +1089,7 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
     //// Otherwise, update as little as possible
     //else ST_diffDraw();
 
+	M_ProfilePopMarker( __FUNCTION__ );
 }
 
 typedef void (*load_callback_t)(const char *lumpname, patch_t **variable);

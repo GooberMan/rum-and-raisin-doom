@@ -215,6 +215,7 @@ boolean D_Display (void)
 	boolean ispaused = paused
 		|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
 
+	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
 
 	redrawsbar = refreshstatusbar || voidcleartype != Void_NoClear;
 	refreshstatusbar = false;
@@ -342,6 +343,8 @@ boolean D_Display (void)
 	M_Drawer (); // menu is drawn even on top of everything
 
 	NetUpdate (); // send out any new accumulation
+
+	M_ProfilePopMarker( __FUNCTION__ );
 
 	return wipe;
 }
