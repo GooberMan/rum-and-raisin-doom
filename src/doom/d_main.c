@@ -52,6 +52,7 @@
 #include "m_misc.h"
 #include "m_menu.h"
 #include "m_dashboard.h"
+#include "m_profile.h"
 #include "p_saveg.h"
 
 #include "i_endoom.h"
@@ -486,61 +487,68 @@ boolean D_GrabMouseCallback(void)
 
 void D_RunFrame()
 {
-    uint64_t nowtime;
-    uint64_t tics;
-    static uint64_t wipestart;
-    static boolean wipe;
+	uint64_t nowtime;
+	uint64_t tics;
+	static uint64_t wipestart;
+	static boolean wipe;
 
 	int32_t prev_render_width = render_width;
 	int32_t prev_render_height = render_height;
 
-    if (wipe)
-    {
-        do
-        {
-            nowtime = I_GetTimeTicks();
-            tics = nowtime - wipestart;
-            I_Sleep(1);
-        } while (tics <= 0);
+	boolean dofinishupdate = true;
 
-        wipestart = nowtime;
-        wipe = !wipe_ScreenWipe(wipe_Melt
-                               , 0, 0, render_width, render_height, tics);
-        I_UpdateNoBlit ();
-        M_Drawer ();                            // menu is drawn even on top of wipes
+	M_ProfileNewFrame();
+	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
 
-        I_FinishUpdate ();                      // page flip or blit buffer
-
-        return;
-    }
-
-    // frame syncronous IO operations
-    I_StartFrame ();
-
-	// TODO: Callbacks or something
-	if( prev_render_width != render_width || prev_render_height != render_height )
+	if (wipe)
 	{
-		R_RenderDimensionsChanged();
+		do
+		{
+			nowtime = I_GetTimeTicks();
+			tics = nowtime - wipestart;
+			I_Sleep(1);
+		} while (tics <= 0);
+
+		wipestart = nowtime;
+		wipe = !wipe_ScreenWipe(wipe_Melt, 0, 0, render_width, render_height, tics);
+		I_UpdateNoBlit ();
+		M_Drawer ();                            // menu is drawn even on top of wipes
+	}
+	else
+	{
+		// frame syncronous IO operations
+		I_StartFrame ();
+
+		// TODO: Callbacks or something
+		if( prev_render_width != render_width || prev_render_height != render_height )
+		{
+			R_RenderDimensionsChanged();
+		}
+
+		TryRunTics (); // will run at least one tic
+
+		S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
+
+		// Update display, next frame, with current state if no profiling is on
+		if (screenvisible && !nodrawers)
+		{
+			if ((wipe = D_Display ()))
+			{
+				// start wipe on this frame
+				wipe_EndScreen(0, 0, render_width, render_height);
+
+				wipestart = I_GetTimeTicks() - 1;
+				dofinishupdate = false;
+			}
+		}
 	}
 
-    TryRunTics (); // will run at least one tic
+	M_ProfilePopMarker( __FUNCTION__ );
 
-    S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
-
-    // Update display, next frame, with current state if no profiling is on
-    if (screenvisible && !nodrawers)
-    {
-        if ((wipe = D_Display ()))
-        {
-            // start wipe on this frame
-            wipe_EndScreen(0, 0, render_width, render_height);
-
-            wipestart = I_GetTimeTicks() - 1;
-        } else {
-            // normal update
-            I_FinishUpdate ();              // page flip or blit buffer
-        }
-    }
+	if( dofinishupdate )
+	{
+		I_FinishUpdate ();
+	}
 }
 
 //
@@ -1358,6 +1366,8 @@ void D_DoomMain (void)
 	blackedges.magic_value = vbuffer_magic;
 
 	M_InitDashboard();
+	M_ProfileInit();
+	M_ProfileThreadInit( "Main" );
 
     I_AtExit(D_Endoom, false);
 

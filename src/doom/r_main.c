@@ -34,6 +34,7 @@
 #include "m_config.h"
 #include "m_menu.h"
 #include "m_dashboard.h"
+#include "m_profile.h"
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
@@ -72,6 +73,7 @@ typedef struct renderdata_s
 	atomicval_t			shouldquit;
 	atomicval_t			framewaiting;
 	atomicval_t			framefinished;
+	int32_t				index;
 } renderdata_t;
 
 renderdata_t*			renderdatas;
@@ -1010,13 +1012,22 @@ int32_t R_ContextThreadFunc( void* userdata )
 	renderdata_t* data = (renderdata_t*)userdata;
 	int32_t ret = 0;
 
+	char threadname[ 256 ] = { 0 };
+	sprintf( threadname, "Render context %d", data->index );
+	M_ProfileThreadInit( threadname );
+
 	I_AtomicExchange( &data->running, 1 );
 
 	while( !I_AtomicLoad( &data->shouldquit ) )
 	{
 		if( I_AtomicExchange( &data->framewaiting, 0 ) )
 		{
+			M_ProfileNewFrame();
+
+			M_ProfilePushMarker( "R_RenderViewContext", __FILE__, __LINE__ );
 			R_RenderViewContext( &data->context );
+			M_ProfilePopMarker( "R_RenderViewContext" );
+
 			I_AtomicExchange( &data->framefinished, 1 );
 		}
 
@@ -1045,6 +1056,7 @@ void R_InitContexts( void )
 
 	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
 	{
+		renderdatas[ currcontext ].index = currcontext;
 		renderdatas[ currcontext ].context.bufferindex = 0;
 		renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
 
@@ -1706,7 +1718,9 @@ void R_RenderPlayerView (player_t* player)
 		}
 		else
 		{
+			M_ProfilePushMarker( "R_RenderViewContext", __FILE__, __LINE__ );
 			R_RenderViewContext( &renderdatas[ currcontext ].context );
+			M_ProfilePopMarker( "R_RenderViewContext" );
 			++finishedcontexts;
 		}
 	}
