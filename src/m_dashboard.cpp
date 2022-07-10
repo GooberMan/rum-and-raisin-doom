@@ -12,15 +12,14 @@
 // GNU General Public License for more details.
 //
 
+#include "m_dashboard.h"
+#include "i_log.h"
+
 extern "C"
 {
-	#include "m_dashboard.h"
-	#include "i_log.h"
 	#include "i_system.h"
 	#include "m_config.h"
 
-	#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-	#include "cimgui.h"
 	#include "cimguiglue.h"
 
 	#include <stdio.h>
@@ -513,7 +512,7 @@ static int32_t lastrenderwidth = 0;
 static int32_t lastrenderheight = 0;
 static ImVec2 backbuffersize = { 640, 480 };
 static ImVec2 backbufferpos = { 50, 50 };
-static ImVec2 logsize = { 500, 300 };
+static ImVec2 logsize = { 500, 600 };
 static ImVec2 logpos = { 720, 50 };
 static ImVec2 zeropivot = { 0, 0 };
 
@@ -606,8 +605,10 @@ void M_InitDashboard( void )
 		M_RegisterDashboardButton( "Close dashboard", NULL, &M_OnDashboardCloseButton, NULL );
 		M_FindDashboardCategory( "Core" );
 		M_FindDashboardCategory( "Game" );
+		M_FindDashboardCategory( "Tools" );
 		M_FindDashboardCategory( "Render" );
 		M_FindDashboardCategory( "Map" );
+		M_FindDashboardCategory( "Windows" );
 	}
 
 	int32_t index = 0;
