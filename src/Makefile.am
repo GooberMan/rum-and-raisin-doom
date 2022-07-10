@@ -105,6 +105,7 @@ m_container.h                              \
 m_controls.c         m_controls.h          \
 m_dashboard.cpp      m_dashboard.h         \
 m_fixed.c            m_fixed.h             \
+m_profile.cpp        m_profile.h           \
 net_client.c         net_client.h          \
 net_common.c         net_common.h          \
 net_dedicated.c      net_dedicated.h       \
