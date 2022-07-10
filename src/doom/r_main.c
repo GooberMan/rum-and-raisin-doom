@@ -36,8 +36,7 @@
 #include "m_dashboard.h"
 #include "m_profile.h"
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui.h"
+#include "cimguiglue.h"
 
 #include "r_local.h"
 #include "r_sky.h"
@@ -56,14 +55,13 @@
 #define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 
 
-
-
-int32_t	field_of_view_degrees = 90;
-
 // Fineangles in the SCREENWIDTH wide window.
 // If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
 #define FIELDOFVIEW				( FINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
 #define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
+
+#define DEFAULT_RENDERCONTEXTS 4
+#define DEFAULT_MAXRENDERCONTEXTS 8
 
 typedef struct renderdata_s
 {
@@ -78,8 +76,7 @@ typedef struct renderdata_s
 
 renderdata_t*			renderdatas;
 
-#define DEFAULT_RENDERCONTEXTS 4
-#define DEFAULT_MAXRENDERCONTEXTS 8
+int32_t					field_of_view_degrees = 90;
 
 int32_t					numrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
 int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
@@ -168,6 +165,10 @@ const byte whacky_void_indices[] =
 const int32_t num_whacky_void_indices = sizeof( whacky_void_indices ) / sizeof( *whacky_void_indices );
 const uint64_t whacky_void_microseconds = 1200000;
 int32_t voidcleartype = Void_NoClear;
+
+int32_t aspect_adjusted_render_width = 0;
+rend_fixed_t aspect_adjusted_scaled_divide = 0;
+rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
 
 
 //
@@ -750,10 +751,6 @@ void R_InitTextureMapping (void)
 	clipangle = xtoviewangle[0];
 }
 
-
-int32_t aspect_adjusted_render_width = 0;
-rend_fixed_t aspect_adjusted_scaled_divide = 0;
-rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
 
 void R_InitAspectAdjustedValues()
 {
