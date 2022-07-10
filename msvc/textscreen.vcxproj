@@ -198,6 +198,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\textscreen\fonts\codepage.h" />
+    <ClInclude Include="..\textscreen\fonts\large.h" />
+    <ClInclude Include="..\textscreen\fonts\normal.h" />
+    <ClInclude Include="..\textscreen\fonts\small.h" />
     <ClInclude Include="..\textscreen\textscreen.h" />
     <ClCompile Include="..\textscreen\txt_conditional.c" />
     <ClInclude Include="..\textscreen\txt_conditional.h" />
@@ -242,6 +246,17 @@
     <ClInclude Include="..\textscreen\txt_window.h" />
     <ClCompile Include="..\textscreen\txt_window_action.c" />
     <ClInclude Include="..\textscreen\txt_window_action.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\textscreen\fonts\large.png">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\textscreen\fonts\normal.png">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\textscreen\fonts\small.png">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </Image>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

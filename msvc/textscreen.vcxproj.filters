@@ -135,6 +135,18 @@
     <ClInclude Include="..\textscreen\txt_window_action.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\textscreen\fonts\codepage.h">
+      <Filter>Header Files\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\textscreen\fonts\large.h">
+      <Filter>Header Files\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\textscreen\fonts\normal.h">
+      <Filter>Header Files\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\textscreen\fonts\small.h">
+      <Filter>Header Files\fonts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -143,5 +155,19 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{8F35243C-C65B-3F09-9CCA-0E6D144DF7FC}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\fonts">
+      <UniqueIdentifier>{dbc2edd6-4f14-4522-8eb7-bce7f5d7ebe7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\textscreen\fonts\large.png">
+      <Filter>Header Files\fonts</Filter>
+    </Image>
+    <Image Include="..\textscreen\fonts\normal.png">
+      <Filter>Header Files\fonts</Filter>
+    </Image>
+    <Image Include="..\textscreen\fonts\small.png">
+      <Filter>Header Files\fonts</Filter>
+    </Image>
   </ItemGroup>
 </Project>
