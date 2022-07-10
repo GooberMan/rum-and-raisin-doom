@@ -1356,72 +1356,128 @@ int32_t AM_lookupColour( int32_t paletteindex, boolean blinking )
 
 #define AM_CanDraw( type ) ( type.val >= 0 )
 
-void AM_drawWalls( mapstyledata_t* style )
+void AM_DrawLine( line_t* line, mapstyledata_t* style )
 {
-	int32_t i;
 	mline_t l;
 
-	for (i=0;i<numlines;i++)
+	l.a.x = line->v1->rend.x;
+	l.a.y = line->v1->rend.y;
+	l.b.x = line->v2->rend.x;
+	l.b.y = line->v2->rend.y;
+
+	if (cheating || (line->flags & ML_MAPPED))
 	{
-		l.a.x = lines[i].v1->rend.x;
-		l.a.y = lines[i].v1->rend.y;
-		l.b.x = lines[i].v2->rend.x;
-		l.b.y = lines[i].v2->rend.y;
-
-		if (cheating || (lines[i].flags & ML_MAPPED))
+		if ((line->flags & ML_DONTDRAW) && !cheating)
 		{
-			if ((lines[i].flags & ML_DONTDRAW) && !cheating)
-			{
-				continue;
-			}
+			return;
+		}
 
-			if( AM_CanDraw( style->sectorsecretsundiscovered ) &&	( lines[ i ].frontsector->secretstate == Secret_Undiscovered
-																	|| lines[ i ].backsector && lines[ i ].backsector->secretstate == Secret_Undiscovered ) )
+		if( AM_CanDraw( style->sectorsecretsundiscovered ) &&	( line->frontsector->secretstate == Secret_Undiscovered
+																|| line->backsector && line->backsector->secretstate == Secret_Undiscovered ) )
+		{
+			AM_drawMline(&l, AM_lookupColour( style->sectorsecretsundiscovered.val, style->sectorsecretsundiscovered.flags ) );
+		}
+		else if( AM_CanDraw( style->sectorsecrets ) &&	( line->frontsector->secretstate == Secret_Discovered
+														|| line->backsector && line->backsector->secretstate == Secret_Discovered ) )
+		{
+			AM_drawMline(&l, AM_lookupColour( style->sectorsecrets.val, style->sectorsecrets.flags ) );
+		}
+		else if( !line->backsector)
+		{
+			if( AM_CanDraw( style->walls ) ) AM_drawMline(&l, AM_lookupColour( style->walls.val, style->walls.flags ) );
+		}
+		else if ( line->special == 39) // teleporters
+		{
+			if( AM_CanDraw( style->teleporters ) ) AM_drawMline(&l, AM_lookupColour( style->teleporters.val, style->teleporters.flags ) );
+		}
+		else if (line->flags & ML_SECRET) // secret door
+		{
+			if ( AM_CanDraw( style->linesecrets ) && cheating)
 			{
-				AM_drawMline(&l, AM_lookupColour( style->sectorsecretsundiscovered.val, style->sectorsecretsundiscovered.flags ) );
+				AM_drawMline(&l, AM_lookupColour( style->linesecrets.val, style->linesecrets.flags ) );
 			}
-			else if( AM_CanDraw( style->sectorsecrets ) &&	( lines[ i ].frontsector->secretstate == Secret_Discovered
-															|| lines[ i ].backsector && lines[ i ].backsector->secretstate == Secret_Discovered ) )
+			else if( AM_CanDraw( style->walls ) )
 			{
-				AM_drawMline(&l, AM_lookupColour( style->sectorsecrets.val, style->sectorsecrets.flags ) );
-			}
-			else if( !lines[i].backsector)
-			{
-				if( AM_CanDraw( style->walls ) ) AM_drawMline(&l, AM_lookupColour( style->walls.val, style->walls.flags ) );
-			}
-			else if ( lines[i].special == 39) // teleporters
-			{
-				if( AM_CanDraw( style->teleporters ) ) AM_drawMline(&l, AM_lookupColour( style->teleporters.val, style->teleporters.flags ) );
-			}
-			else if (lines[i].flags & ML_SECRET) // secret door
-			{
-				if ( AM_CanDraw( style->linesecrets ) && cheating)
-				{
-					AM_drawMline(&l, AM_lookupColour( style->linesecrets.val, style->linesecrets.flags ) );
-				}
-				else if( AM_CanDraw( style->walls ) )
-				{
-					AM_drawMline(&l, AM_lookupColour( style->walls.val, style->walls.flags ) );
-				}
-			}
-			else if ( lines[i].backsector->floorheight != lines[i].frontsector->floorheight)
-			{
-				if( AM_CanDraw( style->floorchange ) ) AM_drawMline(&l, AM_lookupColour( style->floorchange.val, style->floorchange.flags ) ); // floor level change
-			}
-			else if ( lines[i].backsector->ceilingheight != lines[i].frontsector->ceilingheight)
-			{
-				if( AM_CanDraw( style->ceilingchange ) ) AM_drawMline(&l, AM_lookupColour( style->ceilingchange.val, style->ceilingchange.flags ) ); // ceiling level change
-			}
-			else if ( cheating)
-			{
-				if( AM_CanDraw( style->nochange ) ) AM_drawMline(&l, AM_lookupColour( style->nochange.val, style->nochange.flags ) );
+				AM_drawMline(&l, AM_lookupColour( style->walls.val, style->walls.flags ) );
 			}
 		}
-		else if ( AM_CanDraw( style->areamap ) && plr->powers[ pw_allmap ] && !(lines[i].flags & ML_DONTDRAW) )
+		else if ( line->backsector->floorheight != line->frontsector->floorheight)
 		{
-			AM_drawMline(&l, AM_lookupColour( style->areamap.val, style->areamap.flags ) );
+			if( AM_CanDraw( style->floorchange ) ) AM_drawMline(&l, AM_lookupColour( style->floorchange.val, style->floorchange.flags ) ); // floor level change
+		}
+		else if ( line->backsector->ceilingheight != line->frontsector->ceilingheight)
+		{
+			if( AM_CanDraw( style->ceilingchange ) ) AM_drawMline(&l, AM_lookupColour( style->ceilingchange.val, style->ceilingchange.flags ) ); // ceiling level change
+		}
+		else if ( cheating)
+		{
+			if( AM_CanDraw( style->nochange ) ) AM_drawMline(&l, AM_lookupColour( style->nochange.val, style->nochange.flags ) );
 		}
 	}
+	else if ( AM_CanDraw( style->areamap ) && plr->powers[ pw_allmap ] && !(line->flags & ML_DONTDRAW) )
+	{
+		AM_drawMline(&l, AM_lookupColour( style->areamap.val, style->areamap.flags ) );
+	}
+}
+
+
+mapstyledata_t	map_stylenotblockmap =
+{
+	111,						0, // background
+	111,						0, // grid
+	111,						0, // areamap
+	111,						0, // walls
+	111,						0, // teleporters
+	111,						0, // linesecrets
+	111,						0, // sectorsecrets
+	111,						0, // sectorsecretsundiscovered
+	111,						0, // floorchange
+	111,						0, // ceilingchange
+	111,						0, // nochange
+
+	THINGCOLORS,					0, // things
+	214,							0, // monsters_alive
+	151,							0, // monsters_dead
+	196,							0, // items_counted
+	202,							0, // items_uncounted
+	173,							0, // projectiles
+	110,							0, // puffs
+
+	WHITE,							0, // playerarrow
+	XHAIRCOLORS,					0, // crosshair
+};
+
+void AM_drawWalls( mapstyledata_t* style )
+{
+	for ( int32_t index = 0 ; index < numlines; ++index )
+	{
+		AM_DrawLine( &lines[ index ], style );
+	}
+
+#if 0
+	// Blockmap visualiser, might turn it in to a real option IDK
+
+	int32_t bmapx = ( plr->mo->x - bmaporgx ) >> MAPBLOCKSHIFT;
+	int32_t bmapy = ( plr->mo->y - bmaporgy ) >> MAPBLOCKSHIFT;
+	int32_t offset = bmapy * bmapwidth + bmapx;
+
+	offset = *(blockmap + offset);
+
+	for ( int32_t index = 0 ; index < numlines; ++index )
+	{
+		boolean inlist = false;
+		for( blockmap_t* list = blockmapbase + offset; *list != BLOCKMAP_INVALID; ++list )
+		{
+			if( *list == index )
+			{
+				inlist = true;
+				break;
+			}
+		}
+
+		AM_DrawLine( &lines[ index ], inlist ? style : &map_stylenotblockmap );
+	}
+#endif
 }
 
 
