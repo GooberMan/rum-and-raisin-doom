@@ -34,25 +34,30 @@ void M_ProfilePopMarker( const char* markername );
 #ifdef __cplusplus
 }
 
-template< auto& function, auto& file, size_t line >
+#include "m_container.h"
+
+template< StringLiteral function, StringLiteral file, size_t line >
 struct ProfileFunctionRAII
 {
-	ProfileFunctionRAII()
+	constexpr ProfileFunctionRAII()
 	{
-		M_ProfilePushFunction( function, file, line );
+		M_ProfilePushMarker( function.c_str(), file.c_str(), line );
 	}
 
-	~ProfileFunctionRAII()
+	constexpr ~ProfileFunctionRAII()
 	{
-		M_ProfilePopFunction( function );
+		M_ProfilePopMarker( function.c_str() );
 	}
 };
 
-#define CONCAT_IMPL a ## b
+#define CONCAT_IMPL a##b
 #define CONCAT( a, b ) CONCAT_IMPL( a, b )
 
-#define M_PROFILE_FUNC()		ProfileFunctionRAII< __FUNCTION__, __FILE__, __LINE__ > CONCAT( funcprofile_, __COUNTER__ )
-#define M_PROFILE_NAMED( n )	ProfileFunctionRAII< n, __FILE__, __LINE__ > CONCAT( namedprofile_, __COUNTER__ )
+#define STR_IMPL a
+#define STR( a ) STR_IMPL( a )
+
+#define M_PROFILE_FUNC()		ProfileFunctionRAII< __FUNCTION__, __FILE__, __LINE__ > foofunc = {}
+#define M_PROFILE_NAMED( n )	ProfileFunctionRAII< n, __FILE__, __LINE__ > foonamed = {}
 
 #endif
 

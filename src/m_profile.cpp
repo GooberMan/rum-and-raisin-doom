@@ -83,26 +83,22 @@ static void M_ProfileRenderData( profiledata_t& data )
 
 	for( profiledata_t& childdata : data.childcalls )
 	{
-		if( !childdata.childcalls.empty() )
+		int32_t flags = childdata.childcalls.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None;
+
+		bool expanded = igTreeNodeExStr( childdata.markername.c_str(), flags );
+		igNextColumn();
+		igText( "%0.3lfms", (double)childdata.inclusivetime * 0.001 );
+		igNextColumn();
+		igText( "%0.3lfms", (double)childdata.exclusivetime * 0.001 );
+		igNextColumn();
+
+		if( expanded )
 		{
-			if( igTreeNodeStr( childdata.markername.c_str() ) )
+			if( !childdata.childcalls.empty() )
 			{
-				igSameLine( 0, -1 );
-				igText( "%0.3lfms (%0.3lfms)", (double)childdata.inclusivetime * 0.001, (double)childdata.exclusivetime * 0.001 );
 				M_ProfileRenderData( childdata );
-				igTreePop();
 			}
-			else
-			{
-				igSameLine( 0, -1 );
-				igText( "%0.3lfms (%0.3lfms)", (double)childdata.inclusivetime * 0.001, (double)childdata.exclusivetime * 0.001 );
-			}
-		}
-		else
-		{
-			igText( childdata.markername.c_str() );
-			igSameLine( 0, -1 );
-			igText( "%0.3lfms (%0.3lfms)", (double)childdata.inclusivetime * 0.001, (double)childdata.exclusivetime * 0.001 );
+			igTreePop();
 		}
 	}
 
@@ -152,7 +148,36 @@ DOOM_C_API static void M_ProfileWindow( const char* itemname, void* data )
 
 	igPushScrollableArea( "ProfileView", zero );
 	{
+		ImVec2 textsize;
+		ImVec2 contentsize;
+
+		igGetContentRegionAvail( &contentsize );
+
+		igColumns( 3, "ProfileViewColumns", false );
+
+		igCalcTextSize( &textsize, "Inclusive", nullptr, false, -1.f );
+		igSetColumnWidth( 1, textsize.x + 10.f );
+		contentsize.x -= ( textsize.x + 10.f );
+
+		igCalcTextSize( &textsize, "Exclusive", nullptr, false, -1.f );
+		igSetColumnWidth( 2, textsize.x + 10.f );
+		contentsize.x -= ( textsize.x + 10.f );
+
+		igSetColumnWidth( 0, contentsize.x );
+
+		igText( "Marker" );
+		igNextColumn();
+		igText( "Inclusive" );
+		igNextColumn();
+		igText( "Exclusive" );
+		igEndColumns();
+
+		igSeparator();
+		igColumns( 3, "ProfileViewColumns", false );
+
 		M_ProfileRenderData( CurrProfileThread()->rootprofile );
+
+		igEndColumns();
 	}
 	igPopScrollableArea();
 }
