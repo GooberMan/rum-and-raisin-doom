@@ -36,6 +36,8 @@ struct profiledata_s
 	DoomString						filename;
 	size_t							linenumber;
 
+	int64_t							numcalls;
+
 	int64_t							inclusivetime;
 	int64_t							exclusivetime;
 
@@ -86,6 +88,8 @@ static void M_ProfileRenderData( profiledata_t& data )
 		int32_t flags = childdata.childcalls.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None;
 
 		bool expanded = igTreeNodeExStr( childdata.markername.c_str(), flags );
+		igNextColumn();
+		igText( "%d", childdata.numcalls );
 		igNextColumn();
 		igText( "%0.3lfms", (double)childdata.inclusivetime * 0.001 );
 		igNextColumn();
@@ -153,19 +157,25 @@ DOOM_C_API static void M_ProfileWindow( const char* itemname, void* data )
 
 		igGetContentRegionAvail( &contentsize );
 
-		igColumns( 3, "ProfileViewColumns", false );
+		igColumns( 4, "ProfileViewColumns", false );
 
-		igCalcTextSize( &textsize, "Inclusive", nullptr, false, -1.f );
+		igCalcTextSize( &textsize, "Call count", nullptr, false, -1.f );
 		igSetColumnWidth( 1, textsize.x + 10.f );
 		contentsize.x -= ( textsize.x + 10.f );
 
-		igCalcTextSize( &textsize, "Exclusive", nullptr, false, -1.f );
+		igCalcTextSize( &textsize, "Inclusive", nullptr, false, -1.f );
 		igSetColumnWidth( 2, textsize.x + 10.f );
+		contentsize.x -= ( textsize.x + 10.f );
+
+		igCalcTextSize( &textsize, "Exclusive", nullptr, false, -1.f );
+		igSetColumnWidth( 3, textsize.x + 10.f );
 		contentsize.x -= ( textsize.x + 10.f );
 
 		igSetColumnWidth( 0, contentsize.x );
 
 		igText( "Marker" );
+		igNextColumn();
+		igText( "Call count" );
 		igNextColumn();
 		igText( "Inclusive" );
 		igNextColumn();
@@ -173,7 +183,7 @@ DOOM_C_API static void M_ProfileWindow( const char* itemname, void* data )
 		igEndColumns();
 
 		igSeparator();
-		igColumns( 3, "ProfileViewColumns", false );
+		igColumns( 4, "ProfileViewColumns", false );
 
 		M_ProfileRenderData( CurrProfileThread()->rootprofile );
 
@@ -211,8 +221,25 @@ DOOM_C_API void M_ProfilePushMarker( const char* markername, const char* file, s
 	if( profilemode.load() != PM_Capturing ) return;
 	while( rendering.load() ) { I_Yield(); }
 
-	profiledata_t newdata = { markername, file, line, 0, 0, I_GetTimeUS(), 0, currprofile };
-	currprofile = &*currprofile->childcalls.emplace( currprofile->childcalls.end(), newdata );
+	DoomString marker = markername;
+	auto found = std::find_if( currprofile->childcalls.begin(), currprofile->childcalls.end(), [ &marker ]( const profiledata_t& data )
+	{
+		return data.markername == marker;
+	} );
+
+	if( found != currprofile->childcalls.end() )
+	{
+		++found->numcalls;
+		found->starttime = I_GetTimeUS();
+		found->endtime = 0;
+		found->workingparent = currprofile;
+		currprofile = &*found;
+	}
+	else
+	{
+		profiledata_t newdata = { marker, file, line, 1, 0, 0, I_GetTimeUS(), 0, currprofile };
+		currprofile = &*currprofile->childcalls.emplace( currprofile->childcalls.end(), newdata );
+	}
 }
 
 DOOM_C_API void M_ProfilePopMarker( const char* markername )
@@ -228,6 +255,6 @@ DOOM_C_API void M_ProfilePopMarker( const char* markername )
 
 	profiledata_t* prev = currprofile;
 	currprofile = currprofile->workingparent;
-	currprofile->exclusivetime -= prev->inclusivetime;
+	currprofile->exclusivetime -= totaltime;
 	prev->workingparent = nullptr;
 }
