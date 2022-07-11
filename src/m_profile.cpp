@@ -194,69 +194,83 @@ DOOM_C_API static void M_ProfileWindow( const char* itemname, void* data )
 
 DOOM_C_API void M_ProfileInit( void )
 {
-	M_RegisterDashboardWindow( "Tools|Profiling", "Profiling", 500, 400, &profilewindowactive, Menu_Normal, &M_ProfileWindow );
-
-	profilemode = PM_Capturing;
+	if constexpr( PROFILING_ENABLED )
+	{
+		M_RegisterDashboardWindow( "Tools|Profiling", "Profiling", 500, 400, &profilewindowactive, Menu_Normal, &M_ProfileWindow );
+		profilemode = PM_Capturing;
+	}
 }
 
 DOOM_C_API void M_ProfileThreadInit( const char* threadname )
 {
-	profilethread.threadname = threadname;
+	if constexpr( PROFILING_ENABLED )
+	{
+		profilethread.threadname = threadname;
 
-	int32_t threadindex = numprofilethreads.fetch_add( 1 );
-	profilethreads[ threadindex ] = &profilethread;
+		int32_t threadindex = numprofilethreads.fetch_add( 1 );
+		profilethreads[ threadindex ] = &profilethread;
 
-	M_ProfileNewFrame();
+		M_ProfileNewFrame();
+	}
 }
 
 DOOM_C_API void M_ProfileNewFrame( void )
 {
-	if( profilemode.load() != PM_Capturing ) return;
-	while( rendering.load() ) { I_Yield(); }
+	if constexpr( PROFILING_ENABLED )
+	{
+		if( profilemode.load() != PM_Capturing ) return;
+		while( rendering.load() ) { I_Yield(); }
 
-	profilethread.rootprofile = profiledata_t();
-	currprofile = &profilethread.rootprofile;
+		profilethread.rootprofile = profiledata_t();
+		currprofile = &profilethread.rootprofile;
+	}
 }
 
 DOOM_C_API void M_ProfilePushMarker( const char* markername, const char* file, size_t line )
 {
-	if( profilemode.load() != PM_Capturing ) return;
-	while( rendering.load() ) { I_Yield(); }
+	if constexpr( PROFILING_ENABLED )
+	{
+		if( profilemode.load() != PM_Capturing ) return;
+		while( rendering.load() ) { I_Yield(); }
 
-	DoomString marker = markername;
-	auto found = std::find_if( currprofile->childcalls.begin(), currprofile->childcalls.end(), [ &marker ]( const profiledata_t& data )
-	{
-		return data.markername == marker;
-	} );
+		DoomString marker = markername;
+		auto found = std::find_if( currprofile->childcalls.begin(), currprofile->childcalls.end(), [ &marker ]( const profiledata_t& data )
+		{
+			return data.markername == marker;
+		} );
 
-	if( found != currprofile->childcalls.end() )
-	{
-		++found->numcalls;
-		found->starttime = I_GetTimeUS();
-		found->endtime = 0;
-		found->workingparent = currprofile;
-		currprofile = &*found;
-	}
-	else
-	{
-		profiledata_t newdata = { marker, file, line, 1, 0, 0, I_GetTimeUS(), 0, currprofile };
-		currprofile = &*currprofile->childcalls.emplace( currprofile->childcalls.end(), newdata );
+		if( found != currprofile->childcalls.end() )
+		{
+			++found->numcalls;
+			found->starttime = I_GetTimeUS();
+			found->endtime = 0;
+			found->workingparent = currprofile;
+			currprofile = &*found;
+		}
+		else
+		{
+			profiledata_t newdata = { marker, file, line, 1, 0, 0, I_GetTimeUS(), 0, currprofile };
+			currprofile = &*currprofile->childcalls.emplace( currprofile->childcalls.end(), newdata );
+		}
 	}
 }
 
 DOOM_C_API void M_ProfilePopMarker( const char* markername )
 {
-	if( profilemode.load() != PM_Capturing ) return;
-	while( rendering.load() ) { I_Yield(); }
+	if constexpr( PROFILING_ENABLED )
+	{
+		if( profilemode.load() != PM_Capturing ) return;
+		while( rendering.load() ) { I_Yield(); }
 
-	currprofile->endtime = I_GetTimeUS();
-	int64_t totaltime = currprofile->endtime - currprofile->starttime;
+		currprofile->endtime = I_GetTimeUS();
+		int64_t totaltime = currprofile->endtime - currprofile->starttime;
 
-	currprofile->inclusivetime += totaltime;
-	currprofile->exclusivetime += totaltime;
+		currprofile->inclusivetime += totaltime;
+		currprofile->exclusivetime += totaltime;
 
-	profiledata_t* prev = currprofile;
-	currprofile = currprofile->workingparent;
-	currprofile->exclusivetime -= totaltime;
-	prev->workingparent = nullptr;
+		profiledata_t* prev = currprofile;
+		currprofile = currprofile->workingparent;
+		currprofile->exclusivetime -= totaltime;
+		prev->workingparent = nullptr;
+	}
 }
