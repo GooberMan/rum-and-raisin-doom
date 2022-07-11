@@ -205,6 +205,8 @@ DOOM_C_API void M_ProfileThreadInit( const char* threadname )
 
 	int32_t threadindex = numprofilethreads.fetch_add( 1 );
 	profilethreads[ threadindex ] = &profilethread;
+
+	M_ProfileNewFrame();
 }
 
 DOOM_C_API void M_ProfileNewFrame( void )
