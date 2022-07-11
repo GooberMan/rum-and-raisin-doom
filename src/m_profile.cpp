@@ -32,8 +32,8 @@ typedef struct profiledata_s profiledata_t;
 
 struct profiledata_s
 {
-	DoomString						markername;
-	DoomString						filename;
+	const char*						markername;
+	const char*						filename;
 	size_t							linenumber;
 
 	int64_t							numcalls;
@@ -87,7 +87,7 @@ static void M_ProfileRenderData( profiledata_t& data )
 	{
 		int32_t flags = childdata.childcalls.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None;
 
-		bool expanded = igTreeNodeExStr( childdata.markername.c_str(), flags );
+		bool expanded = igTreeNodeExStr( childdata.markername, flags );
 		igNextColumn();
 		igText( "%d", childdata.numcalls );
 		igNextColumn();
@@ -222,6 +222,7 @@ DOOM_C_API void M_ProfileNewFrame( void )
 		while( rendering.load() ) { I_Yield(); }
 
 		profilethread.rootprofile = profiledata_t();
+		profilethread.rootprofile.childcalls.reserve( 32 );
 		currprofile = &profilethread.rootprofile;
 	}
 }
@@ -233,10 +234,9 @@ DOOM_C_API void M_ProfilePushMarker( const char* markername, const char* file, s
 		if( profilemode.load() != PM_Capturing ) return;
 		while( rendering.load() ) { I_Yield(); }
 
-		DoomString marker = markername;
-		auto found = std::find_if( currprofile->childcalls.begin(), currprofile->childcalls.end(), [ &marker ]( const profiledata_t& data )
+		auto found = std::find_if( currprofile->childcalls.begin(), currprofile->childcalls.end(), [ markername ]( const profiledata_t& data )
 		{
-			return data.markername == marker;
+			return data.markername == markername;
 		} );
 
 		if( found != currprofile->childcalls.end() )
@@ -249,8 +249,9 @@ DOOM_C_API void M_ProfilePushMarker( const char* markername, const char* file, s
 		}
 		else
 		{
-			profiledata_t newdata = { marker, file, line, 1, 0, 0, I_GetTimeUS(), 0, currprofile };
+			profiledata_t newdata = { markername, file, line, 1, 0, 0, I_GetTimeUS(), 0, currprofile };
 			currprofile = &*currprofile->childcalls.emplace( currprofile->childcalls.end(), newdata );
+			currprofile->childcalls.reserve( 32 );
 		}
 	}
 }
