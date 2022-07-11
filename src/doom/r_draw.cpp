@@ -295,8 +295,6 @@ namespace DrawColumn
 		requires( IsPowerOf2( _texturewidth ) )
 		struct SamplerOriginal
 		{
-			// The 127 here makes it wrap, keeping max height to 128
-			// Need to make that a bit nicer somehow
 			struct Direct
 			{
 				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac )
@@ -337,14 +335,25 @@ namespace DrawColumn
 			{
 				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
 				{
+#ifdef DO_MORE_OPERATIONS
+					// This _could_ be useful on AMD Jaguar CPUs...
 					int32_t sample = frac >> RENDFRACBITS;
-					if( ( frac >> RENDFRACBITS ) >= textureheight )
+					if( sample >= textureheight )
 					{
 						frac -= ( (rend_fixed_t)textureheight << RENDFRACBITS );
 						sample -= textureheight;
 					}
 
 					return context->source[ sample ];
+#else // !DO_MORE_OPERATIONS
+					rend_fixed_t texfixed = (rend_fixed_t)textureheight << RENDFRACBITS;
+					if( frac >= texfixed )
+					{
+						frac -= texfixed;
+					}
+
+					return context->source[ frac >> RENDFRACBITS ];
+#endif // DO_MORE_OPERATIONS
 				}
 			};
 
