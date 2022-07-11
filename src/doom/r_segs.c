@@ -363,7 +363,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
 			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
-			wallcolcontext.sourceheight = FixedToInt( textureheight[ segcontext->midtexture ] );
+			wallcolcontext.sourceheight = FixedToRendFixed( textureheight[ segcontext->midtexture ] );
 #endif
 			R_RangeCheck();
 			wallcolcontext.colfunc( &wallcolcontext );
@@ -393,7 +393,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
-					wallcolcontext.sourceheight = FixedToInt( textureheight[ segcontext->toptexture ] );
+					wallcolcontext.sourceheight = FixedToRendFixed( textureheight[ segcontext->toptexture ] );
 #endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
@@ -432,7 +432,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
-					wallcolcontext.sourceheight = FixedToInt( textureheight[ segcontext->bottomtexture ] );
+					wallcolcontext.sourceheight = FixedToRendFixed( textureheight[ segcontext->bottomtexture ] );
 #endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );

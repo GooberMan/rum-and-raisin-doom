@@ -967,7 +967,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		skycontext.output = rendercontext->buffer;
 		skycontext.yl = 0;
 		skycontext.yh = render_height - ST_BUFFERHEIGHT;
-		skycontext.sourceheight = FixedToInt( textureheight[ skytexture ] );
+		skycontext.sourceheight = FixedToRendFixed( textureheight[ skytexture ] );
 
 		for ( x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
 		{

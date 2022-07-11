@@ -333,25 +333,24 @@ namespace DrawColumn
 		{
 			struct Direct
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const rend_fixed_t& textureheight )
 				{
+//#define DO_MORE_OPERATIONS
 #ifdef DO_MORE_OPERATIONS
 					// This _could_ be useful on AMD Jaguar CPUs...
 					int32_t sample = frac >> RENDFRACBITS;
-					if( sample >= textureheight )
+					if( frac >= textureheight )
 					{
-						frac -= ( (rend_fixed_t)textureheight << RENDFRACBITS );
-						sample -= textureheight;
+						sample -= ( textureheight >> RENDFRACBITS );
+						frac -= textureheight;
 					}
 
 					return context->source[ sample ];
 #else // !DO_MORE_OPERATIONS
-					rend_fixed_t texfixed = (rend_fixed_t)textureheight << RENDFRACBITS;
-					if( frac >= texfixed )
+					if( frac >= textureheight )
 					{
-						frac -= texfixed;
+						frac -= textureheight;
 					}
-
 					return context->source[ frac >> RENDFRACBITS ];
 #endif // DO_MORE_OPERATIONS
 				}
@@ -359,7 +358,7 @@ namespace DrawColumn
 
 			struct PaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const rend_fixed_t& textureheight )
 				{
 					return context->translation[ Direct::Sample( context, frac, textureheight ) ];
 				}
@@ -367,7 +366,7 @@ namespace DrawColumn
 
 			struct Colormap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const rend_fixed_t& textureheight )
 				{
 					return context->colormap[ Direct::Sample( context, frac, textureheight ) ];
 				}
@@ -375,7 +374,7 @@ namespace DrawColumn
 
 			struct ColormapPaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const rend_fixed_t& textureheight )
 				{
 					return context->colormap[ PaletteSwap::Sample( context, frac, textureheight ) ];
 				}

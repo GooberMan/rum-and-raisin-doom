@@ -683,7 +683,7 @@ typedef struct colcontext_s
 {
 	vbuffer_t			output;
 	byte*				source;
-	int32_t				sourceheight;
+	rend_fixed_t		sourceheight;
 
 	lighttable_t*		colormap;
 	byte*				translation;
