@@ -18,7 +18,11 @@
 #if !defined( __M_PROFILE_H__ )
 #define __M_PROFILE_H__
 
-#define PROFILING_ENABLED 1
+#if defined( RNR_PROFILING )
+	#define PROFILING_ENABLED 1
+#else
+	#define PROFILING_ENABLED 0
+#endif // defined( RNR_PROFILING )
 
 #if PROFILING_ENABLED
 	#define M_PROFILE_PUSH( marker, file, line ) M_ProfilePushMarker( marker, file, line )

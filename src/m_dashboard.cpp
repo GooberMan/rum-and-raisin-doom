@@ -556,6 +556,14 @@ static void M_AboutWindow( const char* itemname, void* data )
 	igText( "GNU General Public License for more details." );
 	igNewLine();
 	igText( "https://github.com/GooberMan/rum-and-raisin-doom" );
+
+#if defined( RNR_PROFILING )
+	igNewLine();
+	igText( "This is a build with a custom instrumented profiling API enabled." );
+	igText( "It will run slower than an optimised build, but faster than a" );
+	igText( "debug build. It is recommended you only use this build if you are" );
+	igText( "actively tracking down performance issues." );
+#endif // defined( RNR_PROFILING )
 }
 
 static void M_LicencesWindow( const char* itemname, void* data )
