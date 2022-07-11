@@ -438,4 +438,9 @@
       <Filter>Resources</Filter>
     </Natvis>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\m_fixed.inl">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
