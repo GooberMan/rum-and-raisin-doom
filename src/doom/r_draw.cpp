@@ -56,11 +56,6 @@ extern vbuffer_t* dest_buffer;
 size_t			xlookup[MAXWIDTH];
 size_t			rowofs[MAXHEIGHT]; 
 
-}
-
-// status bar height at bottom of screen
-#define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
-
 //
 // All drawing to the view buffer is accomplished in this file.
 // The other refresh files only know about ccordinates,
@@ -85,6 +80,13 @@ byte			translations[3][256];
  
 // Backing buffer containing the bezel drawn around the screen and 
 // surrounding background.
+
+}
+
+#include "m_profile.h"
+
+// status bar height at bottom of screen
+#define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 
 static vbuffer_t background_data;
 
@@ -266,6 +268,12 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 
+template< typename _ret, typename... _args >
+constexpr size_t arg_count( _ret( * )( _args... ) )
+{
+	return sizeof...( _args );
+};
+
 namespace DrawColumn
 {
 	struct Null
@@ -283,21 +291,24 @@ namespace DrawColumn
 
 	struct Bytewise
 	{
+		template< size_t _texturewidth >
+		requires( IsPowerOf2( _texturewidth ) )
 		struct SamplerOriginal
 		{
 			// The 127 here makes it wrap, keeping max height to 128
 			// Need to make that a bit nicer somehow
 			struct Direct
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac )
 				{
-					return context->source[ (frac >> RENDFRACBITS ) & 127 ];
+					constexpr size_t Mask = _texturewidth - 1;
+					return context->source[ (frac >> RENDFRACBITS ) & Mask ];
 				}
 			};
 
 			struct PaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac )
 				{
 					return context->translation[ Direct::Sample( context, frac ) ];
 				}
@@ -305,7 +316,7 @@ namespace DrawColumn
 
 			struct Colormap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac )
 				{
 					return context->colormap[ Direct::Sample( context, frac ) ];
 				}
@@ -313,7 +324,7 @@ namespace DrawColumn
 
 			struct ColormapPaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac )
 				{
 					return context->colormap[ PaletteSwap::Sample( context, frac ) ];
 				}
@@ -322,19 +333,24 @@ namespace DrawColumn
 
 		struct SamplerLimitRemoving
 		{
-			// The 127 here makes it wrap, keeping max height to 128
-			// Need to make that a bit nicer somehow
 			struct Direct
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
 				{
-					return context->source[ (frac >> RENDFRACBITS ) % textureheight ];
+					int32_t sample = frac >> RENDFRACBITS;
+					if( ( frac >> RENDFRACBITS ) >= textureheight )
+					{
+						frac -= ( (rend_fixed_t)textureheight << RENDFRACBITS );
+						sample -= textureheight;
+					}
+
+					return context->source[ sample ];
 				}
 			};
 
 			struct PaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
 				{
 					return context->translation[ Direct::Sample( context, frac, textureheight ) ];
 				}
@@ -342,7 +358,7 @@ namespace DrawColumn
 
 			struct Colormap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
 				{
 					return context->colormap[ Direct::Sample( context, frac, textureheight ) ];
 				}
@@ -350,7 +366,7 @@ namespace DrawColumn
 
 			struct ColormapPaletteSwap
 			{
-				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t frac, int32_t textureheight = 0 )
+				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const int32_t& textureheight )
 				{
 					return context->colormap[ PaletteSwap::Sample( context, frac, textureheight ) ];
 				}
@@ -360,34 +376,41 @@ namespace DrawColumn
 		template< typename Sampler >
 		static INLINE void DrawWith( colcontext_t* context )
 		{
-			int			count		= context->yh - context->yl;
+			int32_t			count		= context->yh - context->yl;
 
 			// Framebuffer destination address.
 			// Use ylookup LUT to avoid multiply with ScreenWidth.
 			// Use columnofs LUT for subwindows? 
-			pixel_t*	dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
+			pixel_t*		dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
 
 			// Determine scaling, which is the only mapping to be done.
-			rend_fixed_t		fracstep = context->iscale;
-			rend_fixed_t		frac = context->texturemid +  ( context->yl - centery ) * fracstep;
+			rend_fixed_t	fracstep	= context->iscale;
+			rend_fixed_t	frac		= context->texturemid +  ( context->yl - centery ) * fracstep;
 
 			// Inner loop that does the actual texture mapping,
 			//  e.g. a DDA-lile scaling.
 			// This is as fast as it gets.
 			do 
 			{
-				*dest = Sampler::Sample( context, frac, context->sourceheight );
+				if constexpr( arg_count( &Sampler::Sample ) == 2 )
+				{
+					*dest = Sampler::Sample( context, frac );
+				}
+				else
+				{
+					*dest = Sampler::Sample( context, frac, context->sourceheight );
+				}
 		
-				dest += 1; 
+				++dest;
 				frac += fracstep;
 	
 			} while (count--); 
 		}
 
-		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal::Direct >( context ); }
-		static INLINE void PaletteSwapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal::PaletteSwap >( context ); }
-		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal::Colormap >( context ); }
-		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal::ColormapPaletteSwap >( context ); }
+		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal< 128 >::Direct >( context ); }
+		static INLINE void PaletteSwapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::PaletteSwap >( context ); }
+		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::Colormap >( context ); }
+		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap >( context ); }
 
 		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct >( context ); }
 		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap >( context ); }
@@ -409,24 +432,27 @@ namespace DrawColumn
 
 void R_DrawColumn( colcontext_t* context ) 
 { 
+	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::Draw( context );
 } 
 
 void R_DrawColumn_Untranslated( colcontext_t* context )
 {
+	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::ColormapDraw( context );
 }
 
 void R_LimitRemovingDrawColumn( colcontext_t* context ) 
 { 
+	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::LimitRemovingDraw( context );
 } 
 
 void R_LimitRemovingDrawColumn_Untranslated( colcontext_t* context )
 {
+	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::LimitRemovingColormapDraw( context );
 }
-
 
 void R_DrawColumnLow ( colcontext_t* context ) 
 { 
