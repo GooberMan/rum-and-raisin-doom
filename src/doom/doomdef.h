@@ -20,6 +20,10 @@
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 #include <stdio.h>
 #include <string.h>
 
@@ -180,5 +184,9 @@ typedef enum gameflags_e
 	GF_VanillaIncompatibleFlags		= GF_Pacifist | GF_PistolStarts | GF_LoopOneLevel,
 
 } gameflags_t;
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif          // __DOOMDEF__

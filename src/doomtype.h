@@ -22,6 +22,10 @@
 #ifndef __DOOMTYPE__
 #define __DOOMTYPE__
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 #include "config.h"
 
 #if defined(_MSC_VER) && !defined(__cplusplus) && !defined( inline )
@@ -193,6 +197,10 @@ typedef int16_t dpixel_t;
 #endif
 
 #define arrlen(array) (sizeof(array) / sizeof(*array))
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif
 

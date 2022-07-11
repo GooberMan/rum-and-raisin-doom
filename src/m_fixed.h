@@ -32,6 +32,19 @@
 #define USE_FIXED_T_TYPE 0
 #endif
 
+#if defined( __cplusplus )
+consteval bool IsPowerOf2( size_t val )
+{
+	return val != 0 && ( val & ( val - 1 ) ) == 0;
+}
+
+consteval bool IsValidBitCount( size_t val )
+{
+	return	val <= _INTEGRAL_MAX_BITS
+			&& IsPowerOf2( val );
+}
+#endif // defined( __cplusplus )
+
 #if !USE_FIXED_T_TYPE
 //
 // Fixed point, 32bit as 16.16.
@@ -101,17 +114,6 @@ struct IntegralType< 64, Signed >
 {
 	using type = std::conditional_t< Signed, int64_t, uint64_t >;
 };
-
-consteval bool IsPowerOf2( size_t val )
-{
-	return val != 0 && ( val & ( val - 1 ) ) == 0;
-}
-
-consteval bool IsValidBitCount( size_t val )
-{
-	return	val <= _INTEGRAL_MAX_BITS
-			&& IsPowerOf2( val );
-}
 
 template< size_t IntegralBits, size_t FractionalBits >
 requires IsValidBitCount( IntegralBits + FractionalBits )
