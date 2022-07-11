@@ -18,6 +18,16 @@
 #if !defined( __M_PROFILE_H__ )
 #define __M_PROFILE_H__
 
+#define PROFILING_ENABLED 1
+
+#if PROFILING_ENABLED
+	#define M_PROFILE_PUSH( marker, file, line ) M_ProfilePushMarker( marker, file, line )
+	#define M_PROFILE_POP( marker ) M_ProfilePopMarker( marker )
+#else // !PROFILING_ENABLED
+	#define M_PROFILE_PUSH( marker, file, line )
+	#define M_PROFILE_POP( marker )
+#endif //PROFILING_ENABLED
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,12 +51,12 @@ struct ProfileFunctionRAII
 {
 	constexpr ProfileFunctionRAII()
 	{
-		M_ProfilePushMarker( function.c_str(), file.c_str(), line );
+		if constexpr( PROFILING_ENABLED ) M_ProfilePushMarker( function.c_str(), file.c_str(), line );
 	}
 
 	constexpr ~ProfileFunctionRAII()
 	{
-		M_ProfilePopMarker( function.c_str() );
+		if constexpr( PROFILING_ENABLED ) M_ProfilePopMarker( function.c_str() );
 	}
 };
 
@@ -56,8 +66,13 @@ struct ProfileFunctionRAII
 #define STR_IMPL a
 #define STR( a ) STR_IMPL( a )
 
-#define M_PROFILE_FUNC()		ProfileFunctionRAII< __FUNCTION__, __FILE__, __LINE__ > foofunc = {}
-#define M_PROFILE_NAMED( n )	ProfileFunctionRAII< n, __FILE__, __LINE__ > foonamed = {}
+#if PROFILING_ENABLED
+	#define M_PROFILE_FUNC()		ProfileFunctionRAII< __FUNCTION__, __FILE__, __LINE__ > foofunc = {}
+	#define M_PROFILE_NAMED( n )	ProfileFunctionRAII< n, __FILE__, __LINE__ > foonamed = {}
+#else // !PROFILING_ENABLED
+	#define M_PROFILE_FUNC()
+	#define M_PROFILE_NAMED( n )
+#endif //PROFILING_ENABLED
 
 #endif
 

@@ -215,7 +215,7 @@ boolean D_Display (void)
 	boolean ispaused = paused
 		|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
 
-	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
 	redrawsbar = refreshstatusbar || voidcleartype != Void_NoClear;
 	refreshstatusbar = false;
@@ -344,7 +344,7 @@ boolean D_Display (void)
 
 	NetUpdate (); // send out any new accumulation
 
-	M_ProfilePopMarker( __FUNCTION__ );
+	M_PROFILE_POP( __FUNCTION__ );
 
 	return wipe;
 }
@@ -501,7 +501,7 @@ void D_RunFrame()
 	boolean dofinishupdate = true;
 
 	M_ProfileNewFrame();
-	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
 	if (wipe)
 	{
@@ -546,7 +546,7 @@ void D_RunFrame()
 		}
 	}
 
-	M_ProfilePopMarker( __FUNCTION__ );
+	M_PROFILE_POP( __FUNCTION__ );
 
 	if( dofinishupdate )
 	{
