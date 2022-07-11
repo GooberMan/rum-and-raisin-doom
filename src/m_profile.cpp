@@ -112,17 +112,21 @@ static void M_ProfileRenderData( profiledata_t& data )
 DOOM_C_API static void M_ProfileWindow( const char* itemname, void* data )
 {
 	constexpr ImVec2 zero = { 0, 0 };
+	ImVec2 buttonsize;
+	igCalcTextSize( &buttonsize, "Capture frame", nullptr, false, -1.f );
+	buttonsize.x += 10.f;
+	buttonsize.y = 0.f;
 
 	switch( profilemode.load() )
 	{
 	case PM_Capturing:
-		if( igButton( "Capture frame", zero ) )
+		if( igButton( "Capture frame", buttonsize ) )
 		{
 			profilemode = PM_SingleFrame;
 		}
 		break;
 	case PM_SingleFrame:
-		if( igButton( "Resume", zero ) )
+		if( igButton( "Resume", buttonsize ) )
 		{
 			profilemode = PM_Capturing;
 		}
