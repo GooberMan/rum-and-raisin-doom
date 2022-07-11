@@ -17,11 +17,12 @@
 #define MAXWIDTH			(MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
 #define MAXHEIGHT			(MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
 
+#include "doomdef.h"
+#include "doomtype.h"
+#include "m_fixed.h"
+
 extern "C"
 {
-	#include "doomdef.h"
-	#include "doomtype.h"
-	#include "m_fixed.h"
 	#include "m_misc.h"
 	#include "r_defs.h"
 	#include "r_main.h"

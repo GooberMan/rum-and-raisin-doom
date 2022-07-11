@@ -913,6 +913,8 @@ void R_InitColFuncs( void )
 
 void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightclip )
 {
+	M_PROFILE_FUNC();
+
 	context->begincolumn = context->spritecontext.leftclip = leftclip;
 	context->endcolumn = context->spritecontext.rightclip = rightclip;
 
@@ -1725,13 +1727,17 @@ void R_RenderPlayerView (player_t* player)
 		}
 	}
 
-	while( renderthreaded && finishedcontexts != numusablerendercontexts )
 	{
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+		M_PROFILE_NAMED( "Wait on threads" );
+
+		while( renderthreaded && finishedcontexts != numusablerendercontexts )
 		{
-			finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
+			for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+			{
+				finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
+			}
+			//I_Sleep( 0 );
 		}
-		//I_Sleep( 0 );
 	}
 
 	if( rendersplitvisualise )

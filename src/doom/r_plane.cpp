@@ -193,20 +193,26 @@ DOOM_C_API void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancon
 //
 DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle )
 {
+	M_PROFILE_FUNC();
+
 	int32_t	i;
 	angle_t	angle;
 
-	// opening / clipping determination
-	for (i=0 ; i<viewwidth ; i++)
 	{
-		context->floorclip[i] = viewheight;
+		M_PROFILE_NAMED( "Clip clear" );
+		// opening / clipping determination
+		for (i=0 ; i<viewwidth ; i++)
+		{
+			context->floorclip[i] = viewheight;
+		}
+		memset( context->ceilingclip, -1, sizeof( context->ceilingclip ) );
 	}
-	memset( context->ceilingclip, -1, sizeof( context->ceilingclip ) );
 
 	context->lastvisplane = context->visplanes;
 	context->lastopening = context->openings;
 	if( PlaneLookup( context ).size() > 0 )
 	{
+		M_PROFILE_NAMED( "Lookup clear" );
 		PlaneLookup( context ).clear();
 	}
 
@@ -214,10 +220,6 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 	if( span_override == Span_Original )
 	{
 		memset (context->cachedheight, 0, sizeof(context->cachedheight));
-	}
-	else
-	{
-		memset (context->raster, 0, sizeof(context->raster));
 	}
 
 	// left to right mapping
