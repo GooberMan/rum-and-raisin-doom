@@ -20,6 +20,7 @@
 #include "doomdef.h"
 #include "doomtype.h"
 #include "m_fixed.h"
+#include "m_profile.h"
 
 extern "C"
 {
@@ -212,6 +213,8 @@ INLINE void R_Prepare( visplane_t* visplane, planecontext_t* planecontext )
 
 DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane )
 {
+	M_PROFILE_FUNC();
+
 	rend_fixed_t view_x = FixedToRendFixed( viewx );
 	rend_fixed_t view_y = FixedToRendFixed( viewy );
 

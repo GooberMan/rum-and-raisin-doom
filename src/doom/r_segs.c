@@ -34,6 +34,7 @@
 #include "r_sky.h"
 
 #include "m_misc.h"
+#include "m_profile.h"
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -236,6 +237,8 @@ extern byte lightlevelmaps[32][256];
 
 uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
 {
+	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
+
 	angle_t			angle;
 	uint32_t		index;
 	int32_t			colormapindex;
@@ -466,6 +469,8 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 #endif // R_DRAWCOLUMN_DEBUGDISTANCES
 	}
 
+	M_ProfilePopMarker( __FUNCTION__ );
+
 #if RENDER_PERF_GRAPHING
 	endtime = I_GetTimeUS();
 	return endtime - starttime;
@@ -481,6 +486,8 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 //
 void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
 {
+	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
+
 	rend_fixed_t		hyp;
 	rend_fixed_t		sineval;
 	angle_t				distangle, offsetangle;
@@ -850,6 +857,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
 		&& !bspcontext->thisdrawseg->sprtopclip)
 	{
+		M_ProfilePushMarker( "Reserve openings", __FILE__, __LINE__ );
 #ifdef RANGECHECK
 		if( ( planecontext->lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext->openings > MAXOPENINGS )
 		{
@@ -859,11 +867,13 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		memcpy (planecontext->lastopening, planecontext->ceilingclip+loopcontext.startx, sizeof(*planecontext->lastopening)*(loopcontext.stopx-loopcontext.startx));
 		bspcontext->thisdrawseg->sprtopclip = planecontext->lastopening - loopcontext.startx;
 		planecontext->lastopening += loopcontext.stopx - loopcontext.startx;
+		M_ProfilePopMarker( "Reserve openings" );
 	}
 
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
 		&& !bspcontext->thisdrawseg->sprbottomclip)
 	{
+		M_ProfilePushMarker( "Reserve openings", __FILE__, __LINE__ );
 #ifdef RANGECHECK
 		if( ( planecontext->lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext->openings > MAXOPENINGS )
 		{
@@ -873,6 +883,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		memcpy (planecontext->lastopening, planecontext->floorclip+loopcontext.startx, sizeof(*planecontext->lastopening)*(loopcontext.stopx-loopcontext.startx));
 		bspcontext->thisdrawseg->sprbottomclip = planecontext->lastopening - loopcontext.startx;
 		planecontext->lastopening += loopcontext.stopx - loopcontext.startx;	
+		M_ProfilePopMarker( "Reserve openings" );
 	}
 
 	if (loopcontext.maskedtexture && !(bspcontext->thisdrawseg->silhouette&SIL_TOP))
@@ -893,5 +904,6 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	bspcontext->storetimetaken += ( ( endtime - starttime ) - ( visplaneend - visplanestart ) );
 #endif // RENDER_PERF_GRAPHING
 
+	M_ProfilePopMarker( __FUNCTION__ );
 }
 

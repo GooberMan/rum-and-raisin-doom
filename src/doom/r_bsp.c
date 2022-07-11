@@ -35,7 +35,7 @@
 #include "doomstat.h"
 #include "r_state.h"
 #include "m_misc.h"
-#include "m_argv.h"
+#include "m_profile.h"
 
 
 //
@@ -470,6 +470,7 @@ boolean R_CheckBBox( bspcontext_t* context, rend_fixed_t* bspcoord )
 //
 void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t num )
 {
+	M_ProfilePushMarker( __FUNCTION__, __FILE__, __LINE__ );
 	int32_t			count;
 	seg_t*			line;
 	subsector_t*	sub;
@@ -543,6 +544,8 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 	{
 		I_Error("R_Subsector: solidsegs overflow (vanilla may crash here)\n");
 	}
+
+	M_ProfilePopMarker( __FUNCTION__ );
 }
 
 
