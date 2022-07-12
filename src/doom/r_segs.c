@@ -230,7 +230,7 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 extern byte detailmaps[16][256];
 extern byte lightlevelmaps[32][256];
 
-uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
+uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -281,7 +281,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 
 			if (top <= bottom)
 			{
-				rasterregion_t* region = planecontext->ceilingplane->rasterregion;
+				rasterregion_t* region = planecontext->ceilingregion;
 				rasterline_t* line = region->lines + ( currx - segcontext->startx );
 
 				region->miny = M_MIN( top, region->miny );
@@ -308,7 +308,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			}
 			if (top <= bottom)
 			{
-				rasterregion_t* region = planecontext->floorplane->rasterregion;
+				rasterregion_t* region = planecontext->floorregion;
 				rasterline_t* line = region->lines + ( currx - segcontext->startx );
 
 				line->top = top;
@@ -842,12 +842,12 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		// render it
 		if (loopcontext.markceiling)
 		{
-			planecontext->ceilingplane = R_CheckPlane( planecontext, planecontext->ceilingplane, loopcontext.startx, loopcontext.stopx-1 );
+			planecontext->ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->ceilingpic, bspcontext->frontsector->ceilingheight, bspcontext->frontsector->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 		}
 
 		if (loopcontext.markfloor)
 		{
-			planecontext->floorplane = R_CheckPlane( planecontext, planecontext->floorplane, loopcontext.startx, loopcontext.stopx-1 );
+			planecontext->floorregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->floorpic, bspcontext->frontsector->floorheight, bspcontext->frontsector->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 		}
 
 #if RENDER_PERF_GRAPHING

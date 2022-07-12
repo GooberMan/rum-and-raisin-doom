@@ -87,6 +87,13 @@ typedef int32_t					vertclip_t;
 #define MAXPROFILETIMES			( 35 * 8 )
 
 
+typedef struct cachedflat_s
+{
+	char name[ 8 ];
+	int64_t namepadding;
+	byte* data;
+} cachedflat_t;
+
 //
 // INTERNAL MAP TYPES
 //  used by play and refresh
@@ -620,12 +627,9 @@ struct rasterregion_s
 
 typedef struct planecontext_s
 {
-	visplane_t			visplanes[MAXVISPLANES];
-	visplane_t*			lastvisplane;
-	visplane_t*			floorplane;
-	visplane_t*			ceilingplane;
-
 	rasterregion_t**	rasterregions;
+	rasterregion_t*		floorregion;
+	rasterregion_t*		ceilingregion;
 
 	vertclip_t			openings[MAXOPENINGS];
 	vertclip_t*			lastopening;

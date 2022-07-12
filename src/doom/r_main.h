@@ -205,16 +205,9 @@ INLINE _ty* R_AllocateScratch( atomicval_t numinstances, const _args&... args )
 
 	if constexpr( sizeof...( _args ) == 1 )
 	{
-		if constexpr( std::is_same_v< _ty, std::tuple_element_t< 0, std::tuple< _args... > > > )
+		for( auto& curr : std::span( output, numinstances ) )
 		{
-			for( auto& curr : std::span( output, numinstances ) )
-			{
-				curr = std::get< 0 >( std::forward_as_tuple( args... ) );
-			}
-		}
-		else
-		{
-			static_assert( "R_AllocateScratch only supports copy construction right now." );
+			curr = std::get< 0 >( std::forward_as_tuple( args... ) );
 		}
 	}
 	else if constexpr( sizeof...( _args ) > 1 )

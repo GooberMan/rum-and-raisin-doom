@@ -80,8 +80,8 @@ void R_DrawTranslatedColumnLow ( colcontext_t* context );
 
 void R_VideoEraseRegion( int x, int y, int width, int height );
 
-extern byte*		translationtables;
-extern byte**		precachedflats;
+extern byte*				translationtables;
+extern cachedflat_t*		precachedflats;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.

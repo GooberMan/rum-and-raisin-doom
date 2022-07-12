@@ -189,7 +189,6 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 		memset( context->ceilingclip, -1, sizeof( context->ceilingclip ) );
 	}
 
-	context->lastvisplane = context->visplanes;
 	context->lastopening = context->openings;
 
 	context->rasterregions = R_AllocateScratch< rasterregion_t* >( numflats, nullptr );
@@ -212,74 +211,33 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 // R_FindPlane
 //
 
-// R&R TODO: Optimize this wow linear search this will ruin lives
-DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel )
+DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_t picnum, fixed_t height, int32_t lightlevel, int32_t start, int32_t stop )
 {
-	M_PROFILE_FUNC();
-
-	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
-	{
-		I_Error ("R_FindPlane: no more visplanes");
-	}
-
-	visplane_t*	check = context->lastvisplane++;
-
-	check->height = height;
-	check->picnum = picnum;
-	check->lightlevel = lightlevel;
-	check->minx = render_width;
-	check->maxx = -1;
-	check->miny = render_height;
-	check->maxy = -1;
-	check->rasterregion = nullptr;
-
-	return check;
-}
-
-
-//
-// R_CheckPlane
-//
-DOOM_C_API visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start, int32_t stop )
-{
-	M_PROFILE_FUNC();
-
-	// This is just gonna copy a plane context, no biggie. And no more lookups.
-
-	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
-	{
-		I_Error ("R_CheckPlane: no more visplanes");
-	}
-
-	// make a new visplane
-	context->lastvisplane->height = pl->height;
-	context->lastvisplane->picnum = pl->picnum;
-	context->lastvisplane->lightlevel = pl->lightlevel;
-
-	pl = context->lastvisplane++;
-	pl->minx = start;
-	pl->maxx = stop;
+	constexpr rasterline_t defaultline = { VPINDEX_INVALID, 0 };
+	int16_t width = stop - start + 1;
 
 	rasterregion_t* region = R_AllocateScratch< rasterregion_t >( 1 );
-	region->height = FixedToRendFixed( pl->height );
-	region->lightlevel = pl->lightlevel;
+	region->height = FixedToRendFixed( height );
+	region->lightlevel = lightlevel;
 	region->minx = start;
 	region->maxx = stop;
 	region->miny = render_height;
 	region->maxy = -1;
 
-	int16_t width = stop - start + 1;
-	constexpr rasterline_t defaultline = { VPINDEX_INVALID, 0 };
-	region->lines = R_AllocateScratch< rasterline_t >( width, defaultline );
+	if( width > 0 )
+	{
+		region->lines = R_AllocateScratch< rasterline_t >( width, defaultline );
+	}
+	else
+	{
+		region->lines = nullptr;
+	}
 
-	region->nextregion = context->rasterregions[ pl->picnum ];
-	context->rasterregions[ pl->picnum ] = region;
+	region->nextregion = context->rasterregions[ picnum ];
+	context->rasterregions[ picnum ] = region;
 
-	pl->rasterregion = region;
-
-	return pl;
+	return region;
 }
-
 
 //
 // R_MakeSpans
@@ -320,12 +278,6 @@ DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context )
 				context->bspcontext.thisdrawseg - context->bspcontext.drawsegs);
 	}
 
-	if ( context->planecontext.lastvisplane - context->planecontext.visplanes > MAXVISPLANES)
-	{
-		I_Error ("R_DrawPlanes: visplane overflow (%" PRIiPTR ")",
-				context->planecontext.lastvisplane - context->planecontext.visplanes);
-	}
-
 	if (context->planecontext.lastopening - context->planecontext.openings > MAXOPENINGS)
 	{
 		I_Error ("R_DrawPlanes: opening overflow (%" PRIiPTR ")",
@@ -344,16 +296,48 @@ constexpr auto Lines( rasterregion_t* region )
 	return std::span( region->lines, region->maxx - region->minx + 1 );
 }
 
+constexpr auto Surfaces( planecontext_t* context )
+{
+	return std::span( context->rasterregions, numflats );
+}
+
+struct RegionRange
+{
+	struct iterator
+	{
+		constexpr rasterregion_t* operator*()				{ return _val; }
+		constexpr bool operator!=( const iterator& it )		{ return _val != it._val; }
+		constexpr iterator& operator++()
+		{
+			do
+			{
+				_val = _val->nextregion;
+				if( _val == nullptr ) break;
+				if( _val->minx <= _val->maxx ) break;
+			} while( true );
+
+			return *this;
+		}
+
+		rasterregion_t* _val;
+	};
+
+	RegionRange( rasterregion_t* r )
+		: _begin { r }
+		, _end { nullptr }
+	{
+	}
+
+	constexpr iterator begin() { return _begin; }
+	constexpr iterator end() { return _end; }
+
+	iterator _begin;
+	iterator _end;
+};
+
 DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	M_PROFILE_FUNC();
-
-	visplane_t*		pl;
-	int32_t			light;
-	int32_t			x;
-	int32_t			stop;
-	int32_t			angle;
-	int32_t			lumpnum;
 
 	spancontext_t	spancontext;
 	colcontext_t	skycontext;
@@ -362,7 +346,7 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	if( span_override == Span_None )
 	{
-		span_type = M_MAX( Span_Original, M_MIN( (int32_t)( log2f( render_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
+		span_type = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( render_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 	}
 
 	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
@@ -381,62 +365,70 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 	skycontext.sourceheight = FixedToRendFixed( textureheight[ skytexture ] );
 
 	// TODO: Sort visplanes by height
-	for (pl = planecontext->visplanes ; pl < planecontext->lastvisplane ; pl++)
+	int32_t picnum = -1;
+	for( rasterregion_t* region : Surfaces( planecontext ) )
 	{
-		rasterregion_t* region = pl->rasterregion;
+		++picnum;
 
-		if ( !region || region->minx > region->maxx )
-			continue;
-	
-		// sky flat
-		if (pl->picnum == skyflatnum)
+		// REALLY need an enumerate range so that we can get an index as well as the data
+		if( region != nullptr )
 		{
-			x = region->minx;
-
-			for( rasterline_t& line : Lines( region ) )
+			// sky flat
+			if( picnum == skyflatnum )
 			{
-				if ( line.top <= line.bottom )
+				for( rasterregion_t* thisregion : RegionRange( region ) )
 				{
-					skycontext.yl = line.top;
-					skycontext.yh = line.bottom;
-					skycontext.x = x;
+					int32_t x = thisregion->minx;
 
-					angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
-					// Sky is allways drawn full bright,
-					//  i.e. colormaps[0] is used.
-					// Because of this hack, sky is not affected
-					//  by INVUL inverse mapping.
-					skycontext.source = R_GetColumn(skytexture, angle, 0);
-					skycontext.colfunc( &skycontext );
+					for( rasterline_t& line : Lines( thisregion ) )
+					{
+						if ( line.top <= line.bottom )
+						{
+							skycontext.yl = line.top;
+							skycontext.yh = line.bottom;
+							skycontext.x = x;
+
+							int32_t angle = ( viewangle + xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
+							// Sky is allways drawn full bright,
+							//  i.e. colormaps[0] is used.
+							// Because of this hack, sky is not affected
+							//  by INVUL inverse mapping.
+							skycontext.source = R_GetColumn( skytexture, angle, 0 );
+							skycontext.colfunc( &skycontext );
+						}
+						++x;
+					}
 				}
-				++x;
 			}
-			continue;
-		}
+			else
+			{
+				// regular flat
+				int32_t lumpnum = flattranslation[ picnum ];
+				spancontext.source = precachedflats[ lumpnum ].data;
 
-		// regular flat
-		lumpnum = flattranslation[pl->picnum];
-		spancontext.source = precachedflats[ lumpnum ];
+				for( rasterregion_t* thisregion : RegionRange( region ) )
+				{
+					planecontext->planeheight = abs( RendFixedToFixed( thisregion->height ) - viewz );
+					int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
 
-		planecontext->planeheight = abs(pl->height-viewz);
-		light = M_CLAMP( ( (pl->lightlevel >> LIGHTSEGSHIFT)+extralight ), 0, LIGHTLEVELS - 1 );
+					planecontext->planezlightindex = light;
+					planecontext->planezlight = zlight[ light ];
 
-		planecontext->planezlightindex = light;
-		planecontext->planezlight = zlight[light];
-
-		stop = pl->maxx + 1;
-
-		if( span_type == Span_Original )
-		{
-			I_Error( "I broke the span renderer, it's on its way out now." );
-			//for (x=pl->minx ; x<= stop ; x++)
-			//{
-			//	R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
-			//}
-		}
-		else
-		{
-			R_RasteriseColumns( (spantype_t)span_type, planecontext, &spancontext, pl->rasterregion );
+					if( span_type == Span_Original )
+					{
+						I_Error( "I broke the span renderer, it's on its way out now." );
+						//int32_t stop = pl->maxx + 1;
+						//for (x=pl->minx ; x<= stop ; x++)
+						//{
+						//	R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
+						//}
+					}
+					else
+					{
+						R_RasteriseColumns( (spantype_t)span_type, planecontext, &spancontext, thisregion );
+					}
+				}
+			}
 		}
 	}
 }

@@ -867,7 +867,7 @@ int		flatmemory;
 int		texturememory;
 //int		spritememory;
 
-byte** precachedflats;
+cachedflat_t* precachedflats;
 
 void R_PrecacheLevel (void)
 {
@@ -896,8 +896,8 @@ void R_PrecacheLevel (void)
 	memset (flatpresent,0,numflats);	
 
 	// This needs to be static, and allocated elsewhere
-	precachedflats = Z_Malloc( numflats * sizeof(byte*), PU_LEVEL, NULL );
-	memset( precachedflats, 0, numflats * sizeof(byte*) );
+	precachedflats = Z_Malloc( numflats * sizeof(cachedflat_t), PU_LEVEL, NULL );
+	memset( precachedflats, 0, numflats * sizeof(cachedflat_t) );
 
 	for (i=0 ; i<numsectors ; i++)
 	{
@@ -929,13 +929,16 @@ void R_PrecacheLevel (void)
 
 	for (i=0 ; i<numflats ; i++)
 	{
+		lump = firstflat + i;
+		strncpy( precachedflats[ i ].name, W_GetNameForNum( lump ), 8 );
+		precachedflats[ i ].namepadding = 0;
+
 		if (flatpresent[i])
 		{
-			lump = firstflat + i;
 			flatmemory += lumpinfo[lump]->size;
 			baseflatdata = (byte*)W_CacheLumpNum(lump, PU_CACHE);
 
-			precachedflats[i] = outputflatdata = Z_Malloc(lumpinfo[lump]->size * NUMCOLORMAPS, PU_LEVEL, NULL );
+			precachedflats[ i ].data = outputflatdata = Z_Malloc(lumpinfo[lump]->size * NUMCOLORMAPS, PU_LEVEL, NULL );
 
 			for( currmapindex = 0; currmapindex < NUMCOLORMAPS; ++currmapindex )
 			{

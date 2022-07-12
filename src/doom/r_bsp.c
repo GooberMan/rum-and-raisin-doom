@@ -490,32 +490,6 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 	line = &segs[sub->firstline];
 
 #if RENDER_PERF_GRAPHING
-	uint64_t		startplanefind = I_GetTimeUS();
-#endif // RENDER_PERF_GRAPHING
-
-	if (bspcontext->frontsector->floorheight < viewz)
-	{
-		planecontext->floorplane = R_FindPlane( planecontext, bspcontext->frontsector->floorheight, bspcontext->frontsector->floorpic, bspcontext->frontsector->lightlevel);
-	}
-	else
-	{
-		planecontext->floorplane = NULL;
-	}
-
-	if (bspcontext->frontsector->ceilingheight > viewz 
-		|| bspcontext->frontsector->ceilingpic == skyflatnum)
-	{
-		planecontext->ceilingplane = R_FindPlane( planecontext, bspcontext->frontsector->ceilingheight, bspcontext->frontsector->ceilingpic, bspcontext->frontsector->lightlevel );
-	}
-	else
-	{
-		planecontext->ceilingplane = NULL;
-	}
-
-#if RENDER_PERF_GRAPHING
-	uint64_t		endplanefind = I_GetTimeUS();
-	bspcontext->findvisplanetimetaken += ( endplanefind - startplanefind );
-
 	uint64_t		startaddsprites = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
 		
