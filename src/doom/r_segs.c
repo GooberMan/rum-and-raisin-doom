@@ -359,7 +359,6 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 			wallcolcontext.yl = yl;
 			wallcolcontext.yh = yh;
 			wallcolcontext.texturemid = wallcontext->midtexturemid;
-			//wallcolcontext.texturemid %= rendtextureheight[ segcontext->midtexture ];
 #if R_DRAWCOLUMN_LIGHTLEVELS
 			wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
@@ -390,7 +389,6 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 					wallcolcontext.yl = yl;
 					wallcolcontext.yh = mid;
 					wallcolcontext.texturemid = wallcontext->toptexturemid;
-					//wallcolcontext.texturemid %= rendtextureheight[ segcontext->toptexture ];
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
@@ -430,7 +428,6 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 					wallcolcontext.yl = mid;
 					wallcolcontext.yh = yh;
 					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
-					//wallcolcontext.texturemid %= rendtextureheight[ segcontext->bottomtexture ];
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
