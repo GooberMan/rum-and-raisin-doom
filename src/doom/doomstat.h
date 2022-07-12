@@ -29,6 +29,11 @@
 // We need globally shared data structures,
 //  for defining the global state variables.
 #include "doomdata.h"
+
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 #include "d_loop.h"
 
 // We need the playr data structure as well.
@@ -279,5 +284,9 @@ extern	int		rndindex;
 extern  ticcmd_t       *netcmds;
 
 extern int32_t remove_limits;
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

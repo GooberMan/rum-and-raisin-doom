@@ -392,7 +392,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 			I_Error ("R_DrawSpriteRange: bad texturecolumn");
 #endif
 
-		if( fuzz_style != Fuzz_Original )
+		if( !spritecolcontext.colormap && fuzz_style != Fuzz_Original )
 		{
 			fuzzcolumn = ( spritecolcontext.x * 100 ) / FUZZ_X_RATIO;
 			if(prevfuzzcolumn != fuzzcolumn)

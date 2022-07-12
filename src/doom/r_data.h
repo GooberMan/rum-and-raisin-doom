@@ -25,6 +25,10 @@
 #include "r_defs.h"
 #include "r_state.h"
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 void R_CacheComposite( int32_t tex );
 
 // Retrieve column data for span blitting.
@@ -51,5 +55,9 @@ int R_TextureNumForName(const char *name);
 int R_CheckTextureNumForName(const char *name);
 
 const char* R_TextureNameForNum( int32_t tex );
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

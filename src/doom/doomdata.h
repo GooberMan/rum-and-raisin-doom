@@ -28,7 +28,9 @@
 // Some global defines, that configure the game.
 #include "doomdef.h"
 
-
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
 
 //
 // Map level types.
@@ -282,8 +284,8 @@ typedef PACKED_STRUCT (
 	uint16_t	options;
 }) mapthing_t;
 
-
-
-
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif			// __DOOMDATA__

@@ -20,14 +20,17 @@
 //
 
 
+#include "doomdef.h"
+#include "doomtype.h"
+#include "m_fixed.h"
+#include "r_main.h"
+
 extern "C"
 {
-
 	#include <stdlib.h>
 	#include <math.h>
 	#include <stddef.h>
 
-	#include "doomdef.h"
 	#include "d_loop.h"
 
 	#include "m_bbox.h"
@@ -181,8 +184,13 @@ extern "C"
 
 	extern size_t			xlookup[MAXWIDTH];
 	extern size_t			rowofs[MAXHEIGHT];
-
 }
+
+// Actually expects C++ linkage
+atomicval_t	renderscratchpos = 0;
+atomicval_t	renderscratchsize = 0;
+byte*		renderscratch = nullptr;
+
 
 #include "m_dashboard.h"
 #include "m_profile.h"
@@ -1496,6 +1504,10 @@ void R_Init (void)
     R_InitTranslationTables ();
     printf (".");
 
+	renderscratchsize = 128 * 1024 * 1024;
+	renderscratch = (byte*)Z_Malloc( (int32_t)renderscratchsize, PU_STATIC, nullptr );
+	renderscratchpos = 0;
+
 	M_RegisterDashboardRadioButton( "Render|Clear style|None", NULL, &voidcleartype, Void_NoClear );
 	M_RegisterDashboardRadioButton( "Render|Clear style|Black", NULL, &voidcleartype, Void_Black );
 	M_RegisterDashboardRadioButton( "Render|Clear style|Whacky", NULL, &voidcleartype, Void_Whacky );
@@ -1567,6 +1579,8 @@ void R_SetupFrame (player_t* player)
 	double_t	percentagedebt;
 
 	double_t	idealpercentage = 1.0 / (double_t)numusablerendercontexts;
+
+	renderscratchpos = 0;
 
 	viewplayer = player;
 	viewx = player->mo->x;

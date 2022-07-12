@@ -19,6 +19,15 @@
 //	Moreover, the sky areas have to be determined.
 //
 
+#include "doomdef.h"
+#include "doomtype.h"
+#include "m_fixed.h"
+#include "doomstat.h"
+
+#include "r_local.h"
+#include "r_raster.h"
+#include "r_sky.h"
+
 extern "C"
 {
 	#include <stdio.h>
@@ -27,13 +36,6 @@ extern "C"
 	#include "i_system.h"
 	#include "z_zone.h"
 	#include "w_wad.h"
-
-	#include "doomdef.h"
-	#include "doomstat.h"
-
-	#include "r_local.h"
-	#include "r_sky.h"
-	#include "r_raster.h"
 
 	#include "m_misc.h"
 
@@ -254,7 +256,7 @@ DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int
 		lightlevel = 0;
 	}
 	uint64_t key = PlaneKey( height, picnum, lightlevel );
-
+	
 	auto found = PlaneLookup( context ).find( key );
 	if( found != PlaneLookup( context ).end() )
 	{
@@ -328,18 +330,18 @@ DOOM_C_API visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, in
 		unionh = pl->maxx;
 		intrh = stop;
 	}
-
+	
 	for (x=intrl ; x<= intrh ; x++)
 	{
 		if (pl->top[x] != VPINDEX_INVALID)
 			break;
 	}
-
+	
 	if (x > intrh)
 	{
 		pl->minx = unionl;
 		pl->maxx = unionh;
-
+	
 		// use the same one
 		return pl;
 	}

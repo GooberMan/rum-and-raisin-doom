@@ -17,11 +17,6 @@
 //	All the clipping: columns, horizontal spans, sky columns.
 //
 
-
-
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -250,6 +245,9 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 	int32_t			bottom;
 	int32_t			currx = segcontext->startx;
 
+	rend_fixed_t	topfrac = segcontext->topfrac;
+	rend_fixed_t	bottomfrac = segcontext->bottomfrac;
+
 	colcontext_t	wallcolcontext;
 	extern boolean renderSIMDcolumns;
 
@@ -263,7 +261,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 	for ( ; currx < segcontext->stopx ; currx++)
 	{
 		// mark floor / ceiling areas
-		yl = (int32_t)( (segcontext->topfrac + HEIGHTUNIT - 1 ) >> HEIGHTBITS );
+		yl = (int32_t)( (topfrac + HEIGHTUNIT - 1 ) >> HEIGHTBITS );
 
 		// no space above wall?
 		if (yl < planecontext->ceilingclip[currx]+1)
@@ -291,7 +289,7 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			}
 		}
 		
-		yh = (int32_t)( segcontext->bottomfrac >> HEIGHTBITS );
+		yh = (int32_t)( bottomfrac >> HEIGHTBITS );
 
 		if (yh >= planecontext->floorclip[currx])
 		{
@@ -461,8 +459,8 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 		}
 		
 		wallcontext->scale += wallcontext->scalestep;
-		segcontext->topfrac += segcontext->topstep;
-		segcontext->bottomfrac += segcontext->bottomstep;
+		topfrac += segcontext->topstep;
+		bottomfrac += segcontext->bottomstep;
 
 #if R_DRAWCOLUMN_DEBUGDISTANCES
 		wallcolcontext.colormap = restorelightmap;

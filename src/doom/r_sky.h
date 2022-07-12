@@ -22,6 +22,10 @@
 
 #include "m_fixed.h"
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 // SKY, store the number for name.
 #define			SKYFLATNAME  "F_SKY1"
 
@@ -33,5 +37,9 @@ extern rend_fixed_t		skytexturemid;
 
 // Called whenever the view size changes.
 void R_InitSkyMap (void);
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

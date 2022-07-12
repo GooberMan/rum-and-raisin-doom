@@ -21,7 +21,15 @@
 #ifndef __R_SEGS__
 #define __R_SEGS__
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop );
 void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* context, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 );
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

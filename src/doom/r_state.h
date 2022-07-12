@@ -26,9 +26,9 @@
 #include "r_data.h"
 
 
-
-
-
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
 
 //
 // Refresh internal data structures,
@@ -111,5 +111,9 @@ extern angle_t		clipangle;
 
 extern int32_t		viewangletox[ RENDERFINEANGLES/2 ];
 extern angle_t		xtoviewangle[ MAXSCREENWIDTH+1 ];
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

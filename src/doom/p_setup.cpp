@@ -21,12 +21,12 @@
 #include <math.h>
 #include <stdlib.h>
 
-// Abusing include guards to get the types I want
-//#include "m_fixed.h"
+#include "doomdata.h"
+#include "m_fixed.h"
+#include "r_local.h"
 
 extern "C"
 {
-	#include "doomdata.h"
 	#include "i_log.h"
 	#include "i_system.h"
 	#include "i_swap.h"
@@ -34,7 +34,6 @@ extern "C"
 	#include "m_bbox.h"
 	#include "m_misc.h"
 	#include "p_local.h"
-	#include "r_defs.h"
 	#include "w_wad.h"
 	#include "z_zone.h"
 }

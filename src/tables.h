@@ -36,8 +36,11 @@
 #define __TABLES__
 
 #include "doomtype.h"
-
 #include "m_fixed.h"
+
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
 
 #define FINEANGLES				( 8192 )
 #define FINEMASK				( FINEANGLES-1 )
@@ -139,6 +142,10 @@ int SlopeDiv_Playsim(unsigned int num, unsigned int den);
 
 	#define rendertantoangle			tantoangle
 #endif // RENDERSLOPEQUALITYSHIFT > 0
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif
 

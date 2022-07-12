@@ -27,7 +27,8 @@ extern "C" {
 
 #include "d_player.h"
 #include "r_data.h"
-
+#include "i_system.h"
+#include "i_thread.h"
 
 
 
@@ -180,5 +181,26 @@ void R_SetViewSize (int blocks, int detail);
 #if defined( __cplusplus )
 }
 #endif // __cplusplus
+
+#if defined( __cplusplus )
+
+template< typename _ty >
+INLINE _ty* R_AllocateScratch( atomicval_t numinstances )
+{
+	// TODO: per-thread scratchpad???
+	extern atomicval_t	renderscratchpos;
+	extern atomicval_t	renderscratchsize;
+	extern byte*		renderscratch;
+
+	atomicval_t numbytes = AlignTo< 16 >( sizeof( _ty ) * numinstances );
+	size_t pos = I_AtomicIncrement( &renderscratchpos, numbytes );
+	if( pos + numbytes > renderscratchsize )
+	{
+		I_Error( "R_AllocateScratch: No more scratchpad memory available" );
+	}
+	return (_ty*)( renderscratch + pos );
+}
+
+#endif // defined( __cplusplus )
 
 #endif

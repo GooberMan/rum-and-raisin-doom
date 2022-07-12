@@ -21,13 +21,13 @@
 #include "doomtype.h"
 #include "m_fixed.h"
 #include "m_profile.h"
+#include "r_main.h"
 
 extern "C"
 {
-	#include "m_misc.h"
 	#include "r_defs.h"
-	#include "r_main.h"
 	#include "r_state.h"
+	#include "m_misc.h"
 
 	extern size_t		xlookup[ MAXWIDTH ];
 	extern size_t		rowofs[ MAXHEIGHT ];

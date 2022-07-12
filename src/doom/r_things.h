@@ -25,6 +25,10 @@
 // Remove when you've made a render context
 #include "r_defs.h"
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
 // Does not need to be in a threaded context
@@ -43,5 +47,9 @@ void R_AddSprites( spritecontext_t* spritecontext, sector_t* sec );
 void R_InitSprites(const char **namelist);
 void R_ClearSprites ( spritecontext_t* spritecontext );
 void R_DrawMasked ( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext );
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

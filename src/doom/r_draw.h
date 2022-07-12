@@ -21,6 +21,10 @@
 #ifndef __R_DRAW__
 #define __R_DRAW__
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 // The span blitting interface.
 // Hook in assembler or system specific BLT
 //  here.
@@ -99,5 +103,9 @@ void R_FillBackScreen( void );
 
 // If the view size is not full screen, draws a border around it.
 void R_DrawViewBorder( void );
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

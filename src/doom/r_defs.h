@@ -29,6 +29,10 @@
 // we depend on.
 #include "m_fixed.h"
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 // We rely on the thinker data struct
 // to handle sound origins in sectors.
 #include "d_think.h"
@@ -53,7 +57,7 @@
 #define SIL_BOTH				3
 
 #define VANILLA_MAXVISPLANES	128
-#define MAXVISPLANES			10000
+#define MAXVISPLANES			10240
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
 #define MAXOPENINGS				( MAXSCREENWIDTH*64 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
@@ -601,6 +605,25 @@ typedef struct rastercache_s
 	rend_fixed_t		distance;
 } rastercache_t;
 
+typedef struct rasterline_s
+{
+	vpindex_t top;
+	vpindex_t bottom;
+} rasterline_t;
+
+typedef struct rasterregion_s
+{
+	rend_fixed_t		height;
+	int32_t				picnum;
+	int32_t				lightlevel;
+	int32_t				minx;
+	int32_t				maxx;
+	int32_t				miny;
+	int32_t				maxy;
+
+	rasterline_t*		lines;
+} rasterregion_t;
+
 typedef struct planecontext_s
 {
 	void*				visplanelookup;
@@ -796,5 +819,9 @@ typedef enum disciconstyle_e
 
 	Disk_Count,
 } disciconstyle_t;
+
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
 
 #endif

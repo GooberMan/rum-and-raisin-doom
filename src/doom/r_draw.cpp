@@ -19,17 +19,15 @@
 //	 e.g. inline assembly, different algorithms.
 //
 
+#include "r_local.h"
 
 extern "C"
 {
-#include "doomdef.h"
 #include "deh_main.h"
 
 #include "i_system.h"
 #include "z_zone.h"
 #include "w_wad.h"
-
-#include "r_local.h"
 
 // Needs access to LFB (guess what).
 #include "v_video.h"

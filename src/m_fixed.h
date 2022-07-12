@@ -43,6 +43,15 @@ consteval bool IsValidBitCount( size_t val )
 	return	val <= _INTEGRAL_MAX_BITS
 			&& IsPowerOf2( val );
 }
+
+template< size_t boundary, typename _val >
+requires ( IsPowerOf2( boundary ) )
+constexpr size_t AlignTo( _val val )
+{
+	constexpr _val clip = boundary - 1;
+	constexpr _val mask = ~clip;
+	return ( val + clip ) & mask;
+}
 #endif // defined( __cplusplus )
 
 #if !USE_FIXED_T_TYPE

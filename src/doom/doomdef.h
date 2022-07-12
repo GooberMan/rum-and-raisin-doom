@@ -20,14 +20,15 @@
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
 #include <stdio.h>
 #include <string.h>
 
 #include "doomtype.h"
+
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 #include "i_timer.h"
 #include "d_mode.h"
 
