@@ -51,7 +51,6 @@ DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context );
 
 DOOM_C_API void R_DrawPlanes ( vbuffer_t* dest, planecontext_t* planecontext );
 
-DOOM_C_API void R_InitPlaneLookup( planecontext_t* context );
 DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int32_t picnum, int32_t lightlevel );
 DOOM_C_API visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, int32_t start, int32_t stop );
 

@@ -281,11 +281,13 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 
 			if (top <= bottom)
 			{
-				planecontext->ceilingplane->top[currx] = top;
-				planecontext->ceilingplane->bottom[currx] = bottom;
+				rasterregion_t* region = planecontext->ceilingplane->rasterregion;
+				rasterline_t* line = region->lines + ( currx - segcontext->startx );
 
-				planecontext->ceilingplane->miny = M_MIN( top, planecontext->ceilingplane->miny );
-				planecontext->ceilingplane->maxy = M_MAX( bottom, planecontext->ceilingplane->maxy );
+				region->miny = M_MIN( top, region->miny );
+				region->maxy = M_MAX( bottom, region->maxy );
+				line->top = top;
+				line->bottom = bottom;
 			}
 		}
 		
@@ -306,11 +308,13 @@ uint64_t R_RenderSegLoop ( vbuffer_t* dest, planecontext_t* planecontext, wallco
 			}
 			if (top <= bottom)
 			{
-				planecontext->floorplane->top[currx] = top;
-				planecontext->floorplane->bottom[currx] = bottom;
+				rasterregion_t* region = planecontext->floorplane->rasterregion;
+				rasterline_t* line = region->lines + ( currx - segcontext->startx );
 
-				planecontext->floorplane->miny = M_MIN( top, planecontext->floorplane->miny );
-				planecontext->floorplane->maxy = M_MAX( bottom, planecontext->floorplane->maxy );
+				line->top = top;
+				line->bottom = bottom;
+				region->miny = M_MIN( top, region->miny );
+				region->maxy = M_MAX( bottom, region->maxy );
 			}
 		}
 	

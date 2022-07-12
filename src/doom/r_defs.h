@@ -57,11 +57,11 @@ extern "C" {
 #define SIL_BOTH				3
 
 #define VANILLA_MAXVISPLANES	128
-#define MAXVISPLANES			10240
+#define MAXVISPLANES			( 10240 * 4 )
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
 #define MAXOPENINGS				( MAXSCREENWIDTH*64 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
-#define MAXDRAWSEGS				( MAXVISPLANES << 2 )
+#define MAXDRAWSEGS				( ( MAXVISPLANES / 4 ) << 2 )
 
 // We must expand MAXSEGS to the theoretical limit of the number of solidsegs
 // that can be generated in a scene by the DOOM engine. This was determined by
@@ -376,6 +376,8 @@ typedef uint16_t					mapblockmap_extended_t;
 // OTHER TYPES
 //
 
+typedef struct rasterregion_s rasterregion_t;
+
 // This could be wider for >8 bit display.
 // Indeed, true color support is posibble
 //  precalculating 24bpp lightmap/colormap LUT.
@@ -499,26 +501,14 @@ typedef struct spritedef_s
 
 typedef struct visplane_s
 {
+	rasterregion_t*		rasterregion;
 	fixed_t				height;
 	int32_t				picnum;
 	int32_t				lightlevel;
-	int32_t				minx;
-	int32_t				maxx;
-	int32_t				miny;
-	int32_t				maxy;
-  
-	// leave pads for [minx-1]/[maxx+1]
-  
-	vpindex_t			pad1;
-	// Here lies the rub for all
-	//  dynamic resize/change of resolution.
-	vpindex_t			top[ MAXSCREENWIDTH ];
-	vpindex_t			pad2;
-	vpindex_t			pad3;
-	// See above.
-	vpindex_t			bottom[ MAXSCREENWIDTH ];
-	vpindex_t			pad4;
-
+	int16_t				minx;
+	int16_t				maxx;
+	int16_t				miny;
+	int16_t				maxy;
 } visplane_t;
 
 //
@@ -611,27 +601,31 @@ typedef struct rasterline_s
 	vpindex_t bottom;
 } rasterline_t;
 
-typedef struct rasterregion_s
+struct rasterregion_s
 {
-	rend_fixed_t		height;
-	int32_t				picnum;
-	int32_t				lightlevel;
-	int32_t				minx;
-	int32_t				maxx;
-	int32_t				miny;
-	int32_t				maxy;
-
 	rasterline_t*		lines;
-} rasterregion_t;
+
+	rend_fixed_t		height;
+
+	int32_t				lightlevel;
+	int32_t				padding;
+
+	int16_t				minx;
+	int16_t				maxx;
+	int16_t				miny;
+	int16_t				maxy;
+
+	rasterregion_t*		nextregion;
+};
 
 typedef struct planecontext_s
 {
-	void*				visplanelookup;
-
 	visplane_t			visplanes[MAXVISPLANES];
 	visplane_t*			lastvisplane;
 	visplane_t*			floorplane;
 	visplane_t*			ceilingplane;
+
+	rasterregion_t**	rasterregions;
 
 	vertclip_t			openings[MAXOPENINGS];
 	vertclip_t*			lastopening;

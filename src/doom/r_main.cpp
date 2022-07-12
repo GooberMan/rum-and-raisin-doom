@@ -1096,8 +1096,6 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.endtime = 1;
 		renderdatas[ currcontext ].context.timetaken = 1;
 
-		R_InitPlaneLookup( &renderdatas[ currcontext ].context.planecontext );
-
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
 		if( renderthreaded && currcontext < numrendercontexts - 1 )
@@ -1504,7 +1502,7 @@ void R_Init (void)
     R_InitTranslationTables ();
     printf (".");
 
-	renderscratchsize = 128 * 1024 * 1024;
+	renderscratchsize = 16 * 1024 * 1024;
 	renderscratch = (byte*)Z_Malloc( (int32_t)renderscratchsize, PU_STATIC, nullptr );
 	renderscratchpos = 0;
 

@@ -52,33 +52,12 @@ extern "C"
 
 	extern size_t		xlookup[MAXWIDTH];
 	extern size_t		rowofs[MAXHEIGHT];
+
+	extern int			numflats;
 }
 
 #include "m_container.h"
 #include "m_profile.h"
-
-typedef struct viskeylayout_s
-{
-	fixed_t		height;
-	uint16_t	picnum;
-	uint8_t		lightlevel;
-	int8_t		padding;
-} viskeylayout_t;
-
-static_assert( sizeof( viskeylayout_t ) == sizeof( uint64_t ), "viskeylayout_t exceeds 8 bytes!" );
-
-using visplanelookup_t = DoomUnorderedMap< uint64_t, visplane_t* >;
-
-constexpr visplanelookup_t& PlaneLookup( planecontext_t* context )
-{
-	return *(visplanelookup_t*)context->visplanelookup;
-}
-
-INLINE uint64_t PlaneKey( fixed_t& height, int32_t& picnum, int32_t& lightlevel )
-{
-	viskeylayout_t val = { height, (uint16_t)picnum, (uint8_t)lightlevel, 0 };
-	return *(uint64_t*)&val;
-}
 
 //
 // R_InitPlanes
@@ -212,11 +191,8 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	context->lastvisplane = context->visplanes;
 	context->lastopening = context->openings;
-	if( PlaneLookup( context ).size() > 0 )
-	{
-		M_PROFILE_NAMED( "Lookup clear" );
-		PlaneLookup( context ).clear();
-	}
+
+	context->rasterregions = R_AllocateScratch< rasterregion_t* >( numflats, nullptr );
 
 	// texture calculation
 	if( span_override == Span_Original )
@@ -232,13 +208,6 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 	context->baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
 }
 
-DOOM_C_API void R_InitPlaneLookup( planecontext_t* context )
-{
-	context->visplanelookup = Z_Malloc( sizeof( visplanelookup_t ), PU_STATIC, NULL );
-	new( context->visplanelookup ) visplanelookup_t;
-	PlaneLookup( context ).reserve( MAXVISPLANES );
-}
-
 //
 // R_FindPlane
 //
@@ -248,37 +217,12 @@ DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int
 {
 	M_PROFILE_FUNC();
 
-	visplane_t*	check;
-
-	if (picnum == skyflatnum)
-	{
-		height = 0;			// all skys map together
-		lightlevel = 0;
-	}
-	uint64_t key = PlaneKey( height, picnum, lightlevel );
-	
-	auto found = PlaneLookup( context ).find( key );
-	if( found != PlaneLookup( context ).end() )
-	{
-		return found->second;
-	}
-	
-	//for( check = context->lastvisplane - 1; check >= context->visplanes; --check )
-	//{
-	//	if (height == check->height
-	//		&& picnum == check->picnum
-	//		&& lightlevel == check->lightlevel)
-	//	{
-	//		return check;
-	//	}
-	//}
-			
 	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
 	{
 		I_Error ("R_FindPlane: no more visplanes");
 	}
-		
-	check = context->lastvisplane++;
+
+	visplane_t*	check = context->lastvisplane++;
 
 	check->height = height;
 	check->picnum = picnum;
@@ -287,11 +231,8 @@ DOOM_C_API visplane_t* R_FindPlane( planecontext_t* context, fixed_t height, int
 	check->maxx = -1;
 	check->miny = render_height;
 	check->maxy = -1;
+	check->rasterregion = nullptr;
 
-	memset( check->top, VPINDEX_INVALID, sizeof( check->top ) );
-
-	PlaneLookup( context ).insert( visplanelookup_t::value_type( key, check ) );
-		
 	return check;
 }
 
@@ -303,49 +244,8 @@ DOOM_C_API visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, in
 {
 	M_PROFILE_FUNC();
 
-	int32_t		intrl;
-	int32_t		intrh;
-	int32_t		unionl;
-	int32_t		unionh;
-	int32_t		x;
-	
-	if (start < pl->minx)
-	{
-		intrl = pl->minx;
-		unionl = start;
-	}
-	else
-	{
-		unionl = pl->minx;
-		intrl = start;
-	}
-	
-	if (stop > pl->maxx)
-	{
-		intrh = pl->maxx;
-		unionh = stop;
-	}
-	else
-	{
-		unionh = pl->maxx;
-		intrh = stop;
-	}
-	
-	for (x=intrl ; x<= intrh ; x++)
-	{
-		if (pl->top[x] != VPINDEX_INVALID)
-			break;
-	}
-	
-	if (x > intrh)
-	{
-		pl->minx = unionl;
-		pl->maxx = unionh;
-	
-		// use the same one
-		return pl;
-	}
-	
+	// This is just gonna copy a plane context, no biggie. And no more lookups.
+
 	if (context->lastvisplane - context->visplanes == MAXVISPLANES)
 	{
 		I_Error ("R_CheckPlane: no more visplanes");
@@ -360,8 +260,23 @@ DOOM_C_API visplane_t* R_CheckPlane( planecontext_t* context, visplane_t* pl, in
 	pl->minx = start;
 	pl->maxx = stop;
 
-	memset (pl->top,VPINDEX_INVALID,sizeof(pl->top));
-		
+	rasterregion_t* region = R_AllocateScratch< rasterregion_t >( 1 );
+	region->height = FixedToRendFixed( pl->height );
+	region->lightlevel = pl->lightlevel;
+	region->minx = start;
+	region->maxx = stop;
+	region->miny = render_height;
+	region->maxy = -1;
+
+	int16_t width = stop - start + 1;
+	constexpr rasterline_t defaultline = { VPINDEX_INVALID, 0 };
+	region->lines = R_AllocateScratch< rasterline_t >( width, defaultline );
+
+	region->nextregion = context->rasterregions[ pl->picnum ];
+	context->rasterregions[ pl->picnum ] = region;
+
+	pl->rasterregion = region;
+
 	return pl;
 }
 
@@ -423,6 +338,12 @@ DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context )
 // R_DrawPlanes
 // At the end of each frame.
 //
+
+constexpr auto Lines( rasterregion_t* region )
+{
+	return std::span( region->lines, region->maxx - region->minx + 1 );
+}
+
 DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	M_PROFILE_FUNC();
@@ -462,18 +383,22 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 	// TODO: Sort visplanes by height
 	for (pl = planecontext->visplanes ; pl < planecontext->lastvisplane ; pl++)
 	{
-		if (pl->minx > pl->maxx)
+		rasterregion_t* region = pl->rasterregion;
+
+		if ( !region || region->minx > region->maxx )
 			continue;
 	
 		// sky flat
 		if (pl->picnum == skyflatnum)
 		{
-			for (x=pl->minx ; x <= pl->maxx ; x++)
+			x = region->minx;
+
+			for( rasterline_t& line : Lines( region ) )
 			{
-				if (pl->top[x] <= pl->bottom[x])
+				if ( line.top <= line.bottom )
 				{
-					skycontext.yl = pl->top[x];
-					skycontext.yh = pl->bottom[x];
+					skycontext.yl = line.top;
+					skycontext.yh = line.bottom;
 					skycontext.x = x;
 
 					angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
@@ -484,6 +409,7 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 					skycontext.source = R_GetColumn(skytexture, angle, 0);
 					skycontext.colfunc( &skycontext );
 				}
+				++x;
 			}
 			continue;
 		}
@@ -498,21 +424,19 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		planecontext->planezlightindex = light;
 		planecontext->planezlight = zlight[light];
 
-		pl->top[pl->maxx+1] = VPINDEX_INVALID;
-		pl->top[pl->minx-1] = VPINDEX_INVALID;
-
 		stop = pl->maxx + 1;
 
 		if( span_type == Span_Original )
 		{
-			for (x=pl->minx ; x<= stop ; x++)
-			{
-				R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
-			}
+			I_Error( "I broke the span renderer, it's on its way out now." );
+			//for (x=pl->minx ; x<= stop ; x++)
+			//{
+			//	R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
+			//}
 		}
 		else
 		{
-			R_RasteriseColumns( (spantype_t)span_type, planecontext, &spancontext, pl );
+			R_RasteriseColumns( (spantype_t)span_type, planecontext, &spancontext, pl->rasterregion );
 		}
 	}
 }

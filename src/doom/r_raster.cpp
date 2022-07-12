@@ -179,7 +179,7 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 
 }
 
-INLINE void R_Prepare( int32_t y, visplane_t* visplane, planecontext_t* planecontext )
+INLINE void R_Prepare( int32_t y, planecontext_t* planecontext )
 {
 	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), yslope[ y ] );
 
@@ -200,66 +200,77 @@ INLINE void R_Prepare( int32_t y, visplane_t* visplane, planecontext_t* planecon
 	}
 }
 
-INLINE void R_Prepare( visplane_t* visplane, planecontext_t* planecontext )
+INLINE void R_Prepare( rasterregion_t* region, planecontext_t* planecontext )
 {
-	int32_t y = visplane->miny;
-	int32_t stop = visplane->maxy + 1;
+	int32_t y = region->miny;
+	int32_t stop = region->maxy + 1;
 
 	while( y < stop )
 	{
-		R_Prepare( y++, visplane, planecontext );
+		R_Prepare( y++, planecontext );
 	};
 }
 
-DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planecontext, spancontext_t* spancontext, visplane_t* visplane )
+constexpr auto Lines( rasterregion_t* region )
+{
+	return std::span( region->lines, region->maxx - region->minx + 1 );
+}
+
+
+DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planecontext, spancontext_t* spancontext, rasterregion_t* region )
 {
 	M_PROFILE_FUNC();
 
 	rend_fixed_t view_x = FixedToRendFixed( viewx );
 	rend_fixed_t view_y = FixedToRendFixed( viewy );
 
-	int32_t stop = visplane->maxx + 1;
+	int32_t stop = region->maxx + 1;
+	int32_t x = region->minx;
 
-	R_Prepare( visplane, planecontext );
+	R_Prepare( region, planecontext );
 	switch( spantype )
 	{
 	case Span_PolyRaster_Log2_4:
-		for ( int32_t x = visplane->minx; x <= stop ; x++ )
+		for( rasterline_t& line : Lines( region ) )
 		{
-			if( visplane->top[ x ] <= visplane->bottom[ x ] )
+			if( line.top <= line.bottom )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
 			}
+			++x;
 		}
 		break;
 
 	case Span_PolyRaster_Log2_8:
-		for ( int32_t x = visplane->minx; x <= stop ; x++ )
+		for( rasterline_t& line : Lines( region ) )
 		{
-			if( visplane->top[ x ] <= visplane->bottom[ x ] )
+			if( line.top <= line.bottom )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
 			}
+			++x;
 		}
 		break;
 
 	case Span_PolyRaster_Log2_16:
-		for ( int32_t x = visplane->minx; x <= stop ; x++ )
+		for( rasterline_t& line : Lines( region ) )
 		{
-			if( visplane->top[ x ] <= visplane->bottom[ x ] )
+			if( line.top <= line.bottom )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
 			}
+			++x;
 		}
 		break;
 
 	case Span_PolyRaster_Log2_32:
-		for ( int32_t x = visplane->minx; x <= stop ; x++ )
+		for( rasterline_t& line : Lines( region ) )
 		{
-			if( visplane->top[ x ] <= visplane->bottom[ x ] )
+			if( line.top <= line.bottom )
 			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( view_x, view_y, planecontext, spancontext, x, visplane->top[ x ], visplane->bottom[ x ] - visplane->top[ x ] );
+				R_RasteriseColumnImpl< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
 			}
+			++x;
 		}
 		break;
 	}

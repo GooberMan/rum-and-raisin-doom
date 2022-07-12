@@ -184,8 +184,10 @@ void R_SetViewSize (int blocks, int detail);
 
 #if defined( __cplusplus )
 
-template< typename _ty >
-INLINE _ty* R_AllocateScratch( atomicval_t numinstances )
+#include "m_container.h"
+
+template< typename _ty, typename... _args >
+INLINE _ty* R_AllocateScratch( atomicval_t numinstances, const _args&... args )
 {
 	// TODO: per-thread scratchpad???
 	extern atomicval_t	renderscratchpos;
@@ -193,12 +195,34 @@ INLINE _ty* R_AllocateScratch( atomicval_t numinstances )
 	extern byte*		renderscratch;
 
 	atomicval_t numbytes = AlignTo< 16 >( sizeof( _ty ) * numinstances );
-	size_t pos = I_AtomicIncrement( &renderscratchpos, numbytes );
+	atomicval_t pos = I_AtomicIncrement( &renderscratchpos, numbytes );
 	if( pos + numbytes > renderscratchsize )
 	{
 		I_Error( "R_AllocateScratch: No more scratchpad memory available" );
 	}
-	return (_ty*)( renderscratch + pos );
+
+	_ty* output = (_ty*)( renderscratch + pos );
+
+	if constexpr( sizeof...( _args ) == 1 )
+	{
+		if constexpr( std::is_same_v< _ty, std::tuple_element_t< 0, std::tuple< _args... > > > )
+		{
+			for( auto& curr : std::span( output, numinstances ) )
+			{
+				curr = std::get< 0 >( std::forward_as_tuple( args... ) );
+			}
+		}
+		else
+		{
+			static_assert( "R_AllocateScratch only supports copy construction right now." );
+		}
+	}
+	else if constexpr( sizeof...( _args ) > 1 )
+	{
+		static_assert( "R_AllocateScratch only allows 1 variadic arg for now, will expand later if I want to construct objects with parameter packs." );
+	}
+
+	return output;
 }
 
 #endif // defined( __cplusplus )
