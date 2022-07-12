@@ -152,15 +152,13 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 	// find positioning
 	if (bspcontext->curline->linedef->flags & ML_DONTPEGBOTTOM)
 	{
-		spritecolcontext.texturemid = M_MAX( bspcontext->frontsector->floorheight, bspcontext->backsector->floorheight );
-		spritecolcontext.texturemid = FixedToRendFixed( spritecolcontext.texturemid );
-		spritecolcontext.texturemid = spritecolcontext.texturemid + FixedToRendFixed( textureheight[texnum] - viewz );
+		spritecolcontext.texturemid = FixedToRendFixed( M_MAX( bspcontext->frontsector->floorheight, bspcontext->backsector->floorheight ) );
+		spritecolcontext.texturemid += rendtextureheight[texnum] - FixedToRendFixed( viewz );
 	}
 	else
 	{
-		spritecolcontext.texturemid = M_MIN( bspcontext->frontsector->ceilingheight, bspcontext->backsector->ceilingheight );
-		spritecolcontext.texturemid = FixedToRendFixed( spritecolcontext.texturemid );
-		spritecolcontext.texturemid = spritecolcontext.texturemid - FixedToRendFixed( viewz );
+		spritecolcontext.texturemid = FixedToRendFixed( M_MIN( bspcontext->frontsector->ceilingheight, bspcontext->backsector->ceilingheight ) );
+		spritecolcontext.texturemid -= FixedToRendFixed( viewz );
 	}
 	spritecolcontext.texturemid += bspcontext->curline->sidedef->rend.rowoffset;
 
@@ -361,11 +359,12 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 			wallcolcontext.yl = yl;
 			wallcolcontext.yh = yh;
 			wallcolcontext.texturemid = wallcontext->midtexturemid;
+			//wallcolcontext.texturemid %= rendtextureheight[ segcontext->midtexture ];
 #if R_DRAWCOLUMN_LIGHTLEVELS
 			wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
 			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
-			wallcolcontext.sourceheight = FixedToRendFixed( textureheight[ segcontext->midtexture ] );
+			wallcolcontext.sourceheight = rendtextureheight[ segcontext->midtexture ];
 #endif
 			R_RangeCheck();
 			wallcolcontext.colfunc( &wallcolcontext );
@@ -391,11 +390,12 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 					wallcolcontext.yl = yl;
 					wallcolcontext.yh = mid;
 					wallcolcontext.texturemid = wallcontext->toptexturemid;
+					//wallcolcontext.texturemid %= rendtextureheight[ segcontext->toptexture ];
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
-					wallcolcontext.sourceheight = FixedToRendFixed( textureheight[ segcontext->toptexture ] );
+					wallcolcontext.sourceheight = rendtextureheight[ segcontext->toptexture ];
 #endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
@@ -430,11 +430,12 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 					wallcolcontext.yl = mid;
 					wallcolcontext.yh = yh;
 					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
+					//wallcolcontext.texturemid %= rendtextureheight[ segcontext->bottomtexture ];
 #if R_DRAWCOLUMN_LIGHTLEVELS
 					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
 #else
 					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
-					wallcolcontext.sourceheight = FixedToRendFixed( textureheight[ segcontext->bottomtexture ] );
+					wallcolcontext.sourceheight = rendtextureheight[ segcontext->bottomtexture ];
 #endif
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
@@ -592,7 +593,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				// top of texture at top
 				wallcontext->midtexturemid = worldtop;
 			}
-			wallcontext->midtexturemid += FixedToRendFixed( bspcontext->sidedef->rowoffset );
+			wallcontext->midtexturemid += bspcontext->sidedef->rend.rowoffset;
+			wallcontext->midtexturemid %= rendtextureheight[ bspcontext->sidedef->midtexture ];
 
 			bspcontext->thisdrawseg->silhouette = SIL_BOTH;
 			bspcontext->thisdrawseg->sprtopclip = screenheightarray;
@@ -721,9 +723,11 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 					wallcontext->bottomtexturemid = worldlow;
 				}
 			}
-			wallcontext->toptexturemid += FixedToRendFixed( bspcontext->sidedef->rowoffset );
-			wallcontext->bottomtexturemid += FixedToRendFixed( bspcontext->sidedef->rowoffset );
-	
+			wallcontext->toptexturemid += bspcontext->sidedef->rend.rowoffset;
+			wallcontext->toptexturemid %= rendtextureheight[ bspcontext->sidedef->toptexture ];
+			wallcontext->bottomtexturemid += bspcontext->sidedef->rend.rowoffset;
+			wallcontext->bottomtexturemid %= rendtextureheight[ bspcontext->sidedef->bottomtexture ];
+
 			// allocate space for masked texture tables
 			if (bspcontext->sidedef->midtexture)
 			{

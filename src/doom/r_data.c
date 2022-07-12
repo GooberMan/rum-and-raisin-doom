@@ -150,7 +150,8 @@ texture_t**		textures_hashtable;
 
 int*			texturewidthmask;
 // needed for texture pegging
-fixed_t*		textureheight;		
+fixed_t*		textureheight;
+rend_fixed_t*	rendtextureheight;
 int*			texturecompositesize;
 short**			texturecolumnlump;
 uint32_t**		texturecolumnofs;
@@ -585,6 +586,7 @@ void R_InitTextures (void)
 	texturecompositecolumnofs = Z_Malloc (numtextures * sizeof(*texturecompositecolumnofs), PU_STATIC, 0);
     texturewidthmask = Z_Malloc (numtextures * sizeof(*texturewidthmask), PU_STATIC, 0);
     textureheight = Z_Malloc (numtextures * sizeof(*textureheight), PU_STATIC, 0);
+	rendtextureheight = Z_Malloc( numtextures * sizeof( *rendtextureheight ), PU_STATIC, 0 );
 
     totalwidth = 0;
     
@@ -662,6 +664,7 @@ void R_InitTextures (void)
 
 	texturewidthmask[i] = j-1;
 	textureheight[i] = IntToFixed( texture->height );
+	rendtextureheight[ i ] = IntToRendFixed( texture->height );
 		
 	totalwidth += texture->width;
     }
