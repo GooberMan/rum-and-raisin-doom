@@ -36,15 +36,17 @@
 //
 
 typedef struct lumpinfo_s lumpinfo_t;
-typedef int lumpindex_t;
+typedef int32_t lumpindex_t;
 
 struct lumpinfo_s
 {
-    char	name[8];
     wad_file_t *wad_file;
-    int		position;
-    int		size;
-    void       *cache;
+    void		*cache;
+
+    char		name[8];
+	int32_t		namepadding;
+    int32_t		position;
+    int32_t		size;
 
     // Used for hash table lookups
     lumpindex_t next;
@@ -61,6 +63,7 @@ void W_Reload(void);
 
 lumpindex_t W_CheckNumForName(const char *name);
 lumpindex_t W_GetNumForName(const char *name);
+const char* W_GetNameForNum( lumpindex_t num );
 
 int W_LumpLength(lumpindex_t lump);
 void W_ReadLump(lumpindex_t lump, void *dest);

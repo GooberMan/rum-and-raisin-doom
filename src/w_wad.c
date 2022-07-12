@@ -220,6 +220,7 @@ wad_file_t *W_AddFile (const char *filename)
         lump_p->size = LONG(filerover->size);
         lump_p->cache = NULL;
         strncpy(lump_p->name, filerover->name, 8);
+		lump_p->namepadding = 0;
         lumpinfo[i] = lump_p;
 
         ++filerover;
@@ -322,6 +323,11 @@ lumpindex_t W_GetNumForName(const char *name)
     }
  
     return i;
+}
+
+const char* W_GetNameForNum( lumpindex_t num )
+{
+	return lumpinfo[ num ]->name;
 }
 
 //
