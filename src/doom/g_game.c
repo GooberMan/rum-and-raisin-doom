@@ -74,6 +74,7 @@
 
 
 #include "g_game.h"
+#include "m_profile.h"
 
 
 #define SAVEGAMESIZE	0x2c000
@@ -884,6 +885,8 @@ boolean G_Responder (event_t* ev)
 //
 void G_Ticker (void) 
 { 
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
     int		i;
     int		buf; 
     ticcmd_t*	cmd;
@@ -1054,6 +1057,9 @@ void G_Ticker (void)
 	D_PageTicker (); 
 	break;
     }        
+
+	M_PROFILE_POP( __FUNCTION__ );
+
 } 
  
  
