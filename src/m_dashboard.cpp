@@ -60,7 +60,7 @@ static ImVec4 theme_funkygreenhighlight[ ImGuiCol_COUNT ] =
 {
 	{ 0.956863f, 0.945098f, 0.870588f, 0.8f },			// ImGuiCol_Text,
 	{ 0.356863f, 0.345098f, 0.270588f, 0.8f },			// ImGuiCol_TextDisabled,
-	{ 0.145098f, 0.129412f, 0.192157f, 0.8f },			// ImGuiCol_WindowBg,
+	{ 0.145098f, 0.129412f, 0.192157f, 0.9f },			// ImGuiCol_WindowBg,
 	{ 0.f, 0.f, 0.f, 0.2f },								// ImGuiCol_ChildBg,
 	{ 0.145098f, 0.129412f, 0.192157f, 0.901961f },		// ImGuiCol_PopupBg,
 	{ 0.545098f, 0.529412f, 0.592157f, 0.8f },			// ImGuiCol_Border,
@@ -112,7 +112,7 @@ static ImVec4 theme_purpleyellowthing[ ImGuiCol_COUNT ] =
 {
 	{ 0.862745f, 0.882353f, 0.870588f, 0.8f },			// ImGuiCol_Text,
 	{ 0.262745f, 0.282353f, 0.270588f, 0.8f },			// ImGuiCol_TextDisabled,
-	{ 0.121569f, 0.141176f, 0.129412f, 0.8f },			// ImGuiCol_WindowBg,
+	{ 0.121569f, 0.141176f, 0.129412f, 0.9f },			// ImGuiCol_WindowBg,
 	{ 0.f, 0.f, 0.f, 0.2f },								// ImGuiCol_ChildBg,
 	{ 0.121569f, 0.141176f, 0.129412f, 0.901961f },		// ImGuiCol_PopupBg,
 	{ 0.521569f, 0.541176f, 0.529412f, 0.8f },			// ImGuiCol_Border,
@@ -165,7 +165,7 @@ static ImVec4 theme_doomedspacemarine[ ImGuiCol_COUNT ] =
 {
 	{ 0.858824f, 0.858824f, 0.858824f, 0.8f },			// ImGuiCol_Text,
 	{ 0.258824f, 0.258824f, 0.258824f, 0.8f },			// ImGuiCol_TextDisabled,
-	{ 0.262745f, 0.f, 0.f, 0.8f },						// ImGuiCol_WindowBg,
+	{ 0.262745f, 0.f, 0.f, 0.9f },						// ImGuiCol_WindowBg,
 	{ 0.f, 0.f, 0.f, 0.2f },								// ImGuiCol_ChildBg,
 	{ 0.262745f, 0.f, 0.f, 0.901961f },					// ImGuiCol_PopupBg,
 	{ 0.662745f, 0.4f, 0.4f, 0.8f },					// ImGuiCol_Border,
