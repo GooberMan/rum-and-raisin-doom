@@ -591,7 +591,6 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				wallcontext->midtexturemid = worldtop;
 			}
 			wallcontext->midtexturemid += bspcontext->sidedef->rend.rowoffset;
-			wallcontext->midtexturemid %= rendtextureheight[ bspcontext->sidedef->midtexture ];
 
 			bspcontext->thisdrawseg->silhouette = SIL_BOTH;
 			bspcontext->thisdrawseg->sprtopclip = screenheightarray;
@@ -721,9 +720,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				}
 			}
 			wallcontext->toptexturemid += bspcontext->sidedef->rend.rowoffset;
-			wallcontext->toptexturemid %= rendtextureheight[ bspcontext->sidedef->toptexture ];
 			wallcontext->bottomtexturemid += bspcontext->sidedef->rend.rowoffset;
-			wallcontext->bottomtexturemid %= rendtextureheight[ bspcontext->sidedef->bottomtexture ];
 
 			// allocate space for masked texture tables
 			if (bspcontext->sidedef->midtexture)

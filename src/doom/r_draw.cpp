@@ -382,6 +382,8 @@ namespace DrawColumn
 		template< typename Sampler >
 		static INLINE void DrawWith( colcontext_t* context )
 		{
+			constexpr bool LimitRemoving = arg_count( &Sampler::Sample ) > 2;
+
 			int32_t			count		= context->yh - context->yl;
 
 			// Framebuffer destination address.
@@ -390,15 +392,24 @@ namespace DrawColumn
 			pixel_t*		dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
 
 			// Determine scaling, which is the only mapping to be done.
-			rend_fixed_t	fracstep	= context->iscale;
+			rend_fixed_t&	fracstep	= context->iscale;
 			rend_fixed_t	frac		= context->texturemid +  ( context->yl - centery ) * fracstep;
+			if constexpr( LimitRemoving )
+			{
+				// We're not doing a mask operation, so we need to bring the frac value to within 0 -> sourceheight
+				// range. We should also realisitcally be able to do this once elsewhere instead of all the time,
+				// the frac calculation is only important when clipping to screenspace. A better way of calculating
+				// it should be possible.
+				frac %= context->sourceheight;
+				if( frac < 0 ) frac += context->sourceheight;
+			}
 
 			// Inner loop that does the actual texture mapping,
 			//  e.g. a DDA-lile scaling.
 			// This is as fast as it gets.
 			do 
 			{
-				if constexpr( arg_count( &Sampler::Sample ) == 2 )
+				if constexpr( !LimitRemoving )
 				{
 					*dest = Sampler::Sample( context, frac );
 				}
@@ -410,7 +421,7 @@ namespace DrawColumn
 				++dest;
 				frac += fracstep;
 	
-			} while (count--); 
+			} while (count--);
 		}
 
 		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal< 128 >::Direct >( context ); }
