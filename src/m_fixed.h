@@ -40,7 +40,7 @@ consteval bool IsPowerOf2( size_t val )
 
 consteval bool IsValidBitCount( size_t val )
 {
-	return	val <= _INTEGRAL_MAX_BITS
+	return	val <= ( sizeof( size_t ) * 8 )
 			&& IsPowerOf2( val );
 }
 
