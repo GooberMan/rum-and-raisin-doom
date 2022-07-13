@@ -38,7 +38,7 @@
 
 #define GetPerfCounter( val ) QueryPerformanceCounter( (LARGE_INTEGER*)&val )
 #define GetPerfFreq( val ) QueryPerformanceFrequency( (LARGE_INTEGER*)&val )
-#define DoSleep( val ) SDL_Delay( (Uint32)val )
+#define DoSleep( val ) Sleep( (Uint32)val )
 
 #else // Non-Windows platforms
 
@@ -46,7 +46,7 @@
 
 #define GetPerfCounter( val ) val = SDL_GetPerformanceCounter()
 #define GetPerfFreq( val ) val = SDL_GetPerformanceFrequency()
-#define DoSleep( val ) Sleep( val )
+#define DoSleep( val ) SDL_Delay( val )
 
 #endif // Platform checks
 

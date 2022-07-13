@@ -296,7 +296,7 @@ constexpr auto Lines( rasterregion_t* region )
 	return std::span( region->lines, region->maxx - region->minx + 1 );
 }
 
-constexpr auto Surfaces( planecontext_t* context )
+auto Surfaces( planecontext_t* context )
 {
 	return std::span( context->rasterregions, numflats );
 }

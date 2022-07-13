@@ -73,7 +73,7 @@ extern "C" {
 #define MAXSEGS					( MAXSCREENWIDTH / 2 + 1 )
 
 typedef uint16_t				vpindex_t;
-#define VPINDEX_INVALID			( ~(vpindex_t)0 )
+#define VPINDEX_INVALID			( (vpindex_t)0xFFFF )
 
 typedef pixel_t					lighttable_t;
 

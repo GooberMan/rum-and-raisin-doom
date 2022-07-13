@@ -76,8 +76,8 @@ static int32_t							currthreadview = 0;
 
 static boolean							profilewindowactive = false;
 
-constexpr auto ProfileThreads()			{ return std::span( profilethreads, numprofilethreads ); }
-constexpr auto CurrProfileThread()		{ return profilethreads[ currthreadview ]; }
+auto ProfileThreads()			{ return std::span( profilethreads, numprofilethreads ); }
+auto CurrProfileThread()		{ return profilethreads[ currthreadview ]; }
 
 static void M_ProfileRenderData( profiledata_t& data )
 {
@@ -109,7 +109,7 @@ static void M_ProfileRenderData( profiledata_t& data )
 	rendering = false;
 }
 
-DOOM_C_API static void M_ProfileWindow( const char* itemname, void* data )
+DOOM_C_API void M_ProfileWindow( const char* itemname, void* data )
 {
 	constexpr ImVec2 zero = { 0, 0 };
 	ImVec2 buttonsize;

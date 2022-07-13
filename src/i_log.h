@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 #include "doomtype.h"
+#include <stdarg.h>
 
 enum LogType
 {

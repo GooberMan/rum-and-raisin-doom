@@ -22,8 +22,8 @@ CXX="clang++"
 
 AM_PROG_AR
 CXXFLAGS="$CXXFLAGS -std=c++20 -Wc++20-extensions"
-AC_PROG_CC( [clang gcc])
-AC_PROG_CXX( [clang++ g++])
+AC_PROG_CC( [clang])
+AC_PROG_CXX( [clang++])
 AC_PROG_RANLIB
 AC_CHECK_PROG(HAVE_PYTHON, python, true, false)
 
@@ -32,11 +32,8 @@ OPT_LEVEL=2
 # If this is gcc, we have some options we'd like to turn on.  Turn on 
 # optimisation and debugging symbols.
 
-if test "$GCC" = "yes"
-then
-        WARNINGS="-Wall -Wdeclaration-after-statement -Wredundant-decls"
-        CFLAGS="-O$OPT_LEVEL -g $WARNINGS $orig_CFLAGS"
-fi
+WARNINGS="-Wall -Wdeclaration-after-statement -Wredundant-decls"
+CFLAGS="-O$OPT_LEVEL -g $WARNINGS $orig_CFLAGS"
 
 PKG_CHECK_MODULES(SDL, [sdl2 >= 2.0.1])
 PKG_CHECK_MODULES(SDLMIXER, [SDL2_mixer >= 2.0.0])
