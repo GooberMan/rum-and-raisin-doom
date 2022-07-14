@@ -45,6 +45,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="include-ext.props" />
+    <Import Project="include-textscreen.props" />
     <Import Project="include-sdl.props" />
     <Import Project="profiling-build.props" Condition="'$(Configuration)'=='Debug' OR '$(Configuration)'=='Profiling'" />
   </ImportGroup>
