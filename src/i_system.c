@@ -42,6 +42,7 @@
 #include "m_misc.h"
 #include "i_joystick.h"
 #include "i_sound.h"
+#include "i_terminal.h"
 #include "i_timer.h"
 #include "i_video.h"
 
@@ -153,42 +154,24 @@ byte *I_ZoneBase (int *size)
 
     zonemem = AutoAllocMemory(size, default_ram, min_ram);
 
-    printf("zone memory: %p, %x allocated for zone\n", 
-           zonemem, *size);
+	I_TerminalPrintf( Log_Startup,	"zone memory: %p, %x allocated for zone\n", 
+									zonemem, *size);
 
     return zonemem;
 }
 
-void I_PrintBanner(const char *msg)
-{
-    int i;
-    int spaces = 35 - (strlen(msg) / 2);
-
-    for (i=0; i<spaces; ++i)
-        putchar(' ');
-
-    puts(msg);
-}
-
 void I_PrintDivider(void)
 {
-    int i;
-
-    for (i=0; i<75; ++i)
-    {
-        putchar('=');
-    }
-
-    putchar('\n');
+	I_TerminalPrintf( Log_None, "===========================================================================\n" );
 }
 
 void I_PrintStartupBanner(const char *gamedescription)
 {
     I_PrintDivider();
-    I_PrintBanner(gamedescription);
+    I_TerminalPrintf( Log_Startup, gamedescription );
     I_PrintDivider();
     
-    printf(
+    I_TerminalPrintf( Log_System,
     " " PACKAGE_NAME " is free software, covered by the GNU General Public\n"
     " License.  There is NO warranty; not even for MERCHANTABILITY or FITNESS\n"
     " FOR A PARTICULAR PURPOSE. You are welcome to change and distribute\n"

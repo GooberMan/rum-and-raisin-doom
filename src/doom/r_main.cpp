@@ -1609,6 +1609,11 @@ void R_SetupFrame (player_t* player)
 		fixedcolormap = 0;
 	}
 
+	for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+	{
+		renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
+	}
+
 	if( renderloadbalancing && !renderrebalancecontexts )
 	{
 		lastframetime = 0;
@@ -1674,7 +1679,6 @@ void R_SetupFrame (player_t* player)
 		desiredwidth = viewwidth / numusablerendercontexts;
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 		{
-			renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
 			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
 			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, viewwidth );

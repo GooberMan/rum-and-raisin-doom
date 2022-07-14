@@ -74,10 +74,6 @@ void I_BindVariables(void);
 
 void I_PrintStartupBanner(const char *gamedescription);
 
-// Print a centered text banner displaying the given string.
-
-void I_PrintBanner(const char *text);
-
 // Print a dividing line for startup banners.
 
 void I_PrintDivider(void);
