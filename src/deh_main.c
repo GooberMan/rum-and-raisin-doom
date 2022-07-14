@@ -22,7 +22,9 @@
 
 #include "doomtype.h"
 #include "i_glob.h"
+#include "i_terminal.h"
 #include "i_system.h"
+#include "i_terminal.h"
 #include "d_iwad.h"
 #include "m_argv.h"
 #include "w_wad.h"
@@ -386,7 +388,7 @@ int DEH_LoadFile(const char *filename)
     deh_allow_long_cheats = false;
     deh_allow_extended_strings = false;
 
-    printf(" loading %s\n", filename);
+    I_TerminalPrintf( Log_Startup, " loading %s\n", filename);
 
     context = DEH_OpenFile(filename);
 
@@ -423,7 +425,7 @@ void DEH_AutoLoadPatches(const char *path)
         {
             break;
         }
-        printf(" [autoload]");
+        I_TerminalPrintf( Log_Startup, " [autoload]");
         DEH_LoadFile(filename);
     }
 

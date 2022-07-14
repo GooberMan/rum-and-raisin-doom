@@ -98,7 +98,7 @@ boolean DEH_SetMapping(deh_context_t *context, deh_mapping_t *mapping,
 
     location = GetStructField(structptr, mapping, entry);
 
-    //       printf("Setting %p::%s to %i (%i bytes)\n",
+    //       I_TerminalPrintf("Setting %p::%s to %i (%i bytes)\n",
     //               structptr, name, value, entry->size);
 
     // Set field content based on its type:

@@ -25,6 +25,7 @@
 #include "m_misc.h"
 
 #include "i_log.h"
+#include "i_terminal.h"
 
 #include "z_zone.h"
 
@@ -376,8 +377,8 @@ static const char *FormatStringReplacement(const char *s)
 
     if (!ValidFormatReplacement(s, repl))
     {
-        printf("WARNING: Unsafe dehacked replacement provided for "
-               "printf format string: %s\n", s);
+		I_TerminalPrintf( Log_Warning,	"WARNING: Unsafe dehacked replacement provided for "
+										"printf format string: %s\n", s );
 
         return s;
     }
@@ -396,9 +397,8 @@ void DEH_printf(const char *fmt, ...)
 
     va_start(args, fmt);
 
-    vprintf(repl, args);
 	// Tiny hack, these are only used for startup messages
-	I_LogAddEntryVAList( Log_Startup, repl, args );
+	I_TerminalVPrintf( Log_Startup, repl, args );
 
     va_end(args);
 }
