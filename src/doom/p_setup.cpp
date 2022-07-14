@@ -69,30 +69,6 @@ static int32_t loading_code = LoadingCode::RnRVanilla;
 #include <type_traits>
 #include <vector>
 
-// Support for something as simple as iota is incomplete in Clang hahaha
-struct iota
-{
-	struct iterator
-	{
-		int32_t val;
-		constexpr int32_t operator*() noexcept			{ return val; }
-		bool INLINE operator!=( const iterator& rhs ) 	{ return val != rhs.val; }
-		INLINE iterator& operator++()					{ ++val; return *this; }
-	};
-
-	iota( int32_t b, int32_t e )
-	{
-		_begin = { b };
-		_end = { e };
-	}
-
-	constexpr iterator begin() noexcept { return _begin; }
-	constexpr iterator end() noexcept { return _end; }
-
-	iterator _begin;
-	iterator _end;
-};
-
 struct ReadVal
 {
 	template< typename _ty >
