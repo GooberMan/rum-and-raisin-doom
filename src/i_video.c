@@ -73,7 +73,7 @@ static SDL_GLContext glcontext = NULL;
 
 // Window title
 
-static const char *window_title = "";
+static const char *window_title = NULL;
 
 // These are (1) the 320x200x8 paletted buffer that we draw to (i.e. the one
 // that holds I_VideoBuffer), (2) the 320x200x32 RGBA intermediate buffer that
@@ -93,15 +93,17 @@ pixel_t *I_VideoBuffer = NULL;
 
 typedef struct renderbuffer_s
 {
-	vbuffer_t		screenbuffer;
-	SDL_Surface*	nativesurface;
-	SDL_Rect		validregion;
+	vbuffer_t				screenbuffer;
+	SDL_Surface*			nativesurface;
+	SDL_Rect				validregion;
 } renderbuffer_t;
 
 renderbuffer_t*		renderbuffers = NULL;
 int32_t				renderbuffercount = 0;
 int32_t				renderbufferswidth = 0;
 int32_t				renderbuffersheight = 0;
+
+ImGuiContext*		imgui_context = NULL;
 
 static SDL_Rect blit_rect = {
     0,
@@ -665,7 +667,7 @@ static void LimitTextureSize(int *w_upscale, int *h_upscale)
     }
 }
 
-static void CreateUpscaledTexture(boolean force)
+static void CreateUpscaledTexture( )
 {
     int w, h;
     int h_upscale, w_upscale;
@@ -750,7 +752,7 @@ static void CreateUpscaledTexture(boolean force)
 // I_FinishUpdate
 //
 
-void I_FinishUpdate (void)
+void I_FinishUpdate( vbuffer_t* activebuffer )
 {
 #if FPS_DOTS_SUPPORTED
 	static uint32_t lasttic;
@@ -762,6 +764,11 @@ void I_FinishUpdate (void)
 
 	renderbuffer_t* curr = renderbuffers;
 	renderbuffer_t* end = renderbuffers + renderbuffercount;
+
+	if( activebuffer == NULL )
+	{
+		activebuffer = &renderbuffers->screenbuffer;
+	}
 
     if (!initialized)
         return;
@@ -787,7 +794,7 @@ void I_FinishUpdate (void)
 				queued_window_width = window_width;
 				queued_window_height = window_height;
             }
-            CreateUpscaledTexture(false);
+            CreateUpscaledTexture();
             need_resize = false;
             palette_to_set = true;
         }
@@ -828,8 +835,7 @@ void I_FinishUpdate (void)
     // Draw disk icon before blit, if necessary.
     V_DrawDiskIcon();
 
-
-	if ( palette_to_set && vga_porch_flash)
+	if ( palette_to_set && vga_porch_flash )
 	{
 		// "flash" the pillars/letterboxes with palette changes, emulating
 		// VGA "porch" behaviour (GitHub issue #832)
@@ -837,6 +843,18 @@ void I_FinishUpdate (void)
 			palette[0].b, SDL_ALPHA_OPAQUE);
 	}
 	
+	// Important: Set the "logical size" of the rendering context. At the same
+	// time this also defines the aspect ratio that is preserved while scaling
+	// and stretching the texture into the window.
+	if( activebuffer->mode == VB_Transposed )
+	{
+		SDL_RenderSetLogicalSize( renderer, activebuffer->height, activebuffer->width * activebuffer->verticalscale );
+	}
+	else
+	{
+		SDL_RenderSetLogicalSize( renderer, activebuffer->width, activebuffer->height * activebuffer->verticalscale );
+	}
+
 	while( curr != end )
 	{
 		if (palette_to_set)
@@ -876,11 +894,28 @@ void I_FinishUpdate (void)
 
 	if( USE_IMGUI && !dashboardactive )
 	{
-		// Better transormation courtesy of Altazimuth
-		Target.x = (render_width - actualheight) / 2;
-		Target.y = (actualheight - render_width) / 2;
-		Target.w = actualheight;
-		Target.h = render_width;
+		if( activebuffer->mode == VB_Transposed )
+		{
+			int32_t activewidth = activebuffer->height;
+			int32_t activeheight = activebuffer->width * activebuffer->verticalscale;
+
+			// Better transormation courtesy of Altazimuth
+			Target.x = (activewidth - activeheight) / 2;
+			Target.y = (activeheight - activewidth) / 2;
+			Target.w = activeheight;
+			Target.h = activewidth;
+		}
+		else
+		{
+			int32_t activewidth = activebuffer->width;
+			int32_t activeheight = activebuffer->height * activebuffer->verticalscale;
+
+			// Better transormation courtesy of Altazimuth
+			Target.x = ( activeheight - activewidth ) / 2;
+			Target.y = ( activewidth - activeheight ) / 2;
+			Target.w = activewidth;
+			Target.h = activeheight;
+		}
 
 		SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 	}
@@ -985,6 +1020,10 @@ int I_GetPaletteIndex(int r, int g, int b)
 void I_SetWindowTitle(const char *title)
 {
     window_title = title;
+	if( screen != NULL )
+	{
+		I_InitWindowTitle();
+	}
 }
 
 //
@@ -996,9 +1035,16 @@ void I_InitWindowTitle(void)
 {
     char *buf;
 
-    buf = M_StringJoin(window_title, " - ", EDITION_STRING, NULL);
-    SDL_SetWindowTitle(screen, buf);
-    free(buf);
+	if( window_title != NULL )
+	{
+		buf = M_StringJoin(window_title, " - ", EDITION_STRING, NULL);
+		SDL_SetWindowTitle(screen, buf);
+		free(buf);
+	}
+	else
+	{
+		SDL_SetWindowTitle( screen, EDITION_STRING );
+	}
 }
 
 // Set the application icon
@@ -1329,6 +1375,8 @@ static void I_SetupDearImGui(void)
 {
 	int32_t retval;
 
+	imgui_context = igCreateContext( NULL );
+
 	retval = CImGui_ImplSDL2_InitForOpenGL( screen, glcontext );
 	if ( !retval )
 	{
@@ -1456,6 +1504,8 @@ static void SetVideoMode(void)
 		I_Error( "SDL not initialised in OpenGL mode" );
 	}
 
+	CreateUpscaledTexture();
+
 	I_SetupGLAD();
 
     // Force integer scales for resolution-independent rendering.
@@ -1479,11 +1529,20 @@ static void I_DeinitRenderBuffers( void )
 	renderbuffer_t* curr = renderbuffers;
 	renderbuffer_t* end = renderbuffers + renderbuffercount;
 
-	if( renderbuffers != NULL )
+	if( texture != NULL )
 	{
 		SDL_DestroyTexture( texture );
+		texture = NULL;
+	}
 
+	if( argbbuffer != NULL )
+	{
 		SDL_FreeSurface( argbbuffer );
+		argbbuffer = NULL;
+	}
+
+	if( renderbuffers != NULL )
+	{
 		while( curr != end )
 		{
 			SDL_FreeSurface( curr->nativesurface );
@@ -1520,7 +1579,7 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 
 		SDL_PixelFormatEnumToMasks( pixel_format, &bpp, &rmask, &gmask, &bmask, &amask );
 
-		renderbuffers = curr = Z_Malloc( sizeof( renderbuffer_t) * numbuffers, PU_STATIC, NULL );
+		renderbuffers = curr = Z_Malloc( sizeof( renderbuffer_t ) * numbuffers, PU_STATIC, NULL );
 		renderbuffercount = numbuffers;
 		end = curr + numbuffers;
 
@@ -1530,11 +1589,15 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 			curr->nativesurface = SDL_CreateRGBSurface( 0, height, width, 8, 0, 0, 0, 0 );
 			SDL_FillRect( curr->nativesurface, NULL, 0 );
 
+			curr->screenbuffer.data8bithandle = curr->nativesurface;
 			curr->screenbuffer.data = curr->nativesurface->pixels;
+			curr->screenbuffer.user = NULL;
 			curr->screenbuffer.width = height;
 			curr->screenbuffer.height = width;
 			curr->screenbuffer.pitch = curr->nativesurface->pitch;
 			curr->screenbuffer.pixel_size_bytes = 1;
+			curr->screenbuffer.mode = VB_Transposed;
+			curr->screenbuffer.verticalscale = 1.2f;
 			curr->screenbuffer.magic_value = vbuffer_magic;
 
 			SDL_SetPaletteColors( curr->nativesurface->format->palette, palette, 0, 256 );
@@ -1551,24 +1614,6 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 		argbbuffer = SDL_CreateRGBSurface( 0, height, width, bpp, rmask, gmask, bmask, amask );
 		SDL_FillRect( argbbuffer, NULL, 0 );
 
-		queued_render_height = render_height = blit_rect.w = height;
-		queued_render_width = render_width = blit_rect.h = width;
-
-		if (aspect_ratio_correct == 1)
-		{
-			actualheight = ( render_height * 1200 / 1000 );
-		}
-		else
-		{
-			actualheight = render_height;
-		}
-
-		// Set the scaling quality for rendering the intermediate texture into
-		// the upscaled texture to "nearest", which is gritty and pixelated and
-		// resembles software scaling pretty well.
-
-		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-
 		// Create the intermediate texture that the RGBA surface gets loaded into.
 		// The SDL_TEXTUREACCESS_STREAMING flag means that this texture's content
 		// is going to change frequently.
@@ -1577,17 +1622,6 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 									pixel_format,
 									SDL_TEXTUREACCESS_STREAMING,
 									render_height, render_width);
-
-		CreateUpscaledTexture( true );
-
-		// Important: Set the "logical size" of the rendering context. At the same
-		// time this also defines the aspect ratio that is preserved while scaling
-		// and stretching the texture into the window.
-
-		SDL_RenderSetLogicalSize(renderer,
-								render_width,
-								actualheight);
-
 
 		// REMOVE THIS ANCIENT CODE ALREADY JEEBUS
 
@@ -1618,17 +1652,16 @@ void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end )
 	renderbuffers[ index ].validregion.h = end - begin;
 }
 
-void I_InitGraphics( int32_t numbuffers )
+void I_InitGraphics( void )
 {
+	char *env;
+	SDL_Event dummy;
+
 	queued_window_width = window_width;
 	queued_window_height = window_height;
 	queued_fullscreen = fullscreen;
 	queued_render_width = render_width;
 	queued_render_height = render_height;
-
-    SDL_Event dummy;
-    byte *doompal;
-    char *env;
 
     // Pass through the XSCREENSAVER_WINDOW environment variable to 
     // SDL_WINDOWID, to embed the SDL window into the Xscreensaver
@@ -1668,7 +1701,7 @@ void I_InitGraphics( int32_t numbuffers )
 
 	if (aspect_ratio_correct == 1)
 	{
-		actualheight = ( render_height * 1200 / 1000 );
+		actualheight = ( render_height * 1.2f );
 	}
 	else
 	{
@@ -1679,12 +1712,24 @@ void I_InitGraphics( int32_t numbuffers )
     // on configuration.
     SetVideoMode();
 
-    // Set the palette
+	if ( aspect_ratio_correct == 1 )
+	{
+		actualheight = ( render_height * 1200 / 1000 );
+	}
+	else
+	{
+		actualheight = render_height;
+	}
 
-    doompal = W_CacheLumpName(DEH_String("PLAYPAL"), PU_CACHE);
-    I_SetPalette(doompal);
+	// Important: Set the "logical size" of the rendering context. At the same
+	// time this also defines the aspect ratio that is preserved while scaling
+	// and stretching the texture into the window.
+	SDL_RenderSetLogicalSize( renderer, render_width, actualheight );
 
-	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
+	// Set the scaling quality for rendering the intermediate texture into
+	// the upscaled texture to "nearest", which is gritty and pixelated and
+	// resembles software scaling pretty well.
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
     // SDL2-TODO UpdateFocus();
     UpdateGrab();
@@ -1701,18 +1746,28 @@ void I_InitGraphics( int32_t numbuffers )
 
     // clear out any events waiting at the start and center the mouse
   
-    while (SDL_PollEvent(&dummy))
+    while ( SDL_PollEvent( &dummy ) )
 	{
 #if USE_IMGUI
 		CImGui_ImplSDL2_ProcessEvent( &dummy );
 #endif // USE_IMGUI
 	}
 
-    initialized = true;
-
-    // Call I_ShutdownGraphics on quit
-
+	// Call I_ShutdownGraphics on quit
     I_AtExit(I_ShutdownGraphics, true);
+
+    initialized = true;
+}
+
+void I_InitBuffers( int32_t numbuffers )
+{
+    byte *doompal;
+    // Set the palette
+
+    doompal = W_CacheLumpName(DEH_String("PLAYPAL"), PU_CACHE);
+    I_SetPalette(doompal);
+
+	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
 }
 
 //
@@ -1723,7 +1778,22 @@ void I_StartFrame (void)
 	if( queued_render_width != render_width
 		|| queued_render_height != render_height )
 	{
+		render_height = blit_rect.w = queued_render_height;
+		render_width = blit_rect.h = queued_render_width;
+
+		if ( aspect_ratio_correct == 1 )
+		{
+			actualheight = ( render_height * 1200 / 1000 );
+		}
+		else
+		{
+			actualheight = render_height;
+		}
+
 		I_RefreshRenderBuffers( renderbuffercount, queued_render_width, queued_render_height );
+
+		CreateUpscaledTexture();
+
 	}
 
 	if( queued_window_width != window_width

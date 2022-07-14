@@ -22,6 +22,7 @@
 #define __I_VIDEO__
 
 #include "doomtype.h"
+#include "i_vbuffer.h"
 
 // Screen width and height.
 // Every compiler will do literal calculations at compile time these days, so let's be always correct about it.
@@ -50,26 +51,11 @@
 
 typedef boolean (*grabmouse_callback_t)(void);
 
-// TODO: Should align 16
-typedef struct vbuffer_s
-{
-	pixel_t*	data;
-	int32_t		width;
-	int32_t		height;
-	int32_t		pitch;
-	int32_t		pixel_size_bytes;
-	int32_t		magic_value;
-} vbuffer_t;
-
-enum
-{
-	vbuffer_magic = 0x7ac71e55,
-};
-
 // Called by D_DoomMain,
 // determines the hardware configuration
 // and sets up the video mode
-void I_InitGraphics ( int32_t numbuffers );
+void I_InitGraphics( void );
+void I_InitBuffers( int32_t numbuffers );
 
 vbuffer_t* I_GetRenderBuffer( int32_t index );
 void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );
@@ -87,7 +73,7 @@ void I_SetPalette (byte* palette);
 int I_GetPaletteIndex(int r, int g, int b);
 
 void I_UpdateNoBlit (void);
-void I_FinishUpdate (void);
+void I_FinishUpdate( vbuffer_t* activebuffer );
 
 void I_ReadScreen (pixel_t* scr);
 
