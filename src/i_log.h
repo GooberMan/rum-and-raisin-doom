@@ -25,8 +25,9 @@ extern "C" {
 #include "doomtype.h"
 #include <stdarg.h>
 
-enum LogType
+typedef enum logtype_e
 {
+	Log_None,
 	Log_Normal,
 	Log_System,
 	Log_Startup,
@@ -36,7 +37,7 @@ enum LogType
 	Log_Error,
 
 	Log_Max
-};
+} logtype_t;
 
 void			I_LogAddEntry( int32_t type, const char* message );
 void			I_LogAddEntryVAList( int32_t type, const char* message, va_list args );

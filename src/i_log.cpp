@@ -14,6 +14,8 @@
 // DESCRIPTION: Log library. Wraps some STL containers.
 //
 
+#include "i_log.h"
+
 extern "C"
 {
 	#include "z_zone.h"
@@ -62,12 +64,15 @@ typedef struct logentry_s
 
 static LogVector< logentry_t >	logentries;
 
-extern "C" {
-
 #define BUFFER_LENGTH 1024
 
-void I_LogAddEntry( int32_t type, const char* message )
+DOOM_C_API void I_LogAddEntry( int32_t type, const char* message )
 {
+	if( type == Log_None )
+	{
+		return;
+	}
+
 	if( logentries.capacity() == logentries.size() )
 	{
 		logentries.reserve( logentries.capacity() + 1024 );
@@ -76,7 +81,7 @@ void I_LogAddEntry( int32_t type, const char* message )
 	logentries.push_back( logentry_t( type, message ) );
 }
 
-void I_LogAddEntryVAList( int32_t type, const char* message, va_list args )
+DOOM_C_API void I_LogAddEntryVAList( int32_t type, const char* message, va_list args )
 {
 	char buffer[ 1024 ];
 	buffer[ 0 ] = 0;
@@ -84,7 +89,7 @@ void I_LogAddEntryVAList( int32_t type, const char* message, va_list args )
 	I_LogAddEntry( type, buffer );
 }
 
-void I_LogAddEntryVar( int32_t type, const char* message, ... )
+DOOM_C_API void I_LogAddEntryVar( int32_t type, const char* message, ... )
 {
 	va_list args;
 	va_start( args, message );
@@ -92,24 +97,22 @@ void I_LogAddEntryVar( int32_t type, const char* message, ... )
 	va_end( args );
 }
 
-size_t I_LogNumEntries()
+DOOM_C_API size_t I_LogNumEntries()
 {
 	return logentries.size();
 }
 
-const char* I_LogGetEntryText( size_t index )
+DOOM_C_API const char* I_LogGetEntryText( size_t index )
 {
 	return logentries[ index ].message.c_str();
 }
 
-int32_t I_LogGetEntryType( size_t index )
+DOOM_C_API int32_t I_LogGetEntryType( size_t index )
 {
 	return logentries[ index ].type;
 }
 
-const char* I_LogGetTimestamp( size_t index )
+DOOM_C_API const char* I_LogGetTimestamp( size_t index )
 {
 	return logentries[ index ].timestring.c_str();
-}
-
 }
