@@ -94,7 +94,6 @@ pixel_t *I_VideoBuffer = NULL;
 typedef struct renderbuffer_s
 {
 	vbuffer_t				screenbuffer;
-	SDL_Surface*			nativesurface;
 	SDL_Rect				validregion;
 } renderbuffer_t;
 
@@ -725,12 +724,6 @@ static void CreateUpscaledTexture( )
     h_upscale_old = h_upscale;
     w_upscale_old = w_upscale;
 
-    // Set the scaling quality for rendering the upscaled texture to "linear",
-    // which looks much softer and smoother than "nearest" but does a better
-    // job at downscaling from the upscaled texture to screen.
-
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-
     new_texture = SDL_CreateTexture(renderer,
                                 pixel_format,
                                 SDL_TEXTUREACCESS_TARGET,
@@ -835,6 +828,12 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
     // Draw disk icon before blit, if necessary.
     V_DrawDiskIcon();
 
+    // Set the scaling quality for rendering the upscaled texture to "linear",
+    // which looks much softer and smoother than "nearest" but does a better
+    // job at downscaling from the upscaled texture to screen.
+
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+
 	if ( palette_to_set && vga_porch_flash )
 	{
 		// "flash" the pillars/letterboxes with palette changes, emulating
@@ -859,7 +858,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 	{
 		if (palette_to_set)
 		{
-			SDL_SetPaletteColors( curr->nativesurface->format->palette, palette, 0, 256 );
+			SDL_SetPaletteColors( curr->screenbuffer.data8bithandle->format->palette, palette, 0, 256 );
 		}
 
 		// Blit from the paletted 8-bit screen buffer to the intermediate
@@ -867,7 +866,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
 		if( curr->validregion.h > 0 )
 		{
-			SDL_LowerBlit( curr->nativesurface, &curr->validregion, argbbuffer, &curr->validregion );
+			SDL_LowerBlit( curr->screenbuffer.data8bithandle, &curr->validregion, curr->screenbuffer.dataARGBhandle, &curr->validregion );
 		}
 		++curr;
 	}
@@ -876,7 +875,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
     // Update the intermediate texture with the contents of the RGBA buffer.
 
-    SDL_UpdateTexture(texture, NULL, argbbuffer->pixels, argbbuffer->pitch);
+    SDL_UpdateTexture( activebuffer->datatexture, NULL, activebuffer->dataARGBhandle->pixels, activebuffer->dataARGBhandle->pitch );
 
     // Make sure the pillarboxes are kept clear each frame.
 
@@ -885,8 +884,8 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
     // Render this intermediate texture into the upscaled texture
     // using "nearest" integer scaling.
 
-	SDL_SetRenderTarget(renderer, texture_upscaled);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_SetRenderTarget( renderer, texture_upscaled );
+	SDL_RenderCopy(renderer, activebuffer->datatexture, NULL, NULL);
 
     // Finally, render this upscaled texture to screen using linear scaling.
 
@@ -904,20 +903,14 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 			Target.y = (activeheight - activewidth) / 2;
 			Target.w = activeheight;
 			Target.h = activewidth;
+
+			SDL_RenderCopyEx( renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL );
 		}
 		else
 		{
-			int32_t activewidth = activebuffer->width;
-			int32_t activeheight = activebuffer->height * activebuffer->verticalscale;
-
-			// Better transormation courtesy of Altazimuth
-			Target.x = ( activeheight - activewidth ) / 2;
-			Target.y = ( activewidth - activeheight ) / 2;
-			Target.w = activewidth;
-			Target.h = activeheight;
+			SDL_RenderCopy( renderer, texture_upscaled, NULL, NULL );
 		}
 
-		SDL_RenderCopyEx(renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL);
 	}
 
 	// ImGui time!
@@ -1545,7 +1538,7 @@ static void I_DeinitRenderBuffers( void )
 	{
 		while( curr != end )
 		{
-			SDL_FreeSurface( curr->nativesurface );
+			SDL_FreeSurface( curr->screenbuffer.data8bithandle );
 			++curr;
 		};
 
@@ -1579,36 +1572,6 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 
 		SDL_PixelFormatEnumToMasks( pixel_format, &bpp, &rmask, &gmask, &bmask, &amask );
 
-		renderbuffers = curr = Z_Malloc( sizeof( renderbuffer_t ) * numbuffers, PU_STATIC, NULL );
-		renderbuffercount = numbuffers;
-		end = curr + numbuffers;
-
-		while( curr != end )
-		{
-			// Transposed aw yiss
-			curr->nativesurface = SDL_CreateRGBSurface( 0, height, width, 8, 0, 0, 0, 0 );
-			SDL_FillRect( curr->nativesurface, NULL, 0 );
-
-			curr->screenbuffer.data8bithandle = curr->nativesurface;
-			curr->screenbuffer.data = curr->nativesurface->pixels;
-			curr->screenbuffer.user = NULL;
-			curr->screenbuffer.width = height;
-			curr->screenbuffer.height = width;
-			curr->screenbuffer.pitch = curr->nativesurface->pitch;
-			curr->screenbuffer.pixel_size_bytes = 1;
-			curr->screenbuffer.mode = VB_Transposed;
-			curr->screenbuffer.verticalscale = 1.2f;
-			curr->screenbuffer.magic_value = vbuffer_magic;
-
-			SDL_SetPaletteColors( curr->nativesurface->format->palette, palette, 0, 256 );
-
-			curr->validregion = region;
-
-			++curr;
-		}
-
-		screenbuffer = renderbuffers->nativesurface;
-
 		// Format of argbbuffer must match the screen pixel format because we
 		// import the surface data into the texture.
 		argbbuffer = SDL_CreateRGBSurface( 0, height, width, bpp, rmask, gmask, bmask, amask );
@@ -1622,6 +1585,37 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 									pixel_format,
 									SDL_TEXTUREACCESS_STREAMING,
 									render_height, render_width);
+
+		renderbuffers = curr = Z_Malloc( sizeof( renderbuffer_t ) * numbuffers, PU_STATIC, NULL );
+		renderbuffercount = numbuffers;
+		end = curr + numbuffers;
+
+		while( curr != end )
+		{
+			// Transposed aw yiss
+			curr->screenbuffer.data8bithandle = SDL_CreateRGBSurface( 0, height, width, 8, 0, 0, 0, 0 );
+			SDL_FillRect( curr->screenbuffer.data8bithandle, NULL, 0 );
+
+			curr->screenbuffer.dataARGBhandle = argbbuffer;
+			curr->screenbuffer.datatexture = texture;
+			curr->screenbuffer.data = curr->screenbuffer.data8bithandle->pixels;
+			curr->screenbuffer.user = NULL;
+			curr->screenbuffer.width = height;
+			curr->screenbuffer.height = width;
+			curr->screenbuffer.pitch = curr->screenbuffer.data8bithandle->pitch;
+			curr->screenbuffer.pixel_size_bytes = 1;
+			curr->screenbuffer.mode = VB_Transposed;
+			curr->screenbuffer.verticalscale = 1.2f;
+			curr->screenbuffer.magic_value = vbuffer_magic;
+
+			SDL_SetPaletteColors( curr->screenbuffer.data8bithandle->format->palette, palette, 0, 256 );
+
+			curr->validregion = region;
+
+			++curr;
+		}
+
+		screenbuffer = renderbuffers->screenbuffer.data8bithandle;
 
 		// REMOVE THIS ANCIENT CODE ALREADY JEEBUS
 
@@ -1651,6 +1645,17 @@ void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end )
 	renderbuffers[ index ].validregion.y = begin;
 	renderbuffers[ index ].validregion.h = end - begin;
 }
+
+SDL_Window* I_GetWindow( void )
+{
+	return screen;
+}
+
+SDL_Renderer* I_GetRenderer( void )
+{
+	return renderer;
+}
+
 
 void I_InitGraphics( void )
 {

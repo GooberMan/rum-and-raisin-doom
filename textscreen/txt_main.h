@@ -136,7 +136,7 @@ typedef enum
 
 // Initialize the screen
 // Returns 1 if successful, 0 if failed.
-int TXT_InitForBuffer( vbuffer_t* outputbuffer );
+int TXT_InitForBuffer( vbuffer_t* outputbuffer, SDL_Window* window, SDL_Renderer* rend );
 int TXT_Init(void);
 
 // Shut down text mode emulation

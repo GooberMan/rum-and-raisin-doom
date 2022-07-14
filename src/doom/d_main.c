@@ -1272,7 +1272,7 @@ void PrintGameVersion(void)
 
 	if( remove_limits )
 	{
-		I_TerminalPrintf( Log_Startup, "Running in limit-removing mode." );
+		I_TerminalPrintf( Log_Startup, "Running in limit-removing mode.\n" );
 	}
 }
 
@@ -1415,12 +1415,12 @@ void D_DoomMain (void)
 	I_SetWindowTitle(gamedescription);
 	I_GraphicsCheckCommandLine();
 	I_InitGraphics();
+	M_InitDashboard();
 	I_TerminalInit();
-	//I_TerminalSetMode( TM_ImmediateRender );
+	I_TerminalSetMode( TM_ImmediateRender );
 	I_TerminalPrintBanner( Log_Startup, PACKAGE_STRING, TXT_COLOR_YELLOW, TXT_COLOR_GREEN );
 	DEH_printf( "M_LoadDefaults: Load system defaults.\n" );
 
-	M_InitDashboard();
 	M_ProfileInit();
 	M_ProfileThreadInit( "Main" );
 

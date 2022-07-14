@@ -24,6 +24,7 @@
 #include "doomtype.h"
 #include "m_fixed.h"
 #include "r_main.h"
+#include "i_terminal.h"
 
 extern "C"
 {
@@ -1486,21 +1487,21 @@ void R_Init (void)
 	R_InitColFuncs();
 
     R_InitData ();
-    printf (".");
+    I_TerminalPrintf( Log_None, "." );
     R_InitPointToAngle ();
-    printf (".");
+    I_TerminalPrintf( Log_None, "." );
     R_InitTables ();
     // viewwidth / viewheight / detailLevel are set by the defaults
-    printf (".");
+    I_TerminalPrintf( Log_None, "." );
 
     R_SetViewSize (screenblocks, detailLevel);
     R_InitPlanes ();
-    printf (".");
+    I_TerminalPrintf( Log_None, "." );
     R_InitLightTables ();
-    printf (".");
+    I_TerminalPrintf( Log_None, "." );
     R_InitSkyMap ();
     R_InitTranslationTables ();
-    printf (".");
+    I_TerminalPrintf( Log_None, "." );
 
 	renderscratchsize = 16 * 1024 * 1024;
 	renderscratch = (byte*)Z_Malloc( (int32_t)renderscratchsize, PU_STATIC, nullptr );

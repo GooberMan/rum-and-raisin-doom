@@ -36,7 +36,7 @@ static terminalmode_t terminalmode = TM_None;
 
 DOOM_C_API void I_TerminalInit( void )
 {
-	TXT_InitForBuffer( &terminalbuffer );
+	TXT_InitForBuffer( &terminalbuffer, I_GetWindow(), I_GetRenderer() );
 	terminalmode = TM_StandardRender;
 }
 
@@ -132,6 +132,7 @@ DOOM_C_API void I_TerminalRender( void )
 	if( terminalmode == TM_ImmediateRender )
 	{
 		I_StartFrame();
-		I_FinishUpdate( &terminalbuffer );
+		//I_FinishUpdate( &terminalbuffer );
+		TXT_UpdateScreen();
 	}
 }

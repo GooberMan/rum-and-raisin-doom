@@ -16,6 +16,7 @@
 //
 
 #include "SDL.h"
+#include "SDL_opengl.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -225,8 +226,11 @@ static void ChooseFont(void)
 //
 // Returns 1 if successful, 0 if an error occurred
 //
-int TXT_InitForBuffer( vbuffer_t* outputbuffer )
+int TXT_InitForBuffer( vbuffer_t* outputbuffer, SDL_Window* window, SDL_Renderer* rend )
 {
+	TXT_SDLWindow = window;
+	renderer = rend;
+
 	font = &normal_font;
 
 	screen_image_w = TXT_SCREEN_W * font->w;
@@ -238,12 +242,26 @@ int TXT_InitForBuffer( vbuffer_t* outputbuffer )
 	SDL_SetPaletteColors(screenbuffer->format->palette, ega_colors, 0, 16);
 	SDL_UnlockSurface(screenbuffer);
 
+	int32_t bpp = 0;
+	uint32_t rmask = 0;
+	uint32_t gmask = 0;
+	uint32_t bmask = 0;
+	uint32_t amask = 0;
+	int32_t pixelformat = SDL_GetWindowPixelFormat( window );
+
+	SDL_PixelFormatEnumToMasks( pixelformat, &bpp, &rmask, &gmask, &bmask, &amask );
+
+	SDL_Surface* argbbuffer = SDL_CreateRGBSurface( 0, screen_image_w, screen_image_h, bpp, rmask, gmask, bmask, amask );
+	SDL_FillRect( argbbuffer, NULL, 0 );
+
+	SDL_Texture* texture = SDL_CreateTexture( rend, pixelformat, SDL_TEXTUREACCESS_STREAMING, screen_image_w, screen_image_h );
+
 	screendata = malloc( TXT_SCREEN_W * TXT_SCREEN_H * 2 );
 	memset( screendata, 0, TXT_SCREEN_W * TXT_SCREEN_H * 2 );
 
 	outputbuffer->data8bithandle	= screenbuffer;
-	outputbuffer->dataARGBhandle	= NULL;
-	outputbuffer->datatexture		= NULL;
+	outputbuffer->dataARGBhandle	= argbbuffer;
+	outputbuffer->datatexture		= texture;
 	outputbuffer->data				= screenbuffer->pixels;
 	outputbuffer->user				= NULL;
 	outputbuffer->width				= screen_image_w;
@@ -251,7 +269,7 @@ int TXT_InitForBuffer( vbuffer_t* outputbuffer )
 	outputbuffer->pitch				= screenbuffer->pitch;
 	outputbuffer->pixel_size_bytes	= 1;
 	outputbuffer->mode				= VB_Normal;
-	outputbuffer->verticalscale		= 2.4f;
+	outputbuffer->verticalscale		= 1.2f;
 	outputbuffer->magic_value		= vbuffer_magic;
 
 	return 1;
@@ -479,7 +497,9 @@ void TXT_UpdateScreen(void)
 
 	TXT_UpdateScreenArea( 0, 0, TXT_SCREEN_W, TXT_SCREEN_H );
 
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+	SDL_RenderSetLogicalSize( renderer, TXT_SCREEN_W * font->w, TXT_SCREEN_H * font->h * 1.2f );
+
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
     // TODO: This is currently creating a new texture every time we render
     // the screen; find a more efficient way to do it.
@@ -487,7 +507,7 @@ void TXT_UpdateScreen(void)
 
     SDL_RenderClear(renderer);
     GetDestRect(&rect);
-    SDL_RenderCopy(renderer, screentx, NULL, &rect);
+    SDL_RenderCopy(renderer, screentx, NULL, NULL);
     SDL_RenderPresent(renderer);
 
     SDL_DestroyTexture(screentx);

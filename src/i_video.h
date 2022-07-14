@@ -60,6 +60,9 @@ void I_InitBuffers( int32_t numbuffers );
 vbuffer_t* I_GetRenderBuffer( int32_t index );
 void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );
 
+SDL_Window* I_GetWindow( void );
+SDL_Renderer* I_GetRenderer( void );
+
 void I_GraphicsCheckCommandLine(void);
 
 void I_ShutdownGraphics(void);

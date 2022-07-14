@@ -168,7 +168,7 @@ void I_PrintDivider(void)
 void I_PrintStartupBanner(const char *gamedescription)
 {
     I_PrintDivider();
-    I_TerminalPrintf( Log_Startup, gamedescription );
+    I_TerminalPrintf( Log_Startup, "%s\n", gamedescription );
     I_PrintDivider();
     
     I_TerminalPrintf( Log_System,

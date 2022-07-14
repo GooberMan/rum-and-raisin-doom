@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "deh_main.h"
+#include "i_terminal.h"
 #include "i_swap.h"
 #include "i_system.h"
 #include "z_zone.h"
@@ -395,7 +396,7 @@ void R_GenerateLookup (int texnum)
 	{
 		if (!patchcount[x])
 		{
-			printf ("R_GenerateLookup: column without a patch (%s)\n",
+			I_TerminalPrintf( Log_Warning, "R_GenerateLookup: column without a patch (%s)\n",
 				texture->name);
 			return;
 		}
@@ -617,18 +618,18 @@ void R_InitTextures (void)
 
     if (I_ConsoleStdout())
     {
-        printf("[");
+        I_TerminalPrintf( Log_None, "[" );
         for (i = 0; i < temp3 + 9; i++)
-            printf(" ");
-        printf("]");
+            I_TerminalPrintf( Log_None, " ");
+        I_TerminalPrintf( Log_None, "]");
         for (i = 0; i < temp3 + 10; i++)
-            printf("\b");
+            I_TerminalPrintf( Log_None, "\b");
     }
 	
     for (i=0 ; i<numtextures ; i++, directory++)
     {
 	if (!(i&63))
-	    printf (".");
+		I_TerminalPrintf( Log_None, "." );
 
 	if (i == numtextures1)
 	{
@@ -751,7 +752,7 @@ void R_InitSpriteLumps (void)
     for (i=0 ; i< numspritelumps ; i++)
     {
 		if (!(i&63))
-			printf (".");
+			I_TerminalPrintf( Log_None, "." );
 
 		patch = W_CacheLumpNum (firstspritelump+i, PU_STATIC);
 		spritewidth[i] = IntToFixed( SHORT(patch->width) );

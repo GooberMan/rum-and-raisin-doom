@@ -39,7 +39,8 @@ void I_Endoom(byte *endoom_data)
 
     // Set up text mode screen
 
-    TXT_Init();
+	// Already set up by the terminal
+    //TXT_Init();
 
     TXT_SetWindowTitle(PACKAGE_STRING);
     // SDL2-TODO I_InitWindowTitle();
