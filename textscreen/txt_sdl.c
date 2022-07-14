@@ -225,6 +225,37 @@ static void ChooseFont(void)
 //
 // Returns 1 if successful, 0 if an error occurred
 //
+int TXT_InitForBuffer( vbuffer_t* outputbuffer )
+{
+	font = &normal_font;
+
+	screen_image_w = TXT_SCREEN_W * font->w;
+	screen_image_h = TXT_SCREEN_H * font->h;
+
+	screenbuffer = SDL_CreateRGBSurface( 0, screen_image_w, screen_image_h, 8, 0, 0, 0, 0 );
+
+	SDL_LockSurface(screenbuffer);
+	SDL_SetPaletteColors(screenbuffer->format->palette, ega_colors, 0, 16);
+	SDL_UnlockSurface(screenbuffer);
+
+	screendata = malloc( TXT_SCREEN_W * TXT_SCREEN_H * 2 );
+	memset( screendata, 0, TXT_SCREEN_W * TXT_SCREEN_H * 2 );
+
+	outputbuffer->data8bithandle	= screenbuffer;
+	outputbuffer->dataARGBhandle	= NULL;
+	outputbuffer->datatexture		= NULL;
+	outputbuffer->data				= screenbuffer->pixels;
+	outputbuffer->user				= NULL;
+	outputbuffer->width				= screen_image_w;
+	outputbuffer->height			= screen_image_h;
+	outputbuffer->pitch				= screenbuffer->pitch;
+	outputbuffer->pixel_size_bytes	= 1;
+	outputbuffer->mode				= VB_Normal;
+	outputbuffer->verticalscale		= 2.4f;
+	outputbuffer->magic_value		= vbuffer_magic;
+
+	return 1;
+}
 
 int TXT_Init(void)
 {
@@ -413,8 +444,6 @@ static void GetDestRect(SDL_Rect *rect)
 
 void TXT_UpdateScreenArea(int x, int y, int w, int h)
 {
-    SDL_Texture *screentx;
-    SDL_Rect rect;
     int x1, y1;
     int x_end;
     int y_end;
@@ -435,6 +464,20 @@ void TXT_UpdateScreenArea(int x, int y, int w, int h)
     }
 
     SDL_UnlockSurface(screenbuffer);
+}
+
+void TXT_UpdateScreenForBuffer( vbuffer_t* buffer )
+{
+	// TODO: Need to wrap all the globals up in to a nice little data structure
+	TXT_UpdateScreenArea( 0, 0, TXT_SCREEN_W, TXT_SCREEN_H );
+}
+
+void TXT_UpdateScreen(void)
+{
+    SDL_Texture *screentx;
+    SDL_Rect rect;
+
+	TXT_UpdateScreenArea( 0, 0, TXT_SCREEN_W, TXT_SCREEN_H );
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
@@ -448,11 +491,6 @@ void TXT_UpdateScreenArea(int x, int y, int w, int h)
     SDL_RenderPresent(renderer);
 
     SDL_DestroyTexture(screentx);
-}
-
-void TXT_UpdateScreen(void)
-{
-    TXT_UpdateScreenArea(0, 0, TXT_SCREEN_W, TXT_SCREEN_H);
 }
 
 void TXT_GetMousePosition(int *x, int *y)

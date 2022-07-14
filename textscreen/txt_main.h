@@ -22,6 +22,7 @@
 // text mode screen API:
 
 #include "txt_sdl.h"
+#include "i_vbuffer.h"
 
 // textscreen key values:
 // Key values are difficult because we have to support multiple conflicting
@@ -135,6 +136,7 @@ typedef enum
 
 // Initialize the screen
 // Returns 1 if successful, 0 if failed.
+int TXT_InitForBuffer( vbuffer_t* outputbuffer );
 int TXT_Init(void);
 
 // Shut down text mode emulation
@@ -148,6 +150,7 @@ void TXT_UpdateScreenArea(int x, int y, int w, int h);
 
 // Update the whole screen
 void TXT_UpdateScreen(void);
+void TXT_UpdateScreenForBuffer( vbuffer_t* buffer );
 
 // Set the RGB value for a particular entry in the color palette:
 void TXT_SetColor(txt_color_t color, int r, int g, int b);
