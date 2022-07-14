@@ -263,6 +263,7 @@ void R_GenerateComposite (int texnum)
 	column_t*			patchcol;
 	int16_t*			collump;
 	uint32_t*			colofs;
+	int32_t				patchy = 0;
 	
 	texture = textures[texnum];
 
@@ -295,10 +296,25 @@ void R_GenerateComposite (int texnum)
 		{
 			patchcol = (column_t *)((byte *)realpatch
 						+ LONG(realpatch->columnofs[x-x1]));
-			R_DrawColumnInCache (patchcol,
-					 block + colofs[x],
-					 patch->originy,
-					 texture->height);
+
+			// This little hack accounts for the fact that
+			// single-patch textures in vanilla with negative
+			// start offsets will actually wrap cromulently
+			// with the column renderer. We need to wrap the
+			// texture ourselves basically.
+			patchy = patch->originy;
+			while( patchy < texture->height )
+			{
+				R_DrawColumnInCache (patchcol,
+						 block + colofs[x],
+						 patchy,
+						 texture->height);
+				if( texture->patchcount > 1 )
+				{
+					break;
+				}
+				patchy += realpatch->height;
+			}
 		}
 						
     }
