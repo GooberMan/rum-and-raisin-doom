@@ -339,6 +339,7 @@ static constexpr themedata_t themes[] =
 
 static constexpr ImU32 logcolours[] =
 {
+	IM_COL32( 0x00, 0x00, 0x00, 0xff ), // Log_None
 	IM_COL32( 0xd6, 0xcb, 0xac, 0xff ), // Log_Normal
 	IM_COL32( 0xa3, 0x98, 0xff, 0xff ), // Log_System
 	IM_COL32( 0xbd, 0xbd, 0xbd, 0xff ), // Log_Startup
@@ -473,7 +474,6 @@ static void M_RenderSeparator( menuentry_t* cat );
 
 extern "C"
 {
-	ImGuiContext*			imgui_context;
 	int32_t					dashboardactive = Dash_Inactive;
 	int32_t					dashboardremappingkey = Remap_None;
 	int32_t					dashboardpausesplaysim = true;
@@ -586,15 +586,12 @@ void M_InitDashboard( void )
 	char themefullpath[ MAXNAMELENGTH + 1 ];
 
 #if USE_IMGUI
-	imgui_context = igCreateContext( NULL );
-
 	igStyleColorsClassic( NULL );
 	memcpy( theme_original, igGetStyle()->Colors, sizeof( theme_original ) );
 	igStyleColorsDark( NULL );
 	memcpy( theme_originaldark, igGetStyle()->Colors, sizeof( theme_originaldark ) );
 	igStyleColorsLight( NULL );
 	memcpy( theme_originallight, igGetStyle()->Colors, sizeof( theme_originallight ) );
-
 
 	memset( entries, 0, sizeof( entries ) );
 #endif // USE_IMGUI
@@ -813,7 +810,7 @@ void M_RenderDashboardLogContents( void )
 		igText( I_LogGetTimestamp( currentry ) );
 		igNextColumn();
 		igPushStyleColorU32( ImGuiCol_Text, LogColours()[ I_LogGetEntryType( currentry ) ] );
-		igText( I_LogGetEntryText( currentry ) );
+		igTextWrapped( I_LogGetEntryText( currentry ) );
 		igPopStyleColor( 1 );
 		igNextColumn();
 	}
