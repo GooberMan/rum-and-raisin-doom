@@ -58,7 +58,9 @@
 #include "i_endoom.h"
 #include "i_input.h"
 #include "i_joystick.h"
+#include "i_log.h"
 #include "i_system.h"
+#include "i_terminal.h"
 #include "i_thread.h"
 #include "i_timer.h"
 #include "i_video.h"
@@ -503,6 +505,9 @@ void D_RunFrame()
 	M_ProfileNewFrame();
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
+	// frame syncronous IO operations
+	I_StartFrame();
+
 	if (wipe)
 	{
 		do
@@ -519,9 +524,6 @@ void D_RunFrame()
 	}
 	else
 	{
-		// frame syncronous IO operations
-		I_StartFrame ();
-
 		// TODO: Callbacks or something
 		if( prev_render_width != render_width || prev_render_height != render_height )
 		{
@@ -548,9 +550,10 @@ void D_RunFrame()
 
 	M_PROFILE_POP( __FUNCTION__ );
 
+	I_TerminalRender();
 	if( dofinishupdate )
 	{
-		I_FinishUpdate ();
+		I_FinishUpdate( NULL );
 	}
 }
 
@@ -559,24 +562,25 @@ void D_RunFrame()
 //
 void D_DoomLoop (void)
 {
-    if (gamevariant == bfgedition &&
-        (demorecording || (gameaction == ga_playdemo) || netgame))
-    {
-        printf(" WARNING: You are playing using one of the Doom Classic\n"
-               " IWAD files shipped with the Doom 3: BFG Edition. These are\n"
-               " known to be incompatible with the regular IWAD files and\n"
-               " may cause demos and network games to get out of sync.\n");
-    }
+	if (gamevariant == bfgedition &&
+		(demorecording || (gameaction == ga_playdemo) || netgame))
+	{
+		I_TerminalPrintf( Log_Warning,	" WARNING: You are playing using one of the Doom Classic\n"
+										" IWAD files shipped with the Doom 3: BFG Edition. These are\n"
+										" known to be incompatible with the regular IWAD files and\n"
+										" may cause demos and network games to get out of sync.\n"	);
+	}
 
-    if (demorecording)
-	G_BeginRecording ();
+	if (demorecording)
+	{
+		G_BeginRecording ();
+	}
 
     main_loop_started = true;
 
     I_SetWindowTitle(gamedescription);
-    I_GraphicsCheckCommandLine();
     I_SetGrabMouseCallback(D_GrabMouseCallback);
-    I_InitGraphics( 1 );
+    I_InitBuffers( 1 );
 	R_InitContexts();
 
     D_SetupLoadingDisk( show_diskicon );
@@ -592,6 +596,8 @@ void D_DoomLoop (void)
     {
         wipegamestate = gamestate;
     }
+
+	I_TerminalSetMode( TM_StandardRender );
 
     while (1)
     {
@@ -865,11 +871,11 @@ static void SetMissionForPackName(const char *pack_name)
         }
     }
 
-    printf("Valid mission packs are:\n");
+    I_TerminalPrintf( Log_Error, "Valid mission packs are:\n" );
 
     for (i = 0; i < arrlen(packs); ++i)
     {
-        printf("\t%s\n", packs[i].name);
+        I_TerminalPrintf( Log_Error, "\t%s\n", packs[i].name );
     }
 
     I_Error("Unknown mission pack name: %s", pack_name);
@@ -1027,7 +1033,7 @@ static boolean D_AddFile(char *filename)
 {
     wad_file_t *handle;
 
-    printf(" adding %s\n", filename);
+    I_TerminalPrintf( Log_Startup, " adding %s\n", filename );
     handle = W_AddFile(filename);
 
     return handle != NULL;
@@ -1070,14 +1076,14 @@ void PrintDehackedBanners(void)
 
         if (deh_s != copyright_banners[i])
         {
-            printf("%s", deh_s);
+            I_TerminalPrintf( Log_Startup, "%s", deh_s );
 
             // Make sure the modified banner always ends in a newline character.
             // If it doesn't, add a newline.  This fixes av.wad.
 
             if (deh_s[strlen(deh_s) - 1] != '\n')
             {
-                printf("\n");
+                I_TerminalPrintf( Log_None, "\n" );
             }
         }
     }
@@ -1137,12 +1143,12 @@ static void InitGameVersion(void)
         
         if (gameversions[i].description == NULL) 
         {
-            printf("Supported game versions:\n");
+            I_TerminalPrintf( Log_Error, "Supported game versions:\n" );
 
             for (i=0; gameversions[i].description != NULL; ++i)
             {
-                printf("\t%s (%s)\n", gameversions[i].cmdline,
-                        gameversions[i].description);
+				I_TerminalPrintf( Log_Error, 	"\t%s (%s)\n", gameversions[i].cmdline,
+												gameversions[i].description);
             }
             
             I_Error("Unknown game version '%s'", myargv[p+1]);
@@ -1258,11 +1264,16 @@ void PrintGameVersion(void)
     {
         if (gameversions[i].version == gameversion)
         {
-            printf("Emulating the behavior of the "
-                   "'%s' executable.\n", gameversions[i].description);
+			I_TerminalPrintf( Log_Startup,	"Emulating the behavior of the "
+											"'%s' executable.\n", gameversions[i].description);
             break;
         }
     }
+
+	if( remove_limits )
+	{
+		I_TerminalPrintf( Log_Startup, "Running in limit-removing mode." );
+	}
 }
 
 // Function called at exit to display the ENDOOM screen
@@ -1368,15 +1379,52 @@ void D_DoomMain (void)
 	blackedges.pixel_size_bytes = 1;
 	blackedges.magic_value = vbuffer_magic;
 
+#ifdef _WIN32
+	//!
+	// @category obscure
+	// @platform windows
+	// @vanilla
+	//
+	// Save configuration data and savegames in c:\doomdata,
+	// allowing play from CD.
+	//
+
+	if (M_ParmExists("-cdrom"))
+	{
+		I_TerminalPrintf( Log_Startup, D_CDROM );
+
+		M_SetConfigDir("c:\\doomdata\\");
+	}
+	else
+#endif
+	{
+		// Auto-detect the configuration dir.
+
+		M_SetConfigDir(NULL);
+	}
+
+	// Load configuration files before initialising other subsystems.
+	//DEH_printf("M_LoadDefaults: Load system defaults.\n");
+	M_SetConfigFilenames("default.cfg", PROGRAM_PREFIX "doom.cfg");
+	D_BindVariables();
+	M_LoadDefaults();
+
+	// Save configuration at exit.
+	I_AtExit(M_SaveDefaults, false);
+
+	I_SetWindowTitle(gamedescription);
+	I_GraphicsCheckCommandLine();
+	I_InitGraphics();
+	I_TerminalInit();
+	//I_TerminalSetMode( TM_ImmediateRender );
+	I_TerminalPrintBanner( Log_Startup, PACKAGE_STRING, TXT_COLOR_YELLOW, TXT_COLOR_GREEN );
+	DEH_printf( "M_LoadDefaults: Load system defaults.\n" );
+
 	M_InitDashboard();
 	M_ProfileInit();
 	M_ProfileThreadInit( "Main" );
 
     I_AtExit(D_Endoom, false);
-
-    // print banner
-
-    I_PrintBanner(PACKAGE_STRING);
 
     DEH_printf("Z_Init: Init zone memory allocation daemon. \n");
     Z_Init ();
@@ -1390,7 +1438,7 @@ void D_DoomMain (void)
 
     if (M_CheckParm("-dedicated") > 0)
     {
-        printf("Dedicated server mode.\n");
+        I_TerminalPrintf( Log_Startup, "Dedicated server mode.\n" );
         NET_DedicatedServer();
 
         // Never returns
@@ -1501,31 +1549,6 @@ void D_DoomMain (void)
     
     // find which dir to use for config files
 
-#ifdef _WIN32
-
-    //!
-    // @category obscure
-    // @platform windows
-    // @vanilla
-    //
-    // Save configuration data and savegames in c:\doomdata,
-    // allowing play from CD.
-    //
-
-    if (M_ParmExists("-cdrom"))
-    {
-        printf(D_CDROM);
-
-        M_SetConfigDir("c:\\doomdata\\");
-    }
-    else
-#endif
-    {
-        // Auto-detect the configuration dir.
-
-        M_SetConfigDir(NULL);
-    }
-
     //!
     // @category game
     // @arg <x>
@@ -1557,15 +1580,6 @@ void D_DoomMain (void)
     // init subsystems
     DEH_printf("V_Init: allocate screens.\n");
     V_Init ();
-
-    // Load configuration files before initialising other subsystems.
-    DEH_printf("M_LoadDefaults: Load system defaults.\n");
-    M_SetConfigFilenames("default.cfg", PROGRAM_PREFIX "doom.cfg");
-    D_BindVariables();
-    M_LoadDefaults();
-
-    // Save configuration at exit.
-    I_AtExit(M_SaveDefaults, false);
 
     // Find main IWAD file and load it.
     iwadfile = D_FindIWAD(IWAD_MASK_DOOM, &gamemission);
@@ -1632,7 +1646,7 @@ void D_DoomMain (void)
 
     if (gamevariant == bfgedition)
     {
-        printf("BFG Edition: Using workarounds as needed.\n");
+        I_TerminalPrintf( Log_Startup, "BFG Edition: Using workarounds as needed.\n" );
 
         // BFG Edition changes the names of the secret levels to
         // censor the Wolfenstein references. It also has an extra
@@ -1759,7 +1773,7 @@ void D_DoomMain (void)
             M_StringCopy(demolumpname, myargv[p + 1], sizeof(demolumpname));
         }
 
-        printf("Playing demo %s.\n", file);
+        I_TerminalPrintf( Log_Startup, "Playing demo %s.\n", file );
     }
 
     I_AtExit(G_CheckDemoStatusAtExit, true);
@@ -1789,7 +1803,7 @@ void D_DoomMain (void)
             }
         }
 
-        printf("  loaded %i DEHACKED lumps from PWAD files.\n", loaded);
+        I_TerminalPrintf( Log_Startup, "  loaded %i DEHACKED lumps from PWAD files.\n", loaded);
     }
 
 	if( M_ParmExists( "-blackvoid" ) ) voidcleartype = Void_Black;
@@ -1850,9 +1864,9 @@ void D_DoomMain (void)
      || W_CheckNumForName("FF_END") >= 0)
     {
         I_PrintDivider();
-        printf(" WARNING: The loaded WAD file contains modified sprites or\n"
-               " floor textures.  You may want to use the '-merge' command\n"
-               " line option instead of '-file'.\n");
+		I_TerminalPrintf( Log_Warning,	" WARNING: The loaded WAD file contains modified sprites or\n"
+										" floor textures.  You may want to use the '-merge' command\n"
+										" line option instead of '-file'.\n");
     }
 
     I_PrintStartupBanner(gamedescription);
@@ -1865,7 +1879,7 @@ void D_DoomMain (void)
     I_InitSound(true);
     I_InitMusic();
 
-    printf ("NET_Init: Init network subsystem.\n");
+    I_TerminalPrintf( Log_Startup, "NET_Init: Init network subsystem.\n" );
     NET_Init ();
 
     // Initial netgame startup. Connect to server etc.
