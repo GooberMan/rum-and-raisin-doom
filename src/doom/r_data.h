@@ -25,39 +25,31 @@
 #include "r_defs.h"
 #include "r_state.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
-void R_CacheComposite( int32_t tex );
+DOOM_C_API void R_CacheComposite( int32_t tex );
 
 // Retrieve column data for span blitting.
-byte* R_GetColumn ( int32_t tex, int32_t col, int32_t colormapindex );
+DOOM_C_API byte* R_GetColumn ( int32_t tex, int32_t col, int32_t colormapindex );
 
 // A raw column is a non-composited column as you'd find in your WAD
-byte* R_GetRawColumn ( int32_t tex, int32_t col );
+DOOM_C_API byte* R_GetRawColumn ( int32_t tex, int32_t col );
 
 
 // I/O, setting up the stuff.
-void R_InitData (void);
-void R_PrecacheLevel (void);
+DOOM_C_API void R_InitData (void);
+DOOM_C_API void R_PrecacheLevel (void);
 
 
 // Retrieval.
 // Floor/ceiling opaque texture tiles,
 // lookup by name. For animation?
-int R_FlatNumForName(const char *name);
+DOOM_C_API int R_FlatNumForName(const char *name);
 
 
 // Called by P_Ticker for switches and animations,
 // returns the texture number for the texture name.
-int R_TextureNumForName(const char *name);
-int R_CheckTextureNumForName(const char *name);
+DOOM_C_API int R_TextureNumForName(const char *name);
+DOOM_C_API int R_CheckTextureNumForName(const char *name);
 
-const char* R_TextureNameForNum( int32_t tex );
-
-#if defined( __cplusplus )
-}
-#endif // defined( __cplusplus )
+DOOM_C_API const char* R_TextureNameForNum( int32_t tex );
 
 #endif
