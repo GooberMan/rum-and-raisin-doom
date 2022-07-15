@@ -620,12 +620,23 @@ void R_InitTextures (void)
     temp2 = W_GetNumForName (DEH_String("S_END")) - 1;
     temp3 = ((temp2-temp1+63)/64) + ((numtextures+63)/64);
 
-    I_TerminalPrintf( Log_None, "[" );
-    for (i = 0; i < temp3 + 6; i++)
-        I_TerminalPrintf( Log_None, " ");
-    I_TerminalPrintf( Log_None, "]");
-    for (i = 0; i < temp3 + 7; i++)
-        I_TerminalPrintf( Log_None, "\b");
+	DoomString output;
+	output.reserve( temp3 + 8 );
+
+	output.append( "[" );
+	for (i = 0; i < temp3 + 6; i++)
+	{
+		output.append( " ");
+	}
+	output.append( "]");
+	I_TerminalPrintf( Log_None, output.c_str() );
+	output.clear();
+	output.reserve( temp3 + 7 );
+	for (i = 0; i < temp3 + 7; i++)
+	{
+		output.append( "\b");
+	}
+	I_TerminalPrintf( Log_None, output.c_str() );
 	
     for (i=0 ; i<numtextures ; i++, directory++)
     {
