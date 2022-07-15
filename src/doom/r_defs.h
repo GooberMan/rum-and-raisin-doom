@@ -87,12 +87,16 @@ typedef int32_t					vertclip_t;
 #define MAXPROFILETIMES			( 35 * 8 )
 
 
-typedef struct cachedflat_s
+typedef struct texturecomposite_s
 {
-	char name[ 8 ];
-	int64_t namepadding;
-	byte* data;
-} cachedflat_t;
+	byte*		data;
+	char		name[8];
+	int32_t		namepadding;
+	int32_t		size;
+	int32_t		width;
+	int32_t		height;
+	int32_t		pitch;
+} texturecomposite_t;
 
 //
 // INTERNAL MAP TYPES

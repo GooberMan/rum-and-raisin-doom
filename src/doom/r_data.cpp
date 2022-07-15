@@ -168,17 +168,6 @@ extern "C"
 	uint32_t**		texturecompositecolumnofs;
 	byte**			texturecomposite;
 
-	// TODO: Roll composites in to this struct
-	typedef struct texturecomposite_s
-	{
-		char		name[8];
-		int32_t		size;
-		int32_t		width;
-		int32_t		height;
-		int32_t		pitch;
-		byte*		data;
-	} texturecomposite_t;
-
 	// for global animation
 	int*		flattranslation;
 	int*		texturetranslation;
@@ -896,7 +885,7 @@ int		flatmemory;
 int		texturememory;
 //int		spritememory;
 
-cachedflat_t* precachedflats;
+texturecomposite_t* precachedflats;
 
 void R_PrecacheLevel (void)
 {
@@ -925,8 +914,8 @@ void R_PrecacheLevel (void)
 	memset (flatpresent,0,numflats);	
 
 	// This needs to be static, and allocated elsewhere
-	precachedflats = (cachedflat_t*)Z_Malloc( numflats * sizeof(cachedflat_t), PU_LEVEL, NULL );
-	memset( precachedflats, 0, numflats * sizeof(cachedflat_t) );
+	precachedflats = (texturecomposite_t*)Z_Malloc( numflats * sizeof(texturecomposite_t), PU_LEVEL, NULL );
+	memset( precachedflats, 0, numflats * sizeof(texturecomposite_t) );
 
 	for (i=0 ; i<numsectors ; i++)
 	{
