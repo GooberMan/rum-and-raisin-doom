@@ -332,9 +332,9 @@
     <ClCompile Include="..\src\doom\p_user.c" />
     <ClCompile Include="..\src\doom\r_bsp.c" />
     <ClInclude Include="..\src\doom\r_bsp.h" />
-    <ClCompile Include="..\src\doom\r_data.c" />
     <ClInclude Include="..\src\doom\r_data.h" />
     <ClInclude Include="..\src\doom\r_defs.h" />
+    <ClCompile Include="..\src\doom\r_data.cpp" />
     <ClCompile Include="..\src\doom\r_draw.cpp" />
     <ClInclude Include="..\src\doom\r_draw.h" />
     <ClInclude Include="..\src\doom\r_local.h" />

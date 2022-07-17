@@ -133,9 +133,6 @@
     <ClCompile Include="..\src\doom\r_bsp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\r_data.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\r_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -176,6 +173,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\r_plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\r_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

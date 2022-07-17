@@ -84,7 +84,7 @@ i_glob.c             i_glob.h              \
 i_input.c            i_input.h             \
 i_joystick.c         i_joystick.h          \
                      i_swap.h              \
-i_log.cpp            i_log.h            \
+i_log.cpp            i_log.h               \
 i_midipipe.c         i_midipipe.h          \
 i_musicpack.c                              \
 i_oplmusic.c                               \
@@ -92,6 +92,7 @@ i_pcsound.c                                \
 i_sdlmusic.c                               \
 i_sdlsound.c                               \
 i_sound.c            i_sound.h             \
+i_terminal.cpp       i_terminal.h          \
 i_timer.c            i_timer.h             \
 i_thread.cpp         i_thread.h            \
 i_video.c            i_video.h             \

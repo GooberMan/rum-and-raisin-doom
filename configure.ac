@@ -1,5 +1,5 @@
-AC_INIT(Rum and Raisin Doom, 0.1.1,
-        chocolate-doom-dev-list@chocolate-doom.org, rum-and-raisin-doom)
+AC_INIT(Rum and Raisin Doom, 0.2.0,
+        nothingyet@noemail.com, rum-and-raisin-doom)
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
 PACKAGE_SHORTDESC="Fork of Chocolate Doom focusing on renderer optimisations"

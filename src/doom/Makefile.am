@@ -70,7 +70,7 @@ p_telept.c                      \
 p_tick.c           p_tick.h     \
 p_user.c                        \
 r_bsp.c            r_bsp.h      \
-r_data.c           r_data.h     \
+r_data.cpp         r_data.h     \
                    r_defs.h     \
 r_draw.cpp         r_draw.h     \
                    r_local.h    \
