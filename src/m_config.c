@@ -820,6 +820,14 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(show_endoom),
 
     //!
+    // @game doom
+    //
+    // If non-zero, the classic text startup screen is displayed on boot
+    //
+
+	CONFIG_VARIABLE_INT(show_text_startup),
+
+    //!
     // @game doom strife
     //
     // If non-zero, a disk activity indicator is displayed when data is read
@@ -1798,13 +1806,13 @@ static default_t extra_defaults_list[] =
 	CONFIG_VARIABLE_KEY(key_toggle_autorun),
 
 	//!
-	// Tracks the debug menu theme. Nothing more. Integer that maps directly in to the theme array.
+	// Tracks the dashboard theme. Nothing more. Integer that maps directly in to the theme array.
 	//
 
 	CONFIG_VARIABLE_INT(dashboard_theme),
 
 	//!
-	// Debug menu can let the playsim run ahead while it's active. Or not. Up to you.
+	// Dashboard can let the playsim run ahead while it's active. Or not. Up to you.
 	//
 
 	CONFIG_VARIABLE_INT(dashboard_pausesplaysim),

@@ -133,6 +133,7 @@ char		wadfile[1024];		// primary wad file
 char		mapdir[1024];           // directory of development maps
 
 int32_t				show_endoom = 1;
+int32_t				show_text_startup = 1;
 int32_t				show_diskicon = 1;
 int32_t				remove_limits = 0;
 
@@ -449,6 +450,7 @@ void D_BindVariables(void)
     M_BindIntVariable("vanilla_savegame_limit", &vanilla_savegame_limit);
     M_BindIntVariable("vanilla_demo_limit",     &vanilla_demo_limit);
     M_BindIntVariable("show_endoom",            &show_endoom);
+	M_BindIntVariable("show_text_startup",		&show_text_startup);
     M_BindIntVariable("show_diskicon",          &show_diskicon);
 
     // Multiplayer chat macros
@@ -1418,10 +1420,15 @@ void D_DoomMain (void)
 	I_InitGraphics();
 	M_InitDashboard();
 
-
+	// Before we go in to terminal mode, we want to allow the user to configure all options
+	M_DashboardFirstLaunch();
 
 	I_TerminalInit();
-	I_TerminalSetMode( TM_ImmediateRender );
+
+	if( show_text_startup )
+	{
+		I_TerminalSetMode( TM_ImmediateRender );
+	}
 	I_TerminalPrintBanner( Log_Startup, PACKAGE_STRING, TXT_COLOR_YELLOW, TXT_COLOR_GREEN );
 	DEH_printf( "M_LoadDefaults: Load system defaults.\n" );
 
