@@ -56,6 +56,7 @@ typedef boolean (*grabmouse_callback_t)(void);
 // and sets up the video mode
 void I_InitGraphics( void );
 void I_InitBuffers( int32_t numbuffers );
+void I_UpdateMouseGrab( void );
 
 vbuffer_t* I_GetRenderBuffer( int32_t index );
 void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );

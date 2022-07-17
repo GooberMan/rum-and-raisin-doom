@@ -1818,6 +1818,11 @@ static default_t extra_defaults_list[] =
 	CONFIG_VARIABLE_INT(dashboard_pausesplaysim),
 
 	//!
+	// The first launch will bring up the dashboard, allowing you to configure everything to your liking before play.
+	//
+	CONFIG_VARIABLE_INT(first_launch),
+
+	//!
 	// @game doom
 	//
 	// Automap style. 0 = custom; 1 = original Doom; 2 = ZDoom

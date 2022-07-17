@@ -436,9 +436,7 @@ boolean			inhelpscreens;
 boolean			menuactive;
 extern int32_t	dashboardopensound;
 extern int32_t	dashboardclosesound;
-
-int32_t			mapkeybuttonvalue = -1;
-
+extern int32_t	mapkeybuttonvalue;
 
 
 #define SKULLXOFF		-32
@@ -1671,30 +1669,6 @@ static boolean IsNullKey(int key)
 // CONTROL PANEL
 //
 
-static boolean M_DashboardResponder( event_t* ev )
-{
-	switch( dashboardremappingkey )
-	{
-	case Remap_Key:
-		if( ev->type == ev_keydown )
-		{
-			mapkeybuttonvalue = ev->data1;
-		}
-		break;
-
-	case Remap_Mouse:
-		if( ev->type == ev_mouse && ev->data5 != 0 )
-		{
-			mapkeybuttonvalue = ev->data4;
-		}
-		break;
-
-	default:
-		break;
-	}
-	return true;
-}
-
 //
 // M_Responder
 //
@@ -2656,6 +2630,19 @@ static const char* M_FindKeyName( keyname_t* keys, size_t numkeys, int32_t unbou
 	return "<UNKNOWN>";
 }
 
+const char* M_FindNameForKey( remapping_t type, int32_t key )
+{
+	switch( type )
+	{
+	case Remap_Key:
+		return M_FindKeyName( keynames, arrlen( keynames ), 0, key );
+	case Remap_Mouse:
+		return M_FindKeyName( mousenames, arrlen( mousenames ), -1, key );
+	default:
+		return "<UNKNOWN>";
+	}
+}
+
 typedef struct controldesc_s
 {
 	const char* name;
@@ -2792,10 +2779,8 @@ static const char* remaptypenames[ Remap_Max ] =
 
 static void M_DashboardControlsRemapping(	const char* itemname,
 											controldesc_t* descs,
-											keyname_t* lookupnames,
-											size_t lookupnameslength,
-											int32_t unboundkey,
-											int32_t remappingtype
+											int32_t remappingtype,
+											int32_t unboundkey
 											)
 {
 	controldesc_t*		currdesc;
@@ -2812,39 +2797,8 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 			igPushIDPtr( currdesc->name );
 			igText( currdesc->name );
 			igNextColumn();
-			if( igButton( M_FindKeyName( lookupnames, lookupnameslength, unboundkey, *currdesc->value ), mappingsize ) )
-			{
-				igOpenPopup( "RemapKey", ImGuiPopupFlags_None );
-				dashboardremappingkey = remappingtype;
-				mapkeybuttonvalue = -1;
-			}
+			M_DashboardKeyRemap( remappingtype, currdesc->value, currdesc->name );
 
-			if( igIsPopupOpenStr( "RemapKey", ImGuiPopupFlags_None ) )
-			{
-				ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
-				WindowPos.x *= 0.5f;
-				WindowPos.y *= 0.5f;
-				igSetNextWindowPos( WindowPos, ImGuiCond_Always, halfsize );
-				if( igBeginPopup( "RemapKey", ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoSavedSettings ) )
-				{
-					ImGuiContext* context = igGetCurrentContext();
-
-					igText( "Press new %s for \"%s\"...", remaptypenames[ remappingtype ], currdesc->name );
-					cancel = igButtonEx( "Cancel", zerosize, ImGuiButtonFlags_PressedOnClick );
-					if( !cancel && mapkeybuttonvalue != -1 )
-					{
-						*currdesc->value = mapkeybuttonvalue;
-						cancel = true;
-					}
-					if( cancel )
-					{
-						igCloseCurrentPopup();
-						dashboardremappingkey = Remap_None;
-						mapkeybuttonvalue = -1;
-					}
-					igEndPopup();
-				}
-			}
 			if( *currdesc->value != unboundkey && currdesc->value != &key_menu_dashboard )
 			{
 				igSameLine( 0, -1 );
@@ -2863,7 +2817,7 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 	igPopID();
 }
 
-static void M_DashboardOptionsWindow( const char* itemname, void* data )
+void M_DashboardOptionsWindow( const char* itemname, void* data )
 {
 	extern int32_t fullscreen;
 	extern int32_t window_width;
@@ -2875,6 +2829,7 @@ static void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t fuzz_style;
 	extern int32_t span_override;
 	extern int32_t show_endoom;
+	extern int32_t show_text_startup;
 	extern int32_t show_diskicon;
 	extern int32_t grabmouse;
 	extern int32_t novert;
@@ -2896,13 +2851,61 @@ static void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 	if( igBeginTabBar( "Doom Options tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
+		if( igBeginTabItem( "General", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		{
+			igColumns( 2, "", false );
+			igSetColumnWidth( 0, columwidth );
+
+			igText( "Show text startup" );
+			igNextColumn();
+			WorkingBool = !!show_text_startup;
+			igPushIDPtr( &show_text_startup );
+			if( igCheckbox( "", &WorkingBool ) )
+			{
+				show_text_startup = (int32_t)WorkingBool;
+			}
+			igPopID();
+			igNextColumn();
+
+			igText( "Show ENDOOM" );
+			igNextColumn();
+			WorkingBool = !!show_endoom;
+			igPushIDPtr( &show_endoom );
+			if( igCheckbox( "", &WorkingBool ) )
+			{
+				show_endoom = (int32_t)WorkingBool;
+			}
+			igPopID();
+			igNextColumn();
+
+			igText( "Disk icon" );
+			igNextColumn();
+			igPushIDPtr( &show_diskicon );
+			if( igBeginCombo( "", disk_icon_strings[ show_diskicon ], ImGuiComboFlags_None ) )
+			{
+				for( index = 0; index < disk_icon_strings_count; ++index )
+				{
+					selected = index == show_diskicon;
+					if( igSelectableBool( disk_icon_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+					{
+						D_SetupLoadingDisk( index );
+					}
+				}
+				igEndCombo();
+			}
+			igPopID();
+			igNextColumn();
+
+			igColumns( 1, "", false );
+			igEndTabItem();
+		}
 		if( igBeginTabItem( "Keyboard", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 		{
 			igPushScrollableArea( "Keyboard", zerosize );
 
 			for( currsection = keymappings; currsection->name != NULL; ++currsection )
 			{
-				M_DashboardControlsRemapping( currsection->name, currsection->descs, keynames, arrlen( keynames ), 0, Remap_Key );
+				M_DashboardControlsRemapping( currsection->name, currsection->descs, Remap_Key, 0 );
 			}
 
 			igPopScrollableArea();
@@ -2932,7 +2935,7 @@ static void M_DashboardOptionsWindow( const char* itemname, void* data )
 			}
 			igPopID();
 
-			M_DashboardControlsRemapping( "Bindings", mousemappings, mousenames, arrlen( mousenames ), -1, Remap_Mouse );
+			M_DashboardControlsRemapping( "Bindings", mousemappings, Remap_Mouse, -1 );
 
 			igPopScrollableArea();
 			igEndTabItem();
@@ -3146,23 +3149,23 @@ static void M_DashboardOptionsWindow( const char* itemname, void* data )
 			}
 			igPopID();
 
-			igNextColumn();
-			igText( "Span func override" );
-			igNextColumn();
-			igPushIDPtr( &span_override );
-			if( igBeginCombo( "", span_override_strings[ span_override ], ImGuiComboFlags_None ) )
-			{
-				for( index = 0; index < span_override_strings_count; ++index )
-				{
-					selected = index == span_override;
-					if( igSelectableBool( span_override_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
-					{
-						span_override = index;
-					}
-				}
-				igEndCombo();
-			}
-			igPopID();
+			//igNextColumn();
+			//igText( "Span func override" );
+			//igNextColumn();
+			//igPushIDPtr( &span_override );
+			//if( igBeginCombo( "", span_override_strings[ span_override ], ImGuiComboFlags_None ) )
+			//{
+			//	for( index = 0; index < span_override_strings_count; ++index )
+			//	{
+			//		selected = index == span_override;
+			//		if( igSelectableBool( span_override_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+			//		{
+			//			span_override = index;
+			//		}
+			//	}
+			//	igEndCombo();
+			//}
+			//igPopID();
 
 			igNextColumn();
 			igText( "Low detail" );
@@ -3191,35 +3194,6 @@ static void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igPopID();
 			igNextColumn();
 
-			igText( "Disk icon" );
-			igNextColumn();
-			igPushIDPtr( &show_diskicon );
-			if( igBeginCombo( "", disk_icon_strings[ show_diskicon ], ImGuiComboFlags_None ) )
-			{
-				for( index = 0; index < disk_icon_strings_count; ++index )
-				{
-					selected = index == show_diskicon;
-					if( igSelectableBool( disk_icon_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
-					{
-						D_SetupLoadingDisk( index );
-					}
-				}
-				igEndCombo();
-			}
-			igPopID();
-			igNextColumn();
-
-			igText( "Show ENDOOM" );
-			igNextColumn();
-			WorkingBool = !!show_endoom;
-			igPushIDPtr( &show_endoom );
-			if( igCheckbox( "", &WorkingBool ) )
-			{
-				show_endoom = (int32_t)WorkingBool;
-			}
-			igPopID();
-			igNextColumn();
-
 			igColumns( 1, "", false );
 
 			igPopScrollableArea();
@@ -3230,71 +3204,78 @@ static void M_DashboardOptionsWindow( const char* itemname, void* data )
 		{
 			igPushScrollableArea( "Automap", zerosize );
 
-			igColumns( 2, "", false );
-			igSetColumnWidth( 0, columwidth );
-
-			igText( "Style" );
-			igNextColumn();
-
-			igPushIDPtr( &map_style );
-			igRadioButtonIntPtr( "Custom", &map_style, MapStyle_Custom );
-			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "Original", &map_style, MapStyle_Original );
-			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "ZDoom", &map_style, MapStyle_ZDoom );
-			igPopID();
-
-			igNextColumn();
-
-			if( map_style == MapStyle_Custom )
+			if( numlumps > 0 )
 			{
-				palette = (byte*)W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE );
+				igColumns( 2, "", false );
+				igSetColumnWidth( 0, columwidth );
 
-				extern mapstyledata_t map_styledatacustomdefault;
+				igText( "Style" );
+				igNextColumn();
 
-				M_DashboardDoMapColour( "Background", &style->background, &map_styledatacustomdefault.background, palette );
+				igPushIDPtr( &map_style );
+				igRadioButtonIntPtr( "Custom", &map_style, MapStyle_Custom );
+				igSameLine( 0, -1 );
+				igRadioButtonIntPtr( "Original", &map_style, MapStyle_Original );
+				igSameLine( 0, -1 );
+				igRadioButtonIntPtr( "ZDoom", &map_style, MapStyle_ZDoom );
+				igPopID();
+
 				igNextColumn();
-				M_DashboardDoMapColour( "Grid", &style->grid, &map_styledatacustomdefault.grid, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Computer Area Map", &style->areamap, &map_styledatacustomdefault.areamap, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Walls", &style->walls, &map_styledatacustomdefault.walls, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Teleporters", &style->teleporters, &map_styledatacustomdefault.teleporters, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Hidden Lines", &style->linesecrets, &map_styledatacustomdefault.linesecrets, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Secrets (found)", &style->sectorsecrets, &map_styledatacustomdefault.sectorsecrets, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Secrets (undiscovered)", &style->sectorsecretsundiscovered, &map_styledatacustomdefault.sectorsecretsundiscovered, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Floor Height Diff", &style->floorchange, &map_styledatacustomdefault.floorchange, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Ceiling Height Diff", &style->ceilingchange, &map_styledatacustomdefault.ceilingchange, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "No Height Diff", &style->nochange, &map_styledatacustomdefault.nochange, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Thing", &style->things, &map_styledatacustomdefault.things, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Living Monsters", &style->monsters_alive, &map_styledatacustomdefault.monsters_alive, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Dead Monsters", &style->monsters_dead, &map_styledatacustomdefault.monsters_dead, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Items (Counted)", &style->items_counted, &map_styledatacustomdefault.items_counted, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Items (Uncounted)", &style->items_uncounted, &map_styledatacustomdefault.items_uncounted, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Projectiles", &style->projectiles, &map_styledatacustomdefault.projectiles, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Puffs", &style->puffs, &map_styledatacustomdefault.puffs, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Player Arrow", &style->playerarrow, &map_styledatacustomdefault.playerarrow, palette );
-				igNextColumn();
-				M_DashboardDoMapColour( "Crosshair", &style->crosshair, &map_styledatacustomdefault.crosshair, palette );
-				igNextColumn();
+
+				if( map_style == MapStyle_Custom )
+				{
+					palette = (byte*)W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE );
+
+					extern mapstyledata_t map_styledatacustomdefault;
+
+					M_DashboardDoMapColour( "Background", &style->background, &map_styledatacustomdefault.background, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Grid", &style->grid, &map_styledatacustomdefault.grid, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Computer Area Map", &style->areamap, &map_styledatacustomdefault.areamap, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Walls", &style->walls, &map_styledatacustomdefault.walls, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Teleporters", &style->teleporters, &map_styledatacustomdefault.teleporters, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Hidden Lines", &style->linesecrets, &map_styledatacustomdefault.linesecrets, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Secrets (found)", &style->sectorsecrets, &map_styledatacustomdefault.sectorsecrets, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Secrets (undiscovered)", &style->sectorsecretsundiscovered, &map_styledatacustomdefault.sectorsecretsundiscovered, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Floor Height Diff", &style->floorchange, &map_styledatacustomdefault.floorchange, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Ceiling Height Diff", &style->ceilingchange, &map_styledatacustomdefault.ceilingchange, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "No Height Diff", &style->nochange, &map_styledatacustomdefault.nochange, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Thing", &style->things, &map_styledatacustomdefault.things, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Living Monsters", &style->monsters_alive, &map_styledatacustomdefault.monsters_alive, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Dead Monsters", &style->monsters_dead, &map_styledatacustomdefault.monsters_dead, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Items (Counted)", &style->items_counted, &map_styledatacustomdefault.items_counted, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Items (Uncounted)", &style->items_uncounted, &map_styledatacustomdefault.items_uncounted, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Projectiles", &style->projectiles, &map_styledatacustomdefault.projectiles, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Puffs", &style->puffs, &map_styledatacustomdefault.puffs, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Player Arrow", &style->playerarrow, &map_styledatacustomdefault.playerarrow, palette );
+					igNextColumn();
+					M_DashboardDoMapColour( "Crosshair", &style->crosshair, &map_styledatacustomdefault.crosshair, palette );
+					igNextColumn();
+				}
+
+				igColumns( 1, "", false );
 			}
-
-			igColumns( 1, "", false );
+			else
+			{
+				igTextWrapped( "You will be able to configure the automap colours from within this menu.\n\nOnce you have hit \"Play!\" and the game has initialised, this menu will become fully populated." );
+			}
 
 			igPopScrollableArea();
 			igEndTabItem();
@@ -3326,14 +3307,38 @@ static void M_DashboardRegisterEpisodeMaps( const char* category, episodedetails
 	}
 }
 
+void M_DashboardOptionsInit()
+{
+	extern int window_width;
+	extern int window_height;
+
+	int32_t index;
+
+	window_width_working = window_width;
+	window_height_working = window_height;
+
+	for( index = 0; index < window_sizes_scaled_count; ++index )
+	{
+		if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
+		{
+			window_dimensions_current = window_sizes_scaled[ index ].asstring;
+		}
+	}
+
+	for( index = 0; index < render_sizes_count; ++index )
+	{
+		if( render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height )
+		{
+			render_dimensions_current = render_sizes[ index ].asstring;
+		}
+	}
+}
+
 //
 // M_Init
 //
 void M_Init (void)
 {
-	extern int window_width;
-	extern int window_height;
-
 	int32_t index;
 
 	episodedetails_t* workingepisode;
@@ -3395,25 +3400,7 @@ void M_Init (void)
 
     opldev = M_CheckParm("-opldev") > 0;
 
-	window_width_working = window_width;
-	window_height_working = window_height;
-
-	for( index = 0; index < window_sizes_scaled_count; ++index )
-	{
-		if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
-		{
-			window_dimensions_current = window_sizes_scaled[ index ].asstring;
-		}
-	}
-
-	for( index = 0; index < render_sizes_count; ++index )
-	{
-		if( render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height )
-		{
-			render_dimensions_current = render_sizes[ index ].asstring;
-		}
-	}
-
+	M_DashboardOptionsInit();
 
 	switch( gamemission )
 	{

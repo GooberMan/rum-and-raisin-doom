@@ -18,12 +18,19 @@
 extern "C"
 {
 	#include "i_system.h"
+	#include "i_video.h"
+
+	#include "m_argv.h"
 	#include "m_config.h"
+	#include "m_controls.h"
+	#include "m_misc.h"
 
 	#include "cimguiglue.h"
 
 	#include <stdio.h>
 	#include <string.h>
+
+	#include <glad/glad.h>
 }
 
 #include "m_container.h"
@@ -461,6 +468,15 @@ typedef struct menuentry_s
 
 typedef void (*renderchild_t)( menuentry_t* );
 
+typedef enum firstlaunchstate_e
+{
+	FL_None,
+	FL_Welcome,
+	FL_Options,
+
+	FL_Max,
+} firstlaunchstate_t;
+
 static menuentry_t* M_FindDashboardCategory( const char* category_name );
 static void M_RenderDashboardChildren( menuentry_t** children );
 static void M_ThrowAnErrorBecauseThisIsInvalid( menuentry_t* cat );
@@ -479,11 +495,12 @@ extern "C"
 	int32_t					dashboardpausesplaysim = true;
 	int32_t					dashboardopensound = 0;
 	int32_t					dashboardclosesound = 0;
+	int32_t					first_launch = FL_Welcome;
+	int32_t					mapkeybuttonvalue = -1;
 
 	extern int32_t			render_width;
 	extern int32_t			actualheight;
 	extern int32_t			window_width;
-
 }
 
 static int32_t			dashboard_theme = 0;
@@ -505,6 +522,14 @@ static renderchild_t	childfuncs[] =
 	&M_ThrowAnErrorBecauseThisIsInvalid,
 };
 
+static const char* remaptypenames[ Remap_Max ] =
+{
+	"none",
+	"key",
+	"mouse button",
+	"joystick button",
+};
+
 static boolean aboutwindow_open = false;
 static boolean licenceswindow_open = false;
 
@@ -519,8 +544,59 @@ static ImVec2 zeropivot = { 0, 0 };
 #define CHECK_ELEMENTS() { if( (nextentry - entries) > MAXENTRIES ) I_Error( "M_Dashboard: More than %d elements total added", MAXENTRIES ); }
 #define CHECK_CHILDREN( elem ) { if( (elem->freechild - elem->children) > MAXCHILDREN ) I_Error( "M_Dashboard: Too many child elements added to %s", elem->name ); }
 
-// Blatantly assuming this will get linked in just fine
+// These functions need to link in just fine, but are defined in separate libs
 DOOM_C_API void S_StartSound( void *origin, int sound_id );
+DOOM_C_API void M_DashboardOptionsInit();
+DOOM_C_API void M_DashboardOptionsWindow( const char* itemname, void* data );
+DOOM_C_API const char* M_FindNameForKey( remapping_t type, int32_t key );
+
+static void M_DashboardPrepareRender()
+{
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+	CImGui_ImplOpenGL3_NewFrame();
+	CImGui_ImplSDL2_NewFrame( I_GetWindow() );
+
+	igGetIO()->WantCaptureKeyboard = dashboardactive;
+	igGetIO()->WantCaptureMouse = dashboardactive;
+
+	igNewFrame();
+}
+
+static void M_DashboardFinaliseRender()
+{
+	igRender();
+	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
+}
+
+static bool M_DashboardUpdateSizes( int32_t windowwidth, int32_t windowheight )
+{
+	bool backbuffersizechange = false;
+
+	if( lastrenderwidth > 0 && lastrenderheight > 0 )
+	{
+		if( lastrenderwidth != render_width || lastrenderheight != actualheight )
+		{
+			backbuffersizechange = true;
+			backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
+			lastrenderwidth = render_width;
+			lastrenderheight = actualheight;
+		}
+	}
+	else
+	{
+		backbuffersize.x = window_width * 0.6f;
+		backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
+		lastrenderwidth = render_width;
+		lastrenderheight = actualheight;
+
+		logpos.x = windowwidth - logsize.x - 50.f;
+		logpos.y = windowheight - logsize.y - 50.f;
+	}
+
+	return backbuffersizechange;
+}
 
 static void M_OnDashboardCloseButton( const char* itemname, void* data )
 {
@@ -629,13 +705,211 @@ void M_InitDashboard( void )
 	M_RegisterDashboardWindow( "Core|licences", "licences", 0, 0, &licenceswindow_open, Menu_Normal, &M_LicencesWindow );
 	M_RegisterDashboardSeparator( "Core" );
 	M_RegisterDashboardButton( "Core|Quit", "Yes, this means quit the game", &M_OnDashboardCoreQuit, NULL );
-
 }
 
 void M_BindDashboardVariables( void )
 {
-	M_BindIntVariable("dashboard_theme",			&dashboard_theme);
-	M_BindIntVariable("dashboard_pausesplaysim",	&dashboardpausesplaysim );
+	M_BindIntVariable( "dashboard_theme",			&dashboard_theme );
+	M_BindIntVariable( "dashboard_pausesplaysim",	&dashboardpausesplaysim );
+	M_BindIntVariable( "first_launch",				&first_launch );
+}
+
+static void M_DashboardWelcomeWindow( const char* itemname, void* data )
+{
+	constexpr ImVec2 mappingsize = { 90, 22 };
+
+	igText( "Welcome to " PACKAGE_NAME );
+	igNewLine();
+	igTextWrapped(	"You are currently in the Dashboard\. "
+					"This is always accessible via the '%s' hotkey. "
+					"If you would like to remap this, click the "
+					"button below to define a new key.",
+					M_FindNameForKey( Remap_Key, key_menu_dashboard ) );
+	igNewLine();
+	M_DashboardKeyRemap( Remap_Key, &key_menu_dashboard, "Toggle dashboard" );
+	igNewLine();
+	igTextWrapped(	"You can also remap this key at any time while "
+					"in the Dashboard by accessing the \"Options\" "
+					"window available in the \"Game\" menu." );
+	igNewLine();
+	igTextWrapped(	"When you are ready, pressing \"Next\" will "
+					"present the options window to you so that you "
+					"can configure " PACKAGE_NAME " to your "
+					"liking before you play." );
+}
+
+static void M_DashboardFirstLaunchWindow()
+{
+	constexpr ImVec2 zero = { 0, 0 };
+	constexpr int32_t windowflags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
+
+	memcpy( igGetStyle()->Colors, themes[ dashboard_theme ].colors, sizeof( igGetStyle()->Colors ) );
+
+	ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 600.f ), M_MIN( igGetIO()->DisplaySize.y, 550.f ) };
+	ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
+	igSetNextWindowSize( windowsize, ImGuiCond_Always );
+	igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
+
+	if( igBegin( "Welcome", NULL, windowflags ) )
+	{
+		ImVec2 windowcontentmin;
+		ImVec2 windowcontentmax;
+		igGetWindowContentRegionMin( &windowcontentmin );
+		igGetWindowContentRegionMax( &windowcontentmax );
+
+		ImVec2 framesize = { windowcontentmax.x - windowcontentmin.x, windowcontentmax.y - windowcontentmin.y - 30.f };
+
+		igPushStyleColorU32( ImGuiCol_FrameBg, IM_COL32_BLACK_TRANS );
+		if( igBeginChildFrame( (ImGuiID)&first_launch, framesize, ImGuiWindowFlags_None ) )
+		{
+			// This is annoying, need to reset style colour so that checkboxes/sliders/etc look right
+			igPopStyleColor( 1 );
+			switch( first_launch )
+			{
+			case FL_Welcome:
+				M_DashboardWelcomeWindow( "Welcome", NULL );
+				break;
+			case FL_Options:
+				M_DashboardOptionsWindow( "Welcome", NULL );
+				break;
+			default:
+				igText( "This shouldn't happen!" );
+				break;
+			}
+
+			igEndChildFrame();
+		}
+		else
+		{
+			igPopStyleColor( 1 );
+		}
+
+		constexpr ImVec2 buttonsize = { 40.f, 25.f };
+		const char* buttontext = first_launch == FL_Options ? "Play!" : "Next";
+		igSetCursorPosX( igGetCursorPosX() + framesize.x - buttonsize.x );
+
+		if( igButton( buttontext, buttonsize ) )
+		{
+			if( ++first_launch >= FL_Max )
+			{
+				first_launch = FL_None;
+			}
+		}
+	}
+	igEnd();
+}
+
+void M_DashboardFirstLaunch( void )
+{
+	if( M_ParmExists( "-firstlaunch" ) )
+	{
+		first_launch = FL_Welcome;
+	}
+
+	if( first_launch )
+	{
+#if USE_IMGUI
+		M_DashboardOptionsInit();
+
+		dashboardactive = true;
+		I_UpdateMouseGrab();
+		SDL_Renderer* renderer = I_GetRenderer();
+
+		while( first_launch != FL_None )
+		{
+			I_StartTic();
+			I_StartFrame();
+			while( event_t* ev = D_PopEvent() )
+			{
+				if( ev->type == ev_quit )
+				{
+					I_Quit();
+				}
+				M_DashboardResponder( ev );
+			}
+
+			SDL_RenderClear( renderer );
+
+			M_DashboardPrepareRender();
+			M_DashboardFirstLaunchWindow();
+			M_DashboardFinaliseRender();
+
+			SDL_RenderPresent( renderer );
+		}
+
+		// Clear out the window before we move on
+		SDL_RenderClear( renderer );
+		SDL_RenderPresent( renderer );
+
+		dashboardactive = false;
+#endif // USE_IMGUI
+		first_launch = FL_None;
+	}
+}
+
+void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingname )
+{
+	constexpr ImVec2 halfsize = { 0.5f, 0.5f };
+	constexpr ImVec2 mappingsize = { 90, 22 };
+	constexpr ImVec2 zerosize = { 0, 0 };
+
+	if( igButton( M_FindNameForKey( type, *key ), mappingsize ) )
+	{
+		igOpenPopup( "RemapKey", ImGuiPopupFlags_None );
+		dashboardremappingkey = type;
+		mapkeybuttonvalue = -1;
+	}
+
+	if( igIsPopupOpenStr( "RemapKey", ImGuiPopupFlags_None ) )
+	{
+		ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
+		WindowPos.x *= 0.5f;
+		WindowPos.y *= 0.5f;
+		igSetNextWindowPos( WindowPos, ImGuiCond_Always, halfsize );
+		if( igBeginPopup( "RemapKey", ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoSavedSettings ) )
+		{
+			ImGuiContext* context = igGetCurrentContext();
+
+			igText( "Press new %s for \"%s\"...", remaptypenames[ type ], mappingname );
+			bool cancel = igButtonEx( "Cancel", zerosize, ImGuiButtonFlags_PressedOnClick );
+			if( !cancel && mapkeybuttonvalue != -1 )
+			{
+				*key = mapkeybuttonvalue;
+				cancel = true;
+			}
+			if( cancel )
+			{
+				igCloseCurrentPopup();
+				dashboardremappingkey = Remap_None;
+				mapkeybuttonvalue = -1;
+			}
+			igEndPopup();
+		}
+	}
+}
+
+boolean M_DashboardResponder( event_t* ev )
+{
+	switch( dashboardremappingkey )
+	{
+	case Remap_Key:
+		if( ev->type == ev_keydown )
+		{
+			mapkeybuttonvalue = ev->data1;
+		}
+		break;
+
+	case Remap_Mouse:
+		if( ev->type == ev_mouse && ev->data5 != 0 )
+		{
+			mapkeybuttonvalue = ev->data4;
+		}
+		break;
+
+	default:
+		break;
+	}
+	return true;
 }
 
 static void M_RenderTooltip( menuentry_t* cat )
@@ -738,7 +1012,6 @@ static int32_t M_GetDashboardWindowsOpened( menuentry_t** children )
 	return windowcount;
 }
 
-
 static int32_t M_RenderDashboardWindowActivationItems( menuentry_t** children )
 {
 	menuentry_t* child = NULL;
@@ -766,34 +1039,6 @@ static int32_t M_RenderDashboardWindowActivationItems( menuentry_t** children )
 	}
 
 	return windowcount;
-}
-
-static bool M_DashboardUpdateSizes( int32_t windowwidth, int32_t windowheight )
-{
-	bool backbuffersizechange = false;
-
-	if( lastrenderwidth > 0 && lastrenderheight > 0 )
-	{
-		if( lastrenderwidth != render_width || lastrenderheight != actualheight )
-		{
-			backbuffersizechange = true;
-			backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
-			lastrenderwidth = render_width;
-			lastrenderheight = actualheight;
-		}
-	}
-	else
-	{
-		backbuffersize.x = window_width * 0.6f;
-		backbuffersize.y = backbuffersize.x * ( (float)actualheight / (float)render_width );
-		lastrenderwidth = render_width;
-		lastrenderheight = actualheight;
-
-		logpos.x = windowwidth - logsize.x - 50.f;
-		logpos.y = windowheight - logsize.y - 50.f;
-	}
-
-	return backbuffersizechange;
 }
 
 void M_RenderDashboardLogContents( void )
@@ -897,6 +1142,10 @@ void M_RenderDashboardBackbufferContents( int32_t backbufferid )
 
 void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backbufferid )
 {
+	// ImGui time!
+#if USE_IMGUI
+	M_DashboardPrepareRender();
+
 	menuentry_t* thiswindow;
 	menufunc_t callback;
 	int32_t renderedwindowscount = 0;
@@ -979,6 +1228,9 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 
 		++thiswindow;
 	}
+	
+	M_DashboardFinaliseRender();
+#endif USE_IMGUI
 }
 
 static menuentry_t* M_FindOrCreateDashboardCategory( const char* category_name, menuentry_t* potential_parent )

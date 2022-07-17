@@ -557,7 +557,7 @@ void I_UpdateNoBlit (void)
 
 #define MOUSE_MOVE_TO_BOTTOMRIGHT 0
 
-static void UpdateGrab(void)
+void I_UpdateMouseGrab( void )
 {
     static boolean currently_grabbed = false;
     boolean grab;
@@ -570,7 +570,6 @@ static void UpdateGrab(void)
     if (screensaver_mode)
     {
         // Hide the cursor in screensaver mode
-
         SetShowCursor(false);
     }
     else if (grab && !currently_grabbed)
@@ -797,7 +796,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
         }
     }
 
-    UpdateGrab();
+    I_UpdateMouseGrab();
 
 #if 0 // SDL2-TODO
     // Don't update the screen if the window isn't visible.
@@ -913,16 +912,6 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
 	}
 
-	// ImGui time!
-#if USE_IMGUI
-	CImGui_ImplOpenGL3_NewFrame();
-	CImGui_ImplSDL2_NewFrame( screen );
-
-	igGetIO()->WantCaptureKeyboard = dashboardactive;
-	igGetIO()->WantCaptureMouse = dashboardactive;
-
-	igNewFrame();
-
 	int32_t actualwindowwidth = 0;
 	int32_t actualwindowheight = 0;
 	GLint whichID = 0;
@@ -933,17 +922,9 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
 	SDL_GetWindowSize( screen, &actualwindowwidth, &actualwindowheight );
 
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-
 	M_RenderDashboard( actualwindowwidth, actualwindowheight, whichID );
 
-	igRender();
-	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
-#endif // USE_IMGUI
-    // Draw!
-
-    SDL_RenderPresent(renderer);
+	SDL_RenderPresent(renderer);
 }
 
 
@@ -1737,7 +1718,7 @@ void I_InitGraphics( void )
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
     // SDL2-TODO UpdateFocus();
-    UpdateGrab();
+    I_UpdateMouseGrab();
 
     // On some systems, it takes a second or so for the screen to settle
     // after changing modes.  We include the option to add a delay when
