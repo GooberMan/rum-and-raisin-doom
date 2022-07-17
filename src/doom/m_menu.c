@@ -3095,6 +3095,22 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igColumns( 2, "", false );
 			igSetColumnWidth( 0, columwidth );
 
+			igText( "Gamma level" );
+			igNextColumn();
+			igPushIDPtr( &usegamma );
+			igPushItemWidth( 200.f );
+			if( igSliderInt( "", &usegamma, 0, 4, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput) )
+			{
+				players[ consoleplayer ].message = DEH_String( gammamsg[ usegamma ] );
+				if( numlumps > 0 )
+				{
+					I_SetPalette( W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE ) );
+				}
+			}
+			igPopItemWidth();
+			igPopID();
+
+			igNextColumn();
 			igText( "Screen size" );
 			igNextColumn();
 			igPushIDPtr( &screenblocks );
