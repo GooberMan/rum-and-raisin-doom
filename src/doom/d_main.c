@@ -1414,8 +1414,12 @@ void D_DoomMain (void)
 
 	I_SetWindowTitle(gamedescription);
 	I_GraphicsCheckCommandLine();
+	I_InitTimer();
 	I_InitGraphics();
 	M_InitDashboard();
+
+
+
 	I_TerminalInit();
 	I_TerminalSetMode( TM_ImmediateRender );
 	I_TerminalPrintBanner( Log_Startup, PACKAGE_STRING, TXT_COLOR_YELLOW, TXT_COLOR_GREEN );
@@ -1874,7 +1878,6 @@ void D_DoomMain (void)
 
     DEH_printf("I_Init: Setting up machine state.\n");
     I_CheckIsScreensaver();
-    I_InitTimer();
     I_InitJoystick();
     I_InitSound(true);
     I_InitMusic();
