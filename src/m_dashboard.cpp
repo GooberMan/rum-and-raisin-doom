@@ -611,7 +611,7 @@ static void M_OnDashboardCoreQuit( const char* itemname, void* data )
 
 static void M_AboutWindow( const char* itemname, void* data )
 {
-	igText( EDITION_STRING );
+	igText( PACKAGE_STRING " " PLATFORM_ARCHNAME );
 	igText( "\"Haha software render go BRRRRR!\"" );
 	igNewLine();
 	igText( "A fork of Chocolate Doom focused on speed for modern architectures." );
@@ -632,6 +632,11 @@ static void M_AboutWindow( const char* itemname, void* data )
 	igText( "GNU General Public License for more details." );
 	igNewLine();
 	igText( "https://github.com/GooberMan/rum-and-raisin-doom" );
+
+#if !defined( NDEBUG )
+	igNewLine();
+	igText( "This is a debug build. Expect no speed here." );
+#endif // NDEBUG
 
 #if defined( RNR_PROFILING )
 	igNewLine();
@@ -702,7 +707,7 @@ void M_InitDashboard( void )
 
 	M_RegisterDashboardCheckbox( "Core|Pause While Active", "Multiplayer ignores this", (boolean*)&dashboardpausesplaysim );
 	M_RegisterDashboardWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, Menu_Normal, &M_AboutWindow );
-	M_RegisterDashboardWindow( "Core|licences", "licences", 0, 0, &licenceswindow_open, Menu_Normal, &M_LicencesWindow );
+	M_RegisterDashboardWindow( "Core|Licences", "Licences", 0, 0, &licenceswindow_open, Menu_Normal, &M_LicencesWindow );
 	M_RegisterDashboardSeparator( "Core" );
 	M_RegisterDashboardButton( "Core|Quit", "Yes, this means quit the game", &M_OnDashboardCoreQuit, NULL );
 }
@@ -720,7 +725,7 @@ static void M_DashboardWelcomeWindow( const char* itemname, void* data )
 
 	igText( "Welcome to " PACKAGE_NAME );
 	igNewLine();
-	igTextWrapped(	"You are currently in the Dashboard\. "
+	igTextWrapped(	"You are currently in the Dashboard. "
 					"This is always accessible via the '%s' hotkey. "
 					"If you would like to remap this, click the "
 					"button below to define a new key.",
@@ -804,6 +809,11 @@ void M_DashboardFirstLaunch( void )
 	if( M_ParmExists( "-firstlaunch" ) )
 	{
 		first_launch = FL_Welcome;
+	}
+
+	if( M_ParmExists( "-options" ) )
+	{
+		first_launch = FL_Options;
 	}
 
 	if( first_launch )
