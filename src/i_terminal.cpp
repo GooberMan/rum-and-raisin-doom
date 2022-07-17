@@ -136,13 +136,11 @@ DOOM_C_API void I_TerminalRender( void )
 	{
 		I_StartTic();
 		I_StartFrame();
+		while( event_t* ev = D_PopEvent() )
 		{
-			while( event_t* ev = D_PopEvent() )
+			if (ev->type == ev_quit)
 			{
-				if (ev->type == ev_quit)
-				{
-					I_Quit();
-				}
+				I_Quit();
 			}
 		}
 		//I_FinishUpdate( &terminalbuffer );
