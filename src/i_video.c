@@ -783,6 +783,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
                 // Adjust the window by resizing again so that the window
                 // is the right aspect ratio.
                 SDL_SetWindowSize(screen, window_width, window_height);
+				SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 				queued_window_width = window_width;
 				queued_window_height = window_height;
             }
@@ -1788,6 +1789,7 @@ void I_StartFrame (void)
 		if( !fullscreen )
 		{
 			SDL_SetWindowSize( screen, queued_window_width, queued_window_height );
+			SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		}
 		window_width = queued_window_width;
 		window_height = queued_window_height;
