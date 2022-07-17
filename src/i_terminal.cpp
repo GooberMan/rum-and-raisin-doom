@@ -26,9 +26,12 @@ extern "C"
 {
 	#include "txt_io.h"
 
+	#include "d_event.h"
+
 	#include "m_misc.h"
 
 	#include "i_video.h"
+	#include "i_system.h"
 }
 
 static vbuffer_t terminalbuffer;
@@ -131,7 +134,17 @@ DOOM_C_API void I_TerminalRender( void )
 	TXT_UpdateScreenForBuffer( &terminalbuffer );
 	if( terminalmode == TM_ImmediateRender )
 	{
+		I_StartTic();
 		I_StartFrame();
+		{
+			while( event_t* ev = D_PopEvent() )
+			{
+				if (ev->type == ev_quit)
+				{
+					I_Quit();
+				}
+			}
+		}
 		//I_FinishUpdate( &terminalbuffer );
 		TXT_UpdateScreen();
 	}
