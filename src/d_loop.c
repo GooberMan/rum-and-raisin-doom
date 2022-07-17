@@ -145,7 +145,7 @@ static boolean BuildNewTic(void)
 
     gameticdiv = gametic/ticdup;
 
-    I_StartTic ();
+    I_StartTic();
     loop_interface->ProcessEvents();
 
     // Always run the menu
