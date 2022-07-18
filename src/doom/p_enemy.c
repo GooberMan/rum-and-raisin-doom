@@ -1185,11 +1185,21 @@ void A_VileChase (mobj_t* actor)
 	viletryy =
 	    actor->y + actor->info->speed*yspeed[actor->movedir];
 
-	xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	
+	if( remove_limits )
+	{
+		xl = ( (int64_t)viletryx	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xh = ( (int64_t)viletryx	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yl = ( (int64_t)viletryy	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yh = ( (int64_t)viletryy	- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
+	}
+	else
+	{
+		xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+	}
+
 	vileobj = actor;
 	for (bx=xl ; bx<=xh ; bx++)
 	{
