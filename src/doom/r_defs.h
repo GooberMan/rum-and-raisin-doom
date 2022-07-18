@@ -635,6 +635,9 @@ struct rasterregion_s
 
 typedef struct planecontext_s
 {
+	vbuffer_t			output;
+	byte*				source;
+
 	rasterregion_t**	rasterregions;
 	rasterregion_t*		floorregion;
 	rasterregion_t*		ceilingregion;
@@ -828,6 +831,40 @@ typedef enum disciconstyle_e
 
 #if defined( __cplusplus )
 }
-#endif // defined( __cplusplus )
 
+struct RegionRange
+{
+	struct iterator
+	{
+		constexpr rasterregion_t* operator*()				{ return _val; }
+		constexpr bool operator!=( const iterator& it )		{ return _val != it._val; }
+		constexpr iterator& operator++()
+		{
+			do
+			{
+				_val = _val->nextregion;
+				if( _val == nullptr ) break;
+				if( _val->minx <= _val->maxx ) break;
+			} while( true );
+
+			return *this;
+		}
+
+		rasterregion_t* _val;
+	};
+
+	RegionRange( rasterregion_t* r )
+		: _begin { r }
+		, _end { nullptr }
+	{
+	}
+
+	constexpr iterator begin() { return _begin; }
+	constexpr iterator end() { return _end; }
+
+	iterator _begin;
+	iterator _end;
+};
+
+#endif // defined( __cplusplus )
 #endif

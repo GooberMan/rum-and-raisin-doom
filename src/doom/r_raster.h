@@ -27,6 +27,6 @@ extern "C" {
 }
 #endif
 
-DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planecontext, spancontext_t* spancontext, rasterregion_t* region );
+DOOM_C_API void R_RasteriseRegionRange( spantype_t spantype, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture );
 
 #endif // __I_THREAD__

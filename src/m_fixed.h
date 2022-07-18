@@ -33,6 +33,26 @@
 #endif
 
 #if defined( __cplusplus )
+template< typename _ty >
+consteval _ty RightmostBit( _ty val )
+{
+	return val & ( ~val + 1 );
+}
+
+template< typename _ty >
+consteval _ty FirstSetBitIndex( _ty val )
+{
+	if( !val ) return -1;
+
+	_ty index = 0;
+	while( !( val & ( (_ty)1 << index ) ) )
+	{
+		++index;
+	}
+
+	return index;
+}
+
 consteval bool IsPowerOf2( size_t val )
 {
 	return val != 0 && ( val & ( val - 1 ) ) == 0;

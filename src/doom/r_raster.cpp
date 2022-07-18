@@ -20,6 +20,7 @@
 #include "doomdef.h"
 #include "doomtype.h"
 #include "m_fixed.h"
+#include "doomstat.h"
 #include "m_profile.h"
 #include "r_main.h"
 
@@ -35,23 +36,24 @@ extern "C"
 	extern rend_fixed_t	yslope[ MAXSCREENHEIGHT ];
 }
 
-INLINE void DoSample( int32_t& spot
-					, int32_t& top
+template< int64_t Width, int64_t Height >
+INLINE void DoSample( int32_t& top
 					, rend_fixed_t& xfrac
 					, rend_fixed_t& xstep
 					, rend_fixed_t& yfrac
 					, rend_fixed_t& ystep
 					, pixel_t*& source
 					, pixel_t*& dest
-					, planecontext_t*& planecontext
-					, spancontext_t*& spancontext )
+					, planecontext_t*& planecontext )
 {
-	constexpr int64_t FracMask = 63 * RENDFRACUNIT;
-	constexpr int64_t XShift = RENDFRACBITS - 6;
+	constexpr int64_t YBitIndex = FirstSetBitIndex( RightmostBit( Height ) );
+	constexpr int64_t XFracMask = IntToRendFixed( Width - 1 );
+	constexpr int64_t YFracMask = IntToRendFixed( Height - 1 );
+	constexpr int64_t XShift = RENDFRACBITS - YBitIndex;
 	constexpr int64_t YShift = RENDFRACBITS;
 
-	spot = ( (yfrac & FracMask ) >> YShift ) | ( (xfrac & FracMask ) >> XShift );
-	*dest++ = ( source + planecontext->raster[ top++ ].sourceoffset )[spot];
+	int32_t spot = ( ( yfrac & YFracMask ) >> YShift ) | ( ( xfrac & XFracMask ) >> XShift );
+	*dest++ = ( source + planecontext->raster[ top++ ].sourceoffset )[ spot ];
 	xfrac += xstep;
 	yfrac += ystep;
 }
@@ -59,12 +61,12 @@ INLINE void DoSample( int32_t& spot
 // Used http://www.lysator.liu.se/~mikaelk/doc/perspectivetexture/ as reference for how to implement an efficient rasteriser
 // Implemented for several Log2( N ) values, select based on backbuffer width
 
-template< int32_t Leap, int32_t LeapLog2 >
+template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t top, int32_t count )
+INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, planecontext_t* planecontext, int32_t x, int32_t top, int32_t count )
 {
-	pixel_t*			dest			= spancontext->output.data + xlookup[ x ] + rowofs[ top ];
-	pixel_t*			source			= spancontext->source;
+	pixel_t*			dest			= planecontext->output.data + xlookup[ x ] + rowofs[ top ];
+	pixel_t*			source			= planecontext->source;
 
 	int32_t				nexty			= top;
 
@@ -82,8 +84,6 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 
 	rend_fixed_t		xstep;
 	rend_fixed_t		ystep;
-
-	int32_t				spot;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			starttime = I_GetTimeUS();
@@ -103,47 +103,47 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 
 		if constexpr( LeapLog2 >= 5 )
 		{
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
 		}
 		if constexpr( LeapLog2 >= 4 )
 		{
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
 		}
 		if constexpr( LeapLog2 >= 3 )
 		{
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
 		}
 		if constexpr( LeapLog2 >= 2 )
 		{
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
 		}
 
 		xfrac = nextxfrac;
@@ -167,7 +167,7 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 
 		do
 		{
-			DoSample( spot, top, xfrac, xstep, yfrac, ystep, source, dest, planecontext, spancontext );
+			DoSample< Width, Height >( top, xfrac, xstep, yfrac, ystep, source, dest, planecontext );
 		} while( top <= nexty );
 	}
 
@@ -178,8 +178,10 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 
 }
 
+template< int64_t Width, int64_t Height >
 INLINE void R_Prepare( int32_t y, planecontext_t* planecontext )
 {
+	constexpr int64_t Size = Width * Height;
 	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), yslope[ y ] );
 
 	// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
@@ -187,18 +189,19 @@ INLINE void R_Prepare( int32_t y, planecontext_t* planecontext )
 	{
 		if( fixedcolormapindex )
 		{
-			planecontext->raster[ y ].sourceoffset = fixedcolormapindex * 4096;
+			planecontext->raster[ y ].sourceoffset = fixedcolormapindex * Size;
 		}
 		else
 		{
 			int32_t lightindex = (int32_t)M_CLAMP( ( planecontext->raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
 			lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
-			planecontext->raster[ y ].sourceoffset = lightindex * 4096;
+			planecontext->raster[ y ].sourceoffset = lightindex * Size;
 		}
 
 	}
 }
 
+template< int64_t Width, int64_t Height >
 INLINE void R_Prepare( rasterregion_t* region, planecontext_t* planecontext )
 {
 	int32_t y = region->miny;
@@ -206,7 +209,7 @@ INLINE void R_Prepare( rasterregion_t* region, planecontext_t* planecontext )
 
 	while( y < stop )
 	{
-		R_Prepare( y++, planecontext );
+		R_Prepare< Width, Height >( y++, planecontext );
 	};
 }
 
@@ -215,62 +218,134 @@ constexpr auto Lines( rasterregion_t* region )
 	return std::span( region->lines, region->maxx - region->minx + 1 );
 }
 
-
-DOOM_C_API void R_RasteriseColumns( spantype_t spantype, planecontext_t* planecontext, spancontext_t* spancontext, rasterregion_t* region )
+template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
+requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
+INLINE void ChooseRasteriser( planecontext_t* planecontext, rasterregion_t* region )
 {
-	M_PROFILE_FUNC();
-
 	rend_fixed_t view_x = FixedToRendFixed( viewx );
 	rend_fixed_t view_y = FixedToRendFixed( viewy );
 
 	int32_t stop = region->maxx + 1;
 	int32_t x = region->minx;
 
-	R_Prepare( region, planecontext );
+	for( rasterline_t& line : Lines( region ) )
+	{
+		if( line.top <= line.bottom )
+		{
+			R_RasteriseColumnImpl< Leap, LeapLog2, Width, Height >( view_x, view_y, planecontext, x, line.top, line.bottom - line.top );
+		}
+		++x;
+	}
+}
+
+template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
+requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
+INLINE void ChooseRegionWidthHeightRasteriser( planecontext_t* planecontext, rasterregion_t* firstregion )
+{
+	for( rasterregion_t* thisregion : RegionRange( firstregion ) )
+	{
+		planecontext->planeheight = abs( RendFixedToFixed( thisregion->height ) - viewz );
+		int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
+	
+		planecontext->planezlightindex = light;
+		planecontext->planezlight = zlight[ light ];
+
+		R_Prepare< Width, Height >( thisregion, planecontext );
+		ChooseRasteriser< Leap, LeapLog2, Width, Height >( planecontext, thisregion );
+	}
+}
+
+template< int32_t Leap, int32_t LeapLog2, int64_t Width >
+requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
+INLINE void ChooseRegionWidthRasteriser( planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	switch( texture->height )
+	{
+	case 16:
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 16 >( planecontext, firstregion );
+		break;
+	case 32:
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 32 >( planecontext, firstregion );
+		break;
+	case 64:
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 64 >( planecontext, firstregion );
+		break;
+	case 128:
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 128 >( planecontext, firstregion );
+		break;
+	case 256:
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 256 >( planecontext, firstregion );
+		break;
+	default:
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 64 >( planecontext, firstregion );
+		break;
+	}
+}
+
+template< int32_t Leap, int32_t LeapLog2 >
+requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
+INLINE void ChooseRegionRasteriser( planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	if( !remove_limits )
+	{
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, 64, 64 >( planecontext, firstregion );
+	}
+	else
+	{
+		switch( texture->width )
+		{
+		case 8:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 8 >( planecontext, firstregion, texture );
+			break;
+		case 16:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 16 >( planecontext, firstregion, texture );
+			break;
+		case 32:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 32 >( planecontext, firstregion, texture );
+			break;
+		case 64:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( planecontext, firstregion, texture );
+			break;
+		case 128:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 128 >( planecontext, firstregion, texture );
+			break;
+		case 256:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 256 >( planecontext, firstregion, texture );
+			break;
+		case 512:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 512 >( planecontext, firstregion, texture );
+			break;
+		case 1024:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 1024 >( planecontext, firstregion, texture );
+			break;
+		default:
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( planecontext, firstregion, texture );
+			break;
+		}
+	}
+}
+
+DOOM_C_API void R_RasteriseRegionRange( spantype_t spantype, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	planecontext->source = texture->data;
+
 	switch( spantype )
 	{
 	case Span_PolyRaster_Log2_4:
-		for( rasterline_t& line : Lines( region ) )
-		{
-			if( line.top <= line.bottom )
-			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
-			}
-			++x;
-		}
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( planecontext, firstregion, texture );
 		break;
 
 	case Span_PolyRaster_Log2_8:
-		for( rasterline_t& line : Lines( region ) )
-		{
-			if( line.top <= line.bottom )
-			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
-			}
-			++x;
-		}
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( planecontext, firstregion, texture );
 		break;
 
 	case Span_PolyRaster_Log2_16:
-		for( rasterline_t& line : Lines( region ) )
-		{
-			if( line.top <= line.bottom )
-			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
-			}
-			++x;
-		}
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( planecontext, firstregion, texture );
 		break;
 
 	case Span_PolyRaster_Log2_32:
-		for( rasterline_t& line : Lines( region ) )
-		{
-			if( line.top <= line.bottom )
-			{
-				R_RasteriseColumnImpl< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( view_x, view_y, planecontext, spancontext, x, line.top, line.bottom - line.top );
-			}
-			++x;
-		}
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( planecontext, firstregion, texture );
 		break;
 	}
 }
