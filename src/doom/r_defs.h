@@ -96,6 +96,7 @@ typedef struct texturecomposite_s
 	int32_t		width;
 	int32_t		height;
 	int32_t		pitch;
+	int32_t		index;
 } texturecomposite_t;
 
 //

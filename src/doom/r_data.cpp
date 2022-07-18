@@ -167,6 +167,8 @@ extern "C"
 	uint32_t**				texturecompositecolumnofs;
 	texturecomposite_t*		texturecomposite;
 
+	texturecomposite_t*		precachedflats;
+
 	// for global animation
 	int*		flattranslation;
 	int*		texturetranslation;
@@ -181,19 +183,42 @@ extern "C"
 
 typedef enum compositetype_e
 {
-	CT_Texture,
-	CT_Flat,
+	Composite_Texture,
+	Composite_Flat,
 } compositetype_t;
 
 typedef struct compositedata_s
 {
 	texturecomposite_t*		composite;
 	compositetype_t			type;
-
 } compositedata_t;
 
-DoomVector< compositedata_t >				compositetable;
-DoomUnorderedMap< DoomString, size_t >		compositelookup;
+constexpr texturecomposite_t blankwall =
+{
+	NULL,
+	{ '-', 0, 0, 0, 0, 0, 0, 0 },
+	0,
+	0,
+	0,
+	0,
+	0,
+	-1
+};
+
+constexpr texturecomposite_t limitremovingblankwall =
+{
+	NULL,
+	{ 0, 0, 0, 0, 0, 0, 0, 0 },
+	0,
+	0,
+	0,
+	0,
+	0,
+	-1
+};
+
+
+DoomUnorderedMap< DoomString, compositedata_t >		compositelookup;
 
 //
 // MAPTEXTURE_T CACHING
@@ -677,6 +702,7 @@ void R_InitTextures (void)
 		texturecomposite[ i ].width = texture->width;
 		texturecomposite[ i ].height = texture->height;
 		texturecomposite[ i ].pitch = texture->height;
+		texturecomposite[ i ].index = i;
 
 		for (j=0 ; j<texture->patchcount ; j++, mpatch++, patch++)
 		{
@@ -760,6 +786,7 @@ void R_InitFlats (void)
 		precachedflats[ i ].width = 64;
 		precachedflats[ i ].height = 64;
 		precachedflats[ i ].pitch = 64;
+		precachedflats[ i ].index = i;
 	}
 }
 
@@ -948,11 +975,6 @@ int R_TextureNumForName(const char *name)
 // R_PrecacheLevel
 // Preloads all relevant graphics for the level.
 //
-int		flatmemory;
-int		texturememory;
-//int		spritememory;
-
-texturecomposite_t* precachedflats;
 
 void R_PrecacheLevel (void)
 {
@@ -976,6 +998,17 @@ void R_PrecacheLevel (void)
 	int32_t			animstart;
 	int32_t			animend;
 	int32_t			thisanim;
+
+	compositelookup.clear();
+	{
+		compositedata_t data = { (texturecomposite_t*)&blankwall, Composite_Texture };
+		compositelookup[ blankwall.name ] = data;
+	}
+	if( remove_limits )
+	{
+		compositedata_t data = { (texturecomposite_t*)&limitremovingblankwall, Composite_Texture };
+		compositelookup[ limitremovingblankwall.name ] = data;
+	}
 
 	// Precache flats.
 	flatpresent = (char*)Z_Malloc(numflats, PU_STATIC, NULL);
@@ -1008,8 +1041,6 @@ void R_PrecacheLevel (void)
 		}
 	}
 	
-	flatmemory = 0;
-
 	for (i=0 ; i<numflats ; i++)
 	{
 		precachedflats[ i ].data = NULL;
@@ -1017,7 +1048,6 @@ void R_PrecacheLevel (void)
 
 		if (flatpresent[i])
 		{
-			flatmemory += lumpinfo[lump]->size;
 			originalflatdata = (byte*)W_CacheLumpNum(lump, PU_CACHE);
 
 			byte* currsource = originalflatdata;
@@ -1043,6 +1073,9 @@ void R_PrecacheLevel (void)
 					++outputflatdata;
 				}
 			}
+
+			compositedata_t data = { &precachedflats[ i ], Composite_Flat };
+			compositelookup[ precachedflats[ i ].name ] = data;
 		}
 	}
 
@@ -1068,22 +1101,28 @@ void R_PrecacheLevel (void)
 	//  name.
 	texturepresent[skytexture] = 1;
 	
-	texturememory = 0;
 	for (i=0 ; i<numtextures ; i++)
 	{
 		if (!texturepresent[i])
 			continue;
+
+		if( !remove_limits && i == 0 )
+		{
+			continue;
+		}
 
 		texture = textures[i];
 	
 		for (j=0 ; j<texture->patchcount ; j++)
 		{
 			lump = texture->patches[j].patch;
-			texturememory += lumpinfo[lump]->size;
 			W_CacheLumpNum( lump , PU_LEVEL ); // TODO: Switch to cache after masked textures get a SIMD renderer
 		}
 
 		R_CacheComposite( i );
+
+		compositedata_t data = { &texturecomposite[ i ], Composite_Texture };
+		compositelookup[ texturecomposite[ i ].name ] = data;
 	}
 
 	Z_Free(texturepresent);
