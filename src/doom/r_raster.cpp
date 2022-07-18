@@ -51,8 +51,7 @@ INLINE void DoSample( int32_t& spot
 	constexpr int64_t YShift = RENDFRACBITS - 6;
 
 	spot = ( (yfrac & FracMask ) >> YShift ) | ( (xfrac & FracMask ) >> XShift );
-	source = spancontext->source + planecontext->raster[ top++ ].sourceoffset;
-	*dest++ = source[spot];
+	*dest++ = ( source + planecontext->raster[ top++ ].sourceoffset )[spot];
 	xfrac += xstep;
 	yfrac += ystep;
 }
@@ -73,7 +72,7 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 	rend_fixed_t		anglecos		= FixedToRendFixed( renderfinecosine[ angle ] );
 	rend_fixed_t		anglesin		= FixedToRendFixed( renderfinesine[ angle ] );
 
-	rend_fixed_t		currdistance	= planecontext->raster[ nexty ].distance;
+	rend_fixed_t		currdistance	= planecontext->raster[ top ].distance;
 	rend_fixed_t		currlength		= RendFixedMul( currdistance, distscale[ x ] );
 
 	rend_fixed_t		xfrac			= view_x + RendFixedMul( anglecos, currlength );
