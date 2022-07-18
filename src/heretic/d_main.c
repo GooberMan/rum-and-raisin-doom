@@ -206,7 +206,7 @@ void D_Display(void)
     NetUpdate();
 
     // Flush buffered stuff to screen
-    I_FinishUpdate();
+    I_FinishUpdate( NULL );
 }
 
 //
@@ -243,7 +243,7 @@ void D_DoomLoop(void)
     }
     I_GraphicsCheckCommandLine();
     I_SetGrabMouseCallback(D_GrabMouseCallback);
-    I_InitGraphics( 1 );
+    I_InitGraphics( );
 
     main_loop_started = true;
 

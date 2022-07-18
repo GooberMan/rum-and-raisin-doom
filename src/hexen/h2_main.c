@@ -825,7 +825,7 @@ void H2_GameLoop(void)
     I_SetWindowTitle(gamedescription);
     I_GraphicsCheckCommandLine();
     I_SetGrabMouseCallback(D_GrabMouseCallback);
-    I_InitGraphics( 1 );
+    I_InitGraphics( );
 
     while (1)
     {
@@ -949,7 +949,7 @@ static void DrawAndBlit(void)
     NetUpdate();
 
     // Flush buffered stuff to screen
-    I_FinishUpdate();
+    I_FinishUpdate( NULL );
 }
 
 //==========================================================================

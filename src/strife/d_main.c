@@ -365,7 +365,7 @@ void D_Display (void)
     // normal update
     if (!wipe)
     {
-        I_FinishUpdate ();              // page flip or blit buffer
+        I_FinishUpdate ( NULL );              // page flip or blit buffer
         return;
     }
     
@@ -389,7 +389,7 @@ void D_Display (void)
                                , 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
         I_UpdateNoBlit ();
         M_Drawer ();                            // menu is drawn even on top of wipes
-        I_FinishUpdate ();                      // page flip or blit buffer
+        I_FinishUpdate ( NULL );                      // page flip or blit buffer
     } while (!done);
 }
 
@@ -529,7 +529,7 @@ void D_DoomLoop (void)
 
     if (!showintro)
     {
-        I_InitGraphics( 1 );
+        I_InitGraphics();
     }
 
     if (show_diskicon)
@@ -1267,7 +1267,7 @@ static void D_IntroBackground(void)
     // proper fade-in behavior on the titlescreen
     if(introprogress >= MAXINTROPROGRESS)
     {
-        I_FinishUpdate();
+        I_FinishUpdate( NULL );
         return;
     }
 
@@ -1300,7 +1300,7 @@ static void D_InitIntroSequence(void)
         // In vanilla Strife, Mode 13h was initialized directly in D_DoomMain.
         // We have to be a little more courteous of the low-level code here.
         I_SetGrabMouseCallback(D_StartupGrabCallback);
-        I_InitGraphics( 1 );
+        I_InitGraphics();
         V_RestoreBuffer(); // make the V_ routines work
 
         // Load all graphics
@@ -1417,7 +1417,7 @@ static void D_DrawIntroSequence(void)
         // 699142 - 0xA0000 == 43782, which % 320 == 262, / 320 == 136
         V_DrawBlock(262, 136, 32, 64, rawgfx_startp[laserpos % 4]);
 
-        I_FinishUpdate();
+        I_FinishUpdate( NULL );
     }
     else if (using_text_startup)
     {
