@@ -47,8 +47,8 @@ INLINE void DoSample( int32_t& spot
 					, spancontext_t*& spancontext )
 {
 	constexpr int64_t FracMask = 63 * RENDFRACUNIT;
-	constexpr int64_t XShift = RENDFRACBITS;
-	constexpr int64_t YShift = RENDFRACBITS - 6;
+	constexpr int64_t XShift = RENDFRACBITS - 6;
+	constexpr int64_t YShift = RENDFRACBITS;
 
 	spot = ( (yfrac & FracMask ) >> YShift ) | ( (xfrac & FracMask ) >> XShift );
 	*dest++ = ( source + planecontext->raster[ top++ ].sourceoffset )[spot];

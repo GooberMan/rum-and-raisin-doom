@@ -966,7 +966,8 @@ void R_PrecacheLevel (void)
 
     texture_t*		texture;
 
-	byte*			baseflatdata;
+	byte*			originalflatdata;
+	byte*			transposedflatdata;
 	byte*			outputflatdata;
 	int				currmapindex;
 	lighttable_t*	currmap;
@@ -978,7 +979,8 @@ void R_PrecacheLevel (void)
 
 	// Precache flats.
 	flatpresent = (char*)Z_Malloc(numflats, PU_STATIC, NULL);
-	memset (flatpresent,0,numflats);	
+	memset (flatpresent,0,numflats);
+	transposedflatdata = (byte*)Z_Malloc( 64 * 64, PU_STATIC, NULL );
 
 	for (i=0 ; i<numsectors ; i++)
 	{
@@ -1016,7 +1018,19 @@ void R_PrecacheLevel (void)
 		if (flatpresent[i])
 		{
 			flatmemory += lumpinfo[lump]->size;
-			baseflatdata = (byte*)W_CacheLumpNum(lump, PU_CACHE);
+			originalflatdata = (byte*)W_CacheLumpNum(lump, PU_CACHE);
+
+			byte* currsource = originalflatdata;
+			for( int32_t y : iota( 0, 64 ) )
+			{
+				byte* currdest = transposedflatdata + y;
+				for( int32_t x : iota( 0, 64 ) )
+				{
+					*currdest = *currsource;
+					++currsource;
+					currdest += 64;
+				}
+			}
 
 			outputflatdata = (byte*)Z_Malloc(lumpinfo[lump]->size * NUMCOLORMAPS, COMPOSITE_ZONE, &precachedflats[ i ].data );
 
@@ -1025,13 +1039,14 @@ void R_PrecacheLevel (void)
 				currmap = colormaps + currmapindex * 256;
 				for( currflatbyte = 0; currflatbyte < lumpinfo[lump]->size; ++currflatbyte)
 				{
-					*outputflatdata = currmap[ baseflatdata[ currflatbyte ] ];
+					*outputflatdata = currmap[ transposedflatdata[ currflatbyte ] ];
 					++outputflatdata;
 				}
 			}
 		}
 	}
 
+	Z_Free( originalflatdata );
 	Z_Free(flatpresent);
 
 	// Precache textures.
