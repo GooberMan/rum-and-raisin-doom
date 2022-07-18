@@ -496,10 +496,24 @@ byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
 	return composite->data + ofs;
 }
 
+thread_local byte flatcolumnhack[ 72 ];
+
 byte* R_GetRawColumn( int32_t tex, int32_t col )
 {
 	int		lump;
 	int		ofs;
+
+	if( tex > numtextures )
+	{
+		// THIS IS SO NASTY. NEED TO CACHE THIS
+		flatcolumnhack[ 0 ] = 0;
+		flatcolumnhack[ 1 ] = 64;
+		flatcolumnhack[ 2 ] = 0;
+		memcpy( flatcolumnhack + 3, R_GetColumn( tex, col, 0 ), 64 );
+		flatcolumnhack[ 67 ] = 0;
+		flatcolumnhack[ 68 ] = 0xFF;
+		return flatcolumnhack + 3;
+	}
 	
 	col &= texturelookup[ tex ]->widthmask;
 	ofs = texturecolumnofs[tex][col];
