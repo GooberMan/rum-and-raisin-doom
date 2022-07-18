@@ -302,40 +302,6 @@ auto Surfaces( planecontext_t* context )
 	return std::span( context->rasterregions, numflats + numtextures );
 }
 
-struct RegionRange
-{
-	struct iterator
-	{
-		constexpr rasterregion_t* operator*()				{ return _val; }
-		constexpr bool operator!=( const iterator& it )		{ return _val != it._val; }
-		constexpr iterator& operator++()
-		{
-			do
-			{
-				_val = _val->nextregion;
-				if( _val == nullptr ) break;
-				if( _val->minx <= _val->maxx ) break;
-			} while( true );
-
-			return *this;
-		}
-
-		rasterregion_t* _val;
-	};
-
-	RegionRange( rasterregion_t* r )
-		: _begin { r }
-		, _end { nullptr }
-	{
-	}
-
-	constexpr iterator begin() { return _begin; }
-	constexpr iterator end() { return _end; }
-
-	iterator _begin;
-	iterator _end;
-};
-
 DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	M_PROFILE_FUNC();
@@ -350,9 +316,15 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 		span_type = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( render_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 	}
 
+	if( span_type == Span_Original )
+	{
+		I_Error( "I broke the span renderer, it's on its way out now." );
+	}
+
 	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
 
 	spancontext.output = *dest;
+	planecontext->output = *dest;
 
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook
@@ -405,30 +377,33 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			{
 				// regular flat
 				int32_t lumpnum = flattranslation[ picnum ];
-				spancontext.source = flatlookup[ lumpnum ]->data;
 
-				for( rasterregion_t* thisregion : RegionRange( region ) )
-				{
-					planecontext->planeheight = abs( RendFixedToFixed( thisregion->height ) - viewz );
-					int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
+				R_RasteriseRegionRange( (spantype_t)span_type, planecontext, region, flatlookup[ lumpnum ] );
 
-					planecontext->planezlightindex = light;
-					planecontext->planezlight = zlight[ light ];
-
-					if( span_type == Span_Original )
-					{
-						I_Error( "I broke the span renderer, it's on its way out now." );
-						//int32_t stop = pl->maxx + 1;
-						//for (x=pl->minx ; x<= stop ; x++)
-						//{
-						//	R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
-						//}
-					}
-					else
-					{
-						R_RasteriseColumns( (spantype_t)span_type, planecontext, &spancontext, thisregion );
-					}
-				}
+				//planecontext->source = spancontext.source = flatlookup[ lumpnum ]->data;
+				//
+				//for( rasterregion_t* thisregion : RegionRange( region ) )
+				//{
+				//	planecontext->planeheight = abs( RendFixedToFixed( thisregion->height ) - viewz );
+				//	int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
+				//
+				//	planecontext->planezlightindex = light;
+				//	planecontext->planezlight = zlight[ light ];
+				//
+				//	if( span_type == Span_Original )
+				//	{
+				//		I_Error( "I broke the span renderer, it's on its way out now." );
+				//		//int32_t stop = pl->maxx + 1;
+				//		//for (x=pl->minx ; x<= stop ; x++)
+				//		//{
+				//		//	R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
+				//		//}
+				//	}
+				//	else
+				//	{
+				//		R_RasteriseColumns( (spantype_t)span_type, planecontext, thisregion );
+				//	}
+				//}
 			}
 		}
 	}
