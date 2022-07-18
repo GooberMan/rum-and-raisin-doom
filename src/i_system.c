@@ -278,6 +278,16 @@ void I_Error (const char *error, ...)
 
     // Shutdown. Here might be other errors.
 
+    exit_gui_popup = !M_ParmExists("-nogui");
+    if (exit_gui_popup && !I_ConsoleStdout())
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                                 PACKAGE_STRING, msgbuf, NULL);
+    }
+
+    exit(-1);
+
+
     entry = exit_funcs;
 
     while (entry != NULL)
