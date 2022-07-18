@@ -181,6 +181,7 @@ extern "C"
 	extern int32_t remove_limits;
 	extern int detailLevel;
 	extern int screenblocks;
+	extern int numflats;
 	extern boolean refreshstatusbar;
 
 	extern size_t			xlookup[MAXWIDTH];
@@ -1096,6 +1097,8 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.starttime = 0;
 		renderdatas[ currcontext ].context.endtime = 1;
 		renderdatas[ currcontext ].context.timetaken = 1;
+
+		renderdatas[ currcontext ].context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * numflats, PU_STATIC, NULL );
 
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 

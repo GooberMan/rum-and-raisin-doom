@@ -191,7 +191,7 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	context->lastopening = context->openings;
 
-	context->rasterregions = R_AllocateScratch< rasterregion_t* >( numflats, nullptr );
+	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * numflats );
 
 	// texture calculation
 	if( span_override == Span_Original )
