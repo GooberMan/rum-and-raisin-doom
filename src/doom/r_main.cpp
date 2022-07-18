@@ -1487,8 +1487,6 @@ void R_Init (void)
 {
 	R_InitAspectAdjustedValues();
 
-	R_InitColFuncs();
-
     R_InitData ();
     I_TerminalPrintf( Log_None, "." );
     R_InitPointToAngle ();
@@ -1571,6 +1569,8 @@ double_t Lerp( double_t from, double_t to, double_t percent )
 void R_SetupFrame (player_t* player)
 {
 	M_PROFILE_FUNC();
+
+	R_InitColFuncs();
 
 	int32_t		i;
 	int32_t		currcontext;
