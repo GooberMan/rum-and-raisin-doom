@@ -179,6 +179,22 @@ extern "C"
 	lighttable_t	*colormaps;
 }
 
+typedef enum compositetype_e
+{
+	CT_Texture,
+	CT_Flat,
+} compositetype_t;
+
+typedef struct compositedata_s
+{
+	texturecomposite_t*		composite;
+	compositetype_t			type;
+
+} compositedata_t;
+
+DoomVector< compositedata_t >				compositetable;
+DoomUnorderedMap< DoomString, size_t >		compositelookup;
+
 //
 // MAPTEXTURE_T CACHING
 // When a texture is first needed,
@@ -825,17 +841,28 @@ void R_InitData (void)
 int R_FlatNumForName(const char *name)
 {
     int		i;
-    char	namet[9];
 
-    i = W_CheckNumForName (name);
+	i = W_CheckNumForName (name);
 
-    if (i == -1)
-    {
-	namet[8] = 0;
-	memcpy (namet, name,8);
-	I_Error ("R_FlatNumForName: %s not found",namet);
-    }
-    return i - firstflat;
+	if( i != -1 )
+	{
+		return i - firstflat;
+	}
+
+	if( !remove_limits )
+	{
+		I_Error( "R_FlatNumForName: %s not found", name );
+		return -1;
+	}
+
+	i = R_CheckTextureNumForName (name);
+
+	if( i == -1 )
+	{
+		I_Error ("R_FlatNumForName: %s not found in textures", name );
+	}
+
+	return 1; //i + numflats;
 }
 
 
@@ -854,6 +881,11 @@ int R_CheckTextureNumForName(const char *name)
     // "NoTexture" marker.
     if (name[0] == '-')		
 	return 0;
+
+	if( remove_limits && name[ 0 ] == 0 )
+	{
+		return 0;
+	}
 		
     key = W_LumpNameHash(name) % numtextures;
 
@@ -887,12 +919,26 @@ int R_TextureNumForName(const char *name)
 	
     i = R_CheckTextureNumForName (name);
 
-    if (i==-1)
-    {
-	I_Error ("R_TextureNumForName: %s not found",
-		 name);
-    }
-    return i;
+	if( i != -1 )
+	{
+		return i;
+	}
+
+	if( !remove_limits )
+	{
+		I_Error ("R_TextureNumForName: %s not found", name );
+		return -1;
+	}
+
+	i = W_CheckNumForName( name );
+
+	if( i == -1 )
+	{
+		I_Error ("R_TextureNumForName: %s not found in flats", name );
+		return -1;
+	}
+
+	return 1; //numtextures + i - firstflat;
 }
 
 
