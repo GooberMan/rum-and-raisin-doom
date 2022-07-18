@@ -765,7 +765,7 @@ static void M_DashboardFirstLaunchWindow()
 		ImVec2 framesize = { windowcontentmax.x - windowcontentmin.x, windowcontentmax.y - windowcontentmin.y - 30.f };
 
 		igPushStyleColorU32( ImGuiCol_FrameBg, IM_COL32_BLACK_TRANS );
-		if( igBeginChildFrame( (ImGuiID)&first_launch, framesize, ImGuiWindowFlags_None ) )
+		if( igBeginChildFrame( 666, framesize, ImGuiWindowFlags_None ) )
 		{
 			// This is annoying, need to reset style colour so that checkboxes/sliders/etc look right
 			igPopStyleColor( 1 );
