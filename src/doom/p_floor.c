@@ -377,16 +377,16 @@ EV_DoFloor
 		  {
 		      side = getSide(secnum,i,0);
 		      if (side->bottomtexture >= 0)
-			  if (textureheight[side->bottomtexture] < 
+			  if (texturelookup[side->bottomtexture]->height < 
 			      minsize)
 			      minsize = 
-				  textureheight[side->bottomtexture];
+				  texturelookup[side->bottomtexture]->height;
 		      side = getSide(secnum,i,1);
 		      if (side->bottomtexture >= 0)
-			  if (textureheight[side->bottomtexture] < 
+			  if (texturelookup[side->bottomtexture]->height < 
 			      minsize)
 			      minsize = 
-				  textureheight[side->bottomtexture];
+				  texturelookup[side->bottomtexture]->height;
 		  }
 	      }
 	      floor->floordestheight =
@@ -517,13 +517,13 @@ EV_BuildStairs
 		    continue;
 					
 		tsec = (sec->lines[i])->frontsector;
-		newsecnum = tsec-sectors;
+		newsecnum = (int)( tsec - sectors );
 		
 		if (secnum != newsecnum)
 		    continue;
 
 		tsec = (sec->lines[i])->backsector;
-		newsecnum = tsec - sectors;
+		newsecnum = (int)( tsec - sectors );
 
 		if (tsec->floorpic != texture)
 		    continue;

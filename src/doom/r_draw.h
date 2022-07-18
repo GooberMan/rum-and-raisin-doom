@@ -81,7 +81,7 @@ void R_DrawTranslatedColumnLow ( colcontext_t* context );
 void R_VideoEraseRegion( int x, int y, int width, int height );
 
 extern byte*				translationtables;
-extern texturecomposite_t*	precachedflats;
+extern texturecomposite_t**	flatlookup;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.

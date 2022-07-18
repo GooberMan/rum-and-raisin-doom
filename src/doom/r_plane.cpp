@@ -54,6 +54,7 @@ extern "C"
 	extern size_t		rowofs[MAXHEIGHT];
 
 	extern int			numflats;
+	extern int			numtextures;
 }
 
 #include "m_container.h"
@@ -191,7 +192,7 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	context->lastopening = context->openings;
 
-	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * numflats );
+	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * ( numflats + numtextures ) );
 
 	// texture calculation
 	if( span_override == Span_Original )
@@ -298,7 +299,7 @@ constexpr auto Lines( rasterregion_t* region )
 
 auto Surfaces( planecontext_t* context )
 {
-	return std::span( context->rasterregions, numflats );
+	return std::span( context->rasterregions, numflats + numtextures );
 }
 
 struct RegionRange
@@ -362,7 +363,7 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	// This isn't a constant though...
 	skycontext.output = *dest;
-	skycontext.sourceheight = rendtextureheight[ skytexture ];
+	skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
 
 	// TODO: Sort visplanes by height
 	int32_t picnum = -1;
@@ -404,7 +405,7 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 			{
 				// regular flat
 				int32_t lumpnum = flattranslation[ picnum ];
-				spancontext.source = precachedflats[ lumpnum ].data;
+				spancontext.source = flatlookup[ lumpnum ]->data;
 
 				for( rasterregion_t* thisregion : RegionRange( region ) )
 				{

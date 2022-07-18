@@ -1174,11 +1174,20 @@ void P_UpdateSpecials (void)
     {
 	for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
 	{
+		extern int numtextures;
+		extern int numflats;
+
 	    pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
 	    if (anim->istexture)
-		texturetranslation[i] = pic;
+		{
+			texturetranslation[i] = pic;
+			flattranslation[ i + numflats ] = numflats + pic;
+		}
 	    else
-		flattranslation[i] = pic;
+		{
+			flattranslation[i] = pic;
+			texturetranslation[ i + numtextures ] = numtextures + pic;
+		}
 	}
     }
 

@@ -182,6 +182,7 @@ extern "C"
 	extern int detailLevel;
 	extern int screenblocks;
 	extern int numflats;
+	extern int numtextures;
 	extern boolean refreshstatusbar;
 
 	extern size_t			xlookup[MAXWIDTH];
@@ -977,7 +978,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		skycontext.output = rendercontext->buffer;
 		skycontext.yl = 0;
 		skycontext.yh = render_height - ST_BUFFERHEIGHT;
-		skycontext.sourceheight = rendtextureheight[ skytexture ];
+		skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
 
 		for ( x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
 		{
@@ -1098,7 +1099,7 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.endtime = 1;
 		renderdatas[ currcontext ].context.timetaken = 1;
 
-		renderdatas[ currcontext ].context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * numflats, PU_STATIC, NULL );
+		renderdatas[ currcontext ].context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * ( numflats + numtextures ), PU_STATIC, NULL );
 
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 

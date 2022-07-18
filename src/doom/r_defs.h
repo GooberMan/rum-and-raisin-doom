@@ -89,14 +89,17 @@ typedef int32_t					vertclip_t;
 
 typedef struct texturecomposite_s
 {
-	byte*		data;
-	char		name[8];
-	int32_t		namepadding;
-	int32_t		size;
-	int32_t		width;
-	int32_t		height;
-	int32_t		pitch;
-	int32_t		index;
+	byte*			data;
+	char			name[8];
+	int32_t			namepadding;
+	int32_t			size;
+	int32_t			width;
+	int32_t			height;
+	int32_t			pitch;
+	int32_t			widthmask;
+	rend_fixed_t	renderheight;
+
+	int32_t			index;
 } texturecomposite_t;
 
 //

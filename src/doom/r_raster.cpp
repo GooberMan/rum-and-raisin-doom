@@ -191,7 +191,7 @@ INLINE void R_Prepare( int32_t y, planecontext_t* planecontext )
 		}
 		else
 		{
-			int32_t lightindex = M_CLAMP( ( planecontext->raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
+			int32_t lightindex = (int32_t)M_CLAMP( ( planecontext->raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
 			lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
 			planecontext->raster[ y ].sourceoffset = lightindex * 4096;
 		}

@@ -35,9 +35,8 @@ extern "C" {
 //  for rendering.
 //
 
-// needed for texture pegging
-extern fixed_t*			textureheight;
-extern rend_fixed_t*	rendtextureheight;
+extern texturecomposite_t** texturelookup;
+extern texturecomposite_t** flatlookup;
 
 // needed for pre rendering (fracs)
 extern fixed_t*		spritewidth;

@@ -158,16 +158,15 @@ extern "C"
 	texture_t**		textures_hashtable;
 
 
-	int*					texturewidthmask;
-	// needed for texture pegging
-	fixed_t*				textureheight;
-	rend_fixed_t*			rendtextureheight;
 	short**					texturecolumnlump;
 	uint32_t**				texturecolumnofs;
 	uint32_t**				texturecompositecolumnofs;
 	texturecomposite_t*		texturecomposite;
 
-	texturecomposite_t*		precachedflats;
+	texturecomposite_t*		flatcomposite;
+
+	texturecomposite_t**	texturelookup;
+	texturecomposite_t**	flatlookup;
 
 	// for global animation
 	int*		flattranslation;
@@ -483,16 +482,18 @@ void R_CacheComposite( int32_t tex )
 byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
 {
 	int		ofs;
-	
-	col &= texturewidthmask[tex];
-	ofs = texturecomposite[ tex ].size * colormapindex + texturecompositecolumnofs[tex][col];
 
-	if ( !texturecomposite[tex].data )
+	texturecomposite_t*& composite = texturelookup[ tex ];
+	
+	col &= composite->widthmask;
+	ofs = composite->size * colormapindex + texturecompositecolumnofs[tex][col];
+
+	if ( !composite->data )
 	{
-		R_GenerateComposite (tex);
+		I_Error( "R_GetColumn: Attempting to create composite during rendering." );
 	}
 
-	return texturecomposite[tex].data + ofs;
+	return composite->data + ofs;
 }
 
 byte* R_GetRawColumn( int32_t tex, int32_t col )
@@ -500,10 +501,10 @@ byte* R_GetRawColumn( int32_t tex, int32_t col )
 	int		lump;
 	int		ofs;
 	
-	col &= texturewidthmask[ tex];
+	col &= texturelookup[ tex ]->widthmask;
 	ofs = texturecolumnofs[tex][col];
 	lump = texturecolumnlump[tex][col];
-    
+
 	if (lump > 0)
 	{
 		return (byte *)W_CacheLumpNum(lump,COMPOSITE_ZONE)+ofs;
@@ -553,6 +554,89 @@ static void GenerateTextureHashTable(void)
     }
 }
 
+void R_InitTextureAndFlatComposites( void )
+{
+	int32_t totallookup = numtextures + numflats;
+
+	texturecomposite = (texturecomposite_t*)Z_Malloc( numtextures * sizeof( *texturecomposite ), PU_STATIC, 0 );
+	texturecompositecolumnofs = (uint32_t**)Z_Malloc( totallookup * sizeof( *texturecompositecolumnofs ), PU_STATIC, 0 );
+
+	texturelookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *texturelookup ), PU_STATIC, 0 );
+	flatlookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *flatlookup ), PU_STATIC, 0 );
+
+	flatcomposite = (texturecomposite_t*)Z_Malloc( numflats * sizeof(texturecomposite_t), PU_STATIC, NULL );
+	int32_t index = 0;
+	texturecomposite_t** texturedest = texturelookup;
+	texturecomposite_t** flatdest = flatlookup + numflats;
+
+	for( texture_t* texture : std::span( textures, numtextures ) )
+	{
+		texturecomposite_t& composite = texturecomposite[ index ];
+		texturecompositecolumnofs[ index ] = (uint32_t*)Z_Malloc( texture->width * sizeof( **texturecompositecolumnofs ), PU_STATIC, 0 );
+
+		// Gotta be an easier way to find current or lower power of 2...
+		int32_t mask = 1;
+		while( mask * 2 <= texture->width ) mask <<= 1;
+
+		composite.data = NULL;
+		memcpy( composite.name, texture->name, sizeof( texture->name ) );
+		composite.namepadding = 0;
+		composite.size = 0;
+		composite.width = texture->width;
+		composite.height = texture->height;
+		composite.pitch = texture->height;
+		composite.widthmask = mask - 1;
+		composite.renderheight = IntToRendFixed( texture->height );
+		composite.index = index;
+
+		R_GenerateLookup( index );
+
+		*texturedest++ = *flatdest++ = &composite;
+		++index;
+	}
+
+	index = 0;
+	texturedest = texturelookup + numtextures;
+	flatdest = flatlookup;
+
+	for( texturecomposite_t& composite : std::span( flatcomposite, numflats ) )
+	{
+		int32_t lump = firstflat + index;
+		composite.data = NULL;
+		strncpy( composite.name, W_GetNameForNum( lump ), 8 );
+		composite.namepadding = 0;
+		composite.size = 64 * 64;
+		composite.width = 64;
+		composite.height = 64;
+		composite.pitch = 64;
+		composite.widthmask = 63;
+		composite.renderheight = IntToRendFixed( 64 );
+		composite.index = index;
+
+		uint32_t* columnoffs = texturecompositecolumnofs[ numtextures + index ] = (uint32_t*)Z_Malloc( 64 * sizeof( **texturecompositecolumnofs ), PU_STATIC, 0 );
+		for( uint32_t offset : iota( 0, 64 ) )
+		{
+			*columnoffs++ = offset * 64;
+		}
+
+		*texturedest++ = *flatdest++ = &composite;
+		++index;
+	}
+
+	// Create translation table for global animation.
+	texturetranslation = (int*)Z_Malloc ( ( totallookup + 1 ) * sizeof(*texturetranslation), PU_STATIC, 0);
+	for( int32_t i : iota( 0, totallookup ) )
+	{
+		texturetranslation[i] = i;
+	}
+
+	flattranslation = (int*)Z_Malloc ( ( totallookup + 1 ) * sizeof(*flattranslation), PU_STATIC, 0);
+	for( int32_t i : iota( 0, totallookup ) )
+	{
+		flattranslation[i] = i;
+	}
+
+}
 
 //
 // R_InitTextures
@@ -633,11 +717,6 @@ void R_InitTextures (void)
     textures = (texture_t**)Z_Malloc(numtextures * sizeof(*textures), PU_STATIC, 0);
     texturecolumnlump = (short**)Z_Malloc (numtextures * sizeof(*texturecolumnlump), PU_STATIC, 0);
     texturecolumnofs = (uint32_t**)Z_Malloc (numtextures * sizeof(*texturecolumnofs), PU_STATIC, 0);
-    texturecomposite = (texturecomposite_t*)Z_Malloc (numtextures * sizeof(*texturecomposite), PU_STATIC, 0);
-	texturecompositecolumnofs = (uint32_t**)Z_Malloc (numtextures * sizeof(*texturecompositecolumnofs), PU_STATIC, 0);
-    texturewidthmask = (int32_t*)Z_Malloc (numtextures * sizeof(*texturewidthmask), PU_STATIC, 0);
-    textureheight = (fixed_t*)Z_Malloc (numtextures * sizeof(*textureheight), PU_STATIC, 0);
-	rendtextureheight = (rend_fixed_t*)Z_Malloc( numtextures * sizeof( *rendtextureheight ), PU_STATIC, 0 );
 
     totalwidth = 0;
     
@@ -646,19 +725,20 @@ void R_InitTextures (void)
     temp2 = W_GetNumForName (DEH_String("S_END")) - 1;
     temp3 = ((temp2-temp1+63)/64) + ((numtextures+63)/64);
 
+	constexpr int32_t ExtraDots = 6;
 	DoomString output;
-	output.reserve( temp3 + 8 );
+	output.reserve( temp3 + ExtraDots + 2 );
 
 	output.append( "[" );
-	for (i = 0; i < temp3 + 6; i++)
+	for (i = 0; i < temp3 + ExtraDots; i++)
 	{
 		output.append( " ");
 	}
 	output.append( "]");
 	I_TerminalPrintf( Log_None, output.c_str() );
 	output.clear();
-	output.reserve( temp3 + 7 );
-	for (i = 0; i < temp3 + 7; i++)
+	output.reserve( temp3 + ExtraDots + 1 );
+	for (i = 0; i < temp3 + ExtraDots + 1; i++)
 	{
 		output.append( "\b");
 	}
@@ -695,15 +775,6 @@ void R_InitTextures (void)
 		mpatch = &mtexture->patches[0];
 		patch = &texture->patches[0];
 
-		texturecomposite[ i ].data = NULL;
-		memcpy( texturecomposite[ i ].name, mtexture->name, sizeof( texture->name ) );
-		texturecomposite[ i ].namepadding = 0;
-		texturecomposite[ i ].size = 0;
-		texturecomposite[ i ].width = texture->width;
-		texturecomposite[ i ].height = texture->height;
-		texturecomposite[ i ].pitch = texture->height;
-		texturecomposite[ i ].index = i;
-
 		for (j=0 ; j<texture->patchcount ; j++, mpatch++, patch++)
 		{
 			patch->originx = SHORT(mpatch->originx);
@@ -717,16 +788,7 @@ void R_InitTextures (void)
 		}		
 		texturecolumnlump[i] = (short*)Z_Malloc (texture->width*sizeof(**texturecolumnlump), PU_STATIC,0);
 		texturecolumnofs[i] = (uint32_t*)Z_Malloc (texture->width*sizeof(**texturecolumnofs), PU_STATIC,0);
-		texturecompositecolumnofs[i] = (uint32_t*)Z_Malloc (texture->width*sizeof(**texturecompositecolumnofs), PU_STATIC,0);
 
-		j = 1;
-		while (j*2 <= texture->width)
-			j<<=1;
-
-		texturewidthmask[i] = j-1;
-		textureheight[i] = IntToFixed( texture->height );
-		rendtextureheight[ i ] = IntToRendFixed( texture->height );
-		
 		totalwidth += texture->width;
     }
 
@@ -736,19 +798,7 @@ void R_InitTextures (void)
     if (maptex2)
         W_ReleaseLumpName(DEH_String("TEXTURE2"));
     
-    // Precalculate whatever possible.	
-
-    for (i=0 ; i<numtextures ; i++)
-	{
-		R_GenerateLookup (i);
-	}
     
-    // Create translation table for global animation.
-    texturetranslation = (int*)Z_Malloc ((numtextures+1)*sizeof(*texturetranslation), PU_STATIC, 0);
-    
-    for (i=0 ; i<numtextures ; i++)
-	texturetranslation[i] = i;
-
     GenerateTextureHashTable();
 }
 
@@ -759,35 +809,11 @@ void R_InitTextures (void)
 //
 void R_InitFlats (void)
 {
-	int		i;
+	int32_t totallookup = numflats + numtextures + 1;
 	
 	firstflat = W_GetNumForName (DEH_String("F_START")) + 1;
 	lastflat = W_GetNumForName (DEH_String("F_END")) - 1;
 	numflats = lastflat - firstflat + 1;
-	
-	// Create translation table for global animation.
-	flattranslation = (int*)Z_Malloc ((numflats+1)*sizeof(*flattranslation), PU_STATIC, 0);
-
-	for (i=0 ; i<numflats ; i++)
-	{
-		flattranslation[i] = i;
-	}
-
-	// This needs to be static, and allocated elsewhere
-	precachedflats = (texturecomposite_t*)Z_Malloc( numflats * sizeof(texturecomposite_t), PU_STATIC, NULL );
-
-	for (i=0 ; i<numflats ; i++)
-	{
-		int32_t lump = firstflat + i;
-		precachedflats[ i ].data = NULL;
-		strncpy( precachedflats[ i ].name, W_GetNameForNum( lump ), 8 );
-		precachedflats[ i ].namepadding = 0;
-		precachedflats[ i ].size = 64 * 64;
-		precachedflats[ i ].width = 64;
-		precachedflats[ i ].height = 64;
-		precachedflats[ i ].pitch = 64;
-		precachedflats[ i ].index = i;
-	}
 }
 
 
@@ -854,6 +880,8 @@ void R_InitData (void)
     printf (".");
     R_InitFlats ();
     printf (".");
+	R_InitTextureAndFlatComposites();
+    printf (".");
     R_InitSpriteLumps ();
     printf (".");
     R_InitColormaps ();
@@ -889,7 +917,7 @@ int R_FlatNumForName(const char *name)
 		I_Error ("R_FlatNumForName: %s not found in textures", name );
 	}
 
-	return 1; //i + numflats;
+	return i + numflats;
 }
 
 
@@ -965,7 +993,7 @@ int R_TextureNumForName(const char *name)
 		return -1;
 	}
 
-	return 1; //numtextures + i - firstflat;
+	return numtextures + i - firstflat;
 }
 
 
@@ -995,10 +1023,6 @@ void R_PrecacheLevel (void)
 	lighttable_t*	currmap;
 	int				currflatbyte;
 
-	int32_t			animstart;
-	int32_t			animend;
-	int32_t			thisanim;
-
 	compositelookup.clear();
 	{
 		compositedata_t data = { (texturecomposite_t*)&blankwall, Composite_Texture };
@@ -1010,40 +1034,100 @@ void R_PrecacheLevel (void)
 		compositelookup[ limitremovingblankwall.name ] = data;
 	}
 
-	// Precache flats.
 	flatpresent = (char*)Z_Malloc(numflats, PU_STATIC, NULL);
 	memset (flatpresent,0,numflats);
+	texturepresent = (char*)Z_Malloc(numtextures, PU_STATIC, NULL);
+	memset (texturepresent,0, numtextures);
 	transposedflatdata = (byte*)Z_Malloc( 64 * 64, PU_STATIC, NULL );
+
+	// Check flats and textures for presence, jamming in to appropriate array as necessary
+	auto MarkFlatPresence = [ &texturepresent, &flatpresent ]( int16_t flatnum )
+	{
+		if( flatnum < numflats )
+		{
+			flatpresent[ flatnum ] = 1;
+			int32_t animstart = P_GetPicAnimStart( false, flatnum );
+			if( animstart >= 0 )
+			{
+				int32_t animend = animstart + P_GetPicAnimLength( false, animstart );
+				for( int32_t thisanim : iota( animstart, animend ) )
+				{
+					flatpresent[ thisanim ] = 1;
+				}
+			}
+		}
+		else
+		{
+			int32_t texnum = flatnum - numflats;
+			texturepresent[ texnum ] = 1;
+			int32_t animstart = P_GetPicAnimStart( true, texnum );
+			if( animstart >= 0 )
+			{
+				int32_t animend = animstart + P_GetPicAnimLength( true, animstart );
+				for( int32_t thisanim : iota( animstart, animend ) )
+				{
+					texturepresent[ thisanim ] = 1;
+				}
+			}
+		}
+	};
 
 	for (i=0 ; i<numsectors ; i++)
 	{
-		flatpresent[sectors[i].floorpic] = 1;
-		flatpresent[sectors[i].ceilingpic] = 1;
-
-		animstart = P_GetPicAnimStart( false, sectors[i].floorpic );
-		if( animstart >= 0 )
-		{
-			animend = animstart + P_GetPicAnimLength( false, animstart );
-			for( thisanim = animstart; thisanim < animend; ++thisanim )
-			{
-				flatpresent[ thisanim ] = 1;
-			}
-		}
-
-		animstart = P_GetPicAnimStart( false, sectors[i].ceilingpic );
-		if( animstart >= 0 )
-		{
-			animend = animstart + P_GetPicAnimLength( false, animstart );
-			for( thisanim = animstart; thisanim < animend; ++thisanim )
-			{
-				flatpresent[ thisanim ] = 1;
-			}
-		}
+		MarkFlatPresence( sectors[ i ].floorpic );
+		MarkFlatPresence( sectors[ i ].ceilingpic );
 	}
+
+	auto MarkTexturePresence = [ &texturepresent, &flatpresent ]( int16_t texnum )
+	{
+		if( texnum < numtextures )
+		{
+			texturepresent[ texnum ] = 1;
+			int32_t animstart = P_GetPicAnimStart( true, texnum );
+			if( animstart >= 0 )
+			{
+				int32_t animend = animstart + P_GetPicAnimLength( true, animstart );
+				for( int32_t thisanim : iota( animstart, animend ) )
+				{
+					texturepresent[ thisanim ] = 1;
+				}
+			}
+		}
+		else
+		{
+			int32_t flatnum = texnum - numtextures;
+			flatpresent[ texnum - numtextures ] = 1;
+			int32_t animstart = P_GetPicAnimStart( false, flatnum );
+			if( animstart >= 0 )
+			{
+				int32_t animend = animstart + P_GetPicAnimLength( false, animstart );
+				for( int32_t thisanim : iota( animstart, animend ) )
+				{
+					flatpresent[ thisanim ] = 1;
+				}
+			}
+		}
+	};
+
+	for (i=0 ; i<numsides ; i++)
+	{
+		MarkTexturePresence( sides[ i ].toptexture );
+		MarkTexturePresence( sides[ i ].midtexture );
+		MarkTexturePresence( sides[ i ].bottomtexture );
+	}
+
+	// Sky texture is always present.
+	// Note that F_SKY1 is the name used to
+	//  indicate a sky floor/ceiling as a flat,
+	//  while the sky texture is stored like
+	//  a wall texture, with an episode dependend
+	//  name.
+	texturepresent[skytexture] = 1;
 	
+	// Precache flats.
 	for (i=0 ; i<numflats ; i++)
 	{
-		precachedflats[ i ].data = NULL;
+		flatcomposite[ i ].data = NULL;
 		lump = firstflat + i;
 
 		if (flatpresent[i])
@@ -1062,7 +1146,7 @@ void R_PrecacheLevel (void)
 				}
 			}
 
-			outputflatdata = (byte*)Z_Malloc(lumpinfo[lump]->size * NUMCOLORMAPS, COMPOSITE_ZONE, &precachedflats[ i ].data );
+			outputflatdata = (byte*)Z_Malloc(lumpinfo[lump]->size * NUMCOLORMAPS, COMPOSITE_ZONE, &flatcomposite[ i ].data );
 
 			for( currmapindex = 0; currmapindex < NUMCOLORMAPS; ++currmapindex )
 			{
@@ -1074,33 +1158,12 @@ void R_PrecacheLevel (void)
 				}
 			}
 
-			compositedata_t data = { &precachedflats[ i ], Composite_Flat };
-			compositelookup[ precachedflats[ i ].name ] = data;
+			compositedata_t data = { &flatcomposite[ i ], Composite_Flat };
+			compositelookup[ flatcomposite[ i ].name ] = data;
 		}
 	}
 
-	Z_Free( transposedflatdata );
-	Z_Free(flatpresent);
-
 	// Precache textures.
-	texturepresent = (char*)Z_Malloc(numtextures, PU_STATIC, NULL);
-	memset (texturepresent,0, numtextures);
-	
-	for (i=0 ; i<numsides ; i++)
-	{
-		texturepresent[sides[i].toptexture] = 1;
-		texturepresent[sides[i].midtexture] = 1;
-		texturepresent[sides[i].bottomtexture] = 1;
-	}
-
-	// Sky texture is always present.
-	// Note that F_SKY1 is the name used to
-	//  indicate a sky floor/ceiling as a flat,
-	//  while the sky texture is stored like
-	//  a wall texture, with an episode dependend
-	//  name.
-	texturepresent[skytexture] = 1;
-	
 	for (i=0 ; i<numtextures ; i++)
 	{
 		if (!texturepresent[i])
@@ -1125,6 +1188,8 @@ void R_PrecacheLevel (void)
 		compositelookup[ texturecomposite[ i ].name ] = data;
 	}
 
+	Z_Free( transposedflatdata );
+	Z_Free(flatpresent);
 	Z_Free(texturepresent);
 
 /*
