@@ -1046,7 +1046,7 @@ void R_PrecacheLevel (void)
 		}
 	}
 
-	Z_Free( originalflatdata );
+	Z_Free( transposedflatdata );
 	Z_Free(flatpresent);
 
 	// Precache textures.
