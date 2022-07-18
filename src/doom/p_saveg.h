@@ -22,7 +22,13 @@
 
 #include <stdio.h>
 
-#define SAVEGAME_EOF 0x1d
+typedef enum savegametype_e
+{
+	SaveGame_Invalid,
+	SaveGame_Vanilla,
+	SaveGame_LimitRemoving
+} savegametype_t;
+
 #define VERSIONSIZE 16
 
 // maximum size of a savegame description
@@ -44,8 +50,13 @@ void P_WriteSaveGameHeader(char *description);
 
 // Savegame end-of-file read/write functions
 
-boolean P_ReadSaveGameEOF(void);
-void P_WriteSaveGameEOF(void);
+savegametype_t P_ReadSaveGameEOF(void);
+void P_WriteSaveGameEOF( savegametype_t type );
+
+savegametype_t P_ReadSaveGameType( void );
+
+void P_ArchiveLimitRemovingData( void );
+void P_UnArchiveLimitRemovingData( void );
 
 // Persistent storage/archiving.
 // These are the load / save game routines.

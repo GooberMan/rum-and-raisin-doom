@@ -34,6 +34,9 @@
 #include "m_misc.h"
 #include "r_state.h"
 
+#define VANILLA_SAVEGAME_EOF			0x1d
+#define LIMITREMOVING_SAVEGAME_EOF		0x3d
+
 FILE *save_stream;
 int savegamelength;
 boolean savegame_error;
@@ -1414,22 +1417,81 @@ boolean P_ReadSaveGameHeader(void)
 // Read the end of file marker.  Returns true if read successfully.
 // 
 
-boolean P_ReadSaveGameEOF(void)
+savegametype_t P_ReadSaveGameEOF(void)
 {
-    int value;
+	byte val = saveg_read8();
 
-    value = saveg_read8();
-
-    return value == SAVEGAME_EOF;
+	switch( val )
+	{
+	case VANILLA_SAVEGAME_EOF:
+		return SaveGame_Vanilla;
+	case LIMITREMOVING_SAVEGAME_EOF:
+		return SaveGame_LimitRemoving;
+	default:
+		return SaveGame_Invalid;
+	}
 }
 
 //
 // Write the end of file marker
 //
 
-void P_WriteSaveGameEOF(void)
+void P_WriteSaveGameEOF( savegametype_t type )
 {
-    saveg_write8(SAVEGAME_EOF);
+	switch( type )
+	{
+	case SaveGame_Vanilla:
+		saveg_write8( VANILLA_SAVEGAME_EOF );
+		break;
+	case SaveGame_LimitRemoving:
+		saveg_write8( LIMITREMOVING_SAVEGAME_EOF );
+		break;
+	default:
+		saveg_write8( 0xFF );
+		break;
+	}
+}
+
+savegametype_t P_ReadSaveGameType( void )
+{
+	fseek( save_stream, -1, SEEK_END );
+	savegametype_t type = P_ReadSaveGameEOF();
+	fseek( save_stream, 0, SEEK_SET );
+	return type;
+}
+
+#define LIMITREMOVING_BEGIN		0xD007D007
+#define LIMITREMOVING_END		0xDEFEC7ED
+#define LIMITREMOVING_VERSION	0x00000001
+
+void P_ArchiveLimitRemovingData( void )
+{
+	extern int32_t gameflags;
+
+	saveg_write32( LIMITREMOVING_BEGIN );
+	saveg_write32( LIMITREMOVING_VERSION );
+	saveg_write32( gameflags );
+	saveg_write32( LIMITREMOVING_END );
+	saveg_write32( 16 );
+}
+
+void P_UnArchiveLimitRemovingData( void )
+{
+	extern int32_t gameflags;
+
+	fseek( save_stream, -5, SEEK_END );
+	int32_t byteswritten = saveg_read32();
+
+	fseek( save_stream, -byteswritten - 5, SEEK_END );
+
+	int32_t beginmarker = saveg_read32();
+	int32_t version = saveg_read32();
+	gameflags = saveg_read32();
+	int32_t endmarker = saveg_read32();
+
+	int32_t checkbyteswritten = saveg_read32();
+
+	fseek( save_stream, 0, SEEK_SET );
 }
 
 //

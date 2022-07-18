@@ -1633,15 +1633,27 @@ void G_LoadGame (char* name)
 void G_DoLoadGame (void) 
 { 
     int savedleveltime;
-	 
+
     gameaction = ga_nothing; 
-	 
+	gameflags = GF_None;
+
     save_stream = fopen(savename, "rb");
 
     if (save_stream == NULL)
     {
         I_Error("Could not load savegame %s", savename);
     }
+
+	savegametype_t type = P_ReadSaveGameType();
+	if( type == SaveGame_Invalid )
+	{
+		I_Error( "Bad savegame" );
+	}
+
+	if( remove_limits && type == SaveGame_LimitRemoving )
+	{
+		P_UnArchiveLimitRemovingData();
+	}
 
     savegame_error = false;
 
@@ -1654,7 +1666,7 @@ void G_DoLoadGame (void)
     savedleveltime = leveltime;
     
     // load a base level 
-    G_InitNew (gameskill, gameepisode, gamemap, GF_None); 
+    G_InitNew (gameskill, gameepisode, gamemap, gameflags); 
  
     leveltime = savedleveltime;
 
@@ -1664,8 +1676,17 @@ void G_DoLoadGame (void)
     P_UnArchiveThinkers (); 
     P_UnArchiveSpecials (); 
  
-    if (!P_ReadSaveGameEOF())
-	I_Error ("Bad savegame");
+	if ( P_ReadSaveGameEOF() != SaveGame_Vanilla )
+	{
+		I_Error ("Bad savegame");
+	}
+
+	if( !remove_limits && type == SaveGame_LimitRemoving )
+	{
+		extern boolean message_dontfuckwithme;
+		players[consoleplayer].message = "Saving will erase limit-removing data.";
+		message_dontfuckwithme = true;
+	}
 
     fclose(save_stream);
     
@@ -1687,19 +1708,9 @@ G_SaveGame
 ( int	slot,
   char*	description )
 {
-	extern boolean message_dontfuckwithme;
-	
-	if( gameflags & GF_VanillaIncompatibleFlags )
-	{
-		players[consoleplayer].message = "Vanilla-incompatible flags in use. Not saving.";
-		message_dontfuckwithme = true;
-	}
-	else
-	{
-		savegameslot = slot;
-		M_StringCopy(savedescription, description, sizeof(savedescription));
-		sendsave = true;
-	}
+	savegameslot = slot;
+	M_StringCopy(savedescription, description, sizeof(savedescription));
+	sendsave = true;
 }
 
 void G_DoSaveGame (void) 
@@ -1740,15 +1751,21 @@ void G_DoSaveGame (void)
     P_ArchiveThinkers ();
     P_ArchiveSpecials ();
 
-    P_WriteSaveGameEOF();
+    P_WriteSaveGameEOF( SaveGame_Vanilla );
 
     // Enforce the same savegame size limit as in Vanilla Doom,
     // except if the vanilla_savegame_limit setting is turned off.
 
-    if (vanilla_savegame_limit && ftell(save_stream) > SAVEGAMESIZE)
+    if ( ( vanilla_savegame_limit && !remove_limits ) && ftell(save_stream) > SAVEGAMESIZE)
     {
         I_Error("Savegame buffer overrun");
     }
+
+	if( remove_limits )
+	{
+		P_ArchiveLimitRemovingData();
+		P_WriteSaveGameEOF( SaveGame_LimitRemoving );
+	}
 
     // Finish up, close the savegame file.
 
@@ -1773,7 +1790,9 @@ void G_DoSaveGame (void)
     gameaction = ga_nothing;
     M_StringCopy(savedescription, "", sizeof(savedescription));
 
-    players[consoleplayer].message = DEH_String(GGSAVED);
+	if( remove_limits ) players[consoleplayer].message = "Limit-removing game saved.";
+	else if( gameflags & GF_VanillaIncompatibleFlags ) players[consoleplayer].message = "Game saved without limit-removing data.";
+	else players[consoleplayer].message = DEH_String(GGSAVED);
 
     // draw the pattern into the back screen
     R_FillBackScreen ();
@@ -2077,7 +2096,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
 
     if (demo_p > demoend - 16)
     {
-        if (vanilla_demo_limit)
+        if (vanilla_demo_limit && !remove_limits)
         {
             // no more space 
             G_CheckDemoStatus (); 
