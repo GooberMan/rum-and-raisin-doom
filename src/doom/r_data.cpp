@@ -909,29 +909,32 @@ void R_InitData (void)
 //
 int R_FlatNumForName(const char *name)
 {
-    int		i;
-
-	i = W_CheckNumForName (name);
-
-	if( i != -1 )
-	{
-		return i - firstflat;
-	}
+	int32_t index = W_CheckNumForName (name);
 
 	if( !remove_limits )
 	{
+		if( index != -1 )
+		{
+			return index - firstflat;
+		}
+
 		I_Error( "R_FlatNumForName: %s not found", name );
 		return -1;
 	}
 
-	i = R_CheckTextureNumForName (name);
+	if( index != -1 && index >= firstflat && index <= lastflat )
+	{
+		return index - firstflat;
+	}
 
-	if( i == -1 )
+	index = R_CheckTextureNumForName (name);
+
+	if( index == -1 )
 	{
 		I_Error ("R_FlatNumForName: %s not found in textures", name );
 	}
 
-	return i + numflats;
+	return index + numflats;
 }
 
 
@@ -1001,7 +1004,7 @@ int R_TextureNumForName(const char *name)
 
 	i = W_CheckNumForName( name );
 
-	if( i == -1 )
+	if( i == -1 || i < firstflat || i > lastflat )
 	{
 		I_Error ("R_TextureNumForName: %s not found in flats", name );
 		return -1;
