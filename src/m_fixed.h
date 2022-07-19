@@ -34,13 +34,13 @@
 
 #if defined( __cplusplus )
 template< typename _ty >
-consteval _ty RightmostBit( _ty val )
+constexpr _ty RightmostBit( _ty val )
 {
 	return val & ( ~val + 1 );
 }
 
 template< typename _ty >
-consteval _ty FirstSetBitIndex( _ty val )
+constexpr _ty FirstSetBitIndex( _ty val )
 {
 	if( !val ) return -1;
 
@@ -53,12 +53,12 @@ consteval _ty FirstSetBitIndex( _ty val )
 	return index;
 }
 
-consteval bool IsPowerOf2( size_t val )
+constexpr bool IsPowerOf2( size_t val )
 {
 	return val != 0 && ( val & ( val - 1 ) ) == 0;
 }
 
-consteval bool IsValidBitCount( size_t val )
+constexpr bool IsValidBitCount( size_t val )
 {
 	return	val <= ( sizeof( size_t ) * 8 )
 			&& IsPowerOf2( val );
