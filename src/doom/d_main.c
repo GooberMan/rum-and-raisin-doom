@@ -164,12 +164,12 @@ void D_ProcessEvents (void)
     // IF STORE DEMO, DO NOT ACCEPT INPUT
     if (storedemo)
         return;
-	
+
     while ((ev = D_PopEvent()) != NULL)
     {
-	if (M_Responder (ev))
-	    continue;               // menu ate the event
-	G_Responder (ev);
+		if (M_Responder (ev))
+			continue;               // menu ate the event
+		G_Responder (ev);
     }
 }
 
@@ -287,7 +287,7 @@ boolean D_Display (void)
 	{
 		if( !automapactive )
 		{
-			R_RenderPlayerView ( &players[ displayplayer ] );
+			R_RenderPlayerView ( &players[ displayplayer ], displayplayer == consoleplayer );
 		}
 		ST_Drawer ( fullscreen, redrawsbar );
 		HU_Drawer ();
@@ -512,6 +512,7 @@ void D_RunFrame()
 
 	// frame syncronous IO operations
 	I_StartFrame();
+	I_StartTic();
 
 	if (wipe)
 	{

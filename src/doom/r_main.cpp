@@ -189,7 +189,7 @@ extern "C"
 	extern int numflats;
 	extern int numtextures;
 	extern boolean refreshstatusbar;
-	extern int mousex;
+	extern int mouseSensitivity;
 	extern boolean renderpaused;
 
 	extern uint64_t frametime;
@@ -1578,7 +1578,40 @@ double_t Lerp( double_t from, double_t to, double_t percent )
 	return from + ( to - from ) * percent;
 }
 
-void R_SetupFrame (player_t* player) //__attribute__ ((optnone))
+int32_t mouselookx = 0;
+
+extern "C"
+{
+	#define MAXEVENTS 128
+
+	extern event_t events[MAXEVENTS];
+	extern int eventhead;
+	extern int eventtail;
+
+	extern boolean demoplayback;
+}
+
+void R_Responder( event_t* ev )
+{
+	if( ev->type == ev_mouse )
+	{
+		mouselookx += ev->data2 * ( mouseSensitivity + 5 ) / 10; 
+	}
+}
+
+void R_PeekEvents()
+{
+	mouselookx = 0;
+
+	int32_t currevent = eventhead;
+	while( currevent != eventtail )
+	{
+		R_Responder( &events[ currevent ] );
+		currevent = ( currevent + 1 ) % MAXEVENTS;
+	}
+}
+
+void R_SetupFrame (player_t* player, boolean isconsoleplayer) // __attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
 
@@ -1615,7 +1648,33 @@ void R_SetupFrame (player_t* player) //__attribute__ ((optnone))
 		viewx = RendFixedToFixed( adjustedviewx );
 		viewy = RendFixedToFixed( adjustedviewy );
 		viewz = RendFixedToFixed( adjustedviewz );
-		viewangle = player->mo->curr.angle - ( mousex * 0x8 );
+		viewangle = player->mo->curr.angle;
+
+		if( !demoplayback && isconsoleplayer )
+		{
+			R_PeekEvents();
+			viewangle -= ( ( mouselookx * 0x8 ) << FRACUNIT );
+		}
+		else
+		{
+			int64_t start	= player->mo->prev.angle;
+			int64_t end		= player->mo->curr.angle;
+			int64_t path	= end - start;
+			if( llabs( path ) > ANG180 )
+			{
+				constexpr int64_t ANG360 = (int64_t)ANG_MAX + 1ll;
+				if( end > start )
+				{
+					start += ANG360;
+				}
+				else
+				{
+					end += ANG360;
+				}
+			}
+			rend_fixed_t result = RendFixedLerp( start, end, viewlerp );
+			viewangle = (angle_t)( result & ANG_MAX );
+		}
 
 		bool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
 
@@ -1759,7 +1818,7 @@ static void R_DrawMsg( const char* msg, hu_textline_t* line )
 	HUlib_drawTextLine( line, false );
 }
 
-void R_RenderPlayerView (player_t* player)
+void R_RenderPlayerView (player_t* player, boolean isconsoleplayer)
 {
 	M_PROFILE_FUNC();
 
@@ -1770,7 +1829,7 @@ void R_RenderPlayerView (player_t* player)
 	byte* outputcolumn;
 	byte* endcolumn;
 
-	R_SetupFrame (player);
+	R_SetupFrame (player, isconsoleplayer);
 
 	// NetUpdate can cause lump loads, so we wait until rendering is done before doing it again.
 	// This is a change from the vanilla renderer.
@@ -1826,7 +1885,4 @@ void R_RenderPlayerView (player_t* player)
 	}
 
 	wadrenderlock = false;
-
-	// And now, back to your regular programming.
-	NetUpdate ();
 }

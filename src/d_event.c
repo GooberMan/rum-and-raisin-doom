@@ -24,9 +24,9 @@
 
 #define MAXEVENTS 128
 
-static event_t events[MAXEVENTS];
-static int eventhead;
-static int eventtail;
+event_t events[MAXEVENTS];
+int eventhead;
+int eventtail;
 
 //
 // D_PostEvent

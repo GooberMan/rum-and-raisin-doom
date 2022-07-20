@@ -731,6 +731,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	mobj->flags |= (mthing->type-1)<<MF_TRANSSHIFT;
 		
     mobj->angle	= ANG45 * (mthing->angle/45);
+	mobj->prev.angle = mobj->curr.angle = mobj->angle;
     mobj->player = p;
     mobj->health = p->health;
 
