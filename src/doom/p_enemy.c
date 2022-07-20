@@ -1185,7 +1185,7 @@ void A_VileChase (mobj_t* actor)
 	viletryy =
 	    actor->y + actor->info->speed*yspeed[actor->movedir];
 
-	if( remove_limits )
+	if( false ) // remove_limits )
 	{
 		xl = (int32_t)( (int64_t)viletryx	- (int64_t)bmaporgx - (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
 		xh = (int32_t)( (int64_t)viletryx	- (int64_t)bmaporgx + (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;

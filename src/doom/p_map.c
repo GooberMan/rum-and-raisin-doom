@@ -168,7 +168,7 @@ P_TeleportMove
     numspechit = 0;
     
     // stomp on any things contacted
-	if( remove_limits )
+	if( false ) // remove_limits )
 	{
 		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
 		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
@@ -454,7 +454,7 @@ P_CheckPosition
     // because mobj_ts are grouped into mapblocks
     // based on their origin point, and can overlap
     // into adjacent blocks by up to MAXRADIUS units.
-	if( remove_limits )
+	if( false ) // remove_limits )
 	{
 		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
 		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
@@ -475,7 +475,7 @@ P_CheckPosition
 		return false;
     
     // check lines
-	if( remove_limits )
+	if( false ) // remove_limits )
 	{
 		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
 		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
@@ -1302,7 +1302,7 @@ P_RadiusAttack
     fixed_t	dist;
 	
     dist = (damage+MAXRADIUS)<<FRACBITS;
-	if( remove_limits )
+	if( false ) // remove_limits )
 	{
 		xl = (int32_t)( (int64_t)spot->x		- (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
 		xh = (int32_t)( (int64_t)spot->x		+ (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
