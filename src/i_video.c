@@ -415,6 +415,12 @@ static boolean ToggleFullScreenKeyShortcut(SDL_Keysym *sym)
             sym->scancode == SDL_SCANCODE_KP_ENTER) && (sym->mod & flags) != 0;
 }
 
+#if defined( WIN32 )
+#define FULLSCREEN_BORDERLESS 1
+#else
+#define FULLSCREEN_BORDERLESS 0
+#endif
+
 void I_PerformFullscreen(void)
 {
     fullscreen = queued_fullscreen;
@@ -427,6 +433,7 @@ void I_PerformFullscreen(void)
     //    return;
     //}
 
+#if FULLSCREEN_BORDERLESS
     if (fullscreen)
     {
         // We should be toggling the SDL_WINDOW_POPUP_MENU flag here to get around GL drivers.
@@ -442,6 +449,20 @@ void I_PerformFullscreen(void)
         SDL_SetWindowBordered( screen, true );
         SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
+#else // !FULLSCREEN_BORDERLESS
+    if (fullscreen)
+    {
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+
+    SDL_SetWindowFullscreen(screen, flags);
+
+    if (!fullscreen)
+    {
+        SDL_SetWindowSize(screen, window_width, window_height);
+        SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
+#endif // FULLSCREEN_BORDERLESS
 }
 
 void I_ToggleFullScreen(void)
@@ -657,11 +678,11 @@ static void LimitTextureSize(int *w_upscale, int *h_upscale)
 
     if (*w_upscale != orig_w || *h_upscale != orig_h)
     {
-        printf("CreateUpscaledTexture: Limited texture size to %dx%d "
-               "(max %d pixels, max texture size %dx%d)\n",
-               *w_upscale * render_width, *h_upscale * render_height,
-               max_scaling_buffer_pixels,
-               rinfo.max_texture_width, rinfo.max_texture_height);
+		I_TerminalPrintf( Log_Startup,	"CreateUpscaledTexture: Limited texture size to %dx%d "
+										"(max %d pixels, max texture size %dx%d)\n",
+										*w_upscale * render_width, *h_upscale * render_height,
+										max_scaling_buffer_pixels,
+										rinfo.max_texture_width, rinfo.max_texture_height);
     }
 }
 
