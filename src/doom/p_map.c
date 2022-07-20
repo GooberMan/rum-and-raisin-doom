@@ -170,10 +170,10 @@ P_TeleportMove
     // stomp on any things contacted
 	if( remove_limits )
 	{
-		xl = ( (int64_t)tmbbox[BOXLEFT]		- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = ( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = ( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = ( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yl = (int32_t)( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yh = (int32_t)( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
 	}
 	else
 	{
@@ -456,10 +456,10 @@ P_CheckPosition
     // into adjacent blocks by up to MAXRADIUS units.
 	if( remove_limits )
 	{
-		xl = ( (int64_t)tmbbox[BOXLEFT]		- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = ( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = ( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = ( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yl = (int32_t)( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yh = (int32_t)( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
 	}
 	else
 	{
@@ -477,10 +477,10 @@ P_CheckPosition
     // check lines
 	if( remove_limits )
 	{
-		xl = ( (int64_t)tmbbox[BOXLEFT]		- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = ( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = ( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = ( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yl = (int32_t)( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
+		yh = (int32_t)( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
 	}
 	else
 	{
@@ -1304,10 +1304,10 @@ P_RadiusAttack
     dist = (damage+MAXRADIUS)<<FRACBITS;
 	if( remove_limits )
 	{
-		xl = ( (int64_t)spot->x		- (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
-		xh = ( (int64_t)spot->x		+ (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
-		yl = ( (int64_t)spot->y		- (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
-		yh = ( (int64_t)spot->y		+ (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
+		xl = (int32_t)( (int64_t)spot->x		- (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
+		xh = (int32_t)( (int64_t)spot->x		+ (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
+		yl = (int32_t)( (int64_t)spot->y		- (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
+		yh = (int32_t)( (int64_t)spot->y		+ (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
 	}
 	else
 	{
