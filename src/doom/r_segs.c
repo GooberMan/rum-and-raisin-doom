@@ -606,38 +606,38 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			bspcontext->thisdrawseg->sprtopclip = bspcontext->thisdrawseg->sprbottomclip = NULL;
 			bspcontext->thisdrawseg->silhouette = 0;
 	
-			if (bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight)
+			if (bspcontext->frontsectorinst->floorheight > bspcontext->backsectorinst->floorheight)
 			{
 				bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
 				bspcontext->thisdrawseg->bsilheight = bspcontext->frontsectorinst->floorheight;
 			}
-			else if (bspcontext->backsector->floorheight > viewz)
+			else if (bspcontext->backsectorinst->floorheight > FixedToRendFixed( viewz ) )
 			{
 				bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
 				bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
 				// bspcontext->thisdrawseg->sprbottomclip = negonearray;
 			}
 	
-			if (bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight)
+			if (bspcontext->frontsectorinst->ceilheight < bspcontext->backsectorinst->ceilheight)
 			{
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 				bspcontext->thisdrawseg->tsilheight = bspcontext->frontsectorinst->ceilheight;
 			}
-			else if (bspcontext->backsector->ceilingheight < viewz)
+			else if (bspcontext->backsectorinst->ceilheight < FixedToRendFixed( viewz ) )
 			{
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 				bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
 				// bspcontext->thisdrawseg->sprtopclip = screenheightarray;
 			}
 		
-			if (bspcontext->backsector->ceilingheight <= bspcontext->frontsector->floorheight)
+			if (bspcontext->backsectorinst->ceilheight <= bspcontext->frontsectorinst->floorheight)
 			{
 				bspcontext->thisdrawseg->sprbottomclip = negonearray;
 				bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
 				bspcontext->thisdrawseg->silhouette |= SIL_BOTTOM;
 			}
 	
-			if (bspcontext->backsector->floorheight >= bspcontext->frontsector->ceilingheight)
+			if (bspcontext->backsectorinst->floorheight >= bspcontext->frontsectorinst->ceilheight)
 			{
 				bspcontext->thisdrawseg->sprtopclip = screenheightarray;
 				bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
@@ -648,16 +648,16 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			worldlow = bspcontext->backsectorinst->floorheight - FixedToRendFixed( viewz );
 		
 			// hack to allow height changes in outdoor areas
-			if (bspcontext->frontsector->ceilingpic == skyflatnum 
-				&& bspcontext->backsector->ceilingpic == skyflatnum)
+			if (bspcontext->frontsectorinst->ceiltex == flatlookup[ skyflatnum ]
+				&& bspcontext->backsectorinst->ceiltex == flatlookup[ skyflatnum ])
 			{
 				worldtop = worldhigh;
 			}
 	
 			
 			if (worldlow != worldbottom 
-				|| bspcontext->backsector->floorpic != bspcontext->frontsector->floorpic
-				|| bspcontext->backsector->lightlevel != bspcontext->frontsector->lightlevel)
+				|| bspcontext->backsectorinst->floortex != bspcontext->frontsectorinst->floortex
+				|| bspcontext->backsectorinst->lightlevel != bspcontext->frontsectorinst->lightlevel)
 			{
 				loopcontext.markfloor = true;
 			}
@@ -669,8 +669,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	
 			
 			if (worldhigh != worldtop 
-				|| bspcontext->backsector->ceilingpic != bspcontext->frontsector->ceilingpic
-				|| bspcontext->backsector->lightlevel != bspcontext->frontsector->lightlevel)
+				|| bspcontext->backsectorinst->ceiltex != bspcontext->frontsectorinst->ceiltex
+				|| bspcontext->backsectorinst->lightlevel != bspcontext->frontsectorinst->lightlevel)
 			{
 				loopcontext.markceiling = true;
 			}
@@ -680,8 +680,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				loopcontext.markceiling = false;
 			}
 	
-			if (bspcontext->backsector->ceilingheight <= bspcontext->frontsector->floorheight
-				|| bspcontext->backsector->floorheight >= bspcontext->frontsector->ceilingheight)
+			if (bspcontext->backsectorinst->ceilheight <= bspcontext->frontsectorinst->floorheight
+				|| bspcontext->backsectorinst->floorheight >= bspcontext->frontsectorinst->ceilheight)
 			{
 				// closed door
 				loopcontext.markceiling = loopcontext.markfloor = true;
