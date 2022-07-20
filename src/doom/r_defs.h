@@ -102,6 +102,26 @@ typedef struct texturecomposite_s
 	int32_t			index;
 } texturecomposite_t;
 
+typedef struct sectorinstance_s
+{
+	texturecomposite_t*		floortex;
+	texturecomposite_t*		ceiltex;
+
+	rend_fixed_t			floorheight;
+	rend_fixed_t			ceilheight;
+	rend_fixed_t			lightlevel;
+} sectorinstance_t;
+
+typedef struct sideinstance_s
+{
+	texturecomposite_t*		toptex;
+	texturecomposite_t*		midtex;
+	texturecomposite_t*		bottomtex;
+
+	rend_fixed_t			coloffset;
+	rend_fixed_t			rowoffset;
+} sideinstance_t;
+
 //
 // INTERNAL MAP TYPES
 //  used by play and refresh

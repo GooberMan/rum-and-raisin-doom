@@ -196,6 +196,16 @@ typedef enum
 
 } mobjflag_t;
 
+typedef struct mobjinstance_s
+{
+	rend_fixed_t			x;
+	rend_fixed_t			y;
+	rend_fixed_t			z;
+	rend_fixed_t			angle;
+	spritenum_t				sprite;
+	int32_t					frame;
+} mobjinstance_t;
+
 
 // Map Object definition.
 typedef struct mobj_s
