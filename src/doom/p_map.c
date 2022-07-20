@@ -1304,10 +1304,10 @@ P_RadiusAttack
     dist = (damage+MAXRADIUS)<<FRACBITS;
 	if( remove_limits )
 	{
-		xl = ( (int64_t)spot->x		- dist	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = ( (int64_t)spot->x		+ dist	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = ( (int64_t)spot->y		- dist	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = ( (int64_t)spot->y		+ dist	- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xl = ( (int64_t)spot->x		- (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
+		xh = ( (int64_t)spot->x		+ (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
+		yl = ( (int64_t)spot->y		- (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
+		yh = ( (int64_t)spot->y		+ (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
 	}
 	else
 	{

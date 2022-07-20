@@ -1187,10 +1187,10 @@ void A_VileChase (mobj_t* actor)
 
 	if( remove_limits )
 	{
-		xl = ( (int64_t)viletryx	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = ( (int64_t)viletryx	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = ( (int64_t)viletryy	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = ( (int64_t)viletryy	- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
+		xl = ( (int64_t)viletryx	- (int64_t)bmaporgx - (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
+		xh = ( (int64_t)viletryx	- (int64_t)bmaporgx + (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
+		yl = ( (int64_t)viletryy	- (int64_t)bmaporgy - (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
+		yh = ( (int64_t)viletryy	- (int64_t)bmaporgy + (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
 	}
 	else
 	{
