@@ -28,6 +28,7 @@
 #include "deh_main.h"
 #include "i_swap.h"
 #include "i_system.h"
+#include "i_terminal.h"
 
 #include "w_wad.h"
 
@@ -515,7 +516,7 @@ WI_drawOnLnode
     else
     {
 	// DEBUG
-	printf("Could not place patch on level %d", n+1); 
+	I_TerminalPrintf( Log_Warning, "Could not place patch on level %d", n+1); 
     }
 }
 

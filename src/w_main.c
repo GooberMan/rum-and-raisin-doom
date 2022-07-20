@@ -22,6 +22,7 @@
 #include "d_iwad.h"
 #include "i_glob.h"
 #include "i_system.h"
+#include "i_terminal.h"
 #include "m_argv.h"
 #include "w_main.h"
 #include "w_merge.h"
@@ -58,7 +59,7 @@ boolean W_ParseCommandLine(void)
 
             filename = D_TryFindWADByName(myargv[p]);
 
-            printf(" merging %s\n", filename);
+            I_TerminalPrintf( Log_Startup, " merging %s\n", filename);
             W_MergeFile(filename);
             free(filename);
         }
@@ -87,7 +88,7 @@ boolean W_ParseCommandLine(void)
 
             filename = D_TryFindWADByName(myargv[p]);
 
-            printf(" performing NWT-style merge of %s\n", filename);
+            I_TerminalPrintf( Log_Startup, " performing NWT-style merge of %s\n", filename);
             W_NWTDashMerge(filename);
             free(filename);
         }
@@ -115,7 +116,7 @@ boolean W_ParseCommandLine(void)
 
             filename = D_TryFindWADByName(myargv[p]);
 
-            printf(" merging flats from %s\n", filename);
+            I_TerminalPrintf( Log_Startup, " merging flats from %s\n", filename);
             W_NWTMergeFile(filename, W_NWT_MERGE_FLATS);
             free(filename);
         }
@@ -140,7 +141,7 @@ boolean W_ParseCommandLine(void)
             modifiedgame = true;
             filename = D_TryFindWADByName(myargv[p]);
 
-            printf(" merging sprites from %s\n", filename);
+            I_TerminalPrintf( Log_Startup, " merging sprites from %s\n", filename);
             W_NWTMergeFile(filename, W_NWT_MERGE_SPRITES);
             free(filename);
         }
@@ -165,7 +166,7 @@ boolean W_ParseCommandLine(void)
 
             filename = D_TryFindWADByName(myargv[p]);
 
-            printf(" merging sprites and flats from %s\n", filename);
+            I_TerminalPrintf( Log_Startup, " merging sprites and flats from %s\n", filename);
             W_NWTMergeFile(filename, W_NWT_MERGE_SPRITES | W_NWT_MERGE_FLATS);
             free(filename);
         }
@@ -190,7 +191,7 @@ boolean W_ParseCommandLine(void)
 
             filename = D_TryFindWADByName(myargv[p]);
 
-            printf(" adding %s\n", filename);
+            I_TerminalPrintf( Log_Startup, " adding %s\n", filename);
 	    W_AddFile(filename);
             free(filename);
         }
@@ -216,7 +217,7 @@ void W_AutoLoadWADs(const char *path)
         {
             break;
         }
-        printf(" [autoload] merging %s\n", filename);
+        I_TerminalPrintf( Log_Startup, " [autoload] merging %s\n", filename);
         W_MergeFile(filename);
     }
 

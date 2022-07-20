@@ -29,6 +29,7 @@
 
 #include "i_swap.h"
 #include "i_system.h"
+#include "i_terminal.h"
 #include "i_video.h"
 #include "m_misc.h"
 #include "v_diskicon.h"
@@ -139,8 +140,8 @@ wad_file_t *W_AddFile (const char *filename)
 
     if (wad_file == NULL)
     {
-	printf (" couldn't open %s\n", filename);
-	return NULL;
+		I_TerminalPrintf( Log_Warning, " couldn't open %s\n", filename);
+		return NULL;
     }
 
     if (strcasecmp(filename+strlen(filename)-3 , "wad" ) )

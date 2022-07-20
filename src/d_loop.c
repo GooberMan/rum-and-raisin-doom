@@ -25,6 +25,7 @@
 #include "d_ticcmd.h"
 
 #include "i_system.h"
+#include "i_terminal.h"
 #include "i_timer.h"
 #include "i_video.h"
 
@@ -838,9 +839,9 @@ boolean D_NonVanillaRecord(boolean conditional, const char *feature)
         return false;
     }
 
-    printf("Warning: Recording a demo file with a non-vanilla extension "
-           "(%s). Use -strictdemos to disable this extension.\n",
-           feature);
+    I_TerminalPrintf( Log_Warning,	"Warning: Recording a demo file with a non-vanilla extension "
+									"(%s). Use -strictdemos to disable this extension.\n",
+									feature);
 
     return true;
 }
@@ -878,14 +879,14 @@ boolean D_NonVanillaPlayback(boolean conditional, int lumpnum,
 
     if (!IsDemoFile(lumpnum))
     {
-        printf("Warning: WAD contains demo with a non-vanilla extension "
-               "(%s)\n", feature);
+		I_TerminalPrintf( Log_Warning, "Warning: WAD contains demo with a non-vanilla extension "
+										"(%s)\n", feature);
         return false;
     }
 
-    printf("Warning: Playing back a demo file with a non-vanilla extension "
-           "(%s). Use -strictdemos to disable this extension.\n",
-           feature);
+    I_TerminalPrintf( Log_Warning,	"Warning: Playing back a demo file with a non-vanilla extension "
+									"(%s). Use -strictdemos to disable this extension.\n",
+									feature);
 
     return true;
 }

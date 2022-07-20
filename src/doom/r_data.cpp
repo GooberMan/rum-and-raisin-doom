@@ -891,13 +891,13 @@ void R_InitColormaps (void)
 void R_InitData (void)
 {
     R_InitTextures ();
-    printf (".");
+    //I_TerminalPrintf( Log_None, "." );
     R_InitFlats ();
-    printf (".");
+    //I_TerminalPrintf( Log_None, "." );
 	R_InitTextureAndFlatComposites();
-    printf (".");
+    //I_TerminalPrintf( Log_None, "." );
     R_InitSpriteLumps ();
-    printf (".");
+    //I_TerminalPrintf( Log_None, "." );
     R_InitColormaps ();
 }
 
