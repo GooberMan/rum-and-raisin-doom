@@ -121,10 +121,12 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 	bspcontext->curline = ds->curline;
 	bspcontext->frontsector = bspcontext->curline->frontsector;
+	bspcontext->frontsectorinst = &rendsectors[ bspcontext->curline->frontsector->index ];
 	bspcontext->backsector = bspcontext->curline->backsector;
+	bspcontext->backsectorinst = &rendsectors[ bspcontext->curline->backsector->index ];
 	texnum = texturetranslation[bspcontext->curline->sidedef->midtexture];
 	
-	lightnum = (bspcontext->frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
+	lightnum = (bspcontext->frontsectorinst->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (bspcontext->curline->v1->y == bspcontext->curline->v2->y)
 		lightnum--;
@@ -152,12 +154,12 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 	// find positioning
 	if (bspcontext->curline->linedef->flags & ML_DONTPEGBOTTOM)
 	{
-		spritecolcontext.texturemid = FixedToRendFixed( M_MAX( bspcontext->frontsector->floorheight, bspcontext->backsector->floorheight ) );
+		spritecolcontext.texturemid = M_MAX( bspcontext->frontsectorinst->floorheight, bspcontext->backsectorinst->floorheight );
 		spritecolcontext.texturemid += texturelookup[ texnum ]->renderheight - FixedToRendFixed( viewz );
 	}
 	else
 	{
-		spritecolcontext.texturemid = FixedToRendFixed( M_MIN( bspcontext->frontsector->ceilingheight, bspcontext->backsector->ceilingheight ) );
+		spritecolcontext.texturemid = M_MIN( bspcontext->frontsectorinst->ceilheight, bspcontext->backsectorinst->ceilheight );
 		spritecolcontext.texturemid -= FixedToRendFixed( viewz );
 	}
 	spritecolcontext.texturemid += bspcontext->curline->sidedef->rend.rowoffset;
@@ -567,8 +569,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 
 		// calculate texture boundaries
 		//  and decide if floor / ceiling marks are needed
-		worldtop = FixedToRendFixed( bspcontext->frontsector->ceilingheight - viewz );
-		worldbottom = FixedToRendFixed( bspcontext->frontsector->floorheight - viewz );
+		worldtop = bspcontext->frontsectorinst->ceilheight - FixedToRendFixed( viewz );
+		worldbottom = bspcontext->frontsectorinst->floorheight - FixedToRendFixed( viewz );
 	
 		loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
 		bspcontext->thisdrawseg->maskedtexturecol = NULL;
@@ -581,7 +583,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			loopcontext.markfloor = loopcontext.markceiling = true;
 			if (bspcontext->linedef->flags & ML_DONTPEGBOTTOM)
 			{
-				vtop = FixedToRendFixed( bspcontext->frontsector->floorheight ) + texturelookup[ bspcontext->sidedef->midtexture ]->renderheight;
+				vtop = bspcontext->frontsectorinst->floorheight + texturelookup[ bspcontext->sidedef->midtexture ]->renderheight;
 				// bottom of texture at bottom
 				wallcontext->midtexturemid = vtop - FixedToRendFixed( viewz );
 			}
@@ -607,7 +609,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			if (bspcontext->frontsector->floorheight > bspcontext->backsector->floorheight)
 			{
 				bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
-				bspcontext->thisdrawseg->bsilheight = FixedToRendFixed( bspcontext->frontsector->floorheight );
+				bspcontext->thisdrawseg->bsilheight = bspcontext->frontsectorinst->floorheight;
 			}
 			else if (bspcontext->backsector->floorheight > viewz)
 			{
@@ -619,7 +621,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			if (bspcontext->frontsector->ceilingheight < bspcontext->backsector->ceilingheight)
 			{
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
-				bspcontext->thisdrawseg->tsilheight = FixedToRendFixed( bspcontext->frontsector->ceilingheight );
+				bspcontext->thisdrawseg->tsilheight = bspcontext->frontsectorinst->ceilheight;
 			}
 			else if (bspcontext->backsector->ceilingheight < viewz)
 			{
@@ -642,8 +644,8 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 			}
 	
-			worldhigh = FixedToRendFixed( bspcontext->backsector->ceilingheight - viewz );
-			worldlow = FixedToRendFixed( bspcontext->backsector->floorheight - viewz );
+			worldhigh = bspcontext->backsectorinst->ceilheight - FixedToRendFixed( viewz );
+			worldlow = bspcontext->backsectorinst->floorheight - FixedToRendFixed( viewz );
 		
 			// hack to allow height changes in outdoor areas
 			if (bspcontext->frontsector->ceilingpic == skyflatnum 
@@ -697,7 +699,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				}
 				else
 				{
-					vtop = FixedToRendFixed( bspcontext->backsector->ceilingheight ) + texturelookup[ bspcontext->sidedef->toptexture ]->renderheight;
+					vtop = bspcontext->backsectorinst->ceilheight + texturelookup[ bspcontext->sidedef->toptexture ]->renderheight;
 		
 					// bottom of texture
 					wallcontext->toptexturemid = vtop - FixedToRendFixed( viewz );
@@ -765,7 +767,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 			if (!fixedcolormap)
 			{
-				lightnum = (bspcontext->frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
+				lightnum = (bspcontext->frontsectorinst->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 				if (bspcontext->curline->v1->y == bspcontext->curline->v2->y)
 				{
@@ -792,13 +794,13 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		// if a floor / ceiling plane is on the wrong side
 		//  of the view plane, it is definitely invisible
 		//  and doesn't need to be marked.
-		if (bspcontext->frontsector->floorheight >= viewz)
+		if (bspcontext->frontsectorinst->floorheight >= FixedToRendFixed( viewz ) )
 		{
 			// above view plane
 			loopcontext.markfloor = false;
 		}
 
-		if (bspcontext->frontsector->ceilingheight <= viewz && bspcontext->frontsector->ceilingpic != skyflatnum)
+		if (bspcontext->frontsectorinst->ceilheight <= FixedToRendFixed( viewz ) && bspcontext->frontsectorinst->ceiltex != flatlookup[ skyflatnum ] )
 		{
 			// below view plane
 			loopcontext.markceiling = false;
@@ -840,12 +842,12 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		// render it
 		if (loopcontext.markceiling)
 		{
-			planecontext->ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->ceilingpic, bspcontext->frontsector->ceilingheight, bspcontext->frontsector->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			planecontext->ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->ceilingpic, RendFixedToFixed( bspcontext->frontsectorinst->ceilheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 		}
 
 		if (loopcontext.markfloor)
 		{
-			planecontext->floorregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->floorpic, bspcontext->frontsector->floorheight, bspcontext->frontsector->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			planecontext->floorregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->floorpic, RendFixedToFixed( bspcontext->frontsectorinst->floorheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 		}
 
 #if RENDER_PERF_GRAPHING
