@@ -922,9 +922,18 @@ int R_FlatNumForName(const char *name)
 		return -1;
 	}
 
-	if( index != -1 && index >= firstflat && index <= lastflat )
+	if( index != -1 )
 	{
-		return index - firstflat;
+		if( index >= firstflat && index <= lastflat )
+		{
+			return index - firstflat;
+		}
+		else if( W_LumpLength( index ) == 4096 )
+		{
+			I_LogAddEntryVar( Log_Warning, "Flat %.8s found outside of markers, code does not handle this yet", name );
+			// TODO: Handle bad flat numbers, although this only happens with -merge...
+			return 0;
+		}
 	}
 
 	index = R_CheckTextureNumForName (name);
