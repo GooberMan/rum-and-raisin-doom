@@ -582,7 +582,9 @@ typedef struct bspcontext_s
 	side_t*				sidedef;
 	line_t*				linedef;
 	sector_t*			frontsector;
+	sectorinstance_t*	frontsectorinst;
 	sector_t*			backsector;
+	sectorinstance_t*	backsectorinst;
 
 	drawseg_t			drawsegs[MAXDRAWSEGS];
 	drawseg_t*			thisdrawseg;

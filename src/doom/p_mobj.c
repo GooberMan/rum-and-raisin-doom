@@ -558,11 +558,23 @@ P_SpawnMobj
     mobj->ceilingz = mobj->subsector->sector->ceilingheight;
 
     if (z == ONFLOORZ)
-	mobj->z = mobj->floorz;
+		mobj->z = mobj->floorz;
     else if (z == ONCEILINGZ)
-	mobj->z = mobj->ceilingz - mobj->info->height;
+		mobj->z = mobj->ceilingz - mobj->info->height;
     else 
-	mobj->z = z;
+		mobj->z = z;
+
+	mobj->curr.x = FixedToRendFixed( mobj->x );
+	mobj->curr.y = FixedToRendFixed( mobj->y );
+	mobj->curr.z = FixedToRendFixed( mobj->z );
+	mobj->curr.angle = mobj->angle;
+	mobj->curr.frame = -1;
+	mobj->curr.sprite = SPR_INVALID;
+
+	mobj->prev = mobj->curr;
+
+	mobj->curr.frame = mobj->frame;
+	mobj->curr.sprite = mobj->sprite;
 
     mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
 	
@@ -604,7 +616,7 @@ void P_RemoveMobj (mobj_t* mobj)
     S_StopSound (mobj);
     
     // free block
-    P_RemoveThinker ((thinker_t*)mobj);
+    P_RemoveThinker (&mobj->thinker);
 }
 
 
@@ -731,6 +743,8 @@ void P_SpawnPlayer (mapthing_t* mthing)
     p->extralight = 0;
     p->fixedcolormap = 0;
     p->viewheight = VIEWHEIGHT;
+	p->viewz = mobj->z + p->viewheight;
+	p->prevviewz = p->currviewz = FixedToRendFixed( p->viewz );
 
     // setup gun psprite
     P_SetupPsprites (p);

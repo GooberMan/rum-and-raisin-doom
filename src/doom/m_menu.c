@@ -2902,6 +2902,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t show_diskicon;
 	extern int32_t grabmouse;
 	extern int32_t novert;
+	extern int32_t enable_frame_interpolation;
 
 	controlsection_t*	currsection;
 
@@ -2924,6 +2925,17 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 		{
 			igColumns( 2, "", false );
 			igSetColumnWidth( 0, columwidth );
+
+			igText( "Frame interpolation" );
+			igNextColumn();
+			WorkingBool = !!enable_frame_interpolation;
+			igPushIDPtr( &enable_frame_interpolation );
+			if( igCheckbox( "", &WorkingBool ) )
+			{
+				enable_frame_interpolation = (int32_t)WorkingBool;
+			}
+			igPopID();
+			igNextColumn();
 
 			igText( "Show text startup" );
 			igNextColumn();

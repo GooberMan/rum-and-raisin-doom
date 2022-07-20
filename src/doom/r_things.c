@@ -416,6 +416,8 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 //
 void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 {
+	extern int32_t interpolate_this_frame;
+
 	fixed_t			tr_x;
 	fixed_t			tr_y;
 
@@ -444,9 +446,44 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	angle_t			ang;
 	fixed_t			iscale;
 
+	fixed_t			thingx;
+	fixed_t			thingy;
+	fixed_t			thingz;
+
+	int32_t			thingframe;
+	spritenum_t		thingsprite;
+	angle_t			thingangle;
+
+	if( interpolate_this_frame )
+	{
+		thingx = RendFixedToFixed( RendFixedLerp( thing->prev.x, thing->curr.x, viewlerp ) );
+		thingy = RendFixedToFixed( RendFixedLerp( thing->prev.y, thing->curr.y, viewlerp ) );
+		thingz = RendFixedToFixed( RendFixedLerp( thing->prev.z, thing->curr.z, viewlerp ) );
+
+		boolean selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
+		thingframe = selectcurr ? thing->curr.frame : thing->prev.frame;
+		thingsprite = selectcurr ? thing->curr.sprite : thing->prev.sprite;
+		thingangle = selectcurr ? thing->curr.angle : thing->prev.angle;
+
+		if( thingsprite == -1 ) // Spawned in current frame
+		{
+			return;
+		}
+	}
+	else
+	{
+		thingx = thing->x;
+		thingy = thing->y;
+		thingz = thing->z;
+
+		thingframe = thing->curr.frame;
+		thingsprite = thing->curr.sprite;
+		thingangle = thing->curr.angle;
+	}
+
 	// transform the origin point
-	tr_x = thing->x - viewx;
-	tr_y = thing->y - viewy;
+	tr_x = thingx - viewx;
+	tr_y = thingy - viewy;
 	
 	gxt = FixedMul(tr_x,viewcos); 
 	gyt = -FixedMul(tr_y,viewsin);
@@ -473,32 +510,32 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 
 	// decide which patch to use for sprite relative to player
 #ifdef RANGECHECK
-	if ((uint32_t) thing->sprite >= (uint32_t) numsprites)
+	if ((uint32_t) thingsprite >= (uint32_t) numsprites)
 	{
 		I_Error ("R_ProjectSprite: invalid sprite number %i ",
-				thing->sprite);
+				thingsprite);
 	}
 #endif
 
-	sprdef = &sprites[thing->sprite];
+	sprdef = &sprites[thingsprite];
 
 #ifdef RANGECHECK
-	if ( (thing->frame&FF_FRAMEMASK) >= sprdef->numframes )
+	if ( (thingframe&FF_FRAMEMASK) >= sprdef->numframes )
 	{
 		if( remove_limits ) return;
 
 		I_Error ("R_ProjectSprite: invalid sprite frame %i : %i ",
-				thing->sprite, thing->frame);
+				thingsprite, thingframe);
 	}
 #endif
 
-	sprframe = &sprdef->spriteframes[ thing->frame & FF_FRAMEMASK];
+	sprframe = &sprdef->spriteframes[ thingframe & FF_FRAMEMASK];
 
 	if (sprframe->rotate)
 	{
 		// choose a different rotation based on player view
-		ang = R_PointToAngle( FixedToRendFixed( thing->x ), FixedToRendFixed( thing->y ) );
-		rot = (ang-thing->angle+(unsigned)(ANG45/2)*9)>>29;
+		ang = R_PointToAngle( FixedToRendFixed( thingx ), FixedToRendFixed( thingy ) );
+		rot = (ang-thingangle+(unsigned)(ANG45/2)*9)>>29;
 		lump = sprframe->lump[rot];
 		flip = (boolean)sprframe->flip[rot];
 	}
@@ -532,10 +569,10 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	vis = R_NewVisSprite( spritecontext );
 	vis->mobjflags = thing->flags;
 	vis->scale = xscale<<detailshift;
-	vis->gx = thing->x;
-	vis->gy = thing->y;
-	vis->gz = thing->z;
-	vis->gzt = thing->z + spritetopoffset[lump];
+	vis->gx = thingx;
+	vis->gy = thingy;
+	vis->gz = thingz;
+	vis->gzt = thingz + spritetopoffset[lump];
 	vis->texturemid = vis->gzt - viewz;
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
@@ -571,7 +608,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		// fixed map
 		vis->colormap = fixedcolormap;
 	}
-	else if (thing->frame & FF_FULLBRIGHT)
+	else if (thingframe & FF_FULLBRIGHT)
 	{
 		// full bright
 		vis->colormap = colormaps;

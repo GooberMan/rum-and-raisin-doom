@@ -92,6 +92,9 @@ typedef struct player_s
     // bounded/scaled total momentum.
     fixed_t         	bob;	
 
+	rend_fixed_t prevviewz;
+	rend_fixed_t currviewz;
+
     // This is only used between levels,
     // mo->health is used during levels.
     int			health;	

@@ -26,6 +26,7 @@
 
 typedef enum
 {
+	SPR_INVALID = -1,
     SPR_TROO,
     SPR_SHTG,
     SPR_PUNG,

@@ -100,6 +100,7 @@ INLINE fixed_t FixedDiv( fixed_t a, fixed_t b );
 
 INLINE rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b );
 INLINE rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
+INLINE rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixed_t percent );
 
 #define IntToFixed( x ) ( ( x ) << FRACBITS )
 #define FixedToInt( x ) FRACFILL( ( x ) >> FRACBITS, ( x ) )

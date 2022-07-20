@@ -308,12 +308,15 @@ static void saveg_read_mobj_t(mobj_t *str)
 
     // fixed_t x;
     str->x = saveg_read32();
+	str->prev.x = str->curr.x = FixedToRendFixed( str->x );
 
     // fixed_t y;
     str->y = saveg_read32();
+	str->prev.y = str->y = FixedToRendFixed( str->y );
 
     // fixed_t z;
     str->z = saveg_read32();
+	str->prev.z = str->z = FixedToRendFixed( str->z );
 
     // struct mobj_s* snext;
     str->snext = saveg_readp();
@@ -323,12 +326,15 @@ static void saveg_read_mobj_t(mobj_t *str)
 
     // angle_t angle;
     str->angle = saveg_read32();
+	str->prev.angle = str->curr.angle = str->angle;
 
     // spritenum_t sprite;
     str->sprite = saveg_read_enum();
+	str->prev.sprite = str->curr.sprite = str->sprite;
 
     // int frame;
     str->frame = saveg_read32();
+	str->prev.frame = str->curr.frame = str->frame;
 
     // struct mobj_s* bnext;
     str->bnext = saveg_readp();
@@ -654,6 +660,7 @@ static void saveg_read_player_t(player_t *str)
 
     // fixed_t viewz;
     str->viewz = saveg_read32();
+	str->prevviewz = str->currviewz = FixedToRendFixed( str->viewz );
 
     // fixed_t viewheight;
     str->viewheight = saveg_read32();

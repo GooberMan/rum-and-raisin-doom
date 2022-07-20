@@ -215,8 +215,8 @@ boolean D_Display (void)
     boolean			redrawsbar;
 	patch_t*		pausepatch;
 
-	boolean ispaused = paused
-		|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
+	boolean ispaused = renderpaused = ( paused
+										|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) ) );
 
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -492,6 +492,8 @@ boolean D_GrabMouseCallback(void)
 //  D_RunFrame
 //
 
+uint64_t frametime = 0;
+
 void D_RunFrame()
 {
 	uint64_t nowtime;
@@ -504,6 +506,7 @@ void D_RunFrame()
 
 	boolean dofinishupdate = true;
 
+	uint64_t start = I_GetTimeUS();
 	M_ProfileNewFrame();
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -557,6 +560,8 @@ void D_RunFrame()
 	{
 		I_FinishUpdate( NULL );
 	}
+
+	frametime = I_GetTimeUS() - start;
 }
 
 //

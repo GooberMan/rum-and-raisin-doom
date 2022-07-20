@@ -82,6 +82,9 @@ extern seg_t*		segs;
 
 extern int32_t		numsectors;
 extern sector_t*	sectors;
+extern sectorinstance_t*	prevsectors;
+extern sectorinstance_t*	currsectors;
+extern sectorinstance_t*	rendsectors;
 
 extern int32_t		numsubsectors;
 extern subsector_t*	subsectors;
@@ -94,6 +97,9 @@ extern line_t*		lines;
 
 extern int32_t		numsides;
 extern side_t*		sides;
+extern sideinstance_t*		prevsides;
+extern sideinstance_t*		currsides;
+extern sideinstance_t*		rendsides;
 
 
 //
@@ -102,6 +108,8 @@ extern side_t*		sides;
 extern fixed_t		viewx;
 extern fixed_t		viewy;
 extern fixed_t		viewz;
+
+extern rend_fixed_t	viewlerp;
 
 extern angle_t		viewangle;
 extern player_t*	viewplayer;

@@ -272,6 +272,7 @@ void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* plane
 	}
 	
 	bspcontext->backsector = line->backsector;
+	bspcontext->backsectorinst = line->backsector ? &rendsectors[ line->backsector->index ] : NULL;
 
 	// Single sided line?
 	if (!bspcontext->backsector)
@@ -280,15 +281,15 @@ void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* plane
 	}
 
 	// Closed door.
-	if (bspcontext->backsector->ceilingheight <= bspcontext->frontsector->floorheight
-		|| bspcontext->backsector->floorheight >= bspcontext->frontsector->ceilingheight)
+	if (bspcontext->backsectorinst->ceilheight <= bspcontext->frontsectorinst->floorheight
+		|| bspcontext->backsectorinst->floorheight >= bspcontext->frontsectorinst->ceilheight)
 	{
 		goto clipsolid;
 	}
 
 	// Window.
-	if (bspcontext->backsector->ceilingheight != bspcontext->frontsector->ceilingheight
-		|| bspcontext->backsector->floorheight != bspcontext->frontsector->floorheight)
+	if (bspcontext->backsectorinst->ceilheight != bspcontext->frontsectorinst->ceilheight
+		|| bspcontext->backsectorinst->floorheight != bspcontext->frontsectorinst->floorheight)
 	{
 		goto clippass;
 	}
@@ -298,9 +299,9 @@ void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* plane
 	// Identical floor and ceiling on both sides,
 	// identical light levels on both sides,
 	// and no middle texture.
-	if (bspcontext->backsector->ceilingpic == bspcontext->frontsector->ceilingpic
-		&& bspcontext->backsector->floorpic == bspcontext->frontsector->floorpic
-		&& bspcontext->backsector->lightlevel == bspcontext->frontsector->lightlevel
+	if (bspcontext->backsectorinst->ceiltex == bspcontext->frontsectorinst->ceiltex
+		&& bspcontext->backsectorinst->floortex == bspcontext->frontsectorinst->floortex
+		&& bspcontext->backsectorinst->lightlevel == bspcontext->frontsectorinst->lightlevel
 		&& bspcontext->curline->sidedef->midtexture == 0)
 	{
 		return;
@@ -486,6 +487,7 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 
 	sub = &subsectors[num];
 	bspcontext->frontsector = sub->sector;
+	bspcontext->frontsectorinst = &rendsectors[ sub->sector->index ];
 	count = sub->numlines;
 	line = &segs[sub->firstline];
 

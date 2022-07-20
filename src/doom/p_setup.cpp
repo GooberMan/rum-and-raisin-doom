@@ -203,60 +203,66 @@ struct DoomMapLoader
 {
 	using Read = ReadVal;
 
-	int32_t			_numvertices;
-	vertex_t*		_vertices;
+	int32_t				_numvertices;
+	vertex_t*			_vertices;
 
-	int32_t			_numsegvertices;
-	vertex_t*		_segvertices;
+	int32_t				_numsegvertices;
+	vertex_t*			_segvertices;
 
-	int32_t			_numsegs;
-	seg_t*			_segs;
+	int32_t				_numsegs;
+	seg_t*				_segs;
 
-	int32_t			_numsectors;
-	sector_t*		_sectors;
+	int32_t				_numsectors;
+	sector_t*			_sectors;
+	sectorinstance_t*	_prevsectors;
+	sectorinstance_t*	_currsectors;
+	sectorinstance_t*	_rendsectors;
 
-	int32_t			_numsubsectors;
-	subsector_t*	_subsectors;
+	int32_t				_numsubsectors;
+	subsector_t*		_subsectors;
 
-	int32_t			_numnodes;
-	nodeformat_t	_nodeformat;
-	node_t*			_nodes;
+	int32_t				_numnodes;
+	nodeformat_t		_nodeformat;
+	node_t*				_nodes;
 
-	int32_t			_numlines;
-	line_t*			_lines;
+	int32_t				_numlines;
+	line_t*				_lines;
 
-	int32_t			_numsides;
-	side_t*			_sides;
+	int32_t				_numsides;
+	side_t*				_sides;
+	sideinstance_t*		_prevsides;
+	sideinstance_t*		_currsides;
+	sideinstance_t*		_rendsides;
 
-	int32_t			_totallines;
+	int32_t				_totallines;
 
-	fixed_t			_blockmaporgx;
-	fixed_t			_blockmaporgy;
-	int32_t			_blockmapwidth;
-	int32_t			_blockmapheight;
-	int32_t			_blockmaplength;
-	blockmap_t*		_blockmap;
-	blockmap_t*		_blockmapend;
-	blockmap_t*		_blockmapbase;
-	mobj_t**		_blocklinks;
+	fixed_t				_blockmaporgx;
+	fixed_t				_blockmaporgy;
+	int32_t				_blockmapwidth;
+	int32_t				_blockmapheight;
+	int32_t				_blockmaplength;
+	blockmap_t*			_blockmap;
+	blockmap_t*			_blockmapend;
+	blockmap_t*			_blockmapbase;
+	mobj_t**			_blocklinks;
 
-	byte*			_rejectmatrix;
+	byte*				_rejectmatrix;
 
-	mapthing_t		_deathmatchstarts[MAX_DEATHMATCH_STARTS];
-	mapthing_t*		_deathmatch_p;
-	mapthing_t		_playerstarts[MAXPLAYERS];
-	boolean			_playerstartsingame[MAXPLAYERS];
+	mapthing_t			_deathmatchstarts[MAX_DEATHMATCH_STARTS];
+	mapthing_t*			_deathmatch_p;
+	mapthing_t			_playerstarts[MAXPLAYERS];
+	boolean				_playerstartsingame[MAXPLAYERS];
 
-	lumpinfo_t*		_maplumpinfo;
+	lumpinfo_t*			_maplumpinfo;
 
-	constexpr auto	Vertices() const noexcept		{ return std::span( _vertices,		_numvertices ); }
-	constexpr auto	SegVertices() const noexcept	{ return std::span( _segvertices,	_numsegvertices ); }
-	constexpr auto	Segs() const noexcept			{ return std::span( _segs,			_numsegs ); }
-	constexpr auto	Sectors() const noexcept		{ return std::span( _sectors,		_numsectors ); }
-	constexpr auto	SubSectors() const noexcept		{ return std::span( _subsectors,	_numsubsectors ); }
-	constexpr auto	Nodes() const noexcept			{ return std::span( _nodes,			_numnodes ); }
-	constexpr auto	Lines() const noexcept			{ return std::span( _lines,			_numlines ); }
-	constexpr auto	Sides() const noexcept			{ return std::span( _sides,			_numsides ); }
+	constexpr auto		Vertices() const noexcept		{ return std::span( _vertices,		_numvertices ); }
+	constexpr auto		SegVertices() const noexcept	{ return std::span( _segvertices,	_numsegvertices ); }
+	constexpr auto		Segs() const noexcept			{ return std::span( _segs,			_numsegs ); }
+	constexpr auto		Sectors() const noexcept		{ return std::span( _sectors,		_numsectors ); }
+	constexpr auto		SubSectors() const noexcept		{ return std::span( _subsectors,	_numsubsectors ); }
+	constexpr auto		Nodes() const noexcept			{ return std::span( _nodes,			_numnodes ); }
+	constexpr auto		Lines() const noexcept			{ return std::span( _lines,			_numlines ); }
+	constexpr auto		Sides() const noexcept			{ return std::span( _sides,			_numsides ); }
 
 	void INLINE DetermineExtendedFormat( int32_t rootlump )
 	{
@@ -421,6 +427,27 @@ struct DoomMapLoader
 
 		_numsectors				= data.count;
 		_sectors				= data.output;
+
+		_prevsectors			= (sectorinstance_t*)Z_Malloc( sizeof( sectorinstance_t ) * _numsectors, PU_LEVEL, NULL );
+		_currsectors			= (sectorinstance_t*)Z_Malloc( sizeof( sectorinstance_t ) * _numsectors, PU_LEVEL, NULL );
+		_rendsectors			= (sectorinstance_t*)Z_Malloc( sizeof( sectorinstance_t ) * _numsectors, PU_LEVEL, NULL );
+
+		sector_t* thissec = _sectors;
+		sectorinstance_t* thiscurr = _currsectors;
+		sectorinstance_t* thisprev = _prevsectors;
+
+		for( int32_t index : iota( 0, _numsectors ) )
+		{
+			thisprev->floortex		= thiscurr->floortex		= flatlookup[ thissec->floorpic ];
+			thisprev->ceiltex		= thiscurr->ceiltex			= flatlookup[ thissec->ceilingpic ];
+			thisprev->floorheight	= thiscurr->floorheight		= FixedToRendFixed( thissec->floorheight );
+			thisprev->ceilheight	= thiscurr->ceilheight		= FixedToRendFixed( thissec->ceilingheight );
+			thisprev->lightlevel	= thiscurr->lightlevel		= thissec->lightlevel;
+
+			++thisprev;
+			++thiscurr;
+			++thissec;
+		}
 	}
 
 	void INLINE LoadSidedefs( int32_t lumpnum )
@@ -438,8 +465,29 @@ struct DoomMapLoader
 			out.rend.rowoffset = FixedToRendFixed( out.rowoffset );
 		} );
 
-		_numsides = data.count;
-		_sides = data.output;
+		_numsides				= data.count;
+		_sides					= data.output;
+
+		_prevsides				= (sideinstance_t*)Z_Malloc( sizeof( sideinstance_t ) * _numsides, PU_LEVEL, NULL );
+		_currsides				= (sideinstance_t*)Z_Malloc( sizeof( sideinstance_t ) * _numsides, PU_LEVEL, NULL );
+		_rendsides				= (sideinstance_t*)Z_Malloc( sizeof( sideinstance_t ) * _numsides, PU_LEVEL, NULL );
+
+		side_t* thisside = _sides;
+		sideinstance_t* thiscurr = _currsides;
+		sideinstance_t* thisprev = _prevsides;
+
+		for( int32_t index : iota( 0, _numsides ) )
+		{
+			thisprev->toptex		= thiscurr->toptex			= texturelookup[ thisside->toptexture ];
+			thisprev->midtex		= thiscurr->midtex			= texturelookup[ thisside->midtexture ];
+			thisprev->bottomtex		= thiscurr->bottomtex		= texturelookup[ thisside->bottomtexture ];
+			thisprev->coloffset		= thiscurr->coloffset		= FixedToRendFixed( thisside->textureoffset );
+			thisprev->rowoffset		= thiscurr->rowoffset		= FixedToRendFixed( thisside->rowoffset );
+
+			++thisprev;
+			++thiscurr;
+			++thisside;
+		}
 	}
 
 	template< typename _maptype = maplinedef_t >
@@ -1030,6 +1078,9 @@ extern "C"
 
 	int32_t		numsectors;
 	sector_t*	sectors;
+	sectorinstance_t*	prevsectors;
+	sectorinstance_t*	currsectors;
+	sectorinstance_t*	rendsectors;
 
 	int32_t		numsubsectors;
 	subsector_t*	subsectors;
@@ -1042,6 +1093,9 @@ extern "C"
 
 	int32_t		numsides;
 	side_t*		sides;
+	sideinstance_t*		prevsides;
+	sideinstance_t*		currsides;
+	sideinstance_t*		rendsides;
 
 	int32_t		totallines;
 
@@ -1307,9 +1361,15 @@ P_SetupLevel
 
 	numsectors		= loader._numsectors;
 	sectors			= loader._sectors;
+	prevsectors		= loader._prevsectors;
+	currsectors		= loader._currsectors;
+	rendsectors		= loader._rendsectors;
 
 	numsides		= loader._numsides;
 	sides			= loader._sides;
+	prevsides		= loader._prevsides;
+	currsides		= loader._currsides;
+	rendsides		= loader._rendsides;
 
 	numlines		= loader._numlines;
 	lines			= loader._lines;

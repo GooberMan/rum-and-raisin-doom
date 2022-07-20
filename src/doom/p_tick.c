@@ -117,7 +117,76 @@ void P_RunThinkers (void)
     }
 }
 
+void P_FlipInstanceData( void )
+{
+	sectorinstance_t* tempsec = currsectors;
+	currsectors = prevsectors;
+	prevsectors = tempsec;
 
+	sideinstance_t* tempside = currsides;
+	currsides = prevsides;
+	prevsides = tempside;
+
+	for( thinker_t* th = thinkercap.next; th != &thinkercap; th = th->next )
+	{
+		if (th->function.acp1 == (actionf_p1)P_MobjThinker)
+		{
+			// This is so nasty, I think we can do better these days
+			mobj_t* mobj = (mobj_t*)th;
+			mobj->prev = mobj->curr;
+		}
+	}
+}
+
+void P_UpdateInstanceData( void )
+{
+	int32_t index = 0;
+
+	sector_t* thissec = sectors;
+	sectorinstance_t* thissecinst = currsectors;
+	
+	for( index = 0; index < numsectors; ++index )
+	{
+		thissecinst->floortex		= flatlookup[ thissec->floorpic ];
+		thissecinst->ceiltex		= flatlookup[ thissec->ceilingpic ];
+		thissecinst->floorheight	= FixedToRendFixed( thissec->floorheight );
+		thissecinst->ceilheight		= FixedToRendFixed( thissec->ceilingheight );
+		thissecinst->lightlevel		= thissec->lightlevel;
+
+		++thissec;
+		++thissecinst;
+	}
+
+	side_t* thisside = sides;
+	sideinstance_t* thissideinst = currsides;
+
+	for( index = 0; index < numsides; ++index )
+	{
+		thissideinst->toptex		= texturelookup[ thisside->toptexture ];
+		thissideinst->midtex		= texturelookup[ thisside->midtexture ];
+		thissideinst->bottomtex		= texturelookup[ thisside->bottomtexture ];
+		thissideinst->coloffset		= FixedToRendFixed( thisside->textureoffset );
+		thissideinst->rowoffset		= FixedToRendFixed( thisside->rowoffset );
+
+		++thisside;
+		++thissideinst;
+	}
+
+	for( thinker_t* th = thinkercap.next; th != &thinkercap; th = th->next )
+	{
+		if (th->function.acp1 == (actionf_p1)P_MobjThinker)
+		{
+			// This is so nasty, I think we can do better these days
+			mobj_t* mobj = (mobj_t*)th;
+			mobj->curr.x = FixedToRendFixed( mobj->x );
+			mobj->curr.y = FixedToRendFixed( mobj->y );
+			mobj->curr.z = FixedToRendFixed( mobj->z );
+			mobj->curr.angle = mobj->angle;
+			mobj->curr.sprite = mobj->sprite;
+			mobj->curr.frame = mobj->frame;
+		}
+	}
+}
 
 //
 // P_Ticker
@@ -126,31 +195,52 @@ void P_RunThinkers (void)
 void P_Ticker (void)
 {
     int		i;
+
+	P_FlipInstanceData();
     
 	boolean ispaused = paused
 		|| 	( !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
 
     // run the tic
     if (ispaused)
-	return;
+	{
+		P_UpdateInstanceData();
+		return;
+	}
 		
     // pause if in menu and at least one tic has been run
     if ( !netgame
 	 && menuactive
 	 && !demoplayback
 	 && players[consoleplayer].viewz != 1)
-    {
-	return;
-    }
+	{
+		P_UpdateInstanceData();
+		return;
+	}
     
 		
     for (i=0 ; i<MAXPLAYERS ; i++)
 	if (playeringame[i])
-	    P_PlayerThink (&players[i]);
-			
+	{
+		players[ i ].prevviewz = players[ i ].currviewz;
+		players[ i ].mo->prev = players[ i ].mo->curr;
+
+		P_PlayerThink (&players[i]);
+
+		players[ i ].currviewz = FixedToRendFixed( players[ i ].viewz );
+		players[ i ].mo->curr.x = FixedToRendFixed( players[ i ].mo->x );
+		players[ i ].mo->curr.y = FixedToRendFixed( players[ i ].mo->y );
+		players[ i ].mo->curr.z = FixedToRendFixed( players[ i ].mo->z );
+		players[ i ].mo->curr.angle = players[ i ].mo->angle;
+		players[ i ].mo->curr.sprite = players[ i ].mo->sprite;
+		players[ i ].mo->curr.frame = players[ i ].mo->frame;
+	}
+
     P_RunThinkers ();
     P_UpdateSpecials ();
     P_RespawnSpecials ();
+
+	P_UpdateInstanceData();
 
     // for par times
     leveltime++;	

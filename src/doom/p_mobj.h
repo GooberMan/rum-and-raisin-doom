@@ -201,7 +201,7 @@ typedef struct mobjinstance_s
 	rend_fixed_t			x;
 	rend_fixed_t			y;
 	rend_fixed_t			z;
-	rend_fixed_t			angle;
+	angle_t					angle;
 	spritenum_t				sprite;
 	int32_t					frame;
 } mobjinstance_t;
@@ -226,6 +226,9 @@ typedef struct mobj_s
     angle_t		angle;	// orientation
     spritenum_t		sprite;	// used to find patch_t and flip value
     int			frame;	// might be ORed with FF_FULLBRIGHT
+
+	mobjinstance_t curr;
+	mobjinstance_t prev;
 
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).

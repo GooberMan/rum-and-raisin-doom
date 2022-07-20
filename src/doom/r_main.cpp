@@ -121,6 +121,8 @@ extern "C"
 	fixed_t					viewcos;
 	fixed_t					viewsin;
 
+	rend_fixed_t			viewlerp;
+
 	player_t*				viewplayer;
 
 	// 0 = high, 1 = low
@@ -174,6 +176,9 @@ extern "C"
 	rend_fixed_t aspect_adjusted_scaled_divide = 0;
 	rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
 
+	int32_t enable_frame_interpolation = 1;
+	int32_t interpolate_this_frame = 0;
+
 	boolean		setsizeneeded;
 	int		setblocks;
 	int		setdetail;
@@ -184,6 +189,10 @@ extern "C"
 	extern int numflats;
 	extern int numtextures;
 	extern boolean refreshstatusbar;
+	extern int mousex;
+	extern boolean renderpaused;
+
+	extern uint64_t frametime;
 
 	extern size_t			xlookup[MAXWIDTH];
 	extern size_t			rowofs[MAXHEIGHT];
@@ -1347,12 +1356,14 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 
 	if( igBeginTabItem( graphname, NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
 	{
-		igSliderInt( "Time scale (ms)", &performancegraphscale, 5, 100, "%dms", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-		igNewLine();
 #if !defined( NDEBUG )
 		igText( "YOU ARE PROFILING A DEBUG BUILD, THIS WILL GIVE YOU WRONG RESULTS" );
 		igNewLine();
 #endif // !defined( NDEBUG );
+
+		igSliderInt( "Time scale (ms)", &performancegraphscale, 5, 100, "%dms", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+		igText( "Total frame time: %0.3fms (%d FPS)", (float)( frametime * 0.001 ), (int32_t)( ( 1.0 / frametime ) * 1000000.0 ) );
+		igNewLine();
 
 		igBeginColumns( "Performance columns", M_MIN( 2, numusablerendercontexts ), ImGuiColumnsFlags_NoBorder );
 		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
@@ -1567,7 +1578,7 @@ double_t Lerp( double_t from, double_t to, double_t percent )
 	return from + ( to - from ) * percent;
 }
 
-void R_SetupFrame (player_t* player)
+void R_SetupFrame (player_t* player) //__attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
 
@@ -1584,14 +1595,50 @@ void R_SetupFrame (player_t* player)
 	double_t	idealpercentage = 1.0 / (double_t)numusablerendercontexts;
 
 	renderscratchpos = 0;
-
 	viewplayer = player;
-	viewx = player->mo->x;
-	viewy = player->mo->y;
-	viewangle = player->mo->angle + viewangleoffset;
 	extralight = player->extralight;
 
-	viewz = player->viewz;
+	interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
+
+	if( interpolate_this_frame )
+	{
+		double_t	currmicroseconds = I_GetTimeUS() % 1000000;
+		double_t	currtick = ( currmicroseconds / 1000000 ) * 35;
+		double_t	currpercentage = currtick - floor( currtick );
+	
+		viewlerp	= currpercentage * ( RENDFRACUNIT - 1 );
+
+		rend_fixed_t adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewlerp );
+		rend_fixed_t adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewlerp );
+		rend_fixed_t adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewlerp );
+
+		viewx = RendFixedToFixed( adjustedviewx );
+		viewy = RendFixedToFixed( adjustedviewy );
+		viewz = RendFixedToFixed( adjustedviewz );
+		viewangle = player->mo->curr.angle - ( mousex * 0x8 );
+
+		bool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
+
+		for( int32_t index : iota( 0, numsectors ) )
+		{
+			rendsectors[ index ].floorheight = RendFixedLerp( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewlerp );
+			rendsectors[ index ].ceilheight = RendFixedLerp( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewlerp );
+			rendsectors[ index ].lightlevel = selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
+			rendsectors[ index ].floortex = selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
+			rendsectors[ index ].ceiltex = selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+		}
+	}
+	else
+	{
+		viewx = player->mo->x;
+		viewy = player->mo->y;
+		viewz = player->viewz;
+		viewangle = player->mo->angle + viewangleoffset;
+
+		memcpy( rendsectors, currsectors, sizeof( sectorinstance_t ) * numsectors );
+		memcpy( rendsides, currsides, sizeof( sideinstance_t ) * numsides );
+	}
+
 
 	viewsin = renderfinesine[ viewangle >> RENDERANGLETOFINESHIFT ];
 	viewcos = renderfinecosine[ viewangle >> RENDERANGLETOFINESHIFT ];

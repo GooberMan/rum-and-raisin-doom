@@ -51,3 +51,8 @@ INLINE rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b )
 	rend_fixed_t result = ( a << RENDFRACBITS ) / b;
 	return (rend_fixed_t) result;
 }
+
+INLINE rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixed_t percent )
+{
+	return from + RendFixedMul( ( to - from ), percent );
+}
