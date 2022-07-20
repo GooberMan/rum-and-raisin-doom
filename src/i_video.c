@@ -50,6 +50,7 @@
 #include "i_joystick.h"
 #include "i_log.h"
 #include "i_system.h"
+#include "i_terminal.h"
 #include "i_timer.h"
 #include "i_video.h"
 #include "m_argv.h"
