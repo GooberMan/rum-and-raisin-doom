@@ -1,4 +1,4 @@
-AC_INIT(Rum and Raisin Doom, 0.2.0,
+AC_INIT(Rum and Raisin Doom, 0.2.1,
         nothingyet@noemail.com, rum-and-raisin-doom)
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
