@@ -700,7 +700,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				}
 				else
 				{
-					vtop = bspcontext->backsectorinst->ceilheight + bspcontext->sideinst->toptex->renderheight;
+					vtop = bspcontext->backsectorinst->ceilheight + texturelookup[ loopcontext.toptexture ]->renderheight;
 		
 					// bottom of texture
 					wallcontext->toptexturemid = vtop - FixedToRendFixed( viewz );
