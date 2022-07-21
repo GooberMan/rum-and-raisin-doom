@@ -1487,6 +1487,7 @@ void M_ChangeDetail(int choice)
     detailLevel = 1 - detailLevel;
 
     R_SetViewSize (screenblocks, detailLevel);
+	R_RebalanceContexts();
 
     if (!detailLevel)
 	players[consoleplayer].message = DEH_String(DETAILHI);
@@ -1499,6 +1500,8 @@ void M_ChangeDetail(int choice)
 
 void M_SizeDisplay(int choice)
 {
+	int32_t oldscreenblocks = screenblocks;
+
     switch(choice)
     {
       case 0:
@@ -1518,7 +1521,10 @@ void M_SizeDisplay(int choice)
     }
 	
 
-    R_SetViewSize (screenblocks, detailLevel);
+	if( screenblocks != oldscreenblocks )
+	{
+		R_SetViewSize (screenblocks, detailLevel);
+	}
 }
 
 

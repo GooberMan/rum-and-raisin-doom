@@ -1544,6 +1544,7 @@ void R_RenderDimensionsChanged( void )
 	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
 	R_ExecuteSetViewSize();
+	R_RebalanceContexts();
 }
 
 //
