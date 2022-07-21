@@ -162,9 +162,9 @@ void P_UpdateInstanceData( void )
 
 	for( index = 0; index < numsides; ++index )
 	{
-		thissideinst->toptex		= texturelookup[ thisside->toptexture ];
-		thissideinst->midtex		= texturelookup[ thisside->midtexture ];
-		thissideinst->bottomtex		= texturelookup[ thisside->bottomtexture ];
+		thissideinst->toptex		= thisside->toptexture ? texturelookup[ thisside->toptexture ] : NULL;
+		thissideinst->midtex		= thisside->midtexture ? texturelookup[ thisside->midtexture ] : NULL;
+		thissideinst->bottomtex		= thisside->bottomtexture ? texturelookup[ thisside->bottomtexture ] : NULL;
 		thissideinst->coloffset		= FixedToRendFixed( thisside->textureoffset );
 		thissideinst->rowoffset		= FixedToRendFixed( thisside->rowoffset );
 

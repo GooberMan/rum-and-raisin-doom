@@ -162,7 +162,7 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 		spritecolcontext.texturemid = M_MIN( bspcontext->frontsectorinst->ceilheight, bspcontext->backsectorinst->ceilheight );
 		spritecolcontext.texturemid -= FixedToRendFixed( viewz );
 	}
-	spritecolcontext.texturemid += bspcontext->curline->sidedef->rend.rowoffset;
+	spritecolcontext.texturemid += rendsides[ bspcontext->curline->sidedef->index ].rowoffset;
 
 	if (fixedcolormap)
 	{
@@ -527,6 +527,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	{
 		M_PROFILE_PUSH( "Setup", __FILE__, __LINE__ );
 		bspcontext->sidedef = bspcontext->curline->sidedef;
+		bspcontext->sideinst = &rendsides[ bspcontext->curline->sidedef->index ];
 		bspcontext->linedef = bspcontext->curline->linedef;
 
 		// mark the segment as visible for auto map
@@ -583,7 +584,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			loopcontext.markfloor = loopcontext.markceiling = true;
 			if (bspcontext->linedef->flags & ML_DONTPEGBOTTOM)
 			{
-				vtop = bspcontext->frontsectorinst->floorheight + texturelookup[ bspcontext->sidedef->midtexture ]->renderheight;
+				vtop = bspcontext->frontsectorinst->floorheight + bspcontext->sideinst->midtex->renderheight;
 				// bottom of texture at bottom
 				wallcontext->midtexturemid = vtop - FixedToRendFixed( viewz );
 			}
@@ -592,7 +593,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				// top of texture at top
 				wallcontext->midtexturemid = worldtop;
 			}
-			wallcontext->midtexturemid += bspcontext->sidedef->rend.rowoffset;
+			wallcontext->midtexturemid += bspcontext->sideinst->rowoffset;
 
 			bspcontext->thisdrawseg->silhouette = SIL_BOTH;
 			bspcontext->thisdrawseg->sprtopclip = screenheightarray;
@@ -699,7 +700,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 				}
 				else
 				{
-					vtop = bspcontext->backsectorinst->ceilheight + texturelookup[ bspcontext->sidedef->toptexture ]->renderheight;
+					vtop = bspcontext->backsectorinst->ceilheight + bspcontext->sideinst->toptex->renderheight;
 		
 					// bottom of texture
 					wallcontext->toptexturemid = vtop - FixedToRendFixed( viewz );
@@ -721,11 +722,11 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 					wallcontext->bottomtexturemid = worldlow;
 				}
 			}
-			wallcontext->toptexturemid += bspcontext->sidedef->rend.rowoffset;
-			wallcontext->bottomtexturemid += bspcontext->sidedef->rend.rowoffset;
+			wallcontext->toptexturemid += bspcontext->sideinst->rowoffset;
+			wallcontext->bottomtexturemid += bspcontext->sideinst->rowoffset;
 
 			// allocate space for masked texture tables
-			if (bspcontext->sidedef->midtexture)
+			if (bspcontext->sideinst->midtex != NULL)
 			{
 				// masked midtexture
 				loopcontext.maskedtexture = true;
@@ -758,7 +759,7 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 			if (wallcontext->normalangle-wallcontext->angle1 < ANG180)
 				wallcontext->offset = -wallcontext->offset;
 
-			wallcontext->offset += FixedToRendFixed( bspcontext->sidedef->textureoffset + bspcontext->curline->offset );
+			wallcontext->offset += bspcontext->sideinst->coloffset + FixedToRendFixed( bspcontext->curline->offset );
 			wallcontext->centerangle = ANG90 + viewangle - wallcontext->normalangle;
 	
 			// calculate light table

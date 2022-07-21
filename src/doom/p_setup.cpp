@@ -420,9 +420,6 @@ struct DoomMapLoader
 			out.tag				= Read::AsIs( in.tag );
 			out.thinglist		= NULL;
 			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
-
-			out.rend.floorheight = FixedToRendFixed( out.floorheight );
-			out.rend.ceilingheight = FixedToRendFixed( out.ceilingheight );
 		} );
 
 		_numsectors				= data.count;
@@ -454,15 +451,13 @@ struct DoomMapLoader
 	{
 		auto data = WadDataConvert< mapsidedef_t, side_t >( lumpnum, 0, [ this ]( int32_t index, side_t& out, const mapsidedef_t& in )
 		{
+			out.index			= index;
 			out.textureoffset	= IntToFixed( Read::AsIs( in.textureoffset ) );
 			out.rowoffset		= IntToFixed( Read::AsIs( in.rowoffset ) );
 			out.toptexture		= R_TextureNumForName( in.toptexture );
 			out.bottomtexture	= R_TextureNumForName( in.bottomtexture );
 			out.midtexture		= R_TextureNumForName( in.midtexture );
 			out.sector			= &Sectors()[ Read::AsIs( in.sector ) ];
-
-			out.rend.textureoffset = FixedToRendFixed( out.textureoffset );
-			out.rend.rowoffset = FixedToRendFixed( out.rowoffset );
 		} );
 
 		_numsides				= data.count;
@@ -478,9 +473,9 @@ struct DoomMapLoader
 
 		for( int32_t index : iota( 0, _numsides ) )
 		{
-			thisprev->toptex		= thiscurr->toptex			= texturelookup[ thisside->toptexture ];
-			thisprev->midtex		= thiscurr->midtex			= texturelookup[ thisside->midtexture ];
-			thisprev->bottomtex		= thiscurr->bottomtex		= texturelookup[ thisside->bottomtexture ];
+			thisprev->toptex		= thiscurr->toptex			= thisside->toptexture ? texturelookup[ thisside->toptexture ] : NULL;
+			thisprev->midtex		= thiscurr->midtex			= thisside->midtexture ? texturelookup[ thisside->midtexture ] : NULL;
+			thisprev->bottomtex		= thiscurr->bottomtex		= thisside->bottomtexture ? texturelookup[ thisside->bottomtexture ] : NULL;
 			thisprev->coloffset		= thiscurr->coloffset		= FixedToRendFixed( thisside->textureoffset );
 			thisprev->rowoffset		= thiscurr->rowoffset		= FixedToRendFixed( thisside->rowoffset );
 

@@ -176,16 +176,8 @@ typedef enum secretstate_e
 // The SECTORS record, at runtime.
 // Stores things/mobjs.
 //
-typedef struct rend_sector_s
-{
-	rend_fixed_t		floorheight;
-	rend_fixed_t		ceilingheight;
-} rend_sector_t;
-
 typedef	struct
 {
-	rend_sector_t		rend;
-
 	int32_t				index;
 
 	fixed_t				floorheight;
@@ -231,15 +223,9 @@ typedef	struct
 // The SideDef.
 //
 
-typedef struct rend_side_s
-{
-	rend_fixed_t		textureoffset;
-	rend_fixed_t		rowoffset;
-} rend_side_t;
-
 typedef struct side_s
 {
-	rend_side_t			rend;
+	int32_t				index;
 
 	// add this to the calculated texture column
 	fixed_t				textureoffset;
@@ -580,6 +566,7 @@ typedef struct bspcontext_s
 {
 	seg_t*				curline;
 	side_t*				sidedef;
+	sideinstance_t*		sideinst;
 	line_t*				linedef;
 	sector_t*			frontsector;
 	sectorinstance_t*	frontsectorinst;

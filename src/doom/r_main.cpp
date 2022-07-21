@@ -1611,7 +1611,7 @@ void R_PeekEvents()
 	}
 }
 
-void R_SetupFrame (player_t* player, boolean isconsoleplayer) // __attribute__ ((optnone))
+void R_SetupFrame (player_t* player, boolean isconsoleplayer) //__attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
 
@@ -1645,15 +1645,17 @@ void R_SetupFrame (player_t* player, boolean isconsoleplayer) // __attribute__ (
 		rend_fixed_t adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewlerp );
 		rend_fixed_t adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewlerp );
 
-		viewx = RendFixedToFixed( adjustedviewx );
-		viewy = RendFixedToFixed( adjustedviewy );
-		viewz = RendFixedToFixed( adjustedviewz );
-		viewangle = player->mo->curr.angle;
+		{
+			viewx = RendFixedToFixed( adjustedviewx );
+			viewy = RendFixedToFixed( adjustedviewy );
+			viewz = RendFixedToFixed( adjustedviewz );
+			viewangle = player->mo->curr.angle + viewangleoffset;
+		}
 
 		if( !demoplayback && isconsoleplayer )
 		{
 			R_PeekEvents();
-			viewangle -= ( ( mouselookx * 0x8 ) << FRACUNIT );
+			//viewangle -= ( ( mouselookx * 0x8 ) << FRACUNIT );
 		}
 		else
 		{
@@ -1680,11 +1682,20 @@ void R_SetupFrame (player_t* player, boolean isconsoleplayer) // __attribute__ (
 
 		for( int32_t index : iota( 0, numsectors ) )
 		{
-			rendsectors[ index ].floorheight = RendFixedLerp( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewlerp );
-			rendsectors[ index ].ceilheight = RendFixedLerp( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewlerp );
-			rendsectors[ index ].lightlevel = selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
-			rendsectors[ index ].floortex = selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
-			rendsectors[ index ].ceiltex = selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+			rendsectors[ index ].floorheight	= RendFixedLerp( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewlerp );
+			rendsectors[ index ].ceilheight		= RendFixedLerp( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewlerp );
+			rendsectors[ index ].lightlevel		= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
+			rendsectors[ index ].floortex		= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
+			rendsectors[ index ].ceiltex		= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+		}
+
+		for( int32_t index : iota( 0, numsides ) )
+		{
+			rendsides[ index ].coloffset		= RendFixedLerp( prevsides[ index ].coloffset, currsides[ index ].coloffset, viewlerp );
+			rendsides[ index ].rowoffset		= RendFixedLerp( prevsides[ index ].rowoffset, currsides[ index ].rowoffset, viewlerp );
+			rendsides[ index ].toptex			= selectcurr ? currsides[ index ].toptex : prevsides[ index ].toptex;
+			rendsides[ index ].midtex			= selectcurr ? currsides[ index ].midtex : prevsides[ index ].midtex;
+			rendsides[ index ].bottomtex		= selectcurr ? currsides[ index ].bottomtex : prevsides[ index ].bottomtex;
 		}
 	}
 	else
