@@ -678,10 +678,20 @@ void D_DoAdvanceDemo (void)
     // However! There is an alternate version of Final Doom that
     // includes a fixed executable.
 
-	if( (gameversion == exe_ultimate || gameversion == exe_final)
-		/*&& W_CheckNumForName( DEH_String("demo4") ) != -1*/ )
+	if( gameversion == exe_ultimate )
 	{
 		demosequence = (demosequence+1)%7;
+	}
+	else if( gameversion == exe_final)
+	{
+		if( remove_limits && W_CheckNumForName( DEH_String("demo4") ) == -1 )
+		{
+			demosequence = (demosequence+1)%6;
+		}
+		else
+		{
+			demosequence = (demosequence+1)%7;
+		}
 	}
 	else
 	{
