@@ -828,6 +828,14 @@ static default_t extra_defaults_list[] =
 	CONFIG_VARIABLE_INT(show_text_startup),
 
     //!
+    // @game doom
+    //
+    // If non-zero, frame interpolation is used to give a smooth framerate.
+	// Disabling returns to a proper vanilla experience.
+    //
+	CONFIG_VARIABLE_INT(enable_frame_interpolation),
+
+    //!
     // @game doom strife
     //
     // If non-zero, a disk activity indicator is displayed when data is read

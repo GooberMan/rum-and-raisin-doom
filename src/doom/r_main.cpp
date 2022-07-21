@@ -176,7 +176,7 @@ extern "C"
 	rend_fixed_t aspect_adjusted_scaled_divide = 0;
 	rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
 
-	int32_t enable_frame_interpolation = 1;
+	extern int32_t enable_frame_interpolation;
 	int32_t interpolate_this_frame = 0;
 
 	boolean		setsizeneeded;

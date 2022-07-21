@@ -2900,6 +2900,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t show_endoom;
 	extern int32_t show_text_startup;
 	extern int32_t show_diskicon;
+	extern int32_t enable_frame_interpolation;
 	extern int32_t grabmouse;
 	extern int32_t novert;
 	extern int32_t enable_frame_interpolation;

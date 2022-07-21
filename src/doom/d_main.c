@@ -136,6 +136,7 @@ int32_t				show_endoom = 1;
 int32_t				show_text_startup = 1;
 int32_t				show_diskicon = 1;
 int32_t				remove_limits = 0;
+int32_t				enable_frame_interpolation = 1;
 
 extern int32_t		numrendercontexts;
 extern int32_t		numusablerendercontexts;
@@ -451,6 +452,7 @@ void D_BindVariables(void)
     M_BindIntVariable("vanilla_demo_limit",     &vanilla_demo_limit);
     M_BindIntVariable("show_endoom",            &show_endoom);
 	M_BindIntVariable("show_text_startup",		&show_text_startup);
+	M_BindIntVariable("enable_frame_interpolation", &enable_frame_interpolation);
     M_BindIntVariable("show_diskicon",          &show_diskicon);
 
     // Multiplayer chat macros
