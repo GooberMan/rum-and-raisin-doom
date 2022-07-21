@@ -1167,6 +1167,7 @@ R_SetViewSize
     setsizeneeded = true;
     setblocks = blocks;
     setdetail = detail;
+	R_RebalanceContexts();
 }
 
 typedef enum detail_e
