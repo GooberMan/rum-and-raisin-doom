@@ -353,6 +353,8 @@ static void UpdateMouseButtonState(unsigned int button, boolean on)
 
     event.type = ev_mouse;
     event.data1 = mouse_button_state;
+	event.data2 = 0;
+	event.data3 = 0;
 	// R&R - Hijacking data4 and data5 for button and pressed states
     event.data4 = button;
 	event.data5 = on ? 1 : 0;

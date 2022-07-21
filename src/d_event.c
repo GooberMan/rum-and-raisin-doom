@@ -60,4 +60,38 @@ event_t *D_PopEvent(void)
     return result;
 }
 
+event_t* D_PeekEvent( event_t* curr )
+{
+	event_t* result;
+
+	if( !curr )
+	{
+		if (eventtail == eventhead)
+		{
+			result = NULL;
+		}
+		else
+		{
+			result = &events[ eventtail ];
+		}
+	}
+	else
+	{
+		if( ++curr >= events + MAXEVENTS )
+		{
+			curr -= MAXEVENTS;
+		}
+
+		if( curr == &events[ eventhead ] )
+		{
+			result = NULL;
+		}
+		else
+		{
+			result = curr;
+		}
+	}
+
+	return result;
+}
 

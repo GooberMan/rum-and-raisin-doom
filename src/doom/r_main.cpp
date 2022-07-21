@@ -1578,37 +1578,32 @@ double_t Lerp( double_t from, double_t to, double_t percent )
 	return from + ( to - from ) * percent;
 }
 
-int32_t mouselookx = 0;
-
 extern "C"
 {
-	#define MAXEVENTS 128
-
-	extern event_t events[MAXEVENTS];
-	extern int eventhead;
-	extern int eventtail;
-
 	extern boolean demoplayback;
 }
 
-void R_Responder( event_t* ev )
+int32_t R_Responder( event_t* ev ) //__attribute__ ((optnone))
 {
 	if( ev->type == ev_mouse )
 	{
-		mouselookx += ev->data2 * ( mouseSensitivity + 5 ) / 10; 
+		return ev->data2 * ( mouseSensitivity + 5 ) / 10; 
 	}
+	return 0;
 }
 
-void R_PeekEvents()
+int32_t R_PeekEvents() //__attribute__ ((optnone))
 {
-	mouselookx = 0;
+	int32_t mouselookx = 0;
 
-	int32_t currevent = eventhead;
-	while( currevent != eventtail )
+	event_t* curr = D_PeekEvent( NULL );
+	while( curr != NULL )
 	{
-		R_Responder( &events[ currevent ] );
-		currevent = ( currevent + 1 ) % MAXEVENTS;
+		mouselookx += R_Responder( curr );
+		curr = D_PeekEvent( curr );
 	}
+
+	return mouselookx;
 }
 
 void R_SetupFrame (player_t* player, boolean isconsoleplayer) //__attribute__ ((optnone))
@@ -1654,8 +1649,11 @@ void R_SetupFrame (player_t* player, boolean isconsoleplayer) //__attribute__ ((
 
 		if( !demoplayback && isconsoleplayer )
 		{
-			R_PeekEvents();
-			//viewangle -= ( ( mouselookx * 0x8 ) << FRACUNIT );
+			int64_t mouseamount = R_PeekEvents();
+			int64_t newangle = viewangle;
+			newangle -= ( ( mouseamount * 0x8 ) << FRACBITS );
+
+			viewangle = (angle_t)( newangle & ANG_MAX );
 		}
 		else
 		{

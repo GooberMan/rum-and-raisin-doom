@@ -141,6 +141,8 @@ void D_PostEvent (event_t *ev);
 
 event_t *D_PopEvent(void);
 
+event_t* D_PeekEvent( event_t* curr );
+
 
 #endif
 

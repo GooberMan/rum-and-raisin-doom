@@ -163,8 +163,6 @@ void R_RenderPlayerView (player_t *player, boolean isconsoleplayer);
 // Called by startup code.
 void R_Init (void);
 
-void R_Responder( event_t* ev );
-
 // Called when render_width and render_height change
 void R_RenderDimensionsChanged( void );
 
