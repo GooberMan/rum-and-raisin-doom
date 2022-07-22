@@ -1487,7 +1487,6 @@ void M_ChangeDetail(int choice)
     detailLevel = 1 - detailLevel;
 
     R_SetViewSize (screenblocks, detailLevel);
-	R_RebalanceContexts();
 
     if (!detailLevel)
 	players[consoleplayer].message = DEH_String(DETAILHI);
