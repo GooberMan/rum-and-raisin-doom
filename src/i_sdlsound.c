@@ -34,6 +34,7 @@
 #include "i_sound.h"
 #include "i_system.h"
 #include "i_swap.h"
+#include "i_terminal.h"
 #include "m_argv.h"
 #include "m_misc.h"
 #include "w_wad.h"
@@ -808,30 +809,43 @@ static void GetSfxLumpName(sfxinfo_t *sfx, char *buf, size_t buf_len)
     }
 }
 
-#ifdef HAVE_LIBSAMPLERATE
-
 // Preload all the sound effects - stops nasty ingame freezes
+#define DOTAMOUNT 8
+#define DOTBUFFERSIZE 64
 
 static void I_SDL_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
 {
     char namebuf[9];
     int i;
 
-    // Don't need to precache the sounds unless we are using libsamplerate.
+    I_TerminalPrintf( Log_Startup, "I_SDL_PrecacheSounds: Precaching - " );
 
-    if (use_libsamplerate == 0)
-    {
-	return;
-    }
+	char cachestring[ DOTBUFFERSIZE ];
+	int dotcount = M_MIN( num_sounds / DOTAMOUNT, DOTBUFFERSIZE - 4 );
+	char* currout = cachestring;
+	*currout++ = ' ';
+	*currout++ = '[';
+	for( i = 0; i < dotcount; ++i )
+	{
+		*currout++ = ' ';
+	}
+	*currout++ = ']';
+	*currout = 0;
+	I_TerminalPrintf( Log_None, cachestring );
 
-    printf("I_SDL_PrecacheSounds: Precaching all sound effects..");
+	currout = cachestring;
+	for( i = 0; i < dotcount + 1; ++i )
+	{
+		*currout++ = '\b';
+	}
+	*currout = 0;
+	I_TerminalPrintf( Log_None, cachestring );
 
     for (i=0; i<num_sounds; ++i)
     {
-        if ((i % 6) == 0)
+        if ((i % DOTAMOUNT) == 0)
         {
-            printf(".");
-            fflush(stdout);
+            I_TerminalPrintf( Log_None, "." );
         }
 
         GetSfxLumpName(&sounds[i], namebuf, sizeof(namebuf));
@@ -844,17 +858,8 @@ static void I_SDL_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
         }
     }
 
-    printf("\n");
+    I_TerminalPrintf( Log_None, "\n" );
 }
-
-#else
-
-static void I_SDL_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
-{
-    // no-op
-}
-
-#endif
 
 // Load a SFX chunk into memory and ensure that it is locked.
 
