@@ -23,6 +23,7 @@ extern "C"
 }
 
 #include <atomic>
+#include <semaphore>
 #include <thread>
 
 threadhandle_t I_ThreadCreate( threadfunc_t runfunc, void* userdata )
@@ -50,6 +51,26 @@ void I_Yield( void )
 {
 	std::this_thread::yield();
 }
+
+using semaphore = std::counting_semaphore< INT_MAX >;
+
+semaphore_t I_SemaphoreCreate( int32_t initialcount )
+{
+	void* data = Z_Malloc( sizeof( semaphore ), PU_STATIC, NULL );
+	new( data ) semaphore( initialcount );
+	return data;
+}
+
+void I_SemaphoreAcquire( semaphore_t sem )
+{
+	((semaphore*)sem)->acquire();
+}
+
+void I_SemaphoreRelease( semaphore_t sem )
+{
+	((semaphore*)sem)->release();;
+}
+
 
 atomicval_t I_AtomicLoad( atomicptr_t atomic )
 {

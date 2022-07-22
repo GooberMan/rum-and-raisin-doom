@@ -30,6 +30,8 @@ typedef void* threadhandle_t;
 typedef ptrdiff_t atomicval_t;
 typedef atomicval_t* atomicptr_t;
 
+typedef void* semaphore_t;
+
 #ifdef _MSC_VER
 #define THREADLOCAL static __declspec(thread)
 #else
@@ -41,6 +43,10 @@ void I_ThreadDestroy( threadhandle_t thread );
 void I_ThreadJoin( threadhandle_t thread );
 
 void I_Yield( void );
+
+semaphore_t I_SemaphoreCreate( int32_t initialcount );
+void I_SemaphoreAcquire( semaphore_t sem );
+void I_SemaphoreRelease( semaphore_t sem );
 
 // Do we need to go this cray cray?
 //atomicptr_t I_AtomicCreate( atomicval_t init );
