@@ -71,6 +71,7 @@ extern "C"
 	{
 		rendercontext_t		context;
 		threadhandle_t		thread;
+		semaphore_t			shouldrun;
 		atomicval_t			running;
 		atomicval_t			shouldquit;
 		atomicval_t			framewaiting;
@@ -1062,19 +1063,13 @@ int32_t R_ContextThreadFunc( void* userdata )
 
 	while( !I_AtomicLoad( &data->shouldquit ) )
 	{
-		if( I_AtomicExchange( &data->framewaiting, 0 ) )
-		{
-			M_ProfileNewFrame();
+		I_SemaphoreAcquire( data->shouldrun );
 
-			R_RenderViewContext( &data->context );
+		M_ProfileNewFrame();
 
-			I_AtomicExchange( &data->framefinished, 1 );
-		}
+		R_RenderViewContext( &data->context );
 
-		if( I_AtomicLoad( &renderthreadCPUmelter ) == 0 )
-		{
-			I_Sleep( 1 );
-		}
+		I_AtomicExchange( &data->framefinished, 1 );
 	}
 
 	I_AtomicExchange( &data->running, 0 );
@@ -1114,6 +1109,7 @@ void R_InitContexts( void )
 
 		if( renderthreaded && currcontext < numrendercontexts - 1 )
 		{
+			renderdatas[ currcontext ].shouldrun = I_SemaphoreCreate( 0 );
 			renderdatas[ currcontext ].thread = I_ThreadCreate( &R_ContextThreadFunc, &renderdatas[ currcontext ] );
 		}
 
@@ -1461,7 +1457,12 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 
 	igText( "Performance options" );
 	igSeparator();
+	int32_t oldcount = numusablerendercontexts;
 	igSliderInt( "Running threads", &numusablerendercontexts, 1, numrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+	if( numusablerendercontexts != oldcount )
+	{
+		R_RebalanceContexts();
+	}
 
 	igPushIDPtr( &renderthreadCPUmelter );
 	if( igCheckbox( "CPU melter (nosleep)", &WorkingBool ) )
@@ -1480,7 +1481,12 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	}
 	igPopID();
 
+	boolean oldbalance = renderloadbalancing;
 	igCheckbox( "Load balancing", (bool*)&renderloadbalancing );
+	if( oldbalance != renderloadbalancing )
+	{
+		R_RebalanceContexts();
+	}
 	igSliderFloat( "Balancing scale", &rebalancescale, 0.001f, 0.1f, "%0.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 	igCheckbox( "SIMD columns", (bool*)&renderSIMDcolumns );
 	igNewLine();
@@ -1649,7 +1655,7 @@ void R_SetupFrame (player_t* player, boolean isconsoleplayer) //__attribute__ ((
 			viewangle = player->mo->curr.angle + viewangleoffset;
 		}
 
-		if( !demoplayback && isconsoleplayer )
+		if( !demoplayback && isconsoleplayer && player->playerstate != PST_DEAD )
 		{
 			int64_t mouseamount = R_PeekEvents();
 			int64_t newangle = viewangle;
@@ -1857,6 +1863,7 @@ void R_RenderPlayerView (player_t* player, boolean isconsoleplayer)
 		if( renderthreaded && currcontext < numusablerendercontexts - 1 )
 		{
 			I_AtomicExchange( &renderdatas[ currcontext ].framewaiting, 1 );
+			I_SemaphoreRelease( renderdatas[ currcontext ].shouldrun );
 		}
 		else
 		{
