@@ -52,7 +52,7 @@ void I_Yield( void )
 	std::this_thread::yield();
 }
 
-using semaphore = std::counting_semaphore< INT_MAX >;
+using semaphore = std::counting_semaphore< 1 >;
 
 semaphore_t I_SemaphoreCreate( int32_t initialcount )
 {
@@ -68,7 +68,7 @@ void I_SemaphoreAcquire( semaphore_t sem )
 
 void I_SemaphoreRelease( semaphore_t sem )
 {
-	((semaphore*)sem)->release();;
+	((semaphore*)sem)->release();
 }
 
 
