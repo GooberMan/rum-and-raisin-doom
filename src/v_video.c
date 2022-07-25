@@ -36,9 +36,13 @@
 #include "i_video.h"
 #include "m_bbox.h"
 #include "m_misc.h"
+#include "m_profile.h"
 #include "v_video.h"
 #include "w_wad.h"
 #include "z_zone.h"
+
+#include "r_defs.h"s
+#include "r_draw.h"
 
 #include "config.h"
 #ifdef HAVE_LIBPNG
@@ -257,66 +261,69 @@ void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width
 
 void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
 {
-	fixed_t		virtualx;
-	fixed_t		virtualx2;
-	fixed_t		virtualy;
-	fixed_t		virtualystart;
-	fixed_t		virtualwidth;
-	fixed_t		virtualheight;
-	fixed_t		virtualsourcewidth;
-	fixed_t		virtualsourceheight;
-	pixel_t*	desttop;
-	pixel_t*	desttop2;
-	pixel_t*	destbottom;
-	pixel_t*	destbottom2;
-	pixel_t*	dest;
-	pixel_t*	dest2;
-	pixel_t*	source;
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-	int32_t		widthdiff = render_width - aspect_adjusted_render_width;
-
-	if( widthdiff > 0 )
+	int32_t			widthdiff = render_width - aspect_adjusted_render_width;
+	if( widthdiff <= 0 )
 	{
-		virtualsourcewidth = source_buffer->width << FRACBITS;
-		virtualsourceheight = source_buffer->height << FRACBITS;
-		widthdiff >>= 1;
-		virtualwidth = FixedDiv( widthdiff << FRACBITS, V_WIDTHMULTIPLIER );
-		virtualheight = ( maxy - miny ) << FRACBITS;
-
-		virtualx = 0;
-		virtualx2 = ( V_VIRTUALWIDTH << FRACBITS ) + virtualwidth;
-		virtualystart = FixedMul( ( miny << FRACBITS ), V_HEIGHTMULTIPLIER );
-
-		desttop = dest = dest_buffer->data + ( virtualystart >> FRACBITS );
-		desttop2 = dest2 = dest_buffer->data + ( FixedMul( virtualx2, V_WIDTHMULTIPLIER ) >> FRACBITS ) * dest_buffer->pitch + ( virtualystart >> FRACBITS );
-
-		destbottom = dest_buffer->data + dest_buffer->pitch;
-		destbottom2 = dest_buffer->data + ( ( FixedMul( virtualx2, V_WIDTHMULTIPLIER ) >> FRACBITS ) + 1 ) * dest_buffer->pitch;
-
-		// This modulo operation is rubbish, but whatever, I'll fix it later
-		for ( ; virtualx < virtualwidth; virtualx += V_WIDTHSTEP, virtualx2 += V_WIDTHSTEP )
-		{
-			virtualy = virtualystart;
-
-			source = source_buffer->data + ( ( virtualx % virtualsourcewidth ) >> FRACBITS ) * source_buffer->pitch;
-
-			for( ; virtualy < virtualystart + virtualheight && dest < destbottom && dest2 < destbottom2; virtualy += V_HEIGHTSTEP )
-			{
-				*dest++ = *dest2++ = source[ ( virtualy % virtualsourceheight ) >> FRACBITS ];
-			}
-
-			desttop += dest_buffer->pitch;
-			destbottom += dest_buffer->pitch;
-			dest = desttop;
-
-			desttop2 += dest_buffer->pitch;
-			destbottom2 += dest_buffer->pitch;
-			dest2 = desttop2;
-		}
-
+		return;
 	}
+	widthdiff >>= 1;
+
+	colcontext_t	column;
+
+	rend_fixed_t	xscale = RendFixedDiv( IntToRendFixed( 1 ), FixedToRendFixed( V_WIDTHMULTIPLIER ) );
+	rend_fixed_t	yscale = FixedToRendFixed( V_HEIGHTMULTIPLIER );
+
+	column.output			= *dest_buffer;
+	column.source			= source_buffer->data;
+	column.sourceheight		= IntToRendFixed( source_buffer->height );
+	column.colormap			= NULL;
+	column.translation		= NULL;
+	column.texturemid		= IntToRendFixed( ( V_VIRTUALHEIGHT / 2 ) - miny );
+	column.scale			= yscale;
+	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale );
+	column.yl				= FixedToInt( miny * V_HEIGHTMULTIPLIER );
+	column.yh				= FixedToInt( maxy * V_HEIGHTMULTIPLIER );
+
+	rend_fixed_t width		= IntToRendFixed( source_buffer->width );
+	rend_fixed_t diff		= RendFixedDiv( IntToRendFixed( widthdiff ), FixedToRendFixed( V_HEIGHTMULTIPLIER ) );
+	rend_fixed_t xsource	= width % diff;
+	if( xsource < 0 )
+	{
+		xsource += width;
+	}
+	if( xsource >= width )
+	{
+		xsource -= width;
+	}
+
+	for( column.x = 0; column.x < widthdiff; ++column.x )
+	{
+		column.source = source_buffer->data + ( xsource >> RENDFRACBITS ) * source_buffer->pitch;
+		R_BackbufferDrawColumn( &column );
+		xsource += xscale;
+		if( xsource >= width )
+		{
+			xsource -= width;
+		}
+	}
+
+	xsource	= 0;
+	for( column.x = aspect_adjusted_render_width + widthdiff; column.x < render_width; ++column.x )
+	{
+		column.source = source_buffer->data + ( xsource >> RENDFRACBITS ) * source_buffer->pitch;
+		R_BackbufferDrawColumn( &column );
+		xsource += xscale;
+		if( xsource >= width )
+		{
+			xsource -= width;
+		}
+	}
+
+	M_PROFILE_POP( __FUNCTION__ );
 }
- 
+
 //
 // V_SetPatchClipCallback
 //

@@ -287,6 +287,42 @@ namespace DrawColumn
 		}
 	};
 
+	struct ViewportLookup
+	{
+		static INLINE size_t XOffset( colcontext_t*& context )
+		{
+			return xlookup[ context->x ];
+		}
+
+		static INLINE size_t YOffset( colcontext_t*& context )
+		{
+			return rowofs[ context->yl ];
+		}
+
+		static INLINE size_t CenterY( colcontext_t*& context )
+		{
+			return centery;
+		}
+	};
+
+	struct BackbufferLookup
+	{
+		static INLINE size_t XOffset( colcontext_t*& context )
+		{
+			return context->x * context->output.pitch;
+		}
+
+		static INLINE size_t YOffset( colcontext_t*& context )
+		{
+			return context->yl;
+		}
+
+		static INLINE size_t CenterY( colcontext_t*& context )
+		{
+			return render_height >> 1;
+		}
+	};
+
 	struct Bytewise
 	{
 		template< size_t _texturewidth >
@@ -379,7 +415,7 @@ namespace DrawColumn
 			};
 		};
 
-		template< typename Sampler >
+		template< typename Sampler, typename Lookup >
 		static INLINE void DrawWith( colcontext_t* context )
 		{
 			constexpr bool LimitRemoving = arg_count( &Sampler::Sample ) > 2;
@@ -389,11 +425,11 @@ namespace DrawColumn
 			// Framebuffer destination address.
 			// Use ylookup LUT to avoid multiply with ScreenWidth.
 			// Use columnofs LUT for subwindows? 
-			pixel_t*		dest		= context->output.data + xlookup[ context->x ] + rowofs[ context->yl ];
+			pixel_t*		dest		= context->output.data + Lookup::XOffset( context ) + Lookup::YOffset( context );
 
 			// Determine scaling, which is the only mapping to be done.
 			rend_fixed_t&	fracstep	= context->iscale;
-			rend_fixed_t	frac		= context->texturemid +  ( context->yl - centery ) * fracstep;
+			rend_fixed_t	frac		= context->texturemid +  ( context->yl - Lookup::CenterY( context ) ) * fracstep;
 			if constexpr( LimitRemoving )
 			{
 				// We're not doing a mask operation, so we need to bring the frac value to within 0 -> sourceheight
@@ -424,15 +460,20 @@ namespace DrawColumn
 			} while (count--);
 		}
 
-		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal< 128 >::Direct >( context ); }
-		static INLINE void PaletteSwapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::PaletteSwap >( context ); }
-		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::Colormap >( context ); }
-		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap >( context ); }
+		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal< 128 >::Direct, ViewportLookup >( context ); }
+		static INLINE void PaletteSwapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportLookup >( context ); }
+		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportLookup >( context ); }
+		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportLookup >( context ); }
 
-		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct >( context ); }
-		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap >( context ); }
-		static INLINE void LimitRemovingColormapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::Colormap >( context ); }
-		static INLINE void LimitRemovingColormapPaletteSwapDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap >( context ); }
+		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct, ViewportLookup >( context ); }
+		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap, ViewportLookup >( context ); }
+		static INLINE void LimitRemovingColormapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::Colormap, ViewportLookup >( context ); }
+		static INLINE void LimitRemovingColormapPaletteSwapDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, ViewportLookup >( context ); }
+
+		static INLINE void BackbufferDraw( colcontext_t* context )							{ DrawWith< SamplerLimitRemoving::Direct, BackbufferLookup >( context ); }
+		static INLINE void BackbufferPaletteSwapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::PaletteSwap, BackbufferLookup >( context ); }
+		static INLINE void BackbufferColormapDraw( colcontext_t* context )					{ DrawWith< SamplerLimitRemoving::Colormap, BackbufferLookup >( context ); }
+		static INLINE void BackbufferColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, BackbufferLookup >( context ); }
 	};
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
@@ -471,7 +512,19 @@ void R_LimitRemovingDrawColumn_Untranslated( colcontext_t* context )
 	DrawColumn::Bytewise::LimitRemovingColormapDraw( context );
 }
 
-void R_DrawColumnLow ( colcontext_t* context ) 
+void R_BackbufferDrawColumn( colcontext_t* context ) 
+{ 
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::BackbufferDraw( context );
+} 
+
+void R_BackbufferDrawColumn_Untranslated( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::BackbufferColormapDraw( context );
+}
+
+void R_DrawColumnLow( colcontext_t* context ) 
 { 
     int					count; 
     pixel_t*			dest;

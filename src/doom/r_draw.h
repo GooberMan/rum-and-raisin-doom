@@ -32,6 +32,9 @@ void R_DrawColumn ( colcontext_t* context );
 void R_DrawColumn_Untranslated ( colcontext_t* context );
 void R_LimitRemovingDrawColumn ( colcontext_t* context );
 void R_LimitRemovingDrawColumn_Untranslated ( colcontext_t* context );
+void R_BackbufferDrawColumn ( colcontext_t* context );
+void R_BackbufferDrawColumn_Untranslated ( colcontext_t* context );
+
 void R_DrawColumnLow ( colcontext_t* context );
 
 // Rum and raisin extensions.
