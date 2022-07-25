@@ -384,6 +384,11 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 
 	for( ; column.x < xstop; ++column.x )
 	{
+		if( xsource >= xwidth )
+		{
+			I_Error( "V_DrawPatchClipped: Error with dimensions calculation" );
+		}
+
 		column_t* patchcol = (column_t *)( (byte *)patch + LONG( patch->columnofs[ RendFixedToInt( xsource ) ] ) );
 
 		while( patchcol->topdelta != 0xFF )
@@ -398,10 +403,6 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 		}
 
 		xsource += xscale;
-		if( xsource >= xwidth )
-		{
-			I_Error( "V_DrawPatchClipped: Error with dimensions calculation" );
-		}
 	}
 
 	M_PROFILE_POP( __FUNCTION__ );
