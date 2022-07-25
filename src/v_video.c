@@ -41,7 +41,7 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-#include "r_defs.h"s
+#include "r_defs.h"
 #include "r_draw.h"
 
 #include "config.h"
@@ -374,7 +374,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	column.yl				= FixedToInt( y * V_HEIGHTMULTIPLIER );
 	column.yh				= FixedToInt( M_MIN( y + clippedheight, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1;
 
-	rend_fixed_t xwidth		= IntToRendFixed( clippedwidth );
+	rend_fixed_t xwidth		= IntToRendFixed( patch->width );
 	rend_fixed_t xsource	= IntToRendFixed( clippedx );
 
 	column.x = widthdiff + FixedToInt( x * V_WIDTHMULTIPLIER );
@@ -384,7 +384,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 
 	for( ; column.x < xstop; ++column.x )
 	{
-		column_t* patchcol = (column_t *)( (byte *)patch + LONG( patch->columnofs[ clippedx + RendFixedToInt( xsource ) ] ) );
+		column_t* patchcol = (column_t *)( (byte *)patch + LONG( patch->columnofs[ RendFixedToInt( xsource ) ] ) );
 
 		while( patchcol->topdelta != 0xFF )
 		{
@@ -400,7 +400,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 		xsource += xscale;
 		if( xsource >= xwidth )
 		{
-			xsource -= xwidth;
+			I_Error( "V_DrawPatchClipped: Error with dimensions calculation" );
 		}
 	}
 
