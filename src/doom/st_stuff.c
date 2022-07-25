@@ -420,6 +420,8 @@ void ST_Stop(void);
 
 void ST_refreshBackground(void)
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
 	if (st_statusbaron)
 	{
 		V_FillBorder( &tileflat, ST_Y, V_VIRTUALHEIGHT );
@@ -433,6 +435,8 @@ void ST_refreshBackground(void)
 		if (netgame)
 			V_DrawPatch(ST_FX, ST_Y, faceback);
 	}
+
+	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -1021,6 +1025,8 @@ void ST_doPaletteStuff(void)
 
 void ST_drawWidgets(boolean refresh)
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
     int		i;
 
     // used by w_arms[] widgets
@@ -1051,6 +1057,8 @@ void ST_drawWidgets(boolean refresh)
 	STlib_updateMultIcon(&w_keyboxes[i], refresh);
 
     STlib_updateNum(&w_frags, refresh);
+
+	M_PROFILE_POP( __FUNCTION__ );
 
 }
 
