@@ -303,6 +303,11 @@ namespace DrawColumn
 		{
 			return centery;
 		}
+
+		static INLINE size_t StartPos( colcontext_t*& context )
+		{
+			return context->texturemid +  ( context->yl - CenterY( context ) ) * context->iscale;
+		}
 	};
 
 	struct BackbufferLookup
@@ -320,6 +325,11 @@ namespace DrawColumn
 		static INLINE size_t CenterY( colcontext_t*& context )
 		{
 			return render_height >> 1;
+		}
+
+		static INLINE size_t StartPos( colcontext_t*& context )
+		{
+			return 0;
 		}
 	};
 
@@ -429,7 +439,7 @@ namespace DrawColumn
 
 			// Determine scaling, which is the only mapping to be done.
 			rend_fixed_t&	fracstep	= context->iscale;
-			rend_fixed_t	frac		= context->texturemid +  ( context->yl - Lookup::CenterY( context ) ) * fracstep;
+			rend_fixed_t	frac		= Lookup::StartPos( context );
 			if constexpr( LimitRemoving )
 			{
 				// We're not doing a mask operation, so we need to bring the frac value to within 0 -> sourceheight
