@@ -307,7 +307,6 @@ boolean D_Display( double_t framepercent )
 	{
 		if( !automapactive )
 		{
-			
 			R_RenderPlayerView( &players[ displayplayer ], framepercent, displayplayer == consoleplayer );
 		}
 		ST_Drawer ( fullscreen, redrawsbar );
@@ -325,7 +324,7 @@ boolean D_Display( double_t framepercent )
 	{
 		viewactivestate = false;        // view was not active
 		R_FillBackScreen ();    // draw the pattern into the back screen
-}
+	}
 
 	// see if the border needs to be updated to the screen
 	if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != render_width)
@@ -532,7 +531,7 @@ void D_RunFrame()
 	M_ProfileNewFrame();
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-	double_t currpercentage;
+	double_t currpercentage = 0.0;
 
 	// frame syncronous IO operations
 	I_StartFrame();
@@ -561,8 +560,21 @@ void D_RunFrame()
 		}
 
 		double_t	currmicroseconds = I_GetTimeUS() % 1000000;
-		double_t	currtick = ( currmicroseconds / 1000000.0 ) * 35.0;
-		currpercentage = currtick - floor( currtick );
+		double_t	currtickbase = floor( ( currmicroseconds / 1000000.0 ) * 35.0 );
+		double_t	nexttickbase = currtickbase + 1;
+		double_t	currtick = ( currtickbase * 1000000.0 ) / 35.0;
+		double_t	nexttick = ( nexttickbase * 1000000.0 ) / 35.0;
+		// This is still not smooth enough, need to clamp to the next presentable frame.
+		// This also means working out what the monitor refresh rate is, so that we're
+		// not blindly clamping to intervals of 60.
+		currpercentage = ( currmicroseconds - currtick ) / ( nexttick - currtick );
+
+		// This code gives negative percentages, so we need to increment percentage by
+		// a frame if our closest frame is the one before. But we need to get monitor
+		// refresh rate to do that correctly.
+		//double_t	currframebase = floor( ( currmicroseconds / 1000000.0 ) * 60.0 );
+		//double_t	currframe = ( currframebase * 1000000.0 ) / 60.0;
+		//currpercentage = ( currframe - currtick ) / ( nexttick - currtick );
 
 		TryRunTics (); // will run at least one tic
 
