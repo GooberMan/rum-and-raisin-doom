@@ -158,7 +158,7 @@ void R_BindRenderVariables( void );
 //
 
 // Called by G_Drawer.
-void R_RenderPlayerView (player_t *player, boolean isconsoleplayer);
+void R_RenderPlayerView (player_t *player, double_t framepercent, boolean isconsoleplayer);
 
 // Called by startup code.
 void R_Init (void);

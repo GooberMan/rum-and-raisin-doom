@@ -1614,7 +1614,7 @@ int32_t R_PeekEvents() //__attribute__ ((optnone))
 	return mouselookx;
 }
 
-void R_SetupFrame (player_t* player, boolean isconsoleplayer) //__attribute__ ((optnone))
+void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsoleplayer ) __attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
 
@@ -1638,11 +1638,7 @@ void R_SetupFrame (player_t* player, boolean isconsoleplayer) //__attribute__ ((
 
 	if( interpolate_this_frame )
 	{
-		double_t	currmicroseconds = I_GetTimeUS() % 1000000;
-		double_t	currtick = ( currmicroseconds / 1000000 ) * 35;
-		double_t	currpercentage = currtick - floor( currtick );
-	
-		viewlerp	= currpercentage * ( RENDFRACUNIT - 1 );
+		viewlerp	= framepercent * ( RENDFRACUNIT - 1 );
 
 		rend_fixed_t adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewlerp );
 		rend_fixed_t adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewlerp );
@@ -1835,7 +1831,7 @@ static void R_DrawMsg( const char* msg, hu_textline_t* line )
 	HUlib_drawTextLine( line, false );
 }
 
-void R_RenderPlayerView (player_t* player, boolean isconsoleplayer)
+void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconsoleplayer)
 {
 	M_PROFILE_FUNC();
 
@@ -1846,7 +1842,7 @@ void R_RenderPlayerView (player_t* player, boolean isconsoleplayer)
 	byte* outputcolumn;
 	byte* endcolumn;
 
-	R_SetupFrame (player, isconsoleplayer);
+	R_SetupFrame(player, framepercent, isconsoleplayer);
 
 	// NetUpdate can cause lump loads, so we wait until rendering is done before doing it again.
 	// This is a change from the vanilla renderer.

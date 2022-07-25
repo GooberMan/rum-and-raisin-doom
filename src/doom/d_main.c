@@ -222,7 +222,7 @@ void D_TestControls( const char* itemname, void* data )
 	V_DrawMouseSpeedBox( testcontrols_mousespeed );
 }
 
-boolean D_Display (void)
+boolean D_Display( double_t framepercent )
 {
     static  boolean		viewactivestate = false;
     static  boolean		menuactivestate = false;
@@ -307,7 +307,8 @@ boolean D_Display (void)
 	{
 		if( !automapactive )
 		{
-			R_RenderPlayerView ( &players[ displayplayer ], displayplayer == consoleplayer );
+			
+			R_RenderPlayerView( &players[ displayplayer ], framepercent, displayplayer == consoleplayer );
 		}
 		ST_Drawer ( fullscreen, redrawsbar );
 		HU_Drawer ();
@@ -531,6 +532,8 @@ void D_RunFrame()
 	M_ProfileNewFrame();
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
+	double_t currpercentage;
+
 	// frame syncronous IO operations
 	I_StartFrame();
 	I_StartTic();
@@ -557,6 +560,10 @@ void D_RunFrame()
 			R_RenderDimensionsChanged();
 		}
 
+		double_t	currmicroseconds = I_GetTimeUS() % 1000000;
+		double_t	currtick = ( currmicroseconds / 1000000.0 ) * 35.0;
+		currpercentage = currtick - floor( currtick );
+
 		TryRunTics (); // will run at least one tic
 
 		S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
@@ -564,7 +571,7 @@ void D_RunFrame()
 		// Update display, next frame, with current state if no profiling is on
 		if (screenvisible && !nodrawers)
 		{
-			if ((wipe = D_Display ()))
+			if( (wipe = D_Display( currpercentage ) ) )
 			{
 				// start wipe on this frame
 				wipe_EndScreen(0, 0, render_width, render_height);
