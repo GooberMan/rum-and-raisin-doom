@@ -200,62 +200,46 @@ void V_TransposeFlat( const char* flat_name, vbuffer_t* output, int outputmemzon
 
 void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width, int32_t height )
 {
-	pixel_t *dest;
-	pixel_t *desttop;
-	pixel_t *destbottom;
-	pixel_t *source;
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-	fixed_t virtualx;
-	fixed_t virtualy;
-
-	fixed_t virtualwidth;
-	fixed_t virtualheight;
-
-	fixed_t virtualsourcewidth = source_buffer->width << FRACBITS;
-	fixed_t virtualsourceheight = source_buffer->height << FRACBITS;
-
-	int32_t xcount;
-	int32_t ycount;
-	int32_t ystart;
-	int32_t ylength;
-
-	width = M_MIN( V_VIRTUALWIDTH, x + width ) - x;
-	height = M_MIN( V_VIRTUALHEIGHT, y + height ) - y;
-
-	V_MarkRect(x, y, width, height);
-
-	// Setup destination
-	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
-	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
-	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
-
-	ystart = virtualy >> FRACBITS;
-
-	desttop = dest = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS ) + ystart;
-	destbottom = dest_buffer->data + ( ( virtualx >> FRACBITS ) + 1 ) * dest_buffer->pitch;
-
-	virtualwidth = M_MIN( FixedMul( width, V_WIDTHMULTIPLIER ), V_VIRTUALWIDTH ) << FRACBITS;
-	virtualheight = M_MIN( FixedMul( height, V_HEIGHTMULTIPLIER ), V_VIRTUALHEIGHT ) << FRACBITS;
-
-	xcount = M_MIN( virtualwidth, FixedMul( V_VIRTUALWIDTH << FRACBITS, V_WIDTHMULTIPLIER ) >> FRACBITS );
-	ylength = M_MIN( virtualheight, FixedMul( V_VIRTUALHEIGHT << FRACBITS, V_HEIGHTMULTIPLIER ) >> FRACBITS );
-
-	// This modulo operation is rubbish, but whatever, I'll fix it later
-	for ( ; xcount > 0; virtualx += V_WIDTHSTEP, --xcount )
+	int32_t			widthdiff = render_width - aspect_adjusted_render_width;
+	if( widthdiff < 0 )
 	{
-		virtualy = 0;
-		ycount = ylength;
+		return;
+	}
+	widthdiff >>= 1;
 
-		source = source_buffer->data + ( ( virtualx % virtualsourcewidth ) >> FRACBITS ) * source_buffer->pitch + ystart;
+	colcontext_t	column;
 
-		for( ; ycount > 0 && dest < destbottom; virtualy += V_HEIGHTSTEP, --ycount )
+	rend_fixed_t	xscale = RendFixedDiv( IntToRendFixed( 1 ), FixedToRendFixed( V_WIDTHMULTIPLIER ) );
+	rend_fixed_t	yscale = FixedToRendFixed( V_HEIGHTMULTIPLIER );
+
+	column.output			= *dest_buffer;
+	column.source			= source_buffer->data;
+	column.sourceheight		= IntToRendFixed( source_buffer->height );
+	column.colormap			= NULL;
+	column.translation		= NULL;
+	column.texturemid		= IntToRendFixed( ( V_VIRTUALHEIGHT / 2 ) - y );
+	column.scale			= yscale;
+	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale );
+	column.yl				= FixedToInt( y * V_HEIGHTMULTIPLIER );
+	column.yh				= FixedToInt( M_MIN( y + height, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER );
+
+	rend_fixed_t xwidth		= IntToRendFixed( source_buffer->width );
+	rend_fixed_t xsource	= 0;
+
+	column.x = widthdiff + FixedToInt( x * V_WIDTHMULTIPLIER );
+	int32_t xstop = widthdiff + FixedToInt( M_MIN( x + width, V_VIRTUALWIDTH ) * V_WIDTHMULTIPLIER );
+
+	for( column.x = 0; column.x < xstop; ++column.x )
+	{
+		column.source = source_buffer->data + ( xsource >> RENDFRACBITS ) * source_buffer->pitch;
+		R_BackbufferDrawColumn( &column );
+		xsource += xscale;
+		if( xsource >= xwidth )
 		{
-			*dest++ = source[ ( virtualy % virtualsourceheight ) >> FRACBITS ];
+			xsource -= xwidth;
 		}
-
-		desttop += dest_buffer->pitch;
-		destbottom += dest_buffer->pitch;
-		dest = desttop;
 	}
 }
 
