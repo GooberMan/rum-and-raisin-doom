@@ -1248,7 +1248,7 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	else
 	{
 		scaledviewwidth = setblocks * render_width / 10;
-		viewheight = (setblocks * ( render_height - SBARHEIGHT ) / 10 ) & ~7;
+		viewheight = (setblocks * ( render_height - SBARHEIGHT ) / 10 );// & ~7;
 	}
 
 	detailshift = setdetail;
@@ -1614,7 +1614,7 @@ int32_t R_PeekEvents() //__attribute__ ((optnone))
 	return mouselookx;
 }
 
-void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsoleplayer ) __attribute__ ((optnone))
+void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsoleplayer ) //__attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
 
