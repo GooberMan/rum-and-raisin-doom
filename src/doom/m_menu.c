@@ -2482,9 +2482,8 @@ typedef struct windowsizes_s
 
 static windowsizes_t window_sizes_scaled[] =
 {
-	// It honeslty doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
-	// Uncomment if your port needs them. But be warned that the ImGui overlay will be basically
-	// impossible to use.
+	// It honestly doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
+	// Uncomment if your port needs them. But be warned that the Dashboard will be basically impossible to use.
 
 	//WINDOWDIM( 320,		240		),
 	//WINDOWDIM( 512,		400		),
@@ -2528,7 +2527,7 @@ static windowsizes_t render_sizes[] =
 	WINDOWDIM( 2800,	1000 ),
 	WINDOWDIM( 1920,	1200 ),
 	WINDOWDIM( 2560,	1200 ),
-	WINDOWDIM( 3360,	1200 ),
+	//WINDOWDIM( 3360,	1200 ),
 	WINDOWDIM( 2560,	1600 ),
 
 };
