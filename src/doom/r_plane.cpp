@@ -330,7 +330,6 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
 	skycontext.iscale = FixedToRendFixed( pspriteiscale>>detailshift );
-	skycontext.scale = FixedToRendFixed( pspritescale>>detailshift );
 	skycontext.texturemid = skytexturemid;
 
 	// This isn't a constant though...

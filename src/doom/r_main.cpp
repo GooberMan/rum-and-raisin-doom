@@ -983,7 +983,6 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	{
 		skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
 		skycontext.iscale = FixedToRendFixed( pspriteiscale>>detailshift );
-		skycontext.scale = FixedToRendFixed( pspritescale>>detailshift );
 		skycontext.texturemid = skytexturemid;
 		skycontext.output = rendercontext->buffer;
 		skycontext.yl = 0;
