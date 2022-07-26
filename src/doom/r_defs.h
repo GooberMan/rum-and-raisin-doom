@@ -664,8 +664,7 @@ typedef struct planecontext_s
 	int32_t				planezlightindex;
 	fixed_t				planeheight;
 
-	// New renderer values
-	rastercache_t		raster[ MAXSCREENHEIGHT ];
+	rastercache_t*		raster;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			flattimetaken;
