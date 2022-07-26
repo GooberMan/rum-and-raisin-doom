@@ -850,11 +850,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
     // Draw disk icon before blit, if necessary.
     V_DrawDiskIcon();
 
-    // Set the scaling quality for rendering the upscaled texture to "linear",
-    // which looks much softer and smoother than "nearest" but does a better
-    // job at downscaling from the upscaled texture to screen.
-
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
 	if ( palette_to_set && vga_porch_flash )
 	{
