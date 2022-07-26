@@ -20,17 +20,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "i_system.h"
-
 #include "doomdef.h"
+#include "m_fixed.h"
 #include "doomstat.h"
 
-#include "r_local.h"
+#include "r_main.h"
 #include "r_sky.h"
 #include "r_raster.h"
 
-#include "m_misc.h"
+#include "m_container.h"
 #include "m_profile.h"
+
+extern "C"
+{
+	#include "i_system.h"
+
+	#include "r_local.h"
+
+	#include "m_misc.h"
+
+	extern boolean renderSIMDcolumns;
+}
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -90,11 +100,10 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 
 #endif // RANGECHECK
 
-
 //
 // R_RenderMaskedSegRange
 //
-void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
+DOOM_C_API void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -252,7 +261,6 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 	rend_fixed_t	bottomfrac = segcontext->bottomfrac;
 
 	colcontext_t	wallcolcontext;
-	extern boolean renderSIMDcolumns;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		starttime = I_GetTimeUS();
@@ -488,7 +496,7 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 // A wall segment will be drawn
 //  between start and stop pixels (inclusive).
 //
-void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
+DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 

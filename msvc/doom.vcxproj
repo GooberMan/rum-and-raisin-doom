@@ -492,7 +492,7 @@
     <ClInclude Include="..\src\doom\r_plane.h" />
     <ClCompile Include="..\src\doom\r_plane.cpp" />
     <ClCompile Include="..\src\doom\r_raster.cpp" />
-    <ClCompile Include="..\src\doom\r_segs.c" />
+    <ClCompile Include="..\src\doom\r_segs.cpp" />
     <ClInclude Include="..\src\doom\r_raster.h" />
     <ClInclude Include="..\src\doom\r_segs.h" />
     <ClCompile Include="..\src\doom\r_sky.c" />

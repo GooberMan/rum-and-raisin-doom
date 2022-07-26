@@ -79,7 +79,7 @@ r_draw.cpp         r_draw.h     \
 r_main.cpp         r_main.h     \
 r_plane.cpp        r_plane.h    \
 r_raster.cpp       r_raster.h   \
-r_segs.c           r_segs.h     \
+r_segs.cpp         r_segs.h     \
 r_sky.c            r_sky.h      \
                    r_state.h    \
 r_things.c         r_things.h   \
