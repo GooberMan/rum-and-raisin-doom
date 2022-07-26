@@ -299,14 +299,29 @@ namespace DrawColumn
 			return rowofs[ context->yl ];
 		}
 
-		static INLINE size_t CenterY( colcontext_t*& context )
+		static INLINE size_t StartPos( colcontext_t*& context )
 		{
-			return centery;
+			return context->texturemid + ( context->yl - centery ) * context->iscale;
+		}
+	};
+
+	struct ViewportSpriteLookup
+	{
+		static INLINE size_t XOffset( colcontext_t*& context )
+		{
+			return xlookup[ context->x ];
+		}
+
+		static INLINE size_t YOffset( colcontext_t*& context )
+		{
+			return rowofs[ context->yl ];
 		}
 
 		static INLINE size_t StartPos( colcontext_t*& context )
 		{
-			return context->texturemid +  ( context->yl - CenterY( context ) ) * context->iscale;
+			// TODO: This isn't accurate enough, needs to be more like the backbuffer lookup
+			//return context->texturemid;
+			return context->texturemid + ( context->yl - centery ) * context->iscale;
 		}
 	};
 
@@ -320,11 +335,6 @@ namespace DrawColumn
 		static INLINE size_t YOffset( colcontext_t*& context )
 		{
 			return context->yl;
-		}
-
-		static INLINE size_t CenterY( colcontext_t*& context )
-		{
-			return render_height >> 1;
 		}
 
 		static INLINE size_t StartPos( colcontext_t*& context )
@@ -475,6 +485,11 @@ namespace DrawColumn
 		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportLookup >( context ); }
 		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportLookup >( context ); }
 
+		static INLINE void SpriteDraw( colcontext_t* context )								{ DrawWith< SamplerOriginal< 128 >::Direct, ViewportSpriteLookup >( context ); }
+		static INLINE void SpritePaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportSpriteLookup >( context ); }
+		static INLINE void SpriteColormapDraw( colcontext_t* context )						{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup >( context ); }
+		static INLINE void SpriteColormapPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportSpriteLookup >( context ); }
+
 		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct, ViewportLookup >( context ); }
 		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap, ViewportLookup >( context ); }
 		static INLINE void LimitRemovingColormapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::Colormap, ViewportLookup >( context ); }
@@ -509,6 +524,19 @@ void R_DrawColumn_Untranslated( colcontext_t* context )
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::ColormapDraw( context );
 }
+
+void R_SpriteDrawColumn( colcontext_t* context ) 
+{ 
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SpriteDraw( context );
+} 
+
+void R_SpriteDrawColumn_Untranslated( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SpriteColormapDraw( context );
+}
+
 
 void R_LimitRemovingDrawColumn( colcontext_t* context ) 
 { 
