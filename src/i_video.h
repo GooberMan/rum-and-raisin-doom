@@ -63,6 +63,7 @@ void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );
 
 SDL_Window* I_GetWindow( void );
 SDL_Renderer* I_GetRenderer( void );
+int32_t I_GetRefreshRate( void );
 
 void I_GraphicsCheckCommandLine(void);
 

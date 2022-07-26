@@ -1660,6 +1660,13 @@ SDL_Renderer* I_GetRenderer( void )
 	return renderer;
 }
 
+int32_t I_GetRefreshRate( void )
+{
+	SDL_DisplayMode current;
+	SDL_GetCurrentDisplayMode( video_display, &current );
+
+	return current.refresh_rate;
+}
 
 void I_InitGraphics( void )
 {
