@@ -84,7 +84,7 @@ typedef int32_t					vertclip_t;
 #define MAXVISSPRITES			1024
 
 #define RENDER_PERF_GRAPHING	1
-#define MAXPROFILETIMES			( 35 * 8 )
+#define MAXPROFILETIMES			( 35 * 4 )
 
 
 typedef struct texturecomposite_s
@@ -697,6 +697,7 @@ typedef struct spritecontext_s
 	vertclip_t*			mfloorclip;
 	vertclip_t*			mceilingclip;
 	rend_fixed_t		spryscale;
+	rend_fixed_t		spryiscale;
 	rend_fixed_t		sprtopscreen;
 
 	lighttable_t**		spritelights;
@@ -734,7 +735,6 @@ typedef struct colcontext_s
 	int32_t				x;
 	int32_t				yl;
 	int32_t				yh;
-	rend_fixed_t		scale;
 	rend_fixed_t		iscale;
 	rend_fixed_t		texturemid;
 } colcontext_t;
