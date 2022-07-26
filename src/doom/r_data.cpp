@@ -160,7 +160,6 @@ extern "C"
 
 	short**					texturecolumnlump;
 	uint32_t**				texturecolumnofs;
-	uint32_t**				texturecompositecolumnofs;
 	texturecomposite_t*		texturecomposite;
 
 	texturecomposite_t*		flatcomposite;
@@ -309,7 +308,6 @@ void R_GenerateComposite (int texnum)
 	memset( block, remove_limits ? 0 : 0xFB, texturecomposite[ texnum ].size * COMPOSITE_MULTIPLIER );
 
     collump = texturecolumnlump[texnum];
-    colofs = texturecompositecolumnofs[texnum];
     
     // Composite the columns together.
     patch = texture->patches;
@@ -342,7 +340,7 @@ void R_GenerateComposite (int texnum)
 			while( patchy < texture->height )
 			{
 				R_DrawColumnInCache (patchcol,
-						 block + colofs[x],
+						 block + x * texturecomposite[ texnum ].pitch,
 						 patchy,
 						 texture->height);
 				if( texture->patchcount > 1 )
@@ -387,10 +385,6 @@ void R_GenerateLookup (int texnum)
 	
     texture = textures[texnum];
 
-    // Composited texture not created yet.
-    texturecomposite[ texnum ].data = NULL;
-    texturecomposite[ texnum ].size = 0;
-
     collump = texturecolumnlump[texnum];
     colofs = texturecolumnofs[texnum];
     
@@ -425,25 +419,16 @@ void R_GenerateLookup (int texnum)
 		}
 	}
 	
-	colofs = texturecompositecolumnofs[texnum];
-
 	for (x=0 ; x<texture->width ; x++)
 	{
 		if (!patchcount[x])
 		{
-			I_TerminalPrintf( Log_Warning, "R_GenerateLookup: column without a patch (%s)\n",
-				texture->name);
-			return;
+			I_TerminalPrintf( Log_Warning, "R_GenerateLookup: column without a patch (%s)\n", texture->name );
+			break;
 		}
-	
-		// Pre-caching textures breaks on TNT and PLUTONIA with a 64KB limit. Them sky textures are chonkers.
+	}
 
-		// TODO: Remove colofs and just use a pitch value on the texture...
-		colofs[x] = texturecomposite[ texnum ].size;
-		texturecomposite[ texnum ].size += COMPOSITE_HEIGHTALIGN( texture->height );
-    }
-
-    Z_Free(patchcount);
+	Z_Free(patchcount);
 }
 
 
@@ -481,12 +466,10 @@ void R_CacheComposite( int32_t tex )
 //
 byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
 {
-	int		ofs;
-
 	texturecomposite_t*& composite = texturelookup[ tex ];
 	
 	col &= composite->widthmask;
-	ofs = composite->size * colormapindex + texturecompositecolumnofs[tex][col];
+	int32_t ofs = composite->size * colormapindex + composite->pitch * col;
 
 	if ( !composite->data )
 	{
@@ -496,7 +479,19 @@ byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
 	return composite->data + ofs;
 }
 
-thread_local byte flatcolumnhack[ 72 ];
+thread_local byte flatcolumnhack[ 72 ] =
+{
+	0, 64, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0xFF, 0, 0, 0
+};
 
 byte* R_GetRawColumn( int32_t tex, int32_t col )
 {
@@ -506,12 +501,7 @@ byte* R_GetRawColumn( int32_t tex, int32_t col )
 	if( tex > numtextures )
 	{
 		// THIS IS SO NASTY. NEED TO CACHE THIS
-		flatcolumnhack[ 0 ] = 0;
-		flatcolumnhack[ 1 ] = 64;
-		flatcolumnhack[ 2 ] = 0;
 		memcpy( flatcolumnhack + 3, R_GetColumn( tex, col, 0 ), 64 );
-		flatcolumnhack[ 67 ] = 0;
-		flatcolumnhack[ 68 ] = 0xFF;
 		return flatcolumnhack + 3;
 	}
 	
@@ -573,7 +563,6 @@ void R_InitTextureAndFlatComposites( void )
 	int32_t totallookup = numtextures + numflats;
 
 	texturecomposite = (texturecomposite_t*)Z_Malloc( numtextures * sizeof( *texturecomposite ), PU_STATIC, 0 );
-	texturecompositecolumnofs = (uint32_t**)Z_Malloc( totallookup * sizeof( *texturecompositecolumnofs ), PU_STATIC, 0 );
 
 	texturelookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *texturelookup ), PU_STATIC, 0 );
 	flatlookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *flatlookup ), PU_STATIC, 0 );
@@ -586,7 +575,6 @@ void R_InitTextureAndFlatComposites( void )
 	for( texture_t* texture : std::span( textures, numtextures ) )
 	{
 		texturecomposite_t& composite = texturecomposite[ index ];
-		texturecompositecolumnofs[ index ] = (uint32_t*)Z_Malloc( texture->width * sizeof( **texturecompositecolumnofs ), PU_STATIC, 0 );
 
 		// Gotta be an easier way to find current or lower power of 2...
 		int32_t mask = 1;
@@ -595,7 +583,7 @@ void R_InitTextureAndFlatComposites( void )
 		composite.data = NULL;
 		memcpy( composite.name, texture->name, sizeof( texture->name ) );
 		composite.namepadding = 0;
-		composite.size = 0;
+		composite.size = texture->width * texture->height;
 		composite.width = texture->width;
 		composite.height = texture->height;
 		composite.pitch = texture->height;
@@ -626,12 +614,6 @@ void R_InitTextureAndFlatComposites( void )
 		composite.widthmask = 63;
 		composite.renderheight = IntToRendFixed( 64 );
 		composite.index = index;
-
-		uint32_t* columnoffs = texturecompositecolumnofs[ numtextures + index ] = (uint32_t*)Z_Malloc( 64 * sizeof( **texturecompositecolumnofs ), PU_STATIC, 0 );
-		for( uint32_t offset : iota( 0, 64 ) )
-		{
-			*columnoffs++ = offset * 64;
-		}
 
 		*texturedest++ = *flatdest++ = &composite;
 		++index;
@@ -1195,7 +1177,7 @@ void R_PrecacheLevel (void)
 		if (!texturepresent[i])
 			continue;
 
-		if( !remove_limits && i == 0 )
+		if( i == 0 )
 		{
 			continue;
 		}
