@@ -95,6 +95,8 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 //
 void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
 	uint32_t			index;
 	column_t*			col;
 	int32_t				lightnum;
@@ -113,7 +115,7 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 #endif // RENDER_PERF_GRAPHING
 
 	spritecolcontext.output = *dest;
-	spritecolcontext.colfunc = &R_DrawColumn_Untranslated; 
+	spritecolcontext.colfunc = &R_SpriteDrawColumn_Untranslated; 
 
 	// Calculate light table.
 	// Use different light tables
@@ -175,7 +177,10 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 		// calculate lighting
 		if (maskedtexturecol[spritecolcontext.x] != MASKEDTEXCOL_INVALID)
 		{
-			if (!fixedcolormap)
+			spritecontext->sprtopscreen = FixedToRendFixed( centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
+			spritecolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), spritecontext->spryscale );
+
+			if( !fixedcolormap )
 			{
 				index = (uint32_t)( spritecontext->spryscale >> RENDLIGHTSCALESHIFT );
 				if( LIGHTSCALEMUL != RENDFRACUNIT )
@@ -188,10 +193,6 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 
 				spritecolcontext.colormap = walllights[index];
 			}
-			
-			spritecontext->sprtopscreen = FixedToRendFixed( centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
-			spritecolcontext.scale = spritecontext->spryscale;
-			spritecolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), spritecolcontext.scale );
 
 			// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
 			// spritecolcontext.colfunc = colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
@@ -203,13 +204,14 @@ void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spriteco
 			maskedtexturecol[spritecolcontext.x] = MASKEDTEXCOL_INVALID;
 		}
 		spritecontext->spryscale += scalestep;
-
 	}
 
 #if RENDER_PERF_GRAPHING
 	endtime = I_GetTimeUS();
 	bspcontext->maskedtimetaken += ( endtime - starttime );
 #endif // RENDER_PERF_GRAPHING
+
+	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -343,7 +345,6 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 				colormapindex = wallcontext->lightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ wallcontext->lightsindex ][ index ] : wallcontext->lightsindex;
 			}
 			wallcolcontext.x = currx;
-			wallcolcontext.scale = wallcontext->scale;
 			wallcolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), wallcontext->scale );
 
 #if R_DRAWCOLUMN_DEBUGDISTANCES

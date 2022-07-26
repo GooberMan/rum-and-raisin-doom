@@ -32,6 +32,7 @@
 #include "z_zone.h"
 #include "w_wad.h"
 #include "m_misc.h"
+#include "m_profile.h"
 
 #include "r_local.h"
 
@@ -295,6 +296,8 @@ vissprite_t* R_NewVisSprite ( spritecontext_t* spritecontext )
 
 void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontext, column_t* column )
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
 	rend_fixed_t		topscreen;
 	rend_fixed_t		bottomscreen;
 	rend_fixed_t		basetexturemid;
@@ -337,6 +340,8 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 	}
 	
 	colcontext->texturemid = basetexturemid;
+
+	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -347,6 +352,8 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 //
 void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite_t* vis, int32_t x1, int32_t x2 )
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
 	column_t*			column;
 	int32_t				texturecolumn;
 	int32_t				prevfuzzcolumn;
@@ -361,7 +368,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 
 	spritecolcontext.output = *dest;
 	spritecolcontext.colormap = vis->colormap;
-	spritecolcontext.colfunc = &R_DrawColumn_Untranslated; 
+	spritecolcontext.colfunc = &R_SpriteDrawColumn_Untranslated;
 
 	if (!spritecolcontext.colormap)
 	{
@@ -376,7 +383,6 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
 	
-	spritecolcontext.scale = FixedToRendFixed( abs(vis->xscale)>>detailshift );
 	spritecolcontext.iscale = FixedToRendFixed( abs(vis->xiscale)>>detailshift );
 	spritecolcontext.texturemid = FixedToRendFixed( vis->texturemid );
 	frac = vis->startfrac;
@@ -405,6 +411,8 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 		column = (column_t *)( (byte *)patch + LONG(patch->columnofs[texturecolumn]) );
 		R_DrawMaskedColumn( spritecontext, &spritecolcontext, column );
 	}
+
+	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -791,6 +799,8 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 //
 void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
 	int32_t		i;
 	int32_t		lightnum;
 	pspdef_t*	psp;
@@ -823,6 +833,8 @@ void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
 			R_DrawPSprite ( dest, spritecontext, psp );
 		}
 	}
+
+	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -832,6 +844,8 @@ void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
 
 void R_SortVisSprites ( spritecontext_t* spritecontext )
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
 	int32_t			i;
 	int32_t			count;
 	vissprite_t*	ds;
@@ -881,6 +895,8 @@ void R_SortVisSprites ( spritecontext_t* spritecontext )
 		spritecontext->vsprsortedhead.prev->next = best;
 		spritecontext->vsprsortedhead.prev = best;
 	}
+
+	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -889,6 +905,8 @@ void R_SortVisSprites ( spritecontext_t* spritecontext )
 //
 void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext, vissprite_t* spr )
 {
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
 	drawseg_t*		ds;
 	vertclip_t		clipbot[MAXSCREENWIDTH];
 	vertclip_t		cliptop[MAXSCREENWIDTH];
@@ -946,14 +964,23 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 			// masked mid texture?
 			if (ds->maskedtexturecol)
 			{
+				// Don't even do all that heavy lifting in RenderMaskedSegRange if there's nothing to render
+				for( int32_t check = spr->x1; check <= spr->x2; ++check )
+				{
+					if( ds->maskedtexturecol[ check ] != MASKEDTEXCOL_INVALID )
+					{
 #if RENDER_PERF_GRAPHING
-				starttime = I_GetTimeUS();
+						starttime = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
-				R_RenderMaskedSegRange( dest, bspcontext, spritecontext, ds, r1, r2 );
+						R_RenderMaskedSegRange( dest, bspcontext, spritecontext, ds, r1, r2 );
 #if RENDER_PERF_GRAPHING
-				endtime = I_GetTimeUS();
-				bspcontext->maskedtimetaken += ( endtime - starttime );
+						endtime = I_GetTimeUS();
+						bspcontext->maskedtimetaken += ( endtime - starttime );
 #endif // RENDER_PERF_GRAPHING
+						// Break out of enclosing for loop now that we know we didn't waste our time
+						break;
+					}
+				}
 			}
 			// seg is behind sprite
 			continue;			
@@ -1000,6 +1027,7 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	// all clipping has been performed, so draw the sprite
 
 	// check for unclipped columns
+	int32_t clippedcolumns = 0;
 	for (x = spr->x1 ; x<=spr->x2 ; x++)
 	{
 		if (clipbot[x] == -2)
@@ -1007,6 +1035,14 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 
 		if (cliptop[x] == -2)
 			cliptop[x] = -1;
+
+		if( cliptop[x] == clipbot[x] ) ++clippedcolumns;
+	}
+
+	if( clippedcolumns > ( spr->x2 - spr->x1 ) )
+	{
+		M_PROFILE_POP( __FUNCTION__ );
+		return;
 	}
 		
 	spritecontext->mfloorclip = clipbot;
@@ -1019,6 +1055,9 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	endtime = I_GetTimeUS();
 	spritecontext->maskedtimetaken += ( endtime - starttime );
 #endif // RENDER_PERF_GRAPHING
+
+	M_PROFILE_POP( __FUNCTION__ );
+
 }
 
 
