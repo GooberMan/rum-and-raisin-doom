@@ -115,8 +115,7 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -160,8 +159,7 @@
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Debug/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -204,8 +202,7 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -248,8 +245,7 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -292,8 +288,7 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -336,8 +331,7 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -381,8 +375,7 @@
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -426,8 +419,7 @@
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -471,8 +463,7 @@
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>
@@ -516,8 +507,7 @@
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/projects/github/gooberman/rum-and-raisin-doom/bin/src/Release/rum-and-raisin-doom.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)rum-and-raisin-doom.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>4194304</StackReserveSize>
     </Link>

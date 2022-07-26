@@ -276,7 +276,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;E:\projects\github\gooberman\rum-and-raisin-doom\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -309,7 +309,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Clang|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;E:\projects\github\gooberman\rum-and-raisin-doom\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -342,7 +342,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profiling-Clang|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;E:\projects\github\gooberman\rum-and-raisin-doom\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -375,7 +375,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profiling|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;E:\projects\github\gooberman\rum-and-raisin-doom\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);..\src;..\ext\glad\include;..\ext\cimgui;..\ext\cimgui\imgui;..\ext\cimguiglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <ExceptionHandling>
       </ExceptionHandling>
