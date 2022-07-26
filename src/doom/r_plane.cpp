@@ -50,9 +50,6 @@ extern "C"
 
 	int32_t				span_override = Span_None;
 
-	extern size_t		xlookup[MAXWIDTH];
-	extern size_t		rowofs[MAXHEIGHT];
-
 	extern int			numflats;
 	extern int			numtextures;
 }
@@ -77,9 +74,6 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 {
 	M_PROFILE_FUNC();
 
-	int32_t	i;
-	angle_t	angle;
-
 	{
 		M_PROFILE_NAMED( "Clip clear" );
 		context->floorclip = R_AllocateScratch< vertclip_t >( viewwidth, viewheight );
@@ -91,9 +85,6 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * ( numflats + numtextures ) );
 
 	context->raster = R_AllocateScratch< rastercache_t >( viewheight );
-
-	// left to right mapping
-	angle = (thisangle-ANG90)>>RENDERANGLETOFINESHIFT;
 }
 
 //

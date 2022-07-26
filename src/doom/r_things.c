@@ -922,7 +922,6 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	uint64_t			endtime;
 #endif // RENDER_PERF_GRAPHING
 
-		
 	for (x = spr->x1 ; x<=spr->x2 ; x++)
 	{
 		clipbot[x] = cliptop[x] = -2;

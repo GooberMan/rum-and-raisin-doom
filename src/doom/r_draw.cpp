@@ -46,14 +46,6 @@ extern int32_t border_bezel_style;
 
 extern vbuffer_t* dest_buffer;
 
-// ?
-// This does precisely nothing but hard limit what you can do with a given executable
-#define MAXWIDTH			( MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
-#define MAXHEIGHT			( MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
-
-size_t			xlookup[MAXWIDTH];
-size_t			rowofs[MAXHEIGHT]; 
-
 //
 // All drawing to the view buffer is accomplished in this file.
 // The other refresh files only know about ccordinates,
@@ -203,7 +195,7 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 
 	constexpr simd_int8x16_t fullmask = literal1_int8x16( -1 );
 
-	basedest	= (size_t)context->output.data + xlookup[context->x] + rowofs[context->yl];
+	basedest	= (size_t)context->output.data + context->x * context->output.pitch + context->yl;
 	enddest		= basedest + ( context->yh - context->yl);
 	overlap		= basedest & ( sizeof( simd_int8x16_t ) - 1 );
 
@@ -291,12 +283,12 @@ namespace DrawColumn
 	{
 		static INLINE size_t XOffset( colcontext_t*& context )
 		{
-			return xlookup[ context->x ];
+			return context->x * context->output.pitch;
 		}
 
 		static INLINE size_t YOffset( colcontext_t*& context )
 		{
-			return rowofs[ context->yl ];
+			return context->yl;
 		}
 
 		static INLINE size_t StartPos( colcontext_t*& context )
@@ -309,12 +301,12 @@ namespace DrawColumn
 	{
 		static INLINE size_t XOffset( colcontext_t*& context )
 		{
-			return xlookup[ context->x ];
+			return context->x * context->output.pitch;
 		}
 
 		static INLINE size_t YOffset( colcontext_t*& context )
 		{
-			return rowofs[ context->yl ];
+			return context->yl;
 		}
 
 		static INLINE size_t StartPos( colcontext_t*& context )
@@ -576,8 +568,8 @@ void R_DrawColumnLow( colcontext_t* context )
     // Framebuffer destination address.
     // Use ylookup LUT to avoid multiply with ScreenWidth.
     // Use columnofs LUT for subwindows? 
-    dest = context->output.data + xlookup[ context->x * 2 ] + rowofs[context->yl];  
-    dest2 = context->output.data + xlookup[ context->x * 2 + 1 ] + rowofs[context->yl];  
+    dest = context->output.data + context->x * 2 * context->output.pitch + context->yl;
+    dest2 = context->output.data + ( context->x * 2 + 1 ) * context->output.pitch + context->yl;
 
     // Determine scaling,
     //  which is the only mapping to be done.
@@ -760,7 +752,7 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 
 	count = context->yh - context->yl; 
 
-	start = dest = context->output.data + xlookup[context->x] + rowofs[context->yl];
+	start = dest = context->output.data + context->x * context->output.pitch + context->yl;
 
     // Looks familiar.
     fracstep = context->iscale; 
@@ -816,7 +808,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 
 	count = context->yh - context->yl; 
 
-	dest = context->output.data + xlookup[context->x] + rowofs[context->yl];
+	dest = context->output.data + context->x * context->output.pitch + context->yl;
 
 	// count + 3 is correct. Since a 0 count will always sample one pixel. So make sure we copy one on each side of the sample.
 	memcpy( srcbuffer, dest - 1, sizeof( pixel_t ) * ( count + 3 ) );
@@ -925,8 +917,6 @@ R_InitBuffer
 ( int		width,
   int		height ) 
 { 
-    int32_t	i; 
-
     // Handle resize,
     //  e.g. smaller view windows
     //  with border and/or status bar.
@@ -936,14 +926,6 @@ R_InitBuffer
 		viewwindowy = 0;
     else 
 		viewwindowy = (render_height-SBARHEIGHT-height) >> 1;
-
-    // Preclaculate all column offsets.
-    for (i=0 ; i<width ; i++) 
-		xlookup[i] = (i+viewwindowx)*render_height; 
-
-    // Row offset. For windows.
-    for (i=0 ; i<height ; i++)
-		rowofs[i] = viewwindowy + i;
 
 	background_data.width = background_data.height = 0;
 	if (background_data.data != NULL)

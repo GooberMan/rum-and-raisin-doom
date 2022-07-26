@@ -730,6 +730,7 @@ typedef struct rendercontext_s
 {
 	// Setup
 	vbuffer_t			buffer;
+	vbuffer_t			viewbuffer;
 	int32_t				bufferindex;
 
 	int32_t				begincolumn;

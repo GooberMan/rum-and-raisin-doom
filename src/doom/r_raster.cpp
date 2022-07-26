@@ -65,7 +65,7 @@ template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
 INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, planecontext_t* planecontext, int32_t x, int32_t top, int32_t count )
 {
-	pixel_t*			dest			= planecontext->output.data + xlookup[ x ] + rowofs[ top ];
+	pixel_t*			dest			= planecontext->output.data + x * planecontext->output.pitch + top;
 	pixel_t*			source			= planecontext->source;
 
 	int32_t				nexty			= top;

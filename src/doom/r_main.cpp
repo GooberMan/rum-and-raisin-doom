@@ -193,9 +193,6 @@ extern "C"
 	extern int32_t span_override;
 
 	extern uint64_t frametime;
-
-	extern size_t			xlookup[MAXWIDTH];
-	extern size_t			rowofs[MAXHEIGHT];
 }
 
 // Actually expects C++ linkage
@@ -953,8 +950,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	int32_t			angle;
 
 	int32_t			currtime;
-	byte*			output = rendercontext->buffer.data + rendercontext->buffer.pitch * rendercontext->begincolumn;
-	size_t			outputsize = rendercontext->buffer.pitch * (rendercontext->endcolumn - rendercontext->begincolumn );
+	byte*			output		= rendercontext->buffer.data + rendercontext->buffer.pitch * rendercontext->begincolumn;
+	size_t			outputsize	= rendercontext->buffer.pitch * (rendercontext->endcolumn - rendercontext->begincolumn );
 
 	rendercontext->starttime = I_GetTimeUS();
 #if RENDER_PERF_GRAPHING
@@ -1000,7 +997,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		
 	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
 
-	rendercontext->planecontext.output = rendercontext->buffer;
+	rendercontext->planecontext.output = rendercontext->viewbuffer;
 	rendercontext->planecontext.spantype = span_override;
 	if( span_override == Span_None )
 	{
@@ -1013,13 +1010,13 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 
 	{
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
-		R_RenderBSPNode( &rendercontext->buffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
+		R_RenderBSPNode( &rendercontext->viewbuffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
 	}
 	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes( &rendercontext->buffer, &rendercontext->planecontext );
+	R_DrawPlanes( &rendercontext->viewbuffer, &rendercontext->planecontext );
 	{
 		M_PROFILE_NAMED( "R_DrawMasked" );
-		R_DrawMasked( &rendercontext->buffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
+		R_DrawMasked( &rendercontext->viewbuffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
 	}
 
 	rendercontext->endtime = I_GetTimeUS();
@@ -1102,7 +1099,7 @@ void R_InitContexts( void )
 	{
 		renderdatas[ currcontext ].index = currcontext;
 		renderdatas[ currcontext ].context.bufferindex = 0;
-		renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
+		renderdatas[ currcontext ].context.buffer = renderdatas[ currcontext ].context.viewbuffer = *I_GetRenderBuffer( 0 );
 
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
@@ -1735,7 +1732,14 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 
 	for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
 	{
-		renderdatas[ currcontext ].context.buffer = *I_GetRenderBuffer( 0 );
+		vbuffer_t buffer = *I_GetRenderBuffer( 0 );
+		renderdatas[ currcontext ].context.buffer = buffer;
+
+		buffer.data += buffer.pitch * viewwindowx + viewwindowy;
+		buffer.width = viewheight;
+		buffer.height = viewwidth;
+
+		renderdatas[ currcontext ].context.viewbuffer = buffer;
 	}
 
 	if( renderloadbalancing && !renderrebalancecontexts )
@@ -1876,7 +1880,7 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 
 		for( currcontext = 1; currcontext < numusablerendercontexts; ++currcontext )
 		{
-			outputcolumn = I_VideoBuffer + xlookup[ renderdatas[ currcontext ].context.begincolumn + 1 ] + rowofs[ 0 ];
+			outputcolumn = renderdatas[ currcontext ].context.viewbuffer.data + renderdatas[ currcontext ].context.begincolumn * renderdatas[ currcontext ].context.viewbuffer.pitch;
 			endcolumn = outputcolumn + viewheight;
 
 			while( outputcolumn != endcolumn )
