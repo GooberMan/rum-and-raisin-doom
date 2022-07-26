@@ -647,6 +647,8 @@ typedef struct planecontext_s
 	vbuffer_t			output;
 	byte*				source;
 
+	int32_t				spantype;
+
 	rasterregion_t**	rasterregions;
 	rasterregion_t*		floorregion;
 	rasterregion_t*		ceilingregion;

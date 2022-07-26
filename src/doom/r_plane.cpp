@@ -234,8 +234,15 @@ DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_
 		region->lines = nullptr;
 	}
 
-	region->nextregion = context->rasterregions[ picnum ];
-	context->rasterregions[ picnum ] = region;
+	if( picnum != skyflatnum )
+	{
+		region->nextregion = NULL;
+	}
+	else
+	{
+		region->nextregion = context->rasterregions[ picnum ];
+		context->rasterregions[ picnum ] = region;
+	}
 
 	return region;
 }
@@ -302,29 +309,14 @@ auto Surfaces( planecontext_t* context )
 	return std::span( context->rasterregions, numflats + numtextures );
 }
 
+// This now only draws the sky plane, need to make this way nicer
 DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 {
 	M_PROFILE_FUNC();
 
-	spancontext_t	spancontext;
 	colcontext_t	skycontext;
 
-	int32_t			span_type = span_override;
-
-	if( span_override == Span_None )
-	{
-		span_type = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( render_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
-	}
-
-	if( span_type == Span_Original )
-	{
-		I_Error( "I broke the span renderer, it's on its way out now." );
-	}
-
 	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
-
-	spancontext.output = *dest;
-	planecontext->output = *dest;
 
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook
@@ -337,73 +329,28 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 	skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
 
 	// TODO: Sort visplanes by height
-	int32_t picnum = -1;
-	for( rasterregion_t* region : Surfaces( planecontext ) )
+	rasterregion_t* region = Surfaces( planecontext )[ skyflatnum ];
+	for( rasterregion_t* thisregion : RegionRange( region ) )
 	{
-		++picnum;
+		int32_t x = thisregion->minx;
 
-		// REALLY need an enumerate range so that we can get an index as well as the data
-		if( region != nullptr )
+		for( rasterline_t& line : Lines( thisregion ) )
 		{
-			// sky flat
-			if( picnum == skyflatnum )
+			if ( line.top <= line.bottom )
 			{
-				for( rasterregion_t* thisregion : RegionRange( region ) )
-				{
-					int32_t x = thisregion->minx;
+				skycontext.yl = line.top;
+				skycontext.yh = line.bottom;
+				skycontext.x = x;
 
-					for( rasterline_t& line : Lines( thisregion ) )
-					{
-						if ( line.top <= line.bottom )
-						{
-							skycontext.yl = line.top;
-							skycontext.yh = line.bottom;
-							skycontext.x = x;
-
-							int32_t angle = ( viewangle + xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
-							// Sky is allways drawn full bright,
-							//  i.e. colormaps[0] is used.
-							// Because of this hack, sky is not affected
-							//  by INVUL inverse mapping.
-							skycontext.source = R_GetColumn( skytexture, angle, 0 );
-							skycontext.colfunc( &skycontext );
-						}
-						++x;
-					}
-				}
+				int32_t angle = ( viewangle + xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
+				// Sky is allways drawn full bright,
+				//  i.e. colormaps[0] is used.
+				// Because of this hack, sky is not affected
+				//  by INVUL inverse mapping.
+				skycontext.source = R_GetColumn( skytexture, angle, 0 );
+				skycontext.colfunc( &skycontext );
 			}
-			else
-			{
-				// regular flat
-				int32_t lumpnum = flattranslation[ picnum ];
-
-				R_RasteriseRegionRange( (spantype_t)span_type, planecontext, region, flatlookup[ lumpnum ] );
-
-				//planecontext->source = spancontext.source = flatlookup[ lumpnum ]->data;
-				//
-				//for( rasterregion_t* thisregion : RegionRange( region ) )
-				//{
-				//	planecontext->planeheight = abs( RendFixedToFixed( thisregion->height ) - viewz );
-				//	int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
-				//
-				//	planecontext->planezlightindex = light;
-				//	planecontext->planezlight = zlight[ light ];
-				//
-				//	if( span_type == Span_Original )
-				//	{
-				//		I_Error( "I broke the span renderer, it's on its way out now." );
-				//		//int32_t stop = pl->maxx + 1;
-				//		//for (x=pl->minx ; x<= stop ; x++)
-				//		//{
-				//		//	R_MakeSpans( planecontext, &spancontext, x, pl->top[x-1], pl->bottom[x-1], pl->top[x], pl->bottom[x] );
-				//		//}
-				//	}
-				//	else
-				//	{
-				//		R_RasteriseColumns( (spantype_t)span_type, planecontext, thisregion );
-				//	}
-				//}
-			}
+			++x;
 		}
 	}
 }

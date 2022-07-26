@@ -240,9 +240,8 @@ INLINE void ChooseRasteriser( planecontext_t* planecontext, rasterregion_t* regi
 
 template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionWidthHeightRasteriser( planecontext_t* planecontext, rasterregion_t* firstregion )
+INLINE void ChooseRegionWidthHeightRasteriser( planecontext_t* planecontext, rasterregion_t* thisregion )
 {
-	for( rasterregion_t* thisregion : RegionRange( firstregion ) )
 	{
 		planecontext->planeheight = abs( RendFixedToFixed( thisregion->height ) - viewz );
 		int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
@@ -325,12 +324,12 @@ INLINE void ChooseRegionRasteriser( planecontext_t* planecontext, rasterregion_t
 	}
 }
 
-DOOM_C_API void R_RasteriseRegionRange( spantype_t spantype, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+DOOM_C_API void R_RasteriseRegion( planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
 	M_PROFILE_FUNC();
 	planecontext->source = texture->data;
 
-	switch( spantype )
+	switch( planecontext->spantype )
 	{
 	case Span_PolyRaster_Log2_4:
 		ChooseRegionRasteriser< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( planecontext, firstregion, texture );

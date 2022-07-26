@@ -192,6 +192,7 @@ extern "C"
 	extern boolean refreshstatusbar;
 	extern int mouseSensitivity;
 	extern boolean renderpaused;
+	extern int32_t span_override;
 
 	extern uint64_t frametime;
 
@@ -1000,6 +1001,17 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	}
 		
 	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
+
+	rendercontext->planecontext.output = rendercontext->buffer;
+	rendercontext->planecontext.spantype = span_override;
+	if( span_override == Span_None )
+	{
+		rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( render_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
+	}
+	if( rendercontext->planecontext.spantype == Span_Original )
+	{
+		I_Error( "I broke the span renderer, it's on its way out now." );
+	}
 
 	{
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
@@ -1818,17 +1830,6 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 //
 // R_RenderView
 //
-
-static void R_DrawMsg( const char* msg, hu_textline_t* line )
-{
-	const char* working = msg;
-	HUlib_clearTextLine( line );
-	while( *working )
-	{
-		HUlib_addCharToTextLine( line, *working++ );
-	}
-	HUlib_drawTextLine( line, false );
-}
 
 void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconsoleplayer)
 {

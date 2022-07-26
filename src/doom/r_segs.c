@@ -27,6 +27,7 @@
 
 #include "r_local.h"
 #include "r_sky.h"
+#include "r_raster.h"
 
 #include "m_misc.h"
 #include "m_profile.h"
@@ -512,6 +513,12 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 	uint64_t			visplaneend;
 #endif // RENDER_PERF_GRAPHING
 
+	rasterregion_t* ceil = NULL;
+	int32_t ceilpic = -1;
+	rasterregion_t* floor = NULL;
+	int32_t floorpic = -1;
+
+
 	// don't overflow and crash
 	if ( bspcontext->thisdrawseg == &bspcontext->drawsegs[MAXDRAWSEGS])
 	{
@@ -844,12 +851,14 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 		// render it
 		if (loopcontext.markceiling)
 		{
-			planecontext->ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->ceilingpic, RendFixedToFixed( bspcontext->frontsectorinst->ceilheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			ceil = planecontext->ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->ceilingpic, RendFixedToFixed( bspcontext->frontsectorinst->ceilheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			ceilpic = bspcontext->frontsector->ceilingpic;
 		}
 
 		if (loopcontext.markfloor)
 		{
-			planecontext->floorregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->floorpic, RendFixedToFixed( bspcontext->frontsectorinst->floorheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			floor = planecontext->floorregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->floorpic, RendFixedToFixed( bspcontext->frontsectorinst->floorheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			floorpic = bspcontext->frontsector->floorpic;
 		}
 
 #if RENDER_PERF_GRAPHING
@@ -864,6 +873,16 @@ void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t
 #if RENDER_PERF_GRAPHING
 	bspcontext->solidtimetaken += walltime;
 #endif // RENDER_PERF_GRAPHING
+
+	if( ceil && ceilpic != skyflatnum )
+	{
+		R_RasteriseRegion( planecontext, ceil, flatlookup[ flattranslation[ ceilpic ] ] );
+	}
+
+	if( floor && floorpic != skyflatnum )
+	{
+		R_RasteriseRegion( planecontext, floor, flatlookup[ flattranslation[ floorpic ] ] );
+	}
 
 	M_PROFILE_PUSH( "Reserve openings", __FILE__, __LINE__ );
 	// save sprite clipping info
