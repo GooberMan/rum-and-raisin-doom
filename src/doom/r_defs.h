@@ -667,18 +667,6 @@ typedef struct planecontext_s
 	// New renderer values
 	rastercache_t		raster[ MAXSCREENHEIGHT ];
 
-	// Original renderer values
-	fixed_t				basexscale;
-	fixed_t				baseyscale;
-
-	int32_t				spanstart[ MAXSCREENHEIGHT ];
-	int32_t				spanstop[ MAXSCREENHEIGHT ];
-
-	fixed_t				cachedheight[ MAXSCREENHEIGHT ];
-	fixed_t				cacheddistance[ MAXSCREENHEIGHT ];
-	fixed_t				cachedxstep[ MAXSCREENHEIGHT ];
-	fixed_t				cachedystep[ MAXSCREENHEIGHT ];
-
 #if RENDER_PERF_GRAPHING
 	uint64_t			flattimetaken;
 #endif // RENDER_PERF_GRAPHING
@@ -717,10 +705,8 @@ typedef struct spritecontext_s
 //
 
 typedef struct colcontext_s colcontext_t;
-typedef struct spancontext_s spancontext_t;
 
 typedef void (*colfunc_t)( colcontext_t* );
-typedef void (*spanfunc_t)( spancontext_t* );
 typedef void (*planefunction_t)(int top, int bottom);
 
 typedef struct colcontext_s
@@ -740,21 +726,6 @@ typedef struct colcontext_s
 	rend_fixed_t		iscale;
 	rend_fixed_t		texturemid;
 } colcontext_t;
-
-typedef struct spancontext_s
-{
-	vbuffer_t			output;
-	byte*				source;
-
-	int32_t				y; 
-	int32_t				x1; 
-	int32_t				x2;
-
-	fixed_t				xfrac; 
-	fixed_t				yfrac; 
-	fixed_t				xstep; 
-	fixed_t				ystep;
-} spancontext_t;
 
 typedef struct rendercontext_s
 {
@@ -790,8 +761,6 @@ typedef struct rendercontext_s
 	colfunc_t			colfunc;
 	colfunc_t			fuzzcolfunc;
 	colfunc_t			transcolfunc;
-	
-	spanfunc_t			spanfunc;
 
 } rendercontext_t;
 

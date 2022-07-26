@@ -158,8 +158,6 @@ extern "C"
 
 	colfunc_t			transcolfunc;
 
-	spanfunc_t			spanfunc;
-
 	int32_t				fuzz_style = Fuzz_Adjusted;
 
 	const byte whacky_void_indices[] =
@@ -1273,15 +1271,6 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 
 	colfuncbase = COLFUNC_NUM * ( detailshift );
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
-
-	if (!detailshift)
-	{
-		spanfunc = &R_DrawSpan;
-	}
-	else
-	{
-		spanfunc = &R_DrawSpanLow;
-	}
 
 	R_InitBuffer (scaledviewwidth, viewheight);
 	

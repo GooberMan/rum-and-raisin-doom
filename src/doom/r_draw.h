@@ -92,14 +92,6 @@ void R_VideoEraseRegion( int x, int y, int width, int height );
 extern byte*				translationtables;
 extern texturecomposite_t**	flatlookup;
 
-// Span blitting for rows, floor/ceiling.
-// No Sepctre effect needed.
-void R_DrawSpan( spancontext_t* context );
-
-// Low resolution mode, 160x200?
-void R_DrawSpanLow( spancontext_t* context );
-
-
 void R_InitBuffer( int width, int height );
 
 

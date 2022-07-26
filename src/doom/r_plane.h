@@ -40,9 +40,6 @@ extern rend_fixed_t		distscale[ MAXSCREENWIDTH ];
 DOOM_C_API void R_InitPlanes (void);
 DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle );
 
-DOOM_C_API void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32_t y, int32_t x1, int32_t x2 );
-DOOM_C_API void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t b2 );
-
 #ifdef RANGECHECK
 DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context );
 #else

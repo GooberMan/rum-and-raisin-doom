@@ -112,9 +112,6 @@ extern colfunc_t colfuncs[ COLFUNC_COUNT ];
 
 extern colfunc_t transcolfunc;
 
-// No shadow effects on floors.
-extern spanfunc_t spanfunc;
-
 typedef enum lineside_e
 {
 	LS_Front,

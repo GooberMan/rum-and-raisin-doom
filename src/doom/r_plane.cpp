@@ -69,106 +69,6 @@ DOOM_C_API void R_InitPlanes (void)
   // Doh!
 }
 
-
-//
-// R_MapPlane
-//
-// Uses global vars:
-//  planeheight
-//  ds_source
-//  basexscale
-//  baseyscale
-//  viewx
-//  viewy
-//
-// BASIC PRIMITIVE
-//
-DOOM_C_API void R_MapPlane( planecontext_t* planecontext, spancontext_t* spancontext, int32_t y, int32_t x1, int32_t x2 )
-{
-	angle_t		angle;
-	fixed_t		distance;
-	fixed_t		length;
-	uint32_t	index;
-	byte*		originalsource = spancontext->source;
-
-#if RENDER_PERF_GRAPHING
-	uint64_t			starttime = I_GetTimeUS();
-	uint64_t			endtime;
-#endif // RENDER_PERF_GRAPHING
-
-	
-#ifdef RANGECHECK
-	if (x2 < x1
-		|| x1 < 0
-		|| x2 >= viewwidth
-		|| y > viewheight)
-	{
-		I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
-	}
-#endif
-
-	if (planecontext->planeheight != planecontext->cachedheight[y])
-	{
-		planecontext->cachedheight[y] = planecontext->planeheight;
-		distance = planecontext->cacheddistance[y] = FixedMul (planecontext->planeheight, RendFixedToFixed( yslope[y] ));
-		spancontext->xstep = planecontext->cachedxstep[y] = FixedMul (distance, planecontext->basexscale);
-		spancontext->ystep = planecontext->cachedystep[y] = FixedMul (distance, planecontext->baseyscale);
-	}
-	else
-	{
-		distance = planecontext->cacheddistance[y];
-		spancontext->xstep = planecontext->cachedxstep[y];
-		spancontext->ystep = planecontext->cachedystep[y];
-	}
-	
-	length = FixedMul (distance,RendFixedToFixed(distscale[x1]));
-	angle = (viewangle + xtoviewangle[x1])>>RENDERANGLETOFINESHIFT;
-	spancontext->xfrac = viewx + FixedMul(renderfinecosine[angle], length);
-	spancontext->yfrac = -viewy - FixedMul(renderfinesine[angle], length);
-
-	if( fixedcolormapindex )
-	{
-		// TODO: This should be a real define somewhere
-		spancontext->source += ( 4096 * fixedcolormapindex );
-	}
-	else
-	{
-		index = distance >> LIGHTZSHIFT;
-		if (index >= MAXLIGHTZ )
-			index = MAXLIGHTZ-1;
-
-		index = zlightindex[planecontext->planezlightindex][index];
-
-		spancontext->source += ( 4096 * index );
-	}
-
-	spancontext->y = y;
-	spancontext->x1 = x1;
-	spancontext->x2 = x2;
-
-#ifdef RANGECHECK
-	if (spancontext->x2 < spancontext->x1
-		|| spancontext->x1<0
-		|| spancontext->x2>=render_width
-		|| spancontext->y>render_height)
-	{
-		I_Error( "R_MapPlane: Attempting to draw span %i to %i at %i",
-			 spancontext->x1,spancontext->x2,spancontext->y);
-	}
-#endif
-
-	// high or low detail
-	spanfunc( spancontext );
-
-	spancontext->source = originalsource;
-
-#if RENDER_PERF_GRAPHING
-	endtime = I_GetTimeUS();
-	planecontext->flattimetaken += ( endtime - starttime );
-#endif // RENDER_PERF_GRAPHING
-}
-
-
 //
 // R_ClearPlanes
 // At begining of frame.
@@ -194,18 +94,9 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * ( numflats + numtextures ) );
 
-	// texture calculation
-	if( span_override == Span_Original )
-	{
-		memset (context->cachedheight, 0, sizeof(context->cachedheight));
-	}
-
 	// left to right mapping
 	angle = (thisangle-ANG90)>>RENDERANGLETOFINESHIFT;
 	
-	// scale will be unit scale at SCREENWIDTH/2 distance
-	context->basexscale = FixedDiv (renderfinecosine[angle],centerxfrac);
-	context->baseyscale = -FixedDiv (renderfinesine[angle],centerxfrac);
 }
 
 //
@@ -245,34 +136,6 @@ DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_
 	}
 
 	return region;
-}
-
-//
-// R_MakeSpans
-//
-DOOM_C_API void R_MakeSpans( planecontext_t* planecontext, spancontext_t* spancontext, int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t b2 )
-{
-	while (t1 < t2 && t1<=b1)
-	{
-		R_MapPlane( planecontext, spancontext, t1, planecontext->spanstart[t1], x-1 );
-		t1++;
-	}
-	while (b1 > b2 && b1>=t1)
-	{
-		R_MapPlane( planecontext, spancontext, b1, planecontext->spanstart[b1], x-1 );
-		b1--;
-	}
-	
-	while (t2 < t1 && t2<=b2)
-	{
-		planecontext->spanstart[t2] = x;
-		t2++;
-	}
-	while (b2 > b1 && b2>=t2)
-	{
-		planecontext->spanstart[b2] = x;
-		b2--;
-	}
 }
 
 #ifdef RANGECHECK
