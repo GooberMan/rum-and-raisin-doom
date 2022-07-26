@@ -492,15 +492,6 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 	line = &segs[sub->firstline];
 
 #if RENDER_PERF_GRAPHING
-	uint64_t		startaddsprites = I_GetTimeUS();
-#endif // RENDER_PERF_GRAPHING
-		
-	R_AddSprites( spritecontext, bspcontext->frontsector );
-
-#if RENDER_PERF_GRAPHING
-	uint64_t		endaddsprites = I_GetTimeUS();
-	bspcontext->addspritestimetaken += ( endaddsprites - startaddsprites );
-
 	uint64_t		startaddlines = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHIC
 
@@ -513,6 +504,17 @@ void R_Subsector( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* pla
 #if RENDER_PERF_GRAPHING
 	uint64_t		endaddlines = I_GetTimeUS();
 	bspcontext->addlinestimetaken += ( endaddlines - startaddlines );
+#endif // RENDER_PERF_GRAPHING
+
+#if RENDER_PERF_GRAPHING
+	uint64_t		startaddsprites = I_GetTimeUS();
+#endif // RENDER_PERF_GRAPHING
+		
+	R_AddSprites( spritecontext, bspcontext->frontsector );
+
+#if RENDER_PERF_GRAPHING
+	uint64_t		endaddsprites = I_GetTimeUS();
+	bspcontext->addspritestimetaken += ( endaddsprites - startaddsprites );
 #endif // RENDER_PERF_GRAPHING
 
 	// check for solidsegs overflow - extremely unsatisfactory!
