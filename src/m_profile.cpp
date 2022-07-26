@@ -264,10 +264,12 @@ DOOM_C_API void M_ProfilePopMarker( const char* markername )
 {
 	if constexpr( PROFILING_ENABLED )
 	{
+		uint64_t endtime = I_GetTimeUS();
+
 		if( profilemode.load() != PM_Capturing ) return;
 		while( rendering.load() ) { I_Yield(); }
 
-		currprofile->endtime = I_GetTimeUS();
+		currprofile->endtime = endtime;
 		int64_t totaltime = currprofile->endtime - currprofile->starttime;
 
 		currprofile->inclusivetime += totaltime;
