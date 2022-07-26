@@ -82,12 +82,8 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	{
 		M_PROFILE_NAMED( "Clip clear" );
-		// opening / clipping determination
-		for (i=0 ; i<viewwidth ; i++)
-		{
-			context->floorclip[i] = viewheight;
-		}
-		memset( context->ceilingclip, -1, sizeof( context->ceilingclip ) );
+		context->floorclip = R_AllocateScratch< vertclip_t >( viewwidth, viewheight );
+		context->ceilingclip = R_AllocateScratch< vertclip_t >( viewwidth, -1 );
 	}
 
 	context->lastopening = context->openings;

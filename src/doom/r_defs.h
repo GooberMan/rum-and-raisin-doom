@@ -656,8 +656,8 @@ typedef struct planecontext_s
 	vertclip_t			openings[MAXOPENINGS];
 	vertclip_t*			lastopening;
 
-	vertclip_t			floorclip[ MAXSCREENWIDTH ];
-	vertclip_t			ceilingclip[ MAXSCREENWIDTH ];
+	vertclip_t*			floorclip;
+	vertclip_t*			ceilingclip;
 
 	// Common renderer values
 	lighttable_t**		planezlight;
