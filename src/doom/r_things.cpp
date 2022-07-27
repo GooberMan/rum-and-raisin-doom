@@ -23,46 +23,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-#include "deh_main.h"
+#include "m_fixed.h"
 #include "doomdef.h"
-
-#include "i_swap.h"
-#include "i_system.h"
-#include "z_zone.h"
-#include "w_wad.h"
-#include "m_misc.h"
 #include "m_profile.h"
+#include "r_main.h"
 
-#include "r_local.h"
+extern "C"
+{
+	#include "deh_main.h"
 
-#include "doomstat.h"
+	#include "i_swap.h"
+	#include "i_system.h"
+	#include "z_zone.h"
+	#include "w_wad.h"
+	#include "m_misc.h"
 
-#define MINZ				( IntToFixed( 4 ) )
-#define BASEYCENTER			(V_VIRTUALHEIGHT/2)
+	#include "r_local.h"
 
-// Constant arrays, don't need to live in a context
+	#include "doomstat.h"
 
-//  used for psprite clipping and initializing clipping
-vertclip_t*		negonearray = NULL;
-vertclip_t*		screenheightarray = NULL;
+	#define MINZ				( IntToFixed( 4 ) )
+	#define BASEYCENTER			(V_VIRTUALHEIGHT/2)
 
-fixed_t			pspritescale;
-fixed_t			pspriteiscale;
+	extern int32_t interpolate_this_frame;
 
-//
-// INITIALIZATION FUNCTIONS
-//
+	// Constant arrays, don't need to live in a context
 
-// variables used to look up
-//  and range check thing_t sprites patches
-spritedef_t*	sprites;
-int32_t			numsprites;
+	//  used for psprite clipping and initializing clipping
+	vertclip_t*		negonearray = NULL;
+	vertclip_t*		screenheightarray = NULL;
 
-// Only used in initialisation? Might be safe to keep on stack
-spriteframe_t	sprtemp[29];
-int32_t			maxframe;
-const char		*spritename;
+	fixed_t			pspritescale;
+	fixed_t			pspriteiscale;
+
+	//
+	// INITIALIZATION FUNCTIONS
+	//
+
+	// variables used to look up
+	//  and range check thing_t sprites patches
+	spritedef_t*	sprites;
+	int32_t			numsprites;
+
+	// Only used in initialisation? Might be safe to keep on stack
+	spriteframe_t	sprtemp[29];
+	int32_t			maxframe;
+	const char		*spritename;
+}
 
 
 //
@@ -162,7 +169,7 @@ void R_InitSpriteDefs(const char **namelist)
     if (!numsprites)
 	return;
 		
-    sprites = Z_Malloc(numsprites *sizeof(*sprites), PU_STATIC, NULL);
+    sprites = (spritedef_t*)Z_Malloc(numsprites *sizeof(*sprites), PU_STATIC, NULL);
 	
     start = firstspritelump-1;
     end = lastspritelump+1;
@@ -238,8 +245,7 @@ void R_InitSpriteDefs(const char **namelist)
 	
 	// allocate space for the frames present and copy sprtemp to it
 	sprites[i].numframes = maxframe;
-	sprites[i].spriteframes = 
-	    Z_Malloc (maxframe * sizeof(spriteframe_t), PU_STATIC, NULL);
+	sprites[i].spriteframes = (spriteframe_t*)Z_Malloc( maxframe * sizeof(spriteframe_t), PU_STATIC, NULL );
 	memcpy (sprites[i].spriteframes, sprtemp, maxframe*sizeof(spriteframe_t));
     }
 
@@ -352,7 +358,6 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	int32_t				prevfuzzcolumn;
 	fixed_t				frac;
 	patch_t*			patch;
-	boolean				isfuzz = false;
 	int32_t				fuzzcolumn;
 
 	colcontext_t		spritecolcontext;
@@ -367,7 +372,6 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	{
 		// NULL colormap = shadow draw
 		spritecolcontext.colfunc = colfuncs[ COLFUNC_FUZZBASEINDEX + fuzz_style ];
-		isfuzz = true;
 	}
 	else if (vis->mobjflags & MF_TRANSLATION)
 	{
@@ -417,8 +421,6 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 //
 void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 {
-	extern int32_t interpolate_this_frame;
-
 	fixed_t			tr_x;
 	fixed_t			tr_y;
 

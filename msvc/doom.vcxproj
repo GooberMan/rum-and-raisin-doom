@@ -498,7 +498,7 @@
     <ClCompile Include="..\src\doom\r_sky.c" />
     <ClInclude Include="..\src\doom\r_sky.h" />
     <ClInclude Include="..\src\doom\r_state.h" />
-    <ClCompile Include="..\src\doom\r_things.c" />
+    <ClCompile Include="..\src\doom\r_things.cpp" />
     <ClInclude Include="..\src\doom\r_things.h" />
     <ClCompile Include="..\src\doom\s_sound.c" />
     <ClInclude Include="..\src\doom\s_sound.h" />

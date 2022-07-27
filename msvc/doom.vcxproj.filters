@@ -142,7 +142,7 @@
     <ClCompile Include="..\src\doom\r_sky.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\r_things.c">
+    <ClCompile Include="..\src\doom\r_things.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\s_sound.c">

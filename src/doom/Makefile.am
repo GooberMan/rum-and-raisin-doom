@@ -82,7 +82,7 @@ r_raster.cpp       r_raster.h   \
 r_segs.cpp         r_segs.h     \
 r_sky.c            r_sky.h      \
                    r_state.h    \
-r_things.c         r_things.h   \
+r_things.cpp       r_things.h   \
 s_sound.c          s_sound.h    \
 sounds.c           sounds.h     \
 statdump.c         statdump.h   \
