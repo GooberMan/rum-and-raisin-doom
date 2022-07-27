@@ -683,6 +683,9 @@ typedef struct spritecontext_s
 
 	vissprite_t			vsprsortedhead;
 
+	vertclip_t*			clipbot;
+	vertclip_t*			cliptop;
+
 	vertclip_t*			mfloorclip;
 	vertclip_t*			mceilingclip;
 	rend_fixed_t		spryscale;

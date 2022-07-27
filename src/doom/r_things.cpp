@@ -272,6 +272,9 @@ void R_InitSprites(const char **namelist)
 void R_ClearSprites ( spritecontext_t* spritecontext )
 {
 	spritecontext->nextvissprite = spritecontext->vissprites;
+
+	spritecontext->clipbot = R_AllocateScratch< vertclip_t >( viewwidth );
+	spritecontext->cliptop = R_AllocateScratch< vertclip_t >( viewwidth );
 }
 
 
@@ -903,8 +906,8 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
 	drawseg_t*		ds;
-	vertclip_t		clipbot[MAXSCREENWIDTH];
-	vertclip_t		cliptop[MAXSCREENWIDTH];
+	vertclip_t*		clipbot = spritecontext->clipbot;
+	vertclip_t*		cliptop = spritecontext->cliptop;
 	int32_t			x;
 	int32_t			r1;
 	int32_t			r2;
