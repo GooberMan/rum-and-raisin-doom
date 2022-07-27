@@ -29,13 +29,6 @@
 // Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
 // and SCREENHEIGHT_4_3 to be 4:3 correct.
 
-#define MAXSCREENWIDTH		3200
-#define MAXSCREENHEIGHT		( MAXSCREENWIDTH * 6250 / 10000 )
-
-#define SCREENWIDTH  2560
-#define SCREENHEIGHT ( SCREENWIDTH * 6250 / 10000 )
-#define SCREENHEIGHT_4_3 ( SCREENWIDTH * 7500 / 10000 )
-
 #define VANILLA_SCREENWIDTH 320
 #define VANILLA_SCREENHEIGHT 200
 

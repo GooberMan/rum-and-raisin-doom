@@ -108,8 +108,8 @@ ImGuiContext*		imgui_context = NULL;
 static SDL_Rect blit_rect = {
     0,
     0,
-    SCREENHEIGHT,
-    SCREENWIDTH
+    320,
+    200
 };
 
 static uint32_t pixel_format;

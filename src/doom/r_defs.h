@@ -56,10 +56,13 @@ extern "C" {
 #define SIL_TOP					2
 #define SIL_BOTH				3
 
+#define MAXVALUESBASE			3200
+
+
 #define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			( 10240 * 4 )
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
-#define MAXOPENINGS				( MAXSCREENWIDTH*64 )
+#define MAXOPENINGS				( MAXVALUESBASE*64 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
 #define MAXDRAWSEGS				( ( MAXVISPLANES / 4 ) << 2 )
 
@@ -70,7 +73,7 @@ extern "C" {
 // render overage and then bomb out by detecting the overflow after the 
 // fact. -haleyjd
 #define VANILLA_MAXSEGS			32
-#define MAXSEGS					( MAXSCREENWIDTH / 2 + 1 )
+#define MAXSEGS					( MAXVALUESBASE / 2 + 1 )
 
 typedef uint16_t				vpindex_t;
 #define VPINDEX_INVALID			( (vpindex_t)0xFFFF )
