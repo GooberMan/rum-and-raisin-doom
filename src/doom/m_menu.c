@@ -2473,10 +2473,12 @@ typedef struct windowsizes_s
 {
 	int32_t			width;
 	int32_t			height;
+	double_t		scaletobuffer;
 	const char*		asstring;
 } windowsizes_t;
 
-#define WINDOWDIM( w, h )	{ w, h, #w "x" #h }
+#define WINDOWDIM( w, h )			{ w, h, 1.0, #w "x" #h }
+#define WINDOWDIM_SCALED( w, h, s )	{ w, h, s, #w "x" #h }
 #define WINDOW_MINWIDTH 800
 #define WINDOW_MINHEIGHT 600
 
@@ -2488,20 +2490,20 @@ static windowsizes_t window_sizes_scaled[] =
 	//WINDOWDIM( 320,		240		),
 	//WINDOWDIM( 512,		400		),
 	//WINDOWDIM( 640,		480		),
-	WINDOWDIM( 800,		600		),
-	WINDOWDIM( 960,		720		),
-	WINDOWDIM( 1024,	768		),
-	WINDOWDIM( 1280,	960		),
-	WINDOWDIM( 1600,	1200	),
-	WINDOWDIM( 1920,	1440	),
-	WINDOWDIM( 2560,	1920	),
-	WINDOWDIM( 3840,	2880	),
-	WINDOWDIM( 1280,	720		),
-	WINDOWDIM( 1600,	900		),
-	WINDOWDIM( 1920,	1080	),
-	WINDOWDIM( 1600,	686		),
-	WINDOWDIM( 1920,	822		),
-	WINDOWDIM( 2380,	1020	),
+	WINDOWDIM( 800,			600		),
+	WINDOWDIM( 960,			720		),
+	WINDOWDIM( 1024,		768		),
+	WINDOWDIM( 1280,		960		),
+	WINDOWDIM( 1600,		1200	),
+	WINDOWDIM( 1920,		1440	),
+	WINDOWDIM( 2560,		1920	),
+	WINDOWDIM( 3840,		2880	),
+	WINDOWDIM( 1280,		720		),
+	WINDOWDIM( 1600,		900		),
+	WINDOWDIM( 1920,		1080	),
+	WINDOWDIM( 1600,		686		),
+	WINDOWDIM( 1920,		822		),
+	WINDOWDIM( 2380,		1020	),
 };
 static int32_t window_sizes_scaled_count = sizeof( window_sizes_scaled ) / sizeof( *window_sizes_scaled );
 static int32_t window_width_working;
@@ -2510,47 +2512,39 @@ static const char* window_dimensions_current = NULL;
 
 static windowsizes_t render_sizes[] =
 {
-	WINDOWDIM( 320,		200 ),
-	WINDOWDIM( 426,		200 ),
-	WINDOWDIM( 560,		200 ),
-	WINDOWDIM( 640,		400 ),
-	WINDOWDIM( 854,		400 ),
-	WINDOWDIM( 1120,	400 ),
-	WINDOWDIM( 1280,	800 ),
-	WINDOWDIM( 1706,	800 ),
-	WINDOWDIM( 2240,	800 ),
-	WINDOWDIM( 1440,	900 ),
-	WINDOWDIM( 1920,	900 ),
-	WINDOWDIM( 2520,	900 ),
-	WINDOWDIM( 1600,	1000 ),
-	WINDOWDIM( 2132,	1000 ),
-	WINDOWDIM( 2800,	1000 ),
-	WINDOWDIM( 1920,	1200 ),
-	WINDOWDIM( 2560,	1200 ),
-	WINDOWDIM( 3360,	1200 ),
-	WINDOWDIM( 2560,	1600 ),
-	WINDOWDIM( 3414,	1600 ),
-	WINDOWDIM( 4480,	1600 ),
-	WINDOWDIM( 3200,	2000 ),
-	WINDOWDIM( 4266,	2000 ),
-	WINDOWDIM( 5600,	2000 ),
+	WINDOWDIM_SCALED( 320,		200,	1.2 ),
+	WINDOWDIM_SCALED( 426,		200,	1.2 ),
+	WINDOWDIM_SCALED( 560,		200,	1.2 ),
+	WINDOWDIM_SCALED( 640,		400,	1.2 ),
+	WINDOWDIM_SCALED( 854,		400,	1.2 ),
+	WINDOWDIM_SCALED( 1120,		400,	1.2 ),
+	WINDOWDIM_SCALED( 1280,		800,	1.2 ),
+	WINDOWDIM_SCALED( 1706,		800,	1.2 ),
+	WINDOWDIM_SCALED( 2240,		800,	1.2 ),
+	WINDOWDIM_SCALED( 1440,		900,	1.2 ),
+	WINDOWDIM_SCALED( 1920,		900,	1.2 ),
+	WINDOWDIM_SCALED( 2520,		900,	1.2 ),
+	WINDOWDIM_SCALED( 1600,		1000,	1.2 ),
+	WINDOWDIM_SCALED( 2132,		1000,	1.2 ),
+	WINDOWDIM_SCALED( 2800,		1000,	1.2 ),
+	WINDOWDIM_SCALED( 1920,		1200,	1.2 ),
+	WINDOWDIM_SCALED( 2560,		1200,	1.2 ),
+	WINDOWDIM_SCALED( 3360,		1200,	1.2 ),
+	WINDOWDIM_SCALED( 2560,		1600,	1.2 ),
+	WINDOWDIM_SCALED( 3414,		1600,	1.2 ),
+	WINDOWDIM_SCALED( 4480,		1600,	1.2 ),
+	WINDOWDIM_SCALED( 2880,		1800,	1.2 ),
+	WINDOWDIM_SCALED( 3840,		1800,	1.2 ),
+	WINDOWDIM_SCALED( 5040,		1800,	1.2 ),
+	WINDOWDIM_SCALED( 3200,		2000,	1.2 ),
+	WINDOWDIM_SCALED( 4266,		2000,	1.2 ),
+	WINDOWDIM_SCALED( 5600,		2000,	1.2 ),
 
 };
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
 static int32_t render_width_working;
 static int32_t render_height_working;
 static const char* render_dimensions_current = NULL;
-
-static const char* span_override_strings[] =
-{
-	"None",
-	"Original",
-	"Polyraster Log2(4)",
-	"Polyraster Log2(8)",
-	"Polyraster Log2(16)",
-	"Polyraster Log2(32)",
-};
-static int32_t span_override_strings_count = arrlen( span_override_strings );
 
 static const char* disk_icon_strings[] =
 {
@@ -2562,8 +2556,6 @@ static const char* disk_icon_strings[] =
 static int32_t disk_icon_strings_count = arrlen( disk_icon_strings );
 
 static const ImVec2 zerosize = { 0, 0 };
-static const ImVec2 halfsize = { 0.5f, 0.5f };
-static const ImVec2 mappingsize = { 90, 22 };
 static const ImVec2 unmapbuttonsize = { 22, 22 };
 
 static void M_DashboardDoColour( const char* itemname, int32_t* colourindex, int32_t defaultval, byte* palette )
@@ -2855,14 +2847,6 @@ controldesc_t mousemappings[] =
 
 static float columwidth = 200.f;
 
-static const char* remaptypenames[ Remap_Max ] =
-{
-	"none",
-	"key",
-	"mouse button",
-	"joystick button",
-};
-
 static void M_DashboardControlsRemapping(	const char* itemname,
 											controldesc_t* descs,
 											int32_t remappingtype,
@@ -2870,7 +2854,6 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 											)
 {
 	controldesc_t*		currdesc;
-	bool				cancel;
 
 	igPushIDPtr( descs );
 	if( igCollapsingHeaderTreeNodeFlags( itemname, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
@@ -2929,7 +2912,6 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 	bool doresize = false;
 
-	int32_t currsizeindex = 0;
 	int32_t index;
 	bool selected;
 
@@ -3471,8 +3453,6 @@ void M_DashboardOptionsInit()
 //
 void M_Init (void)
 {
-	int32_t index;
-
 	episodedetails_t* workingepisode;
 
 	char episodestem[ 128 ];
