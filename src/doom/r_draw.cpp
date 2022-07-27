@@ -793,7 +793,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 	int32_t				fuzzpossample;
 
 	pixel_t*			src;
-	pixel_t				srcbuffer[ MAXSCREENHEIGHT ];
+	pixel_t*			srcbuffer;
 	pixel_t*			basecolorpmap = colormaps + 6*256;
 	pixel_t*			darkercolormap = colormaps + 12*256;
 	pixel_t*			samplecolormap;
@@ -809,6 +809,8 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 	count = context->yh - context->yl; 
 
 	dest = context->output.data + context->x * context->output.pitch + context->yl;
+
+	srcbuffer = R_AllocateScratch< pixel_t >( count + 3 );
 
 	// count + 3 is correct. Since a 0 count will always sample one pixel. So make sure we copy one on each side of the sample.
 	memcpy( srcbuffer, dest - 1, sizeof( pixel_t ) * ( count + 3 ) );
