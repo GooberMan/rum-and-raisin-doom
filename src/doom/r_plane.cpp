@@ -39,12 +39,6 @@ extern "C"
 
 	#include "m_misc.h"
 
-	//
-	// Constants. Don't need to be in a context. Will get them off the stack at some point though.
-	//
-	#define MAXWIDTH	( MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
-	#define MAXHEIGHT	( MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
-
 	rend_fixed_t*		yslope = NULL;
 	rend_fixed_t*		distscale = NULL;
 

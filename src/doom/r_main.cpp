@@ -61,9 +61,6 @@ extern "C"
 	#define FIELDOFVIEW				( FINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
 	#define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
 
-	#define MAXWIDTH				(MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
-	#define MAXHEIGHT				(MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
-
 	#define DEFAULT_RENDERCONTEXTS 4
 	#define DEFAULT_MAXRENDERCONTEXTS 8
 
