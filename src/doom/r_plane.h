@@ -30,8 +30,8 @@ extern "C" {
 #endif
 
 // Visplane related.
-extern rend_fixed_t		yslope[ MAXSCREENHEIGHT ];
-extern rend_fixed_t		distscale[ MAXSCREENWIDTH ];
+extern rend_fixed_t*	yslope;
+extern rend_fixed_t*	distscale;
 
 #ifdef __cplusplus
 }

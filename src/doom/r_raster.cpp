@@ -30,10 +30,8 @@ extern "C"
 	#include "r_state.h"
 	#include "m_misc.h"
 
-	extern size_t		xlookup[ MAXWIDTH ];
-	extern size_t		rowofs[ MAXHEIGHT ];
-	extern rend_fixed_t	distscale[ MAXSCREENWIDTH ];
-	extern rend_fixed_t	yslope[ MAXSCREENHEIGHT ];
+	extern rend_fixed_t*	distscale;
+	extern rend_fixed_t*	yslope;
 }
 
 template< int64_t Width, int64_t Height >

@@ -1286,6 +1286,12 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	}
 
 	// planes
+	if( yslope )
+	{
+		Z_Free( yslope );
+	}
+	yslope = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewheight, PU_STATIC, NULL );
+
 	for (i=0 ; i<viewheight ; i++)
 	{
 		rend_fixed_t dy = IntToRendFixed( i- viewheight / 2 ) + RENDFRACUNIT / 2;
@@ -1293,6 +1299,12 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( ( viewwidth << detailshift ) / 2 ), dy ), perspective_mul );
 	}
 	
+	if( distscale )
+	{
+		Z_Free( distscale );
+	}
+	distscale = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewwidth, PU_STATIC, NULL );
+
 	for ( i=0 ; i<viewwidth ; i++ )
 	{
 		rend_fixed_t cosadj = FixedToRendFixed( abs( renderfinecosine[ xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] ) );
