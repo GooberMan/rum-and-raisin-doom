@@ -44,8 +44,8 @@
 // Constant arrays, don't need to live in a context
 
 //  used for psprite clipping and initializing clipping
-vertclip_t		negonearray[ MAXSCREENWIDTH ];
-vertclip_t		screenheightarray[ MAXSCREENWIDTH ];
+vertclip_t*		negonearray = NULL;
+vertclip_t*		screenheightarray = NULL;
 
 fixed_t			pspritescale;
 fixed_t			pspriteiscale;
@@ -254,13 +254,6 @@ void R_InitSpriteDefs(const char **namelist)
 //
 void R_InitSprites(const char **namelist)
 {
-    vertclip_t		i;
-	
-    for (i=0 ; i<MAXSCREENWIDTH ; i++)
-    {
-		negonearray[i] = -1;
-    }
-	
     R_InitSpriteDefs (namelist);
 }
 

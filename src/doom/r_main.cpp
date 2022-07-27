@@ -1286,9 +1286,21 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( render_width ) / viewwidth, perspectivecorrectscale ) );
 
 	// thing clipping
+	if( screenheightarray )
+	{
+		Z_Free( screenheightarray );
+	}
+	if( negonearray )
+	{
+		Z_Free( negonearray );
+	}
+
+	screenheightarray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
+	negonearray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
 	for (i=0 ; i<viewwidth ; i++)
 	{
 		screenheightarray[i] = viewheight;
+		negonearray[i] = -1;
 	}
 
 	// planes
