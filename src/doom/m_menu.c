@@ -2527,8 +2527,13 @@ static windowsizes_t render_sizes[] =
 	WINDOWDIM( 2800,	1000 ),
 	WINDOWDIM( 1920,	1200 ),
 	WINDOWDIM( 2560,	1200 ),
-	//WINDOWDIM( 3360,	1200 ),
+	WINDOWDIM( 3360,	1200 ),
 	WINDOWDIM( 2560,	1600 ),
+	WINDOWDIM( 3414,	1600 ),
+	WINDOWDIM( 4480,	1600 ),
+	WINDOWDIM( 3200,	2000 ),
+	WINDOWDIM( 4266,	2000 ),
+	WINDOWDIM( 5600,	2000 ),
 
 };
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
