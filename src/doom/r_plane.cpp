@@ -45,8 +45,8 @@ extern "C"
 	#define MAXWIDTH	( MAXSCREENWIDTH + ( MAXSCREENWIDTH >> 1) )
 	#define MAXHEIGHT	( MAXSCREENHEIGHT + ( MAXSCREENHEIGHT >> 1) )
 
-	rend_fixed_t*		yslope = NULL; //[ MAXSCREENHEIGHT ];
-	rend_fixed_t*		distscale = NULL; //[ MAXSCREENWIDTH ];
+	rend_fixed_t*		yslope = NULL;
+	rend_fixed_t*		distscale = NULL;
 
 	int32_t				span_override = Span_None;
 

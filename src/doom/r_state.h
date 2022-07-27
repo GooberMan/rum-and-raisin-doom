@@ -118,7 +118,7 @@ extern player_t*	viewplayer;
 extern angle_t		clipangle;
 
 extern int32_t		viewangletox[ RENDERFINEANGLES/2 ];
-extern angle_t		xtoviewangle[ MAXSCREENWIDTH+1 ];
+extern angle_t*		xtoviewangle;
 
 #if defined( __cplusplus )
 }

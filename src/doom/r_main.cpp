@@ -144,7 +144,7 @@ extern "C"
 	// The xtoviewangleangle[] table maps a screen pixel
 	// to the lowest viewangle that maps back to x ranges
 	// from clipangle to -clipangle.
-	angle_t				xtoviewangle[MAXSCREENWIDTH+1];
+	angle_t*			xtoviewangle = NULL;
 
 	lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 	lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
@@ -764,12 +764,18 @@ void R_InitTextureMapping (void)
     // Scan viewangletox[] to generate xtoviewangle[]:
     //  xtoviewangle will give the smallest view angle
     //  that maps to x.	
+	if( xtoviewangle )
+	{
+		Z_Free( xtoviewangle );
+	}
+	xtoviewangle = (angle_t*)Z_Malloc( sizeof( angle_t) * ( viewwidth + 1 ), PU_STATIC, NULL );
+
     for (x=0;x<=viewwidth;x++)
     {
-	i = 0;
-	while (viewangletox[i]>x)
-	    i++;
-	xtoviewangle[x] = (i<<RENDERANGLETOFINESHIFT)-ANG90;
+		i = 0;
+		while (viewangletox[i]>x)
+			i++;
+		xtoviewangle[x] = (i<<RENDERANGLETOFINESHIFT)-ANG90;
     }
 
     // Take out the fencepost cases from viewangletox.
