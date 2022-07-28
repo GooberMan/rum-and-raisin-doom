@@ -451,6 +451,8 @@ void I_PerformFullscreen(void)
         SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
 #else // !FULLSCREEN_BORDERLESS
+	Uint32 flags = 0;
+
     if (fullscreen)
     {
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
