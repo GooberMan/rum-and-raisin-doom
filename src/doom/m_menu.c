@@ -2484,12 +2484,8 @@ typedef struct windowsizes_s
 
 static windowsizes_t window_sizes_scaled[] =
 {
-	// It honestly doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
-	// Uncomment if your port needs them. But be warned that the Dashboard will be basically impossible to use.
-
-	//WINDOWDIM( 320,		240		),
-	//WINDOWDIM( 512,		400		),
-	//WINDOWDIM( 640,		480		),
+	// It doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
+	// Be warned that the Dashboard will be basically impossible to use if you add smaller options.
 	WINDOWDIM( 800,			600		),
 	WINDOWDIM( 960,			720		),
 	WINDOWDIM( 1024,		768		),
@@ -2501,9 +2497,13 @@ static windowsizes_t window_sizes_scaled[] =
 	WINDOWDIM( 1280,		720		),
 	WINDOWDIM( 1600,		900		),
 	WINDOWDIM( 1920,		1080	),
+	WINDOWDIM( 2560,		1440	),
+	WINDOWDIM( 3840,		2160	),
 	WINDOWDIM( 1600,		686		),
 	WINDOWDIM( 1920,		822		),
-	WINDOWDIM( 2380,		1020	),
+	WINDOWDIM( 2560,		1080	),
+	WINDOWDIM( 3440,		1440	),
+	WINDOWDIM( 5160,		2160	),
 };
 static int32_t window_sizes_scaled_count = sizeof( window_sizes_scaled ) / sizeof( *window_sizes_scaled );
 static int32_t window_width_working;
