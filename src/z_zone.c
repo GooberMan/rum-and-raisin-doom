@@ -38,30 +38,30 @@
 // 
  
 // Need things to be 16 by default for SIMD purposes...
-#define MEM_ALIGN 16
+#define MEM_ALIGN 16ull
 #define ZONEID	0x1d4a11
 
 typedef struct memblock_s
 {
-    int			size;	// including the header and possibly tiny fragments
-    void**		user;
-    int			tag;	// PU_FREE if this is free
-    int			id;	// should be ZONEID
-    struct memblock_s*	next;
-    struct memblock_s*	prev;
+	size_t		size;	// including the header and possibly tiny fragments
+	void**		user;
+	int			tag;	// PU_FREE if this is free
+	int			id;	// should be ZONEID
+	struct memblock_s*	next;
+	struct memblock_s*	prev;
 } memblock_t;
 
 
 typedef struct
 {
-    // total bytes malloced, including header
-    int		size;
+	// total bytes malloced, including header
+	size_t		size;
 
-    // start / end cap for linked list
-    memblock_t	blocklist;
-    
-    memblock_t*	rover;
-    
+	// start / end cap for linked list
+	memblock_t	blocklist;
+
+	memblock_t*	rover;
+
 } memzone_t;
 
 
@@ -103,7 +103,7 @@ void Z_ClearZone (memzone_t* zone)
 void Z_Init (void)
 {
     memblock_t*	block;
-    int		size;
+    size_t		size;
 
     mainzone = (memzone_t *)I_ZoneBase (&size);
     mainzone->size = size;
@@ -141,9 +141,11 @@ void Z_Init (void)
 // any remaining pointers.
 static void ScanForBlock(void *start, void *end)
 {
-    memblock_t *block;
-    void **mem;
-    int i, len, tag;
+    memblock_t *block = NULL;
+    void **mem = NULL;
+    int i = 0;
+	size_t len = 0;
+	size_t tag = 0;
 
     block = mainzone->blocklist.next;
 
@@ -249,18 +251,18 @@ void Z_Free (void* ptr)
 
 void*
 Z_Malloc
-( int		size,
+( size_t	size,
   int		tag,
   void*		user )
 {
-    int		extra;
+    size_t		extra;
     memblock_t*	start;
     memblock_t* rover;
     memblock_t* newblock;
     memblock_t*	base;
     void *result;
 
-    size = (size + MEM_ALIGN - 1) & ~(MEM_ALIGN - 1);
+    size = (size + MEM_ALIGN - 1ull) & ~(MEM_ALIGN - 1ull);
     
     // scan through the block list,
     // looking for the first free block
@@ -285,7 +287,7 @@ Z_Malloc
         if (rover == start)
         {
             // scanned all the way around the list
-            I_Error ("Z_Malloc: failed on allocation of %i bytes", size);
+            I_Error ("Z_Malloc: failed on allocation of %zd bytes", size);
         }
 	
         if (rover->tag != PU_FREE)
@@ -397,7 +399,7 @@ Z_DumpHeap
 {
     memblock_t*	block;
 	
-    printf ("zone size: %i  location: %p\n",
+    printf ("zone size: %zd  location: %p\n",
 	    mainzone->size,mainzone);
     
     printf ("tag range: %i to %i\n",
@@ -406,7 +408,7 @@ Z_DumpHeap
     for (block = mainzone->blocklist.next ; ; block = block->next)
     {
 	if (block->tag >= lowtag && block->tag <= hightag)
-	    printf ("block:%p    size:%7i    user:%p    tag:%3i\n",
+	    printf ("block:%p    size:%7zd    user:%p    tag:%3i\n",
 		    block, block->size, block->user, block->tag);
 		
 	if (block->next == &mainzone->blocklist)
@@ -434,11 +436,11 @@ void Z_FileDumpHeap (FILE* f)
 {
     memblock_t*	block;
 	
-    fprintf (f,"zone size: %i  location: %p\n",mainzone->size,mainzone);
+    fprintf (f,"zone size: %zd  location: %p\n",mainzone->size,mainzone);
 	
     for (block = mainzone->blocklist.next ; ; block = block->next)
     {
-	fprintf (f,"block:%p    size:%7i    user:%p    tag:%3i\n",
+	fprintf (f,"block:%p    size:%7zd    user:%p    tag:%3i\n",
 		 block, block->size, block->user, block->tag);
 		
 	if (block->next == &mainzone->blocklist)
@@ -533,10 +535,10 @@ void Z_ChangeUser(void *ptr, void **user)
 //
 // Z_FreeMemory
 //
-int Z_FreeMemory (void)
+size_t Z_FreeMemory(void)
 {
     memblock_t*		block;
-    int			free;
+    size_t			free;
 	
     free = 0;
     
@@ -551,7 +553,7 @@ int Z_FreeMemory (void)
     return free;
 }
 
-unsigned int Z_ZoneSize(void)
+size_t Z_ZoneSize(void)
 {
     return mainzone->size;
 }
