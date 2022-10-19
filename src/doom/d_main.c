@@ -1358,6 +1358,11 @@ static void D_Endoom(void)
 // Load dehacked patches needed for certain IWADs.
 static void LoadIwadDeh(void)
 {
+	if( remove_limits )
+	{
+		DEH_LoadLumpByName("DEHACKED", true, false);
+	}
+
     // The Freedoom IWADs have DEHACKED lumps that must be loaded.
     if (gamevariant == freedoom || gamevariant == freedm)
     {
@@ -1465,6 +1470,11 @@ void D_DoomMain (void)
 		// Auto-detect the configuration dir.
 
 		M_SetConfigDir(NULL);
+	}
+
+	if( M_CheckParm( "-removelimits" ) )
+	{
+		remove_limits = 1;
 	}
 
 	// Load configuration files before initialising other subsystems.
@@ -1693,7 +1703,11 @@ void D_DoomMain (void)
     }
     else if (W_CheckNumForName("DMENUPIC") >= 0)
     {
-        gamevariant = bfgedition;
+		// Unity port IWADs include a DMAPINFO lump. We don't want BFG behavior if that's the case.
+		if( W_CheckNumForName( "DMAPINFO" ) < 0 )
+		{
+			gamevariant = bfgedition;
+		}
     }
 
     //!
@@ -1895,11 +1909,6 @@ void D_DoomMain (void)
 	{
 		M_StrToInt( myargv[p + 1], &numrendercontexts );
 		numusablerendercontexts = numrendercontexts;
-	}
-
-	if( M_CheckParm( "-removelimits" ) )
-	{
-		remove_limits = 1;
 	}
 
     // Set the gamedescription string. This is only possible now that
