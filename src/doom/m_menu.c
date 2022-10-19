@@ -1103,8 +1103,10 @@ void M_QuickLoad(void)
 void M_DrawFullScreenPage( const char* pagename )
 {
 	patch_t* patch = W_CacheLumpName( pagename, PU_CACHE );
+	// WIDESCREEN HACK
+	int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
 
-	V_DrawPatch ( 0, 0, patch );
+	V_DrawPatch ( xpos, 0, patch );
 }
 
 

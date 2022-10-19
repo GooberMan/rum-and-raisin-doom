@@ -997,8 +997,8 @@ int R_TextureNumForName(const char *name)
 
 	if( i == -1 || i < firstflat || i > lastflat )
 	{
-		I_Error ("R_TextureNumForName: %s not found in flats", name );
-		return -1;
+		I_LogAddEntryVar( Log_Warning, "R_TextureNumForName: %s not found in textures or flats, replacing with %s", name, textures[ 0 ]->name );
+		return 0;
 	}
 
 	return numtextures + i - firstflat;

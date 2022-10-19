@@ -680,8 +680,12 @@ void D_PageTicker (void)
 //
 void D_PageDrawer (void)
 {
-    V_DrawPatch (0, 0, W_CacheLumpName(pagename, PU_CACHE));
+	patch_t* patch = W_CacheLumpName( pagename, PU_CACHE );
+	// WIDESCREEN HACK
+	int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
+
 	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
+	V_DrawPatch ( xpos, 0, patch );
 }
 
 

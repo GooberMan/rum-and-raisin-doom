@@ -1042,7 +1042,9 @@ void R_FillBackScreen (void)
 		{
 			const char* lookup = ( gamemode == retail || gamemode == commercial ) ? "INTERPIC" :"WIMAP0";
 			patch_t* interpic = (patch_t*)W_CacheLumpName( DEH_String( lookup ), PU_LEVEL );
-			V_DrawPatch( 0, 0, interpic );
+			// WIDESCREEN HACK
+			int32_t xpos = -( ( interpic->width - V_VIRTUALWIDTH ) / 2 );
+			V_DrawPatch( xpos, 0, interpic );
 		}
 		break;
 

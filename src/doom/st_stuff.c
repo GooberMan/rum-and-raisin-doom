@@ -429,7 +429,9 @@ void ST_refreshBackground(void)
 	{
 		V_FillBorder( &tileflat, ST_Y, V_VIRTUALHEIGHT );
 
-		V_DrawPatch(ST_X, ST_Y, sbar);
+		// WIDESCREEN HACK
+		int32_t xpos = -( ( sbar->width - V_VIRTUALWIDTH ) / 2 );
+		V_DrawPatch(ST_X + xpos, ST_Y, sbar);
 
 		// draw right side of bar if needed (Doom 1.0)
 		if (sbarr)

@@ -168,13 +168,24 @@ void V_TransposeBuffer( vbuffer_t* source, vbuffer_t* output, int outputmemzone 
 	int32_t x;
 	int32_t y;
 
-	output->width = source->height;
-	output->height = source->width;
-	output->pitch = source->width * source->pixel_size_bytes;
-	output->pixel_size_bytes = source->pixel_size_bytes;
-	output->magic_value = vbuffer_magic;
+	if( output->width != source->width
+		|| output->height != source->height
+		|| output->pitch != source->pitch
+		|| output->data == NULL )
+	{
+		if( output->data != NULL )
+		{
+			Z_Free( output->data );
+		}
 
-	dest = output->data = Z_Malloc( output->width * output->height, outputmemzone, &output->data );
+		output->width = source->height;
+		output->height = source->width;
+		output->pitch = source->width * source->pixel_size_bytes;
+		output->pixel_size_bytes = source->pixel_size_bytes;
+		output->data = Z_Malloc( output->width * output->height, outputmemzone, &output->data );
+		output->magic_value = vbuffer_magic;
+	}
+	dest = output->data;
 
 	for( x=0; x < output->width; ++x )
 	{
@@ -224,7 +235,7 @@ void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width
 	column.x = widthdiff + FixedToInt( x * V_WIDTHMULTIPLIER );
 	int32_t xstop = widthdiff + FixedToInt( M_MIN( x + width, V_VIRTUALWIDTH ) * V_WIDTHMULTIPLIER );
 
-	for( column.x = 0; column.x < xstop; ++column.x )
+	for( ; column.x < xstop; ++column.x )
 	{
 		column.source = source_buffer->data + ( xsource >> RENDFRACBITS ) * source_buffer->pitch;
 		R_BackbufferDrawColumn( &column );
@@ -333,6 +344,8 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
+	extern int32_t remove_limits;
+
 	colcontext_t	column;
 
 	int32_t			widthdiff = ( render_width - aspect_adjusted_render_width ) >> 1;
@@ -352,13 +365,25 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	}
 
 #ifdef RANGECHECK
-	if (x < 0
-		|| x + clippedwidth > V_VIRTUALWIDTH
-		|| y < 0
-		|| y + clippedheight > V_VIRTUALHEIGHT
-		|| clippedy > 0)
+	if( !remove_limits )
 	{
-		I_Error("Bad V_DrawPatch");
+		if (x < 0
+			|| x + clippedwidth > V_VIRTUALWIDTH
+			|| y < 0
+			|| y + clippedheight > V_VIRTUALHEIGHT
+			|| clippedy > 0)
+		{
+			I_Error("Bad V_DrawPatch");
+		}
+	}
+	else
+	{
+		if( y < 0
+			|| y + clippedheight > V_VIRTUALHEIGHT
+			|| clippedy > 0)
+		{
+			I_Error("Bad V_DrawPatch");
+		}
 	}
 #endif
 
@@ -375,12 +400,15 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	rend_fixed_t xsource	= IntToRendFixed( clippedx );
 
 	column.x = widthdiff + FixedToInt( x * V_WIDTHMULTIPLIER );
-	int32_t xstop = widthdiff + FixedToInt( M_MIN( x + clippedwidth, V_VIRTUALWIDTH ) * V_WIDTHMULTIPLIER );
+	int32_t xstop = widthdiff + FixedToInt( ( x + clippedwidth ) * V_WIDTHMULTIPLIER );
 
 	rend_fixed_t	xscale = RendFixedDiv( IntToRendFixed( clippedwidth ), IntToRendFixed( xstop - column.x ) );
 
-	for( ; column.x < xstop; ++column.x )
+	for( ; column.x < xstop; ++column.x, xsource += xscale )
 	{
+		if( column.x < 0 ) continue;
+		if( column.x >= render_width ) break;
+
 		if( xsource >= xwidth )
 		{
 			I_Error( "V_DrawPatchClipped: Error with dimensions calculation" );
@@ -398,8 +426,6 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 
 			patchcol = (column_t *)( (byte *)patchcol + patchcol->length + 4 );
 		}
-
-		xsource += xscale;
 	}
 
 	M_PROFILE_POP( __FUNCTION__ );

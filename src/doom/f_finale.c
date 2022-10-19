@@ -160,6 +160,7 @@ void F_StartFinale (void)
     finalecount = 0;
 
 	// erase the entire screen to a tiled background
+	memset( &finaleflatdata, 0, sizeof( vbuffer_t ) );
 	V_TransposeFlat( finaleflat, &finaleflatdata, PU_LEVEL );
 }
 
@@ -535,8 +536,12 @@ void F_CastDrawer (void)
     boolean		flip;
     patch_t*		patch;
     
+	// WIDESCREEN HACK
+	patch_t* bossback = (patch_t*)W_CacheLumpName (DEH_String("BOSSBACK"), PU_LEVEL);
+	int32_t xpos = -( ( bossback->width - V_VIRTUALWIDTH ) / 2 );
+
     // erase the entire screen to a background
-    V_DrawPatch (0, 0, W_CacheLumpName (DEH_String("BOSSBACK"), PU_LEVEL));
+    V_DrawPatch (xpos, 0, bossback);
 
     F_CastPrint (DEH_String(castorder[castnum].name));
     
@@ -559,15 +564,16 @@ void F_CastDrawer (void)
 //
 void F_BunnyScroll (void)
 {
-    signed int  scrolled;
-    patch_t*	p1;
-    patch_t*	p2;
-    char	name[10];
-    int		stage;
-    static int	laststage;
+	char	name[10];
+	int		stage;
+	static int	laststage;
 		
-    p1 = W_CacheLumpName (DEH_String("PFUB2"), PU_LEVEL);
-    p2 = W_CacheLumpName (DEH_String("PFUB1"), PU_LEVEL);
+	patch_t* p1 = (patch_t*)W_CacheLumpName( DEH_String( "PFUB2" ), PU_LEVEL );
+	patch_t* p2 = (patch_t*)W_CacheLumpName( DEH_String( "PFUB1" ), PU_LEVEL );
+	int32_t totalwidth = p1->width + p2->width;
+	// WIDESCREEN HACK
+	int32_t overlap = ( totalwidth - ( V_VIRTUALWIDTH * 2 ) ) / 2;
+
 	stage = 6;
 	while( stage >= 0 )
 	{
@@ -578,16 +584,14 @@ void F_BunnyScroll (void)
 
     V_MarkRect (0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT);
 	
-    scrolled = (V_VIRTUALWIDTH - ((signed int) finalecount-230)/2);
+	int32_t scrolled = (V_VIRTUALWIDTH - ((signed int) finalecount-230)/2);
     if (scrolled > V_VIRTUALWIDTH)
 		scrolled = V_VIRTUALWIDTH;
     if (scrolled < 0)
 		scrolled = 0;
 		
-	if( scrolled < V_VIRTUALWIDTH )
-		V_DrawPatchClipped( 0, 0, p1, scrolled, 0, V_VIRTUALWIDTH - scrolled, V_VIRTUALHEIGHT );
-	if( scrolled > 0 )
-		V_DrawPatchClipped( V_VIRTUALWIDTH - scrolled, 0, p2, 0, 0, V_VIRTUALWIDTH - ( V_VIRTUALWIDTH - scrolled ), V_VIRTUALHEIGHT );
+	V_DrawPatchClipped( -overlap, 0, p1, scrolled, 0, p1->width - scrolled, V_VIRTUALHEIGHT );
+	V_DrawPatchClipped( overlap + p2->width - scrolled, 0, p2, 0, 0, p2->width - ( p2->width - scrolled ), V_VIRTUALHEIGHT );
 	
     if (finalecount < 1130)
 	return;
@@ -649,7 +653,11 @@ static void F_ArtScreenDrawer(void)
 
         lumpname = DEH_String(lumpname);
 
-        V_DrawPatch (0, 0, W_CacheLumpName(lumpname, PU_LEVEL));
+		// WIDESCREEN HACK
+		patch_t* art = (patch_t*)W_CacheLumpName( lumpname, PU_LEVEL );
+		int32_t xpos = -( ( art->width - V_VIRTUALWIDTH ) / 2 );
+
+		V_DrawPatch( xpos, 0, art );
     }
 }
 

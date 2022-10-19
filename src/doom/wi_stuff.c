@@ -405,8 +405,11 @@ extern vbuffer_t blackedges;
 // slam background
 void WI_slamBackground(void)
 {
+	// WIDESCREEN HACK
+	int32_t xpos = -( ( background->width - V_VIRTUALWIDTH ) / 2 );
+
 	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
-    V_DrawPatch(0, 0, background);
+	V_DrawPatch( xpos, 0, background );
 }
 
 // The ticker is used to detect keys
