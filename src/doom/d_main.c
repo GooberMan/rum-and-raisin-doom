@@ -39,6 +39,7 @@
 #include "z_zone.h"
 #include "w_main.h"
 #include "w_wad.h"
+#include "w_merge.h"
 #include "s_sound.h"
 #include "v_diskicon.h"
 #include "v_video.h"
@@ -1029,6 +1030,36 @@ void D_IdentifyVersion(void)
     }
 }
 
+static void D_AddWidescreenPacks()
+{
+	if( remove_limits )
+	{
+		const char* widescreenpackname = NULL;
+
+		if( gamemission == doom )
+		{
+			switch( gamemode )
+			{
+			case retail:					widescreenpackname = "doom.ultimate.widepix"; break;
+			case registered:				widescreenpackname = "doom.registered.widepix"; break;
+			case shareware:					widescreenpackname = "doom.shareware.widepix"; break;
+			default:						break;
+			}
+		}
+		else if( gamemission == doom2 )		widescreenpackname = "doom2.widepix";
+		else if( gamemission == pack_tnt )	widescreenpackname = "tnt.widepix";
+		else if( gamemission == pack_plut ) widescreenpackname = "plutonia.widepix";
+
+		const char* widescreenfilename = D_FindWADByName( widescreenpackname );
+		if( widescreenfilename )
+		{
+			I_TerminalPrintf( Log_Startup, " merging %s\n", widescreenfilename );
+			W_MergeFile( widescreenfilename );
+			free( widescreenfilename );
+		}
+	}
+}
+
 // Set the gamedescription string
 
 static void D_SetGameDescription(void)
@@ -1690,6 +1721,7 @@ void D_DoomMain (void)
     // Now that we've loaded the IWAD, we can figure out what gamemission
     // we're playing and which version of Vanilla Doom we need to emulate.
     D_IdentifyVersion();
+	D_AddWidescreenPacks();
     InitGameVersion();
 
     // Check which IWAD variant we are using.
