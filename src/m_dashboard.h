@@ -52,15 +52,25 @@ typedef enum dashboardmode_e
 	Dash_FirstSession,
 } dashboardmode_t;
 
+typedef enum licence_e
+{
+	Licence_SDL,
+	Licence_DearImGui,
+	Licence_cimgui,
+	Licence_WidePix,
+} licence_t;
+
 typedef void (*menufunc_t)( const char* itemname, void* data );
 
 void M_InitDashboard( void );
+void M_DashboardSetLicenceInUse( licence_t licence, boolean inuse );
 void M_BindDashboardVariables( void );
 void M_DashboardFirstLaunch( void );
 void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingname );
 boolean M_DashboardResponder( event_t* ev );
 void M_RenderDashboardLogContents( void );
 void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backbufferid );
+
 
 // menuname can be categorised with pipes, ie Edit|Preferences|Some pref category
 

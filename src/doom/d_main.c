@@ -1032,6 +1032,7 @@ void D_IdentifyVersion(void)
 
 static void D_AddWidescreenPacks()
 {
+	M_DashboardSetLicenceInUse( Licence_WidePix, false );
 	if( remove_limits )
 	{
 		const char* widescreenpackname = NULL;
@@ -1056,6 +1057,8 @@ static void D_AddWidescreenPacks()
 			I_TerminalPrintf( Log_Startup, " merging %s\n", widescreenfilename );
 			W_MergeFile( widescreenfilename );
 			free( widescreenfilename );
+
+			M_DashboardSetLicenceInUse( Licence_WidePix, true );
 		}
 	}
 }

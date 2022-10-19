@@ -358,13 +358,14 @@ static constexpr ImU32 logcolours[] =
 
 typedef struct licences_s
 {
-	const char* software;
-	const char* license;
+	const char*		software;
+	bool			inuse;
+	const char*		license;
 } licences_t;
 
 static licences_t licences[] =
 {
-	{ "Simple DirectMedia Layer",
+	{ "Simple DirectMedia Layer", true,
 		"zlib license\n"
 		"\n"
 		"Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>\n"
@@ -385,7 +386,7 @@ static licences_t licences[] =
 		"   misrepresented as being the original software.\n"
 		"3. This notice may not be removed or altered from any source distribution.\n"
 	},
-	{ "Dear ImGui",
+	{ "Dear ImGui", true,
 		"The MIT License (MIT)\n"
 		"\n"
 		"Copyright (c) 2014-2022 Omar Cornut\n"
@@ -408,7 +409,7 @@ static licences_t licences[] =
 		"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
 		"SOFTWARE."
 	},
-	{ "cimgui",
+	{ "cimgui", true,
 		"The MIT License (MIT)\n"
 		"\n"
 		"Copyright (c) 2015 Stephan Dilly\n"
@@ -430,6 +431,23 @@ static licences_t licences[] =
 		"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
 		"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
 		"SOFTWARE."
+	},
+	{ "WidePix", true,
+		"Copyright(C) 2020 - 2021 Nash Muhandes\n"
+		"\n"
+		"LICENSE:\n"
+		"\n"
+		"You MAY use, copy, modify, merge, publish, distribute, and/or sublicense this\n"
+		"work - HOWEVER:\n"
+		"\n"
+		"- You may not sell this work\n"
+		"\n"
+		"- Your work must comply with id Software's original licenses (i.e. they must\n"
+		"only work on the game from which they originated)\n"
+		"\n"
+		"- All derivative works must credit the original authors (id Software (Doom),\n"
+		"Raven Software (Hexen/Heretic), Rogue Software (Strife), Digital Cafe (Chex),\n"
+		"Nash Muhandes)"
 	},
 };
 
@@ -652,6 +670,11 @@ static void M_LicencesWindow( const char* itemname, void* data )
 	igPushIDPtr( &licenceswindow_open );
 	for( const licences_t& currlicence : Licences() )
 	{
+		if( !currlicence.inuse )
+		{
+			continue;
+		}
+
 		igPushIDPtr( currlicence.software );
 		if( igCollapsingHeaderTreeNodeFlags( currlicence.software, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 		{
@@ -710,6 +733,11 @@ void M_InitDashboard( void )
 	M_RegisterDashboardWindow( "Core|Licences", "Licences", 0, 0, &licenceswindow_open, Menu_Normal, &M_LicencesWindow );
 	M_RegisterDashboardSeparator( "Core" );
 	M_RegisterDashboardButton( "Core|Quit", "Yes, this means quit the game", &M_OnDashboardCoreQuit, NULL );
+}
+
+void M_DashboardSetLicenceInUse( licence_t licence, boolean inuse )
+{
+	licences[ licence ].inuse = inuse;
 }
 
 void M_BindDashboardVariables( void )
