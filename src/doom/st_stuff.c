@@ -390,6 +390,9 @@ static int	keyboxes[3];
 // a random number per tick
 static int	st_randomnumber;  
 
+int32_t		st_border_tile_style = STB_Flat5_4;
+const char*	st_border_tile_custom = NULL;
+
 cheatseq_t cheat_mus = CHEAT("idmus", 2);
 cheatseq_t cheat_god = CHEAT("iddqd", 0);
 cheatseq_t cheat_ammo = CHEAT("idkfa", 0);
@@ -427,7 +430,7 @@ void ST_refreshBackground(void)
 		V_FillBorder( &tileflat, ST_Y, V_VIRTUALHEIGHT );
 
 		V_DrawPatch(ST_X, ST_Y, sbar);
-		
+
 		// draw right side of bar if needed (Doom 1.0)
 		if (sbarr)
 			V_DrawPatch(ST_ARMSBGX, ST_Y, sbarr);
@@ -1210,13 +1213,40 @@ void ST_loadGraphics(void)
     ST_loadUnloadGraphics(ST_loadCallback);
 }
 
+st_bordertile_t ST_GetBorderTileStyle()
+{
+	return st_border_tile_style;
+}
+
+void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname )
+{
+	st_border_tile_style = mode;
+	st_border_tile_custom = flatname;
+
+	switch( mode )
+	{
+	case STB_WADDefined:
+		V_TransposeFlat( gamemode == commercial ? DEH_String("GRNROCK") : DEH_String("FLOOR7_2"), &tileflat, PU_STATIC );
+		break;
+	case STB_Flat5_4:
+		V_TransposeFlat( "FLAT5_4", &tileflat, PU_STATIC );
+		break;
+	case STB_Custom:
+		V_TransposeFlat( flatname, &tileflat, PU_STATIC );
+		break;
+	default:
+		break;
+	}
+}
+
 void ST_loadData(void)
 {
-
     lu_palette = W_GetNumForName (DEH_String("PLAYPAL"));
     ST_loadGraphics();
 
-	V_TransposeFlat( "FLAT5_4", &tileflat, PU_STATIC );
+	memset( &tileflat, 0, sizeof( vbuffer_t ) );
+
+	ST_SetBorderTileStyle( st_border_tile_style, st_border_tile_custom );
 }
 
 static void ST_unloadCallback(const char *lumpname, patch_t **variable)

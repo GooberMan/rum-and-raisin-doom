@@ -36,6 +36,31 @@
 #define ST_BUFFERWIDTH ( ( ( (int64_t)( ST_WIDTH << FRACBITS ) * (int64_t)V_WIDTHMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 #define ST_BUFFERHEIGHT ( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 
+// States for status bar code.
+typedef enum
+{
+    AutomapState,
+    FirstPersonState
+    
+} st_stateenum_t;
+
+
+// States for the chat code.
+typedef enum
+{
+    StartChatState,
+    WaitDestState,
+    GetChatState
+    
+} st_chatstateenum_t;
+
+typedef enum st_bordertile_e
+{
+	STB_WADDefined, // Defaults to view window border
+	STB_Flat5_4,
+	STB_Custom,
+} st_bordertile_t;
+
 //
 // STATUS BAR
 //
@@ -55,23 +80,8 @@ void ST_Start (void);
 // Called by startup code.
 void ST_Init (void);
 
-// States for status bar code.
-typedef enum
-{
-    AutomapState,
-    FirstPersonState
-    
-} st_stateenum_t;
-
-
-// States for the chat code.
-typedef enum
-{
-    StartChatState,
-    WaitDestState,
-    GetChatState
-    
-} st_chatstateenum_t;
+st_bordertile_t ST_GetBorderTileStyle();
+void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname );
 
 extern cheatseq_t cheat_mus;
 extern cheatseq_t cheat_god;
