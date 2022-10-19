@@ -867,6 +867,13 @@ static default_t extra_defaults_list[] =
 
     //!
     // @game doom
+    // Values are 0 = IWAD defined, 1 = FLAT5_4
+    //
+
+    CONFIG_VARIABLE_INT(st_border_tile_style),
+
+    //!
+    // @game doom
     // Values are 0 = original, 1 = adjusted, 2 = heatwave
     //
 
