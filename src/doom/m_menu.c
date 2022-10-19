@@ -45,6 +45,7 @@
 
 
 #include "hu_stuff.h"
+#include "st_stuff.h"
 
 #include "g_game.h"
 
@@ -1099,7 +1100,12 @@ void M_QuickLoad(void)
     M_StartMessage(tempstring, M_QuickLoadResponse, true);
 }
 
+void M_DrawFullScreenPage( const char* pagename )
+{
+	patch_t* patch = W_CacheLumpName( pagename, PU_CACHE );
 
+	V_DrawPatch ( 0, 0, patch );
+}
 
 
 //
@@ -1110,7 +1116,7 @@ void M_DrawReadThis1(void)
 {
     inhelpscreens = true;
 
-    V_DrawPatchDirect(0, 0, W_CacheLumpName(DEH_String("HELP2"), PU_CACHE));
+    M_DrawFullScreenPage( DEH_String("HELP2") );
 }
 
 
@@ -1125,14 +1131,14 @@ void M_DrawReadThis2(void)
     // We only ever draw the second page if this is 
     // gameversion == exe_doom_1_9 and gamemode == registered
 
-    V_DrawPatchDirect(0, 0, W_CacheLumpName(DEH_String("HELP1"), PU_CACHE));
+    M_DrawFullScreenPage( DEH_String("HELP1") );
 }
 
 void M_DrawReadThisCommercial(void)
 {
     inhelpscreens = true;
 
-    V_DrawPatchDirect(0, 0, W_CacheLumpName(DEH_String("HELP"), PU_CACHE));
+    M_DrawFullScreenPage( DEH_String("HELP") );
 }
 
 
@@ -2904,6 +2910,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t grabmouse;
 	extern int32_t novert;
 	extern int32_t enable_frame_interpolation;
+	extern int32_t snd_pitchshift;
 
 	controlsection_t*	currsection;
 
@@ -3157,14 +3164,39 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 		{
 			igPushScrollableArea( "Sound", zerosize );
 
-			if( igSliderInt( "Effects", &sfxVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			igColumns( 2, "", false );
+			igSetColumnWidth( 0, columwidth );
+
+			igText( "Pitch shifting" );
+			igNextColumn();
+			igPushIDPtr( &snd_pitchshift );
+			igCheckbox( "", (bool*)&snd_pitchshift );
+			igPopID();
+			igNextColumn();
+
+			igText( "Effects" );
+			igNextColumn();
+			igPushIDPtr( &sfxVolume );
+			igPushItemWidth( 200.f );
+			if( igSliderInt( "", &sfxVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
 				S_SetSfxVolume( sfxVolume * 8 );
 			}
-			if( igSliderInt( "Music", &musicVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			igPopID();
+			igNextColumn();
+
+			igText( "Music" );
+			igNextColumn();
+			igPushIDPtr( &musicVolume );
+			igPushItemWidth( 200.f );
+			if( igSliderInt( "", &musicVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
 				S_SetMusicVolume( musicVolume * 8 );
 			}
+			igPopID();
+			igNextColumn();
+
+			igColumns( 1, "", false );
 
 			igPopScrollableArea();
 			igEndTabItem();
@@ -3228,6 +3260,24 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			if( doresize )
 			{
 				R_SetViewSize (screenblocks, detailLevel);
+			}
+
+			igNextColumn();
+			igText( "Status bar border" );
+			igNextColumn();
+
+			int32_t style = ST_GetBorderTileStyle();
+
+			igPushIDPtr( &style );
+			WorkingBool = false;
+			WorkingBool |= igRadioButtonIntPtr( "IWAD defined", &style, 0 );
+			igSameLine( 0, -1 );
+			WorkingBool |= igRadioButtonIntPtr( "FLAT5_4", &style, 1 );
+			igPopID();
+
+			if( WorkingBool )
+			{
+				ST_SetBorderTileStyle( style, NULL );
 			}
 
 			igNextColumn();
