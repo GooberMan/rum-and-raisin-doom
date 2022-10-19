@@ -24,6 +24,10 @@
 #include "doomtype.h"
 #include "i_vbuffer.h"
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 // Screen width and height.
 // Every compiler will do literal calculations at compile time these days, so let's be always correct about it.
 // Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
@@ -119,5 +123,9 @@ void I_GetWindowPosition(int *x, int *y, int w, int h);
 
 // Joystic/gamepad hysteresis
 extern uint64_t joywait;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

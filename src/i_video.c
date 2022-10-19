@@ -1,7 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -24,9 +24,7 @@
 
 #include "m_dashboard.h"
 
-#define USE_GLAD ( USE_IMGUI )
-#include <glad/glad.h>
-
+#include "glad/glad.h"
 #include "SDL_opengl.h"
 
 #ifdef _WIN32
@@ -83,10 +81,11 @@ static const char *window_title = NULL;
 // is upscaled by an integer factor UPSCALE using "nearest" scaling and which
 // in turn is finally rendered to screen using "linear" scaling.
 
-static SDL_Surface *screenbuffer = NULL;
-static SDL_Surface *argbbuffer = NULL;
-static SDL_Texture *texture = NULL;
-static SDL_Texture *texture_upscaled = NULL;
+static SDL_Surface	*screenbuffer = NULL;
+static SDL_Surface	*argbbuffer = NULL;
+static SDL_Texture	*texture = NULL;
+static SDL_Texture	*texture_upscaled = NULL;
+static GLint		texture_upscaled_id = -1;
 
 // The screen buffer; this is modified to draw things to the screen
 
@@ -137,6 +136,8 @@ int32_t border_style = 1;
 
 // 0 = original, 1 = dithered
 int32_t border_bezel_style = 1; // Need to default to dithered until I sort out widescreen UI rendering
+
+extern int32_t st_border_tile_style;
 
 // Window position:
 
@@ -258,47 +259,47 @@ extern int32_t dashboardactive;
 
 static boolean MouseShouldBeGrabbed()
 {
-    // never grab the mouse when in screensaver mode
+	// never grab the mouse when in screensaver mode
    
-    if (screensaver_mode)
-        return false;
+	if (screensaver_mode)
+		return false;
 
-    // if the window doesn't have focus, never grab it
+	// if the window doesn't have focus, never grab it
 
-    if (!window_focused)
-        return false;
+	if (!window_focused)
+		return false;
 
 	// Debug menu needs mouse. Ergo, don't grab mouse.
 	if( dashboardactive )
 		return false;
 
-    // always grab the mouse when full screen (dont want to 
-    // see the mouse pointer)
+	// always grab the mouse when full screen (dont want to 
+	// see the mouse pointer)
 
-    if (fullscreen)
-        return true;
+	if (fullscreen)
+		return true;
 
-    // Don't grab the mouse if mouse input is disabled
+	// Don't grab the mouse if mouse input is disabled
 
-    if (!usemouse || nomouse)
-        return false;
+	if (!usemouse || nomouse)
+		return false;
 
-    // if we specify not to grab the mouse, never grab
+	// if we specify not to grab the mouse, never grab
 
-    if (nograbmouse_override || !grabmouse)
-        return false;
+	if (nograbmouse_override || !grabmouse)
+		return false;
 
-    // Invoke the grabmouse callback function to determine whether
-    // the mouse should be grabbed
+	// Invoke the grabmouse callback function to determine whether
+	// the mouse should be grabbed
 
-    if (grabmouse_callback != NULL)
-    {
-        return grabmouse_callback();
-    }
-    else
-    {
-        return true;
-    }
+	if (grabmouse_callback != NULL)
+	{
+		return grabmouse_callback();
+	}
+	else
+	{
+		return true;
+	}
 }
 
 void I_SetGrabMouseCallback(grabmouse_callback_t func)
@@ -693,9 +694,8 @@ static void CreateUpscaledTexture( )
 {
     int w, h;
     int h_upscale, w_upscale;
-    static int h_upscale_old, w_upscale_old;
 
-    SDL_Texture *new_texture, *old_texture;
+    SDL_Texture *new_texture;
 
     // Get the size of the renderer output. The units this gives us will be
     // real world pixels, which are not necessarily equivalent to the screen's
@@ -744,22 +744,23 @@ static void CreateUpscaledTexture( )
 
     // Create a new texture only if the upscale factors have actually changed.
 
-    h_upscale_old = h_upscale;
-    w_upscale_old = w_upscale;
-
     new_texture = SDL_CreateTexture(renderer,
                                 pixel_format,
                                 SDL_TEXTUREACCESS_TARGET,
                                 h_upscale*render_height,
                                 w_upscale*render_width);
 
-    old_texture = texture_upscaled;
-    texture_upscaled = new_texture;
+	if( texture_upscaled != NULL)
+	{
+		SDL_DestroyTexture( texture_upscaled );
+	}
 
-    if (old_texture != NULL)
-    {
-        SDL_DestroyTexture(old_texture);
-    }
+	texture_upscaled = new_texture;
+
+	SDL_GL_BindTexture( texture_upscaled, NULL, NULL );
+	glGetIntegerv( GL_TEXTURE_BINDING_2D, &texture_upscaled_id );
+	SDL_GL_UnbindTexture( texture_upscaled );
+
 }
 
 #define FPS_DOTS_SUPPORTED 0
@@ -935,15 +936,10 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
 	int32_t actualwindowwidth = 0;
 	int32_t actualwindowheight = 0;
-	GLint whichID = 0;
-
-	SDL_GL_BindTexture( texture_upscaled, NULL, NULL );
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichID);
-	SDL_GL_UnbindTexture( texture );
 
 	SDL_GetWindowSize( screen, &actualwindowwidth, &actualwindowheight );
 
-	M_RenderDashboard( actualwindowwidth, actualwindowheight, whichID );
+	M_RenderDashboard( actualwindowwidth, actualwindowheight, texture_upscaled_id );
 
 	SDL_RenderPresent(renderer);
 }
@@ -963,19 +959,21 @@ void I_ReadScreen (pixel_t* scr)
 //
 void I_SetPalette (byte *doompalette)
 {
-    int i;
+	extern int32_t remove_limits;
+	int32_t entry;
 
-    for (i=0; i<256; ++i)
-    {
-        // Zero out the bottom two bits of each channel - the PC VGA
-        // controller only supports 6 bits of accuracy.
+	// Zero out the bottom two bits of each channel - the PC VGA
+	// controller only supports 6 bits of accuracy.
+	Uint8 bottommask = ~( remove_limits ? 0 : 0x3 );
 
-        palette[i].r = gammatable[usegamma][*doompalette++] & ~3;
-        palette[i].g = gammatable[usegamma][*doompalette++] & ~3;
-        palette[i].b = gammatable[usegamma][*doompalette++] & ~3;
-    }
+	for( entry = 0; entry < 256; ++entry )
+	{
+		palette[ entry ].r = gammatable[ usegamma ][ *doompalette++ ] & bottommask;
+		palette[ entry ].g = gammatable[ usegamma ][ *doompalette++ ] & bottommask;
+		palette[ entry ].b = gammatable[ usegamma ][ *doompalette++ ] & bottommask;
+	}
 
-    palette_to_set = true;
+	palette_to_set = true;
 }
 
 // Given an RGB value, find the closest matching palette index.
@@ -1322,7 +1320,6 @@ static void I_SetupOpenGL(void)
  
 }
 
-#if USE_GLAD
 static void I_SetupGLAD(void)
 {
 	int32_t retval;
@@ -1361,9 +1358,6 @@ static void I_SetupGLAD(void)
 #endif // CHECK_GLES
 	}
 }
-#else // !USE_GLAD
-#define I_SetupGLAD()
-#endif // USE_GLAD
 
 #if USE_IMGUI
 static void I_SetupDearImGui(void)
@@ -1499,9 +1493,9 @@ static void SetVideoMode(void)
 		I_Error( "SDL not initialised in OpenGL mode" );
 	}
 
-	CreateUpscaledTexture();
-
 	I_SetupGLAD();
+
+	CreateUpscaledTexture();
 
     // Force integer scales for resolution-independent rendering.
 
@@ -1856,4 +1850,5 @@ void I_BindVideoVariables(void)
 	// TODO: Move these to R_BindRenderVariables now that it exists
     M_BindIntVariable("border_style",              &border_style);
     M_BindIntVariable("border_bezel_style",        &border_bezel_style);
+	M_BindIntVariable("st_border_tile_style",		&st_border_tile_style );
 }
