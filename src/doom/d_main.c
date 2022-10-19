@@ -1033,7 +1033,7 @@ void D_IdentifyVersion(void)
 static void D_AddWidescreenPacks()
 {
 	M_DashboardSetLicenceInUse( Licence_WidePix, false );
-	if( remove_limits )
+	if( remove_limits && !M_CheckParm( "-nowidepix" ) )
 	{
 		const char* widescreenpackname = NULL;
 
