@@ -33,6 +33,7 @@ extern "C"
 #include <unordered_map>
 #include <algorithm>
 #include <tuple>
+#include <array>
 
 template< typename _ty, int32_t _tag = PU_STATIC >
 struct DoomAllocator
