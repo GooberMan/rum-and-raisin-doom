@@ -1740,6 +1740,12 @@ void D_DoomMain (void)
             gamevariant = freedoom;
         }
     }
+	// DMENUPIC is used by the Unity IWADs. Thus, we can't rely on it
+	// any more to check for BFG Edition IWADs.
+	// We can check for any of M_ACPT, M_CAN, M_EXITO, and M_CHG here
+	// though as they're specific to the BFG frontend.
+	// M_CHG is for changing games, so that one seems super specific
+	// enough for our needs.
     else if (W_CheckNumForName("D_CHG") >= 0)
     {
 		gamevariant = bfgedition;
