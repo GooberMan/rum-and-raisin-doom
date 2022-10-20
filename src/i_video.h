@@ -104,6 +104,8 @@ void I_StartTic (void);
 
 void I_EnableLoadingDisk(int xoffs, int yoffs);
 
+void I_VideoClearBuffer( float_t r, float_t g, float_t b, float_t a );
+
 extern boolean screenvisible;
 
 extern int32_t vanilla_keyboard_mapping;

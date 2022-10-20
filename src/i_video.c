@@ -20,19 +20,19 @@
 
 #include <stdlib.h>
 
-#include "SDL.h"
-
-#include "m_dashboard.h"
-
-#include "glad/glad.h"
-#include "SDL_opengl.h"
-
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
 #endif
+
+#include "SDL.h"
+
+#include "m_dashboard.h"
+
+#include "glad/glad.h"
+#include "SDL_opengl.h"
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
@@ -256,6 +256,17 @@ int32_t usegamma = 0;
 uint64_t joywait = 0;
 
 extern int32_t dashboardactive;
+
+void I_SetupOpenGL( void );
+void I_SetupGLAD( void );
+void I_VideoSetupGLRenderPath( void );
+void I_VideoResetGLFrameBuffer( void );
+void I_VideoUpdateGLPalette( void* data );
+void I_VideoRenderGLIntermediate( void* data );
+int32_t I_VideoGetGLIntermediate( void );
+void I_VideoRenderGLBackbuffer( void );
+
+void I_VideoSetupSDLRenderPath( void );
 
 static boolean MouseShouldBeGrabbed()
 {
@@ -853,93 +864,115 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
     // Draw disk icon before blit, if necessary.
     V_DrawDiskIcon();
 
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-
-	if ( palette_to_set && vga_porch_flash )
-	{
-		// "flash" the pillars/letterboxes with palette changes, emulating
-		// VGA "porch" behaviour (GitHub issue #832)
-		SDL_SetRenderDrawColor(renderer, palette[0].r, palette[0].g,
-			palette[0].b, SDL_ALPHA_OPAQUE);
-	}
-	
-	// Important: Set the "logical size" of the rendering context. At the same
-	// time this also defines the aspect ratio that is preserved while scaling
-	// and stretching the texture into the window.
-	if( activebuffer->mode == VB_Transposed )
-	{
-		SDL_RenderSetLogicalSize( renderer, activebuffer->height, activebuffer->width * activebuffer->verticalscale );
-	}
-	else
-	{
-		SDL_RenderSetLogicalSize( renderer, activebuffer->width, activebuffer->height * activebuffer->verticalscale );
-	}
-
-	while( curr != end )
-	{
-		if (palette_to_set)
-		{
-			SDL_SetPaletteColors( curr->screenbuffer.data8bithandle->format->palette, palette, 0, 256 );
-		}
-
-		// Blit from the paletted 8-bit screen buffer to the intermediate
-		// 32-bit RGBA buffer that we can load into the texture.
-
-		if( curr->validregion.h > 0 )
-		{
-			SDL_LowerBlit( curr->screenbuffer.data8bithandle, &curr->validregion, curr->screenbuffer.dataARGBhandle, &curr->validregion );
-		}
-		++curr;
-	}
-
-	palette_to_set = false;
-
-    // Update the intermediate texture with the contents of the RGBA buffer.
-
-    SDL_UpdateTexture( activebuffer->datatexture, NULL, activebuffer->dataARGBhandle->pixels, activebuffer->dataARGBhandle->pitch );
-
-    // Make sure the pillarboxes are kept clear each frame.
-
-    SDL_RenderClear(renderer);
-
-    // Render this intermediate texture into the upscaled texture
-    // using "nearest" integer scaling.
-
-	SDL_SetRenderTarget( renderer, texture_upscaled );
-	SDL_RenderCopy(renderer, activebuffer->datatexture, NULL, NULL);
-
-    // Finally, render this upscaled texture to screen using linear scaling.
-
-	SDL_SetRenderTarget(renderer, NULL);
-
-	if( USE_IMGUI && !dashboardactive )
-	{
-		if( activebuffer->mode == VB_Transposed )
-		{
-			int32_t activewidth = activebuffer->height;
-			int32_t activeheight = activebuffer->width * activebuffer->verticalscale;
-
-			// Better transormation courtesy of Altazimuth
-			Target.x = (activewidth - activeheight) / 2;
-			Target.y = (activeheight - activewidth) / 2;
-			Target.w = activeheight;
-			Target.h = activewidth;
-
-			SDL_RenderCopyEx( renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL );
-		}
-		else
-		{
-			SDL_RenderCopy( renderer, texture_upscaled, NULL, NULL );
-		}
-
-	}
-
 	int32_t actualwindowwidth = 0;
 	int32_t actualwindowheight = 0;
 
 	SDL_GetWindowSize( screen, &actualwindowwidth, &actualwindowheight );
 
-	M_RenderDashboard( actualwindowwidth, actualwindowheight, texture_upscaled_id );
+	int32_t render_path = 1;
+
+	if( render_path == 0 )
+	{
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+
+		if ( palette_to_set && vga_porch_flash )
+		{
+			// "flash" the pillars/letterboxes with palette changes, emulating
+			// VGA "porch" behaviour (GitHub issue #832)
+			SDL_SetRenderDrawColor(renderer, palette[0].r, palette[0].g,
+				palette[0].b, SDL_ALPHA_OPAQUE);
+		}
+	
+		// Important: Set the "logical size" of the rendering context. At the same
+		// time this also defines the aspect ratio that is preserved while scaling
+		// and stretching the texture into the window.
+		if( activebuffer->mode == VB_Transposed )
+		{
+			SDL_RenderSetLogicalSize( renderer, activebuffer->height, activebuffer->width * activebuffer->verticalscale );
+		}
+		else
+		{
+			SDL_RenderSetLogicalSize( renderer, activebuffer->width, activebuffer->height * activebuffer->verticalscale );
+		}
+
+		while( curr != end )
+		{
+			if (palette_to_set)
+			{
+				SDL_SetPaletteColors( curr->screenbuffer.data8bithandle->format->palette, palette, 0, 256 );
+			}
+
+			// Blit from the paletted 8-bit screen buffer to the intermediate
+			// 32-bit RGBA buffer that we can load into the texture.
+
+			if( curr->validregion.h > 0 )
+			{
+				SDL_LowerBlit( curr->screenbuffer.data8bithandle, &curr->validregion, curr->screenbuffer.dataARGBhandle, &curr->validregion );
+			}
+			++curr;
+		}
+
+		palette_to_set = false;
+
+		// Update the intermediate texture with the contents of the RGBA buffer.
+
+		SDL_UpdateTexture( activebuffer->datatexture, NULL, activebuffer->dataARGBhandle->pixels, activebuffer->dataARGBhandle->pitch );
+
+		// Make sure the pillarboxes are kept clear each frame.
+
+		SDL_RenderClear(renderer);
+
+		// Render this intermediate texture into the upscaled texture
+		// using "nearest" integer scaling.
+
+		SDL_SetRenderTarget( renderer, texture_upscaled );
+		SDL_RenderCopy(renderer, activebuffer->datatexture, NULL, NULL);
+
+		// Finally, render this upscaled texture to screen using linear scaling.
+
+		SDL_SetRenderTarget(renderer, NULL);
+
+		if( !dashboardactive )
+		{
+			if( activebuffer->mode == VB_Transposed )
+			{
+				int32_t activewidth = activebuffer->height;
+				int32_t activeheight = activebuffer->width * activebuffer->verticalscale;
+
+				// Better transormation courtesy of Altazimuth
+				Target.x = (activewidth - activeheight) / 2;
+				Target.y = (activeheight - activewidth) / 2;
+				Target.w = activeheight;
+				Target.h = activewidth;
+
+				SDL_RenderCopyEx( renderer, texture_upscaled, NULL, &Target, 90.0, NULL, SDL_FLIP_VERTICAL );
+			}
+			else
+			{
+				SDL_RenderCopy( renderer, texture_upscaled, NULL, NULL );
+			}
+
+		}
+
+		M_RenderDashboard( actualwindowwidth, actualwindowheight, texture_upscaled_id );
+
+	}
+	else
+	{
+		if( palette_to_set )
+		{
+			I_VideoUpdateGLPalette( (void*)palette );
+		}
+
+		I_VideoRenderGLIntermediate( curr->screenbuffer.data );
+
+		if( !dashboardactive )
+		{
+			I_VideoRenderGLBackbuffer();
+		}
+
+		M_RenderDashboard( actualwindowwidth, actualwindowheight, I_VideoGetGLIntermediate() );
+	}
 
 	SDL_RenderPresent(renderer);
 }
@@ -1055,17 +1088,6 @@ void I_InitWindowIcon(void)
     SDL_FreeSurface(surface);
 }
 
-// Set video size to a particular scale factor (1x, 2x, 3x, etc.)
-
-static void SetScaleFactor(int factor)
-{
-    // Pick 320x200 or 320x240, depending on aspect ratio correct
-
-    window_width = factor * render_width;
-    window_height = factor * actualheight;
-    fullscreen = false;
-}
-
 void I_GraphicsCheckCommandLine(void)
 {
     int i;
@@ -1172,38 +1194,6 @@ void I_GraphicsCheckCommandLine(void)
         }
     }
 
-    //!
-    // @category video
-    //
-    // Don't scale up the screen. Implies -window.
-    //
-
-    if (M_CheckParm("-1")) 
-    {
-        SetScaleFactor(1);
-    }
-
-    //!
-    // @category video
-    //
-    // Double up the screen to 2x its normal size. Implies -window.
-    //
-
-    if (M_CheckParm("-2")) 
-    {
-        SetScaleFactor(2);
-    }
-
-    //!
-    // @category video
-    //
-    // Double up the screen to 3x its normal size. Implies -window.
-    //
-
-    if (M_CheckParm("-3")) 
-    {
-        SetScaleFactor(3);
-    }
 }
 
 // Check if we have been invoked as a screensaver by xscreensaver.
@@ -1287,79 +1277,10 @@ void I_GetWindowPosition(int *x, int *y, int w, int h)
     }
 }
 
-#ifdef __APPLE__
-const char* GLSL_VERSION	= "#version 150";
-int32_t GL_VERSION_MAJOR	= 3;
-int32_t GL_VERSION_MINOR	= 2;
-int32_t GL_CONTEXTFLAGS		= SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
-#else
-const char* GLSL_VERSION	= "#version 130";
-int32_t GL_VERSION_MAJOR	= 3;
-int32_t GL_VERSION_MINOR	= 0;
-int32_t GL_CONTEXTFLAGS		= 0;
-int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
-#endif
-
-#ifdef __linux__
-#define CHECK_GLES			1
-#else
-#define CHECK_GLES			0
-#endif // __linux__
-
-static void I_SetupOpenGL(void)
-{
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS,			GL_CONTEXTFLAGS );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK,	GL_CONTEXTPROFILE );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION,	GL_VERSION_MAJOR );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION,	GL_VERSION_MINOR );
-
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER,			1 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE,				24 );
-	SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE,			8 );
- 
-}
-
-static void I_SetupGLAD(void)
-{
-	int32_t retval;
-	// GLAD handles symbol loading for all platforms we care about, so let it sort it out instead
-	// of following SDL's advice to use its GL_ProcAddress function.
-	retval = gladLoadGL();
-	if ( !retval )
-	{
-		I_Error( "GLAD could not find any OpenGL version" );
-	}
-
-	if( !GLAD_GL_VERSION_3_0 )
-	{
-#if CHECK_GLES
-		// Attempt to see if we're embedded, this will be nice
-		retval = gladLoadGLES2Loader( (GLADloadproc)&SDL_GL_GetProcAddress );
-
-		if ( !retval )
-		{
-			I_Error( "GLAD could not find any OpenGL ES version" );
-		}
-
-		if( !GLAD_GL_ES_VERSION_3_0 )
-		{
-			I_Error( "GLAD could not find any OpenGL ES 3" );
-		}
-
-		GLSL_VERSION = "#version 300 es";
-		GL_CONTEXTPROFILE = SDL_GL_CONTEXT_PROFILE_ES;
-#else // !CHECK_GLES
-		I_Error( "GLAD could not find OpenGL 3.0.\nVersion detected: %d.%d\nVersion string: %s\nHardware vendor: %s\nHardware driver: %s"
-					, GLVersion.major, GLVersion.minor
-					, (const char*) glGetString( GL_VERSION )
-					, (const char*) glGetString( GL_VENDOR )
-					, (const char*) glGetString( GL_RENDERER ) );
-#endif // CHECK_GLES
-	}
-}
 
 #if USE_IMGUI
+const char* I_VideoGetGLSLVersion();
+
 static void I_SetupDearImGui(void)
 {
 	int32_t retval;
@@ -1372,7 +1293,7 @@ static void I_SetupDearImGui(void)
 		I_Error( "ImGui_ImplSDL2_InitForOpenGL failed to initialise" );
 	}
 
-	retval = CImGui_ImplOpenGL3_Init( GLSL_VERSION );
+	retval = CImGui_ImplOpenGL3_Init( I_VideoGetGLSLVersion() );
 	if ( !retval )
 	{
 		I_Error( "CImGui_ImplOpenGL3_Init failed to initialise" );
@@ -1494,6 +1415,8 @@ static void SetVideoMode(void)
 	}
 
 	I_SetupGLAD();
+
+	I_VideoSetupGLRenderPath();
 
 	CreateUpscaledTexture();
 
@@ -1709,7 +1632,7 @@ void I_InitGraphics( void )
 
 	if (aspect_ratio_correct == 1)
 	{
-		actualheight = ( render_height * 1.2f );
+		actualheight = (int32_t)( render_height * 1.2f );
 	}
 	else
 	{
@@ -1797,6 +1720,8 @@ void I_StartFrame (void)
 		{
 			actualheight = render_height;
 		}
+
+		I_VideoResetGLFrameBuffer();
 
 		I_RefreshRenderBuffers( renderbuffercount, queued_render_width, queued_render_height );
 

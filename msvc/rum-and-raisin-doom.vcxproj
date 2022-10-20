@@ -528,6 +528,8 @@
     <ClInclude Include="..\src\i_thread.h" />
     <ClInclude Include="..\src\m_container.h" />
     <ClInclude Include="..\src\i_system.h" />
+    <ClCompile Include="..\src\i_video_gl.cpp" />
+    <ClCompile Include="..\src\i_video_sdl.cpp" />
     <ClCompile Include="..\src\m_argv.c" />
     <ClInclude Include="..\src\m_argv.h" />
     <ClCompile Include="..\src\m_dashboard.cpp" />

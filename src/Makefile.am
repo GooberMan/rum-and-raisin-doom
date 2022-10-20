@@ -86,6 +86,7 @@ i_terminal.cpp       i_terminal.h          \
 i_timer.c            i_timer.h             \
 i_thread.cpp         i_thread.h            \
 i_video.c            i_video.h             \
+i_video_gl.cpp                             \
 i_videohr.c          i_videohr.h           \
 midifile.c           midifile.h            \
 mus2mid.c            mus2mid.h             \
