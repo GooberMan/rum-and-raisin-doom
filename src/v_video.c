@@ -949,6 +949,8 @@ void V_RestoreBuffer(void)
 	default_buffer.pitch = render_height;
 	default_buffer.data = I_VideoBuffer;
 	default_buffer.pixel_size_bytes = 1;
+	default_buffer.mode = VB_Transposed;
+	default_buffer.verticalscale = 1.2f;
 	default_buffer.magic_value = vbuffer_magic;
 }
 
