@@ -1398,7 +1398,7 @@ static void LoadIwadDeh(void)
 {
 	if( remove_limits )
 	{
-		DEH_LoadLumpByName("DEHACKED", true, false);
+		DEH_LoadLumpByName("DEHACKED", false, false);
 	}
 
     // The Freedoom IWADs have DEHACKED lumps that must be loaded.
@@ -1740,13 +1740,9 @@ void D_DoomMain (void)
             gamevariant = freedoom;
         }
     }
-    else if (W_CheckNumForName("DMENUPIC") >= 0)
+    else if (W_CheckNumForName("D_CHG") >= 0)
     {
-		// Unity port IWADs include a DMAPINFO lump. We don't want BFG behavior if that's the case.
-		if( W_CheckNumForName( "DMAPINFO" ) < 0 )
-		{
-			gamevariant = bfgedition;
-		}
+		gamevariant = bfgedition;
     }
 
     //!
