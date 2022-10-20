@@ -1196,6 +1196,10 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 
 	if( dashboardactive )
 	{
+		constexpr int32_t ColorEntry = ImGuiCol_TabActive;
+		const ImVec4& backcolor = themes[ dashboard_theme ].colors[ ColorEntry ];
+
+		I_VideoClearBuffer( backcolor.x * 0.08f, backcolor.y * 0.08f, backcolor.z * 0.08f, 1.f );
 		bool changed = M_DashboardUpdateSizes( windowwidth, windowheight );
 
 		if( igBeginMainMenuBar() )
@@ -1268,7 +1272,7 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 	}
 	
 	M_DashboardFinaliseRender();
-#endif USE_IMGUI
+#endif // USE_IMGUI
 }
 
 static menuentry_t* M_FindOrCreateDashboardCategory( const char* category_name, menuentry_t* potential_parent )
