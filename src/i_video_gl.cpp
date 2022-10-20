@@ -78,10 +78,10 @@ int32_t GL_CONTEXTPROFILE	= SDL_GL_CONTEXT_PROFILE_CORE;
 static const char* basic_vertex_shader =
 	"precision highp float;\n"
 	"\n"
-	"attribute vec3 position;\n"
-	"attribute vec2 uv;\n"
+	"in vec3 position;\n"
+	"in vec2 uv;\n"
 	"\n"
-	"varying vec2 curruv;\n"
+	"out vec2 curruv;\n"
 	"\n"
 	"void main()\n"
 	"{\n"
@@ -272,8 +272,8 @@ static void GenerateBuffer( VertexBuffer& output, const std::array< _vert, len >
 	glBufferData( GL_ARRAY_BUFFER, len * sizeof( _vert ), vertices.data(), GL_STATIC_DRAW );
 	glEnableVertexAttribArray( 0 );
 	glEnableVertexAttribArray( 1 );
-	glVertexAttribPointer( 0, 3, GL_FLOAT, FALSE, sizeof( _vert ), (void*)_vert::PosOffset() );
-	glVertexAttribPointer( 1, 2, GL_FLOAT, FALSE, sizeof( _vert ), (void*)_vert::UVOffset() );
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( _vert ), (void*)_vert::PosOffset() );
+	glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof( _vert ), (void*)_vert::UVOffset() );
 	glBindBuffer( GL_ARRAY_BUFFER, 0 );
 	glBindVertexArray( 0 );
 }
@@ -379,7 +379,7 @@ GLuint CreateShader( GLenum type, const char* source )
 	{
 		char log[ 1024 ] = { 0 };
 		glGetShaderInfoLog( output, 1024, NULL, log );
-		I_Error( "Shader did not compile\n\n%s", log );
+		I_Error( "Shader did not compile\n\n%s\n\n%s", GLSL_VERSION, log );
 	}
 
 	return output;
@@ -417,7 +417,7 @@ DOOM_C_API void I_VideoSetupGLRenderPath( void )
 	GenerateBuffer( normal_quad, NormalQuadVertices );
 	GenerateBuffer( transposed_quad, TransposedQuadVertices );
 
-	GenerateTexture( doom_palette, GL_RGB8, GL_RGB, 256, 1 );
+	GenerateTexture( doom_palette, GL_RGBA8, GL_RGBA, 256, 1 );
 	GenerateTexture( doom_backbuffer, GL_R8, GL_RED, render_height, render_width );
 	GenerateFrameBuffer( doom_rgbexpanded, render_height, render_width );
 
@@ -437,17 +437,7 @@ DOOM_C_API void I_VideoResetGLFrameBuffer( void )
 
 DOOM_C_API void I_VideoUpdateGLPalette( void* data )
 {
-	RawVector3< uint8_t > dest[ 256 ];
-	RawVector4< uint8_t >* source = (RawVector4< uint8_t >*)data;
-
-	for( int32_t index : iota( 0, 256 ) )
-	{
-		dest[ index ].x = source[ index ].x;
-		dest[ index ].y = source[ index ].y;
-		dest[ index ].z = source[ index ].z;
-	}
-
-	UpdateTexture( doom_palette, dest );
+	UpdateTexture( doom_palette, data );
 }
 
 DOOM_C_API void I_VideoRenderGLIntermediate( void* data )
