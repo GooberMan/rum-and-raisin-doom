@@ -36,7 +36,7 @@ int snd_samplerate = 44100;
 // Maximum number of bytes to dedicate to allocated sound effects.
 // (Default: 64MB)
 
-int snd_cachesize = 64 * 1024 * 1024;
+int snd_cachesize = 128 * 1024 * 1024;
 
 // Config variable that controls the sound buffer size.
 // We default to 28ms (1000 / 35fps = 1 buffer per tic).
@@ -490,7 +490,7 @@ void I_BindSoundVariables(void)
     M_BindIntVariable("snd_sbirq",               &snd_sbirq);
     M_BindIntVariable("snd_sbdma",               &snd_sbdma);
     M_BindIntVariable("snd_mport",               &snd_mport);
-    M_BindIntVariable("snd_maxslicetime_ms",     &snd_maxslicetime_ms);
+    //M_BindIntVariable("snd_maxslicetime_ms",     &snd_maxslicetime_ms);
     M_BindStringVariable("snd_musiccmd",         &snd_musiccmd);
     M_BindStringVariable("snd_dmxoption",        &snd_dmxoption);
     M_BindIntVariable("snd_samplerate",          &snd_samplerate);

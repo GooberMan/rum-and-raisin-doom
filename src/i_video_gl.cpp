@@ -102,7 +102,7 @@ static const char* palettedecompress_fragment_shader =
 	"\n"
 	"void main()\n"
 	"{\n"
-	"	vec2 palettesample = vec2( texture( backbuffer, curruv ).x, 0.5 );\n"
+	"	vec2 palettesample = vec2( texture( backbuffer, curruv ).x - 0.0009765625, 0.5 );\n"
 	"	colour = texture( palette, palettesample ).xyz;\n"
 	"}\n"
 	"\n";
