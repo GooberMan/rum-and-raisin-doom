@@ -312,11 +312,11 @@ static void saveg_read_mobj_t(mobj_t *str)
 
     // fixed_t y;
     str->y = saveg_read32();
-	str->prev.y = str->y = FixedToRendFixed( str->y );
+	str->prev.y = str->curr.y = FixedToRendFixed( str->y );
 
     // fixed_t z;
     str->z = saveg_read32();
-	str->prev.z = str->z = FixedToRendFixed( str->z );
+	str->prev.z = str->curr.z = FixedToRendFixed( str->z );
 
     // struct mobj_s* snext;
     str->snext = saveg_readp();
