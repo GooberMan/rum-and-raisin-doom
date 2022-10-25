@@ -80,13 +80,12 @@ extern "C"
 
 	int32_t					field_of_view_degrees = 90;
 
-	int32_t					numrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
-	int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
+	int32_t					maxrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
+	int32_t					num_render_contexts = DEFAULT_RENDERCONTEXTS;
 	int32_t					renderloadbalancing = 1;
 	boolean					rendersplitvisualise = false;
 	boolean					renderrebalancecontexts = false;
 	int32_t					rebalancescale = 40;
-	boolean					renderthreaded = true;
 	boolean					renderSIMDcolumns = false;
 	atomicval_t				renderthreadCPUmelter = 0;
 	int32_t					performancegraphscale = 20;
@@ -1092,13 +1091,15 @@ void R_InitContexts( void )
 	int32_t currstart;
 	int32_t incrementby;
 
+	maxrendercontexts = I_ThreadGetHardwareCount() * 1.5;
+
 	currstart = 0;
-	incrementby = render_width / numrendercontexts;
+	incrementby = render_width / maxrendercontexts;
 
-	renderdatas = (renderdata_t*)Z_Malloc( sizeof( renderdata_t ) * numrendercontexts, PU_STATIC, NULL );
-	memset( renderdatas, 0, sizeof( renderdata_t ) * numrendercontexts );
+	renderdatas = (renderdata_t*)Z_Malloc( sizeof( renderdata_t ) * maxrendercontexts, PU_STATIC, NULL );
+	memset( renderdatas, 0, sizeof( renderdata_t ) * maxrendercontexts );
 
-	for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+	for( currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
 	{
 		renderdatas[ currcontext ].index = currcontext;
 		renderdatas[ currcontext ].context.bufferindex = 0;
@@ -1116,7 +1117,7 @@ void R_InitContexts( void )
 
 		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
-		if( renderthreaded && currcontext < numrendercontexts - 1 )
+		if( currcontext < maxrendercontexts - 1 )
 		{
 			renderdatas[ currcontext ].shouldrun = I_SemaphoreCreate( 0 );
 			renderdatas[ currcontext ].thread = I_ThreadCreate( &R_ContextThreadFunc, &renderdatas[ currcontext ] );
@@ -1134,7 +1135,7 @@ void R_RefreshContexts( void )
 	int32_t currcontext;
 	if( renderdatas )
 	{
-		for( currcontext = 0; currcontext < numrendercontexts; ++currcontext )
+		for( currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
 		{
 			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
 #if RENDER_PERF_GRAPHING
@@ -1386,8 +1387,8 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 		igText( "Total frame time: %0.3fms (%d FPS)", (float)( frametime * 0.001 ), (int32_t)( ( 1.0 / frametime ) * 1000000.0 ) );
 		igNewLine();
 
-		igBeginColumns( "Performance columns", M_MIN( 2, numusablerendercontexts ), ImGuiColumnsFlags_NoBorder );
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+		igBeginColumns( "Performance columns", M_MIN( 2, num_render_contexts ), ImGuiColumnsFlags_NoBorder );
+		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
 			igText( "Context %d", currcontext );
 
@@ -1481,9 +1482,9 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 
 	igText( "Performance options" );
 	igSeparator();
-	int32_t oldcount = numusablerendercontexts;
-	igSliderInt( "Running threads", &numusablerendercontexts, 1, numrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-	if( numusablerendercontexts != oldcount )
+	int32_t oldcount = num_render_contexts;
+	igSliderInt( "Running threads", &num_render_contexts, 1, maxrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+	if( num_render_contexts != oldcount )
 	{
 		R_RebalanceContexts();
 	}
@@ -1643,7 +1644,7 @@ int32_t R_PeekEvents() //__attribute__ ((optnone))
 
 auto RenderDatas( )
 {
-	return std::span( renderdatas, numusablerendercontexts );
+	return std::span( renderdatas, num_render_contexts );
 }
 
 
@@ -1728,9 +1729,9 @@ auto MultiRangeView( _ranges&... r )
 	return view( r... );
 }
 
-void R_RenderOldLoadBalance()
+void R_RenderLoadBalance()
 {
-	const double_t idealpercentage = 1.0 / (double_t)numusablerendercontexts;
+	const double_t idealpercentage = 1.0 / (double_t)num_render_contexts;
 
 	double_t lastframetime = 0;
 	double_t percentagedebt = 0;
@@ -1740,7 +1741,7 @@ void R_RenderOldLoadBalance()
 		lastframetime += data.context.timetaken;
 	}
 
-	double_t average = lastframetime / numusablerendercontexts;
+	double_t average = lastframetime / num_render_contexts;
 	double_t timepercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	double_t oldwidthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	double_t growth[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -1806,7 +1807,7 @@ void R_RenderOldLoadBalance()
 	}
 	
 	currstart -= desiredwidth;
-	R_ResetContext( &renderdatas[ numusablerendercontexts - 1 ].context, M_MAX( currstart, 0 ), viewwidth );
+	R_ResetContext( &renderdatas[ num_render_contexts - 1 ].context, M_MAX( currstart, 0 ), viewwidth );
 }
 
 void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsoleplayer ) //__attribute__ ((optnone))
@@ -1923,7 +1924,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 		fixedcolormap = 0;
 	}
 
-	for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+	for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 	{
 		vbuffer_t buffer = *I_GetRenderBuffer( 0 );
 		renderdatas[ currcontext ].context.buffer = buffer;
@@ -1937,15 +1938,15 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 
 	if( renderloadbalancing && !renderrebalancecontexts )
 	{
-		R_RenderOldLoadBalance();
+		R_RenderLoadBalance();
 	}
 
 	if( !renderloadbalancing || renderrebalancecontexts )
 	{
 		currstart = 0;
 
-		desiredwidth = viewwidth / numusablerendercontexts;
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+		desiredwidth = viewwidth / num_render_contexts;
+		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
 			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
@@ -1983,9 +1984,9 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 
 	atomicval_t finishedcontexts = 0;
 
-	for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+	for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 	{
-		if( renderthreaded && currcontext < numusablerendercontexts - 1 )
+		if( num_render_contexts > 1 && currcontext < num_render_contexts - 1 )
 		{
 			I_AtomicExchange( &renderdatas[ currcontext ].framewaiting, 1 );
 			I_SemaphoreRelease( renderdatas[ currcontext ].shouldrun );
@@ -2000,9 +2001,9 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 	{
 		M_PROFILE_NAMED( "Wait on threads" );
 
-		while( renderthreaded && finishedcontexts != numusablerendercontexts )
+		while( num_render_contexts > 1 && finishedcontexts != num_render_contexts )
 		{
-			for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
+			for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 			{
 				finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
 			}
@@ -2012,7 +2013,7 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 
 	if( rendersplitvisualise )
 	{
-		for( currcontext = 1; currcontext < numusablerendercontexts; ++currcontext )
+		for( currcontext = 1; currcontext < num_render_contexts; ++currcontext )
 		{
 			outputcolumn = renderdatas[ currcontext ].context.viewbuffer.data + renderdatas[ currcontext ].context.begincolumn * renderdatas[ currcontext ].context.viewbuffer.pitch;
 			endcolumn = outputcolumn + viewheight;

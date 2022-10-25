@@ -139,12 +139,9 @@ int32_t				show_diskicon = 1;
 int32_t				remove_limits = 0;
 int32_t				enable_frame_interpolation = 1;
 
-extern int32_t		numrendercontexts;
-extern int32_t		numusablerendercontexts;
-extern boolean		renderloadbalancing;
+extern int32_t		maxrendercontexts;
+extern int32_t		num_render_contexts;
 extern boolean		rendersplitvisualise;
-extern boolean		renderthreaded;
-extern atomicval_t	renderthreadCPUmelter;
 
 boolean refreshstatusbar = true;
 
@@ -1939,17 +1936,11 @@ void D_DoomMain (void)
 	if( M_ParmExists( "-skyvoid" ) ) voidcleartype = Void_Sky;
 
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
-	renderthreaded  = !M_ParmExists( "-norenderthreaded" );
-	if( M_ParmExists( "-cpumelter" ) )
-	{
-		I_AtomicExchange( &renderthreadCPUmelter, 1 );
-	}
 
 	p = M_CheckParmWithArgs( "-numrendercontexts", 1 );
 	if( p )
 	{
-		M_StrToInt( myargv[p + 1], &numrendercontexts );
-		numusablerendercontexts = numrendercontexts;
+		M_StrToInt( myargv[p + 1], &num_render_contexts );
 	}
 
     // Set the gamedescription string. This is only possible now that
