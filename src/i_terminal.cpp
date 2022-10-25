@@ -58,6 +58,12 @@ DOOM_C_API void I_TerminalClear( void )
 	}
 }
 
+INLINE void TerminalPutChar( char c )
+{
+	if( terminalmode != TM_None ) TXT_PutChar( c );
+	putchar( c );
+}
+
 DOOM_C_API void I_TerminalPrintBanner( int32_t logtype, const char* banner, int32_t foreground, int32_t background )
 {
 	txt_saved_colors_t saved;
@@ -72,20 +78,19 @@ DOOM_C_API void I_TerminalPrintBanner( int32_t logtype, const char* banner, int3
 	size_t endmessage = startmessage + bannerlen;
 	const char* currchar = banner;
 
-	for( size_t index : iota( 0, TXT_SCREEN_W ) )
+	for( size_t index : iota( 0, TXT_SCREEN_W - 2 ) )
 	{
 		if( index < startmessage || index >= endmessage )
 		{
-			if( terminalmode != TM_None ) TXT_PutChar( ' ' );
-			putchar( ' ' );
+			TerminalPutChar( ' ' );
 		}
 		else
 		{
-			if( terminalmode != TM_None ) TXT_PutChar( *currchar );
-			putchar( *currchar );
+			TerminalPutChar( *currchar );
 			++currchar;
 		}
 	}
+	TerminalPutChar( '\n');
 
 	TXT_RestoreColors( &saved );
 
@@ -96,7 +101,6 @@ DOOM_C_API void I_TerminalPrintBanner( int32_t logtype, const char* banner, int3
 		I_TerminalRender();
 	}
 }
-
 DOOM_C_API void I_TerminalVPrintf( int32_t logtype, const char* format, va_list args )
 {
 	size_t len = M_vsnprintf( nullptr, 0, format, args );
@@ -105,7 +109,6 @@ DOOM_C_API void I_TerminalVPrintf( int32_t logtype, const char* format, va_list 
 
 	printf( formatted.c_str() );
 	I_LogAddEntry( logtype, formatted.c_str() );
-
 
 	if( terminalmode != TM_None )
 	{
