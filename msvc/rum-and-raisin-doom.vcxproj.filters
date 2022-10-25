@@ -211,9 +211,6 @@
     <ClCompile Include="..\src\i_terminal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\i_video_sdl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\i_video_gl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
