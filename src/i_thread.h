@@ -42,6 +42,8 @@ threadhandle_t I_ThreadCreate( threadfunc_t runfunc, void* userdata );
 void I_ThreadDestroy( threadhandle_t thread );
 void I_ThreadJoin( threadhandle_t thread );
 
+size_t I_ThreadGetHardwareCount( void );
+
 void I_Yield( void );
 
 semaphore_t I_SemaphoreCreate( int32_t initialcount );

@@ -47,6 +47,11 @@ void I_ThreadJoin( threadhandle_t thread )
 	thisthread->join();
 }
 
+size_t I_ThreadGetHardwareCount( void )
+{
+	return std::thread::hardware_concurrency();
+}
+
 void I_Yield( void )
 {
 	std::this_thread::yield();
