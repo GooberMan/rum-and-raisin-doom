@@ -1638,6 +1638,172 @@ int32_t R_PeekEvents() //__attribute__ ((optnone))
 	return mouselookx;
 }
 
+#include "m_container.h"
+
+auto RenderDatas( )
+{
+	return std::span( renderdatas, numusablerendercontexts );
+}
+
+
+template< typename _func, typename _t1, typename _t2, size_t... _i >
+auto foreachtupleelem_impl( _t1& t1, _t2& t2, _func&& f, std::index_sequence< _i... > )
+{
+	return ( f( std::get< _i >( t1 ), std::get< _i >( t2 ) ) | ... );
+}
+
+template< typename _func, typename _t1, typename _t2 >
+auto foreachtupleelem( _t1& t1, _t2& t2, _func&& f )
+{
+	enum : size_t
+	{
+		_t1len = std::tuple_size_v< _t1 >,
+		_t2len = std::tuple_size_v< _t1 >,
+		indexlen = _t1len < _t2len ? _t1len : _t2len,
+	};
+
+	return foreachtupleelem_impl( t1, t2, f, std::make_index_sequence< indexlen >() );
+}
+
+template< typename... _ranges >
+auto MultiRangeView( _ranges&... r )
+{
+	struct view
+	{
+		using value_type = std::tuple< typename _ranges::iterator... >;
+
+		struct iterator
+		{
+			std::tuple< typename _ranges::iterator... > curr;
+			std::tuple< typename _ranges::iterator... > end;
+
+			iterator& operator++()
+			{
+				std::apply(	[]( auto&... it )
+							{
+								auto val = std::make_tuple( ++it... );
+							}, curr );
+
+				bool anytrue = foreachtupleelem( curr, end, []( auto& lhs, auto& rhs ) -> bool { return lhs == rhs; } );
+				if( anytrue )
+				{
+					curr = end;
+				}
+
+				return *this;
+			}
+
+			value_type& operator*()
+			{
+				return curr;
+			}
+
+			bool operator!=( const iterator& rhs )
+			{
+				return curr != rhs.curr;
+			}
+		};
+
+		view( _ranges&... r )
+		{
+			value_type b	= { r.begin()... };
+			value_type e	= { r.end()... };
+
+			iterator bi		= { b, e };
+			iterator ei		= { e, e };
+
+			_begin			= bi;
+			_end			= ei;
+		}
+
+		constexpr iterator begin() { return _begin; }
+		constexpr iterator end() { return _end ; }
+
+	private:
+		iterator _begin;
+		iterator _end;
+	};
+
+	return view( r... );
+}
+
+void R_RenderOldLoadBalance()
+{
+	const double_t idealpercentage = 1.0 / (double_t)numusablerendercontexts;
+
+	double_t lastframetime = 0;
+	double_t percentagedebt = 0;
+
+	for( renderdata_t& data : RenderDatas() )
+	{
+		lastframetime += data.context.timetaken;
+	}
+
+	double_t average = lastframetime / numusablerendercontexts;
+	double_t timepercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	double_t oldwidthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	double_t growth[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	double_t widthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	double_t total = 0;
+
+	int32_t overbudgetcount = 0;
+	int32_t underbudgetcount = 0;
+
+	auto r = RenderDatas();
+	auto tp = std::span( timepercentages, 16 );
+	auto owp = std::span( oldwidthpercentages, 16 );
+	auto g = std::span( growth, 16 );
+	auto wp = std::span( widthpercentages, 16 );
+
+	auto view = MultiRangeView( r, tp, owp, g, wp );
+
+	auto ThisRenderData			= []( auto& tup ) -> auto& { return *std::get< 0 >( tup ); };
+	auto ThisTimePercent		= []( auto& tup ) -> auto& { return *std::get< 1 >( tup ); };
+	auto ThisOldWidthPercent	= []( auto& tup ) -> auto& { return *std::get< 2 >( tup ); };
+	auto ThisGrowth				= []( auto& tup ) -> auto& { return *std::get< 3 >( tup ); };
+	auto ThisWidthPercent		= []( auto& tup ) -> auto& { return *std::get< 4 >( tup ); };
+
+	for( auto& curr : view )
+	{
+		ThisTimePercent( curr ) = ThisRenderData( curr ).context.timetaken / lastframetime;
+		if( ThisTimePercent( curr ) > idealpercentage ) ++overbudgetcount;
+		else ++underbudgetcount;
+	}
+
+	double_t totalshuffle = idealpercentage * (double_t)rebalancescale * numusablerendercontexts;
+	double_t removeamount = ( totalshuffle / ( numusablerendercontexts - 2 ) ) * ( numusablerendercontexts - 3 );
+	double_t addamount = totalshuffle - removeamount;
+	
+	removeamount /= overbudgetcount;
+	addamount /= underbudgetcount;
+
+	for( auto& curr : view )
+	{
+		ThisOldWidthPercent( curr ) = (double_t)( ThisRenderData( curr ).context.endcolumn - ThisRenderData( curr ).context.begincolumn ) / viewwidth;
+	
+		double_t growamount = ThisTimePercent( curr ) > idealpercentage	? -removeamount
+																				: addamount;
+		ThisGrowth( curr ) = growamount;
+		ThisWidthPercent( curr ) = ThisOldWidthPercent( curr ) + growamount;
+	
+		total += ThisWidthPercent( curr );
+	}
+
+	int32_t currstart = 0;
+	int32_t desiredwidth = 0;
+	for( auto& curr : view )
+	{
+		desiredwidth = (int32_t)( viewwidth * ThisWidthPercent( curr ) );
+	
+		R_ResetContext( &ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );
+		currstart += desiredwidth;
+	}
+	
+	currstart -= desiredwidth;
+	R_ResetContext( &renderdatas[ numusablerendercontexts - 1 ].context, M_MAX( currstart, 0 ), viewwidth );
+}
+
 void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsoleplayer ) //__attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
@@ -1648,11 +1814,6 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 	int32_t		currcontext;
 	int32_t		currstart;
 	int32_t		desiredwidth;
-
-	double_t	lastframetime;
-	double_t	percentagedebt;
-
-	double_t	idealpercentage = 1.0 / (double_t)numusablerendercontexts;
 
 	renderscratchpos = 0;
 	viewplayer = player;
@@ -1771,60 +1932,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 
 	if( renderloadbalancing && !renderrebalancecontexts )
 	{
-		lastframetime = 0;
-		percentagedebt = 0;
-		currstart = 0;
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
-		{
-			lastframetime += renderdatas[ currcontext ].context.timetaken;
-		}
-
-		double_t average = lastframetime / numusablerendercontexts;
-		double_t timepercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		double_t oldwidthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		double_t growth[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		double_t widthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-		double_t total = 0;
-
-		int32_t overbudgetcount = 0;
-		int32_t underbudgetcount = 0;
-
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
-		{
-			timepercentages[ currcontext ] = renderdatas[ currcontext ].context.timetaken / lastframetime;
-			if( timepercentages[ currcontext ] > idealpercentage ) ++overbudgetcount;
-			else ++underbudgetcount;
-		}
-
-		double_t totalshuffle = idealpercentage * (double_t)rebalancescale * numusablerendercontexts;
-		double_t removeamount = ( totalshuffle / ( numusablerendercontexts - 2 ) ) * ( numusablerendercontexts - 3 );
-		double_t addamount = totalshuffle - removeamount;
-
-		removeamount /= overbudgetcount;
-		addamount /= underbudgetcount;
-
-		for( currcontext = 0; currcontext < numusablerendercontexts; ++currcontext )
-		{
-			oldwidthpercentages[ currcontext ] = (double_t)( renderdatas[ currcontext ].context.endcolumn - renderdatas[ currcontext ].context.begincolumn ) / viewwidth;
-
-			double_t growamount = timepercentages[ currcontext ] > idealpercentage	? -removeamount
-																					: addamount;
-			growth[ currcontext ] = growamount;
-			widthpercentages[ currcontext ] = oldwidthpercentages[ currcontext ] + growamount;
-
-			total += widthpercentages[ currcontext ];
-		}
-
-		for( currcontext = 0; currcontext < numusablerendercontexts - 1; ++currcontext )
-		{
-			desiredwidth = (int32_t)( viewwidth * widthpercentages[ currcontext ] );
-
-			R_ResetContext( &renderdatas[ currcontext ].context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );
-			currstart += desiredwidth;
-		}
-
-		R_ResetContext( &renderdatas[ numusablerendercontexts - 1 ].context, M_MAX( currstart, 0 ), viewwidth );
+		R_RenderOldLoadBalance();
 	}
 
 	if( !renderloadbalancing || renderrebalancecontexts )
