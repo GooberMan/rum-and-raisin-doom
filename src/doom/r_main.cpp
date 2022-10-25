@@ -82,10 +82,10 @@ extern "C"
 
 	int32_t					numrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
 	int32_t					numusablerendercontexts = DEFAULT_RENDERCONTEXTS;
-	boolean					renderloadbalancing = true;
+	int32_t					renderloadbalancing = 1;
 	boolean					rendersplitvisualise = false;
 	boolean					renderrebalancecontexts = false;
-	float_t					rebalancescale = 0.025f;
+	int32_t					rebalancescale = 40;
 	boolean					renderthreaded = true;
 	boolean					renderSIMDcolumns = false;
 	atomicval_t				renderthreadCPUmelter = 0;
@@ -632,7 +632,7 @@ void R_InitPointToAngle (void)
 	for (i=0 ; i<=RENDERSLOPERANGE ; i++)
 	{
 		f = (float_t)( atan( (float_t)i/RENDERSLOPERANGE )/(PI*2) );
-		t = (angle_t)( 0xffffffff*f );
+		t = (angle_t)( 0xffffffff * f );
 		rendertantoangle[i] = t;
 	}
 #endif
@@ -1505,13 +1505,14 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	}
 	igPopID();
 
-	boolean oldbalance = renderloadbalancing;
-	igCheckbox( "Load balancing", (bool*)&renderloadbalancing );
+	int32_t oldbalance = renderloadbalancing;
+	igRadioButtonIntPtr( "Load balancing off", &renderloadbalancing, 0 );
+	igRadioButtonIntPtr( "Load balancing", &renderloadbalancing, 1 );
 	if( oldbalance != renderloadbalancing )
 	{
 		R_RebalanceContexts();
 	}
-	igSliderFloat( "Balancing scale", &rebalancescale, 0.001f, 0.1f, "%0.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+	igSliderInt( "Balancing scale", &rebalancescale, 1, 40, "%d%%", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 	igCheckbox( "SIMD columns", (bool*)&renderSIMDcolumns );
 	igNewLine();
 	igText( "Debug options" );
@@ -1649,7 +1650,7 @@ auto RenderDatas( )
 template< typename _func, typename _t1, typename _t2, size_t... _i >
 auto foreachtupleelem_impl( _t1& t1, _t2& t2, _func&& f, std::index_sequence< _i... > )
 {
-	return ( f( std::get< _i >( t1 ), std::get< _i >( t2 ) ) | ... );
+	return ( f( std::get< _i >( t1 ), std::get< _i >( t2 ) ) || ... );
 }
 
 template< typename _func, typename _t1, typename _t2 >
@@ -1771,8 +1772,8 @@ void R_RenderOldLoadBalance()
 		else ++underbudgetcount;
 	}
 
-	double_t totalshuffle = idealpercentage * (double_t)rebalancescale * numusablerendercontexts;
-	double_t removeamount = ( totalshuffle / ( numusablerendercontexts - 2 ) ) * ( numusablerendercontexts - 3 );
+	double_t totalshuffle = idealpercentage * (double_t)( rebalancescale / 100.0 );
+	double_t removeamount = totalshuffle / 2;
 	double_t addamount = totalshuffle - removeamount;
 	
 	removeamount /= overbudgetcount;
@@ -1783,7 +1784,7 @@ void R_RenderOldLoadBalance()
 		ThisOldWidthPercent( curr ) = (double_t)( ThisRenderData( curr ).context.endcolumn - ThisRenderData( curr ).context.begincolumn ) / viewwidth;
 	
 		double_t growamount = ThisTimePercent( curr ) > idealpercentage	? -removeamount
-																				: addamount;
+																		: addamount;
 		ThisGrowth( curr ) = growamount;
 		ThisWidthPercent( curr ) = ThisOldWidthPercent( curr ) + growamount;
 	
@@ -1795,6 +1796,10 @@ void R_RenderOldLoadBalance()
 	for( auto& curr : view )
 	{
 		desiredwidth = (int32_t)( viewwidth * ThisWidthPercent( curr ) );
+		if( desiredwidth < 0 )
+		{
+			I_LogAddEntryVar( Log_Error, "Load balancing has created a render slice of %d columns", desiredwidth );
+		}
 	
 		R_ResetContext( &ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );
 		currstart += desiredwidth;
@@ -1964,8 +1969,6 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 	M_PROFILE_FUNC();
 
 	int32_t currcontext;
-	uint64_t looptimestart;
-	uint64_t looptimeend;
 
 	byte* outputcolumn;
 	byte* endcolumn;
@@ -1977,8 +1980,6 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 	NetUpdate ();
 
 	wadrenderlock = true;
-
-	if( rendersplitvisualise ) looptimestart = I_GetTimeUS();
 
 	atomicval_t finishedcontexts = 0;
 
@@ -2011,8 +2012,6 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 
 	if( rendersplitvisualise )
 	{
-		looptimeend = I_GetTimeUS();
-
 		for( currcontext = 1; currcontext < numusablerendercontexts; ++currcontext )
 		{
 			outputcolumn = renderdatas[ currcontext ].context.viewbuffer.data + renderdatas[ currcontext ].context.begincolumn * renderdatas[ currcontext ].context.viewbuffer.pitch;
