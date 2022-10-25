@@ -102,6 +102,8 @@ static void DEH_FrameOverflow(deh_context_t *context, char *varname, int value)
     }
 }
 
+extern int32_t remove_limits;
+
 static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 {
     state_t *state;
@@ -127,7 +129,7 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 
     ivalue = atoi(value);
     
-    if (state == &states[NUMSTATES - 1])
+    if (!remove_limits && state == &states[NUMSTATES - 1])
     {
         DEH_FrameOverflow(context, variable_name, ivalue);
     }
