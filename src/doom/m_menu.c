@@ -2790,16 +2790,27 @@ controldesc_t mousemappings[] =
 	{ NULL,				NULL },
 };
 
-static const char* vsync_strings[] =
+static const char* vsync_strings[ VSync_Max ] =
 {
 	"Off",				// VSync_Off
 	"Native",			// VSync_Native
 	"Adaptive",			// VSync_Adaptive
-	"240Hz",			// VSync_240Hz
-	"120Hz",			// VSync_120Hz
-	"60Hz",				// VSync_60Hz
+	"35Hz",				// VSync_35Hz
+	"36Hz",				// VSync_36Hz
 	"40Hz",				// VSync_40Hz
-	"30Hz",				// VSync_30Hz
+	"50Hz",				// VSync_50Hz
+	"60Hz",				// VSync_60Hz
+	"70Hz",				// VSync_70Hz
+	"72Hz",				// VSync_72Hz
+	"100Hz",			// VSync_100Hz
+	"120Hz",			// VSync_120Hz
+	"140Hz",			// VSync_140Hz
+	"144Hz",			// VSync_144Hz
+	"180Hz",			// VSync_180Hz
+	"200Hz",			// VSync_200Hz
+	"240Hz",			// VSync_240Hz
+	"288Hz",			// VSync_288Hz
+	"360Hz",			// VSync_360Hz
 };
 
 static float columwidth = 200.f;
