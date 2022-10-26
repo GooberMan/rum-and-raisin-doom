@@ -53,7 +53,12 @@ extern "C"
 	extern int32_t display_width;
 	extern int32_t display_height;
 	extern int32_t fullscreen;
+	extern int32_t video_display;
+	extern int32_t vsync_mode;
 }
+
+static bool vsync_supported[ VSync_Max ] = { true, true, false, false, false, false, false, false };
+static int32_t vsync_interval[ VSync_Max ] = { 0, 1, -1, 1, 1, 1, 1, 1 };
 
 #ifdef __APPLE__
 const char* GLSL_VERSION	= "#version 150";
@@ -176,8 +181,8 @@ DOOM_C_API void I_SetupGLAD( void )
 					, (const char*) glGetString( GL_RENDERER ) );
 #endif // CHECK_GLES
 	}
-}
 
+}
 
 template< typename _elem >
 struct RawVector2
@@ -412,8 +417,90 @@ void GenerateProgram( ShaderProgram& output, const char* vertex, const char* fra
 	output.texture2location = texture2uniform ? glGetUniformLocation( output.program, texture2uniform ) : -1;
 }
 
+void SetupVSync()
+{
+	SDL_DisplayMode mode;
+	SDL_GetCurrentDisplayMode( video_display, &mode );
+
+	// Intentional fall through on each case
+	switch( mode.refresh_rate )
+	{
+	case 240:
+		vsync_supported[ VSync_240Hz ]	= true;
+		vsync_interval[ VSync_240Hz ]	= 1;
+		vsync_supported[ VSync_120Hz ]	= true;
+		vsync_interval[ VSync_120Hz ]	= 2;
+		vsync_supported[ VSync_60Hz ]	= true;
+		vsync_interval[ VSync_60Hz ]	= 4;
+		vsync_supported[ VSync_40Hz ]	= true;
+		vsync_interval[ VSync_40Hz ]	= 6;
+		vsync_supported[ VSync_30Hz ]	= true;
+		vsync_interval[ VSync_30Hz ]	= 8;
+		break;
+	case 120:
+		vsync_supported[ VSync_120Hz ]	= true;
+		vsync_interval[ VSync_120Hz ]	= 1;
+		vsync_supported[ VSync_60Hz ]	= true;
+		vsync_interval[ VSync_60Hz ]	= 2;
+		vsync_supported[ VSync_40Hz ]	= true;
+		vsync_interval[ VSync_40Hz ]	= 3;
+		vsync_supported[ VSync_30Hz ]	= true;
+		vsync_interval[ VSync_30Hz ]	= 4;
+		break;
+	case 60:
+		vsync_supported[ VSync_60Hz ]	= true;
+		vsync_interval[ VSync_60Hz ]	= 1;
+		vsync_supported[ VSync_30Hz ]	= true;
+		vsync_interval[ VSync_30Hz ]	= 2;
+		break;
+	case 30:
+		vsync_supported[ VSync_30Hz ]	= true;
+		vsync_interval[ VSync_30Hz ]	= 1;
+		break;
+	default:
+		break;
+	}
+
+	if( gladHasExtension( "GLX_EXT_swap_control_tear" ) )
+	{
+		vsync_supported[ VSync_Adaptive ]	= true;
+	}
+
+	if( !vsync_supported[ vsync_mode ] )
+	{
+		vsync_mode = VSync_Native;
+	}
+
+	SDL_GL_SetSwapInterval( vsync_interval[ vsync_mode ] );
+}
+
+DOOM_C_API boolean I_VideoSetVSync( vsync_t vsyncval )
+{
+	if( vsync_supported[ vsyncval ] )
+	{
+		vsync_mode = vsyncval;
+		SDL_GL_SetSwapInterval( vsync_interval[ vsync_mode ] );
+
+		return true;
+	}
+
+	return false;
+}
+
+DOOM_C_API vsync_t I_VideoGetVSync( void )
+{
+	return (vsync_t)vsync_mode;
+}
+
+DOOM_C_API boolean I_VideoSupportsVSync( vsync_t vsyncval )
+{
+	return vsync_supported[ vsyncval ];
+}
+
 DOOM_C_API void I_VideoSetupGLRenderPath( void )
 {
+	SetupVSync();
+	
 	GenerateBuffer( normal_quad, NormalQuadVertices );
 	GenerateBuffer( transposed_quad, TransposedQuadVertices );
 

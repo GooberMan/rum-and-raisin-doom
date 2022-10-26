@@ -146,6 +146,7 @@ char *window_position = "center";
 // SDL display number on which to run.
 
 int32_t video_display = 0;
+int32_t vsync_mode = VSync_Native;
 
 // Screen width and height, from configuration file.
 
@@ -975,6 +976,8 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 	}
 
 	SDL_RenderPresent(renderer);
+
+	//glFinish();
 }
 
 

@@ -70,6 +70,24 @@ void I_ToggleFullScreen(void);
 void I_SetWindowDimensions( int32_t w, int32_t h );
 void I_SetRenderDimensions( int32_t w, int32_t h );
 
+typedef enum vsync_e
+{
+	VSync_Off,
+	VSync_Native,
+	VSync_Adaptive,
+	VSync_240Hz,
+	VSync_120Hz,
+	VSync_60Hz,
+	VSync_40Hz,
+	VSync_30Hz,
+
+	VSync_Max,
+} vsync_t;
+
+boolean I_VideoSetVSync( vsync_t vsyncval );
+vsync_t I_VideoGetVSync( void );
+boolean I_VideoSupportsVSync( vsync_t vsyncval );
+
 // Takes full 8 bit values.
 void I_SetPalette (byte* palette);
 int I_GetPaletteIndex(int r, int g, int b);
