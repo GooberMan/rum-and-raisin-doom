@@ -847,10 +847,18 @@ static default_t extra_defaults_list[] =
     //!
     // @game doom
     //
-    // 
+    // Number of threads that the renderer will use to generate the final image
     //
 
     CONFIG_VARIABLE_INT(num_render_contexts),
+
+    //!
+    // @game doom
+    //
+    // Vsync value that matches up to the vsync_t enumeration.
+    //
+
+    CONFIG_VARIABLE_INT(vsync_mode),
 
     //!
     // If non-zero, save screenshots in PNG format. If zero, screenshots are

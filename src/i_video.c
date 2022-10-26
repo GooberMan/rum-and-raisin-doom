@@ -1774,6 +1774,7 @@ void I_BindVideoVariables(void)
 	M_BindIntVariable("render_width",				&render_width);
 	M_BindIntVariable("render_height",				&render_height);
 	M_BindIntVariable("render_dimensions_mode",		&render_dimensions_mode);
+	M_BindIntVariable("vsync_mode",					&vsync_mode);
 
 	// TODO: Move these to R_BindRenderVariables now that it exists
     M_BindIntVariable("border_style",              &border_style);
