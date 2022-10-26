@@ -2790,6 +2790,18 @@ controldesc_t mousemappings[] =
 	{ NULL,				NULL },
 };
 
+static const char* vsync_strings[] =
+{
+	"Off",				// VSync_Off
+	"Native",			// VSync_Native
+	"Adaptive",			// VSync_Adaptive
+	"240Hz",			// VSync_240Hz
+	"120Hz",			// VSync_120Hz
+	"60Hz",				// VSync_60Hz
+	"40Hz",				// VSync_40Hz
+	"30Hz",				// VSync_30Hz
+};
+
 static float columwidth = 200.f;
 
 static void M_DashboardControlsRemapping(	const char* itemname,
@@ -2852,6 +2864,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t snd_pitchshift;
 	extern int32_t num_render_contexts;
 	extern int32_t maxrendercontexts;
+	extern int32_t vsync_mode;
 
 	controlsection_t*	currsection;
 
@@ -3108,6 +3121,26 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				if( num_render_contexts != oldcount )
 				{
 					R_RebalanceContexts();
+				}
+				igPopID();
+				igNextColumn();
+
+				igText( "Vsync" );
+				igNextColumn();
+				igPushIDPtr( &vsync_mode );
+				if( igBeginCombo( "", vsync_strings[ vsync_mode ], ImGuiComboFlags_None ) )
+				{
+					for( index = 0; index < VSync_Max; ++index )
+					{
+						selected = index == vsync_mode;
+						if( I_VideoSupportsVSync( index )
+							&& igSelectableBool( vsync_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+						{
+							I_VideoSetVSync( index );
+						}
+					}
+
+					igEndCombo();
 				}
 				igPopID();
 				igNextColumn();
