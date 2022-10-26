@@ -66,6 +66,24 @@ static LogVector< logentry_t >	logentries;
 
 #define BUFFER_LENGTH 1024
 
+#if defined( _WIN32 )
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+INLINE void PrintEntryToConsole( logentry_t& entry )
+{
+	OutputDebugString( entry.message.c_str() );
+	OutputDebugString( "\n" );
+}
+#else // Non-windows platforms dump to console
+#include <cstdio>
+
+INLINE void PrintEntryToConsole( logentry_t& entry )
+{
+	printf( "%s\n", entry.message.c_str() );
+}
+#endif // _WIN32
+
 DOOM_C_API void I_LogAddEntry( int32_t type, const char* message )
 {
 	if( type == Log_None )
@@ -78,7 +96,8 @@ DOOM_C_API void I_LogAddEntry( int32_t type, const char* message )
 		logentries.reserve( logentries.capacity() + 1024 );
 	}
 
-	logentries.push_back( logentry_t( type, message ) );
+	auto entry = logentries.insert( logentries.end(), logentry_t( type, message ) );
+	PrintEntryToConsole( *entry );
 }
 
 DOOM_C_API void I_LogAddEntryVAList( int32_t type, const char* message, va_list args )
