@@ -255,6 +255,12 @@ static int has_ext(const char *ext) {
 
     return 0;
 }
+
+int gladHasExtension( const char* ext )
+{
+	return has_ext( ext );
+}
+
 int GLAD_GL_VERSION_1_0 = 0;
 int GLAD_GL_VERSION_1_1 = 0;
 int GLAD_GL_VERSION_1_2 = 0;
@@ -1614,7 +1620,6 @@ static void load_GL_VERSION_3_0(GLADloadproc load) {
 static int find_extensionsGL(void) {
 	if (!get_exts()) return 0;
 	(void)&has_ext;
-	free_exts();
 	return 1;
 }
 
@@ -1692,7 +1697,8 @@ int gladLoadGLLoader(GLADloadproc load) {
 	load_GL_VERSION_2_1(load);
 	load_GL_VERSION_3_0(load);
 
-	//if (!find_extensionsGL()) return 0;
+	find_extensionsGL();
+
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
 
