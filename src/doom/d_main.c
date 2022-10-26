@@ -471,6 +471,7 @@ void D_BindVariables(void)
 	M_BindIntVariable("show_text_startup",		&show_text_startup);
 	M_BindIntVariable("enable_frame_interpolation", &enable_frame_interpolation);
     M_BindIntVariable("show_diskicon",          &show_diskicon);
+	M_BindIntVariable("num_render_contexts",    &num_render_contexts);
 
     // Multiplayer chat macros
 
@@ -1942,6 +1943,13 @@ void D_DoomMain (void)
 	{
 		M_StrToInt( myargv[p + 1], &num_render_contexts );
 	}
+
+	p = M_CheckParmWithArgs( "-maxrendercontexts", 1 );
+	if( p )
+	{
+		M_StrToInt( myargv[p + 1], &maxrendercontexts );
+	}
+
 
     // Set the gamedescription string. This is only possible now that
     // we've finished loading Dehacked patches.

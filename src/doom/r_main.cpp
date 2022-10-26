@@ -81,11 +81,11 @@ extern "C"
 	int32_t					field_of_view_degrees = 90;
 
 	int32_t					maxrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
-	int32_t					num_render_contexts = DEFAULT_RENDERCONTEXTS;
+	int32_t					num_render_contexts = -1;
 	int32_t					renderloadbalancing = 1;
 	boolean					rendersplitvisualise = false;
 	boolean					renderrebalancecontexts = false;
-	int32_t					rebalancescale = 40;
+	int32_t					rebalancescale = 25;
 	boolean					renderSIMDcolumns = false;
 	atomicval_t				renderthreadCPUmelter = 0;
 	int32_t					performancegraphscale = 20;
@@ -1091,7 +1091,11 @@ void R_InitContexts( void )
 	int32_t currstart;
 	int32_t incrementby;
 
-	maxrendercontexts = I_ThreadGetHardwareCount() * 1.5;
+	maxrendercontexts = I_ThreadGetHardwareCount();
+	if( num_render_contexts <= 0 )
+	{
+		num_render_contexts = maxrendercontexts;
+	}
 
 	currstart = 0;
 	incrementby = render_width / maxrendercontexts;
@@ -1797,9 +1801,10 @@ void R_RenderLoadBalance()
 	for( auto& curr : view )
 	{
 		desiredwidth = (int32_t)( viewwidth * ThisWidthPercent( curr ) );
-		if( desiredwidth < 0 )
+		if( desiredwidth <= 0 )
 		{
 			I_LogAddEntryVar( Log_Error, "Load balancing has created a render slice of %d columns", desiredwidth );
+			I_Error( "Load balancing has created a render slice of %d columns", desiredwidth );
 		}
 	
 		R_ResetContext( &ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );

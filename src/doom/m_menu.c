@@ -2850,6 +2850,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t novert;
 	extern int32_t enable_frame_interpolation;
 	extern int32_t snd_pitchshift;
+	extern int32_t num_render_contexts;
+	extern int32_t maxrendercontexts;
 
 	controlsection_t*	currsection;
 
@@ -2972,128 +2974,147 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 		{
 			igPushScrollableArea( "Screen", zerosize );
 
-			igColumns( 2, "", false );
-			igSetColumnWidth( 0, columwidth );
-
-			igText( "Windowed dimensions" );
-			igNextColumn();
-			igText( "%dx%d", window_width, window_height );
-			igNextColumn();
-			igText( "Fullscreen dimensions" );
-			igNextColumn();
-			igText( "%dx%d", display_width, display_height );
-			igNextColumn();
-
-			igSeparatorEx( ImGuiSeparatorFlags_Horizontal | ImGuiSeparatorFlags_SpanAllColumns );
-
-			igText( "Predefined window sizes" );
-
-			igNextColumn();
-			igPushItemWidth( 180.f );
-			igPushIDPtr( &window_dimensions_current );
-			if( igBeginCombo( "", window_dimensions_current, ImGuiComboFlags_None ) )
+			igPushIDStr( "Window settings" );
+			if( igCollapsingHeaderTreeNodeFlags( "Window", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
-				for( index = 0; index < window_sizes_scaled_count; ++index )
+				igColumns( 2, "", false );
+				igSetColumnWidth( 0, columwidth );
+
+				igText( "Windowed dimensions" );
+				igNextColumn();
+				igText( "%dx%d", window_width, window_height );
+				igNextColumn();
+				igText( "Fullscreen dimensions" );
+				igNextColumn();
+				igText( "%dx%d", display_width, display_height );
+				igNextColumn();
+
+				igSeparatorEx( ImGuiSeparatorFlags_Horizontal | ImGuiSeparatorFlags_SpanAllColumns );
+
+				igText( "Predefined window sizes" );
+
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushIDPtr( &window_dimensions_current );
+				if( igBeginCombo( "", window_dimensions_current, ImGuiComboFlags_None ) )
 				{
-					selected = window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height;
-					if( igSelectableBool( window_sizes_scaled[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+					for( index = 0; index < window_sizes_scaled_count; ++index )
 					{
-						window_dimensions_current = window_sizes_scaled[ index ].asstring;
-						window_width_working = window_sizes_scaled[ index ].width;
-						window_height_working = window_sizes_scaled[ index ].height;
-						I_SetWindowDimensions( window_width_working, window_height_working );
+						selected = window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height;
+						if( igSelectableBool( window_sizes_scaled[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+						{
+							window_dimensions_current = window_sizes_scaled[ index ].asstring;
+							window_width_working = window_sizes_scaled[ index ].width;
+							window_height_working = window_sizes_scaled[ index ].height;
+							I_SetWindowDimensions( window_width_working, window_height_working );
+						}
+					}
+					igEndCombo();
+				}
+				igPopID();
+				igPopItemWidth();
+
+				igNextColumn();
+				igText( "Custom window size" );
+				igSameLine( 0, -1 );
+
+				igNextColumn();
+				igPushItemWidth( 80.f );
+				if( igInputInt( "w", &window_width_working, 16, 160, ImGuiInputTextFlags_None ) )
+				{
+					window_width_working = M_MAX( WINDOW_MINWIDTH, window_width_working );
+					window_height_working = M_MAX( WINDOW_MINHEIGHT, window_width_working * 300 / 400 );
+				}
+				igSameLine( 0, -1 );
+				if( igInputInt( "h", &window_height_working, 12, 120, ImGuiInputTextFlags_None ) )
+				{
+					window_height_working = M_MAX( WINDOW_MINHEIGHT, window_height_working );
+					window_width_working = M_MAX( WINDOW_MINWIDTH, window_height_working * 400 / 300 );
+				}
+				igSameLine( 0, -1 );
+				igPopItemWidth();
+				if( igButton( "Apply", zerosize ) )
+				{
+					I_SetWindowDimensions( window_width_working, window_height_working );
+
+					window_dimensions_current = NULL;
+					for( index = 0; index < window_sizes_scaled_count; ++index )
+					{
+						if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
+						{
+							window_dimensions_current = window_sizes_scaled[ index ].asstring;
+						}
 					}
 				}
-				igEndCombo();
-			}
-			igPopID();
-			igPopItemWidth();
+				igNextColumn();
 
-			igNextColumn();
-			igText( "Custom window size" );
-			igSameLine( 0, -1 );
-
-			igNextColumn();
-			igPushItemWidth( 80.f );
-			if( igInputInt( "w", &window_width_working, 16, 160, ImGuiInputTextFlags_None ) )
-			{
-				window_width_working = M_MAX( WINDOW_MINWIDTH, window_width_working );
-				window_height_working = M_MAX( WINDOW_MINHEIGHT, window_width_working * 300 / 400 );
-			}
-			igSameLine( 0, -1 );
-			if( igInputInt( "h", &window_height_working, 12, 120, ImGuiInputTextFlags_None ) )
-			{
-				window_height_working = M_MAX( WINDOW_MINHEIGHT, window_height_working );
-				window_width_working = M_MAX( WINDOW_MINWIDTH, window_height_working * 400 / 300 );
-			}
-			igSameLine( 0, -1 );
-			igPopItemWidth();
-			if( igButton( "Apply", zerosize ) )
-			{
-				I_SetWindowDimensions( window_width_working, window_height_working );
-
-				window_dimensions_current = NULL;
-				for( index = 0; index < window_sizes_scaled_count; ++index )
+				igText( "Full screen" );
+				igNextColumn();
+				WorkingBool = !!fullscreen;
+				igPushIDPtr( &fullscreen );
+				if( igCheckbox( "", &WorkingBool ) )
 				{
-					if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
-					{
-						window_dimensions_current = window_sizes_scaled[ index ].asstring;
-					}
+					I_ToggleFullScreen();
 				}
-			}
+				igPopID();
 
-			igNextColumn();
-			igText( "Full screen" );
-			igNextColumn();
-			WorkingBool = !!fullscreen;
-			igPushIDPtr( &fullscreen );
-			if( igCheckbox( "", &WorkingBool ) )
-			{
-				I_ToggleFullScreen();
+				igColumns( 1, "", false );
 			}
 			igPopID();
 
-			igColumns( 1, "", false );
-			igNewLine();
-
-			igColumns( 2, "", false );
-			igSetColumnWidth( 0, columwidth );
-
-			igText( "Separate backbuffer size" );
-			igNextColumn();
-			igText( "<coming soon>" );
-			igNextColumn();
-
-			igText( "Predefined backbuffer sizes" );
-			igNextColumn();
-			igPushItemWidth( 180.f );
-			igPushIDPtr( &render_dimensions_current );
-			if( igBeginCombo( "", render_dimensions_current, ImGuiComboFlags_None ) )
+			igPushIDStr( "Backbuffer settings" );
+			if( igCollapsingHeaderTreeNodeFlags( "Backbuffer", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
-				for( index = 0; index < render_sizes_count; ++index )
+				igColumns( 2, "", false );
+				igSetColumnWidth( 0, columwidth );
+
+				igText( "Size" );
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushIDPtr( &render_dimensions_current );
+				if( igBeginCombo( "", render_dimensions_current, ImGuiComboFlags_None ) )
 				{
-					selected = render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height;
-					if( igSelectableBool( render_sizes[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+					for( index = 0; index < render_sizes_count; ++index )
 					{
-						render_dimensions_current = render_sizes[ index ].asstring;
-						render_width_working = render_sizes[ index ].width;
-						render_height_working = render_sizes[ index ].height;
-						I_SetRenderDimensions( render_width_working, render_height_working );
-						R_RebalanceContexts();
+						selected = render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height;
+						if( igSelectableBool( render_sizes[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+						{
+							render_dimensions_current = render_sizes[ index ].asstring;
+							render_width_working = render_sizes[ index ].width;
+							render_height_working = render_sizes[ index ].height;
+							I_SetRenderDimensions( render_width_working, render_height_working );
+							R_RebalanceContexts();
+						}
 					}
+					igEndCombo();
 				}
-				igEndCombo();
+				igPopID();
+				igPopItemWidth();
+				igColumns( 1, "", false );
 			}
 			igPopID();
-			igPopItemWidth();
-			igNextColumn();
 
-			igText( "Custom backbuffer size" );
-			igNextColumn();
-			igText( "<coming soon>" );
-			igNextColumn();
+			igPushIDStr( "Performance settings" );
+			if( igCollapsingHeaderTreeNodeFlags( "Performance", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+			{
+				igColumns( 2, "", false );
+				igSetColumnWidth( 0, columwidth );
 
-			igColumns( 1, "", false );
+				int32_t oldcount = num_render_contexts;
+				igText( "Running threads" );
+				igNextColumn();
+				igPushIDPtr( &num_render_contexts );
+				igSliderInt( "", &num_render_contexts, 1, maxrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+				if( num_render_contexts != oldcount )
+				{
+					R_RebalanceContexts();
+				}
+				igPopID();
+				igNextColumn();
+
+				igColumns( 1, "", false );
+			}
+			igPopID();
 
 			igPopScrollableArea();
 			igEndTabItem();

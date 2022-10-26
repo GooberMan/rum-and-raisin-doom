@@ -845,6 +845,14 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(show_diskicon),
 
     //!
+    // @game doom
+    //
+    // 
+    //
+
+    CONFIG_VARIABLE_INT(num_render_contexts),
+
+    //!
     // If non-zero, save screenshots in PNG format. If zero, screenshots are
     // saved in PCX format, as Vanilla Doom does.
     //
