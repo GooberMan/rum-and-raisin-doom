@@ -57,8 +57,36 @@ extern "C"
 	extern int32_t vsync_mode;
 }
 
-static bool vsync_supported[ VSync_Max ] = { true, true, false, false, false, false, false, false };
-static int32_t vsync_interval[ VSync_Max ] = { 0, 1, -1, 1, 1, 1, 1, 1 };
+typedef struct vsyncsupport_s
+{
+	bool		supported;
+	int32_t		interval;
+
+	INLINE void SetSupported( int32_t i )		{ supported = true; interval = i; }
+} vsyncsupport_t;
+
+static vsyncsupport_t vsync_modes[ VSync_Max ] =
+{
+	{ true,		0	},		// VSync_Off
+	{ true,		1	},		// VSync_Native
+	{ false,	-1	},		// VSync_Adaptive
+	{ false,	0	},		// VSync_35Hz
+	{ false,	0	},		// VSync_36Hz
+	{ false,	0	},		// VSync_40Hz
+	{ false,	0	},		// VSync_50Hz
+	{ false,	0	},		// VSync_60Hz
+	{ false,	0	},		// VSync_70Hz
+	{ false,	0	},		// VSync_72Hz
+	{ false,	0	},		// VSync_100Hz
+	{ false,	0	},		// VSync_120Hz
+	{ false,	0	},		// VSync_140Hz
+	{ false,	0	},		// VSync_144Hz
+	{ false,	0	},		// VSync_180Hz
+	{ false,	0	},		// VSync_200Hz
+	{ false,	0	},		// VSync_240Hz
+	{ false,	0	},		// VSync_288Hz
+	{ false,	0	},		// VSync_360Hz
+};
 
 #ifdef __APPLE__
 const char* GLSL_VERSION	= "#version 150";
@@ -425,37 +453,59 @@ void SetupVSync()
 	// Intentional fall through on each case
 	switch( mode.refresh_rate )
 	{
-	case 240:
-		vsync_supported[ VSync_240Hz ]	= true;
-		vsync_interval[ VSync_240Hz ]	= 1;
-		vsync_supported[ VSync_120Hz ]	= true;
-		vsync_interval[ VSync_120Hz ]	= 2;
-		vsync_supported[ VSync_60Hz ]	= true;
-		vsync_interval[ VSync_60Hz ]	= 4;
-		vsync_supported[ VSync_40Hz ]	= true;
-		vsync_interval[ VSync_40Hz ]	= 6;
-		vsync_supported[ VSync_30Hz ]	= true;
-		vsync_interval[ VSync_30Hz ]	= 8;
+	case 60:
+		vsync_modes[ VSync_60Hz ].SetSupported( 1 );
+		break;
+	case 70:
+		vsync_modes[ VSync_70Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_35Hz ].SetSupported( 2 );
+		break;
+	case 72:
+		vsync_modes[ VSync_72Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_36Hz ].SetSupported( 2 );
+		break;
+	case 100:
+		vsync_modes[ VSync_100Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_50Hz ].SetSupported( 2 );
 		break;
 	case 120:
-		vsync_supported[ VSync_120Hz ]	= true;
-		vsync_interval[ VSync_120Hz ]	= 1;
-		vsync_supported[ VSync_60Hz ]	= true;
-		vsync_interval[ VSync_60Hz ]	= 2;
-		vsync_supported[ VSync_40Hz ]	= true;
-		vsync_interval[ VSync_40Hz ]	= 3;
-		vsync_supported[ VSync_30Hz ]	= true;
-		vsync_interval[ VSync_30Hz ]	= 4;
+		vsync_modes[ VSync_120Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_60Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_40Hz ].SetSupported( 3 );
 		break;
-	case 60:
-		vsync_supported[ VSync_60Hz ]	= true;
-		vsync_interval[ VSync_60Hz ]	= 1;
-		vsync_supported[ VSync_30Hz ]	= true;
-		vsync_interval[ VSync_30Hz ]	= 2;
+	case 140:
+		vsync_modes[ VSync_140Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_70Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_35Hz ].SetSupported( 4 );
 		break;
-	case 30:
-		vsync_supported[ VSync_30Hz ]	= true;
-		vsync_interval[ VSync_30Hz ]	= 1;
+	case 144:
+		vsync_modes[ VSync_144Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_72Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_36Hz ].SetSupported( 4 );
+		break;
+	case 200:
+		vsync_modes[ VSync_200Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_100Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_50Hz ].SetSupported( 4 );
+		break;
+	case 240:
+		vsync_modes[ VSync_240Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_120Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_60Hz ].SetSupported( 4 );
+		vsync_modes[ VSync_40Hz ].SetSupported( 6 );
+		break;
+	case 288:
+		vsync_modes[ VSync_288Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_144Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_72Hz ].SetSupported( 4 );
+		vsync_modes[ VSync_36Hz ].SetSupported( 8 );
+		break;
+	case 360:
+		vsync_modes[ VSync_360Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_180Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_120Hz ].SetSupported( 3 );
+		vsync_modes[ VSync_60Hz ].SetSupported( 6 );
+		vsync_modes[ VSync_40Hz ].SetSupported( 9 );
 		break;
 	default:
 		break;
@@ -463,23 +513,23 @@ void SetupVSync()
 
 	if( gladHasExtension( "GLX_EXT_swap_control_tear" ) )
 	{
-		vsync_supported[ VSync_Adaptive ]	= true;
+		vsync_modes[ VSync_Adaptive ].SetSupported( -1 );
 	}
 
-	if( !vsync_supported[ vsync_mode ] )
+	if( !vsync_modes[ vsync_mode ].supported )
 	{
 		vsync_mode = VSync_Native;
 	}
 
-	SDL_GL_SetSwapInterval( vsync_interval[ vsync_mode ] );
+	SDL_GL_SetSwapInterval( vsync_modes[ vsync_mode ].interval );
 }
 
 DOOM_C_API boolean I_VideoSetVSync( vsync_t vsyncval )
 {
-	if( vsync_supported[ vsyncval ] )
+	if( vsync_modes[ vsync_mode ].supported )
 	{
 		vsync_mode = vsyncval;
-		SDL_GL_SetSwapInterval( vsync_interval[ vsync_mode ] );
+		SDL_GL_SetSwapInterval( vsync_modes[ vsync_mode ].interval );
 
 		return true;
 	}
@@ -494,7 +544,7 @@ DOOM_C_API vsync_t I_VideoGetVSync( void )
 
 DOOM_C_API boolean I_VideoSupportsVSync( vsync_t vsyncval )
 {
-	return vsync_supported[ vsyncval ];
+	return vsync_modes[ vsyncval ].supported;
 }
 
 DOOM_C_API void I_VideoSetupGLRenderPath( void )
