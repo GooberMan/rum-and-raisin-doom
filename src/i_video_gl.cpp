@@ -543,6 +543,7 @@ void SetupVSync()
 		vsync_modes[ VSync_60Hz ].SetSupported( 6 );
 		vsync_modes[ VSync_45Hz ].SetSupported( 8 );
 		vsync_modes[ VSync_40Hz ].SetSupported( 9 );
+		vsync_modes[ VSync_36Hz ].SetSupported( 10 );
 		break;
 	default:
 		break;
