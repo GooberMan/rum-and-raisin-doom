@@ -2798,10 +2798,12 @@ static const char* vsync_strings[ VSync_Max ] =
 	"35Hz",				// VSync_35Hz
 	"36Hz",				// VSync_36Hz
 	"40Hz",				// VSync_40Hz
+	"45Hz",				// VSync_45Hz
 	"50Hz",				// VSync_50Hz
 	"60Hz",				// VSync_60Hz
 	"70Hz",				// VSync_70Hz
 	"72Hz",				// VSync_72Hz
+	"90Hz",				// VSync_90Hz
 	"100Hz",			// VSync_100Hz
 	"120Hz",			// VSync_120Hz
 	"140Hz",			// VSync_140Hz

@@ -453,6 +453,9 @@ void SetupVSync()
 	// Intentional fall through on each case
 	switch( mode.refresh_rate )
 	{
+	case 50:
+		vsync_modes[ VSync_50Hz ].SetSupported( 1 );
+		break;
 	case 60:
 		vsync_modes[ VSync_60Hz ].SetSupported( 1 );
 		break;
@@ -463,6 +466,10 @@ void SetupVSync()
 	case 72:
 		vsync_modes[ VSync_72Hz ].SetSupported( 1 );
 		vsync_modes[ VSync_36Hz ].SetSupported( 2 );
+		break;
+	case 90:
+		vsync_modes[ VSync_90Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_45Hz ].SetSupported( 2 );
 		break;
 	case 100:
 		vsync_modes[ VSync_100Hz ].SetSupported( 1 );
@@ -482,6 +489,11 @@ void SetupVSync()
 		vsync_modes[ VSync_144Hz ].SetSupported( 1 );
 		vsync_modes[ VSync_72Hz ].SetSupported( 2 );
 		vsync_modes[ VSync_36Hz ].SetSupported( 4 );
+		break;
+	case 180:
+		vsync_modes[ VSync_180Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_90Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_45Hz ].SetSupported( 4 );
 		break;
 	case 200:
 		vsync_modes[ VSync_200Hz ].SetSupported( 1 );
