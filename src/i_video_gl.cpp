@@ -88,6 +88,7 @@ static vsyncsupport_t vsync_modes[ VSync_Max ] =
 	{ false,	0	},		// VSync_180Hz
 	{ false,	0	},		// VSync_200Hz
 	{ false,	0	},		// VSync_240Hz
+	{ false,	0	},		// VSync_280Hz
 	{ false,	0	},		// VSync_288Hz
 	{ false,	0	},		// VSync_300Hz
 	{ false,	0	},		// VSync_360Hz
@@ -519,6 +520,13 @@ void SetupVSync()
 		vsync_modes[ VSync_90Hz ].SetSupported( 3 );
 		vsync_modes[ VSync_60Hz ].SetSupported( 4 );
 		vsync_modes[ VSync_40Hz ].SetSupported( 6 );
+		break;
+	case 280:
+		vsync_modes[ VSync_280Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_140Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_70Hz ].SetSupported( 4 );
+		vsync_modes[ VSync_40Hz ].SetSupported( 7 );
+		vsync_modes[ VSync_35Hz ].SetSupported( 8 );
 		break;
 	case 288:
 		vsync_modes[ VSync_288Hz ].SetSupported( 1 );

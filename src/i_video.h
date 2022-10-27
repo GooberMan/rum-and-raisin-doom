@@ -93,6 +93,7 @@ typedef enum vsync_e
 	VSync_180Hz,
 	VSync_200Hz,
 	VSync_240Hz,
+	VSync_280Hz,
 	VSync_288Hz,
 	VSync_300Hz,
 	VSync_360Hz,
