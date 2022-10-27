@@ -1031,7 +1031,7 @@ void D_IdentifyVersion(void)
 static void D_AddWidescreenPacks()
 {
 	M_DashboardSetLicenceInUse( Licence_WidePix, false );
-	if( remove_limits && !M_CheckParm( "-nowidepix" ) )
+	if( remove_limits && !M_CheckParm( "-nowidepix" ) && gamevariant != unityport )
 	{
 		const char* widescreenpackname = NULL;
 
@@ -1722,8 +1722,6 @@ void D_DoomMain (void)
     // Now that we've loaded the IWAD, we can figure out what gamemission
     // we're playing and which version of Vanilla Doom we need to emulate.
     D_IdentifyVersion();
-	D_AddWidescreenPacks();
-    InitGameVersion();
 
     // Check which IWAD variant we are using.
 
@@ -1744,10 +1742,20 @@ void D_DoomMain (void)
 	// though as they're specific to the BFG frontend.
 	// M_CHG is for changing games, so that one seems super specific
 	// enough for our needs.
-    else if (W_CheckNumForName("D_CHG") >= 0)
-    {
-		gamevariant = bfgedition;
-    }
+	else if( W_CheckNumForName("DMENUPIC") >= 0 || W_CheckNumForName( "DMAPINFO" ) >= 0 )
+	{
+		if (W_CheckNumForName("D_CHG") >= 0)
+		{
+			gamevariant = bfgedition;
+		}
+		else
+		{
+			gamevariant = unityport;
+		}
+	}
+
+	D_AddWidescreenPacks();
+    InitGameVersion();
 
     //!
     // @category mod

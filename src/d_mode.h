@@ -82,6 +82,7 @@ typedef enum
     freedoom,   // FreeDoom: Phase 1 + 2
     freedm,     // FreeDM
     bfgedition, // Doom Classic (Doom 3: BFG Edition)
+	unityport,	// IWADs from the Doom unity port, including add-on WADs
 } GameVariant_t;
 
 // Skill level.
