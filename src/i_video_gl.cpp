@@ -73,18 +73,23 @@ static vsyncsupport_t vsync_modes[ VSync_Max ] =
 	{ false,	0	},		// VSync_35Hz
 	{ false,	0	},		// VSync_36Hz
 	{ false,	0	},		// VSync_40Hz
+	{ false,	0	},		// VSync_45Hz
 	{ false,	0	},		// VSync_50Hz
 	{ false,	0	},		// VSync_60Hz
 	{ false,	0	},		// VSync_70Hz
 	{ false,	0	},		// VSync_72Hz
+	{ false,	0	},		// VSync_75Hz
+	{ false,	0	},		// VSync_90Hz
 	{ false,	0	},		// VSync_100Hz
 	{ false,	0	},		// VSync_120Hz
 	{ false,	0	},		// VSync_140Hz
 	{ false,	0	},		// VSync_144Hz
+	{ false,	0	},		// VSync_150Hz
 	{ false,	0	},		// VSync_180Hz
 	{ false,	0	},		// VSync_200Hz
 	{ false,	0	},		// VSync_240Hz
 	{ false,	0	},		// VSync_288Hz
+	{ false,	0	},		// VSync_300Hz
 	{ false,	0	},		// VSync_360Hz
 };
 
@@ -448,9 +453,8 @@ void GenerateProgram( ShaderProgram& output, const char* vertex, const char* fra
 void SetupVSync()
 {
 	SDL_DisplayMode mode;
-	SDL_GetCurrentDisplayMode( video_display, &mode );
+	SDL_GetDesktopDisplayMode( video_display, &mode );
 
-	// Intentional fall through on each case
 	switch( mode.refresh_rate )
 	{
 	case 50:
@@ -466,6 +470,9 @@ void SetupVSync()
 	case 72:
 		vsync_modes[ VSync_72Hz ].SetSupported( 1 );
 		vsync_modes[ VSync_36Hz ].SetSupported( 2 );
+		break;
+	case 75:
+		vsync_modes[ VSync_75Hz ].SetSupported( 1 );
 		break;
 	case 90:
 		vsync_modes[ VSync_90Hz ].SetSupported( 1 );
@@ -490,9 +497,15 @@ void SetupVSync()
 		vsync_modes[ VSync_72Hz ].SetSupported( 2 );
 		vsync_modes[ VSync_36Hz ].SetSupported( 4 );
 		break;
+	case 150:
+		vsync_modes[ VSync_150Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_75Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_50Hz ].SetSupported( 3 );
+		break;
 	case 180:
 		vsync_modes[ VSync_180Hz ].SetSupported( 1 );
 		vsync_modes[ VSync_90Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_60Hz ].SetSupported( 3 );
 		vsync_modes[ VSync_45Hz ].SetSupported( 4 );
 		break;
 	case 200:
@@ -503,6 +516,7 @@ void SetupVSync()
 	case 240:
 		vsync_modes[ VSync_240Hz ].SetSupported( 1 );
 		vsync_modes[ VSync_120Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_90Hz ].SetSupported( 3 );
 		vsync_modes[ VSync_60Hz ].SetSupported( 4 );
 		vsync_modes[ VSync_40Hz ].SetSupported( 6 );
 		break;
@@ -512,11 +526,22 @@ void SetupVSync()
 		vsync_modes[ VSync_72Hz ].SetSupported( 4 );
 		vsync_modes[ VSync_36Hz ].SetSupported( 8 );
 		break;
+	case 300:
+		vsync_modes[ VSync_300Hz ].SetSupported( 1 );
+		vsync_modes[ VSync_150Hz ].SetSupported( 2 );
+		vsync_modes[ VSync_100Hz ].SetSupported( 3 );
+		vsync_modes[ VSync_75Hz ].SetSupported( 4 );
+		vsync_modes[ VSync_60Hz ].SetSupported( 5 );
+		vsync_modes[ VSync_50Hz ].SetSupported( 6 );
+		break;
 	case 360:
 		vsync_modes[ VSync_360Hz ].SetSupported( 1 );
 		vsync_modes[ VSync_180Hz ].SetSupported( 2 );
 		vsync_modes[ VSync_120Hz ].SetSupported( 3 );
+		vsync_modes[ VSync_90Hz ].SetSupported( 4 );
+		vsync_modes[ VSync_72Hz ].SetSupported( 5 );
 		vsync_modes[ VSync_60Hz ].SetSupported( 6 );
+		vsync_modes[ VSync_45Hz ].SetSupported( 8 );
 		vsync_modes[ VSync_40Hz ].SetSupported( 9 );
 		break;
 	default:
