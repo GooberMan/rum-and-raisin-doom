@@ -250,6 +250,13 @@ static char *steam_install_subdirs[] =
     // From Strife: Veteran Edition:
 
     "steamapps\\common\\Strife",
+
+	// From the repackaged steam editions for the Unity port:
+
+	"steamapps\\common\\doom 2\\finaldoombase",
+	"steamapps\\common\\doom 2\\rerelease\\DOOM II_Data\\StreamingAssets",
+	"steamapps\\common\\ultimate doom\\rerelease\\DOOM_Data\\StreamingAssets",
+
 };
 
 #define STEAM_BFG_GUS_PATCHES \
@@ -691,6 +698,9 @@ static void AddSteamDirs(void)
     AddIWADPath(steampath, "/Hexen/base");
     AddIWADPath(steampath, "/Hexen Deathkings of the Dark Citadel/base");
     AddIWADPath(steampath, "/Strife");
+	AddIWADPath(steampath, "/Doom 2/finaldoombase");
+	AddIWADPath(steampath, "/Doom 2/rerelease/DOOM II_Data/StreamingAssets");
+	AddIWADPath(steampath, "/Ultimate Doom/rerelease/DOOM_Data/StreamingAssets");
     free(steampath);
 }
 #endif // __MACOSX__
