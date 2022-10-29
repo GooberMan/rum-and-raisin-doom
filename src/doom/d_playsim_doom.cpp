@@ -186,14 +186,14 @@ static interlevelframe_t doom_frames_splat[] =
 
 static interlevelframe_t doom_frames_youarehereleft[] =
 {
-	frame( "WIURH0", Frame_FixedDuration ),
-	frame( NULL, Frame_FixedDuration ),
+	frame_withtime( "WIURH0", Frame_FixedDuration, 20 ),
+	frame_withtime( NULL, Frame_FixedDuration, 12 ),
 };
 
 static interlevelframe_t doom_frames_youarehereright[] =
 {
-	frame( "WIURH1", Frame_FixedDuration ),
-	frame( NULL, Frame_FixedDuration ),
+	frame_withtime( "WIURH1", Frame_FixedDuration, 20 ),
+	frame_withtime( NULL, Frame_FixedDuration, 12 ),
 };
 
 #define generate_locationcond( map, levelnum ) \
@@ -292,29 +292,29 @@ episodeinfo_t doom_episode_one =
 	1								// episode_num
 };
 
-episodeinfo_t doom_episode_two =
-{
-	"The Shores Of Hell",			// name
-	"M_EPI2",						// name_patch_lump
-	&doom_map_e2m1,					// first_map
-	2								// episode_num
-};
-
-episodeinfo_t doom_episode_three =
-{
-	"Inferno",						// name
-	"M_EPI3",						// name_patch_lump
-	&doom_map_e3m1,					// first_map
-	3								// episode_num
-};
-
-episodeinfo_t doom_episode_four =
-{
-	"Thy Flesh Consumed",			// name
-	"M_EPI4",						// name_patch_lump
-	&doom_map_e4m1,					// first_map
-	4								// episode_num
-};
+//episodeinfo_t doom_episode_two =
+//{
+//	"The Shores Of Hell",			// name
+//	"M_EPI2",						// name_patch_lump
+//	&doom_map_e2m1,					// first_map
+//	2								// episode_num
+//};
+//
+//episodeinfo_t doom_episode_three =
+//{
+//	"Inferno",						// name
+//	"M_EPI3",						// name_patch_lump
+//	&doom_map_e3m1,					// first_map
+//	3								// episode_num
+//};
+//
+//episodeinfo_t doom_episode_four =
+//{
+//	"Thy Flesh Consumed",			// name
+//	"M_EPI4",						// name_patch_lump
+//	&doom_map_e4m1,					// first_map
+//	4								// episode_num
+//};
 
 episodeinfo_t* doom_episodes_shareware[] =
 {
@@ -587,7 +587,7 @@ intermission_t doom_intermission_e1 =
 
 endgame_t doom_endgame_e1 =
 {
-	EndGame_Pic | EndGame_Ultimate,	// type
+	EndGame_Pic | EndGame_Ultimate | EndGame_SkipInterlevel,	// type
 	&doom_intermission_e1,			// intermission
 	"HELP2",						// primary_image_lump
 	"CREDIT",						// secondary_image_lump
@@ -621,6 +621,16 @@ static interlevelanim_t doom_anim_e1_fore[] =
 };
 
 interlevel_t doom_interlevel_e1finished =
+{
+	Interlevel_Animated,			// type
+	"WIMAP0",						// background_lump
+	doom_anim_e1_back,				// background_anims
+	arrlen( doom_anim_e1_back ),	// num_background_anims
+	NULL,							// foreground_anims
+	0,								// num_foreground_anims
+};
+
+interlevel_t doom_interlevel_e1entering =
 {
 	Interlevel_Animated,			// type
 	"WIMAP0",						// background_lump
