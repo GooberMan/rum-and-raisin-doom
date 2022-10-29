@@ -34,6 +34,7 @@ extern "C"
 #include <algorithm>
 #include <tuple>
 #include <array>
+#include <type_traits>
 
 template< typename _ty, int32_t _tag = PU_STATIC >
 struct DoomAllocator
