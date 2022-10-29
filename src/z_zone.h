@@ -28,6 +28,10 @@
 #include <stdio.h>
 #include "doomtype.h"
 
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
+
 //
 // ZONE MEMORY
 // PU - purge tags.
@@ -72,4 +76,8 @@ size_t	Z_ZoneSize(void);
     Z_ChangeTag2((p), (t), __FILE__, __LINE__)
 
 
-#endif
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
+
+#endif // __Z_ZONE__

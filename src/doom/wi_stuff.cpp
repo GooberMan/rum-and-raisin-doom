@@ -21,31 +21,39 @@
 #include <stdio.h>
 
 #include "z_zone.h"
-
-#include "m_misc.h"
-#include "m_random.h"
-
-#include "deh_main.h"
-#include "i_swap.h"
-#include "i_system.h"
-#include "i_terminal.h"
-
-#include "w_wad.h"
-
-#include "g_game.h"
-
+#include "m_fixed.h"
+#include "m_container.h"
 #include "r_local.h"
-#include "s_sound.h"
 
-#include "doomstat.h"
+extern "C"
+{
+	#include "m_misc.h"
+	#include "m_random.h"
 
-// Data.
-#include "sounds.h"
+	#include "deh_main.h"
+	#include "i_swap.h"
+	#include "i_system.h"
+	#include "i_terminal.h"
 
-// Needs access to LFB.
-#include "v_video.h"
+	#include "w_wad.h"
 
-#include "wi_stuff.h"
+	#include "g_game.h"
+
+	#include "s_sound.h"
+
+	#include "doomstat.h"
+
+	// Data.
+	#include "sounds.h"
+
+	// Needs access to LFB.
+	#include "v_video.h"
+
+	#include "wi_stuff.h"
+
+	extern vbuffer_t blackedges;
+
+}
 
 //
 // Data needed to add patches to full screen intermission pics.
@@ -395,8 +403,6 @@ static patch_t**	lnames;
 
 // Buffer storing the backdrop
 static patch_t *background;
-
-extern vbuffer_t blackedges;
 
 //
 // CODE
@@ -1715,7 +1721,7 @@ static void WI_loadUnloadData(load_callback_t callback)
 
 static void WI_loadCallback(const char *name, patch_t **variable)
 {
-    *variable = W_CacheLumpName(name, PU_STATIC);
+    *variable = (patch_t*)W_CacheLumpName(name, PU_STATIC);
 }
 
 void WI_loadData(void)
@@ -1738,10 +1744,10 @@ void WI_loadData(void)
     // them with the status bar code
 
     // your face
-    star = W_CacheLumpName(DEH_String("STFST01"), PU_STATIC);
+    star = (patch_t*)W_CacheLumpName(DEH_String("STFST01"), PU_STATIC);
 
     // dead face
-    bstar = W_CacheLumpName(DEH_String("STFDEAD0"), PU_STATIC);
+    bstar = (patch_t*)W_CacheLumpName(DEH_String("STFDEAD0"), PU_STATIC);
 }
 
 static void WI_unloadCallback(const char *name, patch_t **variable)
