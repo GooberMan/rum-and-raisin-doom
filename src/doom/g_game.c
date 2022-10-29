@@ -1448,6 +1448,8 @@ void G_DoCompleted (void)
 //#endif
     
 	 
+	wminfo.currmap = current_map;
+
 	wminfo.didsecret = players[consoleplayer].didsecret; 
 	wminfo.epsd = gameepisode -1; 
 	wminfo.last = gamemap -1;
