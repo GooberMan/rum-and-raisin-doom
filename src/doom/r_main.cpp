@@ -1803,8 +1803,9 @@ void R_RenderLoadBalance()
 		desiredwidth = (int32_t)( viewwidth * ThisWidthPercent( curr ) );
 		if( desiredwidth <= 0 )
 		{
-			I_LogAddEntryVar( Log_Error, "Load balancing has created a render slice of %d columns", desiredwidth );
-			I_Error( "Load balancing has created a render slice of %d columns", desiredwidth );
+			I_LogAddEntryVar( Log_Error, "Load balancing has created a render slice of %d columns, rebalancing everything", desiredwidth );
+			R_RebalanceContexts();
+			return;
 		}
 	
 		R_ResetContext( &ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );
