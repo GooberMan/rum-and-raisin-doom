@@ -29,90 +29,163 @@ extern "C" {
 
 typedef enum endgametype_e
 {
-	EndGame_Pic,
-	EndGame_Bunny,
-	EndGame_Cast
+	EndGame_None,
+	EndGame_Pic				= 0x0001,
+	EndGame_Bunny			= 0x0002,
+	EndGame_Cast			= 0x0004,
+
+	EndGame_Ultimate		= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
+	EndGame_SkipInterlevel	= 0x2000,		// Standard Doom 1 behavior on endgame, can be ignored with an option
 } endgametype_t;
 
 typedef enum interleveltype_e
 {
+	Interlevel_None,
 	Interlevel_Animated,
-	Interlevel_Skip,
 } interleveltype_t;
+
+typedef enum frametype_s
+{
+	Frame_None,
+	Frame_Infinite,
+	Frame_FixedDuration,
+	Frame_RandomDuration,
+} frametype_t;
+
+typedef enum animcondition_s
+{
+	AnimCondition_None,
+	AnimCondition_MapNumGreater,
+	AnimCondition_MapNumEqual,
+	AnimCondition_FitsInFrame,
+} animcondition_t;
 
 typedef struct mapinfo_s mapinfo_t;
 typedef struct episodeinfo_s episodeinfo_t;
 
 typedef struct bossaction_s
 {
-	int32_t				thing_type;
-	int32_t				line_special;
-	int32_t				tag;
+	int32_t					thing_type;
+	int32_t					line_special;
+	int32_t					tag;
 } bossaction_t;
 
 typedef struct intermission_s
 {
-	const char*			text;
-	const char*			music_lump;
-	const char*			background_lump;
+	const char*				text;
+	const char*				music_lump;
+	const char*				background_lump;
 } intermission_t;
 
-typedef struct interanim_s
+typedef struct interlevelframe_s
 {
-	const char**		image_lumps;
-	int32_t				num_image_lumps;
-	int32_t				x_pos;
-	int32_t				y_pos;
-	int32_t				duration;
-};
+	const char*				image_lump;
+	frametype_t				type;
+	int32_t					duration;
+} interlevelframe_t;
+
+typedef struct interlevelcond_s
+{
+	animcondition_t			condition;
+	int32_t					param;
+} interlevelcond_t;
+
+typedef struct interlevelanim_s
+{
+	interlevelframe_t*		frames;
+	int32_t					num_frames;
+	int32_t					x_pos;
+	int32_t					y_pos;
+	interlevelcond_t*		conditions;
+	int32_t					num_conditions;
+} interlevelanim_t;
 
 typedef struct interlevel_s
 {
-	const char*			background_lump;
+	interleveltype_t		type;
 
-	interanim_s*		background_anims;
-	int32_t				num_background_anims;
+	const char*				background_lump;
 
-	interanim_s*		foreground_anims;
-	int32_t				num_foreground_anims;
+	interlevelanim_t*		background_anims;
+	int32_t					num_background_anims;
+
+	interlevelanim_t*		foreground_anims;
+	int32_t					num_foreground_anims;
+
 } interlevel_t;
+
+typedef struct endgame_s
+{
+	endgametype_t			type;
+	intermission_t*			intermission;
+	const char*				primary_image_lump;
+	const char*				secondary_image_lump;
+} endgame_t;
 
 typedef struct mapinfo_s
 {
-	const char*			name;
-	episodeinfo_t*		episode;
-	int32_t				map_num;
+	const char*				data_lump;
+	const char*				name;
+	const char*				name_patch_lump;
+	const char*				authors;
 
-	const char*			name_patch_lump;
-	const char*			music_lump;
-	const char*			sky_texture;
-	int32_t				sky_scroll_speed;
-	int32_t				par_time;
+	episodeinfo_t*			episode;
+	int32_t					map_num;
 
-	bossaction_t*		boss_actions;
-	int32_t				num_boss_actions;
+	const char*				music_lump;
+	const char*				sky_texture;
+	int32_t					sky_scroll_speed;
+	int32_t					par_time;
 
-	interleveltype_t	interlevel_type;
+	bossaction_t*			boss_actions;
+	int32_t					num_boss_actions;
 
-	interlevel_t*		interlevel_finished;
-	interlevel_t*		interlevel_entering;
+	interlevel_t*			interlevel_finished;
+	interlevel_t*			interlevel_entering;
 
-	mapinfo_t*			next_map;
-	intermission_t*		next_map_intermission;
-	mapinfo_t*			secret_map;
-	intermission_t*		secret_map_intermission;
+	mapinfo_t*				next_map;
+	intermission_t*			next_map_intermission;
+	mapinfo_t*				secret_map;
+	intermission_t*			secret_map_intermission;
 
-	endgametype_t		endgame_type;
-
+	endgame_t*				endgame;
 } mapinfo_t;
 
 typedef struct episodeinfo_s
 {
-	const char*			name;
-	const char*			name_patch_lump;
-	mapinfo_t*			first_map;
-	int32_t				episode_num;
+	const char*				name;
+	const char*				name_patch_lump;
+
+	mapinfo_t*				first_map;
+	int32_t					episode_num;
 } episodeinfo_t;
+
+// Still working out the details, but playsim_base can equal:
+// * vanilla
+// * limitremoving
+// * boom
+// * mbf21
+//
+// Options will define subversion, for example
+// * vanilla
+//   * version=1.9
+//   * version=final
+// * boom
+//   * version=2.02
+
+typedef struct gameflow_s
+{
+	const char*				name;
+	episodeinfo_t**			episodes;
+	int32_t					num_episodes;
+
+	const char*				playsim_base;
+	const char*				playsim_options;
+} gameflow_t;
+
+extern gameflow_t*			current_game;
+extern episodeinfo_t*		current_episode;
+extern mapinfo_t*			current_map;
 
 #ifdef __cplusplus
 }
