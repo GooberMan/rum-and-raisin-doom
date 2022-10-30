@@ -1988,8 +1988,8 @@ void WI_Start(wbstartstruct_t* wbstartstruct)
     WI_initVariables(wbstartstruct);
     WI_loadData();
 
-	cache = Z_Malloc< wi_cache_t >( PU_LEVEL, NULL );
-	cache->Setup( wbs->currmap );
+	//cache = Z_Malloc< wi_cache_t >( PU_LEVEL, NULL );
+	//cache->Setup( wbs->currmap );
 
     if (deathmatch)
 	WI_initDeathmatchStats();
