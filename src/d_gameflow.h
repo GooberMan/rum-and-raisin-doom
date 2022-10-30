@@ -23,11 +23,7 @@
 
 #include "doomtype.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum endgametype_e
+DOOM_C_API typedef enum endgametype_e
 {
 	EndGame_None,
 	EndGame_Pic				= 0x0001,
@@ -38,14 +34,14 @@ typedef enum endgametype_e
 	EndGame_SkipInterlevel	= 0x2000,		// Standard Doom 1 behavior on endgame, can be ignored with an option
 } endgametype_t;
 
-typedef enum interleveltype_e
+DOOM_C_API typedef enum interleveltype_e
 {
 	Interlevel_None,
 	Interlevel_Static,
 	Interlevel_Animated,
 } interleveltype_t;
 
-typedef enum frametype_s
+DOOM_C_API typedef enum frametype_s
 {
 	Frame_None,
 	Frame_Infinite,
@@ -53,7 +49,7 @@ typedef enum frametype_s
 	Frame_RandomDuration,
 } frametype_t;
 
-typedef enum animcondition_s
+DOOM_C_API typedef enum animcondition_s
 {
 	AnimCondition_None,
 	AnimCondition_MapNumGreater,
@@ -61,31 +57,31 @@ typedef enum animcondition_s
 	AnimCondition_FitsInFrame,
 } animcondition_t;
 
-typedef enum lumpnameflags_s
+DOOM_C_API typedef enum lumpnameflags_s
 {
 	Lumpname_None				= 0x00,
 	Lumpname_Dehacked			= 0x01,
 	Lumpname_RuntimeGenerated	= 0x02,
 } lumpnameflags_t;
 
-typedef struct mapinfo_s mapinfo_t;
-typedef struct episodeinfo_s episodeinfo_t;
+DOOM_C_API typedef struct mapinfo_s mapinfo_t;
+DOOM_C_API typedef struct episodeinfo_s episodeinfo_t;
 
-typedef struct bossaction_s
+DOOM_C_API typedef struct bossaction_s
 {
 	int32_t					thing_type;
 	int32_t					line_special;
 	int32_t					tag;
 } bossaction_t;
 
-typedef struct intermission_s
+DOOM_C_API typedef struct intermission_s
 {
 	const char*				text;
 	const char*				music_lump;
 	const char*				background_lump;
 } intermission_t;
 
-typedef struct interlevelframe_s
+DOOM_C_API typedef struct interlevelframe_s
 {
 	const char*				image_lump;
 	frametype_t				type;
@@ -95,13 +91,13 @@ typedef struct interlevelframe_s
 	int32_t					lumpname_animframe;
 } interlevelframe_t;
 
-typedef struct interlevelcond_s
+DOOM_C_API typedef struct interlevelcond_s
 {
 	animcondition_t			condition;
 	int32_t					param;
 } interlevelcond_t;
 
-typedef struct interlevelanim_s
+DOOM_C_API typedef struct interlevelanim_s
 {
 	interlevelframe_t*		frames;
 	int32_t					num_frames;
@@ -111,7 +107,7 @@ typedef struct interlevelanim_s
 	int32_t					num_conditions;
 } interlevelanim_t;
 
-typedef struct interlevel_s
+DOOM_C_API typedef struct interlevel_s
 {
 	interleveltype_t		type;
 
@@ -125,7 +121,7 @@ typedef struct interlevel_s
 
 } interlevel_t;
 
-typedef struct endgame_s
+DOOM_C_API typedef struct endgame_s
 {
 	endgametype_t			type;
 	intermission_t*			intermission;
@@ -133,7 +129,7 @@ typedef struct endgame_s
 	const char*				secondary_image_lump;
 } endgame_t;
 
-typedef struct mapinfo_s
+DOOM_C_API typedef struct mapinfo_s
 {
 	const char*				data_lump;
 	const char*				name;
@@ -162,7 +158,7 @@ typedef struct mapinfo_s
 	endgame_t*				endgame;
 } mapinfo_t;
 
-typedef struct episodeinfo_s
+DOOM_C_API typedef struct episodeinfo_s
 {
 	const char*				name;
 	const char*				name_patch_lump;
@@ -184,7 +180,7 @@ typedef struct episodeinfo_s
 // * boom
 //   * version=2.02
 
-typedef struct gameflow_s
+DOOM_C_API typedef struct gameflow_s
 {
 	const char*				name;
 	episodeinfo_t**			episodes;
@@ -194,12 +190,8 @@ typedef struct gameflow_s
 	const char*				playsim_options;
 } gameflow_t;
 
-extern gameflow_t*			current_game;
-extern episodeinfo_t*		current_episode;
-extern mapinfo_t*			current_map;
-
-#ifdef __cplusplus
-}
-#endif
+DOOM_C_API extern gameflow_t*			current_game;
+DOOM_C_API extern episodeinfo_t*		current_episode;
+DOOM_C_API extern mapinfo_t*			current_map;
 
 #endif // __D_GAMEFLOW_H__

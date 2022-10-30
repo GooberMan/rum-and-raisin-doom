@@ -21,45 +21,41 @@
 #include "doomtype.h"
 #include "d_gameflow.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct attractoptions_s
+DOOM_C_API typedef struct attractoptions_s
 {
 	boolean					demo4;
 } attractoptions_t;
 
-typedef struct dehackedoptions_s
+DOOM_C_API typedef struct dehackedoptions_s
 {
 	boolean					frame_966;
 	boolean					lump_from_iwads;
 } dehackedoptions_t;
 
-typedef struct demoopitions_s
+DOOM_C_API typedef struct demoopitions_s
 {
 	boolean					large_size;
 	boolean					longtics;
 } demooptions_t;
 
-typedef struct gameoptions_s
+DOOM_C_API typedef struct gameoptions_s
 {
 	boolean					unlimited_scrollers;
 } gameoptions_t;
 
-typedef struct wadoptions_s
+DOOM_C_API typedef struct wadoptions_s
 {
 	boolean					extended_map_datatypes;
 	boolean					allow_unlimited_lumps;
 } wadoptions_t;
 
-typedef struct savegameoptions_s
+DOOM_C_API typedef struct savegameoptions_s
 {
 	boolean					large_size;
 	boolean					extended_data;
 } savegameoptions_t;
 
-typedef struct renderoptions_s
+DOOM_C_API typedef struct renderoptions_s
 {
 	boolean					unlimited_solidsegs;
 	boolean					no_medusa;
@@ -71,7 +67,7 @@ typedef struct renderoptions_s
 	boolean					invalid_thing_frames;
 } renderoptions_t;
 
-typedef struct playsimoptions_s
+DOOM_C_API typedef struct playsimoptions_s
 {
 	attractoptions_t		attract;
 	dehackedoptions_t		dehacked;
@@ -81,24 +77,20 @@ typedef struct playsimoptions_s
 	wadoptions_t			wad;
 } playsimoptions_t;
 
-extern playsimoptions_t		playsim;
-extern renderoptions_t		render;
+DOOM_C_API extern playsimoptions_t		playsim;
+DOOM_C_API extern renderoptions_t		render;
 
-extern gameflow_t			doom_shareware;
-extern gameflow_t			doom_registered;
-extern gameflow_t			doom_ultimate;
-extern gameflow_t			doom_2;
-extern gameflow_t			doom_tnt;
-extern gameflow_t			doom_plutonia;
-extern gameflow_t			doom_chex;
-extern gameflow_t			doom_hacx;
+DOOM_C_API extern gameflow_t			doom_shareware;
+DOOM_C_API extern gameflow_t			doom_registered;
+DOOM_C_API extern gameflow_t			doom_ultimate;
+DOOM_C_API extern gameflow_t			doom_2;
+DOOM_C_API extern gameflow_t			doom_tnt;
+DOOM_C_API extern gameflow_t			doom_plutonia;
+DOOM_C_API extern gameflow_t			doom_chex;
+DOOM_C_API extern gameflow_t			doom_hacx;
 
 // This is designed to analyse the IWAD and register the base gameflow.
 // It also sets up the current playsim and render options.
-void D_RegisterPlaysim();
-
-#ifdef __cplusplus
-}
-#endif
+DOOM_C_API void D_RegisterPlaysim();
 
 #endif // __D_PLAYSIM_H__
