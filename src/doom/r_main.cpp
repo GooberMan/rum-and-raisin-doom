@@ -22,6 +22,7 @@
 
 #include "doomdef.h"
 #include "doomtype.h"
+#include "m_container.h"
 #include "m_fixed.h"
 #include "r_main.h"
 #include "i_terminal.h"
@@ -1644,93 +1645,9 @@ int32_t R_PeekEvents() //__attribute__ ((optnone))
 	return mouselookx;
 }
 
-#include "m_container.h"
-
 auto RenderDatas( )
 {
 	return std::span( renderdatas, num_render_contexts );
-}
-
-
-template< typename _func, typename _t1, typename _t2, size_t... _i >
-auto foreachtupleelem_impl( _t1& t1, _t2& t2, _func&& f, std::index_sequence< _i... > )
-{
-	return ( f( std::get< _i >( t1 ), std::get< _i >( t2 ) ) || ... );
-}
-
-template< typename _func, typename _t1, typename _t2 >
-auto foreachtupleelem( _t1& t1, _t2& t2, _func&& f )
-{
-	enum : size_t
-	{
-		_t1len = std::tuple_size_v< _t1 >,
-		_t2len = std::tuple_size_v< _t1 >,
-		indexlen = _t1len < _t2len ? _t1len : _t2len,
-	};
-
-	return foreachtupleelem_impl( t1, t2, f, std::make_index_sequence< indexlen >() );
-}
-
-template< typename... _ranges >
-auto MultiRangeView( _ranges&... r )
-{
-	struct view
-	{
-		using value_type = std::tuple< typename _ranges::iterator... >;
-
-		struct iterator
-		{
-			std::tuple< typename _ranges::iterator... > curr;
-			std::tuple< typename _ranges::iterator... > end;
-
-			iterator& operator++()
-			{
-				std::apply(	[]( auto&... it )
-							{
-								auto val = std::make_tuple( ++it... );
-							}, curr );
-
-				bool anytrue = foreachtupleelem( curr, end, []( auto& lhs, auto& rhs ) -> bool { return lhs == rhs; } );
-				if( anytrue )
-				{
-					curr = end;
-				}
-
-				return *this;
-			}
-
-			value_type& operator*()
-			{
-				return curr;
-			}
-
-			bool operator!=( const iterator& rhs )
-			{
-				return curr != rhs.curr;
-			}
-		};
-
-		view( _ranges&... r )
-		{
-			value_type b	= { r.begin()... };
-			value_type e	= { r.end()... };
-
-			iterator bi		= { b, e };
-			iterator ei		= { e, e };
-
-			_begin			= bi;
-			_end			= ei;
-		}
-
-		constexpr iterator begin() { return _begin; }
-		constexpr iterator end() { return _end ; }
-
-	private:
-		iterator _begin;
-		iterator _end;
-	};
-
-	return view( r... );
 }
 
 void R_RenderLoadBalance()
@@ -1764,11 +1681,11 @@ void R_RenderLoadBalance()
 
 	auto view = MultiRangeView( r, tp, owp, g, wp );
 
-	auto ThisRenderData			= []( auto& tup ) -> auto& { return *std::get< 0 >( tup ); };
-	auto ThisTimePercent		= []( auto& tup ) -> auto& { return *std::get< 1 >( tup ); };
-	auto ThisOldWidthPercent	= []( auto& tup ) -> auto& { return *std::get< 2 >( tup ); };
-	auto ThisGrowth				= []( auto& tup ) -> auto& { return *std::get< 3 >( tup ); };
-	auto ThisWidthPercent		= []( auto& tup ) -> auto& { return *std::get< 4 >( tup ); };
+	auto ThisRenderData			= []( auto& tup ) -> auto& { return tup.template get< 0 >(); };
+	auto ThisTimePercent		= []( auto& tup ) -> auto& { return tup.template get< 1 >(); };
+	auto ThisOldWidthPercent	= []( auto& tup ) -> auto& { return tup.template get< 2 >(); };
+	auto ThisGrowth				= []( auto& tup ) -> auto& { return tup.template get< 3 >(); };
+	auto ThisWidthPercent		= []( auto& tup ) -> auto& { return tup.template get< 4 >(); };
 
 	for( auto& curr : view )
 	{

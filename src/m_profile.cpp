@@ -46,7 +46,7 @@ struct profiledata_s
 
 	profiledata_t*					workingparent;
 
-	DoomVector< profiledata_s >		childcalls;
+	std::vector< profiledata_s >	childcalls;
 };
 
 typedef struct profilethread_s
