@@ -134,50 +134,53 @@ auto operator~( _type val )
 
 constexpr int32_t standardduration = TICRATE / 3;
 
-#define frame( lump, type ) { lump, type, standardduration }
-#define frame_withtime( lump, type, duration ) { lump, type, duration }
+#define frame( lump, type ) { lump, type, standardduration, Lumpname_Dehacked }
+#define frame_withtime( lump, type, duration ) { lump, type, duration, Lumpname_Dehacked }
+#define frame_runtime( lump, type, index, frame ) { lump, type, standardduration, Lumpname_RuntimeGenerated | Lumpname_Dehacked, index, frame }
 
-#define stringof( val ) #val
+#define generate_name( ep, index ) doom_frames_ ## ep ## _ ## index
 
-#define generate_frameseqstatic( name ) static interlevelframe_t doom_frames_ ## name [] = { \
-	frame( stringof( name ) "00", Frame_Infinite ), \
+#define frame_format_text "WIA%d%.2d%.2d"
+
+#define generate_frameseqstatic( ep, index ) static interlevelframe_t generate_name( ep, index ) [] = { \
+	frame_runtime( frame_format_text, Frame_Infinite, index, 0 ), \
 };
 
-#define generate_frameseq3( name ) static interlevelframe_t doom_frames_ ## name [] = { \
-	frame( stringof( name ) "00", Frame_RandomDuration ), \
-	frame( stringof( name ) "01", Frame_RandomDuration ), \
-	frame( stringof( name ) "02", Frame_RandomDuration ), \
+#define generate_frameseq3( ep, index ) static interlevelframe_t generate_name( ep, index ) [] = { \
+	frame_runtime( frame_format_text, Frame_RandomDuration, index, 0 ), \
+	frame_runtime( frame_format_text, Frame_RandomDuration, index, 1 ), \
+	frame_runtime( frame_format_text, Frame_RandomDuration, index, 2 ), \
 };
 
-#define get_frameseq( name ) doom_frames_ ## name
-#define get_frameseqlen( name ) arrlen( get_frameseq( name ) )
+#define get_frameseq( ep, index ) generate_name( ep, index )
+#define get_frameseqlen( ep, index ) arrlen( get_frameseq( ep, index ) )
 
-generate_frameseq3( WIA000 );
-generate_frameseq3( WIA001 );
-generate_frameseq3( WIA002 );
-generate_frameseq3( WIA003 );
-generate_frameseq3( WIA004 );
-generate_frameseq3( WIA005 );
-generate_frameseq3( WIA006 );
-generate_frameseq3( WIA007 );
-generate_frameseq3( WIA008 );
-generate_frameseq3( WIA009 );
+generate_frameseq3( 0, 0 );
+generate_frameseq3( 0, 1 );
+generate_frameseq3( 0, 2 );
+generate_frameseq3( 0, 3 );
+generate_frameseq3( 0, 4 );
+generate_frameseq3( 0, 5 );
+generate_frameseq3( 0, 6 );
+generate_frameseq3( 0, 7 );
+generate_frameseq3( 0, 8 );
+generate_frameseq3( 0, 9 );
 
-generate_frameseqstatic( WIA100 );
-generate_frameseqstatic( WIA101 );
-generate_frameseqstatic( WIA102 );
-generate_frameseqstatic( WIA103 );
-generate_frameseqstatic( WIA104 );
-generate_frameseqstatic( WIA105 );
-generate_frameseqstatic( WIA106 );
-generate_frameseq3( WIA107 );
-
-generate_frameseq3( WIA200 );
-generate_frameseq3( WIA201 );
-generate_frameseq3( WIA202 );
-generate_frameseq3( WIA203 );
-generate_frameseq3( WIA204 );
-generate_frameseq3( WIA205 );
+//generate_frameseqstatic( 1, 0 );
+//generate_frameseqstatic( 1, 1 );
+//generate_frameseqstatic( 1, 2 );
+//generate_frameseqstatic( 1, 3 );
+//generate_frameseqstatic( 1, 4 );
+//generate_frameseqstatic( 1, 5 );
+//generate_frameseqstatic( 1, 6 );
+//generate_frameseq3( 1, 7 );
+//
+//generate_frameseq3( 2, 0 );
+//generate_frameseq3( 2, 1 );
+//generate_frameseq3( 2, 2 );
+//generate_frameseq3( 2, 3 );
+//generate_frameseq3( 2, 4 );
+//generate_frameseq3( 2, 5 );
 
 static interlevelframe_t doom_frames_splat[] =
 {
@@ -232,27 +235,37 @@ generate_locationcond( E1M7, 7 );
 generate_locationcond( E1M8, 8 );
 generate_locationcond( E1M9, 9 );
 
-generate_locationcond( E2M1, 1 );
-generate_locationcond( E2M2, 2 );
-generate_locationcond( E2M3, 3 );
-generate_locationcond( E2M4, 4 );
-generate_locationcond( E2M5, 5 );
-generate_locationcond( E2M6, 6 );
-generate_locationcond( E2M7, 7 );
-generate_locationcond( E2M8, 8 );
-generate_locationcond( E2M9, 9 );
+//generate_locationcond( E2M1, 1 );
+//generate_locationcond( E2M2, 2 );
+//generate_locationcond( E2M3, 3 );
+//generate_locationcond( E2M4, 4 );
+//generate_locationcond( E2M5, 5 );
+//generate_locationcond( E2M6, 6 );
+//generate_locationcond( E2M7, 7 );
+//generate_locationcond( E2M8, 8 );
+//generate_locationcond( E2M9, 9 );
+//
+//generate_locationcond( E3M1, 1 );
+//generate_locationcond( E3M2, 2 );
+//generate_locationcond( E3M3, 3 );
+//generate_locationcond( E3M4, 4 );
+//generate_locationcond( E3M5, 5 );
+//generate_locationcond( E3M6, 6 );
+//generate_locationcond( E3M7, 7 );
+//generate_locationcond( E3M8, 8 );
+//generate_locationcond( E3M9, 9 );
 
-generate_locationcond( E3M1, 1 );
-generate_locationcond( E3M2, 2 );
-generate_locationcond( E3M3, 3 );
-generate_locationcond( E3M4, 4 );
-generate_locationcond( E3M5, 5 );
-generate_locationcond( E3M6, 6 );
-generate_locationcond( E3M7, 7 );
-generate_locationcond( E3M8, 8 );
-generate_locationcond( E3M9, 9 );
+#define generatesplatanim( arrayname, map, xpos, ypos ) \
+{ \
+	arrayname, \
+	arrlen( arrayname ), \
+	xpos, \
+	ypos, \
+	get_splatcond( map ), \
+	get_splatcondlen( map ) \
+}
 
-#define generatelocationanim( arrayname, map, xpos, ypos ) \
+#define generatehereanim( arrayname, map, xpos, ypos ) \
 { \
 	arrayname, \
 	arrlen( arrayname ), \
@@ -262,10 +275,10 @@ generate_locationcond( E3M9, 9 );
 	get_herecondlen( map ) \
 }
 
-#define generatebackgroundanim( frameseq, xpos, ypos ) \
+#define generatebackgroundanim( ep, index, xpos, ypos ) \
 { \
-	get_frameseq( frameseq ), \
-	get_frameseqlen( frameseq ), \
+	get_frameseq( ep, index ), \
+	get_frameseqlen( ep, index ), \
 	xpos, \
 	ypos, \
 	NULL, \
@@ -274,9 +287,9 @@ generate_locationcond( E3M9, 9 );
 
 
 #define generatelocationanims( map, xpos, ypos ) \
-generatelocationanim( doom_frames_splat, map, xpos, ypos ), \
-generatelocationanim( doom_frames_youarehereleft, map, xpos, ypos ), \
-generatelocationanim( doom_frames_youarehereright, map, xpos, ypos )
+generatesplatanim( doom_frames_splat, map, xpos, ypos ), \
+generatehereanim( doom_frames_youarehereleft, map, xpos, ypos ), \
+generatehereanim( doom_frames_youarehereright, map, xpos, ypos )
 
 // Now for the full declarations
 
@@ -595,16 +608,16 @@ endgame_t doom_endgame_e1 =
 
 static interlevelanim_t doom_anim_e1_back[] =
 {
-	generatebackgroundanim( WIA000, 224, 104 ),
-	generatebackgroundanim( WIA001, 184, 160 ),
-	generatebackgroundanim( WIA002, 112, 136 ),
-	generatebackgroundanim( WIA003, 72, 112 ),
-	generatebackgroundanim( WIA004, 88, 96 ),
-	generatebackgroundanim( WIA005, 64, 48 ),
-	generatebackgroundanim( WIA006, 192, 140 ),
-	generatebackgroundanim( WIA007, 136, 16 ),
-	generatebackgroundanim( WIA008, 80, 16 ),
-	generatebackgroundanim( WIA009, 64, 24 )
+	generatebackgroundanim( 0, 0, 224, 104 ),
+	generatebackgroundanim( 0, 1, 184, 160 ),
+	generatebackgroundanim( 0, 2, 112, 136 ),
+	generatebackgroundanim( 0, 3, 72, 112 ),
+	generatebackgroundanim( 0, 4, 88, 96 ),
+	generatebackgroundanim( 0, 5, 64, 48 ),
+	generatebackgroundanim( 0, 6, 192, 140 ),
+	generatebackgroundanim( 0, 7, 136, 16 ),
+	generatebackgroundanim( 0, 8, 80, 16 ),
+	generatebackgroundanim( 0, 9, 64, 24 )
 };
 
 static interlevelanim_t doom_anim_e1_fore[] =

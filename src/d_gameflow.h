@@ -32,7 +32,7 @@ typedef enum endgametype_e
 	EndGame_None,
 	EndGame_Pic				= 0x0001,
 	EndGame_Bunny			= 0x0002,
-	EndGame_Cast			= 0x0004,
+	EndGame_Cast			= 0x0003,
 
 	EndGame_Ultimate		= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
 	EndGame_SkipInterlevel	= 0x2000,		// Standard Doom 1 behavior on endgame, can be ignored with an option
@@ -41,6 +41,7 @@ typedef enum endgametype_e
 typedef enum interleveltype_e
 {
 	Interlevel_None,
+	Interlevel_Static,
 	Interlevel_Animated,
 } interleveltype_t;
 
@@ -59,6 +60,13 @@ typedef enum animcondition_s
 	AnimCondition_MapNumEqual,
 	AnimCondition_FitsInFrame,
 } animcondition_t;
+
+typedef enum lumpnameflags_s
+{
+	Lumpname_None				= 0x00,
+	Lumpname_Dehacked			= 0x01,
+	Lumpname_RuntimeGenerated	= 0x02,
+} lumpnameflags_t;
 
 typedef struct mapinfo_s mapinfo_t;
 typedef struct episodeinfo_s episodeinfo_t;
@@ -82,6 +90,9 @@ typedef struct interlevelframe_s
 	const char*				image_lump;
 	frametype_t				type;
 	int32_t					duration;
+	lumpnameflags_t			lumpname_flags;
+	int32_t					lumpname_animindex;
+	int32_t					lumpname_animframe;
 } interlevelframe_t;
 
 typedef struct interlevelcond_s
