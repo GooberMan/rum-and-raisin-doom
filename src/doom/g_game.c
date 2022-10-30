@@ -1146,6 +1146,15 @@ void G_PlayerReborn (int player)
 	{
 		R_RebalanceContexts();
 	}
+
+	if( p->visitedlevels )
+	{
+		Z_Free( p->visitedlevels );
+	}
+
+	size_t buffersize = sizeof( boolean ) * ( current_episode->highest_map_num + 1 );
+	p->visitedlevels = Z_Malloc( buffersize, PU_STATIC, &p->visitedlevels );
+	memset( p->visitedlevels, 0, buffersize );
 }
 
 //
@@ -1448,10 +1457,19 @@ void G_DoCompleted (void)
 	} 
 //#endif
     
-	 
-	wminfo.currmap = current_map;
+	for (i=0 ; i<MAXPLAYERS ; i++) 
+	{
+		players[i].didsecret = ( current_map->map_flags & Map_Secret );
 
-	wminfo.didsecret = players[consoleplayer].didsecret; 
+		if( players[i].visitedlevels ) players[i].visitedlevels[ current_map->map_num ] = true;
+	}
+
+	wminfo.currmap = current_map;
+	wminfo.nextmap = secretexit	? current_map->secret_map != NULL	? current_map->secret_map
+																	: current_map
+								: current_map->next_map;
+
+	wminfo.didsecret = players[consoleplayer].didsecret;
 	wminfo.epsd = gameepisode -1; 
 	wminfo.last = gamemap -1;
 
@@ -1464,8 +1482,8 @@ void G_DoCompleted (void)
 			{
 				switch(gamemap)
 				{
-				  case 15: wminfo.next = 30; break;
-				  case 31: wminfo.next = 31; break;
+				  case 15: wminfo.next = 30; wminfo.nextissecret = true; break;
+				  case 31: wminfo.next = 31; wminfo.nextissecret = true; break;
 				}
 			}
 			else
@@ -1481,7 +1499,10 @@ void G_DoCompleted (void)
 		else
 		{
 			if (secretexit) 
+			{
 				wminfo.next = 8; 	// go to secret level 
+				wminfo.nextissecret = true;
+			}
 			else if (gamemap == 9) 
 			{
 				// returning from secret level 
@@ -1549,15 +1570,22 @@ void G_DoCompleted (void)
 
     wminfo.pnum = consoleplayer; 
  
+	size_t buffersize = sizeof( boolean ) * ( current_episode->highest_map_num + 1 );
+
     for (i=0 ; i<MAXPLAYERS ; i++) 
     { 
-	wminfo.plyr[i].in = playeringame[i]; 
-	wminfo.plyr[i].skills = players[i].killcount; 
-	wminfo.plyr[i].sitems = players[i].itemcount; 
-	wminfo.plyr[i].ssecret = players[i].secretcount; 
-	wminfo.plyr[i].stime = leveltime; 
-	memcpy (wminfo.plyr[i].frags, players[i].frags 
-		, sizeof(wminfo.plyr[i].frags)); 
+		wminfo.plyr[i].in = playeringame[i]; 
+		wminfo.plyr[i].skills = players[i].killcount; 
+		wminfo.plyr[i].sitems = players[i].itemcount; 
+		wminfo.plyr[i].ssecret = players[i].secretcount; 
+		wminfo.plyr[i].stime = leveltime; 
+		memcpy (wminfo.plyr[i].frags, players[i].frags, sizeof(wminfo.plyr[i].frags));
+
+		if( players[i].visitedlevels )
+		{
+			wminfo.plyr[i].visited = Z_Malloc( buffersize, PU_LEVEL, &wminfo.plyr[ i ].visited );
+			memcpy( wminfo.plyr[ i ].visited, players[ i ].visitedlevels, buffersize );
+		}
     } 
  
     gamestate = GS_INTERMISSION; 
@@ -1854,36 +1882,6 @@ void G_InitNew( skill_t skill, int episode, int map, gameflags_t flags )
 	paused = false;
 	S_ResumeSound ();
     }
-
-    /*
-    // Note: This commented-out block of code was added at some point
-    // between the DOS version(s) and the Doom source release. It isn't
-    // found in disassemblies of the DOS version and causes IDCLEV and
-    // the -warp command line parameter to behave differently.
-    // This is left here for posterity.
-
-    // This was quite messy with SPECIAL and commented parts.
-    // Supposedly hacks to make the latest edition work.
-    // It might not work properly.
-    if (episode < 1)
-      episode = 1;
-
-    if ( gamemode == retail )
-    {
-      if (episode > 4)
-	episode = 4;
-    }
-    else if ( gamemode == shareware )
-    {
-      if (episode > 1)
-	   episode = 1;	// only start episode 1 on shareware
-    }
-    else
-    {
-      if (episode > 3)
-	episode = 3;
-    }
-    */
 
     if (skill > sk_nightmare)
 	skill = sk_nightmare;

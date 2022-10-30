@@ -92,6 +92,11 @@ extern gameflow_t		doom_gameflow_shareware;
 extern gameflow_t		doom_gameflow_registered;
 extern gameflow_t		doom_gameflow_ultimate;
 
+#define frame_format_text "WIA%d%.2d%.2d"
+#define levename_format_text "WILV%d%d"
+#define levellump_format_text "E%dM%d"
+#define background_format_text "WIMAP%d"
+
 // Helpers
 
 // This needs to live in a header somewhere... and I think we need to 100% opt-in to it, at least while we mix C and C++ code everywhere
@@ -116,6 +121,12 @@ constexpr auto FlowString( const char* name, flowstringflags_t additional = Flow
 	return lump;
 }
 
+constexpr auto RuntimeFlowString( const char* name )
+{
+	flowstring_t lump = { name, FlowString_Dehacked | FlowString_RuntimeGenerated };
+	return lump;
+}
+
 constexpr auto PlainFlowString( const char* name )
 {
 	flowstring_t lump = { name, FlowString_None };
@@ -125,20 +136,18 @@ constexpr auto PlainFlowString( const char* name )
 
 #define frame( lump, type )								{ FlowString( lump ), type, standardduration }
 #define frame_withtime( lump, type, duration )			{ FlowString( lump ), type, duration }
-#define frame_runtime( lump, type, index, frame )		{ FlowString( lump, FlowString_RuntimeGenerated ), type, standardduration, index, frame }
+#define frame_runtime( lump, type, index, frame )		{ RuntimeFlowString( lump ), type, standardduration, index, frame }
 
 #define generate_name( ep, index ) doom_frames_ ## ep ## _ ## index
-
-#define frame_format_text "WIA%d%.2d%.2d"
 
 #define generate_frameseqstatic( ep, index ) static interlevelframe_t generate_name( ep, index ) [] = { \
 	frame_runtime( frame_format_text, Frame_Infinite, index, 0 ), \
 };
 
 #define generate_frameseq3( ep, index ) static interlevelframe_t generate_name( ep, index ) [] = { \
-	frame_runtime( frame_format_text, Frame_RandomDuration, index, 0 ), \
-	frame_runtime( frame_format_text, Frame_RandomDuration, index, 1 ), \
-	frame_runtime( frame_format_text, Frame_RandomDuration, index, 2 ), \
+	frame_runtime( frame_format_text, Frame_FixedDuration | Frame_RandomStart, index, 0 ), \
+	frame_runtime( frame_format_text, Frame_FixedDuration | Frame_RandomStart, index, 1 ), \
+	frame_runtime( frame_format_text, Frame_FixedDuration | Frame_RandomStart, index, 2 ), \
 };
 
 #define get_frameseq( ep, index ) generate_name( ep, index )
@@ -188,6 +197,19 @@ static interlevelframe_t doom_frames_youarehereright[] =
 	frame_withtime( NULL, Frame_FixedDuration, 12 ),
 };
 
+#define generate_herecond( map, levelnum ) \
+static interlevelcond_t doom_herecond_ ## map [] = \
+{ \
+	{ \
+		AnimCondition_MapNumEqual, \
+		levelnum \
+	}, \
+	{ \
+		AnimCondition_FitsInFrame, \
+		1 \
+	}, \
+}
+
 #define generate_locationcond( map, levelnum ) \
 static interlevelcond_t doom_splatcond_ ## map [] = \
 { \
@@ -197,17 +219,34 @@ static interlevelcond_t doom_splatcond_ ## map [] = \
 	} \
 }; \
 \
-static interlevelcond_t doom_herecond_ ## map [] = \
+generate_herecond( map, levelnum )
+
+#define generate_locationcond_aftersecret( map, levelnum ) \
+static interlevelcond_t doom_splatcond_ ## map [] = \
 { \
 	{ \
-		AnimCondition_MapNumEqual, \
+		AnimCondition_MapNumGreater, \
 		levelnum \
 	}, \
 	{ \
-		AnimCondition_FitsInFrame, \
-		levelnum \
-	}, \
-}
+		AnimCondition_MapNotSecret, \
+		0 \
+	} \
+}; \
+\
+generate_herecond( map, levelnum )
+
+
+#define generate_locationcond_issecret( map, levelnum ) \
+static interlevelcond_t doom_splatcond_ ## map [] = \
+{ \
+	{ \
+		AnimCondition_SecretVisited, \
+		0 \
+	} \
+}; \
+\
+generate_herecond( map, levelnum )
 
 #define get_splatcond( map ) doom_splatcond_ ## map
 #define get_splatcondlen( map ) arrlen( get_splatcond( map ) )
@@ -217,32 +256,32 @@ static interlevelcond_t doom_herecond_ ## map [] = \
 generate_locationcond( E1M1, 1 );
 generate_locationcond( E1M2, 2 );
 generate_locationcond( E1M3, 3 );
-generate_locationcond( E1M4, 4 );
-generate_locationcond( E1M5, 5 );
-generate_locationcond( E1M6, 6 );
-generate_locationcond( E1M7, 7 );
-generate_locationcond( E1M8, 8 );
-generate_locationcond( E1M9, 9 );
+generate_locationcond_aftersecret( E1M4, 4 );
+generate_locationcond_aftersecret( E1M5, 5 );
+generate_locationcond_aftersecret( E1M6, 6 );
+generate_locationcond_aftersecret( E1M7, 7 );
+generate_locationcond_aftersecret( E1M8, 8 );
+generate_locationcond_issecret( E1M9, 9 );
 
-//generate_locationcond( E2M1, 1 );
-//generate_locationcond( E2M2, 2 );
-//generate_locationcond( E2M3, 3 );
-//generate_locationcond( E2M4, 4 );
-//generate_locationcond( E2M5, 5 );
-//generate_locationcond( E2M6, 6 );
-//generate_locationcond( E2M7, 7 );
-//generate_locationcond( E2M8, 8 );
-//generate_locationcond( E2M9, 9 );
-//
-//generate_locationcond( E3M1, 1 );
-//generate_locationcond( E3M2, 2 );
-//generate_locationcond( E3M3, 3 );
-//generate_locationcond( E3M4, 4 );
-//generate_locationcond( E3M5, 5 );
-//generate_locationcond( E3M6, 6 );
-//generate_locationcond( E3M7, 7 );
-//generate_locationcond( E3M8, 8 );
-//generate_locationcond( E3M9, 9 );
+generate_locationcond( E2M1, 1 );
+generate_locationcond( E2M2, 2 );
+generate_locationcond( E2M3, 3 );
+generate_locationcond( E2M4, 4 );
+generate_locationcond( E2M5, 5 );
+generate_locationcond_aftersecret( E2M6, 6 );
+generate_locationcond_aftersecret( E2M7, 7 );
+generate_locationcond_aftersecret( E2M8, 8 );
+generate_locationcond_issecret( E2M9, 9 );
+
+generate_locationcond( E3M1, 1 );
+generate_locationcond( E3M2, 2 );
+generate_locationcond( E3M3, 3 );
+generate_locationcond( E3M4, 4 );
+generate_locationcond( E3M5, 5 );
+generate_locationcond( E3M6, 6 );
+generate_locationcond_aftersecret( E3M7, 7 );
+generate_locationcond_aftersecret( E3M8, 8 );
+generate_locationcond_issecret( E3M9, 9 );
 
 #define generatesplatanim( arrayname, map, xpos, ypos ) \
 { \
@@ -274,7 +313,6 @@ generate_locationcond( E1M9, 9 );
 	0 \
 }
 
-
 #define generatelocationanims( map, xpos, ypos ) \
 generatesplatanim( doom_frames_splat, map, xpos, ypos ), \
 generatehereanim( doom_frames_youarehereleft, map, xpos, ypos ), \
@@ -286,12 +324,22 @@ generatehereanim( doom_frames_youarehereright, map, xpos, ypos )
 // Game setup (episodes etc)
 //============================================================================
 
+mapinfo_t* doom_maps_episode_1[] =
+{
+	&doom_map_e1m1, &doom_map_e1m2, &doom_map_e1m3,
+	&doom_map_e1m2, &doom_map_e1m5, &doom_map_e1m6,
+	&doom_map_e1m3, &doom_map_e1m8, &doom_map_e1m9
+};
+
 episodeinfo_t doom_episode_one =
 {
 	PlainFlowString( "Knee-Deep In The Dead" ),		// name
 	FlowString( "M_EPI1" ),							// name_patch_lump
-	&doom_map_e1m1,									// first_map
-	1												// episode_num
+	1,												// episode_num
+	doom_maps_episode_1,							// all_maps
+	arrlen( doom_maps_episode_1 ),					// num_maps
+	doom_map_e1m9.map_num,							// highest_map_num
+	&doom_map_e1m1									// first_map
 };
 
 //episodeinfo_t doom_episode_two =
@@ -371,12 +419,13 @@ gameflow_t doom_gameflow_shareware =
 
 mapinfo_t doom_map_e1m1 =
 {
-	FlowString( "E1M1" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M1 ),						// name
-	FlowString( "WILV00" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_one,								// episode
 	1,												// map_num
+	Map_None,										// map_flags
 	FlowString( "D_E1M1" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -394,12 +443,13 @@ mapinfo_t doom_map_e1m1 =
 
 mapinfo_t doom_map_e1m2 =
 {
-	FlowString( "E1M2" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M2 ),						// name
-	FlowString( "WILV01" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_one,								// episode
 	2,												// map_num
+	Map_None,										// map_flags
 	FlowString( "D_E1M2" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -417,12 +467,13 @@ mapinfo_t doom_map_e1m2 =
 
 mapinfo_t doom_map_e1m3 =
 {
-	FlowString( "E1M3" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M3 ),						// name
-	FlowString( "WILV02" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_one,								// episode
 	3,												// map_num
+	Map_None,										// map_flags
 	FlowString( "D_E1M3" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -440,12 +491,13 @@ mapinfo_t doom_map_e1m3 =
 
 mapinfo_t doom_map_e1m4 =
 {
-	FlowString( "E1M4" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M4 ),						// name
-	FlowString( "WILV03" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Tom Hall, John Romero" ),		// authors
 	&doom_episode_one,								// episode
 	4,												// map_num
+	Map_None,										// map_flags
 	FlowString( "D_E1M4" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -463,12 +515,13 @@ mapinfo_t doom_map_e1m4 =
 
 mapinfo_t doom_map_e1m5 =
 {
-	FlowString( "E1M5" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M5 ),						// name
-	FlowString( "WILV04" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_one,								// episode
 	5,												// map_num
+	Map_None,										// map_flags
 	FlowString( "D_E1M5" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -486,12 +539,13 @@ mapinfo_t doom_map_e1m5 =
 
 mapinfo_t doom_map_e1m6 =
 {
-	FlowString( "E1M6" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M6 ),						// name
-	FlowString( "WILV05" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_one,								// episode
 	6,												// map_num
+	Map_None,										// map_flags
 	FlowString( "D_E1M6" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -509,12 +563,13 @@ mapinfo_t doom_map_e1m6 =
 
 mapinfo_t doom_map_e1m7 =
 {
-	FlowString( "E1M7" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M7 ),						// name
-	FlowString( "WILV06" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_one,								// episode
 	7,												// map_num
+	Map_None,										// map_flags
 	FlowString( "D_E1M7" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -532,12 +587,13 @@ mapinfo_t doom_map_e1m7 =
 
 mapinfo_t doom_map_e1m8 =
 {
-	FlowString( "E1M8" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M8 ),						// name
-	FlowString( "WILV07" ),							// name_patch_lump
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
 	&doom_episode_one,								// episode
 	8,												// map_num
+	Map_Doom1EndOfEpisode,							// map_flags
 	FlowString( "D_E1M8" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -545,7 +601,7 @@ mapinfo_t doom_map_e1m8 =
 	NULL,											// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
-	NULL,											// interlevel_entering
+	&doom_interlevel_e1entering,					// interlevel_entering
 	NULL,											// next_map
 	NULL,											// next_map_intermission
 	NULL,											// secret_map
@@ -555,12 +611,13 @@ mapinfo_t doom_map_e1m8 =
 
 mapinfo_t doom_map_e1m9 =
 {
-	FlowString( "E1M9" ),							// data_lump
+	RuntimeFlowString( levellump_format_text ),		// data_lump
 	FlowString( HUSTR_E1M9 ),						// name
-	FlowString( "WILV08" ),							// name_patch_lump
-	PlainFlowString( "John Romero" ),					// authors
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_one,								// episode
 	9,												// map_num
+	Map_Secret,										// map_flags
 	FlowString( "D_E1M9" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -589,7 +646,7 @@ intermission_t doom_intermission_e1 =
 
 endgame_t doom_endgame_e1 =
 {
-	EndGame_Pic | EndGame_Ultimate | EndGame_SkipInterlevel,	// type
+	EndGame_Pic | EndGame_Ultimate,					// type
 	&doom_intermission_e1,							// intermission
 	FlowString( "HELP2" ),							// primary_image_lump
 	FlowString( "CREDIT" ),							// secondary_image_lump
@@ -625,7 +682,7 @@ static interlevelanim_t doom_anim_e1_fore[] =
 interlevel_t doom_interlevel_e1finished =
 {
 	Interlevel_Animated,							// type
-	FlowString( "WIMAP0" ),							// background_lump
+	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e1_back,								// background_anims
 	arrlen( doom_anim_e1_back ),					// num_background_anims
 	NULL,											// foreground_anims
@@ -635,7 +692,7 @@ interlevel_t doom_interlevel_e1finished =
 interlevel_t doom_interlevel_e1entering =
 {
 	Interlevel_Animated,							// type
-	FlowString( "WIMAP0" ),							// background_lump
+	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e1_back,								// background_anims
 	arrlen( doom_anim_e1_back ),					// num_background_anims
 	doom_anim_e1_fore,								// foreground_anims
@@ -648,4 +705,4 @@ interlevel_t doom_interlevel_e1entering =
 
 gameflow_t* current_game = &doom_gameflow_shareware;
 episodeinfo_t* current_episode = &doom_episode_one;
-mapinfo_t* current_map = &doom_map_e1m1;
+mapinfo_t* current_map = &doom_map_e1m3;

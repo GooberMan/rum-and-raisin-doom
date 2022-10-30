@@ -55,144 +55,6 @@ extern "C"
 	extern vbuffer_t blackedges;
 }
 
-template< typename _it >
-void SetupCache( _it& itr )
-{
-	itr.template get< 0 >().Setup( itr.template get< 1 >() );
-};
-
-typedef class interframecache_s
-{
-public:
-	interframecache_s()
-		: source( nullptr )
-		, image( nullptr )
-	{
-	}
-
-	constexpr patch_t* Image()			{ return image; }
-	constexpr int32_t Duration()		{ return source->duration; }
-	constexpr frametype_t Type()		{ return source->type; }
-
-	void Setup( interlevelframe_t& interframe )
-	{
-		source = &interframe;
-
-		DoomString imagelump = AsString( source->image_lump, current_episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
-
-		if( imagelump.size() > 0 )
-		{
-			image = (patch_t*)W_CacheLumpName( imagelump.c_str(), PU_LEVEL );
-		}
-	}
-
-private:
-	interlevelframe_t*					source;
-	patch_t*							image;
-
-} interframecache_t;
-
-typedef class interanimcache_s
-{
-public:
-	interanimcache_s()
-		: source( nullptr )
-	{
-	}
-
-	constexpr auto& Frames()			{ return frames; }
-	constexpr int32_t XPos()			{ return source->x_pos; }
-	constexpr int32_t YPos()			{ return source->y_pos; }
-	constexpr auto Conditions()			{ return std::span( source->conditions, source->num_conditions ); }
-
-	void Setup( interlevelanim_t& interanim )
-	{
-		source = &interanim;
-
-		frames.resize( source->num_frames );
-
-		auto og_frames = std::span( source->frames, source->num_frames );
-	
-		for( auto& curr : MultiRangeView( frames, og_frames ) )
-		{
-			SetupCache( curr );
-		}
-	}
-
-private:
-	interlevelanim_t*					source;
-	DoomVector< interframecache_t, PU_LEVEL >		frames;
-
-} interanimcache_t;
-
-typedef class interlevelcache_s
-{
-public:
-	interlevelcache_s()
-		: source( nullptr )
-		, background( nullptr )
-	{
-	}
-
-	constexpr patch_t* Background()		{ return background; }
-	constexpr auto& BackgroundAnims()	{ return background_anims; }
-	constexpr auto& ForegroundAnims()	{ return foreground_anims; }
-
-	void Setup( interlevel_t* interlevel )
-	{
-		source = interlevel;
-
-		background = (patch_t*)W_CacheLumpName( AsString( source->background_lump ).c_str(), PU_LEVEL );
-		background_anims.resize( source->num_background_anims );
-		foreground_anims.resize( source->num_foreground_anims );
-
-		auto og_background = std::span( source->background_anims, source->num_background_anims );
-		auto og_foreground = std::span( source->foreground_anims, source->num_foreground_anims );
-
-		for( auto curr : MultiRangeView( background_anims, og_background ) )
-		{
-			SetupCache( curr );
-		}
-
-		for( auto curr : MultiRangeView( foreground_anims, og_foreground ) )
-		{
-			SetupCache( curr );
-		}
-	}
-
-private:
-	interlevel_t*						source;
-	patch_t*							background;
-
-	DoomVector< interanimcache_t, PU_LEVEL >		background_anims;
-	DoomVector< interanimcache_t, PU_LEVEL >		foreground_anims;
-
-} interlevelcache_t;
-
-typedef class wi_cache_s
-{
-public:
-	wi_cache_s()
-	{
-	}
-
-	void Setup( mapinfo_t* map )
-	{
-		finished.Setup( map->interlevel_finished );
-		entering.Setup( map->interlevel_entering );
-	}
-
-	constexpr interlevelcache_t& Finished() { return finished; }
-	constexpr interlevelcache_t& Entering() { return entering; }
-
-private:
-	interlevelcache_t		finished;
-	interlevelcache_t		entering;
-
-} wi_cache_t;
-
-static wi_cache_t* cache = NULL;
-
 //
 // Data needed to add patches to full screen intermission pics.
 // Patches are statistics messages, and animations.
@@ -317,113 +179,6 @@ typedef struct
 } interanim_t;
 
 
-static point_t lnodes[NUMEPISODES][NUMMAPS] =
-{
-    // Episode 0 World Map
-    {
-	{ 185, 164 },	// location of level 0 (CJ)
-	{ 148, 143 },	// location of level 1 (CJ)
-	{ 69, 122 },	// location of level 2 (CJ)
-	{ 209, 102 },	// location of level 3 (CJ)
-	{ 116, 89 },	// location of level 4 (CJ)
-	{ 166, 55 },	// location of level 5 (CJ)
-	{ 71, 56 },	// location of level 6 (CJ)
-	{ 135, 29 },	// location of level 7 (CJ)
-	{ 71, 24 }	// location of level 8 (CJ)
-    },
-
-    // Episode 1 World Map should go here
-    {
-	{ 254, 25 },	// location of level 0 (CJ)
-	{ 97, 50 },	// location of level 1 (CJ)
-	{ 188, 64 },	// location of level 2 (CJ)
-	{ 128, 78 },	// location of level 3 (CJ)
-	{ 214, 92 },	// location of level 4 (CJ)
-	{ 133, 130 },	// location of level 5 (CJ)
-	{ 208, 136 },	// location of level 6 (CJ)
-	{ 148, 140 },	// location of level 7 (CJ)
-	{ 235, 158 }	// location of level 8 (CJ)
-    },
-
-    // Episode 2 World Map should go here
-    {
-	{ 156, 168 },	// location of level 0 (CJ)
-	{ 48, 154 },	// location of level 1 (CJ)
-	{ 174, 95 },	// location of level 2 (CJ)
-	{ 265, 75 },	// location of level 3 (CJ)
-	{ 130, 48 },	// location of level 4 (CJ)
-	{ 279, 23 },	// location of level 5 (CJ)
-	{ 198, 48 },	// location of level 6 (CJ)
-	{ 140, 25 },	// location of level 7 (CJ)
-	{ 281, 136 }	// location of level 8 (CJ)
-    }
-
-};
-
-
-//
-// Animation locations for episode 0 (1).
-// Using patches saves a lot of space,
-//  as they replace 320x200 full screen frames.
-//
-
-#define ANIM(type, period, nanims, x, y, nexttic)            \
-   { (type), (period), (nanims), { (x), (y) }, (nexttic),    \
-     0, { NULL, NULL, NULL }, 0, 0, 0, 0 }
-
-
-static interanim_t epsd0animinfo[] =
-{
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 224, 104, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 184, 160, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 112, 136, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 72, 112, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 88, 96, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 64, 48, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 192, 40, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 136, 16, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 80, 16, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 64, 24, 0),
-};
-
-static interanim_t epsd1animinfo[] =
-{
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 1),
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 2),
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 3),
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 4),
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 5),
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 6),
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 7),
-    ANIM(ANIM_LEVEL, TICRATE/3, 3, 192, 144, 8),
-    ANIM(ANIM_LEVEL, TICRATE/3, 1, 128, 136, 8),
-};
-
-static interanim_t epsd2animinfo[] =
-{
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 104, 168, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 40, 136, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 160, 96, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 104, 80, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/3, 3, 120, 32, 0),
-    ANIM(ANIM_ALWAYS, TICRATE/4, 3, 40, 0, 0),
-};
-
-static int NUMANIMS[NUMEPISODES] =
-{
-    arrlen(epsd0animinfo),
-    arrlen(epsd1animinfo),
-    arrlen(epsd2animinfo),
-};
-
-static interanim_t *anims[NUMEPISODES] =
-{
-    epsd0animinfo,
-    epsd1animinfo,
-    epsd2animinfo
-};
-
-
 //
 // GENERAL DATA
 //
@@ -485,12 +240,6 @@ static int		NUMCMAPS;
 //	GRAPHICS
 //
 
-// You Are Here graphic
-static patch_t*		yah[3] = { NULL, NULL, NULL }; 
-
-// splat
-static patch_t*		splat[2] = { NULL, NULL };
-
 // %, : graphics
 static patch_t*		percent;
 static patch_t*		colon;
@@ -539,22 +288,389 @@ static patch_t*		bp[MAXPLAYERS];
  // Name graphics of each level (centered)
 static patch_t**	lnames;
 
-// Buffer storing the backdrop
-static patch_t *background;
+
+template< typename _it >
+void SetupCache( mapinfo_t* map, _it& itr )
+{
+	itr.template get< 0 >().Setup( map, itr.template get< 1 >() );
+};
+
+typedef class interframecache_s
+{
+public:
+	interframecache_s()
+		: source( nullptr )
+		, image( nullptr )
+	{
+	}
+
+	constexpr patch_t* Image()			{ return image; }
+	constexpr int32_t Duration()		{ return source->duration; }
+	constexpr frametype_t Type()		{ return source->type; }
+
+	void Setup( mapinfo_t* map, interlevelframe_t& interframe )
+	{
+		source = &interframe;
+
+		DoomString imagelump = AsString( source->image_lump, map->episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
+
+		if( imagelump.size() > 0 )
+		{
+			image = (patch_t*)W_CacheLumpName( imagelump.c_str(), PU_LEVEL );
+		}
+	}
+
+private:
+	interlevelframe_t*					source;
+	patch_t*							image;
+
+} interframecache_t;
+
+typedef class interimagecache_s
+{
+public:
+	interimagecache_s()
+		: image( nullptr )
+	{
+	}
+
+	constexpr patch_t* Image()			{ return image; }
+
+	template< typename... _params >
+	void Setup( mapinfo_t* map, flowstring_t& lumpname, _params... params )
+	{
+		imagelump = AsString( lumpname, params... );
+
+		if( imagelump.size() > 0 )
+		{
+			image = (patch_t*)W_CacheLumpName( imagelump.c_str(), PU_LEVEL );
+		}
+	}
+
+private:
+	DoomString							imagelump;
+	patch_t*							image;
+
+} interimagecache_t;
+
+typedef class interanimcache_s
+{
+public:
+	interanimcache_s()
+		: source( nullptr )
+		, conditionsmet( false )
+	{
+	}
+
+	using frame_iterator = DoomVector< interframecache_t, PU_LEVEL >::iterator;
+
+	constexpr auto& Frames()			{ return frames; }
+	constexpr int32_t XPos()			{ return source->x_pos; }
+	constexpr int32_t YPos()			{ return source->y_pos; }
+	constexpr auto Conditions()			{ return std::span( source->conditions, source->num_conditions ); }
+	constexpr auto ConditionsMet()		{ return conditionsmet; }
+
+	void Setup( mapinfo_t* map, interlevelanim_t& interanim )
+	{
+		source = &interanim;
+
+		frames.resize( source->num_frames );
+
+		auto og_frames = std::span( source->frames, source->num_frames );
+	
+		for( auto& curr : MultiRangeView( frames, og_frames ) )
+		{
+			SetupCache( map, curr );
+		}
+
+		conditionsmet = frames.size() > 0;
+		if( conditionsmet )
+		{
+			for( auto& cond : Conditions() )
+			{
+				switch( cond.condition )
+				{
+				case AnimCondition_MapNumGreater:
+					conditionsmet &= ( map->map_num > cond.param );
+					break;
+
+				case AnimCondition_MapNumEqual:
+					conditionsmet &= ( map->map_num == cond.param );
+					break;
+
+				case AnimCondition_MapVisited:
+					conditionsmet &= wbs->plyr[ consoleplayer ].visited[ cond.param ];
+					break;
+
+				case AnimCondition_MapNotSecret:
+					conditionsmet &= ( map->map_flags & Map_Secret ) == Map_None;
+					break;
+
+				case AnimCondition_SecretVisited:
+					conditionsmet &= wbs->didsecret;
+					break;
+
+				case AnimCondition_FitsInFrame:
+					for( auto& frame : Frames() )
+					{
+						if( frame.Image() != nullptr )
+						{
+							int32_t left	= XPos() - SHORT( frame.Image()->leftoffset );
+							int32_t top		= YPos() - SHORT( frame.Image()->topoffset );
+							int32_t right	= left + SHORT( frame.Image()->width );
+							int32_t bottom	= top + SHORT( frame.Image()->height );
+
+							conditionsmet &= left >= 0 && top >= 0
+											&& right < V_VIRTUALWIDTH && bottom < V_VIRTUALHEIGHT;
+						}
+					}
+					break;
+
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+private:
+	interlevelanim_t*								source;
+	DoomVector< interframecache_t, PU_LEVEL >		frames;
+	bool											conditionsmet;
+
+} interanimcache_t;
+
+typedef class interlevelcache_s
+{
+public:
+	interlevelcache_s()
+		: source( nullptr )
+		, fake_backgroundframe( { } )
+		, fake_backgroundanim( { } )
+		, fake_background_span( std::span( &fake_background, 1 ) )
+	{
+	}
+
+	constexpr auto& Background()			{ return fake_background_span; }
+	constexpr auto& BackgroundAnims()		{ return background_anims; }
+	constexpr auto& ForegroundAnims()		{ return foreground_anims; }
+
+	INLINE auto AllAnims()					{ return Concat( fake_background_span, background_anims, foreground_anims ); }
+	INLINE size_t AllAnimsCount()			{ return background_anims.size() + foreground_anims.size() + 1; }
+
+	void Setup( mapinfo_t* map, interlevel_t* interlevel )
+	{
+		source = interlevel;
+
+		PrimeFakeBackgroundAnim( map );
+
+		background_anims.resize( source->num_background_anims );
+		foreground_anims.resize( source->num_foreground_anims );
+
+		auto og_background = std::span( source->background_anims, source->num_background_anims );
+		auto og_foreground = std::span( source->foreground_anims, source->num_foreground_anims );
+
+		for( auto curr : MultiRangeView( background_anims, og_background ) )
+		{
+			SetupCache( map, curr );
+		}
+
+		for( auto curr : MultiRangeView( foreground_anims, og_foreground ) )
+		{
+			SetupCache( map, curr );
+		}
+	}
+
+private:
+	void PrimeFakeBackgroundAnim( mapinfo_t* map )
+	{
+		fake_backgroundframe.image_lump = source->background_lump;
+		fake_backgroundframe.type = Frame_Background;
+		fake_backgroundframe.duration = -1;
+		fake_backgroundframe.lumpname_animindex = fake_backgroundframe.lumpname_animframe = 0;
+
+		fake_backgroundanim.frames = &fake_backgroundframe;
+		fake_backgroundanim.num_frames = 1;
+		fake_backgroundanim.x_pos = fake_backgroundanim.y_pos = 0;
+		fake_backgroundanim.conditions = NULL;
+		fake_backgroundanim.num_conditions = 0;
+
+		fake_background.Setup( map, fake_backgroundanim );
+	}
+
+	interlevel_t*									source;
+
+	interlevelframe_t								fake_backgroundframe;
+	interlevelanim_t								fake_backgroundanim;
+	interanimcache_t								fake_background;
+
+	DoomVector< interanimcache_t, PU_LEVEL >		background_anims;
+	DoomVector< interanimcache_t, PU_LEVEL >		foreground_anims;
+	std::span< interanimcache_t, 1 >				fake_background_span;
+
+} interlevelcache_t;
+
+typedef class wi_animationstate_s
+{
+public:
+	using frame_iterator = interanimcache_t::frame_iterator;
+
+	void Setup( interanimcache_t& cache )
+	{
+		x_pos = cache.XPos();
+		y_pos = cache.YPos();
+
+		frames_begin = frames_curr = cache.Frames().begin();
+		frames_end = cache.Frames().end();
+
+		duration_left = frames_curr->Duration() + 1;
+		if( frames_curr->Type() & Frame_RandomStart )
+		{
+			duration_left = 1 + ( M_Random() % ( duration_left - 1 ) );
+		}
+
+		if( frames_curr->Type() & Frame_AdjustForWidescreen )
+		{
+			x_pos -= ( ( frames_curr->Image()->width - V_VIRTUALWIDTH ) / 2 );
+		}
+	}
+
+	void Update()
+	{
+		if( duration_left > 0 )
+		{
+			--duration_left;
+		}
+
+		if( duration_left == 0 )
+		{
+			if( ++frames_curr == frames_end )
+			{
+				frames_curr = frames_begin;
+			}
+			duration_left = frames_curr->Duration();
+		}
+	}
+
+	void Render()
+	{
+		if( frames_curr->Image() != nullptr )
+		{
+			V_DrawPatch( x_pos, y_pos, frames_curr->Image() );
+		}
+	}
+
+private:
+	int32_t duration_left;
+	int32_t x_pos;
+	int32_t y_pos;
+
+	frame_iterator frames_begin;
+	frame_iterator frames_end;
+	frame_iterator frames_curr;
+
+} wi_animationstate_t;
+
+typedef class wi_animation_s
+{
+public:
+	wi_animation_s()
+		: currmap( nullptr )
+		, nextmap( nullptr )
+		, nextintermission( nullptr )
+		, nextendgame( nullptr )
+	{
+	}
+
+	void Setup( mapinfo_t* map, mapinfo_t* next )
+	{
+		currmap = map;
+		nextmap = next;
+
+		if( currmap->interlevel_finished )
+		{
+			finished.Setup( currmap, currmap->interlevel_finished );
+
+			SetupAnims( finished, finished_anims );
+		}
+
+		if( nextmap && currmap->interlevel_entering )
+		{
+			entering.Setup( nextmap, currmap->interlevel_entering );
+
+			SetupAnims( entering, entering_anims );
+		}
+	}
+
+	void Update( bool entering )
+	{
+		for( auto& anim : entering ? entering_anims : finished_anims )
+		{
+			anim.Update();
+		}
+	}
+
+	void Render( bool entering )
+	{
+		for( auto& anim : entering ? entering_anims : finished_anims )
+		{
+			anim.Render();
+		}
+	}
+
+private:
+	constexpr interlevelcache_t& Finished() { return finished; }
+	constexpr interlevelcache_t& Entering() { return entering; }
+
+	static void SetupAnims( interlevelcache_t& cache, DoomVector< wi_animationstate_t >& anims )
+	{
+		auto animcache = cache.AllAnims();
+		size_t validanims = 0;
+		size_t invalidanims = 0;
+		for( auto& anim : animcache )
+		{
+			if( anim.ConditionsMet() )
+			{
+				++validanims;
+			}
+			else
+			{
+				++invalidanims;
+			}
+		}
+
+		anims.resize( validanims );
+
+		auto outputanim = anims.begin();
+
+		for( auto& anim : animcache )
+		{
+			if( anim.ConditionsMet() )
+			{
+				outputanim->Setup( anim );
+				++outputanim;
+			}
+		}
+	}
+
+	mapinfo_t*				currmap;
+	mapinfo_t*				nextmap;
+	intermission_t*			nextintermission;
+	endgame_t*				nextendgame;
+
+	interlevelcache_t		finished;
+	interlevelcache_t		entering;
+
+	DoomVector< wi_animationstate_t >	finished_anims;
+	DoomVector< wi_animationstate_t >	entering_anims;
+
+} wi_animation_t;
+
+static wi_animation_t* animation = NULL;
 
 //
 // CODE
 //
-
-// slam background
-void WI_slamBackground(void)
-{
-	// WIDESCREEN HACK
-	int32_t xpos = -( ( background->width - V_VIRTUALWIDTH ) / 2 );
-
-	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
-	V_DrawPatch( xpos, 0, background );
-}
 
 // The ticker is used to detect keys
 //  because of timing issues in netgames.
@@ -617,156 +733,6 @@ void WI_drawEL(void)
     V_DrawPatch((V_VIRTUALWIDTH - SHORT(lnames[wbs->next]->width))/2,
 		y, 
                 lnames[wbs->next]);
-
-}
-
-void
-WI_drawOnLnode
-( int		n,
-  patch_t*	c[] )
-{
-
-    int		i;
-    int		left;
-    int		top;
-    int		right;
-    int		bottom;
-    boolean	fits = false;
-
-    i = 0;
-    do
-    {
-	left = lnodes[wbs->epsd][n].x - SHORT(c[i]->leftoffset);
-	top = lnodes[wbs->epsd][n].y - SHORT(c[i]->topoffset);
-	right = left + SHORT(c[i]->width);
-	bottom = top + SHORT(c[i]->height);
-
-	if (left >= 0
-	    && right < V_VIRTUALWIDTH
-	    && top >= 0
-	    && bottom < V_VIRTUALHEIGHT)
-	{
-	    fits = true;
-	}
-	else
-	{
-	    i++;
-	}
-    } while (!fits && i!=2 && c[i] != NULL);
-
-    if (fits && i<2)
-    {
-	V_DrawPatch(lnodes[wbs->epsd][n].x,
-                    lnodes[wbs->epsd][n].y,
-		    c[i]);
-    }
-    else
-    {
-	// DEBUG
-	I_TerminalPrintf( Log_Warning, "Could not place patch on level %d", n+1); 
-    }
-}
-
-
-
-void WI_initAnimatedBack(void)
-{
-    int		i;
-    interanim_t*	a;
-
-    if (gamemode == commercial)
-	return;
-
-    if (wbs->epsd > 2)
-	return;
-
-    for (i=0;i<NUMANIMS[wbs->epsd];i++)
-    {
-	a = &anims[wbs->epsd][i];
-
-	// init variables
-	a->ctr = -1;
-
-	// specify the next time to draw it
-	if (a->type == ANIM_ALWAYS)
-	    a->nexttic = bcnt + 1 + (M_Random()%a->period);
-	else if (a->type == ANIM_RANDOM)
-	    a->nexttic = bcnt + 1 + a->data2+(M_Random()%a->data1);
-	else if (a->type == ANIM_LEVEL)
-	    a->nexttic = bcnt + 1;
-    }
-
-}
-
-void WI_updateAnimatedBack(void)
-{
-    int		i;
-    interanim_t*	a;
-
-    if (gamemode == commercial)
-	return;
-
-    if (wbs->epsd > 2)
-	return;
-
-    for (i=0;i<NUMANIMS[wbs->epsd];i++)
-    {
-	a = &anims[wbs->epsd][i];
-
-	if (bcnt == a->nexttic)
-	{
-	    switch (a->type)
-	    {
-	      case ANIM_ALWAYS:
-		if (++a->ctr >= a->nanims) a->ctr = 0;
-		a->nexttic = bcnt + a->period;
-		break;
-
-	      case ANIM_RANDOM:
-		a->ctr++;
-		if (a->ctr == a->nanims)
-		{
-		    a->ctr = -1;
-		    a->nexttic = bcnt+a->data2+(M_Random()%a->data1);
-		}
-		else a->nexttic = bcnt + a->period;
-		break;
-		
-	      case ANIM_LEVEL:
-		// gawd-awful hack for level anims
-		if (!(state == StatCount && i == 7)
-		    && wbs->next == a->data1)
-		{
-		    a->ctr++;
-		    if (a->ctr == a->nanims) a->ctr--;
-		    a->nexttic = bcnt + a->period;
-		}
-		break;
-	    }
-	}
-
-    }
-
-}
-
-void WI_drawAnimatedBack(void)
-{
-    int			i;
-    interanim_t*		a;
-
-    if (gamemode == commercial)
-	return;
-
-    if (wbs->epsd > 2)
-	return;
-
-    for (i=0 ; i<NUMANIMS[wbs->epsd] ; i++)
-    {
-	a = &anims[wbs->epsd][i];
-
-	if (a->ctr >= 0)
-	    V_DrawPatch(a->loc.x, a->loc.y, a->p[a->ctr]);
-    }
 
 }
 
@@ -905,8 +871,6 @@ void WI_initNoState(void)
 
 void WI_updateNoState(void) {
 
-    WI_updateAnimatedBack();
-
     if (!--cnt)
     {
         // Don't call WI_End yet.  G_WorldDone doesnt immediately 
@@ -927,14 +891,10 @@ void WI_initShowNextLoc(void)
     state = ShowNextLoc;
     acceleratestage = 0;
     cnt = SHOWNEXTLOCDELAY * TICRATE;
-
-    WI_initAnimatedBack();
 }
 
 void WI_updateShowNextLoc(void)
 {
-    WI_updateAnimatedBack();
-
     if (!--cnt || acceleratestage)
 	WI_initNoState();
     else
@@ -944,38 +904,7 @@ void WI_updateShowNextLoc(void)
 void WI_drawShowNextLoc(void)
 {
 
-    int		i;
-    int		last;
-
-    WI_slamBackground();
-
-    // draw animated background
-    WI_drawAnimatedBack(); 
-
-    if ( gamemode != commercial)
-    {
-  	if (wbs->epsd > 2)
-	{
-	    WI_drawEL();
-	    return;
-	}
-	
-	last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
-
-	// draw a splat on taken cities.
-	for (i=0 ; i<=last ; i++)
-	    WI_drawOnLnode(i, splat);
-
-	// splat the secret level?
-	if (wbs->didsecret)
-	    WI_drawOnLnode(8, splat);
-
-	// draw flashing ptr
-	if (snl_pointeron)
-	    WI_drawOnLnode(wbs->next, yah); 
-    }
-
-    // draws which level you are entering..
+	// Well then
     if ( (gamemode != commercial)
 	 || wbs->next != 30)
 	WI_drawEL();  
@@ -1042,8 +971,6 @@ void WI_initDeathmatchStats(void)
 	    dm_totals[i] = 0;
 	}
     }
-    
-    WI_initAnimatedBack();
 }
 
 
@@ -1055,8 +982,6 @@ void WI_updateDeathmatchStats(void)
     int		j;
     
     boolean	stillticking;
-
-    WI_updateAnimatedBack();
 
     if (acceleratestage && dm_state != 4)
     {
@@ -1160,10 +1085,6 @@ void WI_drawDeathmatchStats(void)
     int		y;
     int		w;
 
-    WI_slamBackground();
-    
-    // draw animated background
-    WI_drawAnimatedBack(); 
     WI_drawLF();
 
     // draw stat titles (top line)
@@ -1261,8 +1182,6 @@ void WI_initNetgameStats(void)
     }
 
     dofrags = !!dofrags;
-
-    WI_initAnimatedBack();
 }
 
 
@@ -1274,8 +1193,6 @@ void WI_updateNetgameStats(void)
     int		fsum;
     
     boolean	stillticking;
-
-    WI_updateAnimatedBack();
 
     if (acceleratestage && ng_state != 10)
     {
@@ -1429,11 +1346,6 @@ void WI_drawNetgameStats(void)
     int		y;
     int		pwidth = SHORT(percent->width);
 
-    WI_slamBackground();
-    
-    // draw animated background
-    WI_drawAnimatedBack(); 
-
     WI_drawLF();
 
     // draw stat titles (top line)
@@ -1487,15 +1399,10 @@ void WI_initStats(void)
     cnt_kills[0] = cnt_items[0] = cnt_secret[0] = -1;
     cnt_time = cnt_par = -1;
     cnt_pause = TICRATE;
-
-    WI_initAnimatedBack();
 }
 
 void WI_updateStats(void)
 {
-
-    WI_updateAnimatedBack();
-
     if (acceleratestage && sp_state != 10)
     {
 	acceleratestage = 0;
@@ -1604,11 +1511,6 @@ void WI_drawStats(void)
 
     lh = (3*SHORT(num[0]->height))/2;
 
-    WI_slamBackground();
-
-    // draw animated background
-    WI_drawAnimatedBack();
-    
     WI_drawLF();
 
     V_DrawPatch(SP_STATSX, SP_STATSY, kills);
@@ -1680,6 +1582,8 @@ void WI_Ticker(void)
 
     WI_checkForAccelerate();
 
+	animation->Update( state != StatCount );
+
     switch (state)
     {
       case StatCount:
@@ -1710,54 +1614,22 @@ static void WI_loadUnloadData(load_callback_t callback)
     char name[9];
     interanim_t *a;
 
-    if (gamemode == commercial)
-    {
-	for (i=0 ; i<NUMCMAPS ; i++)
+	if (gamemode == commercial)
 	{
-	    DEH_snprintf(name, 9, "CWILV%2.2d", i);
-            callback(name, &lnames[i]);
-	}
-    }
-    else
-    {
-	for (i=0 ; i<NUMMAPS ; i++)
-	{
-	    DEH_snprintf(name, 9, "WILV%d%d", wbs->epsd, i);
-            callback(name, &lnames[i]);
-	}
-
-	// you are here
-        callback(DEH_String("WIURH0"), &yah[0]);
-
-	// you are here (alt.)
-        callback(DEH_String("WIURH1"), &yah[1]);
-
-	// splat
-        callback(DEH_String("WISPLAT"), &splat[0]);
-
-	if (wbs->epsd < 3)
-	{
-	    for (j=0;j<NUMANIMS[wbs->epsd];j++)
-	    {
-		a = &anims[wbs->epsd][j];
-		for (i=0;i<a->nanims;i++)
+		for (i=0 ; i<NUMCMAPS ; i++)
 		{
-		    // MONDO HACK!
-		    if (wbs->epsd != 1 || j != 8)
-		    {
-			// animations
-			DEH_snprintf(name, 9, "WIA%d%.2d%.2d", wbs->epsd, j, i);
-                        callback(name, &a->p[i]);
-		    }
-		    else
-		    {
-			// HACK ALERT!
-			a->p[i] = anims[1][4].p[i];
-		    }
+			DEH_snprintf(name, 9, "CWILV%2.2d", i);
+				callback(name, &lnames[i]);
 		}
-	    }
 	}
-    }
+	else
+	{
+		for (i=0 ; i<NUMMAPS ; i++)
+		{
+			DEH_snprintf(name, 9, "WILV%d%d", wbs->epsd, i);
+				callback(name, &lnames[i]);
+		}
+	}
 
     // More hacks on minus sign.
     if (W_CheckNumForName(DEH_String("WIMINUS")) > 0)
@@ -1767,9 +1639,9 @@ static void WI_loadUnloadData(load_callback_t callback)
 
     for (i=0;i<10;i++)
     {
-	 // numbers 0-9
-	DEH_snprintf(name, 9, "WINUM%d", i);
-        callback(name, &num[i]);
+		 // numbers 0-9
+		DEH_snprintf(name, 9, "WINUM%d", i);
+			callback(name, &num[i]);
     }
 
     // percent sign
@@ -1790,17 +1662,19 @@ static void WI_loadUnloadData(load_callback_t callback)
      // "secret"
     callback(DEH_String("WISCRT2"), &sp_secret);
 
-    // french wad uses WIOBJ (?)
-    if (W_CheckNumForName(DEH_String("WIOBJ")) >= 0)
-    {
-    	// "items"
-    	if (netgame && !deathmatch)
-            callback(DEH_String("WIOBJ"), &items);
-    	else
-            callback(DEH_String("WIOSTI"), &items);
-    } else {
-        callback(DEH_String("WIOSTI"), &items);
-    }
+	// french wad uses WIOBJ (?)
+	if (W_CheckNumForName(DEH_String("WIOBJ")) >= 0)
+	{
+		// "items"
+		if (netgame && !deathmatch)
+			callback(DEH_String("WIOBJ"), &items);
+		else
+			callback(DEH_String("WIOSTI"), &items);
+	}
+	else
+	{
+		callback(DEH_String("WIOSTI"), &items);
+	}
 
     // "frgs"
     callback(DEH_String("WIFRGS"), &frags);
@@ -1828,33 +1702,15 @@ static void WI_loadUnloadData(load_callback_t callback)
 
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
-	// "1,2,3,4"
-	DEH_snprintf(name, 9, "STPB%d", i);
-        callback(name, &p[i]);
+		// "1,2,3,4"
+		DEH_snprintf(name, 9, "STPB%d", i);
+			callback(name, &p[i]);
 
-	// "1,2,3,4"
-	DEH_snprintf(name, 9, "WIBP%d", i+1);
-        callback(name, &bp[i]);
+		// "1,2,3,4"
+		DEH_snprintf(name, 9, "WIBP%d", i+1);
+			callback(name, &bp[i]);
     }
 
-    // Background image
-
-    if (gamemode == commercial)
-    {
-        M_StringCopy(name, DEH_String("INTERPIC"), sizeof(name));
-    }
-    else if (gameversion >= exe_ultimate && wbs->epsd == 3)
-    {
-        M_StringCopy(name, DEH_String("INTERPIC"), sizeof(name));
-    }
-    else
-    {
-	DEH_snprintf(name, sizeof(name), "WIMAP%d", wbs->epsd);
-    }
-
-    // Draw backdrop and save to a temporary buffer
-
-    callback(name, &background);
 }
 
 static void WI_loadCallback(const char *name, patch_t **variable)
@@ -1907,6 +1763,9 @@ void WI_unloadData(void)
 
 void WI_Drawer (void)
 {
+	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
+	animation->Render( state != StatCount );
+
     switch (state)
     {
       case StatCount:
@@ -1976,8 +1835,8 @@ void WI_Start(wbstartstruct_t* wbstartstruct)
     WI_initVariables(wbstartstruct);
     WI_loadData();
 
-	cache = Z_Malloc< wi_cache_t >( PU_LEVEL, NULL );
-	cache->Setup( (mapinfo_t*)wbs->currmap );
+	animation = Z_Malloc< wi_animation_t >( PU_LEVEL, NULL );
+	animation->Setup( (mapinfo_t*)wbs->currmap, (mapinfo_t*)wbs->nextmap );
 
     if (deathmatch)
 	WI_initDeathmatchStats();

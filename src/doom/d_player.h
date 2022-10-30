@@ -161,6 +161,7 @@ typedef struct player_s
     // True if secret level has been done.
     boolean		didsecret;	
 
+	boolean*	visitedlevels;
 } player_t;
 
 
@@ -179,12 +180,13 @@ typedef struct
     int		stime; 
     int		frags[4];
     int		score;	// current score on entry, modified on return
-  
+    boolean* visited;
 } wbplayerstruct_t;
 
 typedef struct
 {
 	void*	currmap;
+	void*	nextmap;
 
     int		epsd;	// episode # (0-2)
 
@@ -193,7 +195,8 @@ typedef struct
     
     // previous and next levels, origin 0
     int		last;
-    int		next;	
+    int		next;
+	boolean	nextissecret;
     
     int		maxkills;
     int		maxitems;
