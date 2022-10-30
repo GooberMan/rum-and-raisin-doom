@@ -81,7 +81,27 @@ typedef struct interframecache_s
 
 		if( source->image_lump )
 		{
-			image = (patch_t*)W_CacheLumpName( source->image_lump, PU_LEVEL );
+			bool dehacked = ( source->lumpname_flags & Lumpname_Dehacked ) != Lumpname_None;
+
+			if( source->lumpname_flags & Lumpname_RuntimeGenerated )
+			{
+				char lumpname[ 12 ] = {};
+
+				if( dehacked )
+				{
+					DEH_snprintf( lumpname, 12, source->image_lump, current_episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
+				}
+				else
+				{
+					M_snprintf( lumpname, 12, source->image_lump, current_episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
+				}
+
+				image = (patch_t*)W_CacheLumpName( lumpname, PU_LEVEL );
+			}
+			else
+			{
+				image = (patch_t*)W_CacheLumpName( dehacked ? DEH_String( source->image_lump ) : source->image_lump, PU_LEVEL );
+			}
 		}
 	}
 
