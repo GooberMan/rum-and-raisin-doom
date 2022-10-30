@@ -52,8 +52,138 @@ extern "C"
 	#include "wi_stuff.h"
 
 	extern vbuffer_t blackedges;
-
 }
+
+template< typename _it >
+void SetupCache( _it& itr )
+{
+	itr.template get< 0 >().Setup( itr.template get< 1 >() );
+};
+
+typedef struct interframecache_s
+{
+	interframecache_s()
+		: source( nullptr )
+		, image( nullptr )
+	{
+	}
+
+	interlevelframe_t*					source;
+	patch_t*							image;
+
+	constexpr patch_t* Image()			{ return image; }
+	constexpr int32_t Duration()		{ return source->duration; }
+	constexpr frametype_t Type()		{ return source->type; }
+
+	void Setup( interlevelframe_t& interframe )
+	{
+		source = &interframe;
+
+		if( source->image_lump )
+		{
+			image = (patch_t*)W_CacheLumpName( source->image_lump, PU_LEVEL );
+		}
+	}
+
+} interframecache_t;
+
+typedef struct interanimcache_s
+{
+	interanimcache_s()
+		: source( nullptr )
+	{
+	}
+
+	interlevelanim_t*					source;
+	DoomVector< interframecache_t, PU_LEVEL >		frames;
+
+	constexpr auto& Frames()			{ return frames; }
+	constexpr int32_t XPos()			{ return source->x_pos; }
+	constexpr int32_t YPos()			{ return source->y_pos; }
+	constexpr auto Conditions()			{ return std::span( source->conditions, source->num_conditions ); }
+
+	void Setup( interlevelanim_t& interanim )
+	{
+		source = &interanim;
+
+		frames.resize( source->num_frames );
+
+		auto og_frames = std::span( source->frames, source->num_frames );
+	
+		for( auto& curr : MultiRangeView( frames, og_frames ) )
+		{
+			SetupCache( curr );
+		}
+	}
+
+} interanimcache_t;
+
+typedef struct interlevelcache_s
+{
+	interlevelcache_s()
+		: source( nullptr )
+		, background( nullptr )
+	{
+	}
+
+	interlevel_t*						source;
+	patch_t*							background;
+
+	DoomVector< interanimcache_t, PU_LEVEL >		background_anims;
+	DoomVector< interanimcache_t, PU_LEVEL >		foreground_anims;
+
+	constexpr patch_t* Background()		{ return background; }
+	constexpr auto& BackgroundAnims()	{ return background_anims; }
+	constexpr auto& ForegroundAnims()	{ return foreground_anims; }
+
+	void Setup( interlevel_t* interlevel )
+	{
+		source = interlevel;
+
+		background = (patch_t*)W_CacheLumpName( source->background_lump, PU_LEVEL );
+		background_anims.resize( source->num_background_anims );
+		foreground_anims.resize( source->num_foreground_anims );
+
+		auto og_background = std::span( source->background_anims, source->num_background_anims );
+		auto og_foreground = std::span( source->foreground_anims, source->num_foreground_anims );
+
+		auto range_bg = MultiRangeView( background_anims, og_background );
+
+		for( auto it = background_anims.begin(); it != background_anims.end(); ++it )
+		{
+			interanimcache_t& val = *it;
+			val.source = NULL;
+		}
+
+		for( auto curr : MultiRangeView( background_anims, og_background ) )
+		{
+			SetupCache( curr );
+		}
+
+		for( auto curr : MultiRangeView( foreground_anims, og_foreground ) )
+		{
+			SetupCache( curr );
+		}
+	}
+} interlevelcache_t;
+
+typedef struct wi_cache_s
+{
+	wi_cache_s()
+	{
+	}
+
+	interlevelcache_t		finished;
+	interlevelcache_t		entering;
+
+	void Setup( mapinfo_t* map )
+	{
+		finished.Setup( map->interlevel_finished );
+		entering.Setup( map->interlevel_entering );
+	}
+} wi_cache_t;
+
+static wi_cache_t* cache = NULL;
 
 //
 // Data needed to add patches to full screen intermission pics.
@@ -1721,7 +1851,7 @@ static void WI_loadUnloadData(load_callback_t callback)
 
 static void WI_loadCallback(const char *name, patch_t **variable)
 {
-    *variable = (patch_t*)W_CacheLumpName(name, PU_STATIC);
+    *variable = (patch_t*)W_CacheLumpName(name, PU_LEVEL);
 }
 
 void WI_loadData(void)
@@ -1730,12 +1860,12 @@ void WI_loadData(void)
     {
 	NUMCMAPS = 32;
 	lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMCMAPS,
-				       PU_STATIC, NULL);
+				       PU_LEVEL, NULL);
     }
     else
     {
 	lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMMAPS,
-				       PU_STATIC, NULL);
+				       PU_LEVEL, NULL);
     }
 
     WI_loadUnloadData(WI_loadCallback);
@@ -1752,7 +1882,7 @@ void WI_loadData(void)
 
 static void WI_unloadCallback(const char *name, patch_t **variable)
 {
-    W_ReleaseLumpName(name);
+    //W_ReleaseLumpName(name);
     *variable = NULL;
 }
 
@@ -1837,6 +1967,9 @@ void WI_Start(wbstartstruct_t* wbstartstruct)
 {
     WI_initVariables(wbstartstruct);
     WI_loadData();
+
+	cache = Z_Malloc< wi_cache_t >( PU_LEVEL, NULL );
+	cache->Setup( wbs->currmap );
 
     if (deathmatch)
 	WI_initDeathmatchStats();
