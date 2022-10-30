@@ -140,13 +140,13 @@ constexpr int32_t standardduration = TICRATE / 3;
 #define stringof( val ) #val
 
 #define generate_frameseqstatic( name ) static interlevelframe_t doom_frames_ ## name [] = { \
-	frame( stringof( val ) "00", Frame_Infinite ), \
+	frame( stringof( name ) "00", Frame_Infinite ), \
 };
 
 #define generate_frameseq3( name ) static interlevelframe_t doom_frames_ ## name [] = { \
-	frame( stringof( val ) "00", Frame_RandomDuration ), \
-	frame( stringof( val ) "01", Frame_RandomDuration ), \
-	frame( stringof( val ) "02", Frame_RandomDuration ), \
+	frame( stringof( name ) "00", Frame_RandomDuration ), \
+	frame( stringof( name ) "01", Frame_RandomDuration ), \
+	frame( stringof( name ) "02", Frame_RandomDuration ), \
 };
 
 #define get_frameseq( name ) doom_frames_ ## name
