@@ -80,7 +80,10 @@ struct DoomAllocator
 
 	void deallocate( pointer p, std::size_t n )
 	{
-		Z_Free( p );
+		if constexpr( tag < PU_LEVEL )
+		{
+			Z_Free( p );
+		}
 	}
 
 	size_type max_size() const noexcept
@@ -114,7 +117,7 @@ struct DoomAllocator
 };
 
 template< typename _ty, int32_t _tag = PU_STATIC >
-using DoomVector = std::vector< _ty >; //, DoomAllocator< _ty, _tag > >;
+using DoomVector = std::vector< _ty, DoomAllocator< _ty, _tag > >;
 
 template< typename _key, typename _val, int32_t _tag = PU_STATIC >
 using DoomUnorderedMap = std::unordered_map< _key, _val, std::hash< _key >, std::equal_to< _key > >; //, DoomAllocator< std::pair< const _key, _val >, _tag > >;
@@ -162,6 +165,128 @@ struct iota
 	iterator _begin;
 	iterator _end;
 };
+
+template< typename _func, typename _t1, typename _t2, size_t... _i >
+auto foreachtupleelem_impl( _t1& t1, _t2& t2, _func&& f, std::index_sequence< _i... > )
+{
+	return ( f( std::get< _i >( t1 ), std::get< _i >( t2 ) ) || ... );
+}
+
+template< typename _func, typename _t1, typename _t2 >
+auto foreachtupleelem( _t1& t1, _t2& t2, _func&& f )
+{
+	enum : size_t
+	{
+		_t1len = std::tuple_size_v< _t1 >,
+		_t2len = std::tuple_size_v< _t1 >,
+		indexlen = _t1len < _t2len ? _t1len : _t2len,
+	};
+
+	return foreachtupleelem_impl( t1, t2, f, std::make_index_sequence< indexlen >() );
+}
+
+// Because C++ won't let this be proper hidden in a function definition...
+template< typename... _ranges >
+class range_iterators_view
+{
+public:
+	std::tuple< typename _ranges::iterator... >	val;
+
+	range_iterators_view()
+	{
+	}
+
+	range_iterators_view( typename _ranges::iterator... v )
+		: val( v... )
+	{
+	}
+
+	template< size_t index >
+	auto& get()
+	{
+		return *std::get< index >( val );
+	}
+
+	bool operator!=( const range_iterators_view& rhs )
+	{
+		return val != rhs.val;
+	}
+};
+
+template< typename... _ranges >
+auto MultiRangeView( _ranges&... r )
+{
+	class view
+	{
+	public:
+		using value_type = range_iterators_view< _ranges... >;
+
+		struct iterator
+		{
+			iterator()
+			{
+			}
+
+			iterator( value_type& c, value_type& e )
+				: curr( c )
+				, end( e )
+			{
+			}
+
+			value_type curr;
+			value_type end;
+
+			iterator& operator++()
+			{
+				std::apply(	[]( auto&... it )
+							{
+								auto val = std::make_tuple( ++it... );
+							}, curr.val );
+
+				bool anytrue = foreachtupleelem( curr.val, end.val, []( auto& lhs, auto& rhs ) -> bool { return lhs == rhs; } );
+				if( anytrue )
+				{
+					curr = end;
+				}
+
+				return *this;
+			}
+
+			value_type& operator*()
+			{
+				return curr;
+			}
+
+			bool operator!=( const iterator& rhs )
+			{
+				return curr != rhs.curr;
+			}
+		};
+
+		view()
+		{
+		}
+
+		view( _ranges&... r )
+		{
+			value_type b( r.begin()... );
+			value_type e( r.end()... );
+
+			_begin	= iterator( b, e );
+			_end	= iterator( e, e );
+		}
+
+		constexpr iterator begin() { return _begin; }
+		constexpr iterator end() { return _end ; }
+
+	private:
+		iterator _begin;
+		iterator _end;
+	};
+
+	view retval( r... );
+	return retval;
+}
 
 #endif // __cplusplus
 
