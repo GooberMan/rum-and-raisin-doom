@@ -139,11 +139,11 @@ constexpr int32_t standardduration = TICRATE / 3;
 
 #define stringof( val ) #val
 
-#define generate_frameseqstatic( name ) static interlevelframe_t doom_frames_ ## name ## [] = { \
+#define generate_frameseqstatic( name ) static interlevelframe_t doom_frames_ ## name [] = { \
 	frame( stringof( val ) "00", Frame_Infinite ), \
 };
 
-#define generate_frameseq3( name ) static interlevelframe_t doom_frames_ ## name ## [] = { \
+#define generate_frameseq3( name ) static interlevelframe_t doom_frames_ ## name [] = { \
 	frame( stringof( val ) "00", Frame_RandomDuration ), \
 	frame( stringof( val ) "01", Frame_RandomDuration ), \
 	frame( stringof( val ) "02", Frame_RandomDuration ), \
@@ -197,7 +197,7 @@ static interlevelframe_t doom_frames_youarehereright[] =
 };
 
 #define generate_locationcond( map, levelnum ) \
-static interlevelcond_t doom_splatcond_ ## map ## [] = \
+static interlevelcond_t doom_splatcond_ ## map [] = \
 { \
 	{ \
 		AnimCondition_MapNumGreater, \
@@ -205,7 +205,7 @@ static interlevelcond_t doom_splatcond_ ## map ## [] = \
 	} \
 }; \
 \
-static interlevelcond_t doom_herecond_ ## map ## [] = \
+static interlevelcond_t doom_herecond_ ## map [] = \
 { \
 	{ \
 		AnimCondition_MapNumEqual, \
