@@ -20,11 +20,8 @@
 
 #ifdef __cplusplus
 
-extern "C"
-{
-	#include "doomtype.h"
-	#include "z_zone.h"
-}
+#include "doomtype.h"
+#include "z_zone.h"
 
 #include <span>
 #include <vector>

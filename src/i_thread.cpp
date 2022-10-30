@@ -17,10 +17,7 @@
 
 #include "i_thread.h"
 
-extern "C"
-{
-	#include "z_zone.h"
-}
+#include "z_zone.h"
 
 #include <atomic>
 #include <semaphore>

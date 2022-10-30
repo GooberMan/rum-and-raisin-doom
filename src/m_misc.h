@@ -35,31 +35,30 @@
 #define M_BITMASK64( numbits ) ( 1ll << numbits ) - 1 )
 #define M_NEGATE( unsignedval ) ( ~unsignedval + 1 )
 
-boolean M_WriteFile(const char *name, const void *source, int length);
-int M_ReadFile(const char *name, byte **buffer);
-void M_MakeDirectory(const char *dir);
-char *M_TempFile(const char *s);
-boolean M_FileExists(const char *file);
-char *M_FileCaseExists(const char *file);
-long M_FileLength(FILE *handle);
-boolean M_StrToInt(const char *str, int *result);
-char *M_DirName(const char *path);
-const char *M_BaseName(const char *path);
-void M_ExtractFileBase(const char *path, char *dest);
-void M_ForceUppercase(char *text);
-void M_ForceLowercase(char *text);
-const char *M_StrCaseStr(const char *haystack, const char *needle);
-char *M_StringDuplicate(const char *orig);
-boolean M_StringCopy(char *dest, const char *src, size_t dest_size);
-boolean M_StringConcat(char *dest, const char *src, size_t dest_size);
-char *M_StringReplace(const char *haystack, const char *needle,
-                      const char *replacement);
-char *M_StringJoin(const char *s, ...);
-boolean M_StringStartsWith(const char *s, const char *prefix);
-boolean M_StringEndsWith(const char *s, const char *suffix);
-int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args);
-int M_snprintf(char *buf, size_t buf_len, const char *s, ...) PRINTF_ATTR(3, 4);
-char *M_OEMToUTF8(const char *ansi);
+DOOM_C_API boolean M_WriteFile(const char *name, const void *source, int length);
+DOOM_C_API int M_ReadFile(const char *name, byte **buffer);
+DOOM_C_API void M_MakeDirectory(const char *dir);
+DOOM_C_API char *M_TempFile(const char *s);
+DOOM_C_API boolean M_FileExists(const char *file);
+DOOM_C_API char *M_FileCaseExists(const char *file);
+DOOM_C_API long M_FileLength(FILE *handle);
+DOOM_C_API boolean M_StrToInt(const char *str, int *result);
+DOOM_C_API char *M_DirName(const char *path);
+DOOM_C_API const char *M_BaseName(const char *path);
+DOOM_C_API void M_ExtractFileBase(const char *path, char *dest);
+DOOM_C_API void M_ForceUppercase(char *text);
+DOOM_C_API void M_ForceLowercase(char *text);
+DOOM_C_API const char *M_StrCaseStr(const char *haystack, const char *needle);
+DOOM_C_API char *M_StringDuplicate(const char *orig);
+DOOM_C_API boolean M_StringCopy(char *dest, const char *src, size_t dest_size);
+DOOM_C_API boolean M_StringConcat(char *dest, const char *src, size_t dest_size);
+DOOM_C_API char *M_StringReplace(const char *haystack, const char *needle, const char *replacement);
+DOOM_C_API char *M_StringJoin(const char *s, ...);
+DOOM_C_API boolean M_StringStartsWith(const char *s, const char *prefix);
+DOOM_C_API boolean M_StringEndsWith(const char *s, const char *suffix);
+DOOM_C_API int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args);
+DOOM_C_API int M_snprintf(char *buf, size_t buf_len, const char *s, ...) PRINTF_ATTR(3, 4);
+DOOM_C_API char *M_OEMToUTF8(const char *ansi);
 
 #endif
 

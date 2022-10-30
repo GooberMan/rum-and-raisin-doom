@@ -16,11 +16,9 @@
 
 #include "i_log.h"
 
-extern "C"
-{
-	#include "z_zone.h"
-	#include "m_misc.h"
-}
+#include "z_zone.h"
+
+#include "m_misc.h"
 
 #include <memory>
 #include <limits>

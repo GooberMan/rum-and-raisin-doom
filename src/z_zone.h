@@ -54,19 +54,22 @@ enum
 
     PU_NUM_TAGS
 };
-        
 
-void	Z_Init (void);
-void*	Z_Malloc( size_t size, int tag, void *ptr );
-void    Z_Free (void *ptr);
-void    Z_FreeTags (int lowtag, int hightag);
-void    Z_DumpHeap (int lowtag, int hightag);
-void    Z_FileDumpHeap (FILE *f);
-void    Z_CheckHeap (void);
-boolean Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
-void    Z_ChangeUser(void *ptr, void **user);
-size_t	Z_FreeMemory (void);
-size_t	Z_ZoneSize(void);
+#if defined( __cplusplus )
+}
+#endif // defined( __cplusplus )
+
+DOOM_C_API void		Z_Init (void);
+DOOM_C_API void*	Z_Malloc( size_t size, int tag, void *ptr );
+DOOM_C_API void		Z_Free (void *ptr);
+DOOM_C_API void		Z_FreeTags (int lowtag, int hightag);
+DOOM_C_API void		Z_DumpHeap (int lowtag, int hightag);
+DOOM_C_API void		Z_FileDumpHeap (FILE *f);
+DOOM_C_API void		Z_CheckHeap (void);
+DOOM_C_API boolean	Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
+DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
+DOOM_C_API size_t	Z_FreeMemory (void);
+DOOM_C_API size_t	Z_ZoneSize(void);
 
 //
 // This is used to get the local FILE:LINE info from CPP
@@ -75,9 +78,16 @@ size_t	Z_ZoneSize(void);
 #define Z_ChangeTag(p,t)                                       \
     Z_ChangeTag2((p), (t), __FILE__, __LINE__)
 
-
 #if defined( __cplusplus )
+
+template< typename _ty >
+INLINE _ty* Z_Malloc( int32_t tag, void* ptr )
+{
+	_ty* val = (_ty*)Z_Malloc( sizeof( _ty ), tag, ptr );
+	new( val ) _ty;
+	return val;
 }
+
 #endif // defined( __cplusplus )
 
 #endif // __Z_ZONE__
