@@ -26,7 +26,6 @@
 // animation states (closely tied to the sprites
 // used to represent them, unfortunately).
 #include "d_items.h"
-#include "d_playsim.h"
 #include "p_pspr.h"
 
 // In addition, the player is just a special
@@ -185,7 +184,7 @@ typedef struct
 
 typedef struct
 {
-	mapinfo_t*		currmap;
+	void*	currmap;
 
     int		epsd;	// episode # (0-2)
 

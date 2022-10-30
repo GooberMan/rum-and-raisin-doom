@@ -57,12 +57,18 @@ DOOM_C_API typedef enum animcondition_s
 	AnimCondition_FitsInFrame,
 } animcondition_t;
 
-DOOM_C_API typedef enum lumpnameflags_s
+DOOM_C_API typedef enum flowstringflags_s
 {
-	Lumpname_None				= 0x00,
-	Lumpname_Dehacked			= 0x01,
-	Lumpname_RuntimeGenerated	= 0x02,
-} lumpnameflags_t;
+	FlowString_None				= 0x00,
+	FlowString_Dehacked			= 0x01,
+	FlowString_RuntimeGenerated	= 0x02,
+} flowstringflags_t;
+
+DOOM_C_API typedef struct flowstring_s
+{
+	const char*				val;
+	flowstringflags_t		flags;
+} flowstring_t;
 
 DOOM_C_API typedef struct mapinfo_s mapinfo_t;
 DOOM_C_API typedef struct episodeinfo_s episodeinfo_t;
@@ -76,17 +82,16 @@ DOOM_C_API typedef struct bossaction_s
 
 DOOM_C_API typedef struct intermission_s
 {
-	const char*				text;
-	const char*				music_lump;
-	const char*				background_lump;
+	flowstring_t			text;
+	flowstring_t			music_lump;
+	flowstring_t			background_lump;
 } intermission_t;
 
 DOOM_C_API typedef struct interlevelframe_s
 {
-	const char*				image_lump;
+	flowstring_t			image_lump;
 	frametype_t				type;
 	int32_t					duration;
-	lumpnameflags_t			lumpname_flags;
 	int32_t					lumpname_animindex;
 	int32_t					lumpname_animframe;
 } interlevelframe_t;
@@ -111,7 +116,7 @@ DOOM_C_API typedef struct interlevel_s
 {
 	interleveltype_t		type;
 
-	const char*				background_lump;
+	flowstring_t			background_lump;
 
 	interlevelanim_t*		background_anims;
 	int32_t					num_background_anims;
@@ -125,22 +130,22 @@ DOOM_C_API typedef struct endgame_s
 {
 	endgametype_t			type;
 	intermission_t*			intermission;
-	const char*				primary_image_lump;
-	const char*				secondary_image_lump;
+	flowstring_t			primary_image_lump;
+	flowstring_t			secondary_image_lump;
 } endgame_t;
 
 DOOM_C_API typedef struct mapinfo_s
 {
-	const char*				data_lump;
-	const char*				name;
-	const char*				name_patch_lump;
-	const char*				authors;
+	flowstring_t			data_lump;
+	flowstring_t			name;
+	flowstring_t			name_patch_lump;
+	flowstring_t			authors;
 
 	episodeinfo_t*			episode;
 	int32_t					map_num;
 
-	const char*				music_lump;
-	const char*				sky_texture;
+	flowstring_t			music_lump;
+	flowstring_t			sky_texture;
 	int32_t					sky_scroll_speed;
 	int32_t					par_time;
 
@@ -160,8 +165,8 @@ DOOM_C_API typedef struct mapinfo_s
 
 DOOM_C_API typedef struct episodeinfo_s
 {
-	const char*				name;
-	const char*				name_patch_lump;
+	flowstring_t			name;
+	flowstring_t			name_patch_lump;
 
 	mapinfo_t*				first_map;
 	int32_t					episode_num;
@@ -182,16 +187,38 @@ DOOM_C_API typedef struct episodeinfo_s
 
 DOOM_C_API typedef struct gameflow_s
 {
-	const char*				name;
+	flowstring_t			name;
 	episodeinfo_t**			episodes;
 	int32_t					num_episodes;
 
-	const char*				playsim_base;
-	const char*				playsim_options;
+	flowstring_t			playsim_base;
+	flowstring_t			playsim_options;
 } gameflow_t;
 
 DOOM_C_API extern gameflow_t*			current_game;
 DOOM_C_API extern episodeinfo_t*		current_episode;
 DOOM_C_API extern mapinfo_t*			current_map;
+
+#if defined( __cplusplus )
+
+#include "m_container.h"
+#include "m_misc.h"
+#include "deh_str.h"
+
+template< typename... _params >
+INLINE DoomString AsString( const flowstring_t& str, _params... params )
+{
+	const char* base = ( str.flags & FlowString_Dehacked ) ? DEH_String( str.val ) : str.val;
+	if( str.flags & FlowString_RuntimeGenerated )
+	{
+		size_t len = M_snprintf( nullptr, 0, base, params... );
+		DoomString formatted( len, '\0' );
+		M_snprintf( formatted.data(), len + 1, base, params... );
+		return formatted;
+	}
+	return DoomString( base ? base : "" );
+}
+
+#endif // defined( __cplusplus )
 
 #endif // __D_GAMEFLOW_H__

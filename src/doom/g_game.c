@@ -47,6 +47,7 @@
 #include "p_tick.h"
 
 #include "d_main.h"
+#include "d_playsim.h"
 
 #include "wi_stuff.h"
 #include "hu_stuff.h"

@@ -24,6 +24,7 @@
 #include "m_fixed.h"
 #include "m_container.h"
 #include "r_local.h"
+#include "d_playsim.h"
 
 extern "C"
 {
@@ -60,16 +61,14 @@ void SetupCache( _it& itr )
 	itr.template get< 0 >().Setup( itr.template get< 1 >() );
 };
 
-typedef struct interframecache_s
+typedef class interframecache_s
 {
+public:
 	interframecache_s()
 		: source( nullptr )
 		, image( nullptr )
 	{
 	}
-
-	interlevelframe_t*					source;
-	patch_t*							image;
 
 	constexpr patch_t* Image()			{ return image; }
 	constexpr int32_t Duration()		{ return source->duration; }
@@ -79,43 +78,27 @@ typedef struct interframecache_s
 	{
 		source = &interframe;
 
-		if( source->image_lump )
+		DoomString imagelump = AsString( source->image_lump, current_episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
+
+		if( imagelump.size() > 0 )
 		{
-			bool dehacked = ( source->lumpname_flags & Lumpname_Dehacked ) != Lumpname_None;
-
-			if( source->lumpname_flags & Lumpname_RuntimeGenerated )
-			{
-				char lumpname[ 12 ] = {};
-
-				if( dehacked )
-				{
-					DEH_snprintf( lumpname, 12, source->image_lump, current_episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
-				}
-				else
-				{
-					M_snprintf( lumpname, 12, source->image_lump, current_episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
-				}
-
-				image = (patch_t*)W_CacheLumpName( lumpname, PU_LEVEL );
-			}
-			else
-			{
-				image = (patch_t*)W_CacheLumpName( dehacked ? DEH_String( source->image_lump ) : source->image_lump, PU_LEVEL );
-			}
+			image = (patch_t*)W_CacheLumpName( imagelump.c_str(), PU_LEVEL );
 		}
 	}
 
+private:
+	interlevelframe_t*					source;
+	patch_t*							image;
+
 } interframecache_t;
 
-typedef struct interanimcache_s
+typedef class interanimcache_s
 {
+public:
 	interanimcache_s()
 		: source( nullptr )
 	{
 	}
-
-	interlevelanim_t*					source;
-	DoomVector< interframecache_t, PU_LEVEL >		frames;
 
 	constexpr auto& Frames()			{ return frames; }
 	constexpr int32_t XPos()			{ return source->x_pos; }
@@ -136,21 +119,20 @@ typedef struct interanimcache_s
 		}
 	}
 
+private:
+	interlevelanim_t*					source;
+	DoomVector< interframecache_t, PU_LEVEL >		frames;
+
 } interanimcache_t;
 
-typedef struct interlevelcache_s
+typedef class interlevelcache_s
 {
+public:
 	interlevelcache_s()
 		: source( nullptr )
 		, background( nullptr )
 	{
 	}
-
-	interlevel_t*						source;
-	patch_t*							background;
-
-	DoomVector< interanimcache_t, PU_LEVEL >		background_anims;
-	DoomVector< interanimcache_t, PU_LEVEL >		foreground_anims;
 
 	constexpr patch_t* Background()		{ return background; }
 	constexpr auto& BackgroundAnims()	{ return background_anims; }
@@ -160,20 +142,12 @@ typedef struct interlevelcache_s
 	{
 		source = interlevel;
 
-		background = (patch_t*)W_CacheLumpName( source->background_lump, PU_LEVEL );
+		background = (patch_t*)W_CacheLumpName( AsString( source->background_lump ).c_str(), PU_LEVEL );
 		background_anims.resize( source->num_background_anims );
 		foreground_anims.resize( source->num_foreground_anims );
 
 		auto og_background = std::span( source->background_anims, source->num_background_anims );
 		auto og_foreground = std::span( source->foreground_anims, source->num_foreground_anims );
-
-		auto range_bg = MultiRangeView( background_anims, og_background );
-
-		for( auto it = background_anims.begin(); it != background_anims.end(); ++it )
-		{
-			interanimcache_t& val = *it;
-			val.source = NULL;
-		}
 
 		for( auto curr : MultiRangeView( background_anims, og_background ) )
 		{
@@ -185,22 +159,36 @@ typedef struct interlevelcache_s
 			SetupCache( curr );
 		}
 	}
+
+private:
+	interlevel_t*						source;
+	patch_t*							background;
+
+	DoomVector< interanimcache_t, PU_LEVEL >		background_anims;
+	DoomVector< interanimcache_t, PU_LEVEL >		foreground_anims;
+
 } interlevelcache_t;
 
-typedef struct wi_cache_s
+typedef class wi_cache_s
 {
+public:
 	wi_cache_s()
 	{
 	}
-
-	interlevelcache_t		finished;
-	interlevelcache_t		entering;
 
 	void Setup( mapinfo_t* map )
 	{
 		finished.Setup( map->interlevel_finished );
 		entering.Setup( map->interlevel_entering );
 	}
+
+	constexpr interlevelcache_t& Finished() { return finished; }
+	constexpr interlevelcache_t& Entering() { return entering; }
+
+private:
+	interlevelcache_t		finished;
+	interlevelcache_t		entering;
+
 } wi_cache_t;
 
 static wi_cache_t* cache = NULL;
@@ -1988,8 +1976,8 @@ void WI_Start(wbstartstruct_t* wbstartstruct)
     WI_initVariables(wbstartstruct);
     WI_loadData();
 
-	//cache = Z_Malloc< wi_cache_t >( PU_LEVEL, NULL );
-	//cache->Setup( wbs->currmap );
+	cache = Z_Malloc< wi_cache_t >( PU_LEVEL, NULL );
+	cache->Setup( (mapinfo_t*)wbs->currmap );
 
     if (deathmatch)
 	WI_initDeathmatchStats();
