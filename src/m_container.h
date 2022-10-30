@@ -18,10 +18,10 @@
 #ifndef __M_CONTAINER__
 #define __M_CONTAINER__
 
-#ifdef __cplusplus
-
 #include "doomtype.h"
 #include "z_zone.h"
+
+#ifdef __cplusplus
 
 #include <span>
 #include <vector>

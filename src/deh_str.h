@@ -24,11 +24,11 @@
 
 // Used to do dehacked text substitutions throughout the program
 
-const char *DEH_String(const char *s) PRINTF_ARG_ATTR(1);
-void DEH_printf(const char *fmt, ...) PRINTF_ATTR(1, 2);
-void DEH_fprintf(FILE *fstream, const char *fmt, ...) PRINTF_ATTR(2, 3);
-void DEH_snprintf(char *buffer, size_t len, const char *fmt, ...) PRINTF_ATTR(3, 4);
-void DEH_AddStringReplacement(const char *from_text, const char *to_text);
+DOOM_C_API const char *DEH_String(const char *s) PRINTF_ARG_ATTR(1);
+DOOM_C_API void DEH_printf(const char *fmt, ...) PRINTF_ATTR(1, 2);
+DOOM_C_API void DEH_fprintf(FILE *fstream, const char *fmt, ...) PRINTF_ATTR(2, 3);
+DOOM_C_API void DEH_snprintf(char *buffer, size_t len, const char *fmt, ...) PRINTF_ATTR(3, 4);
+DOOM_C_API void DEH_AddStringReplacement(const char *from_text, const char *to_text);
 
 
 #if 0
