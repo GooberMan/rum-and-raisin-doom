@@ -615,76 +615,34 @@ ST_Responder (event_t* ev)
     // 'clev' change-level cheat
     if (!netgame && cht_CheckCheat(&cheat_clev, ev->data2))
     {
-      char		buf[3];
-      int		epsd;
-      int		map;
-      
-      cht_GetParam(&cheat_clev, buf);
-      
-      if (gamemode == commercial)
-      {
-	epsd = 0;
-	map = (buf[0] - '0')*10 + buf[1] - '0';
-      }
-      else
-      {
-	epsd = buf[0] - '0';
-	map = buf[1] - '0';
+		char		buf[3];
+		int		epsd;
+		int		map;
 
-        // Chex.exe always warps to episode 1.
+		cht_GetParam(&cheat_clev, buf);
 
-        if (gameversion == exe_chex)
-        {
-            if (epsd > 1)
-            {
-                epsd = 1;
-            }
-            if (map > 5)
-            {
-                map = 5;
-            }
-        }
-      }
+		if (gamemode == commercial)
+		{
+			epsd = 0;
+			map = (buf[0] - '0')*10 + buf[1] - '0';
+		}
+		else
+		{
+			epsd = buf[0] - '0';
+			map = buf[1] - '0';
+		}
 
-      // Catch invalid maps.
-      if (gamemode != commercial)
-      {
-          if (epsd < 1)
-          {
-              return false;
-          }
-          if (epsd > 4)
-          {
-              return false;
-          }
-          if (epsd == 4 && gameversion < exe_ultimate)
-          {
-              return false;
-          }
-          if (map < 1)
-          {
-              return false;
-          }
-          if (map > 9)
-          {
-              return false;
-          }
-      }
-      else
-      {
-          if (map < 1)
-          {
-              return false;
-          }
-          if (map > 40)
-          {
-              return false;
-          }
-      }
+		episodeinfo_t* epinfo = D_GameflowGetEpisode( epsd );
+		mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map );
 
-      // So be it.
-      plyr->message = DEH_String(STSTR_CLEV);
-      G_DeferedInitNew(gameskill, epsd, map, GF_None);
+		if( !mapinfo )
+		{
+			return false;
+		}
+
+		// So be it.
+		plyr->message = DEH_String(STSTR_CLEV);
+		G_DeferedInitNew(gameskill, mapinfo, GF_None);
     }
   }
   return false;

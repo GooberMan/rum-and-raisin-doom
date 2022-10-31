@@ -1369,8 +1369,8 @@ void P_WriteSaveGameHeader(char *description)
         saveg_write8(name[i]);
 	 
     saveg_write8(gameskill);
-    saveg_write8(gameepisode);
-    saveg_write8(gamemap);
+    saveg_write8(current_episode->episode_num);
+    saveg_write8(current_map->map_num);
 
     for (i=0 ; i<MAXPLAYERS ; i++) 
         saveg_write8(playeringame[i]);
@@ -1405,8 +1405,12 @@ boolean P_ReadSaveGameHeader(void)
 	return false;				// bad version 
 
     gameskill = saveg_read8();
-    gameepisode = saveg_read8();
-    gamemap = saveg_read8();
+    int32_t episode = saveg_read8();
+    int32_t map = saveg_read8();
+
+	episodeinfo_t* epinfo = D_GameflowGetEpisode( episode );
+	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map );
+	D_GameflowSetCurrentMap( mapinfo );
 
     for (i=0 ; i<MAXPLAYERS ; i++) 
 	playeringame[i] = saveg_read8();
@@ -1469,14 +1473,39 @@ savegametype_t P_ReadSaveGameType( void )
 
 #define LIMITREMOVING_BEGIN		0xD007D007
 #define LIMITREMOVING_END		0xDEFEC7ED
-#define LIMITREMOVING_VERSION	0x00000001
+#define LIMITREMOVING_VERSION1	0x00000001
+#define LIMITREMOVING_VERSION2	0x00000002
+
+void P_UnArchiveLimitRemovingData_Version1( void )
+{
+	extern int32_t gameflags;
+
+	gameflags = saveg_read32();
+	int32_t endmarker = saveg_read32();
+	int32_t bytesread = saveg_read32();
+}
+
+void P_UnarchiveLimitRemovingData_Latest( int32_t bytesremaining )
+{
+	extern int32_t gameflags;
+	gameflags = saveg_read32();
+	bytesremaining -= sizeof( int32_t );
+
+	while( bytesremaining > 0 )
+	{
+		saveg_read8();
+		--bytesremaining;
+	}
+
+	int32_t endmarker = saveg_read32();
+}
 
 void P_ArchiveLimitRemovingData( void )
 {
 	extern int32_t gameflags;
 
 	saveg_write32( LIMITREMOVING_BEGIN );
-	saveg_write32( LIMITREMOVING_VERSION );
+	saveg_write32( LIMITREMOVING_VERSION2 );
 	saveg_write32( gameflags );
 	saveg_write32( LIMITREMOVING_END );
 	saveg_write32( 16 );
@@ -1493,10 +1522,15 @@ void P_UnArchiveLimitRemovingData( void )
 
 	int32_t beginmarker = saveg_read32();
 	int32_t version = saveg_read32();
-	gameflags = saveg_read32();
-	int32_t endmarker = saveg_read32();
-
-	int32_t checkbyteswritten = saveg_read32();
+	switch( version )
+	{
+	case LIMITREMOVING_VERSION1:
+		P_UnArchiveLimitRemovingData_Version1();
+		break;
+	default:
+		P_UnarchiveLimitRemovingData_Latest( byteswritten - sizeof( int32_t ) * 2 );
+		break;
+	}
 
 	fseek( save_stream, 0, SEEK_SET );
 }

@@ -24,6 +24,7 @@
 #include "doomdata.h"
 #include "m_fixed.h"
 #include "r_local.h"
+#include "d_gameflow.h"
 
 extern "C"
 {
@@ -1208,37 +1209,7 @@ DOOM_C_API extern const char *mapnames_commercial[];
 
 const char* P_GetMapTitle()
 {
-	const char* s = "Unknown level";
-
-	switch ( logical_gamemission )
-	{
-	case doom:
-		if( gameversion == exe_chex )
-		{
-			s = mapnames_chex[ ( gameepisode - 1 ) * 9 + gamemap - 1 ];
-		}
-		else
-		{
-			s = mapnames[ ( gameepisode - 1 ) * 9 + gamemap - 1 ];
-		}
-		break;
-	case doom2:
-		s = mapnames_commercial[ gamemap - 1 ];
-		// Pre-Final Doom compatibility: map33-map35 names don't spill over
-		if (gameversion <= exe_doom_1_9 && gamemap >= 33)
-		{
-			s = "";
-		}
-		break;
-	case pack_plut:
-		s = mapnames_commercial[ gamemap - 1 + 32 ];
-		break;
-	case pack_tnt:
-		s = mapnames_commercial[ gamemap - 1 + 64 ];
-		break;
-	default:
-		break;
-	}
+	const char* s = current_map->name.val;
 
 	return DEH_String(s);
 }
@@ -1248,13 +1219,12 @@ const char* P_GetMapTitle()
 //
 DOOM_C_API void
 P_SetupLevel
-( int		episode,
-  int		map,
+( mapinfo_t* map,
   int		playermask,
   skill_t	skill)
 {
     int		i;
-    char	lumpname[9];
+    DoomString lumpname;
     int		lumpnum;
 	
     totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
@@ -1283,16 +1253,18 @@ P_SetupLevel
 	// find map name
 	if ( gamemode == commercial)
 	{
-		DEH_snprintf(lumpname, 9, "MAP%02d", map);
+		lumpname = AsDoomString( map->data_lump, map->map_num );
 	}
 	else
 	{
-		DEH_snprintf( lumpname, 9, "E%dM%d", episode, map );
+		lumpname = AsDoomString( map->data_lump, map->episode->episode_num, map->map_num );
 	}
 
-	I_LogAddEntryVar( Log_System, "Loading %s: %s", lumpname, P_GetMapTitle() );
+	DoomString maptitle = AsDoomString( map->name );
 
-    lumpnum = W_GetNumForName (lumpname);
+	I_LogAddEntryVar( Log_System, "Loading %s: %s", lumpname.c_str(), maptitle.c_str() );
+
+    lumpnum = W_GetNumForName( lumpname.c_str() );
 	
     maplumpinfo = lumpinfo[lumpnum];
 

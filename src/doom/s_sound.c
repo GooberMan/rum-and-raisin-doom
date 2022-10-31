@@ -37,6 +37,8 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
+#include "d_gameflow.h"
+
 // when to clip out sounds
 // Does not fit the large outdoor areas.
 
@@ -231,7 +233,7 @@ void S_Start(void)
 
     if (gamemode == commercial)
     {
-        mnum = mus_runnin + gamemap - 1;
+        mnum = mus_runnin + current_map->map_num - 1;
     }
     else
     {
@@ -250,13 +252,13 @@ void S_Start(void)
             mus_e1m9,        // Tim          e4m9
         };
 
-        if (gameepisode < 4)
+        if (current_episode->episode_num < 4)
         {
-            mnum = mus_e1m1 + (gameepisode-1)*9 + gamemap-1;
+            mnum = mus_e1m1 + (current_episode->episode_num-1)*9 + current_map->map_num-1;
         }
         else
         {
-            mnum = spmus[gamemap-1];
+            mnum = spmus[current_map->map_num-1];
         }
     }
 
@@ -359,7 +361,7 @@ static int S_AdjustSoundParams(mobj_t *listener, mobj_t *source,
     // From _GG1_ p.428. Appox. eucledian distance fast.
     approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
 
-    if (gamemap != 8 && approx_dist > S_CLIPPING_DIST)
+    if (current_map->map_num != 8 && approx_dist > S_CLIPPING_DIST)
     {
         return 0;
     }
@@ -389,7 +391,7 @@ static int S_AdjustSoundParams(mobj_t *listener, mobj_t *source,
     {
         *vol = snd_SfxVolume;
     }
-    else if (gamemap == 8)
+    else if (current_map->map_num == 8)
     {
         if (approx_dist > S_CLIPPING_DIST)
         {

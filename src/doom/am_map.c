@@ -21,6 +21,8 @@
 
 #include "deh_main.h"
 
+#include "d_gameflow.h"
+
 #include "z_zone.h"
 #include "doomkeys.h"
 #include "doomdef.h"
@@ -728,15 +730,14 @@ void AM_Stop (void)
 //
 void AM_Start (void)
 {
-    static int lastlevel = -1, lastepisode = -1;
+    static mapinfo_t* lastmap = NULL;
 
     if (!stopped) AM_Stop();
     stopped = false;
-    if (lastlevel != gamemap || lastepisode != gameepisode)
+    if (current_map != lastmap)
     {
-	AM_LevelInit();
-	lastlevel = gamemap;
-	lastepisode = gameepisode;
+		AM_LevelInit();
+		lastmap = current_map;
     }
     AM_initVariables();
     AM_loadPics();

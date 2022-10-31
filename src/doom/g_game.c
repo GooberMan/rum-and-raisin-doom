@@ -100,9 +100,7 @@ gamestate_t     oldgamestate;
 gameaction_t    gameaction; 
 gamestate_t     gamestate; 
 skill_t         gameskill; 
-boolean		respawnmonsters;
-int             gameepisode; 
-int             gamemap; 
+boolean			respawnmonsters;
 int32_t			gameflags;
 
 // If non-zero, exit the level after this number of minutes.
@@ -626,24 +624,8 @@ void G_DoLoadLevel (void)
     if ((gamemode == commercial)
      && (gameversion == exe_final2 || gameversion == exe_chex))
     {
-        const char *skytexturename;
-
-        if (gamemap < 12)
-        {
-            skytexturename = "SKY1";
-        }
-        else if (gamemap < 21)
-        {
-            skytexturename = "SKY2";
-        }
-        else
-        {
-            skytexturename = "SKY3";
-        }
-
-        skytexturename = DEH_String(skytexturename);
-
-        skytexture = R_TextureNumForName(skytexturename);
+		const char* skytexturename = DEH_String( current_map->sky_texture.val );
+		skytexture = R_TextureNumForName( skytexturename );
     }
 
     levelstarttic = gametic;        // for time calculation
@@ -660,13 +642,13 @@ void G_DoLoadLevel (void)
 	    players[i].playerstate = PST_REBORN; 
 	memset (players[i].frags,0,sizeof(players[i].frags)); 
     } 
-		 
-    P_SetupLevel (gameepisode, gamemap, 0, gameskill);    
-    displayplayer = consoleplayer;		// view the guy you are playing    
-    gameaction = ga_nothing; 
-    Z_CheckHeap ();
-    
-    // clear cmd building stuff
+
+	P_SetupLevel( current_map, 0, gameskill );
+	displayplayer = consoleplayer;		// view the guy you are playing    
+	gameaction = ga_nothing; 
+	Z_CheckHeap ();
+
+	// clear cmd building stuff
 
     memset (gamekeydown, 0, sizeof(gamekeydown));
     joyxmove = joyymove = joystrafemove = 0;
@@ -1413,7 +1395,7 @@ void G_DoCompleted (void)
 
         if (gameversion == exe_chex)
         {
-            if (gamemap == 5 && !( gameflags & GF_LoopOneLevel ) )
+            if (current_map->map_num == 5 && !( gameflags & GF_LoopOneLevel ) )
             {
                 gameaction = ga_victory;
                 return;
@@ -1421,7 +1403,7 @@ void G_DoCompleted (void)
         }
         else
         {
-            switch(gamemap)
+            switch(current_map->map_num)
             {
               case 8:
 				if( !( gameflags & GF_LoopOneLevel ) )
@@ -1439,14 +1421,14 @@ void G_DoCompleted (void)
     }
 
 //#if 0  Hmmm - why?
-	if ( (gamemap == 8) && (gamemode != commercial) && !( gameflags & GF_LoopOneLevel ) ) 
+	if ( (current_map->map_num == 8) && (gamemode != commercial) && !( gameflags & GF_LoopOneLevel ) ) 
 	{
 		// victory 
 		gameaction = ga_victory; 
 		return; 
 	} 
 	 
-	if ( (gamemap == 9) && (gamemode != commercial) ) 
+	if ( (current_map->map_num == 9) && (gamemode != commercial) ) 
 	{
 		// exit secret level 
 		for (i=0 ; i<MAXPLAYERS ; i++) 
@@ -1464,108 +1446,43 @@ void G_DoCompleted (void)
 	}
 
 	wminfo.currmap = current_map;
-	wminfo.nextmap = secretexit	? current_map->secret_map != NULL	? current_map->secret_map
-																	: current_map
-								: current_map->next_map;
-
 	wminfo.didsecret = players[consoleplayer].didsecret;
-	wminfo.epsd = gameepisode -1; 
-	wminfo.last = gamemap -1;
 
 	if( !( gameflags & GF_LoopOneLevel ) )
 	{
-		// wminfo.next is 0 biased, unlike gamemap
-		if ( gamemode == commercial)
-		{
-			if (secretexit)
-			{
-				switch(gamemap)
-				{
-				  case 15: wminfo.next = 30; wminfo.nextissecret = true; break;
-				  case 31: wminfo.next = 31; wminfo.nextissecret = true; break;
-				}
-			}
-			else
-			{
-				switch(gamemap)
-				{
-				  case 31:
-				  case 32: wminfo.next = 15; break;
-				  default: wminfo.next = gamemap;
-				}
-			}
-		}
-		else
-		{
-			if (secretexit) 
-			{
-				wminfo.next = 8; 	// go to secret level 
-				wminfo.nextissecret = true;
-			}
-			else if (gamemap == 9) 
-			{
-				// returning from secret level 
-				switch (gameepisode) 
-				{ 
-				case 1: 
-					wminfo.next = 3; 
-					break; 
-				case 2: 
-					wminfo.next = 5; 
-					break; 
-				case 3: 
-					wminfo.next = 6; 
-					break; 
-				case 4:
-					wminfo.next = 2;
-					break;
-				}
-			} 
-			else
-			{
-				wminfo.next = gamemap;          // go to next level
-			}
-		}
+		wminfo.nextmap = secretexit	? current_map->secret_map
+									: current_map->next_map;
 	}
 	else
 	{
-		wminfo.next = gamemap - 1;
+		wminfo.nextmap = current_map;
 	}
-		 
+
     wminfo.maxkills = totalkills; 
     wminfo.maxitems = totalitems; 
     wminfo.maxsecret = totalsecret; 
     wminfo.maxfrags = 0; 
+	wminfo.partime = current_map->par_time * TICRATE;
 
     // Set par time. Exceptions are added for purposes of
     // statcheck regression testing.
-    if (gamemode == commercial)
-    {
-        // map33 reads its par time from beyond the cpars[] array
-        if (gamemap == 33)
-        {
-            int cpars32;
-
-            memcpy(&cpars32, DEH_String(GAMMALVL0), sizeof(int));
-            cpars32 = LONG(cpars32);
-
-            wminfo.partime = TICRATE*cpars32;
-        }
-        else
-        {
-            wminfo.partime = TICRATE*cpars[gamemap-1];
-        }
-    }
-    // Doom episode 4 doesn't have a par time, so this
-    // overflows into the cpars array.
-    else if (gameepisode < 4)
-    {
-        wminfo.partime = TICRATE*pars[gameepisode][gamemap];
-    }
-    else
-    {
-        wminfo.partime = TICRATE*cpars[gamemap];
-    }
+    //if (gamemode == commercial)
+    //{
+    //    // map33 reads its par time from beyond the cpars[] array
+    //    if (gamemap == 33)
+    //    {
+    //        int cpars32;
+	//
+    //        memcpy(&cpars32, DEH_String(GAMMALVL0), sizeof(int));
+    //        cpars32 = LONG(cpars32);
+	//
+    //        wminfo.partime = TICRATE*cpars32;
+    //    }
+    //    else
+    //    {
+    //        wminfo.partime = TICRATE*cpars[gamemap-1];
+    //    }
+    //}
 
     wminfo.pnum = consoleplayer; 
  
@@ -1609,7 +1526,7 @@ void G_WorldDone (void)
 
     if ( gamemode == commercial )
     {
-	switch (gamemap)
+	switch (current_map->map_num)
 	{
 	  case 15:
 	  case 31:
@@ -1630,10 +1547,19 @@ void G_DoWorldDone (void)
 	int32_t curr;
 
     gamestate = GS_LEVEL; 
-    gamemap = wminfo.next+1; 
 
-	// TODO: get rid of gamemap and gameepisode numbers
-	mapinfo_t* mapinfo = D_GameflowGetMap( current_episode, gamemap );
+	mapinfo_t* mapinfo = NULL;
+
+	if( !( gameflags & GF_LoopOneLevel ) )
+	{
+		mapinfo = secretexit	? current_map->secret_map
+								: current_map->next_map;
+	}
+	else
+	{
+		wminfo.nextmap = current_map;
+	}
+
 	D_GameflowSetCurrentMap( mapinfo );
 
 	if( gameflags & GF_PistolStarts )
@@ -1701,7 +1627,7 @@ void G_DoLoadGame (void)
     savedleveltime = leveltime;
     
     // load a base level 
-    G_InitNew (gameskill, gameepisode, gamemap, gameflags); 
+    G_InitNew (gameskill, current_map, gameflags); 
  
     leveltime = savedleveltime;
 
@@ -1840,15 +1766,13 @@ void G_DoSaveGame (void)
 // consoleplayer, displayplayer, playeringame[] should be set. 
 //
 skill_t			d_skill; 
-int				d_episode; 
-int				d_map; 
+mapinfo_t*		d_mapinfo = NULL;
 gameflags_t		d_gameflags = GF_None;
  
-void G_DeferedInitNew( skill_t	skill, int episode, int map, gameflags_t flags) 
+void G_DeferedInitNew( skill_t	skill, mapinfo_t* mapinfo, gameflags_t flags) 
 { 
     d_skill = skill; 
-    d_episode = episode; 
-    d_map = map; 
+	d_mapinfo = mapinfo;
 	d_gameflags = flags;
     gameaction = ga_newgame; 
 
@@ -1870,18 +1794,15 @@ void G_DoNewGame (void)
     fastparm = false;
     nomonsters = false;
     consoleplayer = 0;
-    G_InitNew (d_skill, d_episode, d_map, d_gameflags); 
+    G_InitNew (d_skill, d_mapinfo, d_gameflags); 
     gameaction = ga_nothing; 
 } 
 
 
-void G_InitNew( skill_t skill, int episode, int map, gameflags_t flags )
+void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags )
 {
     const char *skytexturename;
     int             i;
-
-	episodeinfo_t* epinfo = D_GameflowGetEpisode( episode );
-	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map );
 
 	if( mapinfo )
 	{
@@ -1896,37 +1817,6 @@ void G_InitNew( skill_t skill, int episode, int map, gameflags_t flags )
 
     if (skill > sk_nightmare)
 	skill = sk_nightmare;
-
-    if (gameversion >= exe_ultimate)
-    {
-        if (episode == 0)
-        {
-            episode = 4;
-        }
-    }
-    else
-    {
-        if (episode < 1)
-        {
-            episode = 1;
-        }
-        if (episode > 3)
-        {
-            episode = 3;
-        }
-    }
-
-    if (episode > 1 && gamemode == shareware)
-    {
-        episode = 1;
-    }
-
-    if (map < 1)
-	map = 1;
-
-    if ( (map > 9)
-	 && ( gamemode != commercial) )
-      map = 9;
 
     M_ClearRandom ();
 
@@ -1961,8 +1851,6 @@ void G_InitNew( skill_t skill, int episode, int map, gameflags_t flags )
     demoplayback = false;
     automapactive = false;
     viewactive = true;
-    gameepisode = episode;
-    gamemap = map;
     gameskill = skill;
 	gameflags = flags;
 
@@ -1978,37 +1866,8 @@ void G_InitNew( skill_t skill, int episode, int map, gameflags_t flags )
     // restore from a saved game.  This was fixed before the Doom
     // source release, but this IS the way Vanilla DOS Doom behaves.
 
-    if (gamemode == commercial)
-    {
-        skytexturename = DEH_String("SKY3");
-        skytexture = R_TextureNumForName(skytexturename);
-        if (gamemap < 21)
-        {
-            skytexturename = DEH_String(gamemap < 12 ? "SKY1" : "SKY2");
-            skytexture = R_TextureNumForName(skytexturename);
-        }
-    }
-    else
-    {
-        switch (gameepisode)
-        {
-          default:
-          case 1:
-            skytexturename = "SKY1";
-            break;
-          case 2:
-            skytexturename = "SKY2";
-            break;
-          case 3:
-            skytexturename = "SKY3";
-            break;
-          case 4:        // Special Edition sky
-            skytexturename = "SKY4";
-            break;
-        }
-        skytexturename = DEH_String(skytexturename);
-        skytexture = R_TextureNumForName(skytexturename);
-    }
+	skytexturename = DEH_String( current_map->sky_texture.val );
+	skytexture = R_TextureNumForName(skytexturename);
 
     G_DoLoadLevel ();
 }
@@ -2206,8 +2065,8 @@ void G_BeginRecording (void)
     }
 
     *demo_p++ = gameskill; 
-    *demo_p++ = gameepisode; 
-    *demo_p++ = gamemap; 
+    *demo_p++ = current_episode->episode_num; 
+    *demo_p++ = current_map->map_num; 
     if (longtics || gameversion > exe_doom_1_2)
     {
         *demo_p++ = deathmatch; 
@@ -2325,6 +2184,8 @@ void G_DoPlayDemo (void)
     skill = *demo_p++; 
     episode = *demo_p++; 
     map = *demo_p++; 
+	episodeinfo_t* epinfo = D_GameflowGetEpisode( episode );
+	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map );
     if (!olddemo)
     {
         deathmatch = *demo_p++;
@@ -2354,7 +2215,7 @@ void G_DoPlayDemo (void)
 		solonetgame = M_CheckParm("-solo-net") > 0 && !playeringame[1];
 	}
 
-    G_InitNew (skill, episode, map, GF_None); 
+    G_InitNew (skill, mapinfo, GF_None); 
     starttime = I_GetTimeTicks(); 
 
     usergame = false; 

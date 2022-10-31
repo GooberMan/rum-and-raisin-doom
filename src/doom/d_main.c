@@ -35,6 +35,7 @@
 #include "sounds.h"
 
 #include "d_iwad.h"
+#include "d_playsim.h"
 
 #include "z_zone.h"
 #include "w_main.h"
@@ -2230,11 +2231,14 @@ void D_DoomMain (void)
         M_StringCopy(file, P_SaveGameFile(startloadgame), sizeof(file));
 	G_LoadGame(file);
     }
+
+	episodeinfo_t* epinfo = D_GameflowGetEpisode( startepisode );
+	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, startmap );
 	
     if (gameaction != ga_loadgame )
     {
 	if (autostart || netgame)
-	    G_InitNew (startskill, startepisode, startmap, GF_None);
+	    G_InitNew (startskill, mapinfo, GF_None);
 	else
 	    D_StartTitle ();                // start up intro loop
     }

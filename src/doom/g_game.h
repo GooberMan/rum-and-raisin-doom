@@ -23,6 +23,7 @@
 #include "doomdef.h"
 #include "d_event.h"
 #include "d_ticcmd.h"
+#include "d_gameflow.h"
 
 
 //
@@ -30,12 +31,12 @@
 //
 void G_DeathMatchSpawnPlayer (int playernum);
 
-void G_InitNew (skill_t skill, int episode, int map, gameflags_t flags);
+void G_InitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags);
 
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,
 // but a warp test can start elsewhere
-void G_DeferedInitNew (skill_t skill, int episode, int map, gameflags_t flags);
+void G_DeferedInitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags);
 
 void G_DeferedPlayDemo (const char* demo);
 

@@ -285,8 +285,8 @@ static patch_t*		p[MAXPLAYERS];
 // "gray P[1..MAXPLAYERS]"
 static patch_t*		bp[MAXPLAYERS];
 
- // Name graphics of each level (centered)
-static patch_t**	lnames;
+static patch_t*		currlevelname;
+static patch_t*		nextlevelname;
 
 
 template< typename _it, typename... _params >
@@ -315,7 +315,7 @@ public:
 	{
 		source = &interframe;
 
-		DoomString imagelump = AsDomString( source->image_lump, map->episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
+		DoomString imagelump = AsDoomString( source->image_lump, map->episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
 
 		if( imagelump.size() > 0 )
 		{
@@ -436,7 +436,7 @@ public:
 					break;
 
 				case AnimCondition_MapVisited:
-					conditionsmet &= wbs->plyr[ consoleplayer ].visited[ cond.param ];
+					conditionsmet &= !!wbs->plyr[ consoleplayer ].visited[ cond.param ];
 					break;
 
 				case AnimCondition_MapNotSecret:
@@ -444,7 +444,7 @@ public:
 					break;
 
 				case AnimCondition_SecretVisited:
-					conditionsmet &= wbs->didsecret;
+					conditionsmet &= !!wbs->didsecret;
 					break;
 
 				case AnimCondition_FitsInFrame:
@@ -729,34 +729,31 @@ void WI_drawLF(void)
 {
     int y = WI_TITLEY;
 
-    if (gamemode != commercial || wbs->last < NUMCMAPS)
-    {
-        // draw <LevelName> 
-        V_DrawPatch((V_VIRTUALWIDTH - SHORT(lnames[wbs->last]->width))/2,
-                    y, lnames[wbs->last]);
+	if( currlevelname )
+	{
+		// draw <LevelName> 
+		V_DrawPatch( ( V_VIRTUALWIDTH - SHORT( currlevelname->width ) ) / 2, y, currlevelname );
 
-        // draw "Finished!"
-        y += (5*SHORT(lnames[wbs->last]->height))/4;
+		// draw "Finished!"
+		y += ( 5 * SHORT( currlevelname->height ) ) / 4;
 
-        V_DrawPatch((V_VIRTUALWIDTH - SHORT(finished->width)) / 2, y, finished);
+		V_DrawPatch((V_VIRTUALWIDTH - SHORT(finished->width)) / 2, y, finished);
+	}
+	else
+	{
+		// MAP33 - draw "Finished!" only
+		V_DrawPatch((V_VIRTUALWIDTH - SHORT(finished->width)) / 2, y, finished);
     }
-    else if (wbs->last == NUMCMAPS)
-    {
-        // MAP33 - draw "Finished!" only
-        V_DrawPatch((V_VIRTUALWIDTH - SHORT(finished->width)) / 2, y, finished);
-    }
-    else if (wbs->last > NUMCMAPS)
-    {
-        // > MAP33.  Doom bombs out here with a Bad V_DrawPatch error.
-        // I'm pretty sure that doom2.exe is just reading into random
-        // bits of memory at this point, but let's try to be accurate
-        // anyway.  This deliberately triggers a V_DrawPatch error.
 
-        patch_t tmp = { V_VIRTUALWIDTH, V_VIRTUALHEIGHT, 1, 1, 
-                        { 0, 0, 0, 0, 0, 0, 0, 0 } };
+	// > MAP33.  Doom bombs out here with a Bad V_DrawPatch error.
+	// I'm pretty sure that doom2.exe is just reading into random
+	// bits of memory at this point, but let's try to be accurate
+	// anyway.  This deliberately triggers a V_DrawPatch error.
 
-        V_DrawPatch(0, y, &tmp);
-    }
+	//patch_t tmp = { V_VIRTUALWIDTH, V_VIRTUALHEIGHT, 1, 1, 
+	//				{ 0, 0, 0, 0, 0, 0, 0, 0 } };
+	//
+	//V_DrawPatch(0, y, &tmp);
 }
 
 
@@ -771,13 +768,13 @@ void WI_drawEL(void)
 		y,
                 entering);
 
-    // draw level
-    y += (5*SHORT(lnames[wbs->next]->height))/4;
+	if( nextlevelname )
+	{
+		// draw "Finished!"
+		y += ( 5 * SHORT( nextlevelname->height ) ) / 4;
 
-    V_DrawPatch((V_VIRTUALWIDTH - SHORT(lnames[wbs->next]->width))/2,
-		y, 
-                lnames[wbs->next]);
-
+		V_DrawPatch( ( V_VIRTUALWIDTH - SHORT( nextlevelname->width ) ) / 2, y, nextlevelname );
+	}
 }
 
 //
@@ -947,12 +944,11 @@ void WI_updateShowNextLoc(void)
 
 void WI_drawShowNextLoc(void)
 {
-
-	// Well then
-    if ( (gamemode != commercial)
-	 || wbs->next != 30)
-	WI_drawEL();  
-
+	mapinfo_t* currmap = (mapinfo_t*)wbs->currmap;
+	if ( ( currmap->map_flags & Map_NoEnterBanner ) != Map_NoEnterBanner )
+	{
+		WI_drawEL();
+	}
 }
 
 void WI_drawNoState(void)
@@ -1569,7 +1565,8 @@ void WI_drawStats(void)
     V_DrawPatch(SP_TIMEX, SP_TIMEY, timepatch);
     WI_drawTime(V_VIRTUALWIDTH/2 - SP_TIMEX, SP_TIMEY, cnt_time);
 
-    if (wbs->epsd < 3)
+	mapinfo_t* currmap = (mapinfo_t*)wbs->currmap;
+    if ( ( currmap->map_flags & Map_NoParTime ) != Map_NoParTime )
     {
         V_DrawPatch(V_VIRTUALWIDTH/2 + SP_TIMEX, SP_TIMEY, par);
         WI_drawTime(V_VIRTUALWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
@@ -1655,24 +1652,34 @@ typedef void (*load_callback_t)(const char *lumpname, patch_t **variable);
 static void WI_loadUnloadData(load_callback_t callback)
 {
     int i, j;
-    char name[9];
-    interanim_t *a;
+	DoomString currname;
+	DoomString nextname;
 
+	char name[ 9 ];
+
+	mapinfo_t* currmap = (mapinfo_t*)wbs->currmap;
+	mapinfo_t* nextmap = (mapinfo_t*)wbs->nextmap;
+
+	// TODO: make this more generic
 	if (gamemode == commercial)
 	{
-		for (i=0 ; i<NUMCMAPS ; i++)
-		{
-			DEH_snprintf(name, 9, "CWILV%2.2d", i);
-				callback(name, &lnames[i]);
-		}
+		currname = AsDoomString( currmap->name_patch_lump, currmap->map_num - 1 );
+		if( nextmap ) nextname = AsDoomString( nextmap->name_patch_lump, nextmap->map_num - 1 );
 	}
 	else
 	{
-		for (i=0 ; i<NUMMAPS ; i++)
-		{
-			DEH_snprintf(name, 9, "WILV%d%d", wbs->epsd, i);
-				callback(name, &lnames[i]);
-		}
+		currname = AsDoomString( currmap->name_patch_lump, currmap->episode->episode_num - 1, currmap->map_num - 1 );
+		if( nextmap ) nextname = AsDoomString( nextmap->name_patch_lump, currmap->episode->episode_num - 1, nextmap->map_num - 1 );
+	}
+
+	callback( currname.c_str(), &currlevelname );
+	if( !nextname.empty() )
+	{
+		callback( nextname.c_str(), &nextlevelname );
+	}
+	else
+	{
+		nextlevelname = nullptr;
 	}
 
     // More hacks on minus sign.
@@ -1764,18 +1771,6 @@ static void WI_loadCallback(const char *name, patch_t **variable)
 
 void WI_loadData(void)
 {
-    if (gamemode == commercial)
-    {
-	NUMCMAPS = 32;
-	lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMCMAPS,
-				       PU_LEVEL, NULL);
-    }
-    else
-    {
-	lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMMAPS,
-				       PU_LEVEL, NULL);
-    }
-
     WI_loadUnloadData(WI_loadCallback);
 
     // These two graphics are special cased because we're sharing
@@ -1868,10 +1863,6 @@ void WI_initVariables(wbstartstruct_t* wbstartstruct)
 
     if (!wbs->maxsecret)
 	wbs->maxsecret = 1;
-
-    if ( gameversion < exe_ultimate )
-      if (wbs->epsd > 2)
-	wbs->epsd -= 3;
 }
 
 void WI_Start(wbstartstruct_t* wbstartstruct)

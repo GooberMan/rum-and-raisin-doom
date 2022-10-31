@@ -36,6 +36,7 @@
 // State.
 #include "doomstat.h"
 #include "r_state.h"
+#include "d_gameflow.h"
 // Data.
 #include "sounds.h"
 
@@ -115,7 +116,7 @@ boolean PIT_StompThing (mobj_t* thing)
 	return true;
     
     // monsters don't stomp things except on boss level
-    if ( !tmthing->player && gamemap != 30)
+    if ( !tmthing->player && current_map->map_num != 30)
 	return false;	
 		
     P_DamageMobj (thing, tmthing, tmthing, 10000);

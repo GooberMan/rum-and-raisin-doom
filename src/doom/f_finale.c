@@ -37,6 +37,7 @@
 #include "sounds.h"
 
 #include "doomstat.h"
+#include "d_gameflow.h"
 #include "r_state.h"
 #include "m_misc.h"
 
@@ -143,8 +144,8 @@ void F_StartFinale (void)
         }
 
         if (logical_gamemission == screen->mission
-         && (logical_gamemission != doom || gameepisode == screen->episode)
-         && gamemap == screen->level)
+         && (logical_gamemission != doom || current_episode->episode_num == screen->episode)
+         && current_map->map_num == screen->level)
         {
             finaletext = screen->text;
             finaleflat = screen->background;
@@ -193,7 +194,7 @@ void F_Ticker (void)
 				
       if (i < MAXPLAYERS)
       {	
-	if (gamemap == 30)
+	if (current_map->map_num == 30)
 	  F_StartCast ();
 	else
 	  gameaction = ga_worlddone;
@@ -218,7 +219,7 @@ void F_Ticker (void)
 	finalecount = 0;
 	finalestage = F_STAGE_ARTSCREEN;
 	wipegamestate = -1;		// force a wipe
-	if (gameepisode == 3)
+	if (current_episode->episode_num == 3)
 	    S_StartMusic (mus_bunny);
     }
 }
@@ -621,37 +622,20 @@ void F_BunnyScroll (void)
 
 static void F_ArtScreenDrawer(void)
 {
-    const char *lumpname;
-    
-    if (gameepisode == 3)
-    {
-        F_BunnyScroll();
-    }
-    else
-    {
-        switch (gameepisode)
-        {
-            case 1:
-                if (gameversion >= exe_ultimate)
-                {
-                    lumpname = "CREDIT";
-                }
-                else
-                {
-                    lumpname = "HELP2";
-                }
-                break;
-            case 2:
-                lumpname = "VICTORY2";
-                break;
-            case 4:
-                lumpname = "ENDPIC";
-                break;
-            default:
-                return;
-        }
 
-        lumpname = DEH_String(lumpname);
+	if( current_map->endgame->type & EndGame_Bunny )
+	{
+		F_BunnyScroll();
+	}
+	else
+	{
+		const char* lumpname = current_map->endgame->primary_image_lump.val;
+		if( current_map->endgame->type & EndGame_Ultimate && gameversion >= exe_ultimate )
+		{
+			lumpname = current_map->endgame->secondary_image_lump.val;
+		}
+
+		lumpname = DEH_String( lumpname );
 
 		// WIDESCREEN HACK
 		patch_t* art = (patch_t*)W_CacheLumpName( lumpname, PU_LEVEL );

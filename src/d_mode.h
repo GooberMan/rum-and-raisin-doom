@@ -26,17 +26,18 @@
 
 typedef enum
 {
-    doom,            // Doom 1
-    doom2,           // Doom 2
-    pack_tnt,        // Final Doom: TNT: Evilution
-    pack_plut,       // Final Doom: The Plutonia Experiment
-    pack_chex,       // Chex Quest (modded doom)
-    pack_hacx,       // Hacx (modded doom2)
-    heretic,         // Heretic
-    hexen,           // Hexen
-    strife,          // Strife
+	doom,				// Doom 1
+	doom2,				// Doom 2
+	pack_tnt,			// Final Doom: TNT: Evilution
+	pack_plut,			// Final Doom: The Plutonia Experiment
+	pack_chex,			// Chex Quest (modded doom)
+	pack_hacx,			// Hacx (modded doom2)
+	heretic,			// Heretic
+	hexen,				// Hexen
+	strife,				// Strife
+	gameflowdefined,	// UMAPINFO or DMAPINFO
 
-    none
+	none
 } GameMission_t;
 
 // The "mode" allows more accurate specification of the game mode we are

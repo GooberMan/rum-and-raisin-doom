@@ -1185,7 +1185,7 @@ mapinfo_t doom_map_e4m1 =
 	PlainFlowString( "American McGee" ),			// authors
 	&doom_episode_four,								// episode
 	1,												// map_num
-	Map_None,										// map_flags
+	Map_NoParTime,									// map_flags
 	FlowString( "D_E3M4" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1209,7 +1209,7 @@ mapinfo_t doom_map_e4m2 =
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_four,								// episode
 	2,												// map_num
-	Map_None,										// map_flags
+	Map_NoParTime,									// map_flags
 	FlowString( "D_E3M2" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1233,7 +1233,7 @@ mapinfo_t doom_map_e4m3 =
 	PlainFlowString( "Shawn Green" ),				// authors
 	&doom_episode_four,								// episode
 	3,												// map_num
-	Map_None,										// map_flags
+	Map_NoParTime,									// map_flags
 	FlowString( "D_E3M3" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1257,7 +1257,7 @@ mapinfo_t doom_map_e4m4 =
 	PlainFlowString( "American McGee" ),			// authors
 	&doom_episode_four,								// episode
 	4,												// map_num
-	Map_None,										// map_flags
+	Map_NoParTime,									// map_flags
 	FlowString( "D_E1M5" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1281,7 +1281,7 @@ mapinfo_t doom_map_e4m5 =
 	PlainFlowString( "Theresa Chasar, Tim Willits" ),	// authors
 	&doom_episode_four,								// episode
 	5,												// map_num
-	Map_None,										// map_flags
+	Map_NoParTime,									// map_flags
 	FlowString( "D_E2M7" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1305,7 +1305,7 @@ mapinfo_t doom_map_e4m6 =
 	PlainFlowString( "John Romero" ),				// authors
 	&doom_episode_four,								// episode
 	6,												// map_num
-	Map_None,										// map_flags
+	Map_NoParTime,									// map_flags
 	FlowString( "D_E2M4" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1329,7 +1329,7 @@ mapinfo_t doom_map_e4m7 =
 	PlainFlowString( "John Anderson" ),				// authors
 	&doom_episode_four,								// episode
 	7,												// map_num
-	Map_None,										// map_flags
+	Map_NoParTime,									// map_flags
 	FlowString( "D_E2M6" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1353,7 +1353,7 @@ mapinfo_t doom_map_e4m8 =
 	PlainFlowString( "Shawn Green" ),				// authors
 	&doom_episode_four,								// episode
 	8,												// map_num
-	Map_Doom1EndOfEpisode,							// map_flags
+	Map_Doom1EndOfEpisode | Map_NoParTime,			// map_flags
 	FlowString( "D_E2M5" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
@@ -1377,7 +1377,7 @@ mapinfo_t doom_map_e4m9 =
 	PlainFlowString( "Tim Willits" ),				// authors
 	&doom_episode_four,								// episode
 	9,												// map_num
-	Map_Secret,										// map_flags
+	Map_Secret | Map_NoParTime,						// map_flags
 	FlowString( "D_E1M9" ),							// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed

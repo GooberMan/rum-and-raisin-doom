@@ -28,7 +28,7 @@ DOOM_C_API typedef enum endgametype_e
 	EndGame_None,
 	EndGame_Pic					= 0x0001,
 	EndGame_Bunny				= 0x0002,
-	EndGame_Cast				= 0x0003,
+	EndGame_Cast				= 0x0004,
 
 	EndGame_Ultimate			= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
 } endgametype_t;
@@ -84,12 +84,18 @@ DOOM_C_API typedef enum flowstringflags_s
 
 DOOM_C_API typedef enum mapflags_s
 {
-	Map_None					= 0x00,
-	Map_Secret					= 0x01,
-	Map_EndOfEpisode			= 0x02,
-	Map_NoInterlevel			= 0x04,
+	Map_None					= 0x0000,
+	Map_Secret					= 0x0001,
+	Map_EndOfEpisode			= 0x0002,
+	Map_NoInterlevel			= 0x0004,
+	Map_NoParTime				= 0x0008,
+	Map_NoEnterBanner			= 0x0010,
+
+	Map_MonstersTelefrag		= 0x1000,
 
 	Map_Doom1EndOfEpisode		= Map_EndOfEpisode | Map_NoInterlevel,
+
+	Map_Doom2EndOfGame			= Map_EndOfEpisode | Map_NoEnterBanner,
 } mapflags_t;
 
 DOOM_C_API typedef struct flowstring_s

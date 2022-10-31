@@ -44,6 +44,8 @@
 
 #include "m_profile.h"
 
+#include "d_gameflow.h"
+
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
@@ -51,11 +53,11 @@
 //
 // Locally used constants, shortcuts.
 //
-#define HU_TITLE	(mapnames[(gameepisode-1)*9+gamemap-1])
-#define HU_TITLE2	(mapnames_commercial[gamemap-1])
-#define HU_TITLEP	(mapnames_commercial[gamemap-1 + 32])
-#define HU_TITLET	(mapnames_commercial[gamemap-1 + 64])
-#define HU_TITLE_CHEX   (mapnames_chex[(gameepisode-1)*9+gamemap-1])
+#define HU_TITLE	( current_map->name.val )
+#define HU_TITLE2	( current_map->name.val )
+#define HU_TITLEP	( current_map->name.val )
+#define HU_TITLET	( current_map->name.val )
+#define HU_TITLE_CHEX   ( current_map->name.val )
 #define HU_TITLEHEIGHT	1
 #define HU_TITLEX	0
 #define HU_TITLEY	(V_VIRTUALHEIGHT - ST_HEIGHT - 1 - SHORT(hu_font[0]->height))
@@ -395,10 +397,10 @@ void HU_Start(void)
       case doom2:
 	 s = HU_TITLE2;
          // Pre-Final Doom compatibility: map33-map35 names don't spill over
-         if (gameversion <= exe_doom_1_9 && gamemap >= 33)
-         {
-             s = "";
-         }
+         ///if (gameversion <= exe_doom_1_9 && gamemap >= 33)
+         ///{
+         ///    s = "";
+         ///}
 	 break;
       case pack_plut:
 	s = HU_TITLEP;

@@ -20,6 +20,8 @@
 #ifndef __P_SETUP__
 #define __P_SETUP__
 
+#include "d_gameflow.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,8 +38,7 @@ extern "C" {
 // NOT called by W_Ticker. Fixme.
 DOOM_C_API void
 P_SetupLevel
-( int		episode,
-  int		map,
+( mapinfo_t* map,
   int		playermask,
   skill_t	skill);
 

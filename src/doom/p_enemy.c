@@ -1631,14 +1631,14 @@ static boolean CheckBossEnd(mobjtype_t motype)
 {
     if (gameversion < exe_ultimate)
     {
-        if (gamemap != 8)
+        if (current_map->map_num != 8)
         {
             return false;
         }
 
         // Baron death on later episodes is nothing special.
 
-        if (motype == MT_BRUISER && gameepisode != 1)
+        if (motype == MT_BRUISER && current_episode->episode_num != 1)
         {
             return false;
         }
@@ -1652,23 +1652,23 @@ static boolean CheckBossEnd(mobjtype_t motype)
         // episode 4 support.  Now bosses only trigger on their
         // specific episode.
 
-	switch(gameepisode)
+	switch(current_episode->episode_num)
 	{
             case 1:
-                return gamemap == 8 && motype == MT_BRUISER;
+                return current_map->map_num == 8 && motype == MT_BRUISER;
 
             case 2:
-                return gamemap == 8 && motype == MT_CYBORG;
+                return current_map->map_num == 8 && motype == MT_CYBORG;
 
             case 3:
-                return gamemap == 8 && motype == MT_SPIDER;
+                return current_map->map_num == 8 && motype == MT_SPIDER;
 
 	    case 4:
-                return (gamemap == 6 && motype == MT_CYBORG)
-                    || (gamemap == 8 && motype == MT_SPIDER);
+                return (current_map->map_num == 6 && motype == MT_CYBORG)
+                    || (current_map->map_num == 8 && motype == MT_SPIDER);
 
             default:
-                return gamemap == 8;
+                return current_map->map_num == 8;
 	}
     }
 }
@@ -1687,7 +1687,7 @@ void A_BossDeath (mobj_t* mo)
 		
     if ( gamemode == commercial)
     {
-	if (gamemap != 7)
+	if (current_map->map_num != 7)
 	    return;
 		
 	if ((mo->type != MT_FATSO)
@@ -1730,7 +1730,7 @@ void A_BossDeath (mobj_t* mo)
     // victory!
     if ( gamemode == commercial)
     {
-	if (gamemap == 7)
+	if (current_map->map_num == 7)
 	{
 	    if (mo->type == MT_FATSO)
 	    {
@@ -1749,7 +1749,7 @@ void A_BossDeath (mobj_t* mo)
     }
     else
     {
-	switch(gameepisode)
+	switch(current_episode->episode_num)
 	{
 	  case 1:
 	    junk.tag = 666;
@@ -1758,7 +1758,7 @@ void A_BossDeath (mobj_t* mo)
 	    break;
 	    
 	  case 4:
-	    switch(gamemap)
+	    switch(current_map->map_num)
 	    {
 	      case 6:
 		junk.tag = 666;

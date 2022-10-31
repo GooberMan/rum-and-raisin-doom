@@ -27,6 +27,7 @@
 #include "d_mode.h"
 #include "i_terminal.h"
 #include "m_argv.h"
+#include "d_gameflow.h"
 
 #include "statdump.h"
 
@@ -65,7 +66,9 @@ static void DiscoverGamemode(const wbstartstruct_t *stats, int num_stats)
 {
     int partime;
     int level;
+	int episode;
     int i;
+	mapinfo_t* currmap = NULL;
 
     if (discovered_gamemission != none)
     {
@@ -74,11 +77,13 @@ static void DiscoverGamemode(const wbstartstruct_t *stats, int num_stats)
 
     for (i=0; i<num_stats; ++i)
     {
-        level = stats[i].last;
+		currmap = (mapinfo_t*)stats[i].currmap;
+        level = currmap->map_num;
+		episode = currmap->episode->episode_num;
 
         /* If episode 2, 3 or 4, this is Doom 1. */
 
-        if (stats[i].epsd > 0)
+        if (episode > 0)
         {
             discovered_gamemission = doom;
             return;
@@ -272,7 +277,11 @@ static void PrintStats(FILE *stream, const wbstartstruct_t *stats)
     short leveltime, partime;
     int i;
 
-    PrintLevelName(stream, stats->epsd, stats->last);
+	mapinfo_t* currmap = (mapinfo_t*)stats->currmap;
+	int32_t level = currmap->map_num;
+	int32_t episode = currmap->episode->episode_num;
+
+    PrintLevelName(stream, episode, level);
     fprintf(stream, "\n");
 
     leveltime = stats->plyr[0].stime / TICRATE;

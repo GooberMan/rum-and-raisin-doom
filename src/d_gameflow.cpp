@@ -46,11 +46,14 @@ episodeinfo_t* D_GameflowGetEpisode( int32_t episodenum )
 
 mapinfo_t* D_GameflowGetMap( episodeinfo_t* episode, int32_t mapnum )
 {
-	for( auto& map : Maps( episode ) )
+	if( episode != nullptr )
 	{
-		if( map->map_num == mapnum )
+		for( auto& map : Maps( episode ) )
 		{
-			return map;
+			if( map->map_num == mapnum )
+			{
+				return map;
+			}
 		}
 	}
 

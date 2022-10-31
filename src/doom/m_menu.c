@@ -1190,7 +1190,9 @@ void M_VerifyNightmare(int key)
     if (key != key_menu_confirm)
 	return;
 		
-    G_DeferedInitNew(nightmare,epi+1,1, false);
+	episodeinfo_t* epinfo = D_GameflowGetEpisode( epi + 1 );
+
+    G_DeferedInitNew(nightmare, epinfo->first_map, false);
     M_ClearMenus ();
 }
 
@@ -1202,7 +1204,9 @@ void M_ChooseSkill(int choice)
 	return;
     }
 	
-    G_DeferedInitNew(choice,epi+1,1, false);
+	episodeinfo_t* epinfo = D_GameflowGetEpisode( epi + 1 );
+
+    G_DeferedInitNew(choice, epinfo->first_map, false);
     M_ClearMenus ();
 }
 
@@ -3463,7 +3467,10 @@ static void M_DashboardNewGame( const char* itemname, void* data )
 {
 	mapdetails_t* map = (mapdetails_t*)data;
 
-	G_DeferedInitNew( dashboard_currgameskill, map->episodenum, map->mapnum, dashboard_currgameflags );
+	episodeinfo_t* epinfo = D_GameflowGetEpisode( map->episodenum );
+	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map->mapnum );
+
+	G_DeferedInitNew( dashboard_currgameskill, mapinfo, dashboard_currgameflags );
 }
 
 static void M_DashboardRegisterEpisodeMaps( const char* category, episodedetails_t* episode, menufunc_t callback )
