@@ -2020,8 +2020,8 @@ void D_DoomMain (void)
 
     // get skill / episode / map from parms
     startskill = sk_medium;
-    startepisode = 1;
-    startmap = 1;
+    startepisode = current_episode->episode_num;
+    startmap = current_episode->first_map->map_num;
     autostart = false;
 
     //!
@@ -2123,17 +2123,17 @@ void D_DoomMain (void)
     // Undocumented:
     // Invoked by setup to test the controls.
 
-    p = M_CheckParm("-testcontrols");
-
-    if ( p > 0)
-    {
-        startepisode = 1;
-        startmap = 1;
-        autostart = true;
-        testcontrols = true;
-
-		M_RegisterDashboardWindow( "Test|Mouse", "Mouse testing", 400, 200, &testcontrols, Menu_Overlay, &D_TestControls );
-    }
+    //p = M_CheckParm("-testcontrols");
+	//
+    //if ( p > 0)
+    //{
+    //    startepisode = 1;
+    //    startmap = 1;
+    //    autostart = true;
+    //    testcontrols = true;
+	//
+	//	M_RegisterDashboardWindow( "Test|Mouse", "Mouse testing", 400, 200, &testcontrols, Menu_Overlay, &D_TestControls );
+    //}
 
     // Check for load game parameter
     // We do this here and save the slot number, so that the network code
