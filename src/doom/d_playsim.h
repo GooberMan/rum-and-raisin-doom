@@ -41,6 +41,8 @@ DOOM_C_API typedef struct demoopitions_s
 DOOM_C_API typedef struct gameoptions_s
 {
 	boolean					unlimited_scrollers;
+	boolean					reset_player_visited_secret;
+	boolean					doom2_bad_secret_exit_doesnt_loop;
 } gameoptions_t;
 
 DOOM_C_API typedef struct wadoptions_s
@@ -65,6 +67,7 @@ DOOM_C_API typedef struct renderoptions_s
 	boolean					widescreen_assets;
 	boolean					full_rgb_range;
 	boolean					invalid_thing_frames;
+	boolean					always_update_sky_texture;
 } renderoptions_t;
 
 DOOM_C_API typedef struct playsimoptions_s
