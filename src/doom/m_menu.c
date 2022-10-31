@@ -537,6 +537,8 @@ menuitem_t EpisodeMenu[]=
     {1,"M_EPI4", M_Episode,'t'}
 };
 
+menuitem_t* gameflow_episodes;
+
 menu_t  EpiDef =
 {
     ep_end,		// # of menu items
@@ -1190,7 +1192,16 @@ void M_VerifyNightmare(int key)
     if (key != key_menu_confirm)
 	return;
 		
-	episodeinfo_t* epinfo = D_GameflowGetEpisode( gamemode == commercial ? 0 : epi + 1 );
+	episodeinfo_t* epinfo;
+	
+	if( gameflow_episodes )
+	{
+		epinfo = current_game->episodes[ epi ];
+	}
+	else
+	{
+		epinfo = D_GameflowGetEpisode( gamemode == commercial ? 0 : epi + 1 );
+	}
 
     G_DeferedInitNew(nightmare, epinfo->first_map, false);
     M_ClearMenus ();
@@ -1204,7 +1215,16 @@ void M_ChooseSkill(int choice)
 	return;
     }
 	
-	episodeinfo_t* epinfo = D_GameflowGetEpisode( gamemode == commercial ? 0 : epi + 1 );
+	episodeinfo_t* epinfo;
+	
+	if( gameflow_episodes )
+	{
+		epinfo = current_game->episodes[ epi ];
+	}
+	else
+	{
+		epinfo = D_GameflowGetEpisode( gamemode == commercial ? 0 : epi + 1 );
+	}
 
     G_DeferedInitNew(choice, epinfo->first_map, false);
     M_ClearMenus ();
@@ -1212,16 +1232,28 @@ void M_ChooseSkill(int choice)
 
 void M_Episode(int choice)
 {
-    if ( (gamemode == shareware)
-	 && choice)
-    {
-	M_StartMessage(DEH_String(SWSTRING),NULL,false);
-	M_SetupNextMenu(&ReadDef1);
-	return;
-    }
+	if( gameflow_episodes )
+	{
+		if( current_game->episodes[ choice ]->first_map == NULL )
+		{
+			M_StartMessage( DEH_String( SWSTRING ), NULL, false );
+			M_SetupNextMenu( &ReadDef1 );
+			return;
+		}
+	}
+	else
+	{
+		if ( (gamemode == shareware)
+		 && choice)
+		{
+			M_StartMessage(DEH_String(SWSTRING),NULL,false);
+			M_SetupNextMenu(&ReadDef1);
+			return;
+		}
+	}
 
-    epi = choice;
-    M_SetupNextMenu(&NewDef);
+	epi = choice;
+	M_SetupNextMenu(&NewDef);
 }
 
 
@@ -3563,19 +3595,40 @@ void M_Init (void)
         ReadMenu1[rdthsempty1].routine = M_FinishReadThis;
     }
 
-    // Versions of doom.exe before the Ultimate Doom release only had
-    // three episodes; if we're emulating one of those then don't try
-    // to show episode four. If we are, then do show episode four
-    // (should crash if missing).
-    if (gameversion < exe_ultimate)
-    {
-        EpiDef.numitems--;
-    }
-    // chex.exe shows only one episode.
-    else if (gameversion == exe_chex)
-    {
-        EpiDef.numitems = 1;
-    }
+	if( current_game->num_episodes > 0 )
+	{
+		gameflow_episodes = Z_Malloc( sizeof( menuitem_t ) * current_game->num_episodes, PU_STATIC, NULL );
+
+		for( int32_t curr = 0; curr < current_game->num_episodes; ++curr )
+		{
+			episodeinfo_t* currep = current_game->episodes[ curr ];
+			menuitem_t* curritem = &gameflow_episodes[ curr ];
+
+			curritem->alphaKey = tolower( currep->name.val[ 0 ] );
+			M_StringCopy( curritem->name, currep->name_patch_lump.val, 10 );
+			curritem->routine = M_Episode;
+			curritem->status = 1;
+		}
+
+		EpiDef.menuitems = gameflow_episodes;
+		EpiDef.numitems = current_game->num_episodes;
+	}
+	else
+	{
+		// Versions of doom.exe before the Ultimate Doom release only had
+		// three episodes; if we're emulating one of those then don't try
+		// to show episode four. If we are, then do show episode four
+		// (should crash if missing).
+		if (gameversion < exe_ultimate)
+		{
+			EpiDef.numitems--;
+		}
+		// chex.exe shows only one episode.
+		else if (gameversion == exe_chex)
+		{
+			EpiDef.numitems = 1;
+		}
+	}
 
     opldev = M_CheckParm("-opldev") > 0;
 
