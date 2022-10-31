@@ -285,6 +285,95 @@ auto MultiRangeView( _ranges&... r )
 	return retval;
 }
 
+
+template< typename _c1, typename _c2 >
+requires std::is_same_v< typename _c1::value_type, typename _c2::value_type >
+class ConcatImpl
+{
+public:
+	using left_type = _c1;
+	using right_type = _c2;
+
+	using value_type = typename _c1::value_type;
+
+	struct iterator
+	{
+		iterator()
+		{
+		}
+
+		iterator( left_type& l, right_type& r, bool end )
+			: currleft( end ? l.end() : l.begin() )
+			, endleft( l.end() )
+			, currright( end ? r.end() : r.begin() )
+			, endright( r.end() )
+		{
+		}
+
+		INLINE value_type& operator*() noexcept			{ return currleft == endleft ? *currright : *currleft; }
+		bool INLINE operator!=( const iterator& rhs )
+		{
+			// This logic makes me crosseyed. But it is basically just a matrix of checking
+			// when something should be checked, and when something definitively is not
+			// equal to the current iterator (ie they're not iterating the same side)
+			if( currleft == endleft )
+			{
+				if( rhs.currleft == rhs.endleft )
+				{
+					return currright != rhs.endright;
+				}
+				return true;
+			}
+			else
+			{
+				if( rhs.currleft == rhs.endleft )
+				{
+					return true;
+				}
+				return currleft != rhs.endleft;
+			}
+		}
+		INLINE iterator& operator++()					{ if( currleft == endleft ) ++currright; else ++currleft; return *this; }
+
+	private:
+		left_type::iterator currleft;
+		left_type::iterator endleft;
+		right_type::iterator currright;
+		right_type::iterator endright;
+	};
+
+	ConcatImpl( left_type& l, right_type& r )
+		: _begin( l, r, false )
+		, _end( l, r, true )
+	{
+	}
+
+	iterator begin() { return _begin; }
+	iterator end() { return _end; }
+
+private:
+	iterator _begin;
+	iterator _end;
+};
+
+template< typename _c1, typename _c2 >
+auto Concat( _c1& c1, _c2& c2 )
+{
+	using ConcatType = ConcatImpl< _c1, _c2 >;
+
+	return ConcatType( c1, c2 );
+}
+
+template< typename _c1, typename _c2, typename... _cN >
+auto Concat( _c1& c1, _c2& c2, _cN&... cN )
+{
+	auto concat = Concat( c2, cN... );
+
+	using ConcatType = ConcatImpl< _c1, decltype( concat ) >;
+
+	return ConcatType( c1, concat );
+}
+
 #endif // __cplusplus
 
 #endif // __M_CONTAINER__
