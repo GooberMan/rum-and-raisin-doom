@@ -90,7 +90,6 @@ void	G_DoLoadLevel (void);
 void	G_DoNewGame (void); 
 void	G_DoPlayDemo (void); 
 void	G_DoCompleted (void); 
-void	G_DoVictory (void); 
 void	G_DoWorldDone (void); 
 void	G_DoSaveGame (void); 
  
@@ -1459,7 +1458,7 @@ void G_DoCompleted (void)
     
 	for (i=0 ; i<MAXPLAYERS ; i++) 
 	{
-		players[i].didsecret = ( current_map->map_flags & Map_Secret );
+		players[i].didsecret |= ( current_map->map_flags & Map_Secret );
 
 		if( players[i].visitedlevels ) players[i].visitedlevels[ current_map->map_num ] = true;
 	}
@@ -1632,6 +1631,10 @@ void G_DoWorldDone (void)
 
     gamestate = GS_LEVEL; 
     gamemap = wminfo.next+1; 
+
+	// TODO: get rid of gamemap and gameepisode numbers
+	mapinfo_t* mapinfo = D_GameflowGetMap( current_episode, gamemap );
+	D_GameflowSetCurrentMap( mapinfo );
 
 	if( gameflags & GF_PistolStarts )
 	{
@@ -1876,6 +1879,14 @@ void G_InitNew( skill_t skill, int episode, int map, gameflags_t flags )
 {
     const char *skytexturename;
     int             i;
+
+	episodeinfo_t* epinfo = D_GameflowGetEpisode( episode );
+	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map );
+
+	if( mapinfo )
+	{
+		D_GameflowSetCurrentMap( mapinfo );
+	}
 
     if (paused)
     {

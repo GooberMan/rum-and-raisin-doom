@@ -1754,8 +1754,11 @@ void D_DoomMain (void)
 		}
 	}
 
+	InitGameVersion();
+
 	D_AddWidescreenPacks();
-    InitGameVersion();
+
+	D_RegisterPlaysim();
 
     //!
     // @category mod

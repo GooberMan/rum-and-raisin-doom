@@ -23,6 +23,8 @@
 
 // Forward declarations
 extern episodeinfo_t	doom_episode_one;
+extern episodeinfo_t	doom_shareware_episode_two;
+extern episodeinfo_t	doom_shareware_episode_three;
 extern episodeinfo_t	doom_episode_two;
 extern episodeinfo_t	doom_episode_three;
 extern episodeinfo_t	doom_episode_four;
@@ -87,10 +89,6 @@ extern endgame_t		doom_endgame_e1;
 extern endgame_t		doom_endgame_e2;
 extern endgame_t		doom_endgame_e3;
 extern endgame_t		doom_endgame_e4;
-
-extern gameflow_t		doom_gameflow_shareware;
-extern gameflow_t		doom_gameflow_registered;
-extern gameflow_t		doom_gameflow_ultimate;
 
 #define frame_format_text "WIA%d%.2d%.2d"
 #define levename_format_text "WILV%d%d"
@@ -327,8 +325,8 @@ generatehereanim( doom_frames_youarehereright, map, xpos, ypos )
 mapinfo_t* doom_maps_episode_1[] =
 {
 	&doom_map_e1m1, &doom_map_e1m2, &doom_map_e1m3,
-	&doom_map_e1m2, &doom_map_e1m5, &doom_map_e1m6,
-	&doom_map_e1m3, &doom_map_e1m8, &doom_map_e1m9
+	&doom_map_e1m4, &doom_map_e1m5, &doom_map_e1m6,
+	&doom_map_e1m7, &doom_map_e1m8, &doom_map_e1m9
 };
 
 episodeinfo_t doom_episode_one =
@@ -342,51 +340,84 @@ episodeinfo_t doom_episode_one =
 	&doom_map_e1m1									// first_map
 };
 
-//episodeinfo_t doom_episode_two =
-//{
-//	"The Shores Of Hell",			// name
-//	"M_EPI2",						// name_patch_lump
-//	&doom_map_e2m1,					// first_map
-//	2								// episode_num
-//};
-//
-//episodeinfo_t doom_episode_three =
-//{
-//	"Inferno",						// name
-//	"M_EPI3",						// name_patch_lump
-//	&doom_map_e3m1,					// first_map
-//	3								// episode_num
-//};
-//
-//episodeinfo_t doom_episode_four =
-//{
-//	"Thy Flesh Consumed",			// name
-//	"M_EPI4",						// name_patch_lump
-//	&doom_map_e4m1,					// first_map
-//	4								// episode_num
-//};
+episodeinfo_t doom_shareware_episode_two =
+{
+	PlainFlowString( "The Shores Of Hell" ),		// name
+	FlowString( "M_EPI2" ),							// name_patch_lump
+	2,												// episode_num
+	nullptr,										// all_maps
+	0,												// num_maps
+	0,												// highest_map_num
+	0												// first_map
+};
+
+episodeinfo_t doom_shareware_episode_three =
+{
+	PlainFlowString( "Inferno" ),					// name
+	FlowString( "M_EPI3" ),							// name_patch_lump
+	3,												// episode_num
+	nullptr,										// all_maps
+	0,												// num_maps
+	0,												// highest_map_num
+	0												// first_map
+};
+
+episodeinfo_t doom_episode_two =
+{
+	PlainFlowString( "The Shores Of Hell" ),		// name
+	FlowString( "M_EPI2" ),							// name_patch_lump
+	2,												// episode_num
+	nullptr,										// all_maps
+	0,												// num_maps
+	0,												// highest_map_num
+	0												// first_map
+};
+
+episodeinfo_t doom_episode_three =
+{
+	PlainFlowString( "Inferno" ),					// name
+	FlowString( "M_EPI3" ),							// name_patch_lump
+	3,												// episode_num
+	nullptr,										// all_maps
+	0,												// num_maps
+	0,												// highest_map_num
+	0												// first_map
+};
+
+episodeinfo_t doom_episode_four =
+{
+	PlainFlowString( "Thy Flesh Consumed" ),		// name
+	FlowString( "M_EPI4" ),							// name_patch_lump
+	4,												// episode_num
+	nullptr,										// all_maps
+	0,												// num_maps
+	0,												// highest_map_num
+	0												// first_map
+};
 
 episodeinfo_t* doom_episodes_shareware[] =
 {
-	&doom_episode_one
+	&doom_episode_one,
+	&doom_shareware_episode_two,
+	&doom_shareware_episode_three
 };
 
-//episodeinfo_t* doom_episodes_registered[] =
-//{
-//	&doom_episode_one,
-//	&doom_episode_two,
-//	&doom_episode_three
-//};
-//
-//episodeinfo_t* doom_episodes_ultimate[] =
-//{
-//	&doom_episode_one,
-//	&doom_episode_two,
-//	&doom_episode_three,
-//	&doom_episode_four
-//};
+episodeinfo_t* doom_episodes_registered[] =
+{
+	&doom_episode_one,
+	&doom_episode_two,
+	&doom_episode_three
+};
 
-gameflow_t doom_gameflow_shareware =
+episodeinfo_t* doom_episodes_ultimate[] =
+{
+	&doom_episode_one,
+	&doom_episode_two,
+	&doom_episode_three,
+	&doom_episode_four
+};
+
+gameflow_t doom_shareware =
 {
 	PlainFlowString( "DOOM Shareware" ),			// name
 	doom_episodes_shareware,						// episodes
@@ -395,23 +426,23 @@ gameflow_t doom_gameflow_shareware =
 	PlainFlowString( "" )							// playsim_options
 };
 
-//gameflow_t doom_gameflow_registered =
-//{
-//	"DOOM Registered",				// name
-//	doom_episodes_registered,		// episodes
-//	arrlen( doom_episodes_registered ),	// num_episodes
-//	"vanilla",						// playsim_base
-//	""								// playsim_options
-//};
-//
-//gameflow_t doom_gameflow_ultimate =
-//{
-//	"The Ultimate DOOM",			// name
-//	doom_episodes_ultimate,			// episodes
-//	arrlen( doom_episodes_ultimate ),	// num_episodes
-//	"vanilla",						// playsim_base
-//	""								// playsim_options
-//};
+gameflow_t doom_registered =
+{
+	PlainFlowString( "DOOM Registered" ),			// name
+	doom_episodes_registered,						// episodes
+	arrlen( doom_episodes_registered ),				// num_episodes
+	PlainFlowString( "vanilla" ),					// playsim_base
+	PlainFlowString( "" )							// playsim_options
+};
+
+gameflow_t doom_ultimate =
+{
+	PlainFlowString( "The Ultimate DOOM" ),			// name
+	doom_episodes_ultimate,							// episodes
+	arrlen( doom_episodes_ultimate ),				// num_episodes
+	PlainFlowString( "vanilla" ),					// playsim_base
+	PlainFlowString( "" )							// playsim_options
+};
 
 //============================================================================
 // Maps
@@ -698,11 +729,3 @@ interlevel_t doom_interlevel_e1entering =
 	doom_anim_e1_fore,								// foreground_anims
 	arrlen( doom_anim_e1_fore ),					// num_foreground_anims
 };
-
-//============================================================================
-// HACKS
-//============================================================================
-
-gameflow_t* current_game = &doom_gameflow_shareware;
-episodeinfo_t* current_episode = &doom_episode_one;
-mapinfo_t* current_map = &doom_map_e1m3;
