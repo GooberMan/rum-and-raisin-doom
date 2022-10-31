@@ -23,11 +23,11 @@
 
 // Forward declarations
 extern episodeinfo_t	doom_episode_one;
-extern episodeinfo_t	doom_shareware_episode_two;
-extern episodeinfo_t	doom_shareware_episode_three;
 extern episodeinfo_t	doom_episode_two;
 extern episodeinfo_t	doom_episode_three;
 extern episodeinfo_t	doom_episode_four;
+extern episodeinfo_t	doom_shareware_episode_two;
+extern episodeinfo_t	doom_shareware_episode_three;
 
 extern mapinfo_t		doom_map_e1m1;
 extern mapinfo_t		doom_map_e1m2;
@@ -112,6 +112,11 @@ constexpr auto operator|( _type lhs, _type rhs )
 // So there's some terrible static object generation just to get this working...
 
 constexpr int32_t standardduration = TICRATE / 3;
+
+constexpr auto EmptyFlowString()
+{
+	return flowstring_t();
+}
 
 constexpr auto FlowString( const char* name, flowstringflags_t additional = FlowString_None )
 {
@@ -211,7 +216,7 @@ static interlevelcond_t doom_herecond_ ## map [] = \
 	}, \
 	{ \
 		AnimCondition_FitsInFrame, \
-		1 \
+		levelnum \
 	}, \
 }
 
@@ -374,6 +379,14 @@ mapinfo_t* doom_maps_episode_2[] =
 	&doom_map_e2m7, &doom_map_e2m8, &doom_map_e2m9
 };
 
+mapinfo_t* doom_maps_episode_3[] =
+{
+	&doom_map_e3m1, &doom_map_e3m2, &doom_map_e3m3,
+	&doom_map_e3m4, &doom_map_e3m5, &doom_map_e3m6,
+	&doom_map_e3m7, &doom_map_e3m8, &doom_map_e3m9
+};
+
+
 episodeinfo_t doom_episode_one =
 {
 	PlainFlowString( "Knee-Deep In The Dead" ),		// name
@@ -383,6 +396,39 @@ episodeinfo_t doom_episode_one =
 	arrlen( doom_maps_episode_1 ),					// num_maps
 	doom_map_e1m9.map_num,							// highest_map_num
 	&doom_map_e1m1									// first_map
+};
+
+episodeinfo_t doom_episode_two =
+{
+	PlainFlowString( "The Shores Of Hell" ),		// name
+	FlowString( "M_EPI2" ),							// name_patch_lump
+	2,												// episode_num
+	doom_maps_episode_2,							// all_maps
+	arrlen( doom_maps_episode_2 ),					// num_maps
+	9,												// highest_map_num
+	&doom_map_e2m1									// first_map
+};
+
+episodeinfo_t doom_episode_three =
+{
+	PlainFlowString( "Inferno" ),					// name
+	FlowString( "M_EPI3" ),							// name_patch_lump
+	3,												// episode_num
+	doom_maps_episode_3,							// all_maps
+	arrlen( doom_maps_episode_3 ),					// num_maps
+	9,												// highest_map_num
+	&doom_map_e3m1									// first_map
+};
+
+episodeinfo_t doom_episode_four =
+{
+	PlainFlowString( "Thy Flesh Consumed" ),		// name
+	FlowString( "M_EPI4" ),							// name_patch_lump
+	4,												// episode_num
+	nullptr,										// all_maps
+	0,												// num_maps
+	9,												// highest_map_num
+	nullptr											// first_map
 };
 
 episodeinfo_t doom_shareware_episode_two =
@@ -404,39 +450,6 @@ episodeinfo_t doom_shareware_episode_three =
 	nullptr,										// all_maps
 	0,												// num_maps
 	0,												// highest_map_num
-	nullptr											// first_map
-};
-
-episodeinfo_t doom_episode_two =
-{
-	PlainFlowString( "The Shores Of Hell" ),		// name
-	FlowString( "M_EPI2" ),							// name_patch_lump
-	2,												// episode_num
-	doom_maps_episode_2,							// all_maps
-	arrlen( doom_maps_episode_2 ),					// num_maps
-	9,												// highest_map_num
-	&doom_map_e2m1									// first_map
-};
-
-episodeinfo_t doom_episode_three =
-{
-	PlainFlowString( "Inferno" ),					// name
-	FlowString( "M_EPI3" ),							// name_patch_lump
-	3,												// episode_num
-	nullptr,										// all_maps
-	0,												// num_maps
-	9,												// highest_map_num
-	nullptr											// first_map
-};
-
-episodeinfo_t doom_episode_four =
-{
-	PlainFlowString( "Thy Flesh Consumed" ),		// name
-	FlowString( "M_EPI4" ),							// name_patch_lump
-	4,												// episode_num
-	nullptr,										// all_maps
-	0,												// num_maps
-	9,												// highest_map_num
 	nullptr											// first_map
 };
 
@@ -491,6 +504,10 @@ gameflow_t doom_ultimate =
 
 //============================================================================
 // Maps
+//============================================================================
+
+//============================================================================
+// Knee-Deep In The Dead
 //============================================================================
 
 mapinfo_t doom_map_e1m1 =
@@ -709,6 +726,10 @@ mapinfo_t doom_map_e1m9 =
 	nullptr,										// endgame
 };
 
+//============================================================================
+// The Shores Of Hell
+//============================================================================
+
 mapinfo_t doom_map_e2m1 =
 {
 	RuntimeFlowString( levellump_format_text ),		// data_lump
@@ -926,6 +947,226 @@ mapinfo_t doom_map_e2m9 =
 };
 
 //============================================================================
+// Inferno
+//============================================================================
+
+mapinfo_t doom_map_e3m1 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M1 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	1,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M1" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m2,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e3m2 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M2 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	2,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M2" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	45,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m3,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e3m3 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M3 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
+	&doom_episode_three,							// episode
+	3,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M3" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m4,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e3m4 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M4 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	4,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M4" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	150,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m5,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e3m5 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M5 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	5,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M5" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m6,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e3m6 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M6 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	6,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M6" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m7,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e3m7 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M7 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
+	&doom_episode_three,							// episode
+	7,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M7" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	165,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m8,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e3m8 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M8 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	8,												// map_num
+	Map_Doom1EndOfEpisode,							// map_flags
+	FlowString( "D_E3M8" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	30,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	nullptr,										// next_map
+	nullptr,										// next_map_intermission
+	nullptr,										// secret_map
+	nullptr,										// secret_map_intermission
+	&doom_endgame_e3,								// endgame
+};
+
+mapinfo_t doom_map_e3m9 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M9 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	9,												// map_num
+	Map_Secret,										// map_flags
+	FlowString( "D_E3M9" ),							// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	135,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_map_e3m7,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+//============================================================================
 // Intermissions, endgames, and interlevels
 //============================================================================
 
@@ -1012,7 +1253,7 @@ endgame_t doom_endgame_e2 =
 	EndGame_Pic,									// type
 	&doom_intermission_e2,							// intermission
 	FlowString( "VICTORY2" ),						// primary_image_lump
-	nullptr,										// secondary_image_lump
+	EmptyFlowString(),								// secondary_image_lump
 };
 
 static interlevelanim_t doom_anim_e2_finished[] =
@@ -1071,4 +1312,94 @@ interlevel_t doom_interlevel_e2entering =
 	0,												// num_foreground_anims
 };
 
+//============================================================================
+// Inferno
+//============================================================================
+
+intermission_t doom_intermission_e3 =
+{
+	FlowString( E3TEXT ),							// text
+	FlowString( "D_VICTOR" ),						// music_lump
+	FlowString( "MFLR8_4" ),						// background_lump
+};
+
+endgame_t doom_endgame_e3 =
+{
+	EndGame_Bunny,									// type
+	&doom_intermission_e3,							// intermission
+	EmptyFlowString(),								// primary_image_lump
+	EmptyFlowString(),								// secondary_image_lump
+};
+
+static interlevelanim_t doom_anim_e3_back[] =
+{
+	generatebackgroundanim( 2, 0, 104, 168 ),
+	generatebackgroundanim( 2, 1, 40, 136 ),
+	generatebackgroundanim( 2, 2, 160, 96 ),
+	generatebackgroundanim( 2, 3, 104, 80 ),
+	generatebackgroundanim( 2, 4, 120, 32 ),
+	generatebackgroundanim( 2, 5, 40, 0 ),
+};
+
+static interlevelanim_t doom_anim_e3_fore[] =
+{
+	generatelocationanims( E3M1, 156, 168 ),
+	generatelocationanims( E3M2, 48, 154 ),
+	generatelocationanims( E3M3, 174, 95 ),
+	generatelocationanims( E3M4, 265, 75 ),
+	generatelocationanims( E3M5, 130, 48 ),
+	generatelocationanims( E3M6, 279, 23 ),
+	generatelocationanims( E3M7, 198, 48 ),
+	generatelocationanims( E3M8, 140, 25 ),
+	generatelocationanims( E3M9, 281, 136 ),
+};
+
+interlevel_t doom_interlevel_e3finished =
+{
+	Interlevel_Animated,							// type
+	RuntimeFlowString( background_format_text ),	// background_lump
+	doom_anim_e3_back,								// background_anims
+	arrlen( doom_anim_e3_back ),					// num_background_anims
+	nullptr,										// foreground_anims
+	0,												// num_foreground_anims
+};
+
+interlevel_t doom_interlevel_e3entering =
+{
+	Interlevel_Animated,							// type
+	RuntimeFlowString( background_format_text ),	// background_lump
+	doom_anim_e3_back,								// background_anims
+	arrlen( doom_anim_e3_back ),					// num_background_anims
+	doom_anim_e3_fore,								// foreground_anims
+	arrlen( doom_anim_e3_fore ),					// num_foreground_anims
+};
+
+//============================================================================
+// Thy Flesh Consumed
+//============================================================================
+
+intermission_t doom_intermission_e4 =
+{
+	FlowString( E4TEXT ),							// text
+	FlowString( "D_VICTOR" ),						// music_lump
+	FlowString( "MFLR8_3" ),						// background_lump
+};
+
+endgame_t doom_endgame_e4 =
+{
+	EndGame_Pic,									// type
+	&doom_intermission_e3,							// intermission
+	FlowString( "ENDPIC" ),							// primary_image_lump
+	EmptyFlowString(),								// secondary_image_lump
+};
+
+interlevel_t doom_interlevel_e4 =
+{
+	Interlevel_Static,								// type
+	FlowString( "INTERPIC" ),						// background_lump
+	nullptr,										// background_anims
+	0,												// num_background_anims
+	nullptr,										// foreground_anims
+	0,												// num_foreground_anims
+};
 
