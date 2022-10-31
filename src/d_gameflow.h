@@ -26,12 +26,11 @@
 DOOM_C_API typedef enum endgametype_e
 {
 	EndGame_None,
-	EndGame_Pic				= 0x0001,
-	EndGame_Bunny			= 0x0002,
-	EndGame_Cast			= 0x0003,
+	EndGame_Pic					= 0x0001,
+	EndGame_Bunny				= 0x0002,
+	EndGame_Cast				= 0x0003,
 
-	EndGame_Ultimate		= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
-	EndGame_SkipInterlevel	= 0x2000,		// Standard Doom 1 behavior on endgame, can be ignored with an option
+	EndGame_Ultimate			= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
 } endgametype_t;
 
 DOOM_C_API typedef enum interleveltype_e
@@ -43,18 +42,26 @@ DOOM_C_API typedef enum interleveltype_e
 
 DOOM_C_API typedef enum frametype_s
 {
-	Frame_None,
-	Frame_Infinite,
-	Frame_FixedDuration,
-	Frame_RandomDuration,
+	Frame_None					= 0x0000,
+	Frame_Infinite				= 0x0001,
+	Frame_FixedDuration			= 0x0002,
+	Frame_RandomDuration		= 0x0004,
+
+	Frame_RandomStart			= 0x1000,
+	Frame_AdjustForWidescreen	= 0x2000,
+
+	Frame_Background			= Frame_Infinite | Frame_AdjustForWidescreen
 } frametype_t;
 
 DOOM_C_API typedef enum animcondition_s
 {
 	AnimCondition_None,
-	AnimCondition_MapNumGreater,
-	AnimCondition_MapNumEqual,
-	AnimCondition_FitsInFrame,
+	AnimCondition_MapNumGreater,	// Checks: Current/next map number.			Parameter: map number
+	AnimCondition_MapNumEqual,		// Checks: Current/next map number.			Parameter: map number
+	AnimCondition_MapVisited,		// Checks: Visited flag for map number.		Parameter: map number
+	AnimCondition_MapNotSecret,		// Checks: Current/next map.				Parameter: none
+	AnimCondition_SecretVisited,	// Checks: Any secret map visited.			Parameter: none
+	AnimCondition_FitsInFrame,		// Checks: Patch dimensions.				Parameter: none
 } animcondition_t;
 
 DOOM_C_API typedef enum flowstringflags_s
@@ -63,6 +70,16 @@ DOOM_C_API typedef enum flowstringflags_s
 	FlowString_Dehacked			= 0x01,
 	FlowString_RuntimeGenerated	= 0x02,
 } flowstringflags_t;
+
+DOOM_C_API typedef enum mapflags_s
+{
+	Map_None					= 0x00,
+	Map_Secret					= 0x01,
+	Map_EndOfEpisode			= 0x02,
+	Map_NoInterlevel			= 0x04,
+
+	Map_Doom1EndOfEpisode		= Map_EndOfEpisode | Map_NoInterlevel,
+} mapflags_t;
 
 DOOM_C_API typedef struct flowstring_s
 {
@@ -143,6 +160,7 @@ DOOM_C_API typedef struct mapinfo_s
 
 	episodeinfo_t*			episode;
 	int32_t					map_num;
+	mapflags_t				map_flags;
 
 	flowstring_t			music_lump;
 	flowstring_t			sky_texture;
@@ -168,8 +186,13 @@ DOOM_C_API typedef struct episodeinfo_s
 	flowstring_t			name;
 	flowstring_t			name_patch_lump;
 
-	mapinfo_t*				first_map;
 	int32_t					episode_num;
+
+	mapinfo_t**				all_maps;
+	int32_t					num_maps;
+	int32_t					highest_map_num;
+
+	mapinfo_t*				first_map;
 } episodeinfo_t;
 
 // Still working out the details, but playsim_base can equal:
@@ -198,6 +221,12 @@ DOOM_C_API typedef struct gameflow_s
 DOOM_C_API extern gameflow_t*			current_game;
 DOOM_C_API extern episodeinfo_t*		current_episode;
 DOOM_C_API extern mapinfo_t*			current_map;
+
+DOOM_C_API episodeinfo_t* D_GameflowGetEpisode( int32_t episodenum );
+DOOM_C_API mapinfo_t* D_GameflowGetMap( episodeinfo_t* episode, int32_t mapnum );
+
+DOOM_C_API void D_GameflowSetCurrentEpisode( episodeinfo_t* episode );
+DOOM_C_API void D_GameflowSetCurrentMap( mapinfo_t* map );
 
 #if defined( __cplusplus )
 
