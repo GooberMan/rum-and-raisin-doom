@@ -289,10 +289,10 @@ static patch_t*		bp[MAXPLAYERS];
 static patch_t**	lnames;
 
 
-template< typename _it >
-void SetupCache( mapinfo_t* map, _it& itr )
+template< typename _it, typename... _params >
+void SetupCache( mapinfo_t* map, _it& itr, _params&... params )
 {
-	itr.template get< 0 >().Setup( map, itr.template get< 1 >() );
+	itr.template get< 0 >().Setup( map, itr.template get< 1 >(), params... );
 };
 
 typedef class interframecache_s
@@ -362,18 +362,21 @@ public:
 	interanimcache_s()
 		: source( nullptr )
 		, conditionsmet( false )
+		, fitsinframegroup( 0 )
 	{
 	}
 
 	using frame_iterator = DoomVector< interframecache_t, PU_LEVEL >::iterator;
+	using anim_container = DoomVector< interanimcache_s, PU_LEVEL >;
 
 	constexpr auto& Frames()			{ return frames; }
 	constexpr int32_t XPos()			{ return source->x_pos; }
 	constexpr int32_t YPos()			{ return source->y_pos; }
 	constexpr auto Conditions()			{ return std::span( source->conditions, source->num_conditions ); }
 	constexpr auto ConditionsMet()		{ return conditionsmet; }
+	constexpr auto FitsInFrameGroup()	{ return fitsinframegroup; }
 
-	void Setup( mapinfo_t* map, interlevelanim_t& interanim )
+	void Setup( mapinfo_t* map, interlevelanim_t& interanim, anim_container& anims )
 	{
 		source = &interanim;
 
@@ -385,6 +388,37 @@ public:
 		{
 			SetupCache( map, curr );
 		}
+
+		auto fitsinframe = [ this ]( interframecache_t& frame ) -> bool
+		{
+			bool fits = true;
+			if( frame.Image() != nullptr )
+			{
+				int32_t left	= XPos() - SHORT( frame.Image()->leftoffset );
+				int32_t top		= YPos() - SHORT( frame.Image()->topoffset );
+				int32_t right	= left + SHORT( frame.Image()->width );
+				int32_t bottom	= top + SHORT( frame.Image()->height );
+
+				fits &= left >= 0 && top >= 0
+					&& right < V_VIRTUALWIDTH && bottom < V_VIRTUALHEIGHT;
+			}
+
+			return fits;
+		};
+
+		auto checkfitsinframegrouping = [ this, &anims ]( int32_t group ) -> bool
+		{
+			bool passedcheck = true;
+			for( auto& curranim : anims )
+			{
+				if( curranim.FitsInFrameGroup() == group )
+				{
+					passedcheck &= !curranim.ConditionsMet();
+				}
+			}
+
+			return passedcheck;
+		};
 
 		conditionsmet = frames.size() > 0;
 		if( conditionsmet )
@@ -414,18 +448,15 @@ public:
 					break;
 
 				case AnimCondition_FitsInFrame:
+					if( cond.param > 0 )
+					{
+						conditionsmet &= checkfitsinframegrouping( cond.param );
+					}
+					fitsinframegroup = cond.param;
+
 					for( auto& frame : Frames() )
 					{
-						if( frame.Image() != nullptr )
-						{
-							int32_t left	= XPos() - SHORT( frame.Image()->leftoffset );
-							int32_t top		= YPos() - SHORT( frame.Image()->topoffset );
-							int32_t right	= left + SHORT( frame.Image()->width );
-							int32_t bottom	= top + SHORT( frame.Image()->height );
-
-							conditionsmet &= left >= 0 && top >= 0
-											&& right < V_VIRTUALWIDTH && bottom < V_VIRTUALHEIGHT;
-						}
+						conditionsmet &= fitsinframe( frame );
 					}
 					break;
 
@@ -440,6 +471,7 @@ private:
 	interlevelanim_t*								source;
 	DoomVector< interframecache_t, PU_LEVEL >		frames;
 	bool											conditionsmet;
+	int32_t											fitsinframegroup;
 
 } interanimcache_t;
 
@@ -475,12 +507,12 @@ public:
 
 		for( auto curr : MultiRangeView( background_anims, og_background ) )
 		{
-			SetupCache( map, curr );
+			SetupCache( map, curr, background_anims );
 		}
 
 		for( auto curr : MultiRangeView( foreground_anims, og_foreground ) )
 		{
-			SetupCache( map, curr );
+			SetupCache( map, curr, foreground_anims );
 		}
 	}
 
@@ -498,7 +530,7 @@ private:
 		fake_backgroundanim.conditions = NULL;
 		fake_backgroundanim.num_conditions = 0;
 
-		fake_background.Setup( map, fake_backgroundanim );
+		fake_background.Setup( map, fake_backgroundanim, background_anims );
 	}
 
 	interlevel_t*									source;
