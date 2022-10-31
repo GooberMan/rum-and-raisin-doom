@@ -214,6 +214,9 @@
     <ClCompile Include="..\src\i_video_gl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\d_gameflow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\i_system.h">
@@ -421,6 +424,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\i_terminal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\d_gameflow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

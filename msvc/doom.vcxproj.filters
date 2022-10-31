@@ -160,9 +160,6 @@
     <ClCompile Include="..\src\doom\st_stuff.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\wi_stuff.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\r_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -176,6 +173,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\r_data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\d_playsim_doom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\d_playsim_doom2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\d_playsim_tnt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\d_playsim_plutonia.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\wi_stuff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\d_playsim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -316,6 +331,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\doom\r_raster.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\doom\d_playsim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

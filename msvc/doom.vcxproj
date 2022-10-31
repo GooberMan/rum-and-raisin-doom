@@ -408,6 +408,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\doom\am_map.c" />
+    <ClCompile Include="..\src\doom\d_playsim.cpp" />
+    <ClCompile Include="..\src\doom\wi_stuff.cpp" />
     <ClInclude Include="..\src\doom\am_map.h" />
     <ClCompile Include="..\src\doom\deh_ammo.c" />
     <ClCompile Include="..\src\doom\deh_bexstr.c" />
@@ -434,8 +436,13 @@
     <ClInclude Include="..\src\doom\d_player.h" />
     <ClCompile Include="..\src\doom\dstrings.c" />
     <ClInclude Include="..\src\doom\dstrings.h" />
+    <ClInclude Include="..\src\doom\d_playsim.h" />
     <ClInclude Include="..\src\doom\d_textur.h" />
     <ClInclude Include="..\src\doom\d_think.h" />
+    <ClCompile Include="..\src\doom\d_playsim_doom.cpp" />
+    <ClCompile Include="..\src\doom\d_playsim_doom2.cpp" />
+    <ClCompile Include="..\src\doom\d_playsim_plutonia.cpp" />
+    <ClCompile Include="..\src\doom\d_playsim_tnt.cpp" />
     <ClCompile Include="..\src\doom\f_finale.c" />
     <ClInclude Include="..\src\doom\f_finale.h" />
     <ClCompile Include="..\src\doom\f_wipe.c" />
@@ -510,7 +517,6 @@
     <ClInclude Include="..\src\doom\st_lib.h" />
     <ClCompile Include="..\src\doom\st_stuff.c" />
     <ClInclude Include="..\src\doom\st_stuff.h" />
-    <ClCompile Include="..\src\doom\wi_stuff.c" />
     <ClInclude Include="..\src\doom\wi_stuff.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
