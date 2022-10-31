@@ -903,7 +903,7 @@ void G_Ticker (void)
 	    G_DoCompleted (); 
 	    break; 
 	  case ga_victory: 
-	    F_StartFinale (); 
+	    F_StartFinale( current_map->endgame ); 
 	    break; 
 	  case ga_worlddone: 
 	    G_DoWorldDone (); 
@@ -1506,24 +1506,24 @@ void G_DoCompleted (void)
 //
 void G_WorldDone (void) 
 { 
-    gameaction = ga_worlddone; 
+    gameaction = ga_worlddone;
 
-    if ( gamemode == commercial )
-    {
-	switch (current_map->map_num)
+	if( !( gameflags & GF_LoopOneLevel ) )
 	{
-	  case 15:
-	  case 31:
-	    if (!secretexit)
-		break;
-	  case 6:
-	  case 11:
-	  case 20:
-	  case 30:
-	    F_StartFinale ();
-	    break;
+		if( !secretexit && current_map->endgame )
+		{
+			F_StartFinale( current_map->endgame );
+		}
+		else
+		{
+			intermission_t* inter = secretexit ? current_map->secret_map_intermission : current_map->next_map_intermission;
+
+			if( inter )
+			{
+				F_StartIntermission( inter );
+			}
+		}
 	}
-    }
 } 
  
 void G_DoWorldDone (void) 
@@ -1541,7 +1541,7 @@ void G_DoWorldDone (void)
 	}
 	else
 	{
-		wminfo.nextmap = current_map;
+		mapinfo = current_map;
 	}
 
 	D_GameflowSetCurrentMap( mapinfo );

@@ -23,6 +23,8 @@
 
 #include "doomtype.h"
 #include "d_event.h"
+#include "d_gameflow.h"
+
 //
 // FINALE
 //
@@ -37,9 +39,8 @@ void F_Ticker (void);
 void F_Drawer (void);
 
 
-void F_StartFinale (void);
-
-
+void F_StartIntermission( intermission_t* intermission );
+void F_StartFinale( endgame_t* endgame );
 
 
 #endif

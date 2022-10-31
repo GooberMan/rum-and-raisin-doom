@@ -38,6 +38,12 @@ DOOM_C_API typedef struct demoopitions_s
 	boolean					longtics;
 } demooptions_t;
 
+DOOM_C_API typedef struct finaleoptions_s
+{
+	boolean					always_allow_text_skip;
+	boolean					cast_allows_mouse_presses;
+} finaleoptions_t;
+
 DOOM_C_API typedef struct gameoptions_s
 {
 	boolean					unlimited_scrollers;
@@ -75,6 +81,7 @@ DOOM_C_API typedef struct playsimoptions_s
 	attractoptions_t		attract;
 	dehackedoptions_t		dehacked;
 	demooptions_t			demo;
+	finaleoptions_t			finale;
 	gameoptions_t			game;
 	savegameoptions_t		savegame;
 	wadoptions_t			wad;

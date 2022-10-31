@@ -1403,6 +1403,7 @@ mapinfo_t doom_map_e4m9 =
 
 intermission_t doom_intermission_e1 =
 {
+	Intermission_None,								// type
 	FlowString( E1TEXT ),							// text
 	FlowString( "D_VICTOR" ),						// music_lump
 	FlowString( "FLOOR4_8" ),						// background_lump
@@ -1410,10 +1411,11 @@ intermission_t doom_intermission_e1 =
 
 endgame_t doom_endgame_e1 =
 {
-	EndGame_Pic | EndGame_Ultimate,					// type
+	EndGame_Pic | EndGame_LoopingMusic | EndGame_Ultimate,	// type
 	&doom_intermission_e1,							// intermission
 	FlowString( "HELP2" ),							// primary_image_lump
 	FlowString( "CREDIT" ),							// secondary_image_lump
+	FlowString( "D_VICTOR" ),						// music_lump
 };
 
 static interlevelanim_t doom_anim_e1_back[] =
@@ -1446,6 +1448,7 @@ static interlevelanim_t doom_anim_e1_fore[] =
 interlevel_t doom_interlevel_e1finished =
 {
 	Interlevel_Animated,							// type
+	FlowString( "D_INTER" ),						// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e1_back,								// background_anims
 	arrlen( doom_anim_e1_back ),					// num_background_anims
@@ -1456,6 +1459,7 @@ interlevel_t doom_interlevel_e1finished =
 interlevel_t doom_interlevel_e1entering =
 {
 	Interlevel_Animated,							// type
+	FlowString( "D_INTER" ),						// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e1_back,								// background_anims
 	arrlen( doom_anim_e1_back ),					// num_background_anims
@@ -1470,6 +1474,7 @@ interlevel_t doom_interlevel_e1entering =
 
 intermission_t doom_intermission_e2 =
 {
+	Intermission_None,								// type
 	FlowString( E2TEXT ),							// text
 	FlowString( "D_VICTOR" ),						// music_lump
 	FlowString( "SFLR6_1" ),						// background_lump
@@ -1477,10 +1482,11 @@ intermission_t doom_intermission_e2 =
 
 endgame_t doom_endgame_e2 =
 {
-	EndGame_Pic,									// type
+	EndGame_Pic | EndGame_LoopingMusic,				// type
 	&doom_intermission_e2,							// intermission
 	FlowString( "VICTORY2" ),						// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
+	FlowString( "D_VICTOR" ),						// music_lump
 };
 
 static interlevelanim_t doom_anim_e2_finished[] =
@@ -1522,6 +1528,7 @@ static interlevelanim_t doom_anim_e2_entering[] =
 interlevel_t doom_interlevel_e2finished =
 {
 	Interlevel_Animated,							// type
+	FlowString( "D_INTER" ),						// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e2_finished,							// background_anims
 	arrlen( doom_anim_e2_finished ),				// num_background_anims
@@ -1532,6 +1539,7 @@ interlevel_t doom_interlevel_e2finished =
 interlevel_t doom_interlevel_e2entering =
 {
 	Interlevel_Animated,							// type
+	FlowString( "D_INTER" ),						// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e2_entering,							// background_anims
 	arrlen( doom_anim_e2_entering ),				// num_background_anims
@@ -1545,6 +1553,7 @@ interlevel_t doom_interlevel_e2entering =
 
 intermission_t doom_intermission_e3 =
 {
+	Intermission_None,								// type
 	FlowString( E3TEXT ),							// text
 	FlowString( "D_VICTOR" ),						// music_lump
 	FlowString( "MFLR8_4" ),						// background_lump
@@ -1554,8 +1563,9 @@ endgame_t doom_endgame_e3 =
 {
 	EndGame_Bunny,									// type
 	&doom_intermission_e3,							// intermission
-	EmptyFlowString(),								// primary_image_lump
-	EmptyFlowString(),								// secondary_image_lump
+	FlowString( "PFUB2" ),							// primary_image_lump
+	FlowString( "PFUB1" ),							// secondary_image_lump
+	FlowString( "D_BUNNY" ),						// music_lump
 };
 
 static interlevelanim_t doom_anim_e3_back[] =
@@ -1584,6 +1594,7 @@ static interlevelanim_t doom_anim_e3_fore[] =
 interlevel_t doom_interlevel_e3finished =
 {
 	Interlevel_Animated,							// type
+	FlowString( "D_INTER" ),						// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e3_back,								// background_anims
 	arrlen( doom_anim_e3_back ),					// num_background_anims
@@ -1594,6 +1605,7 @@ interlevel_t doom_interlevel_e3finished =
 interlevel_t doom_interlevel_e3entering =
 {
 	Interlevel_Animated,							// type
+	FlowString( "D_INTER" ),						// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e3_back,								// background_anims
 	arrlen( doom_anim_e3_back ),					// num_background_anims
@@ -1607,6 +1619,7 @@ interlevel_t doom_interlevel_e3entering =
 
 intermission_t doom_intermission_e4 =
 {
+	Intermission_None,								// type
 	FlowString( E4TEXT ),							// text
 	FlowString( "D_VICTOR" ),						// music_lump
 	FlowString( "MFLR8_3" ),						// background_lump
@@ -1614,15 +1627,17 @@ intermission_t doom_intermission_e4 =
 
 endgame_t doom_endgame_e4 =
 {
-	EndGame_Pic,									// type
+	EndGame_Pic | EndGame_LoopingMusic,				// type
 	&doom_intermission_e3,							// intermission
 	FlowString( "ENDPIC" ),							// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
+	FlowString( "D_VICTOR" ),						// music_lump
 };
 
 interlevel_t doom_interlevel_e4 =
 {
 	Interlevel_Static,								// type
+	FlowString( "D_INTER" ),						// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
 	nullptr,										// background_anims
 	0,												// num_background_anims

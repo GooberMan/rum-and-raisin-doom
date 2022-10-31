@@ -104,65 +104,69 @@ const char *finaleflat;
 static vbuffer_t finaleflatdata;
 extern vbuffer_t blackedges;
 
+static intermission_t* finaleintermission = NULL;
+static endgame_t* finaleendgame = NULL;
+
 void	F_StartCast (void);
 void	F_CastTicker (void);
 boolean F_CastResponder (event_t *ev);
 void	F_CastDrawer (void);
 
+void F_SwitchFinale()
+{
+	finalecount = 0;
+	if( finaleendgame->type & EndGame_Cast )
+	{
+		F_StartCast();
+	}
+	else if( finaleendgame->type & EndGame_AnyArtScreen )
+	{
+		finalecount = 0;
+		finalestage = F_STAGE_ARTSCREEN;
+		wipegamestate = -1;
+		S_ChangeMusicLump( DEH_String( finaleendgame->music_lump.val ), !!( finaleendgame->type & EndGame_LoopingMusic ) );
+	}
+}
+
 //
 // F_StartFinale
 //
-void F_StartFinale (void)
+void F_StartIntermission( intermission_t* intermission )
 {
-    size_t i;
+	finaleendgame = NULL;
+	finaleintermission = intermission;
 
-    gameaction = ga_nothing;
-    gamestate = GS_FINALE;
-    viewactive = false;
-    automapactive = false;
+	gameaction = ga_nothing;
+	gamestate = GS_FINALE;
+	viewactive = false;
+	automapactive = false;
 
-    if (logical_gamemission == doom)
-    {
-        S_ChangeMusic(mus_victor, true);
-    }
-    else
-    {
-        S_ChangeMusic(mus_read_m, true);
-    }
+	S_ChangeMusicLump( DEH_String( finaleintermission->music_lump.val ), true );
 
-    // Find the right screen and set the text and background
+	finaletext = DEH_String( finaleintermission->text.val );
+	finaleflat = DEH_String( finaleintermission->background_lump.val );
 
-    for (i=0; i<arrlen(textscreens); ++i)
-    {
-        textscreen_t *screen = &textscreens[i];
-
-        // Hack for Chex Quest
-
-        if (gameversion == exe_chex && screen->mission == doom)
-        {
-            screen->level = 5;
-        }
-
-        if (logical_gamemission == screen->mission
-         && (logical_gamemission != doom || current_episode->episode_num == screen->episode)
-         && current_map->map_num == screen->level)
-        {
-            finaletext = screen->text;
-            finaleflat = screen->background;
-        }
-    }
-
-    // Do dehacked substitutions of strings
-  
-    finaletext = DEH_String(finaletext);
-    finaleflat = DEH_String(finaleflat);
-    
-    finalestage = F_STAGE_TEXT;
-    finalecount = 0;
+	finalestage = F_STAGE_TEXT;
+	finalecount = 0;
 
 	// erase the entire screen to a tiled background
 	memset( &finaleflatdata, 0, sizeof( vbuffer_t ) );
 	V_TransposeFlat( finaleflat, &finaleflatdata, PU_LEVEL );
+
+}
+
+void F_StartFinale( endgame_t* endgame )
+{
+	if( endgame->intermission )
+	{
+		F_StartIntermission( endgame->intermission );
+		finaleendgame = endgame;
+		return;
+	}
+	finaleintermission = NULL;
+	finaleendgame = endgame;
+
+	F_SwitchFinale();
 }
 
 
@@ -182,48 +186,45 @@ boolean F_Responder (event_t *event)
 void F_Ticker (void)
 {
     size_t		i;
+
+	boolean didskip = false;
     
     // check for skipping
-    if ( (gamemode == commercial)
-      && ( finalecount > 50) )
+    if ( finaleintermission && !!( finaleintermission->type & Intermission_Skippable ) && finalecount > 50 )
     {
-      // go on to the next level
-      for (i=0 ; i<MAXPLAYERS ; i++)
-	if (players[i].cmd.buttons)
-	  break;
-				
-      if (i < MAXPLAYERS)
-      {	
-	if (current_map->map_num == 30)
-	  F_StartCast ();
-	else
-	  gameaction = ga_worlddone;
-      }
-    }
-    
-    // advance animation
-    finalecount++;
-	
-    if (finalestage == F_STAGE_CAST)
-    {
-	F_CastTicker ();
-	return;
-    }
-	
-    if ( gamemode == commercial)
-	return;
-		
-    if (finalestage == F_STAGE_TEXT
-     && finalecount>strlen (finaletext)*TEXTSPEED + TEXTWAIT)
-    {
-	finalecount = 0;
-	finalestage = F_STAGE_ARTSCREEN;
-	wipegamestate = -1;		// force a wipe
-	if (current_episode->episode_num == 3)
-	    S_StartMusic (mus_bunny);
-    }
-}
+		// go on to the next level
+		for (i=0 ; i<MAXPLAYERS ; i++)
+		{
+			if (players[i].cmd.buttons)
+			{
+				didskip = true;
+			}
+		}
+	}
 
+	// advance animation
+	finalecount++;
+	
+	if( finalestage == F_STAGE_CAST )
+	{
+		F_CastTicker ();
+	}
+
+	boolean advance = didskip
+		|| ( finalestage == F_STAGE_TEXT && finalecount > strlen( finaletext ) * TEXTSPEED + TEXTWAIT );
+	
+	if( advance )
+	{
+		if( !finaleendgame )
+		{
+			gameaction = ga_worlddone;
+		}
+		else
+		{
+			F_SwitchFinale();
+		}
+	}
+}
 
 
 //
@@ -339,7 +340,8 @@ void F_StartCast (void)
     castframes = 0;
     castonmelee = 0;
     castattacking = false;
-    S_ChangeMusic(mus_evil, true);
+    S_ChangeMusicLump( DEH_String( finaleendgame->music_lump.val ), !!( finaleendgame->type & EndGame_LoopingMusic ) );
+
 }
 
 
@@ -455,8 +457,17 @@ void F_CastTicker (void)
 
 boolean F_CastResponder (event_t* ev)
 {
-    if (ev->type != ev_keydown)
-	return false;
+	boolean canrespond = ev->type == ev_keydown;
+
+	if( remove_limits )
+	{
+		canrespond |= ev->type == ev_keyup || ( ev->type == ev_mouse && ev->data4 != 0 );
+	}
+
+	if ( !canrespond )
+	{
+		return false;
+	}
 		
     if (castdeath)
 	return true;			// already in dying frames
@@ -569,8 +580,8 @@ void F_BunnyScroll (void)
 	int		stage;
 	static int	laststage;
 		
-	patch_t* p1 = (patch_t*)W_CacheLumpName( DEH_String( "PFUB2" ), PU_LEVEL );
-	patch_t* p2 = (patch_t*)W_CacheLumpName( DEH_String( "PFUB1" ), PU_LEVEL );
+	patch_t* p1 = (patch_t*)W_CacheLumpName( DEH_String( finaleendgame->primary_image_lump.val ), PU_LEVEL );
+	patch_t* p2 = (patch_t*)W_CacheLumpName( DEH_String( finaleendgame->secondary_image_lump.val ), PU_LEVEL );
 	int32_t totalwidth = p1->width + p2->width;
 	// WIDESCREEN HACK
 	int32_t overlap = ( totalwidth - ( V_VIRTUALWIDTH * 2 ) ) / 2;
@@ -622,17 +633,16 @@ void F_BunnyScroll (void)
 
 static void F_ArtScreenDrawer(void)
 {
-
-	if( current_map->endgame->type & EndGame_Bunny )
+	if( finaleendgame->type & EndGame_Bunny )
 	{
 		F_BunnyScroll();
 	}
 	else
 	{
-		const char* lumpname = current_map->endgame->primary_image_lump.val;
-		if( current_map->endgame->type & EndGame_Ultimate && gameversion >= exe_ultimate )
+		const char* lumpname = finaleendgame->primary_image_lump.val;
+		if( finaleendgame->type & EndGame_Ultimate && gameversion >= exe_ultimate )
 		{
-			lumpname = current_map->endgame->secondary_image_lump.val;
+			lumpname = finaleendgame->secondary_image_lump.val;
 		}
 
 		lumpname = DEH_String( lumpname );

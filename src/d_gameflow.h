@@ -23,6 +23,12 @@
 
 #include "doomtype.h"
 
+DOOM_C_API typedef enum intermissiontype_e
+{
+	Intermission_None,
+	Intermission_Skippable,
+} intermissiontype_t;
+
 DOOM_C_API typedef enum endgametype_e
 {
 	EndGame_None,
@@ -30,7 +36,11 @@ DOOM_C_API typedef enum endgametype_e
 	EndGame_Bunny				= 0x0002,
 	EndGame_Cast				= 0x0004,
 
+	EndGame_LoopingMusic		= 0x0100,
+
 	EndGame_Ultimate			= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
+
+	EndGame_AnyArtScreen		= EndGame_Pic | EndGame_Bunny
 } endgametype_t;
 
 DOOM_C_API typedef enum interleveltype_e
@@ -115,6 +125,8 @@ DOOM_C_API typedef struct bossaction_s
 
 DOOM_C_API typedef struct intermission_s
 {
+	intermissiontype_t		type;
+
 	flowstring_t			text;
 	flowstring_t			music_lump;
 	flowstring_t			background_lump;
@@ -149,6 +161,8 @@ DOOM_C_API typedef struct interlevel_s
 {
 	interleveltype_t		type;
 
+	flowstring_t			music_lump;
+
 	flowstring_t			background_lump;
 
 	interlevelanim_t*		background_anims;
@@ -165,6 +179,7 @@ DOOM_C_API typedef struct endgame_s
 	intermission_t*			intermission;
 	flowstring_t			primary_image_lump;
 	flowstring_t			secondary_image_lump;
+	flowstring_t			music_lump;
 } endgame_t;
 
 DOOM_C_API typedef struct mapinfo_s

@@ -932,6 +932,9 @@ void WI_initShowNextLoc(void)
     state = ShowNextLoc;
     acceleratestage = 0;
     cnt = SHOWNEXTLOCDELAY * TICRATE;
+
+	mapinfo_t* map = (mapinfo_t*)wbs->currmap;
+	S_ChangeMusicLump( map->interlevel_entering->music_lump.val, true );
 }
 
 void WI_updateShowNextLoc(void)
@@ -1614,11 +1617,8 @@ void WI_Ticker(void)
 
     if (bcnt == 1)
     {
-	// intermission music
-  	if ( gamemode == commercial )
-	  S_ChangeMusic(mus_dm2int, true);
-	else
-	  S_ChangeMusic(mus_inter, true); 
+		mapinfo_t* map = (mapinfo_t*)wbs->currmap;
+		S_ChangeMusicLump( map->interlevel_finished->music_lump.val, true );
     }
 
     WI_checkForAccelerate();
