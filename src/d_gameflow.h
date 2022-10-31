@@ -246,7 +246,7 @@ DOOM_C_API void D_GameflowSetCurrentMap( mapinfo_t* map );
 #include "deh_str.h"
 
 template< typename... _params >
-INLINE DoomString AsString( const flowstring_t& str, _params... params )
+INLINE DoomString AsDoomString( const flowstring_t& str, _params... params )
 {
 	const char* base = ( str.flags & FlowString_Dehacked ) ? DEH_String( str.val ) : str.val;
 	if( str.flags & FlowString_RuntimeGenerated )

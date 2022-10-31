@@ -315,7 +315,7 @@ public:
 	{
 		source = &interframe;
 
-		DoomString imagelump = AsString( source->image_lump, map->episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
+		DoomString imagelump = AsDomString( source->image_lump, map->episode->episode_num - 1, source->lumpname_animindex, source->lumpname_animframe );
 
 		if( imagelump.size() > 0 )
 		{
@@ -342,7 +342,7 @@ public:
 	template< typename... _params >
 	void Setup( mapinfo_t* map, flowstring_t& lumpname, _params... params )
 	{
-		imagelump = AsString( lumpname, params... );
+		imagelump = AsDoomString( lumpname, params... );
 
 		if( imagelump.size() > 0 )
 		{
