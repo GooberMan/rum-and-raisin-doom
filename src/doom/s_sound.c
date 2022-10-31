@@ -648,6 +648,18 @@ void S_SetSfxVolume(int volume)
 // Starts some music with the music id found in sounds.h.
 //
 
+void S_MusicPlay( musicinfo_t* music, int32_t looping )
+{
+	void *handle;
+	music->data = W_CacheLumpNum(music->lumpnum, PU_STATIC);
+
+	handle = I_RegisterSong(music->data, W_LumpLength(music->lumpnum));
+	music->handle = handle;
+	I_PlaySong(handle, looping);
+
+	mus_playing = music;
+}
+
 void S_StartMusic(int m_id)
 {
     S_ChangeMusic(m_id, false);
@@ -657,7 +669,6 @@ void S_ChangeMusic(int musicnum, int looping)
 {
     musicinfo_t *music = NULL;
     char namebuf[9];
-    void *handle;
 
     // The Doom IWAD file has two versions of the intro music: d_intro
     // and d_introa.  The latter is used for OPL playback.
@@ -693,13 +704,32 @@ void S_ChangeMusic(int musicnum, int looping)
         music->lumpnum = W_GetNumForName(namebuf);
     }
 
-    music->data = W_CacheLumpNum(music->lumpnum, PU_STATIC);
+	S_MusicPlay( music, looping );
+}
 
-    handle = I_RegisterSong(music->data, W_LumpLength(music->lumpnum));
-    music->handle = handle;
-    I_PlaySong(handle, looping);
+static musicinfo_t music_from_lump;
 
-    mus_playing = music;
+void S_ChangeMusicLump( const char* lump, int32_t looping )
+{
+	boolean wasplaying = mus_playing == &music_from_lump;
+	if( wasplaying && stricmp( music_from_lump.name, lump ) == 0 )
+	{
+		return;
+	}
+
+	S_StopMusic();
+
+	if( wasplaying )
+	{
+		W_ReleaseLumpNum( music_from_lump.lumpnum, PU_STATIC );
+	}
+
+	music_from_lump.name = lump;
+	music_from_lump.lumpnum = W_GetNumForName( lump );
+	music_from_lump.data = NULL;
+	music_from_lump.handle = NULL;
+
+	S_MusicPlay( &music_from_lump, looping );
 }
 
 boolean S_MusicPlaying(void)
