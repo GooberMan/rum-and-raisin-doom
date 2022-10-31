@@ -56,12 +56,23 @@ DOOM_C_API typedef enum frametype_s
 DOOM_C_API typedef enum animcondition_s
 {
 	AnimCondition_None,
-	AnimCondition_MapNumGreater,	// Checks: Current/next map number.			Parameter: map number
-	AnimCondition_MapNumEqual,		// Checks: Current/next map number.			Parameter: map number
-	AnimCondition_MapVisited,		// Checks: Visited flag for map number.		Parameter: map number
-	AnimCondition_MapNotSecret,		// Checks: Current/next map.				Parameter: none
-	AnimCondition_SecretVisited,	// Checks: Any secret map visited.			Parameter: none
-	AnimCondition_FitsInFrame,		// Checks: Patch dimensions.				Parameter: none
+	AnimCondition_MapNumGreater,	// Checks: Current/next map number.
+									// Parameter: map number
+
+	AnimCondition_MapNumEqual,		// Checks: Current/next map number.
+									// Parameter: map number
+
+	AnimCondition_MapVisited,		// Checks: Visited flag for map number.
+									// Parameter: map number
+
+	AnimCondition_MapNotSecret,		// Checks: Current/next map.
+									// Parameter: none
+
+	AnimCondition_SecretVisited,	// Checks: Any secret map visited.
+									// Parameter: none
+
+	AnimCondition_FitsInFrame,		// Checks: Patch dimensions.
+									// Parameter: group number, allowing only one condition of this type to succeed per group
 } animcondition_t;
 
 DOOM_C_API typedef enum flowstringflags_s
