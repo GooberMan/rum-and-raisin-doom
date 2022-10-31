@@ -412,7 +412,7 @@ episodeinfo_t doom_episode_two =
 	2,												// episode_num
 	doom_maps_episode_2,							// all_maps
 	arrlen( doom_maps_episode_2 ),					// num_maps
-	9,												// highest_map_num
+	doom_map_e2m9.map_num,							// highest_map_num
 	&doom_map_e2m1									// first_map
 };
 
@@ -423,7 +423,7 @@ episodeinfo_t doom_episode_three =
 	3,												// episode_num
 	doom_maps_episode_3,							// all_maps
 	arrlen( doom_maps_episode_3 ),					// num_maps
-	9,												// highest_map_num
+	doom_map_e3m9.map_num,							// highest_map_num
 	&doom_map_e3m1									// first_map
 };
 
@@ -434,7 +434,7 @@ episodeinfo_t doom_episode_four =
 	4,												// episode_num
 	doom_maps_episode_4,							// all_maps
 	arrlen( doom_maps_episode_4 ),					// num_maps
-	9,												// highest_map_num
+	doom_map_e4m9.map_num,							// highest_map_num
 	&doom_map_e4m1									// first_map
 };
 

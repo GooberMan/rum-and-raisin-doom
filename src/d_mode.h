@@ -35,7 +35,6 @@ typedef enum
 	heretic,			// Heretic
 	hexen,				// Hexen
 	strife,				// Strife
-	gameflowdefined,	// UMAPINFO or DMAPINFO
 
 	none
 } GameMission_t;

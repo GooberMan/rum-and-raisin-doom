@@ -43,5 +43,8 @@ void D_RegisterPlaysim()
 			break;
 		}
 		break;
+	case doom2:
+		SetGame( doom_2 );
+		break;
 	}
 }

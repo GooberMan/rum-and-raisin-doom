@@ -1412,10 +1412,6 @@ void G_DoCompleted (void)
 					return;
 				}
 				break;
-              case 9: 
-                for (i=0 ; i<MAXPLAYERS ; i++) 
-                    players[i].didsecret = true; 
-                break;
             }
         }
     }
@@ -1426,15 +1422,6 @@ void G_DoCompleted (void)
 		// victory 
 		gameaction = ga_victory; 
 		return; 
-	} 
-	 
-	if ( (current_map->map_num == 9) && (gamemode != commercial) ) 
-	{
-		// exit secret level 
-		for (i=0 ; i<MAXPLAYERS ; i++) 
-		{
-			players[i].didsecret = true; 
-		}
 	} 
 //#endif
     
@@ -1520,9 +1507,6 @@ void G_DoCompleted (void)
 void G_WorldDone (void) 
 { 
     gameaction = ga_worlddone; 
-
-    if (secretexit) 
-	players[consoleplayer].didsecret = true; 
 
     if ( gamemode == commercial )
     {
