@@ -386,6 +386,13 @@ mapinfo_t* doom_maps_episode_3[] =
 	&doom_map_e3m7, &doom_map_e3m8, &doom_map_e3m9
 };
 
+mapinfo_t* doom_maps_episode_4[] =
+{
+	&doom_map_e4m1, &doom_map_e4m2, &doom_map_e4m3,
+	&doom_map_e4m4, &doom_map_e4m5, &doom_map_e4m6,
+	&doom_map_e4m7, &doom_map_e4m8, &doom_map_e4m9
+};
+
 
 episodeinfo_t doom_episode_one =
 {
@@ -425,10 +432,10 @@ episodeinfo_t doom_episode_four =
 	PlainFlowString( "Thy Flesh Consumed" ),		// name
 	FlowString( "M_EPI4" ),							// name_patch_lump
 	4,												// episode_num
-	nullptr,										// all_maps
-	0,												// num_maps
+	doom_maps_episode_4,							// all_maps
+	arrlen( doom_maps_episode_4 ),					// num_maps
 	9,												// highest_map_num
-	nullptr											// first_map
+	&doom_map_e4m1									// first_map
 };
 
 episodeinfo_t doom_shareware_episode_two =
@@ -1162,6 +1169,226 @@ mapinfo_t doom_map_e3m9 =
 	&doom_map_e3m7,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+//============================================================================
+// Thy Flesh Consumed
+//============================================================================
+
+mapinfo_t doom_map_e4m1 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M1 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "American McGee" ),			// authors
+	&doom_episode_four,								// episode
+	1,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M4" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	30,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m2,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e4m2 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M2 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "John Romero" ),				// authors
+	&doom_episode_four,								// episode
+	2,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M2" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m3,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e4m3 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M3 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Shawn Green" ),				// authors
+	&doom_episode_four,								// episode
+	3,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E3M3" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	120,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m4,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e4m4 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M4 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "American McGee" ),			// authors
+	&doom_episode_four,								// episode
+	4,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E1M5" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	120,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m5,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e4m5 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M5 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Theresa Chasar, Tim Willits" ),	// authors
+	&doom_episode_four,								// episode
+	5,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M7" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m6,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e4m6 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M6 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "John Romero" ),				// authors
+	&doom_episode_four,								// episode
+	6,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M4" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	150,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m7,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e4m7 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M7 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "John Anderson" ),				// authors
+	&doom_episode_four,								// episode
+	7,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M6" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	120,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m8,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e4m8 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M8 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Shawn Green" ),				// authors
+	&doom_episode_four,								// episode
+	8,												// map_num
+	Map_Doom1EndOfEpisode,							// map_flags
+	FlowString( "D_E2M5" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	120,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	nullptr,										// next_map
+	nullptr,										// next_map_intermission
+	nullptr,										// secret_map
+	nullptr,										// secret_map_intermission
+	&doom_endgame_e4,								// endgame
+};
+
+mapinfo_t doom_map_e4m9 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E4M9 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tim Willits" ),				// authors
+	&doom_episode_four,								// episode
+	9,												// map_num
+	Map_Secret,										// map_flags
+	FlowString( "D_E1M9" ),							// music_lump
+	FlowString( "SKY4" ),							// sky_texture
+	0,												// sky_scroll_speed
+	270,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e4,							// interlevel_finished
+	&doom_interlevel_e4,							// interlevel_entering
+	&doom_map_e4m3,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e4m9,									// secret_map
 	nullptr,										// secret_map_intermission
 	nullptr,										// endgame
 };
