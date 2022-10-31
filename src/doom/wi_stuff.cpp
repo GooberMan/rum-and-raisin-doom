@@ -308,6 +308,9 @@ public:
 	constexpr int32_t Duration()		{ return source->duration; }
 	constexpr frametype_t Type()		{ return source->type; }
 
+	template< frametype_t check >
+	INLINE bool Is() const				{ return ( source->type & check ) == check; }
+
 	void Setup( mapinfo_t* map, interlevelframe_t& interframe )
 	{
 		source = &interframe;
@@ -523,13 +526,17 @@ public:
 		frames_begin = frames_curr = cache.Frames().begin();
 		frames_end = cache.Frames().end();
 
-		duration_left = frames_curr->Duration() + 1;
-		if( frames_curr->Type() & Frame_RandomStart )
+		duration_left = frames_curr->Duration();
+		if( frames_curr->Is< Frame_RandomStart >() )
 		{
 			duration_left = 1 + ( M_Random() % ( duration_left - 1 ) );
 		}
+		else if( !frames_curr->Is< Frame_Infinite >() )
+		{
+			++duration_left;
+		}
 
-		if( frames_curr->Type() & Frame_AdjustForWidescreen )
+		if( frames_curr->Is< Frame_AdjustForWidescreen >() )
 		{
 			x_pos -= ( ( frames_curr->Image()->width - V_VIRTUALWIDTH ) / 2 );
 		}
@@ -537,6 +544,11 @@ public:
 
 	void Update()
 	{
+		if( frames_curr->Is< Frame_Infinite >() )
+		{
+			return;
+		}
+
 		if( duration_left > 0 )
 		{
 			--duration_left;

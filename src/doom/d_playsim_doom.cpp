@@ -135,17 +135,24 @@ constexpr auto PlainFlowString( const char* name )
 #define frame( lump, type )								{ FlowString( lump ), type, standardduration }
 #define frame_withtime( lump, type, duration )			{ FlowString( lump ), type, duration }
 #define frame_runtime( lump, type, index, frame )		{ RuntimeFlowString( lump ), type, standardduration, index, frame }
+#define frame_runtime_infinite( lump, index, frame )	{ RuntimeFlowString( lump ), Frame_Infinite, -1, index, frame }
 
 #define generate_name( ep, index ) doom_frames_ ## ep ## _ ## index
 
 #define generate_frameseqstatic( ep, index ) static interlevelframe_t generate_name( ep, index ) [] = { \
-	frame_runtime( frame_format_text, Frame_Infinite, index, 0 ), \
+	frame_runtime_infinite( frame_format_text, index, 0 ), \
 };
 
 #define generate_frameseq3( ep, index ) static interlevelframe_t generate_name( ep, index ) [] = { \
 	frame_runtime( frame_format_text, Frame_FixedDuration | Frame_RandomStart, index, 0 ), \
 	frame_runtime( frame_format_text, Frame_FixedDuration | Frame_RandomStart, index, 1 ), \
 	frame_runtime( frame_format_text, Frame_FixedDuration | Frame_RandomStart, index, 2 ), \
+};
+
+#define generate_frameseq3_ep2secret( ep, index ) static interlevelframe_t generate_name( ep, index ) [] = { \
+	frame_runtime( frame_format_text, Frame_FixedDuration, index, 0 ), \
+	frame_runtime( frame_format_text, Frame_FixedDuration, index, 1 ), \
+	frame_runtime_infinite( frame_format_text, index, 2 ), \
 };
 
 #define get_frameseq( ep, index ) generate_name( ep, index )
@@ -162,21 +169,21 @@ generate_frameseq3( 0, 7 );
 generate_frameseq3( 0, 8 );
 generate_frameseq3( 0, 9 );
 
-//generate_frameseqstatic( 1, 0 );
-//generate_frameseqstatic( 1, 1 );
-//generate_frameseqstatic( 1, 2 );
-//generate_frameseqstatic( 1, 3 );
-//generate_frameseqstatic( 1, 4 );
-//generate_frameseqstatic( 1, 5 );
-//generate_frameseqstatic( 1, 6 );
-//generate_frameseq3( 1, 7 );
-//
-//generate_frameseq3( 2, 0 );
-//generate_frameseq3( 2, 1 );
-//generate_frameseq3( 2, 2 );
-//generate_frameseq3( 2, 3 );
-//generate_frameseq3( 2, 4 );
-//generate_frameseq3( 2, 5 );
+generate_frameseqstatic( 1, 0 );
+generate_frameseqstatic( 1, 1 );
+generate_frameseqstatic( 1, 2 );
+generate_frameseqstatic( 1, 3 );
+generate_frameseqstatic( 1, 4 );
+generate_frameseqstatic( 1, 5 );
+generate_frameseqstatic( 1, 6 );
+generate_frameseq3_ep2secret( 1, 7 );
+
+generate_frameseq3( 2, 0 );
+generate_frameseq3( 2, 1 );
+generate_frameseq3( 2, 2 );
+generate_frameseq3( 2, 3 );
+generate_frameseq3( 2, 4 );
+generate_frameseq3( 2, 5 );
 
 static interlevelframe_t doom_frames_splat[] =
 {
@@ -186,13 +193,13 @@ static interlevelframe_t doom_frames_splat[] =
 static interlevelframe_t doom_frames_youarehereleft[] =
 {
 	frame_withtime( "WIURH0", Frame_FixedDuration, 20 ),
-	frame_withtime( NULL, Frame_FixedDuration, 12 ),
+	frame_withtime( nullptr, Frame_FixedDuration, 12 ),
 };
 
 static interlevelframe_t doom_frames_youarehereright[] =
 {
 	frame_withtime( "WIURH1", Frame_FixedDuration, 20 ),
-	frame_withtime( NULL, Frame_FixedDuration, 12 ),
+	frame_withtime( nullptr, Frame_FixedDuration, 12 ),
 };
 
 #define generate_herecond( map, levelnum ) \
@@ -246,10 +253,21 @@ static interlevelcond_t doom_splatcond_ ## map [] = \
 \
 generate_herecond( map, levelnum )
 
+#define generate_exactmap_condition( map, levelnum ) \
+static interlevelcond_t doom_exactmapcond_ ## map [] = \
+{ \
+	{ \
+		AnimCondition_MapNumEqual, \
+		levelnum \
+	} \
+}
+
 #define get_splatcond( map ) doom_splatcond_ ## map
 #define get_splatcondlen( map ) arrlen( get_splatcond( map ) )
 #define get_herecond( map ) doom_herecond_ ## map
 #define get_herecondlen( map ) arrlen( get_herecond( map ) )
+#define get_exactmapcond( map ) doom_exactmapcond_ ## map
+#define get_exactmapcondlen( map ) arrlen( get_exactmapcond( map ) )
 
 generate_locationcond( E1M1, 1 );
 generate_locationcond( E1M2, 2 );
@@ -281,6 +299,16 @@ generate_locationcond_aftersecret( E3M7, 7 );
 generate_locationcond_aftersecret( E3M8, 8 );
 generate_locationcond_issecret( E3M9, 9 );
 
+generate_exactmap_condition( E2M1, 1 );
+generate_exactmap_condition( E2M2, 2 );
+generate_exactmap_condition( E2M3, 3 );
+generate_exactmap_condition( E2M4, 4 );
+generate_exactmap_condition( E2M5, 5 );
+generate_exactmap_condition( E2M6, 6 );
+generate_exactmap_condition( E2M7, 7 );
+generate_exactmap_condition( E2M8, 8 );
+generate_exactmap_condition( E2M9, 9 );
+
 #define generatesplatanim( arrayname, map, xpos, ypos ) \
 { \
 	arrayname, \
@@ -307,8 +335,18 @@ generate_locationcond_issecret( E3M9, 9 );
 	get_frameseqlen( ep, index ), \
 	xpos, \
 	ypos, \
-	NULL, \
+	nullptr, \
 	0 \
+}
+
+#define generateexactmapanim( map, ep, index, xpos, ypos ) \
+{ \
+	get_frameseq( ep, index ), \
+	get_frameseqlen( ep, index ), \
+	xpos, \
+	ypos, \
+	get_exactmapcond( map ), \
+	get_exactmapcondlen( map ) \
 }
 
 #define generatelocationanims( map, xpos, ypos ) \
@@ -327,6 +365,13 @@ mapinfo_t* doom_maps_episode_1[] =
 	&doom_map_e1m1, &doom_map_e1m2, &doom_map_e1m3,
 	&doom_map_e1m4, &doom_map_e1m5, &doom_map_e1m6,
 	&doom_map_e1m7, &doom_map_e1m8, &doom_map_e1m9
+};
+
+mapinfo_t* doom_maps_episode_2[] =
+{
+	&doom_map_e2m1, &doom_map_e2m2, &doom_map_e2m3,
+	&doom_map_e2m4, &doom_map_e2m5, &doom_map_e2m6,
+	&doom_map_e2m7, &doom_map_e2m8, &doom_map_e2m9
 };
 
 episodeinfo_t doom_episode_one =
@@ -348,7 +393,7 @@ episodeinfo_t doom_shareware_episode_two =
 	nullptr,										// all_maps
 	0,												// num_maps
 	0,												// highest_map_num
-	0												// first_map
+	nullptr											// first_map
 };
 
 episodeinfo_t doom_shareware_episode_three =
@@ -359,7 +404,7 @@ episodeinfo_t doom_shareware_episode_three =
 	nullptr,										// all_maps
 	0,												// num_maps
 	0,												// highest_map_num
-	0												// first_map
+	nullptr											// first_map
 };
 
 episodeinfo_t doom_episode_two =
@@ -367,10 +412,10 @@ episodeinfo_t doom_episode_two =
 	PlainFlowString( "The Shores Of Hell" ),		// name
 	FlowString( "M_EPI2" ),							// name_patch_lump
 	2,												// episode_num
-	nullptr,										// all_maps
-	0,												// num_maps
-	0,												// highest_map_num
-	0												// first_map
+	doom_maps_episode_2,							// all_maps
+	arrlen( doom_maps_episode_2 ),					// num_maps
+	9,												// highest_map_num
+	&doom_map_e2m1									// first_map
 };
 
 episodeinfo_t doom_episode_three =
@@ -380,8 +425,8 @@ episodeinfo_t doom_episode_three =
 	3,												// episode_num
 	nullptr,										// all_maps
 	0,												// num_maps
-	0,												// highest_map_num
-	0												// first_map
+	9,												// highest_map_num
+	nullptr											// first_map
 };
 
 episodeinfo_t doom_episode_four =
@@ -391,8 +436,8 @@ episodeinfo_t doom_episode_four =
 	4,												// episode_num
 	nullptr,										// all_maps
 	0,												// num_maps
-	0,												// highest_map_num
-	0												// first_map
+	9,												// highest_map_num
+	nullptr											// first_map
 };
 
 episodeinfo_t* doom_episodes_shareware[] =
@@ -461,15 +506,15 @@ mapinfo_t doom_map_e1m1 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m2,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 mapinfo_t doom_map_e1m2 =
@@ -485,15 +530,15 @@ mapinfo_t doom_map_e1m2 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	75,												// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m3,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 mapinfo_t doom_map_e1m3 =
@@ -509,15 +554,15 @@ mapinfo_t doom_map_e1m3 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m4,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 mapinfo_t doom_map_e1m4 =
@@ -533,15 +578,15 @@ mapinfo_t doom_map_e1m4 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m5,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 mapinfo_t doom_map_e1m5 =
@@ -557,15 +602,15 @@ mapinfo_t doom_map_e1m5 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	165,											// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m6,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 mapinfo_t doom_map_e1m6 =
@@ -581,15 +626,15 @@ mapinfo_t doom_map_e1m6 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m7,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 mapinfo_t doom_map_e1m7 =
@@ -605,15 +650,15 @@ mapinfo_t doom_map_e1m7 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m8,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 mapinfo_t doom_map_e1m8 =
@@ -629,14 +674,14 @@ mapinfo_t doom_map_e1m8 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
-	NULL,											// next_map
-	NULL,											// next_map_intermission
-	NULL,											// secret_map
-	NULL,											// secret_map_intermission
+	nullptr,										// next_map
+	nullptr,										// next_map_intermission
+	nullptr,										// secret_map
+	nullptr,										// secret_map_intermission
 	&doom_endgame_e1,								// endgame
 };
 
@@ -653,19 +698,239 @@ mapinfo_t doom_map_e1m9 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	165,											// par_time
-	NULL,											// boss_actions
+	nullptr,										// boss_actions
 	0,												// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	&doom_map_e1m4,									// next_map
-	NULL,											// next_map_intermission
+	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
-	NULL,											// secret_map_intermission
-	NULL,											// endgame
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m1 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M1 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
+	&doom_episode_two,								// episode
+	1,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M1" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m2,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m2 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M2 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
+	&doom_episode_two,								// episode
+	2,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M2" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m3,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m3 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M3 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
+	&doom_episode_two,								// episode
+	3,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M3" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m4,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m4 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M4 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
+	&doom_episode_two,								// episode
+	4,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M4" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	120,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m5,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m5 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M5 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_two,								// episode
+	5,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M5" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m6,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m6 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M6 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_two,								// episode
+	6,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M6" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	360,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m7,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m7 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M7 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Tom Hall, Sandy Petersen" ),	// authors
+	&doom_episode_two,								// episode
+	7,												// map_num
+	Map_None,										// map_flags
+	FlowString( "D_E2M7" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	240,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m8,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom_map_e2m8 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M8 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_two,								// episode
+	8,												// map_num
+	Map_Doom1EndOfEpisode,							// map_flags
+	FlowString( "D_E2M8" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	30,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	nullptr,										// next_map
+	nullptr,										// next_map_intermission
+	nullptr,										// secret_map
+	nullptr,										// secret_map_intermission
+	&doom_endgame_e2,								// endgame
+};
+
+mapinfo_t doom_map_e2m9 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M9 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_two,								// episode
+	9,												// map_num
+	Map_Secret,										// map_flags
+	FlowString( "D_E2M9" ),							// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	170,											// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_map_e2m6,									// next_map
+	nullptr,										// next_map_intermission
+	&doom_map_e2m9,									// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
 };
 
 //============================================================================
 // Intermissions, endgames, and interlevels
+//============================================================================
+
+//============================================================================
+// Knee-deep In The Dead
 //============================================================================
 
 intermission_t doom_intermission_e1 =
@@ -716,7 +981,7 @@ interlevel_t doom_interlevel_e1finished =
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_anim_e1_back,								// background_anims
 	arrlen( doom_anim_e1_back ),					// num_background_anims
-	NULL,											// foreground_anims
+	nullptr,										// foreground_anims
 	0,												// num_foreground_anims
 };
 
@@ -729,3 +994,81 @@ interlevel_t doom_interlevel_e1entering =
 	doom_anim_e1_fore,								// foreground_anims
 	arrlen( doom_anim_e1_fore ),					// num_foreground_anims
 };
+
+
+//============================================================================
+// The Shores Of Hell
+//============================================================================
+
+intermission_t doom_intermission_e2 =
+{
+	FlowString( E2TEXT ),							// text
+	FlowString( "D_VICTOR" ),						// music_lump
+	FlowString( "SFLR6_1" ),						// background_lump
+};
+
+endgame_t doom_endgame_e2 =
+{
+	EndGame_Pic,									// type
+	&doom_intermission_e2,							// intermission
+	FlowString( "VICTORY2" ),						// primary_image_lump
+	nullptr,										// secondary_image_lump
+};
+
+static interlevelanim_t doom_anim_e2_finished[] =
+{
+	generateexactmapanim( E2M1, 1, 0, 128, 136 ),
+	generateexactmapanim( E2M2, 1, 1, 128, 136 ),
+	generateexactmapanim( E2M3, 1, 2, 128, 136 ),
+	generateexactmapanim( E2M4, 1, 3, 128, 136 ),
+	generateexactmapanim( E2M5, 1, 4, 128, 136 ),
+	generateexactmapanim( E2M6, 1, 5, 128, 136 ),
+	generateexactmapanim( E2M7, 1, 6, 128, 136 ),
+	generateexactmapanim( E2M8, 1, 6, 128, 136 ),
+	generateexactmapanim( E2M9, 1, 4, 128, 136 ),
+};
+
+static interlevelanim_t doom_anim_e2_entering[] =
+{
+	generateexactmapanim( E2M1, 1, 0, 128, 136 ),
+	generateexactmapanim( E2M2, 1, 0, 128, 136 ),
+	generateexactmapanim( E2M3, 1, 1, 128, 136 ),
+	generateexactmapanim( E2M4, 1, 2, 128, 136 ),
+	generateexactmapanim( E2M5, 1, 3, 128, 136 ),
+	generateexactmapanim( E2M6, 1, 4, 128, 136 ),
+	generateexactmapanim( E2M7, 1, 5, 128, 136 ),
+	generateexactmapanim( E2M8, 1, 6, 128, 136 ),
+	generateexactmapanim( E2M9, 1, 4, 128, 136 ),
+	generateexactmapanim( E2M9, 1, 7, 192, 144 ),
+	generatelocationanims( E2M1, 254, 25 ),
+	generatelocationanims( E2M2, 97, 50 ),
+	generatelocationanims( E2M3, 188, 64 ),
+	generatelocationanims( E2M4, 128, 78 ),
+	generatelocationanims( E2M5, 214, 92 ),
+	generatelocationanims( E2M6, 133, 130 ),
+	generatelocationanims( E2M7, 208, 136 ),
+	generatelocationanims( E2M8, 148, 140 ),
+	generatelocationanims( E2M9, 235, 158 ),
+};
+
+interlevel_t doom_interlevel_e2finished =
+{
+	Interlevel_Animated,							// type
+	RuntimeFlowString( background_format_text ),	// background_lump
+	doom_anim_e2_finished,							// background_anims
+	arrlen( doom_anim_e2_finished ),				// num_background_anims
+	nullptr,										// foreground_anims
+	0,												// num_foreground_anims
+};
+
+interlevel_t doom_interlevel_e2entering =
+{
+	Interlevel_Animated,							// type
+	RuntimeFlowString( background_format_text ),	// background_lump
+	doom_anim_e2_entering,							// background_anims
+	arrlen( doom_anim_e2_entering ),				// num_background_anims
+	nullptr,										// foreground_anims
+	0,												// num_foreground_anims
+};
+
+
