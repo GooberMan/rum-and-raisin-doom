@@ -49,6 +49,7 @@ DOOM_C_API typedef struct gameoptions_s
 	boolean					unlimited_scrollers;
 	boolean					reset_player_visited_secret;
 	boolean					doom2_bad_secret_exit_doesnt_loop;
+	boolean					noclip_cheats_work_everywhere;
 } gameoptions_t;
 
 DOOM_C_API typedef struct wadoptions_s
