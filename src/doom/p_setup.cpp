@@ -1203,10 +1203,6 @@ static void P_LoadThings (int lump)
     W_ReleaseLumpNum(lump);
 }
 
-DOOM_C_API extern const char *mapnames[];
-DOOM_C_API extern const char *mapnames_chex[];
-DOOM_C_API extern const char *mapnames_commercial[];
-
 const char* P_GetMapTitle()
 {
 	const char* s = current_map->name.val;
