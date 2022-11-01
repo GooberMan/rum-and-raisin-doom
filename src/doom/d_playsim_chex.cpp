@@ -253,7 +253,7 @@ mapinfo_t chex_map_e1m1 =
 	&chex_episode_one,								// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_E1M1" ),							// music_lump
+	FlowString( "e1m1" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -277,7 +277,7 @@ mapinfo_t chex_map_e1m2 =
 	&chex_episode_one,								// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_E1M2" ),							// music_lump
+	FlowString( "e1m2" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	75,												// par_time
@@ -301,7 +301,7 @@ mapinfo_t chex_map_e1m3 =
 	&chex_episode_one,								// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_E1M3" ),							// music_lump
+	FlowString( "e1m3" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -325,7 +325,7 @@ mapinfo_t chex_map_e1m4 =
 	&chex_episode_one,								// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_E1M4" ),							// music_lump
+	FlowString( "e1m4" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -349,7 +349,7 @@ mapinfo_t chex_map_e1m5 =
 	&chex_episode_one,								// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_E1M5" ),							// music_lump
+	FlowString( "e1m5" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	165,											// par_time
@@ -372,7 +372,7 @@ intermission_t chex_intermission_e1 =
 {
 	Intermission_None,								// type
 	FlowString( E1TEXT ),							// text
-	FlowString( "D_VICTOR" ),						// music_lump
+	FlowString( "victor" ),							// music_lump
 	FlowString( "FLOOR4_8" ),						// background_lump
 };
 
@@ -382,7 +382,7 @@ endgame_t chex_endgame_e1 =
 	&chex_intermission_e1,							// intermission
 	FlowString( "CREDIT" ),							// primary_image_lump
 	EmptyFlowString( ),								// secondary_image_lump
-	FlowString( "D_VICTOR" ),						// music_lump
+	FlowString( "victor" ),							// music_lump
 };
 
 static interlevelanim_t chex_anim_e1_back[] =
@@ -411,7 +411,7 @@ static interlevelanim_t chex_anim_e1_fore[] =
 interlevel_t chex_interlevel_e1finished =
 {
 	Interlevel_Animated,							// type
-	FlowString( "D_INTER" ),						// music_lump
+	FlowString( "inter" ),							// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	chex_anim_e1_back,								// background_anims
 	arrlen( chex_anim_e1_back ),					// num_background_anims
@@ -422,7 +422,7 @@ interlevel_t chex_interlevel_e1finished =
 interlevel_t chex_interlevel_e1entering =
 {
 	Interlevel_Animated,							// type
-	FlowString( "D_INTER" ),						// music_lump
+	FlowString( "inter" ),							// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	chex_anim_e1_back,								// background_anims
 	arrlen( chex_anim_e1_back ),					// num_background_anims

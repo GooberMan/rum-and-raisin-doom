@@ -29,7 +29,7 @@
 // Mainly movements/button commands per game tick,
 // plus a checksum for internal state consistency.
 
-typedef struct
+DOOM_C_API typedef struct
 {
     signed char	forwardmove;	// *2048 for move
     signed char	sidemove;	// *2048 for move

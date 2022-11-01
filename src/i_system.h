@@ -24,17 +24,17 @@
 #include "d_event.h"
 
 
-typedef void (*atexit_func_t)(void);
+DOOM_C_API typedef void (*atexit_func_t)(void);
 
 // Called by DoomMain.
-void I_Init (void);
+// DOOM_C_API void I_Init (void);
 
 // Called by startup code
 // to get the ammount of memory to malloc
 // for the zone management.
-byte*	I_ZoneBase (size_t *size);
+DOOM_C_API byte*	I_ZoneBase (size_t *size);
 
-boolean I_ConsoleStdout(void);
+DOOM_C_API boolean I_ConsoleStdout(void);
 
 
 // Asynchronous interrupt functions should maintain private queues
@@ -45,38 +45,38 @@ boolean I_ConsoleStdout(void);
 // or calls a loadable driver to build it.
 // This ticcmd will then be modified by the gameloop
 // for normal input.
-ticcmd_t* I_BaseTiccmd (void);
+DOOM_C_API ticcmd_t* I_BaseTiccmd (void);
 
 
 // Called by M_Responder when quit is selected.
 // Clean exit, displays sell blurb.
-void I_Quit (void) NORETURN;
+DOOM_C_API void I_Quit (void) NORETURN;
 
-void I_Error (const char *error, ...) NORETURN PRINTF_ATTR(1, 2);
+DOOM_C_API void I_Error (const char *error, ...) NORETURN PRINTF_ATTR(1, 2);
 
-void I_Tactile (int on, int off, int total);
+DOOM_C_API void I_Tactile (int on, int off, int total);
 
-void *I_Realloc(void *ptr, size_t size);
+DOOM_C_API void *I_Realloc(void *ptr, size_t size);
 
-boolean I_GetMemoryValue(unsigned int offset, void *value, int size);
+DOOM_C_API boolean I_GetMemoryValue(unsigned int offset, void *value, int size);
 
 // Schedule a function to be called when the program exits.
 // If run_if_error is true, the function is called if the exit
 // is due to an error (I_Error)
 
-void I_AtExit(atexit_func_t func, boolean run_if_error);
+DOOM_C_API void I_AtExit(atexit_func_t func, boolean run_if_error);
 
 // Add all system-specific config file variable bindings.
 
-void I_BindVariables(void);
+DOOM_C_API void I_BindVariables(void);
 
 // Print startup banner copyright message.
 
-void I_PrintStartupBanner(const char *gamedescription);
+DOOM_C_API void I_PrintStartupBanner(const char *gamedescription);
 
 // Print a dividing line for startup banners.
 
-void I_PrintDivider(void);
+DOOM_C_API void I_PrintDivider(void);
 
 #endif
 

@@ -693,8 +693,11 @@ void S_ChangeMusicLump( const char* lump, int32_t looping )
 		W_ReleaseLumpNum( music_from_lump.lumpnum );
 	}
 
+	char namebuf[ 9 ];
+	M_snprintf( namebuf, sizeof( namebuf ), "D_%s", DEH_String( lump ) );
+
 	music_from_lump.name = lump;
-	music_from_lump.lumpnum = W_GetNumForName( lump );
+	music_from_lump.lumpnum = W_GetNumForName( namebuf );
 	music_from_lump.data = NULL;
 	music_from_lump.handle = NULL;
 

@@ -29,7 +29,7 @@
 //
 
 // Input event types.
-typedef enum
+DOOM_C_API typedef enum
 {
     // Key press/release events.
     //    data1: Key code (from doomkeys.h) of the key that was
@@ -68,7 +68,7 @@ typedef enum
 } evtype_t;
 
 // Event structure.
-typedef struct
+DOOM_C_API typedef struct
 {
     evtype_t type;
 
@@ -80,7 +80,7 @@ typedef struct
 //
 // Button/action code definitions.
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     // Press "Fire".
     BT_ATTACK		= 1,
@@ -112,7 +112,7 @@ typedef enum
 
 // villsa [STRIFE] Strife specific buttons
 // TODO - not finished
-typedef enum
+DOOM_C_API typedef enum
 {
     // Player view look up
     BT2_LOOKUP          = 1,
@@ -135,13 +135,13 @@ typedef enum
 
 
 // Called by IO functions when input is detected.
-void D_PostEvent (event_t *ev);
+DOOM_C_API void D_PostEvent (event_t *ev);
 
 // Read an event from the event queue
 
-event_t *D_PopEvent(void);
+DOOM_C_API event_t *D_PopEvent(void);
 
-event_t* D_PeekEvent( event_t* curr );
+DOOM_C_API event_t* D_PeekEvent( event_t* curr );
 
 
 #endif

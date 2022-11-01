@@ -129,7 +129,7 @@ episodeinfo_t plutonia_episode =
 {
 	PlainFlowString( "The Plutonia Experiment" ),	// name
 	EmptyFlowString(),								// name_patch_lump
-	0,												// episode_num
+	1,												// episode_num
 	plutonia_maps,									// all_maps
 	arrlen( plutonia_maps ),						// num_maps
 	plutonia_map_map32.map_num,						// highest_map_num
@@ -167,7 +167,7 @@ mapinfo_t plutonia_map_map01 =
 	&plutonia_episode,								// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_RUNNIN" ),						// music_lump
+	FlowString( "runnin" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -191,7 +191,7 @@ mapinfo_t plutonia_map_map02 =
 	&plutonia_episode,								// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_STALKS" ),						// music_lump
+	FlowString( "stalks" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -215,7 +215,7 @@ mapinfo_t plutonia_map_map03 =
 	&plutonia_episode,								// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_COUNTD" ),						// music_lump
+	FlowString( "countd" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -239,7 +239,7 @@ mapinfo_t plutonia_map_map04 =
 	&plutonia_episode,								// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_BETWEE" ),						// music_lump
+	FlowString( "betwee" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -263,7 +263,7 @@ mapinfo_t plutonia_map_map05 =
 	&plutonia_episode,								// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_DOOM" ),							// music_lump
+	FlowString( "doom" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -287,7 +287,7 @@ mapinfo_t plutonia_map_map06 =
 	&plutonia_episode,								// episode
 	6,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_THE_DA" ),						// music_lump
+	FlowString( "the_da" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -311,7 +311,7 @@ mapinfo_t plutonia_map_map07 =
 	&plutonia_episode,								// episode
 	7,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_SHAWN" ),						// music_lump
+	FlowString( "shawn" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -335,7 +335,7 @@ mapinfo_t plutonia_map_map08 =
 	&plutonia_episode,								// episode
 	8,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_DDTBLU" ),						// music_lump
+	FlowString( "ddtblu" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -359,7 +359,7 @@ mapinfo_t plutonia_map_map09 =
 	&plutonia_episode,								// episode
 	9,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_IN_CIT" ),						// music_lump
+	FlowString( "in_cit" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	270,											// par_time
@@ -383,7 +383,7 @@ mapinfo_t plutonia_map_map10 =
 	&plutonia_episode,								// episode
 	10,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_DEAD" ),							// music_lump
+	FlowString( "dead" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -407,7 +407,7 @@ mapinfo_t plutonia_map_map11 =
 	&plutonia_episode,								// episode
 	11,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_STLKS2" ),						// music_lump
+	FlowString( "stlks2" ),							// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -435,7 +435,7 @@ mapinfo_t plutonia_map_map12 =
 	&plutonia_episode,								// episode
 	12,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_THEDA2" ),						// music_lump
+	FlowString( "theda2" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -459,7 +459,7 @@ mapinfo_t plutonia_map_map13 =
 	&plutonia_episode,								// episode
 	13,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_DOOM2" ),						// music_lump
+	FlowString( "doom2" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -483,7 +483,7 @@ mapinfo_t plutonia_map_map14 =
 	&plutonia_episode,								// episode
 	14,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_DDTBL2" ),						// music_lump
+	FlowString( "ddtbl2" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -507,7 +507,7 @@ mapinfo_t plutonia_map_map15 =
 	&plutonia_episode,								// episode
 	15,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_RUNNI2" ),						// music_lump
+	FlowString( "runni2" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -531,7 +531,7 @@ mapinfo_t plutonia_map_map16 =
 	&plutonia_episode,								// episode
 	16,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_DEAD2" ),						// music_lump
+	FlowString( "dead2" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -555,7 +555,7 @@ mapinfo_t plutonia_map_map17 =
 	&plutonia_episode,								// episode
 	17,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_STLKS3" ),						// music_lump
+	FlowString( "stlks3" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	420,											// par_time
@@ -579,7 +579,7 @@ mapinfo_t plutonia_map_map18 =
 	&plutonia_episode,								// episode
 	18,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_ROMERO" ),						// music_lump
+	FlowString( "romero" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -603,7 +603,7 @@ mapinfo_t plutonia_map_map19 =
 	&plutonia_episode,								// episode
 	19,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_SHAWN2" ),						// music_lump
+	FlowString( "shawn2" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	200,											// par_time
@@ -627,7 +627,7 @@ mapinfo_t plutonia_map_map20 =
 	&plutonia_episode,								// episode
 	20,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_MESSAG" ),						// music_lump
+	FlowString( "messag" ),							// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -655,7 +655,7 @@ mapinfo_t plutonia_map_map21 =
 	&plutonia_episode,								// episode
 	21,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_COUNT2" ),						// music_lump
+	FlowString( "count2" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	240,											// par_time
@@ -679,7 +679,7 @@ mapinfo_t plutonia_map_map22 =
 	&plutonia_episode,								// episode
 	22,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_DDTBL3" ),						// music_lump
+	FlowString( "ddtbl3" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -703,7 +703,7 @@ mapinfo_t plutonia_map_map23 =
 	&plutonia_episode,								// episode
 	23,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_AMPIE" ),						// music_lump
+	FlowString( "ampie" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -727,7 +727,7 @@ mapinfo_t plutonia_map_map24 =
 	&plutonia_episode,								// episode
 	24,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_THEDA3" ),						// music_lump
+	FlowString( "theda3" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -751,7 +751,7 @@ mapinfo_t plutonia_map_map25 =
 	&plutonia_episode,								// episode
 	25,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_ADRIAN" ),						// music_lump
+	FlowString( "adrian" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -775,7 +775,7 @@ mapinfo_t plutonia_map_map26 =
 	&plutonia_episode,								// episode
 	26,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_MESSG2" ),						// music_lump
+	FlowString( "messg2" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	300,											// par_time
@@ -799,7 +799,7 @@ mapinfo_t plutonia_map_map27 =
 	&plutonia_episode,								// episode
 	27,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_ROMER2" ),						// music_lump
+	FlowString( "romer2" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	330,											// par_time
@@ -823,7 +823,7 @@ mapinfo_t plutonia_map_map28 =
 	&plutonia_episode,								// episode
 	28,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_TENSE" ),						// music_lump
+	FlowString( "tense" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	420,											// par_time
@@ -847,7 +847,7 @@ mapinfo_t plutonia_map_map29 =
 	&plutonia_episode,								// episode
 	29,												// map_num
 	Map_None,										// map_flags
-	FlowString( "D_SHAWN3" ),						// music_lump
+	FlowString( "shawn3" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	300,											// par_time
@@ -871,7 +871,7 @@ mapinfo_t plutonia_map_map30 =
 	&plutonia_episode,								// episode
 	30,												// map_num
 	Map_Doom2EndOfGame,								// map_flags
-	FlowString( "D_OPENIN" ),						// music_lump
+	FlowString( "openin" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -899,7 +899,7 @@ mapinfo_t plutonia_map_map31 =
 	&plutonia_episode,								// episode
 	31,												// map_num
 	Map_Secret,										// map_flags
-	FlowString( "D_EVIL" ),							// music_lump
+	FlowString( "evil" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -923,7 +923,7 @@ mapinfo_t plutonia_map_map32 =
 	&plutonia_episode,								// episode
 	32,												// map_num
 	Map_Secret,										// map_flags
-	FlowString( "D_ULTIMA" ),						// music_lump
+	FlowString( "ultima" ),							// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -950,7 +950,7 @@ intermission_t plutonia_intermission_e1 =
 {
 	Intermission_Skippable,							// type
 	FlowString( P1TEXT ),							// text
-	FlowString( "D_READ_M" ),						// music_lump
+	FlowString( "read_m" ),							// music_lump
 	FlowString( "SLIME16" ),						// background_lump
 };
 
@@ -958,7 +958,7 @@ intermission_t plutonia_intermission_e2 =
 {
 	Intermission_Skippable,							// type
 	FlowString( P2TEXT ),							// text
-	FlowString( "D_READ_M" ),						// music_lump
+	FlowString( "read_m" ),							// music_lump
 	FlowString( "RROCK14" ),						// background_lump
 };
 
@@ -966,7 +966,7 @@ intermission_t plutonia_intermission_e3 =
 {
 	Intermission_Skippable,							// type
 	FlowString( P3TEXT ),							// text
-	FlowString( "D_READ_M" ),						// music_lump
+	FlowString( "read_m" ),							// music_lump
 	FlowString( "RROCK07" ),						// background_lump
 };
 
@@ -974,7 +974,7 @@ intermission_t plutonia_intermission_e4 =
 {
 	Intermission_Skippable,							// type
 	FlowString( P4TEXT ),							// text
-	FlowString( "D_READ_M" ),						// music_lump
+	FlowString( "read_m" ),							// music_lump
 	FlowString( "RROCK17" ),						// background_lump
 };
 
@@ -982,7 +982,7 @@ intermission_t plutonia_intermission_s1 =
 {
 	Intermission_Skippable,							// type
 	FlowString( P5TEXT ),							// text
-	FlowString( "D_READ_M" ),						// music_lump
+	FlowString( "read_m" ),							// music_lump
 	FlowString( "RROCK13" ),						// background_lump
 };
 
@@ -990,7 +990,7 @@ intermission_t plutonia_intermission_s2 =
 {
 	Intermission_Skippable,							// type
 	FlowString( P6TEXT ),							// text
-	FlowString( "D_READ_M" ),						// music_lump
+	FlowString( "read_m" ),							// music_lump
 	FlowString( "RROCK19" ),						// background_lump
 };
 
@@ -1000,13 +1000,13 @@ endgame_t plutonia_endgame =
 	&plutonia_intermission_e4,						// intermission
 	EmptyFlowString(),								// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
-	FlowString( "D_EVIL" ),							// music_lump
+	FlowString( "evil" ),							// music_lump
 };
 
 interlevel_t plutonia_interlevel =
 {
 	Interlevel_Static,								// type
-	FlowString( "D_DM2INT" ),						// music_lump
+	FlowString( "dm2int" ),							// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
 	nullptr,										// background_anims
 	0,												// num_background_anims
