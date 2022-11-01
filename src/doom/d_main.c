@@ -137,7 +137,7 @@ char		mapdir[1024];           // directory of development maps
 int32_t				show_endoom = 1;
 int32_t				show_text_startup = 1;
 int32_t				show_diskicon = 1;
-int32_t				remove_limits = 0;
+int32_t				remove_limits = 1;
 int32_t				enable_frame_interpolation = 1;
 
 extern int32_t		maxrendercontexts;
@@ -1231,6 +1231,8 @@ static void InitGameVersion(void)
 
     if (p)
     {
+		remove_limits = 0;
+
         for (i=0; gameversions[i].description != NULL; ++i)
         {
             if (!strcmp(myargv[p+1], gameversions[i].cmdline))
@@ -1511,11 +1513,6 @@ void D_DoomMain (void)
 		// Auto-detect the configuration dir.
 
 		M_SetConfigDir(NULL);
-	}
-
-	if( M_CheckParm( "-removelimits" ) )
-	{
-		remove_limits = 1;
 	}
 
 	// Load configuration files before initialising other subsystems.
