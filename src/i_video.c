@@ -90,6 +90,7 @@ static GLint		texture_upscaled_id = -1;
 // The screen buffer; this is modified to draw things to the screen
 
 pixel_t *I_VideoBuffer = NULL;
+pixel_t* prev_video_buffer = NULL;
 
 typedef struct renderbuffer_s
 {
@@ -991,6 +992,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 	}
 
 	screenbuffer = renderbuffers[ current_render_buffer ].screenbuffer.data8bithandle;
+	prev_video_buffer = I_VideoBuffer;
 	I_VideoBuffer = screenbuffer->pixels;
 	V_RestoreBuffer();
 }
@@ -1001,7 +1003,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 //
 void I_ReadScreen (pixel_t* scr)
 {
-    memcpy(scr, I_VideoBuffer, render_width*render_height*sizeof(*scr));
+    memcpy(scr, prev_video_buffer, render_width*render_height*sizeof(*scr));
 }
 
 
@@ -1564,7 +1566,7 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 		// 32-bit RGBA screen buffer that gets loaded into a texture that gets
 		// finally rendered into our window or full screen in I_FinishUpdate().
 
-		I_VideoBuffer = screenbuffer->pixels;
+		prev_video_buffer = I_VideoBuffer = screenbuffer->pixels;
 		V_RestoreBuffer();
 	}
 
