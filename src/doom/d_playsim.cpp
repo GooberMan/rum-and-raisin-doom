@@ -16,6 +16,7 @@
 #include "m_fixed.h"
 #include "d_playsim.h"
 #include "doomstat.h"
+#include "i_system.h"
 
 static void SetGame( gameflow_t& game )
 {
@@ -54,6 +55,12 @@ void D_RegisterPlaysim()
 		break;
 	case pack_chex:
 		SetGame( doom_chex );
+		break;
+	case pack_hacx:
+		SetGame( doom_hacx );
+		break;
+	default:
+		I_Error( "Unsupported game configuration" );
 		break;
 	}
 }

@@ -196,6 +196,9 @@
     <ClCompile Include="..\src\doom\d_playsim_chex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\doom\d_playsim_hacx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\doom\am_map.h">
