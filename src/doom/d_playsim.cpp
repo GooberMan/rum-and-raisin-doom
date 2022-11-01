@@ -52,5 +52,8 @@ void D_RegisterPlaysim()
 	case pack_plut:
 		SetGame( doom_plutonia );
 		break;
+	case pack_chex:
+		SetGame( doom_chex );
+		break;
 	}
 }

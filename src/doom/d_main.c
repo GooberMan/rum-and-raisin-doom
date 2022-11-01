@@ -1050,7 +1050,7 @@ static void D_AddWidescreenPacks()
 		else if( gamemission == pack_tnt )	widescreenpackname = "tnt.widepix";
 		else if( gamemission == pack_plut ) widescreenpackname = "plutonia.widepix";
 
-		const char* widescreenfilename = D_FindWADByName( widescreenpackname );
+		const char* widescreenfilename = widescreenpackname ? D_FindWADByName( widescreenpackname ) : NULL;
 		if( widescreenfilename )
 		{
 			I_TerminalPrintf( Log_Startup, " merging %s\n", widescreenfilename );
