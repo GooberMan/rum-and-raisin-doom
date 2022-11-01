@@ -35,10 +35,10 @@
 // WADFILE I/O related stuff.
 //
 
-typedef struct lumpinfo_s lumpinfo_t;
-typedef int32_t lumpindex_t;
+DOOM_C_API typedef struct lumpinfo_s lumpinfo_t;
+DOOM_C_API typedef int32_t lumpindex_t;
 
-struct lumpinfo_s
+DOOM_C_API struct lumpinfo_s
 {
     wad_file_t *wad_file;
     void		*cache;
@@ -53,32 +53,32 @@ struct lumpinfo_s
 };
 
 
-extern lumpinfo_t **lumpinfo;
-extern uint32_t numlumps;
+DOOM_C_API extern lumpinfo_t **lumpinfo;
+DOOM_C_API extern uint32_t numlumps;
 
-extern boolean wadrenderlock;
+DOOM_C_API extern boolean wadrenderlock;
 
-wad_file_t *W_AddFile(const char *filename);
-void W_Reload(void);
+DOOM_C_API wad_file_t *W_AddFile(const char *filename);
+DOOM_C_API void W_Reload(void);
 
-lumpindex_t W_CheckNumForName(const char *name);
-lumpindex_t W_GetNumForName(const char *name);
-const char* W_GetNameForNum( lumpindex_t num );
+DOOM_C_API lumpindex_t W_CheckNumForName(const char *name);
+DOOM_C_API lumpindex_t W_GetNumForName(const char *name);
+DOOM_C_API const char* W_GetNameForNum( lumpindex_t num );
 
-int W_LumpLength(lumpindex_t lump);
-void W_ReadLump(lumpindex_t lump, void *dest);
+DOOM_C_API int W_LumpLength(lumpindex_t lump);
+DOOM_C_API void W_ReadLump(lumpindex_t lump, void *dest);
 
-void *W_CacheLumpNum(lumpindex_t lump, int tag);
-void *W_CacheLumpName(const char *name, int tag);
+DOOM_C_API void *W_CacheLumpNum(lumpindex_t lump, int tag);
+DOOM_C_API void *W_CacheLumpName(const char *name, int tag);
 
-void W_GenerateHashTable(void);
+DOOM_C_API void W_GenerateHashTable(void);
 
-extern unsigned int W_LumpNameHash(const char *s);
+DOOM_C_API extern unsigned int W_LumpNameHash(const char *s);
 
-void W_ReleaseLumpNum(lumpindex_t lump);
-void W_ReleaseLumpName(const char *name);
+DOOM_C_API void W_ReleaseLumpNum(lumpindex_t lump);
+DOOM_C_API void W_ReleaseLumpName(const char *name);
 
-const char *W_WadNameForLump(const lumpinfo_t *lump);
-boolean W_IsIWADLump(const lumpinfo_t *lump);
+DOOM_C_API const char *W_WadNameForLump(const lumpinfo_t *lump);
+DOOM_C_API boolean W_IsIWADLump(const lumpinfo_t *lump);
 
 #endif

@@ -259,6 +259,8 @@ DOOM_C_API mapinfo_t* D_GameflowGetMap( episodeinfo_t* episode, int32_t mapnum )
 DOOM_C_API void D_GameflowSetCurrentEpisode( episodeinfo_t* episode );
 DOOM_C_API void D_GameflowSetCurrentMap( mapinfo_t* map );
 
+DOOM_C_API void D_GameflowCheckAndParseMapinfos( void );
+
 #if defined( __cplusplus )
 
 #include "m_container.h"

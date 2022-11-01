@@ -16,6 +16,7 @@
 #include "d_gameflow.h"
 
 #include "m_container.h"
+#include "w_wad.h"
 
 gameflow_t*		current_game		= nullptr;
 episodeinfo_t*	current_episode		= nullptr;
@@ -70,4 +71,15 @@ void D_GameflowSetCurrentMap( mapinfo_t* map )
 {
 	current_episode = map->episode;
 	current_map = map;
+}
+
+void D_GameflowParseDMAPINFO( int32_t lumpnum );
+
+void D_GameflowCheckAndParseMapinfos( void )
+{
+	int32_t lumpnum = -1;
+	if( ( lumpnum = W_GetNumForName( "DMAPINFO" ) ) >= 0 )
+	{
+		D_GameflowParseDMAPINFO( lumpnum );
+	}
 }

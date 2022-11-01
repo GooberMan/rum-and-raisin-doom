@@ -1854,6 +1854,9 @@ void D_DoomMain (void)
     // Load PWAD files.
     modifiedgame = W_ParseCommandLine();
 
+	// Now that everything is registered, we can check for the various mapinfo lumps
+	D_GameflowCheckAndParseMapinfos();
+
     // Debug:
 //    W_PrintDirectory();
 
