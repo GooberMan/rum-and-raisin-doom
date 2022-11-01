@@ -73,244 +73,6 @@
 #include "cimguiglue.h"
 
 
-typedef struct mapdetails_s
-{
-	int32_t				episodenum;
-	int32_t				mapnum;
-	const char*			name;
-	const char*			lump;
-} mapdetails_t;
-
-typedef struct episodedetails_s
-{
-	int32_t				num;
-	const char*			name;
-	mapdetails_t*		maps;
-} episodedetails_t;
-
-typedef struct gamedetails_s
-{
-	const char*			name;
-	episodedetails_t*	episodes;
-} gamedetails_t;
-
-static gamedetails_t game_doomultimate =
-{
-	"Ultimate Doom", (episodedetails_t[]){
-		1, "Knee-Deep In The Dead", (mapdetails_t[]){
-			{ 1,	1,		HUSTR_E1M1,		"E1M1"	},
-			{ 1,	2,		HUSTR_E1M2,		"E1M2"	},
-			{ 1,	3,		HUSTR_E1M3,		"E1M3"	},
-			{ 1,	4,		HUSTR_E1M4,		"E1M4"	},
-			{ 1,	5,		HUSTR_E1M5,		"E1M5"	},
-			{ 1,	6,		HUSTR_E1M6,		"E1M6"	},
-			{ 1,	7,		HUSTR_E1M7,		"E1M7"	},
-			{ 1,	8,		HUSTR_E1M8,		"E1M8"	},
-			{ 1,	9,		HUSTR_E1M9,		"E1M9"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-
-		2, "The Shores of Hell", (mapdetails_t[]){
-			{ 2,	1,		HUSTR_E2M1,		"E2M1"	},
-			{ 2,	2,		HUSTR_E2M2,		"E2M2"	},
-			{ 2,	3,		HUSTR_E2M3,		"E2M3"	},
-			{ 2,	4,		HUSTR_E2M4,		"E2M4"	},
-			{ 2,	5,		HUSTR_E2M5,		"E2M5"	},
-			{ 2,	6,		HUSTR_E2M6,		"E2M6"	},
-			{ 2,	7,		HUSTR_E2M7,		"E2M7"	},
-			{ 2,	8,		HUSTR_E2M8,		"E2M8"	},
-			{ 2,	9,		HUSTR_E2M9,		"E2M9"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-
-		3, "Inferno", (mapdetails_t[]){
-			{ 3,	1,		HUSTR_E3M1,		"E3M1"	},
-			{ 3,	2,		HUSTR_E3M2,		"E3M2"	},
-			{ 3,	3,		HUSTR_E3M3,		"E3M3"	},
-			{ 3,	4,		HUSTR_E3M4,		"E3M4"	},
-			{ 3,	5,		HUSTR_E3M5,		"E3M5"	},
-			{ 3,	6,		HUSTR_E3M6,		"E3M6"	},
-			{ 3,	7,		HUSTR_E3M7,		"E3M7"	},
-			{ 3,	8,		HUSTR_E3M8,		"E3M8"	},
-			{ 3,	9,		HUSTR_E3M9,		"E3M9"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-
-		4, "Thy Flesh Consumed", (mapdetails_t[]){
-			{ 4,	1,		HUSTR_E4M1,		"E4M1"	},
-			{ 4,	2,		HUSTR_E4M2,		"E4M2"	},
-			{ 4,	3,		HUSTR_E4M3,		"E4M3"	},
-			{ 4,	4,		HUSTR_E4M4,		"E4M4"	},
-			{ 4,	5,		HUSTR_E4M5,		"E4M5"	},
-			{ 4,	6,		HUSTR_E4M6,		"E4M6"	},
-			{ 4,	7,		HUSTR_E4M7,		"E4M7"	},
-			{ 4,	8,		HUSTR_E4M8,		"E4M8"	},
-			{ 4,	9,		HUSTR_E4M9,		"E4M9"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-
-		5, "(Fifth episode)", (mapdetails_t[]){
-			{ 5,	1,		"E5M1",			"E5M1"	},
-			{ 5,	2,		"E5M2",			"E5M2"	},
-			{ 5,	3,		"E5M3",			"E5M3"	},
-			{ 5,	4,		"E5M4",			"E5M4"	},
-			{ 5,	5,		"E5M5",			"E5M5"	},
-			{ 5,	6,		"E5M6",			"E5M6"	},
-			{ 5,	7,		"E5M7",			"E5M7"	},
-			{ 5,	8,		"E5M8",			"E5M8"	},
-			{ 5,	9,		"E5M9",			"E5M9"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-		{ -1, NULL, NULL }
-	}
-};
-
-static gamedetails_t game_chexquest =
-{
-	"Chex Quest", (episodedetails_t[]){
-		1, "Chex Quest", (mapdetails_t[]){
-			{ 1,	1,		HUSTR_E1M1,		"E1M1"	},
-			{ 1,	2,		HUSTR_E1M2,		"E1M2"	},
-			{ 1,	3,		HUSTR_E1M3,		"E1M3"	},
-			{ 1,	4,		HUSTR_E1M4,		"E1M4"	},
-			{ 1,	5,		HUSTR_E1M5,		"E1M5"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-		{ -1, NULL, NULL }
-	}
-};
-
-static gamedetails_t game_doom2 =
-{
-	"Doom II - Hell On Earth", (episodedetails_t[]){
-		0, "Hell On Earth", (mapdetails_t[]){
-			{ 0,	1,		HUSTR_1,		"MAP01"	},
-			{ 0,	2,		HUSTR_2,		"MAP02"	},
-			{ 0,	3,		HUSTR_3,		"MAP03"	},
-			{ 0,	4,		HUSTR_4,		"MAP04"	},
-			{ 0,	5,		HUSTR_5,		"MAP05"	},
-			{ 0,	6,		HUSTR_6,		"MAP06"	},
-			{ 0,	7,		HUSTR_7,		"MAP07"	},
-			{ 0,	8,		HUSTR_8,		"MAP08"	},
-			{ 0,	9,		HUSTR_9,		"MAP09"	},
-			{ 0,	10,		HUSTR_10,		"MAP10"	},
-			{ 0,	11,		HUSTR_11,		"MAP11"	},
-			{ 0,	12,		HUSTR_12,		"MAP12"	},
-			{ 0,	13,		HUSTR_13,		"MAP13"	},
-			{ 0,	14,		HUSTR_14,		"MAP14"	},
-			{ 0,	15,		HUSTR_15,		"MAP15"	},
-			{ 0,	16,		HUSTR_16,		"MAP16"	},
-			{ 0,	17,		HUSTR_17,		"MAP17"	},
-			{ 0,	18,		HUSTR_18,		"MAP18"	},
-			{ 0,	19,		HUSTR_19,		"MAP19"	},
-			{ 0,	20,		HUSTR_20,		"MAP20"	},
-			{ 0,	21,		HUSTR_21,		"MAP21"	},
-			{ 0,	22,		HUSTR_22,		"MAP22"	},
-			{ 0,	23,		HUSTR_23,		"MAP23"	},
-			{ 0,	24,		HUSTR_24,		"MAP24"	},
-			{ 0,	25,		HUSTR_25,		"MAP25"	},
-			{ 0,	26,		HUSTR_26,		"MAP26"	},
-			{ 0,	27,		HUSTR_27,		"MAP27"	},
-			{ 0,	28,		HUSTR_28,		"MAP28"	},
-			{ 0,	29,		HUSTR_29,		"MAP29"	},
-			{ 0,	30,		HUSTR_30,		"MAP30"	},
-			{ 0,	31,		HUSTR_31,		"MAP31"	},
-			{ 0,	32,		HUSTR_32,		"MAP32"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-		{ -1, NULL, NULL }
-	}
-};
-
-static gamedetails_t game_evilution =
-{
-	"TNT - Evilution", (episodedetails_t[]){
-		0, "Evilution", (mapdetails_t[]){
-			{ 0,	1,		THUSTR_1,		"MAP01"	},
-			{ 0,	2,		THUSTR_2,		"MAP02"	},
-			{ 0,	3,		THUSTR_3,		"MAP03"	},
-			{ 0,	4,		THUSTR_4,		"MAP04"	},
-			{ 0,	5,		THUSTR_5,		"MAP05"	},
-			{ 0,	6,		THUSTR_6,		"MAP06"	},
-			{ 0,	7,		THUSTR_7,		"MAP07"	},
-			{ 0,	8,		THUSTR_8,		"MAP08"	},
-			{ 0,	9,		THUSTR_9,		"MAP09"	},
-			{ 0,	10,		THUSTR_10,		"MAP10"	},
-			{ 0,	11,		THUSTR_11,		"MAP11"	},
-			{ 0,	12,		THUSTR_12,		"MAP12"	},
-			{ 0,	13,		THUSTR_13,		"MAP13"	},
-			{ 0,	14,		THUSTR_14,		"MAP14"	},
-			{ 0,	15,		THUSTR_15,		"MAP15"	},
-			{ 0,	16,		THUSTR_16,		"MAP16"	},
-			{ 0,	17,		THUSTR_17,		"MAP17"	},
-			{ 0,	18,		THUSTR_18,		"MAP18"	},
-			{ 0,	19,		THUSTR_19,		"MAP19"	},
-			{ 0,	20,		THUSTR_20,		"MAP20"	},
-			{ 0,	21,		THUSTR_21,		"MAP21"	},
-			{ 0,	22,		THUSTR_22,		"MAP22"	},
-			{ 0,	23,		THUSTR_23,		"MAP23"	},
-			{ 0,	24,		THUSTR_24,		"MAP24"	},
-			{ 0,	25,		THUSTR_25,		"MAP25"	},
-			{ 0,	26,		THUSTR_26,		"MAP26"	},
-			{ 0,	27,		THUSTR_27,		"MAP27"	},
-			{ 0,	28,		THUSTR_28,		"MAP28"	},
-			{ 0,	29,		THUSTR_29,		"MAP29"	},
-			{ 0,	30,		THUSTR_30,		"MAP30"	},
-			{ 0,	31,		THUSTR_31,		"MAP31"	},
-			{ 0,	32,		THUSTR_32,		"MAP32"	},
-			{ 0,	33,		"MAP33",		"MAP33"	},
-			{ 0,	34,		"MAP34",		"MAP34"	},
-			{ 0,	35,		"MAP35",		"MAP35"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-		{ -1, NULL, NULL }
-	}
-};
-
-static gamedetails_t game_plutonia =
-{
-	"The Plutonia Experiment", (episodedetails_t[]){
-		0, "The Plutonia Experiment", (mapdetails_t[]){
-			{ 0,	1,		PHUSTR_1,		"MAP01"	},
-			{ 0,	2,		PHUSTR_2,		"MAP02"	},
-			{ 0,	3,		PHUSTR_3,		"MAP03"	},
-			{ 0,	4,		PHUSTR_4,		"MAP04"	},
-			{ 0,	5,		PHUSTR_5,		"MAP05"	},
-			{ 0,	6,		PHUSTR_6,		"MAP06"	},
-			{ 0,	7,		PHUSTR_7,		"MAP07"	},
-			{ 0,	8,		PHUSTR_8,		"MAP08"	},
-			{ 0,	9,		PHUSTR_9,		"MAP09"	},
-			{ 0,	10,		PHUSTR_10,		"MAP10"	},
-			{ 0,	11,		PHUSTR_11,		"MAP11"	},
-			{ 0,	12,		PHUSTR_12,		"MAP12"	},
-			{ 0,	13,		PHUSTR_13,		"MAP13"	},
-			{ 0,	14,		PHUSTR_14,		"MAP14"	},
-			{ 0,	15,		PHUSTR_15,		"MAP15"	},
-			{ 0,	16,		PHUSTR_16,		"MAP16"	},
-			{ 0,	17,		PHUSTR_17,		"MAP17"	},
-			{ 0,	18,		PHUSTR_18,		"MAP18"	},
-			{ 0,	19,		PHUSTR_19,		"MAP19"	},
-			{ 0,	20,		PHUSTR_20,		"MAP20"	},
-			{ 0,	21,		PHUSTR_21,		"MAP21"	},
-			{ 0,	22,		PHUSTR_22,		"MAP22"	},
-			{ 0,	23,		PHUSTR_23,		"MAP23"	},
-			{ 0,	24,		PHUSTR_24,		"MAP24"	},
-			{ 0,	25,		PHUSTR_25,		"MAP25"	},
-			{ 0,	26,		PHUSTR_26,		"MAP26"	},
-			{ 0,	27,		PHUSTR_27,		"MAP27"	},
-			{ 0,	28,		PHUSTR_28,		"MAP28"	},
-			{ 0,	29,		PHUSTR_29,		"MAP29"	},
-			{ 0,	30,		PHUSTR_30,		"MAP30"	},
-			{ 0,	31,		PHUSTR_31,		"MAP31"	},
-			{ 0,	32,		PHUSTR_32,		"MAP32"	},
-			{ -1,	-1,		NULL,			NULL	}
-		},
-		{ -1, NULL, NULL }
-	}
-};
-
-static gamedetails_t*	dashboard_currgame			= NULL;
-static int32_t			dashboard_currgameepisodes	= 0;
 static int32_t			dashboard_currgameskill		= sk_medium;
 static int32_t			dashboard_currgameflags		= GF_None;
 
@@ -3497,24 +3259,36 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 static void M_DashboardNewGame( const char* itemname, void* data )
 {
-	mapdetails_t* map = (mapdetails_t*)data;
+	mapinfo_t* map = (mapinfo_t*)data;
 
-	episodeinfo_t* epinfo = D_GameflowGetEpisode( map->episodenum );
-	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map->mapnum );
-
-	G_DeferedInitNew( dashboard_currgameskill, mapinfo, dashboard_currgameflags );
+	G_DeferedInitNew( dashboard_currgameskill, map, dashboard_currgameflags );
 }
 
-static void M_DashboardRegisterEpisodeMaps( const char* category, episodedetails_t* episode, menufunc_t callback )
-{
-	char namebuffer[ 128 ];
+//static void M_DashboardRegisterEpisodeMaps( const char* category, episodedetails_t* episode, menufunc_t callback )
+//{
+//	char namebuffer[ 128 ];
+//
+//	mapdetails_t* curr = episode->maps;
+//	
+//	while( curr->mapnum != -1 )
+//	{
+//		memset( namebuffer, 0, sizeof( namebuffer ) );
+//		sprintf( namebuffer, "%s|%s", category, DEH_String( curr->name ) );
+//		M_RegisterDashboardButton( namebuffer, NULL, callback, curr );
+//		++curr;
+//	}
+//}
 
-	mapdetails_t* curr = episode->maps;
-	
-	while( curr->mapnum != -1 )
+static void M_DashboardRegisterEpisodeMaps( const char* category, episodeinfo_t* episode, menufunc_t callback )
+{
+	char namebuffer[ 256 ];
+
+	for( int32_t mapind = 0 ; mapind < episode->num_maps; ++mapind )
 	{
+		mapinfo_t* curr = episode->all_maps[ mapind ];
+
 		memset( namebuffer, 0, sizeof( namebuffer ) );
-		sprintf( namebuffer, "%s|%s", category, DEH_String( curr->name ) );
+		sprintf( namebuffer, "%s|%s", category, DEH_String( curr->name.val ) );
 		M_RegisterDashboardButton( namebuffer, NULL, callback, curr );
 		++curr;
 	}
@@ -3552,9 +3326,7 @@ void M_DashboardOptionsInit()
 //
 void M_Init (void)
 {
-	episodedetails_t* workingepisode;
-
-	char episodestem[ 128 ];
+	char episodestem[ 256 ];
 
     currentMenu = &MainDef;
     menuactive = 0;
@@ -3637,36 +3409,6 @@ void M_Init (void)
 
 	M_DashboardOptionsInit();
 
-	switch( gamemission )
-	{
-	case doom:
-		dashboard_currgame = &game_doomultimate;
-		break;
-	case doom2:
-		dashboard_currgame = &game_doom2;
-		break;
-	case pack_tnt:
-		dashboard_currgame = &game_evilution;
-		break;
-	case pack_plut:
-		dashboard_currgame = &game_plutonia;
-		break;
-	case pack_chex:
-		dashboard_currgame = &game_chexquest;
-		break;
-	default:
-		// Just assume Doom 2 style for everything else
-		dashboard_currgame = &game_doom2;
-		break;
-	}
-
-	workingepisode = dashboard_currgame->episodes;
-	while( workingepisode->num != -1 )
-	{
-		++workingepisode;
-	};
-	dashboard_currgameepisodes = workingepisode - dashboard_currgame->episodes;
-
 	extern int32_t sleeponzerotics;
 
 	dashboardopensound = sfx_swtchn;
@@ -3685,25 +3427,18 @@ void M_Init (void)
 	M_RegisterDashboardCheckboxFlag( "Game|New|Loop one level", NULL, &dashboard_currgameflags, GF_LoopOneLevel );
 	M_RegisterDashboardSeparator( "Game|New" );
 
-	if( dashboard_currgameepisodes == 1 )
+	if( current_game->num_episodes == 1 )
 	{
-		M_DashboardRegisterEpisodeMaps( "Game|New", dashboard_currgame->episodes, &M_DashboardNewGame );
+		M_DashboardRegisterEpisodeMaps( "Game|New", current_game->episodes[ 0 ], &M_DashboardNewGame );
 	}
 	else
 	{
-		workingepisode = dashboard_currgame->episodes;
-		while( workingepisode->num != -1 )
+		for( int32_t epindex = 0; epindex < current_game->num_episodes; ++epindex  )
 		{
-			if( workingepisode->maps[ 0 ].mapnum != -1
-				&& W_CheckNumForName( workingepisode->maps[ 0 ].lump ) >= 0 )
-			{
-				memset( episodestem, 0, sizeof( episodestem ) );
-				sprintf( episodestem, "Game|New|%s", workingepisode->name );
-				M_DashboardRegisterEpisodeMaps( episodestem, workingepisode, &M_DashboardNewGame );
-			}
-
-			++workingepisode;
-		};
+			memset( episodestem, 0, sizeof( episodestem ) );
+			sprintf( episodestem, "Game|New|%s", current_game->episodes[ epindex ]->name.val );
+			M_DashboardRegisterEpisodeMaps( episodestem, current_game->episodes[ epindex ], &M_DashboardNewGame );
+		}
 	}
 
 	M_RegisterDashboardWindow( "Game|Options", "Game Options", 500, 500, &debugwindow_options, Menu_Normal, &M_DashboardOptionsWindow );
