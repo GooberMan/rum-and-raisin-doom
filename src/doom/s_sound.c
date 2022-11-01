@@ -690,7 +690,7 @@ void S_ChangeMusicLump( const char* lump, int32_t looping )
 
 	if( wasplaying )
 	{
-		W_ReleaseLumpNum( music_from_lump.lumpnum, PU_STATIC );
+		W_ReleaseLumpNum( music_from_lump.lumpnum );
 	}
 
 	music_from_lump.name = lump;

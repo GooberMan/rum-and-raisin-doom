@@ -336,10 +336,10 @@ public:
 		INLINE iterator& operator++()					{ if( currleft == endleft ) ++currright; else ++currleft; return *this; }
 
 	private:
-		left_type::iterator currleft;
-		left_type::iterator endleft;
-		right_type::iterator currright;
-		right_type::iterator endright;
+		typename left_type::iterator currleft;
+		typename left_type::iterator endleft;
+		typename right_type::iterator currright;
+		typename right_type::iterator endright;
 	};
 
 	ConcatImpl( left_type& l, right_type& r )
