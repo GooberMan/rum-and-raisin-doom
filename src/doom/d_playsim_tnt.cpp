@@ -302,6 +302,12 @@ mapinfo_t tnt_map_map06 =
 	nullptr,										// endgame
 };
 
+static bossaction_t		tnt_map07special[] =
+{
+	{ 8 /*MT_FATSO*/, 82 /*lowerFloorToLowest repeatable*/, 666 },
+	{ 20 /*MT_BABY*/, 96 /*raiseToTexture repeatable*/, 667 },
+};
+
 mapinfo_t tnt_map_map07 =
 {
 	RuntimeFlowString( levellump0_format_text ),	// data_lump
@@ -315,8 +321,8 @@ mapinfo_t tnt_map_map07 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
-	nullptr,										// boss_actions
-	0,												// num_boss_actions
+	tnt_map07special,								// boss_actions
+	arrlen( tnt_map07special ),						// num_boss_actions
 	&tnt_interlevel,								// interlevel_finished
 	&tnt_interlevel,								// interlevel_entering
 	&tnt_map_map08,									// next_map

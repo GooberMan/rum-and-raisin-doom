@@ -254,6 +254,12 @@ typedef struct dmapinfo_gameinfo_s
 
 } dmapinfo_gameinfo_t;
 
+static bossaction_t map07special[] =
+{
+	{ 8 /*MT_FATSO*/, 82 /*lowerFloorToLowest repeatable*/, 666 },
+	{ 20 /*MT_BABY*/, 96 /*raiseToTexture repeatable*/, 667 },
+};
+
 constexpr auto EmptyFlowString()
 {
 	return flowstring_t();
@@ -303,8 +309,8 @@ static void BuildNewGameInfo()
 
 		if( sourcemap.map_07_special )
 		{
-			//targetmap.boss_actions;
-			//targetmap.num_boss_actions;
+			targetmap.boss_actions = map07special;
+			targetmap.num_boss_actions = arrlen( map07special );
 		}
 
 		if( !original_map )

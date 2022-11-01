@@ -685,6 +685,11 @@ mapinfo_t doom_map_e1m7 =
 	nullptr,										// endgame
 };
 
+static bossaction_t doom_e1m8special[] =
+{
+	{ 15 /*MT_BRUISER*/, 82 /*lowerFloorToLowest repeatable*/, 666 }
+};
+
 mapinfo_t doom_map_e1m8 =
 {
 	RuntimeFlowString( levellump_format_text ),		// data_lump
@@ -698,8 +703,8 @@ mapinfo_t doom_map_e1m8 =
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
-	nullptr,										// boss_actions
-	0,												// num_boss_actions
+	doom_e1m8special,								// boss_actions
+	arrlen( doom_e1m8special ),						// num_boss_actions
 	&doom_interlevel_e1finished,					// interlevel_finished
 	&doom_interlevel_e1entering,					// interlevel_entering
 	nullptr,										// next_map
@@ -905,6 +910,11 @@ mapinfo_t doom_map_e2m7 =
 	nullptr,										// endgame
 };
 
+static bossaction_t doom_e2m8special[] =
+{
+	{ 21 /*MT_CYBORG*/, 52 /*exitlevel*/, 0 }
+};
+
 mapinfo_t doom_map_e2m8 =
 {
 	RuntimeFlowString( levellump_format_text ),		// data_lump
@@ -918,8 +928,8 @@ mapinfo_t doom_map_e2m8 =
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
-	nullptr,										// boss_actions
-	0,												// num_boss_actions
+	doom_e2m8special,								// boss_actions
+	arrlen( doom_e2m8special ),						// num_boss_actions
 	&doom_interlevel_e2finished,					// interlevel_finished
 	&doom_interlevel_e2entering,					// interlevel_entering
 	nullptr,										// next_map
@@ -1125,6 +1135,11 @@ mapinfo_t doom_map_e3m7 =
 	nullptr,										// endgame
 };
 
+static bossaction_t doom_e3m8special[] =
+{
+	{ 19 /*MT_SPIDER*/, 52 /*exitlevel*/, 0 }
+};
+
 mapinfo_t doom_map_e3m8 =
 {
 	RuntimeFlowString( levellump_format_text ),		// data_lump
@@ -1138,8 +1153,8 @@ mapinfo_t doom_map_e3m8 =
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
-	nullptr,										// boss_actions
-	0,												// num_boss_actions
+	doom_e3m8special,								// boss_actions
+	arrlen( doom_e3m8special ),						// num_boss_actions
 	&doom_interlevel_e3finished,					// interlevel_finished
 	&doom_interlevel_e3entering,					// interlevel_entering
 	nullptr,										// next_map
@@ -1297,6 +1312,11 @@ mapinfo_t doom_map_e4m5 =
 	nullptr,										// endgame
 };
 
+static bossaction_t doom_e4m6special[] =
+{
+	{ 21 /*MT_CYBORG*/, 106 /*vld_blazeOpen repeatable*/, 666 }
+};
+
 mapinfo_t doom_map_e4m6 =
 {
 	RuntimeFlowString( levellump_format_text ),		// data_lump
@@ -1310,8 +1330,8 @@ mapinfo_t doom_map_e4m6 =
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
-	nullptr,										// boss_actions
-	0,												// num_boss_actions
+	doom_e4m6special,								// boss_actions
+	arrlen( doom_e4m6special ),						// num_boss_actions
 	&doom_interlevel_e4,							// interlevel_finished
 	&doom_interlevel_e4,							// interlevel_entering
 	&doom_map_e4m7,									// next_map
@@ -1345,6 +1365,12 @@ mapinfo_t doom_map_e4m7 =
 	nullptr,										// endgame
 };
 
+static bossaction_t doom_e4m8special[] =
+{
+	{ 19 /*MT_SPIDER*/, 82 /*lowerFloorToLowest repeatable*/, 666 }
+};
+
+
 mapinfo_t doom_map_e4m8 =
 {
 	RuntimeFlowString( levellump_format_text ),		// data_lump
@@ -1358,8 +1384,8 @@ mapinfo_t doom_map_e4m8 =
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
-	nullptr,										// boss_actions
-	0,												// num_boss_actions
+	doom_e4m8special,								// boss_actions
+	arrlen( doom_e4m8special ),						// num_boss_actions
 	&doom_interlevel_e4,							// interlevel_finished
 	&doom_interlevel_e4,							// interlevel_entering
 	nullptr,										// next_map
@@ -1628,7 +1654,7 @@ intermission_t doom_intermission_e4 =
 endgame_t doom_endgame_e4 =
 {
 	EndGame_Pic | EndGame_LoopingMusic,				// type
-	&doom_intermission_e3,							// intermission
+	&doom_intermission_e4,							// intermission
 	FlowString( "ENDPIC" ),							// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
 	RuntimeFlowString( "victor" ),					// music_lump

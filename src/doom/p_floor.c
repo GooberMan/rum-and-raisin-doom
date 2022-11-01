@@ -389,8 +389,7 @@ EV_DoFloor
 				  texturelookup[side->bottomtexture]->height;
 		  }
 	      }
-	      floor->floordestheight =
-		  floor->sector->floorheight + minsize;
+	      floor->floordestheight = floor->sector->floorheight + IntToFixed( minsize );
 	  }
 	  break;
 	  

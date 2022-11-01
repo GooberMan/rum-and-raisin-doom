@@ -18,6 +18,14 @@
 #include "doomstat.h"
 #include "i_system.h"
 
+static bossaction_t doom_bossspecial_pre_version_1_9[] =
+{
+	{ -1 /*any*/, 52 /*exitlevel*/, 0 }
+};
+
+extern mapinfo_t		doom_map_e2m8;
+extern mapinfo_t		doom_map_e3m8;
+
 static void SetGame( gameflow_t& game )
 {
 	current_game = &game;
@@ -27,6 +35,13 @@ static void SetGame( gameflow_t& game )
 
 void D_RegisterPlaysim()
 {
+	// Dirty hack to retain compatibility with older maps
+	if( gameversion < exe_ultimate )
+	{
+		doom_map_e2m8.boss_actions = doom_map_e3m8.boss_actions = doom_bossspecial_pre_version_1_9;
+		doom_map_e2m8.num_boss_actions = doom_map_e3m8.num_boss_actions = arrlen( doom_bossspecial_pre_version_1_9 );
+	}
+
 	switch( gamemission )
 	{
 	case doom:

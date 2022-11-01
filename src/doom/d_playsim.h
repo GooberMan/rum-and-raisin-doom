@@ -50,6 +50,7 @@ DOOM_C_API typedef struct gameoptions_s
 	boolean					reset_player_visited_secret;
 	boolean					doom2_bad_secret_exit_doesnt_loop;
 	boolean					noclip_cheats_work_everywhere;
+	boolean					pre_ultimate_bossdeath_support;
 } gameoptions_t;
 
 DOOM_C_API typedef struct wadoptions_s

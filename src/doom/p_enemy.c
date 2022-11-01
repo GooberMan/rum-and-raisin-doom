@@ -1621,58 +1621,6 @@ void A_Explode (mobj_t* thingy)
     P_RadiusAttack(thingy, thingy->target, 128);
 }
 
-// Check whether the death of the specified monster type is allowed
-// to trigger the end of episode special action.
-//
-// This behavior changed in v1.9, the most notable effect of which
-// was to break uac_dead.wad
-
-static boolean CheckBossEnd(mobjtype_t motype)
-{
-    if (gameversion < exe_ultimate)
-    {
-        if (current_map->map_num != 8)
-        {
-            return false;
-        }
-
-        // Baron death on later episodes is nothing special.
-
-        if (motype == MT_BRUISER && current_episode->episode_num != 1)
-        {
-            return false;
-        }
-
-        return true;
-    }
-    else
-    {
-        // New logic that appeared in Ultimate Doom.
-        // Looks like the logic was overhauled while adding in the
-        // episode 4 support.  Now bosses only trigger on their
-        // specific episode.
-
-	switch(current_episode->episode_num)
-	{
-            case 1:
-                return current_map->map_num == 8 && motype == MT_BRUISER;
-
-            case 2:
-                return current_map->map_num == 8 && motype == MT_CYBORG;
-
-            case 3:
-                return current_map->map_num == 8 && motype == MT_SPIDER;
-
-	    case 4:
-                return (current_map->map_num == 6 && motype == MT_CYBORG)
-                    || (current_map->map_num == 8 && motype == MT_SPIDER);
-
-            default:
-                return current_map->map_num == 8;
-	}
-    }
-}
-
 //
 // A_BossDeath
 // Possibly trigger special effects
@@ -1684,98 +1632,60 @@ void A_BossDeath (mobj_t* mo)
     mobj_t*	mo2;
     line_t	junk;
     int		i;
-		
-    if ( gamemode == commercial)
-    {
-	if (current_map->map_num != 7)
-	    return;
-		
-	if ((mo->type != MT_FATSO)
-	    && (mo->type != MT_BABY))
-	    return;
-    }
-    else
-    {
-        if (!CheckBossEnd(mo->type))
-        {
-            return;
-        }
-    }
 
-    // make sure there is a player alive for victory
-    for (i=0 ; i<MAXPLAYERS ; i++)
-	if (playeringame[i] && players[i].health > 0)
-	    break;
-    
-    if (i==MAXPLAYERS)
-	return;	// no one left alive, so do not end game
-    
-    // scan the remaining thinkers to see
-    // if all bosses are dead
-    for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    {
-	if (th->function.acp1 != (actionf_p1)P_MobjThinker)
-	    continue;
-	
-	mo2 = (mobj_t *)th;
-	if (mo2 != mo
-	    && mo2->type == mo->type
-	    && mo2->health > 0)
+	if( !current_map->boss_actions )
 	{
-	    // other boss not dead
-	    return;
+		return;
 	}
-    }
-	
-    // victory!
-    if ( gamemode == commercial)
-    {
-	if (current_map->map_num == 7)
+
+	boolean matched = false;
+	for( bossaction_t* action = current_map->boss_actions; action < current_map->boss_actions + current_map->num_boss_actions; ++action )
 	{
-	    if (mo->type == MT_FATSO)
-	    {
-		junk.tag = 666;
-		EV_DoFloor(&junk,lowerFloorToLowest);
-		return;
-	    }
-	    
-	    if (mo->type == MT_BABY)
-	    {
-		junk.tag = 667;
-		EV_DoFloor(&junk,raiseToTexture);
-		return;
-	    }
+		// -1 is shorthand for any thing type to trigger A_BossDeath actions.
+		// Required for pre-v1.9 compatibility.
+		matched |= ( action->thing_type == -1 || mo->type == action->thing_type );
 	}
-    }
-    else
-    {
-	switch(current_episode->episode_num)
+
+	if( !matched )
 	{
-	  case 1:
-	    junk.tag = 666;
-	    EV_DoFloor (&junk, lowerFloorToLowest);
-	    return;
-	    break;
-	    
-	  case 4:
-	    switch(current_map->map_num)
-	    {
-	      case 6:
-		junk.tag = 666;
-		EV_DoDoor (&junk, vld_blazeOpen);
 		return;
-		break;
-		
-	      case 8:
-		junk.tag = 666;
-		EV_DoFloor (&junk, lowerFloorToLowest);
-		return;
-		break;
-	    }
 	}
-    }
+
+	// make sure there is a player alive for victory
+	for (i=0 ; i<MAXPLAYERS ; i++)
+	{
+		if (playeringame[i] && players[i].health <= 0)
+			return;
+	}
+
+	// scan the remaining thinkers to see
+	// if all bosses are dead
+	for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
+	{
+		if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+			continue;
 	
-    G_ExitLevel ();
+		mo2 = (mobj_t *)th;
+		if (mo2 != mo
+			&& mo2->type == mo->type
+			&& mo2->health > 0)
+		{
+			// other boss not dead
+			return;
+		}
+	}
+
+	for( bossaction_t* action = current_map->boss_actions; action < current_map->boss_actions + current_map->num_boss_actions; ++action )
+	{
+		if( mo->type == action->thing_type )
+		{
+			junk.special = action->line_special;
+			junk.tag = action->tag;
+
+			// Cheating and giving the first player to allow most linedefs to trigger
+			P_CrossSpecialLine( &junk, 0, players[ 0 ].mo );
+		}
+	}
 }
 
 
