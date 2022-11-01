@@ -53,11 +53,6 @@
 //
 // Locally used constants, shortcuts.
 //
-#define HU_TITLE	( current_map->name.val )
-#define HU_TITLE2	( current_map->name.val )
-#define HU_TITLEP	( current_map->name.val )
-#define HU_TITLET	( current_map->name.val )
-#define HU_TITLE_CHEX   ( current_map->name.val )
 #define HU_TITLEHEIGHT	1
 #define HU_TITLEX	0
 #define HU_TITLEY	(V_VIRTUALHEIGHT - ST_HEIGHT - 1 - SHORT(hu_font[0]->height))
@@ -389,38 +384,8 @@ void HU_Start(void)
 		       hu_font,
 		       HU_FONTSTART);
     
-    switch ( logical_gamemission )
-    {
-      case doom:
-	s = HU_TITLE;
-	break;
-      case doom2:
-	 s = HU_TITLE2;
-         // Pre-Final Doom compatibility: map33-map35 names don't spill over
-         ///if (gameversion <= exe_doom_1_9 && gamemap >= 33)
-         ///{
-         ///    s = "";
-         ///}
-	 break;
-      case pack_plut:
-	s = HU_TITLEP;
-	break;
-      case pack_tnt:
-	s = HU_TITLET;
-	break;
-      default:
-         s = "Unknown level";
-         break;
-    }
 
-    if (logical_gamemission == doom && gameversion == exe_chex)
-    {
-        s = HU_TITLE_CHEX;
-    }
-
-    // dehacked substitution to get modified level name
-
-    s = DEH_String(s);
+    s = DEH_String( current_map->name.val );
     
     while (*s)
 	HUlib_addCharToTextLine(&w_title, *(s++));

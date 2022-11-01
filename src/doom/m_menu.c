@@ -3605,7 +3605,10 @@ void M_Init (void)
 			menuitem_t* curritem = &gameflow_episodes[ curr ];
 
 			curritem->alphaKey = tolower( currep->name.val[ 0 ] );
-			M_StringCopy( curritem->name, currep->name_patch_lump.val, 10 );
+			if( currep->name_patch_lump.val )
+			{
+				M_StringCopy( curritem->name, currep->name_patch_lump.val, 10 );
+			}
 			curritem->routine = M_Episode;
 			curritem->status = 1;
 		}
