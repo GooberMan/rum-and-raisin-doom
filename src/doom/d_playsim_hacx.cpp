@@ -149,7 +149,7 @@ mapinfo_t hacx_map_map01 =
 	&hacx_episode,									// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	FlowString( "runnin" ),							// music_lump
+	RuntimeFlowString( "runnin" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -173,7 +173,7 @@ mapinfo_t hacx_map_map02 =
 	&hacx_episode,									// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	FlowString( "stalks" ),							// music_lump
+	RuntimeFlowString( "stalks" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -197,7 +197,7 @@ mapinfo_t hacx_map_map03 =
 	&hacx_episode,									// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	FlowString( "countd" ),							// music_lump
+	RuntimeFlowString( "countd" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -221,7 +221,7 @@ mapinfo_t hacx_map_map04 =
 	&hacx_episode,									// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	FlowString( "betwee" ),							// music_lump
+	RuntimeFlowString( "betwee" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -241,11 +241,11 @@ mapinfo_t hacx_map_map05 =
 	RuntimeFlowString( levellump0_format_text ),	// data_lump
 	FlowString( HUSTR_5 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
-	PlainFlowString( "Iikka Keränen" ),				// authors
+	PlainFlowString( "Iikka Kerï¿½nen" ),				// authors
 	&hacx_episode,									// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	FlowString( "doom" ),							// music_lump
+	RuntimeFlowString( "doom" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -269,7 +269,7 @@ mapinfo_t hacx_map_map06 =
 	&hacx_episode,									// episode
 	6,												// map_num
 	Map_None,										// map_flags
-	FlowString( "the_da" ),							// music_lump
+	RuntimeFlowString( "the_da" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -293,7 +293,7 @@ mapinfo_t hacx_map_map07 =
 	&hacx_episode,									// episode
 	7,												// map_num
 	Map_None,										// map_flags
-	FlowString( "shawn" ),							// music_lump
+	RuntimeFlowString( "shawn" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -317,7 +317,7 @@ mapinfo_t hacx_map_map08 =
 	&hacx_episode,									// episode
 	8,												// map_num
 	Map_None,										// map_flags
-	FlowString( "ddtblu" ),							// music_lump
+	RuntimeFlowString( "ddtblu" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -341,7 +341,7 @@ mapinfo_t hacx_map_map09 =
 	&hacx_episode,									// episode
 	9,												// map_num
 	Map_None,										// map_flags
-	FlowString( "in_cit" ),							// music_lump
+	RuntimeFlowString( "in_cit" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	270,											// par_time
@@ -365,7 +365,7 @@ mapinfo_t hacx_map_map10 =
 	&hacx_episode,									// episode
 	10,												// map_num
 	Map_None,										// map_flags
-	FlowString( "dead" ),							// music_lump
+	RuntimeFlowString( "dead" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -389,7 +389,7 @@ mapinfo_t hacx_map_map11 =
 	&hacx_episode,									// episode
 	11,												// map_num
 	Map_None,										// map_flags
-	FlowString( "stlks2" ),							// music_lump
+	RuntimeFlowString( "stlks2" ),					// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -417,7 +417,7 @@ mapinfo_t hacx_map_map12 =
 	&hacx_episode,									// episode
 	12,												// map_num
 	Map_None,										// map_flags
-	FlowString( "theda2" ),							// music_lump
+	RuntimeFlowString( "theda2" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -441,7 +441,7 @@ mapinfo_t hacx_map_map13 =
 	&hacx_episode,									// episode
 	13,												// map_num
 	Map_None,										// map_flags
-	FlowString( "doom2" ),							// music_lump
+	RuntimeFlowString( "doom2" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -465,7 +465,7 @@ mapinfo_t hacx_map_map14 =
 	&hacx_episode,									// episode
 	14,												// map_num
 	Map_None,										// map_flags
-	FlowString( "ddtbl2" ),							// music_lump
+	RuntimeFlowString( "ddtbl2" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -489,7 +489,7 @@ mapinfo_t hacx_map_map15 =
 	&hacx_episode,									// episode
 	15,												// map_num
 	Map_None,										// map_flags
-	FlowString( "runni2" ),							// music_lump
+	RuntimeFlowString( "runni2" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -513,7 +513,7 @@ mapinfo_t hacx_map_map16 =
 	&hacx_episode,									// episode
 	16,												// map_num
 	Map_None,										// map_flags
-	FlowString( "dead2" ),							// music_lump
+	RuntimeFlowString( "dead2" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -537,7 +537,7 @@ mapinfo_t hacx_map_map17 =
 	&hacx_episode,									// episode
 	17,												// map_num
 	Map_None,										// map_flags
-	FlowString( "stlks3" ),							// music_lump
+	RuntimeFlowString( "stlks3" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	420,											// par_time
@@ -561,7 +561,7 @@ mapinfo_t hacx_map_map18 =
 	&hacx_episode,									// episode
 	18,												// map_num
 	Map_None,										// map_flags
-	FlowString( "romero" ),							// music_lump
+	RuntimeFlowString( "romero" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -585,7 +585,7 @@ mapinfo_t hacx_map_map19 =
 	&hacx_episode,									// episode
 	19,												// map_num
 	Map_None,										// map_flags
-	FlowString( "shawn2" ),							// music_lump
+	RuntimeFlowString( "shawn2" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	200,											// par_time
@@ -609,7 +609,7 @@ mapinfo_t hacx_map_map20 =
 	&hacx_episode,									// episode
 	20,												// map_num
 	Map_None,										// map_flags
-	FlowString( "messag" ),							// music_lump
+	RuntimeFlowString( "messag" ),					// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -637,7 +637,7 @@ mapinfo_t hacx_map_map31 =
 	&hacx_episode,									// episode
 	31,												// map_num
 	Map_Secret,										// map_flags
-	FlowString( "evil" ),							// music_lump
+	RuntimeFlowString( "evil" ),					// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -664,7 +664,7 @@ intermission_t hacx_intermission_e1 =
 {
 	Intermission_Skippable,							// type
 	FlowString( C1TEXT ),							// text
-	FlowString( "read_m" ),							// music_lump
+	RuntimeFlowString( "read_m" ),					// music_lump
 	FlowString( "SLIME16" ),						// background_lump
 };
 
@@ -672,7 +672,7 @@ intermission_t hacx_intermission_e2 =
 {
 	Intermission_Skippable,							// type
 	FlowString( C2TEXT ),							// text
-	FlowString( "read_m" ),							// music_lump
+	RuntimeFlowString( "read_m" ),					// music_lump
 	FlowString( "RROCK14" ),						// background_lump
 };
 
@@ -680,7 +680,7 @@ intermission_t hacx_intermission_e3 =
 {
 	Intermission_Skippable,							// type
 	FlowString( C3TEXT ),							// text
-	FlowString( "read_m" ),							// music_lump
+	RuntimeFlowString( "read_m" ),					// music_lump
 	FlowString( "RROCK07" ),						// background_lump
 };
 
@@ -688,7 +688,7 @@ intermission_t hacx_intermission_s1 =
 {
 	Intermission_Skippable,							// type
 	FlowString( C5TEXT ),							// text
-	FlowString( "read_m" ),							// music_lump
+	RuntimeFlowString( "read_m" ),					// music_lump
 	FlowString( "RROCK13" ),						// background_lump
 };
 
@@ -698,13 +698,13 @@ endgame_t hacx_endgame =
 	&hacx_intermission_e3,							// intermission
 	EmptyFlowString(),								// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
-	FlowString( "evil" ),							// music_lump
+	RuntimeFlowString( "evil" ),					// music_lump
 };
 
 interlevel_t hacx_interlevel =
 {
 	Interlevel_Static,								// type
-	FlowString( "dm2int" ),							// music_lump
+	RuntimeFlowString( "dm2int" ),					// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
 	nullptr,										// background_anims
 	0,												// num_background_anims
