@@ -1048,7 +1048,8 @@ static void D_AddWidescreenPacks()
 		}
 		else if( gamemission == doom2 )		widescreenpackname = "doom2.widepix";
 		else if( gamemission == pack_tnt )	widescreenpackname = "tnt.widepix";
-		else if( gamemission == pack_plut ) widescreenpackname = "plutonia.widepix";
+		else if( gamemission == pack_plut )	widescreenpackname = "plutonia.widepix";
+		else if( gamemission == pack_chex )	widescreenpackname = "chex.widepix";
 
 		const char* widescreenfilename = widescreenpackname ? D_FindWADByName( widescreenpackname ) : NULL;
 		if( widescreenfilename )
