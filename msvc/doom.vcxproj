@@ -409,6 +409,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\doom\am_map.c" />
     <ClCompile Include="..\src\doom\d_playsim.cpp" />
+    <ClCompile Include="..\src\doom\d_playsim_chex.cpp" />
     <ClCompile Include="..\src\doom\wi_stuff.cpp" />
     <ClInclude Include="..\src\doom\am_map.h" />
     <ClCompile Include="..\src\doom\deh_ammo.c" />
