@@ -220,9 +220,9 @@ static void ParseEndSequence( std::stringstream& lumpstream, DoomString& currlin
 			}
 		}
 
-		if( lhs == "id" )
+		if( lhs == "endsequence" )
 		{
-			newseq.id = rhs;
+			newseq.id = middle;
 		}
 		else if( lhs == "text" )
 		{
@@ -247,6 +247,9 @@ typedef struct dmapinfo_gameinfo_s
 	std::unordered_map< DoomString, mapinfo_t >					maps;
 
 	std::unordered_map< int32_t, std::vector< mapinfo_t* > >	episodemaps;
+
+	std::unordered_map< DoomString, endgame_t >					endgames;
+	std::unordered_map< DoomString, intermission_t >			intermissions;
 
 	std::vector< episodeinfo_t* >								episodelist;
 
@@ -330,7 +333,17 @@ static void BuildNewGameInfo()
 
 		if( !sourcemap.end_sequence.empty() )
 		{
-			// targetmap.next_map_intermission;
+			if( targetmap.endgame != nullptr )
+			{
+				auto& targetendgame = dmapinfogame.endgames[ sourcemap.end_sequence ];
+				targetendgame = *targetmap.endgame;
+				targetendgame.intermission = &dmapinfogame.intermissions[ sourcemap.end_sequence ];
+				targetmap.endgame = &targetendgame;
+			}
+			else
+			{
+				targetmap.next_map_intermission = &dmapinfogame.intermissions[ sourcemap.end_sequence ];
+			}
 		}
 	}
 
@@ -360,6 +373,14 @@ static void BuildNewGameInfo()
 		}
 
 		dmapinfogame.episodelist.push_back( &targetep );
+	}
+
+	for( auto& sourceend : dmapinfo::endsequences )
+	{
+		intermission_t& targetend = dmapinfogame.intermissions[ sourceend.id ];
+		targetend.text = FlowString( sourceend.text );
+		targetend.background_lump = FlowString( sourceend.flat_lump );
+		targetend.music_lump = FlowString( sourceend.music_lump );
 	}
 
 	dmapinfogame.game = *current_game;
