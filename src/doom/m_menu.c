@@ -2677,6 +2677,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t novert;
 	extern int32_t enable_frame_interpolation;
 	extern int32_t snd_pitchshift;
+	extern int32_t num_software_backbuffers;
 	extern int32_t num_render_contexts;
 	extern int32_t maxrendercontexts;
 	extern int32_t vsync_mode;
@@ -2918,6 +2919,17 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				}
 				igPopID();
 				igPopItemWidth();
+				igNextColumn();
+
+				igText( "Software backbuffers" );
+				igNextColumn();
+				igPushIDPtr( &fullscreen );
+				if( igSliderInt( "", &num_software_backbuffers, 1, 3, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+				{
+					I_SetNumBuffers( num_software_backbuffers );
+				}
+				igPopID();
+
 				igColumns( 1, "", false );
 			}
 			igPopID();

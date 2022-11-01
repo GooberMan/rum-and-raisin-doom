@@ -101,6 +101,8 @@ renderbuffer_t*		renderbuffers = NULL;
 int32_t				renderbuffercount = 0;
 int32_t				renderbufferswidth = 0;
 int32_t				renderbuffersheight = 0;
+int32_t				current_render_buffer = 0;
+boolean				buffers_initialised = false;
 
 ImGuiContext*		imgui_context = NULL;
 
@@ -175,6 +177,7 @@ int32_t queued_window_height = DEFAULT_WINDOW_HEIGHT;
 int32_t queued_fullscreen = DEFAULT_FULLSCREEN;
 int32_t queued_render_width = DEFAULT_RENDER_WIDTH;
 int32_t queued_render_height = DEFAULT_RENDER_HEIGHT;
+int32_t queued_num_render_buffers = 1;
 
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
 
@@ -791,12 +794,21 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
 	SDL_Rect Target;
 
-	renderbuffer_t* curr = renderbuffers;
-	renderbuffer_t* end = renderbuffers + renderbuffercount;
-
+	renderbuffer_t* curr = NULL;
 	if( activebuffer == NULL )
 	{
-		activebuffer = &renderbuffers->screenbuffer;
+		curr = &renderbuffers[ current_render_buffer ];
+		activebuffer = &curr->screenbuffer;
+	}
+	else
+	{
+		for( int32_t ind = 0; ind < renderbuffercount; ++ind )
+		{
+			if( activebuffer == &renderbuffers[ ind ].screenbuffer )
+			{
+				curr = &renderbuffers[ ind ];
+			}
+		}
 	}
 
     if (!initialized)
@@ -896,21 +908,17 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 			SDL_RenderSetLogicalSize( renderer, activebuffer->width, activebuffer->height * activebuffer->verticalscale );
 		}
 
-		while( curr != end )
+		if (palette_to_set)
 		{
-			if (palette_to_set)
-			{
-				SDL_SetPaletteColors( curr->screenbuffer.data8bithandle->format->palette, palette, 0, 256 );
-			}
+			SDL_SetPaletteColors( curr->screenbuffer.data8bithandle->format->palette, palette, 0, 256 );
+		}
 
-			// Blit from the paletted 8-bit screen buffer to the intermediate
-			// 32-bit RGBA buffer that we can load into the texture.
+		// Blit from the paletted 8-bit screen buffer to the intermediate
+		// 32-bit RGBA buffer that we can load into the texture.
 
-			if( curr->validregion.h > 0 )
-			{
-				SDL_LowerBlit( curr->screenbuffer.data8bithandle, &curr->validregion, curr->screenbuffer.dataARGBhandle, &curr->validregion );
-			}
-			++curr;
+		if( curr->validregion.h > 0 )
+		{
+			SDL_LowerBlit( curr->screenbuffer.data8bithandle, &curr->validregion, curr->screenbuffer.dataARGBhandle, &curr->validregion );
 		}
 
 		palette_to_set = false;
@@ -977,7 +985,14 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
 	SDL_RenderPresent(renderer);
 
-	//glFinish();
+	if( ++current_render_buffer >= renderbuffercount )
+	{
+		current_render_buffer = 0;
+	}
+
+	screenbuffer = renderbuffers[ current_render_buffer ].screenbuffer.data8bithandle;
+	I_VideoBuffer = screenbuffer->pixels;
+	V_RestoreBuffer();
 }
 
 
@@ -1534,10 +1549,13 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 
 			curr->validregion = region;
 
+			// Clear the buffer to black.
+			memset( curr->screenbuffer.data8bithandle->pixels, 0, render_width * render_height * sizeof( pixel_t ) );
 			++curr;
 		}
 
-		screenbuffer = renderbuffers->screenbuffer.data8bithandle;
+		current_render_buffer = 0;
+		screenbuffer = renderbuffers[ current_render_buffer ].screenbuffer.data8bithandle;
 
 		// REMOVE THIS ANCIENT CODE ALREADY JEEBUS
 
@@ -1548,18 +1566,23 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 
 		I_VideoBuffer = screenbuffer->pixels;
 		V_RestoreBuffer();
-
-		// Clear the screen to black.
-
-		memset(I_VideoBuffer, 0, render_width * render_height * sizeof(*I_VideoBuffer));
-
 	}
 
+}
+
+void I_SetNumBuffers( int32_t count )
+{
+	queued_num_render_buffers = count;
 }
 
 vbuffer_t* I_GetRenderBuffer( int32_t index )
 {
 	return &renderbuffers[ index ].screenbuffer;
+}
+
+vbuffer_t* I_GetCurrentRenderBuffer( void )
+{
+	return &renderbuffers[ current_render_buffer ].screenbuffer;
 }
 
 void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end )
@@ -1702,6 +1725,8 @@ void I_InitBuffers( int32_t numbuffers )
     I_SetPalette(doompal);
 
 	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
+
+	buffers_initialised = true;
 }
 
 //
@@ -1709,27 +1734,30 @@ void I_InitBuffers( int32_t numbuffers )
 //
 void I_StartFrame (void)
 {
-	if( queued_render_width != render_width
-		|| queued_render_height != render_height )
+	if( buffers_initialised )
 	{
-		render_height = blit_rect.w = queued_render_height;
-		render_width = blit_rect.h = queued_render_width;
-
-		if ( aspect_ratio_correct == 1 )
+		if( queued_render_width != render_width
+			|| queued_render_height != render_height
+			|| queued_num_render_buffers != renderbuffercount )
 		{
-			actualheight = ( render_height * 1200 / 1000 );
+			render_height = blit_rect.w = queued_render_height;
+			render_width = blit_rect.h = queued_render_width;
+
+			if ( aspect_ratio_correct == 1 )
+			{
+				actualheight = ( render_height * 1200 / 1000 );
+			}
+			else
+			{
+				actualheight = render_height;
+			}
+
+			I_VideoResetGLFrameBuffer();
+
+			I_RefreshRenderBuffers( queued_num_render_buffers, queued_render_width, queued_render_height );
+
+			CreateUpscaledTexture();
 		}
-		else
-		{
-			actualheight = render_height;
-		}
-
-		I_VideoResetGLFrameBuffer();
-
-		I_RefreshRenderBuffers( renderbuffercount, queued_render_width, queued_render_height );
-
-		CreateUpscaledTexture();
-
 	}
 
 	if( queued_window_width != window_width

@@ -83,6 +83,7 @@ extern "C"
 
 	int32_t					maxrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
 	int32_t					num_render_contexts = -1;
+	int32_t					num_software_backbuffers = 1;
 	int32_t					renderloadbalancing = 1;
 	boolean					rendersplitvisualise = false;
 	boolean					renderrebalancecontexts = false;
@@ -1849,7 +1850,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 
 	for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 	{
-		vbuffer_t buffer = *I_GetRenderBuffer( 0 );
+		vbuffer_t buffer = *I_GetCurrentRenderBuffer( );
 		renderdatas[ currcontext ].context.buffer = buffer;
 
 		buffer.data += buffer.pitch * viewwindowx + viewwindowy;

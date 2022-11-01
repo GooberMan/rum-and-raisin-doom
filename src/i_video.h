@@ -56,7 +56,9 @@ void I_InitBuffers( int32_t numbuffers );
 void I_UpdateMouseGrab( void );
 
 vbuffer_t* I_GetRenderBuffer( int32_t index );
+vbuffer_t* I_GetCurrentRenderBuffer( void );
 void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );
+void I_SetNumBuffers( int32_t count );
 
 SDL_Window* I_GetWindow( void );
 SDL_Renderer* I_GetRenderer( void );

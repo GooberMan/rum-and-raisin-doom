@@ -142,6 +142,7 @@ int32_t				enable_frame_interpolation = 1;
 
 extern int32_t		maxrendercontexts;
 extern int32_t		num_render_contexts;
+extern int32_t		num_software_backbuffers;
 extern boolean		rendersplitvisualise;
 
 boolean refreshstatusbar = true;
@@ -473,6 +474,7 @@ void D_BindVariables(void)
 	M_BindIntVariable("enable_frame_interpolation", &enable_frame_interpolation);
     M_BindIntVariable("show_diskicon",          &show_diskicon);
 	M_BindIntVariable("num_render_contexts",    &num_render_contexts);
+	M_BindIntVariable("num_software_backbuffers", &num_software_backbuffers);
 
     // Multiplayer chat macros
 
@@ -628,7 +630,7 @@ void D_DoomLoop (void)
 
     I_SetWindowTitle(gamedescription);
     I_SetGrabMouseCallback(D_GrabMouseCallback);
-    I_InitBuffers( 1 );
+    I_InitBuffers( num_software_backbuffers );
 	R_InitContexts();
 
     D_SetupLoadingDisk( show_diskicon );

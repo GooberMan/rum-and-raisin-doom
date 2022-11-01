@@ -855,6 +855,14 @@ static default_t extra_defaults_list[] =
     //!
     // @game doom
     //
+    // Number of software backbuffers to cycle between. For DOS stylings, go with 3.
+    //
+
+    CONFIG_VARIABLE_INT(num_software_backbuffers),
+
+    //!
+    // @game doom
+    //
     // Vsync value that matches up to the vsync_t enumeration.
     //
 
