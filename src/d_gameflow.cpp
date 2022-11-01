@@ -78,7 +78,7 @@ void D_GameflowParseDMAPINFO( int32_t lumpnum );
 void D_GameflowCheckAndParseMapinfos( void )
 {
 	int32_t lumpnum = -1;
-	if( ( lumpnum = W_GetNumForName( "DMAPINFO" ) ) >= 0 )
+	if( ( lumpnum = W_CheckNumForName( "DMAPINFO" ) ) >= 0 )
 	{
 		D_GameflowParseDMAPINFO( lumpnum );
 	}
