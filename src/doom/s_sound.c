@@ -231,7 +231,7 @@ void S_Start(void)
     // start new music for the level
     mus_paused = 0;
 
-    S_ChangeMusicLump( current_map->music_lump.val, true );
+    S_ChangeMusicLump( &current_map->music_lump, true );
 }
 
 void S_StopSound(mobj_t *origin)
@@ -678,10 +678,10 @@ void S_ChangeMusic(int musicnum, int looping)
 
 static musicinfo_t music_from_lump;
 
-void S_ChangeMusicLump( const char* lump, int32_t looping )
+void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
 {
 	boolean wasplaying = mus_playing == &music_from_lump;
-	if( wasplaying && stricmp( music_from_lump.name, lump ) == 0 )
+	if( wasplaying && stricmp( music_from_lump.name, lump->val ) == 0 )
 	{
 		return;
 	}
@@ -694,9 +694,15 @@ void S_ChangeMusicLump( const char* lump, int32_t looping )
 	}
 
 	char namebuf[ 9 ];
-	M_snprintf( namebuf, sizeof( namebuf ), "D_%s", DEH_String( lump ) );
+	const char* working = lump->val;
+	if( lump->flags & FlowString_Dehacked )
+	{
+		working = DEH_String( working );
+	}
 
-	music_from_lump.name = lump;
+	M_snprintf( namebuf, sizeof( namebuf ), !!( lump->flags & FlowString_RuntimeGenerated ) ? "D_%s" : "%s", working );
+
+	music_from_lump.name = lump->val;
 	music_from_lump.lumpnum = W_GetNumForName( namebuf );
 	music_from_lump.data = NULL;
 	music_from_lump.handle = NULL;

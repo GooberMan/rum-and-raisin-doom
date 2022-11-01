@@ -22,6 +22,7 @@
 
 #include "p_mobj.h"
 #include "sounds.h"
+#include "d_gameflow.h"
 
 //
 // Initializes sound stuff, including volume
@@ -64,7 +65,7 @@ void S_StartMusic(int music_id);
 //  and set whether looping
 void S_ChangeMusic(int music_id, int looping);
 
-void S_ChangeMusicLump( const char* lump, int32_t looping );
+void S_ChangeMusicLump( flowstring_t* lump, int32_t looping );
 
 // query if music is playing
 boolean S_MusicPlaying(void);

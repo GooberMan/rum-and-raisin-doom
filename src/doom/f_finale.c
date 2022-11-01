@@ -87,7 +87,7 @@ void F_SwitchFinale()
 		finalecount = 0;
 		finalestage = F_STAGE_ARTSCREEN;
 		wipegamestate = -1;
-		S_ChangeMusicLump( DEH_String( finaleendgame->music_lump.val ), !!( finaleendgame->type & EndGame_LoopingMusic ) );
+		S_ChangeMusicLump( &finaleendgame->music_lump, !!( finaleendgame->type & EndGame_LoopingMusic ) );
 	}
 }
 
@@ -104,7 +104,7 @@ void F_StartIntermission( intermission_t* intermission )
 	viewactive = false;
 	automapactive = false;
 
-	S_ChangeMusicLump( DEH_String( finaleintermission->music_lump.val ), true );
+	S_ChangeMusicLump( &finaleintermission->music_lump, true );
 
 	finaletext = DEH_String( finaleintermission->text.val );
 	finaleflat = DEH_String( finaleintermission->background_lump.val );
@@ -303,7 +303,7 @@ void F_StartCast (void)
     castframes = 0;
     castonmelee = 0;
     castattacking = false;
-    S_ChangeMusicLump( DEH_String( finaleendgame->music_lump.val ), !!( finaleendgame->type & EndGame_LoopingMusic ) );
+    S_ChangeMusicLump( &finaleendgame->music_lump, !!( finaleendgame->type & EndGame_LoopingMusic ) );
 
 }
 

@@ -621,8 +621,6 @@ public:
 	wi_animation_s()
 		: currmap( nullptr )
 		, nextmap( nullptr )
-		, nextintermission( nullptr )
-		, nextendgame( nullptr )
 	{
 	}
 
@@ -699,8 +697,6 @@ private:
 
 	mapinfo_t*				currmap;
 	mapinfo_t*				nextmap;
-	intermission_t*			nextintermission;
-	endgame_t*				nextendgame;
 
 	interlevelcache_t		finished;
 	interlevelcache_t		entering;
@@ -934,7 +930,7 @@ void WI_initShowNextLoc(void)
     cnt = SHOWNEXTLOCDELAY * TICRATE;
 
 	mapinfo_t* map = (mapinfo_t*)wbs->currmap;
-	S_ChangeMusicLump( map->interlevel_entering->music_lump.val, true );
+	S_ChangeMusicLump( &map->interlevel_entering->music_lump, true );
 }
 
 void WI_updateShowNextLoc(void)
@@ -1618,7 +1614,7 @@ void WI_Ticker(void)
     if (bcnt == 1)
     {
 		mapinfo_t* map = (mapinfo_t*)wbs->currmap;
-		S_ChangeMusicLump( map->interlevel_finished->music_lump.val, true );
+		S_ChangeMusicLump( &map->interlevel_finished->music_lump, true );
     }
 
     WI_checkForAccelerate();
