@@ -985,8 +985,9 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		skycontext.iscale = FixedToRendFixed( pspriteiscale>>detailshift );
 		skycontext.texturemid = skytexturemid;
 		skycontext.output = rendercontext->buffer;
+		skycontext.output.data += skycontext.output.pitch * viewwindowx + viewwindowy;
 		skycontext.yl = 0;
-		skycontext.yh = render_height - ST_BUFFERHEIGHT;
+		skycontext.yh = viewheight;
 		skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
 
 		for ( x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
