@@ -49,6 +49,8 @@
 
 #include "g_game.h"
 
+#include "f_wipe.h"
+
 #include "m_argv.h"
 #include "m_controls.h"
 #include "p_saveg.h"
@@ -2681,6 +2683,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t num_render_contexts;
 	extern int32_t maxrendercontexts;
 	extern int32_t vsync_mode;
+	extern int32_t wipe_style;
 
 	controlsection_t*	currsection;
 
@@ -3115,6 +3118,15 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igText( "Not implemented yet, defers to Adjusted" );
 				igEndTooltip();
 			}
+			igPopID();
+
+			igNextColumn();
+			igText( "Wipe style" );
+			igNextColumn();
+			igPushIDPtr( &wipe_style );
+			//igRadioButtonIntPtr( "Color Xform", &wipe_style, wipe_ColorXForm );
+			//igSameLine( 0, -1 );
+			igRadioButtonIntPtr( "Melt", &wipe_style, wipe_Melt );
 			igPopID();
 
 			//igNextColumn();

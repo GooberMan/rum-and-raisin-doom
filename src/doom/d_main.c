@@ -519,6 +519,8 @@ boolean D_GrabMouseCallback(void)
 
 uint64_t frametime = 0;
 
+int32_t wipe_style = wipe_Melt;
+
 void D_RunFrame()
 {
 	uint64_t nowtime;
@@ -551,7 +553,7 @@ void D_RunFrame()
 		} while (tics <= 0);
 
 		wipestart = nowtime;
-		wipe = !wipe_ScreenWipe(wipe_Melt, 0, 0, render_width, render_height, tics);
+		wipe = !wipe_ScreenWipe(wipe_style, 0, 0, render_width, render_height, tics);
 		M_Drawer ();                            // menu is drawn even on top of wipes
 	}
 	else
