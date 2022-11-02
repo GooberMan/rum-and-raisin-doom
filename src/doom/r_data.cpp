@@ -432,7 +432,7 @@ void R_GenerateLookup (int texnum)
 }
 
 
-void R_CacheComposite( int32_t tex )
+void R_CacheCompositeTexture( int32_t tex )
 {
 	int32_t animstart;
 	int32_t animend;
@@ -459,6 +459,59 @@ void R_CacheComposite( int32_t tex )
 			}
 		}
 	}
+}
+
+void R_CacheCompositeFlat( int32_t flat )
+{
+	int32_t lump = firstflat + flat;
+
+	byte* transposedflatdata = (byte*)Z_Malloc( 64 * 64, PU_STATIC, NULL );
+	byte* originalflatdata = (byte*)W_CacheLumpNum( lump, PU_CACHE );
+
+	byte* currsource = originalflatdata;
+	for( int32_t y : iota( 0, 64 ) )
+	{
+		byte* currdest = transposedflatdata + y;
+		for( int32_t x : iota( 0, 64 ) )
+		{
+			*currdest = *currsource;
+			++currsource;
+			currdest += 64;
+		}
+	}
+
+	byte* outputflatdata = (byte*)Z_Malloc( lumpinfo[ lump ]->size * NUMCOLORMAPS, COMPOSITE_ZONE, &flatcomposite[ flat ].data );
+
+	for( int32_t currmapindex = 0; currmapindex < NUMCOLORMAPS; ++currmapindex )
+	{
+		lighttable_t* currmap = colormaps + currmapindex * 256;
+		for( int32_t currflatbyte = 0; currflatbyte < lumpinfo[ lump ]->size; ++currflatbyte )
+		{
+			*outputflatdata = currmap[ transposedflatdata[ currflatbyte ] ];
+			++outputflatdata;
+		}
+	}
+
+	compositedata_t data = { &flatcomposite[ flat ], Composite_Flat };
+	compositelookup[ flatcomposite[ flat ].name ] = data;
+
+	Z_Free( transposedflatdata );
+}
+
+texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat )
+{
+	int32_t index = R_FlatNumForName( flat );
+
+	if( index >= numflats )
+	{
+		R_CacheCompositeTexture( index );
+	}
+	else
+	{
+		R_CacheCompositeFlat( index );
+	}
+
+	return flatlookup[ index ];
 }
 
 //
@@ -1024,9 +1077,6 @@ void R_PrecacheLevel (void)
 
     texture_t*		texture;
 
-	byte*			originalflatdata;
-	byte*			transposedflatdata;
-	byte*			outputflatdata;
 	int				currmapindex;
 	lighttable_t*	currmap;
 	int				currflatbyte;
@@ -1046,7 +1096,6 @@ void R_PrecacheLevel (void)
 	memset (flatpresent,0,numflats);
 	texturepresent = (char*)Z_Malloc(numtextures, PU_STATIC, NULL);
 	memset (texturepresent,0, numtextures);
-	transposedflatdata = (byte*)Z_Malloc( 64 * 64, PU_STATIC, NULL );
 
 	// Check flats and textures for presence, jamming in to appropriate array as necessary
 	auto MarkFlatPresence = [ &texturepresent, &flatpresent ]( int16_t flatnum )
@@ -1140,34 +1189,7 @@ void R_PrecacheLevel (void)
 
 		if (flatpresent[i])
 		{
-			originalflatdata = (byte*)W_CacheLumpNum(lump, PU_CACHE);
-
-			byte* currsource = originalflatdata;
-			for( int32_t y : iota( 0, 64 ) )
-			{
-				byte* currdest = transposedflatdata + y;
-				for( int32_t x : iota( 0, 64 ) )
-				{
-					*currdest = *currsource;
-					++currsource;
-					currdest += 64;
-				}
-			}
-
-			outputflatdata = (byte*)Z_Malloc(lumpinfo[lump]->size * NUMCOLORMAPS, COMPOSITE_ZONE, &flatcomposite[ i ].data );
-
-			for( currmapindex = 0; currmapindex < NUMCOLORMAPS; ++currmapindex )
-			{
-				currmap = colormaps + currmapindex * 256;
-				for( currflatbyte = 0; currflatbyte < lumpinfo[lump]->size; ++currflatbyte)
-				{
-					*outputflatdata = currmap[ transposedflatdata[ currflatbyte ] ];
-					++outputflatdata;
-				}
-			}
-
-			compositedata_t data = { &flatcomposite[ i ], Composite_Flat };
-			compositelookup[ flatcomposite[ i ].name ] = data;
+			R_CacheCompositeFlat( i );
 		}
 	}
 
@@ -1190,13 +1212,12 @@ void R_PrecacheLevel (void)
 			W_CacheLumpNum( lump , PU_LEVEL ); // TODO: Switch to cache after masked textures get a SIMD renderer
 		}
 
-		R_CacheComposite( i );
+		R_CacheCompositeTexture( i );
 
 		compositedata_t data = { &texturecomposite[ i ], Composite_Texture };
 		compositelookup[ texturecomposite[ i ].name ] = data;
 	}
 
-	Z_Free( transposedflatdata );
 	Z_Free(flatpresent);
 	Z_Free(texturepresent);
 

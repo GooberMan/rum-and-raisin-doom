@@ -25,7 +25,10 @@
 #include "r_defs.h"
 #include "r_state.h"
 
-DOOM_C_API void R_CacheComposite( int32_t tex );
+DOOM_C_API void R_CacheCompositeTexture( int32_t tex );
+DOOM_C_API void R_CacheCompositeFlat( int32_t flat );
+
+DOOM_C_API texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat );
 
 // Retrieve column data for span blitting.
 DOOM_C_API byte* R_GetColumn ( int32_t tex, int32_t col, int32_t colormapindex );
