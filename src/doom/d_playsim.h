@@ -30,6 +30,7 @@ DOOM_C_API typedef struct dehackedoptions_s
 {
 	boolean					frame_966;
 	boolean					lump_from_iwads;
+	boolean					always_load_lump;
 } dehackedoptions_t;
 
 DOOM_C_API typedef struct demoopitions_s

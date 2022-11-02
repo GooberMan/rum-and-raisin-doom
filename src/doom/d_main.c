@@ -973,6 +973,14 @@ void D_IdentifyVersion(void)
                 gamemission = doom;
                 break;
             }
+			else if( remove_limits &&
+					( !strncasecmp(lumpinfo[i]->name, "E2M1", 8)
+					|| !strncasecmp(lumpinfo[i]->name, "E3M1", 8)
+					|| !strncasecmp(lumpinfo[i]->name, "E4M1", 8) ) )
+			{
+				gamemission = doom;
+				break;
+			}
         }
 
         if (gamemission == none)
@@ -1935,7 +1943,7 @@ void D_DoomMain (void)
     // Load Dehacked patches from DEHACKED lumps contained in one of the
     // loaded PWAD files.
     //
-    if (M_ParmExists("-dehlump"))
+    if ( remove_limits || M_ParmExists("-dehlump"))
     {
         uint32_t i, loaded = 0;
 
