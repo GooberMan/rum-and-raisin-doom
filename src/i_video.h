@@ -111,7 +111,6 @@ boolean I_VideoSupportsVSync( vsync_t vsyncval );
 void I_SetPalette (byte* palette);
 int I_GetPaletteIndex(int r, int g, int b);
 
-void I_UpdateNoBlit (void);
 void I_FinishUpdate( vbuffer_t* activebuffer );
 
 void I_ReadScreen (pixel_t* scr);

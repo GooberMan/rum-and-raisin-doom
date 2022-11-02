@@ -1,7 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -160,6 +160,8 @@ wipe_doMelt
 	int currrow;
 	int dytranslated;
 
+	memcpy( wipe_scr, wipe_scr_end, width * height * sizeof( pixel_t ) );
+
     while (ticks--)
     {
 		for (col=0;col<WIPECOLUMNS;col++)
@@ -168,44 +170,36 @@ wipe_doMelt
 			{
 				y[col]++;
 				done = false;
+
+				currcol = col * horizblocksize / 100;
+				currcolend = ( col + 1 ) * horizblocksize / 100;
+				for(; currcol < currcolend; ++currcol)
+				{
+					pixel_t* source = wipe_scr_start + ( currcol * height );
+					pixel_t* dest = wipe_scr + ( currcol * height );
+				
+					memcpy( dest, source, height );
+				}
 			}
 			else if (y[col] < WIPEROWS)
 			{
 				dy = (y[col] < 16) ? y[col] + 1 : 8;
 				if (y[col]+dy >= WIPEROWS) dy = WIPEROWS - y[col];
-
-				currrow = y[col] * vertblocksize / 100;
-				dytranslated = dy * vertblocksize / 100;
-
-				currcol = col * horizblocksize / 100;
-				currcolend = ( col + 1 ) * horizblocksize / 100;
-
-				for(; currcol < currcolend; ++currcol)
-				{
-					s = &((pixel_t *)wipe_scr_end)[currcol*height+currrow];
-					d = &((pixel_t *)wipe_scr)[currcol*height+currrow];
-
-					for (j=dytranslated;j;j--)
-					{
-						*d++ = *(s++);
-					}
-				}
 				y[col] += dy;
-				currrow = y[col] * vertblocksize / 100;
 
 				currcol = col * horizblocksize / 100;
 				currcolend = ( col + 1 ) * horizblocksize / 100;
-
+				
+				currrow = y[col] * vertblocksize / 100;
+				
 				for(; currcol < currcolend; ++currcol)
 				{
-					s = &((pixel_t *)wipe_scr_start)[currcol*height];
-					d = &((pixel_t *)wipe_scr)[currcol*height+currrow];
-
-					for (j=height-currrow;j;j--)
-					{
-						*(d++) = *(s++);
-					}
+					pixel_t* source = wipe_scr_start + ( currcol * height );
+					pixel_t* dest = wipe_scr + ( currcol * height ) + currrow;
+				
+					memcpy( dest, source, height - currrow );
 				}
+
 				done = false;
 			}
 		}
@@ -248,7 +242,7 @@ wipe_EndScreen
 {
     wipe_scr_end = Z_Malloc(render_width * render_height * sizeof(*wipe_scr_end), PU_STATIC, NULL);
     I_ReadScreen(wipe_scr_end);
-    V_DrawBlock(x, y, width, height, wipe_scr_start); // restore start scr.
+	memcpy( I_VideoBuffer, wipe_scr_start, render_width * render_height * sizeof( pixel_t ) );
     return 0;
 }
 
@@ -273,12 +267,13 @@ wipe_ScreenWipe
 	wipe_exitMelt
     };
 
+	wipe_scr = I_VideoBuffer;
+
     // initial stuff
     if (!go)
     {
 	go = 1;
 	// wipe_scr = (pixel_t *) Z_Malloc(width*height, PU_STATIC, 0); // DEBUG
-	wipe_scr = I_VideoBuffer;
 	(*wipes[wipeno*3])(width, height, ticks);
     }
 

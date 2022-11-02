@@ -588,14 +588,6 @@ void I_StartTic (void)
 }
 
 
-//
-// I_UpdateNoBlit
-//
-void I_UpdateNoBlit (void)
-{
-    // what is this?
-}
-
 #define MOUSE_MOVE_TO_BOTTOMRIGHT 0
 
 void I_UpdateMouseGrab( void )
@@ -1003,7 +995,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 //
 void I_ReadScreen (pixel_t* scr)
 {
-    memcpy(scr, prev_video_buffer, render_width*render_height*sizeof(*scr));
+    memcpy(scr, I_VideoBuffer, render_width*render_height*sizeof(*scr));
 }
 
 
@@ -1566,7 +1558,8 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 		// 32-bit RGBA screen buffer that gets loaded into a texture that gets
 		// finally rendered into our window or full screen in I_FinishUpdate().
 
-		prev_video_buffer = I_VideoBuffer = screenbuffer->pixels;
+		prev_video_buffer = renderbuffers[ renderbuffercount - 1 ].screenbuffer.data8bithandle->pixels;
+		I_VideoBuffer = screenbuffer->pixels;
 		V_RestoreBuffer();
 	}
 
@@ -1726,6 +1719,9 @@ void I_InitBuffers( int32_t numbuffers )
     doompal = W_CacheLumpName(DEH_String("PLAYPAL"), PU_CACHE);
     I_SetPalette(doompal);
 
+	queued_num_render_buffers = numbuffers;
+	queued_render_width = render_width;
+	queued_render_height = render_height;
 	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
 
 	buffers_initialised = true;

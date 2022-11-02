@@ -299,9 +299,6 @@ boolean D_Display( double_t framepercent )
 		break;
 	}
 
-	// draw buffered stuff to screen
-	I_UpdateNoBlit ();
-
 	// draw the view directly
 	if (gamestate == GS_LEVEL && gametic)
 	{
@@ -366,6 +363,11 @@ boolean D_Display( double_t framepercent )
 	M_Drawer (); // menu is drawn even on top of everything
 
 	NetUpdate (); // send out any new accumulation
+
+	if( wipe )
+	{
+		wipe_EndScreen(0, 0, render_width, render_height);
+	}
 
 	M_PROFILE_POP( __FUNCTION__ );
 
@@ -550,7 +552,6 @@ void D_RunFrame()
 
 		wipestart = nowtime;
 		wipe = !wipe_ScreenWipe(wipe_Melt, 0, 0, render_width, render_height, tics);
-		I_UpdateNoBlit ();
 		M_Drawer ();                            // menu is drawn even on top of wipes
 	}
 	else
@@ -587,11 +588,7 @@ void D_RunFrame()
 		{
 			if( (wipe = D_Display( currpercentage ) ) )
 			{
-				// start wipe on this frame
-				wipe_EndScreen(0, 0, render_width, render_height);
-
 				wipestart = I_GetTimeTicks() - 1;
-				dofinishupdate = false;
 			}
 		}
 	}
@@ -599,10 +596,7 @@ void D_RunFrame()
 	M_PROFILE_POP( __FUNCTION__ );
 
 	I_TerminalRender();
-	if( dofinishupdate )
-	{
-		I_FinishUpdate( NULL );
-	}
+	I_FinishUpdate( NULL );
 
 	frametime = I_GetTimeUS() - start;
 }
