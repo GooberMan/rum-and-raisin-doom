@@ -263,6 +263,17 @@ static bossaction_t map07special[] =
 	{ 20 /*MT_BABY*/, 96 /*raiseToTexture repeatable*/, 667 },
 };
 
+// This needs to live in a header somewhere... and I think we need to 100% opt-in to it, at least while we mix C and C++ code everywhere
+
+// You can use std::enable_if in earlier C++ versions if required...
+template< typename _type >
+requires std::is_enum_v< _type >
+constexpr auto operator|( _type lhs, _type rhs )
+{
+	using underlying = std::underlying_type_t< _type >;
+	return (_type)( (underlying)lhs | (underlying)rhs );
+}
+
 constexpr auto EmptyFlowString()
 {
 	return flowstring_t();
@@ -307,8 +318,11 @@ static void BuildNewGameInfo()
 
 		targetmap.next_map				= sourcemap.next_map.empty() ? nullptr : &dmapinfogame.maps[ sourcemap.next_map ];
 		targetmap.secret_map			= sourcemap.secret_map.empty() ? nullptr : &dmapinfogame.maps[ sourcemap.secret_map ];
+		if( targetmap.secret_map )
+		{
+			targetmap.map_flags = targetmap.map_flags | Map_Secret;
+		}
 		// targetmap.secret_map_intermission;
-		// targetmap.endgame;
 
 		if( sourcemap.map_07_special )
 		{

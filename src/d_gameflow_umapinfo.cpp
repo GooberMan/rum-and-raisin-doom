@@ -22,9 +22,13 @@
 #include <sstream>
 #include <iomanip>
 
-constexpr int32_t SetBoolean_None = 0;
-constexpr int32_t SetBoolean_False = 1;
-constexpr int32_t SetBoolean_True = 2;
+
+typedef enum class setboolean_e
+{
+	None,
+	False,
+	True
+} setboolean_t, setboolean;
 
 #define ThingType( x ) { #x, __COUNTER__ }
 namespace umapinfo
@@ -288,7 +292,7 @@ namespace umapinfo
 {
 	typedef struct bossaction_s
 	{
-		DoomString			thingtype;
+		int32_t				thingtype;
 		int32_t				linespecial;
 		int32_t				tag;
 	} bossaction_t;
@@ -298,7 +302,7 @@ namespace umapinfo
 		DoomString			mapname;
 		DoomString			levelname;
 		DoomString			label;
-		boolean				labelclear;
+		bool				labelclear;
 		DoomString			levelpic;
 		DoomString			next;
 		DoomString			nextsecret;
@@ -307,23 +311,23 @@ namespace umapinfo
 		DoomString			exitpic;
 		DoomString			enterpic;
 		int32_t				partime;
-		int32_t				endgame;
+		setboolean_t		endgame;
 		DoomString			endpic;
-		int32_t				endbunny;
-		int32_t				endcast;
-		int32_t				nointermission;
+		setboolean_t		endbunny;
+		setboolean_t		endcast;
+		setboolean_t		nointermission;
 		DoomString			intertext;
-		boolean				intertextclear;
+		bool				intertextclear;
 		DoomString			intertextsecret;
-		boolean				intertextsecretclear;
+		bool				intertextsecretclear;
 		DoomString			interbackdrop;
 		DoomString			intermusic;
 		DoomString			episodepatch;
 		DoomString			episodename;
 		DoomString			episodekey;
-		boolean				episodeclear;
+		bool				episodeclear;
 		std::vector< bossaction_t > bossactions;
-		boolean				bossactionclear;
+		bool				bossactionclear;
 
 		DoomString			full_name;
 		int32_t				episode_num;
@@ -349,10 +353,15 @@ constexpr auto EmptyFlowString()
 	return flowstring_t();
 }
 
+constexpr auto FlowString( const char* name, flowstringflags_t flags = FlowString_None )
+{
+	flowstring_t str = { name, flags };
+	return str;
+}
+
 constexpr auto FlowString( DoomString& name, flowstringflags_t flags = FlowString_None )
 {
-	flowstring_t str = { name.c_str(), flags };
-	return str;
+	return FlowString( name.c_str(), flags );
 }
 
 constexpr auto RuntimeFlowString( const char* name )
@@ -363,9 +372,9 @@ constexpr auto RuntimeFlowString( const char* name )
 
 constexpr auto SetBoolean( const DoomString& val )
 {
-	return val == "false" ? SetBoolean_False
-		: val == "true" ? SetBoolean_True
-		: SetBoolean_None;
+	return val == "false" ? setboolean::False
+		: val == "true" ? setboolean::True
+		: setboolean::None;
 }
 
 static void Sanitize( DoomString& currline )
@@ -385,7 +394,7 @@ static void ToLower( DoomString& str )
 					[]( unsigned char c ){ return std::tolower( c ); } );
 }
 
-static void HandleIntertext( DoomString& targetstring, boolean& targetclear
+static void HandleIntertext( DoomString& targetstring, bool& targetclear
 							, std::stringstream& lumpstream
 							, DoomString& currline
 							, std::istringstream& currlinestream
@@ -503,11 +512,11 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 		}
 		else if( lhs == "endbunny" )
 		{
-			newmap.endgame = SetBoolean( rhs );
+			newmap.endbunny = SetBoolean( rhs );
 		}
 		else if( lhs == "endcast" )
 		{
-			newmap.endgame = SetBoolean( rhs );
+			newmap.endcast = SetBoolean( rhs );
 		}
 		else if( lhs == "nointermission" )
 		{
@@ -585,11 +594,15 @@ typedef struct umapinfo_gameinfo_s
 	std::unordered_map< int32_t, episodeinfo_t >				episodes;
 	std::unordered_map< DoomString, mapinfo_t >					maps;
 	std::unordered_map< DoomString, interlevel_t >				interlevels;
+	std::unordered_map< DoomString, intermission_t >			intermission_normal;
+	std::unordered_map< DoomString, intermission_t >			intermission_secret;
 
 	std::unordered_map< int32_t, std::vector< mapinfo_t* > >	episodemaps;
+	std::unordered_map< DoomString, std::vector< bossaction_t > > mapbossactions;
 
 	std::unordered_map< DoomString, endgame_t >					endgames;
 	std::unordered_map< DoomString, intermission_t >			intermissions;
+	std::unordered_map< DoomString, intermission_t >			secretintermissions;
 
 	std::vector< episodeinfo_t* >								episodelist;
 
@@ -625,8 +638,27 @@ static void BuildNewGameInfo()
 	{
 		for( auto& map : std::span( epi->all_maps, epi->num_maps ) )
 		{
-			mapinfo_t& copiedmap = umapinfogame.maps[ GetMapName( map ) ];
+			DoomString mapname = GetMapName( map );
+			mapinfo_t& copiedmap = umapinfogame.maps[ mapname ];
 			copiedmap = *map;
+			
+			if( map->endgame != nullptr )
+			{
+				umapinfogame.endgames[ mapname ] = *map->endgame;
+				if( map->endgame->intermission != nullptr )
+				{
+					umapinfogame.intermissions[ mapname ] = *map->endgame->intermission;
+				}
+				else if( map->next_map_intermission )
+				{
+					umapinfogame.intermissions[ mapname ] = *map->next_map_intermission;
+				}
+
+				if( map->secret_map_intermission )
+				{
+					umapinfogame.secretintermissions[ mapname ] = *map->secret_map_intermission;
+				}
+			}
 		}
 
 		if( !clearepisodes )
@@ -685,9 +717,80 @@ static void BuildNewGameInfo()
 		if( !map.music.empty() ) newmap.music_lump = FlowString( map.music );
 		if( !map.skytexture.empty() ) newmap.sky_texture = FlowString( map.skytexture );
 		if( map.partime ) newmap.par_time = map.partime;
+		if( !map.next.empty() ) newmap.next_map = &umapinfogame.maps[ map.next ];
+		if( !map.nextsecret.empty() )
+		{
+			newmap.secret_map = &umapinfogame.maps[ map.nextsecret ];
+			newmap.map_flags = newmap.map_flags | Map_Secret;
+		}
 
-		// newmap.boss_actions;
-		// newmap.num_boss_actions;
+		if( map.bossactionclear )
+		{
+			newmap.boss_actions = nullptr;
+			newmap.num_boss_actions = 0;
+		}
+		if( !map.bossactions.empty() )
+		{
+			std::vector< bossaction_t >& mapactions = umapinfogame.mapbossactions[ map.mapname ];
+
+			for( auto& sourceaction : map.bossactions )
+			{
+				bossaction_t& targetaction = *mapactions.insert( mapactions.end(), bossaction_t() );
+				targetaction.thing_type = sourceaction.thingtype;
+				targetaction.line_special = sourceaction.linespecial;
+				targetaction.tag = sourceaction.tag;
+			}
+
+			newmap.boss_actions = mapactions.data();
+			newmap.num_boss_actions = mapactions.size();
+		}
+
+		if( map.endgame == setboolean::False )
+		{
+			newmap.endgame = nullptr;
+			newmap.map_flags = (mapflags_t)( newmap.map_flags & ~(int32_t)Map_GenericEndOfGame );
+		}
+		else if( map.endgame == setboolean::True )
+		{
+			newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
+		}
+
+		if( !map.endpic.empty() )
+		{
+			newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
+			newmap.endgame->type = EndGame_Pic;
+			newmap.endgame->primary_image_lump = FlowString( map.endpic );
+			newmap.endgame->secondary_image_lump = EmptyFlowString();
+			newmap.endgame->music_lump = FlowString( gamemode == commercial ? "read_m" : "victor" );
+		}
+
+		if( map.endbunny == setboolean::True )
+		{
+			newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
+			newmap.endgame->type = EndGame_Bunny;
+			newmap.endgame->primary_image_lump = FlowString( "PFUB2" );
+			newmap.endgame->secondary_image_lump = FlowString( "PFUB1" );
+			newmap.endgame->music_lump = RuntimeFlowString( "bunny" );
+		}
+
+		if( map.endcast == setboolean::True )
+		{
+			newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
+			newmap.endgame->type = EndGame_Cast;
+			newmap.endgame->primary_image_lump = EmptyFlowString( );
+			newmap.endgame->secondary_image_lump = EmptyFlowString( );
+			newmap.endgame->music_lump = RuntimeFlowString( "evil" );
+		}
+
+		if( map.nointermission == setboolean::True && newmap.endgame != nullptr )
+		{
+			newmap.map_flags = newmap.map_flags | Map_NoInterlevel;
+			newmap.interlevel_finished = newmap.interlevel_entering = nullptr;
+		}
 
 		if( !map.exitpic.empty() )
 		{
@@ -710,11 +813,59 @@ static void BuildNewGameInfo()
 			newinter->background_lump = FlowString( map.enterpic );
 		}
 
-		if( !map.next.empty() ) newmap.next_map = &umapinfogame.maps[ map.next ];
-		// newmap.next_map_intermission;
-		if( !map.nextsecret.empty() ) newmap.secret_map = &umapinfogame.maps[ map.nextsecret ];
-		// newmap.secret_map_intermission;
-		// newmap.endgame;
+		intermission_t*& next_map_intermission = ( newmap.endgame != nullptr ) ? newmap.endgame->intermission : newmap.next_map_intermission;
+		if( map.intertextclear )
+		{
+			next_map_intermission = nullptr;
+		}
+
+		if( map.intertextsecretclear )
+		{
+			newmap.secret_map_intermission = nullptr;
+		}
+
+		if( !map.intertext.empty() )
+		{
+			intermission_t& newinter = umapinfogame.intermissions[ map.mapname ];
+			intermissiontype_t type = ( gamemode != commercial && newmap.endgame != nullptr ) ? Intermission_None : Intermission_Skippable;
+			newinter.type = type;
+			newinter.text = FlowString( map.intertext );
+
+			next_map_intermission = &newinter;
+		}
+
+		if( !map.intertextsecret.empty() )
+		{
+			intermission_t& newinter = umapinfogame.secretintermissions[ map.mapname ];
+			intermissiontype_t type = ( gamemode != commercial && newmap.endgame != nullptr ) ? Intermission_None : Intermission_Skippable;
+			newinter.type = type;
+			newinter.text = FlowString( map.intertextsecret );
+
+			newmap.secret_map_intermission = &newinter;
+		}
+
+		if( !map.interbackdrop.empty() )
+		{
+			if( next_map_intermission ) next_map_intermission->background_lump = FlowString( map.interbackdrop );
+			if( newmap.secret_map_intermission ) newmap.secret_map_intermission->background_lump = FlowString( map.interbackdrop );
+		}
+
+		if( !map.intermusic.empty () )
+		{
+			if( next_map_intermission ) next_map_intermission->music_lump = FlowString( map.intermusic );
+			if( newmap.secret_map_intermission ) newmap.secret_map_intermission->music_lump = FlowString( map.intermusic );
+		}
+
+		if( next_map_intermission )
+		{
+			if( next_map_intermission->background_lump.val == nullptr ) next_map_intermission->background_lump = FlowString( "FLOOR4_8" );
+			if( next_map_intermission->music_lump.val == nullptr ) next_map_intermission->music_lump = RuntimeFlowString( ( gamemode == commercial ) ? "read_m" : "victor" );
+		}
+		if( newmap.secret_map_intermission)
+		{
+			if( newmap.secret_map_intermission->background_lump.val == nullptr ) newmap.secret_map_intermission->background_lump = FlowString( "FLOOR4_8" );
+			if( newmap.secret_map_intermission->music_lump.val == nullptr ) newmap.secret_map_intermission->music_lump = RuntimeFlowString( ( gamemode == commercial ) ? "read_m" : "victor" );
+		}
 	}
 
 	for( auto& ep : umapinfogame.episodelist )

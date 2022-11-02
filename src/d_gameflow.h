@@ -105,6 +105,7 @@ DOOM_C_API typedef enum mapflags_s
 
 	Map_Doom1EndOfEpisode		= Map_EndOfEpisode | Map_NoInterlevel,
 	Map_Doom2EndOfGame			= Map_EndOfEpisode | Map_NoEnterBanner | Map_MonstersTelefrag,
+	Map_GenericEndOfGame		= Map_EndOfEpisode | Map_NoEnterBanner,
 } mapflags_t;
 
 DOOM_C_API typedef struct flowstring_s
