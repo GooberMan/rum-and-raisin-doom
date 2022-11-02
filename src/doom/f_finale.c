@@ -62,9 +62,10 @@ unsigned int finalecount;
 #define	TEXTWAIT	250
 
 const char *finaletext;
-const char *finaleflat;
+const char *finaletiletexture;
 
-static vbuffer_t finaleflatdata;
+static vbuffer_t finaletiledata;
+static texturecomposite_t* finaletilecomposite;
 extern vbuffer_t blackedges;
 
 static intermission_t* finaleintermission = NULL;
@@ -107,15 +108,17 @@ void F_StartIntermission( intermission_t* intermission )
 	S_ChangeMusicLump( &finaleintermission->music_lump, true );
 
 	finaletext = DEH_String( finaleintermission->text.val );
-	finaleflat = DEH_String( finaleintermission->background_lump.val );
+	finaletiletexture = DEH_String( finaleintermission->background_lump.val );
 
 	finalestage = F_STAGE_TEXT;
 	finalecount = 0;
 
-	// erase the entire screen to a tiled background
-	memset( &finaleflatdata, 0, sizeof( vbuffer_t ) );
-	V_TransposeFlat( finaleflat, &finaleflatdata, PU_LEVEL );
-
+	finaletilecomposite = R_CacheAndGetCompositeFlat( finaletiletexture );
+	finaletiledata.data = finaletilecomposite->data;
+	finaletiledata.width = finaletilecomposite->width;
+	finaletiledata.height = finaletilecomposite->height;
+	finaletiledata.pitch = finaletilecomposite->pitch;
+	finaletiledata.magic_value = vbuffer_magic;
 }
 
 void F_StartFinale( endgame_t* endgame )
@@ -206,7 +209,7 @@ void F_TextWrite (void)
     int		cx;
     int		cy;
 
-	V_TileBuffer( &finaleflatdata, 0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT );
+	V_TileBuffer( &finaletiledata, 0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT );
 	V_FillBorder( &blackedges, 0, V_VIRTUALHEIGHT );
 
     V_MarkRect (0, 0, V_VIRTUALWIDTH, V_VIRTUALHEIGHT);
