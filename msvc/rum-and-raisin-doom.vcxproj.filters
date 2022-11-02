@@ -220,6 +220,9 @@
     <ClCompile Include="..\src\d_gameflow_dmapinfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\d_gameflow_umapinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\i_system.h">

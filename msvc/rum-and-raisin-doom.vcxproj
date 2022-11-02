@@ -517,6 +517,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\d_gameflow.cpp" />
+    <ClCompile Include="..\src\d_gameflow_umapinfo.cpp" />
     <ClCompile Include="..\src\icon.c" />
     <ClCompile Include="..\src\i_log.cpp" />
     <ClCompile Include="..\src\i_terminal.cpp" />

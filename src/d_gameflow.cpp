@@ -15,6 +15,7 @@
 
 #include "d_gameflow.h"
 
+#include "i_terminal.h"
 #include "m_container.h"
 #include "w_wad.h"
 
@@ -73,13 +74,20 @@ void D_GameflowSetCurrentMap( mapinfo_t* map )
 	current_map = map;
 }
 
+void D_GameflowParseUMAPINFO( int32_t lumpnum );
 void D_GameflowParseDMAPINFO( int32_t lumpnum );
 
 void D_GameflowCheckAndParseMapinfos( void )
 {
 	int32_t lumpnum = -1;
-	if( ( lumpnum = W_CheckNumForName( "DMAPINFO" ) ) >= 0 )
+	if( ( lumpnum = W_CheckNumForName( "UMAPINFO" ) ) >= 0 )
+	{
+		D_GameflowParseUMAPINFO( lumpnum );
+		I_TerminalPrintf( Log_Startup, "UMAPINFO gameflow defined\n" );
+	}
+	else if( ( lumpnum = W_CheckNumForName( "DMAPINFO" ) ) >= 0 )
 	{
 		D_GameflowParseDMAPINFO( lumpnum );
+		I_TerminalPrintf( Log_Startup, "DMAPINFO gameflow defined\n" );
 	}
 }
