@@ -55,6 +55,7 @@ DOOM_C_API typedef struct gameoptions_s
 
 DOOM_C_API typedef struct wadoptions_s
 {
+	boolean					allow_mapinfo_lumps;
 	boolean					extended_map_datatypes;
 	boolean					allow_unlimited_lumps;
 } wadoptions_t;

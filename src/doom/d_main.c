@@ -1854,7 +1854,10 @@ void D_DoomMain (void)
     modifiedgame = W_ParseCommandLine();
 
 	// Now that everything is registered, we can check for the various mapinfo lumps
-	D_GameflowCheckAndParseMapinfos();
+	if( remove_limits )
+	{
+		D_GameflowCheckAndParseMapinfos();
+	}
 
     // Debug:
 //    W_PrintDirectory();
