@@ -23,8 +23,12 @@
 #include "i_video.h"
 #include "v_video.h"
 #include "m_random.h"
+#include "m_misc.h"
 
 #include "doomtype.h"
+
+#include "w_wad.h"
+#include "deh_str.h"
 
 #include "f_wipe.h"
 
@@ -39,6 +43,17 @@ static pixel_t*	wipe_scr_start;
 static pixel_t*	wipe_scr_end;
 static pixel_t*	wipe_scr;
 
+typedef struct hsv_s
+{
+	double_t hue;
+	double_t saturation;
+	double_t value;
+} hsv_t;
+
+static uint64_t wipe_progress;
+static rgb_t* wipe_palette;
+static hsv_t* wipe_hsv;
+
 extern int32_t render_width;
 extern int32_t render_height;
 
@@ -48,7 +63,6 @@ wipe_initColorXForm
   int	height,
   uint64_t	ticks )
 {
-    memcpy(wipe_scr, wipe_scr_start, width*height*sizeof(*wipe_scr));
     return 0;
 }
 
@@ -61,38 +75,40 @@ wipe_doColorXForm
     boolean	changed;
     pixel_t*	w;
     pixel_t*	e;
-    uint64_t		newval;
+    int32_t		newval;
 
     changed = false;
-    w = wipe_scr;
+    w = wipe_scr_start;
     e = wipe_scr_end;
-    
-    while (w!=wipe_scr+width*height)
+
+    while (w!=wipe_scr_start+width*height)
     {
-	if (*w != *e)
-	{
-	    if (*w > *e)
-	    {
-		newval = *w - ticks;
-		if (newval < *e)
-		    *w = *e;
-		else
-		    *w = (pixel_t)newval;
-		changed = true;
-	    }
-	    else if (*w < *e)
-	    {
-		newval = *w + ticks;
-		if (newval > *e)
-		    *w = *e;
-		else
-		    *w = (pixel_t)newval;
-		changed = true;
-	    }
-	}
-	w++;
-	e++;
+		if (*w != *e)
+		{
+			if (*w > *e)
+			{
+			newval = M_MAX( (int32_t)*w - (int32_t)ticks, 0 );
+			if (newval < *e)
+				*w = *e;
+			else
+				*w = (pixel_t)newval;
+			changed = true;
+			}
+			else if (*w < *e)
+			{
+			newval = M_MIN( (int32_t)*w + (int32_t)ticks, 255 );
+			if (newval > *e)
+				*w = *e;
+			else
+				*w = (pixel_t)newval;
+			changed = true;
+			}
+		}
+		w++;
+		e++;
     }
+
+	memcpy( wipe_scr, wipe_scr_start, width * height * sizeof( pixel_t) );
 
     return !changed;
 
@@ -119,9 +135,6 @@ wipe_initMelt
   uint64_t	ticks )
 {
     int i, r;
-
-    // copy start screen to main screen
-    memcpy(wipe_scr, wipe_scr_start, width*height*sizeof(*wipe_scr));
 
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
@@ -221,6 +234,115 @@ wipe_exitMelt
     return 0;
 }
 
+void ToHSV( hsv_t* dest, rgb_t* source )
+{
+	pixel_t min = M_MIN( M_MIN( source->r, source->g ), source->b );
+	pixel_t max = M_MAX( M_MAX( source->r, source->g ), source->b );
+
+	dest->value = max / 255.0;
+	double_t delta = max - min;
+	if( delta == 0 )
+	{
+		dest->hue = dest->saturation = 0;
+	}
+	else
+	{
+		dest->saturation = max > 0 ? delta / max : 0;
+
+		if( max == source->r )
+		{
+			dest->hue = 60 * fmod( ( ( source->g - source->b ) / delta ), 6 );
+		}
+		else if( max == source->g )
+		{
+			dest->hue = 60 * ( ( ( source->b - source->r ) / delta ) + 2 );
+		}
+		else
+		{
+			dest->hue = 60 * ( ( ( source->r - source->g ) / delta ) + 2 );
+		}
+	}
+}
+
+void Blend( rgb_t* output, rgb_t* lhs, rgb_t* rhs, double_t percent )
+{
+	output->r = ( 1.0 - percent ) * lhs->r + percent * rhs->r;
+	output->g = ( 1.0 - percent ) * lhs->g + percent * rhs->g;
+	output->b = ( 1.0 - percent ) * lhs->b + percent * rhs->b;
+}
+
+int32_t ClosestMatch( hsv_t* source )
+{
+	double_t distance = 720.0; // Get a better value;
+	int32_t result = -1;
+
+	for( hsv_t* val = wipe_hsv; val < wipe_hsv + 256; ++val )
+	{
+		double_t thisdistance = M_MIN( fabs( source->value - val->value ), 360 - fabs( val->value - source->value ) );
+		if( thisdistance < distance )
+		{
+			result = val - wipe_hsv;
+			distance = thisdistance;
+		}
+	}
+
+	return result;
+}
+
+int wipe_initBlend( int width, int height, uint64_t ticks )
+{
+	wipe_progress = 0;
+	wipe_palette = (rgb_t*)W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE );
+	wipe_hsv = Z_Malloc( sizeof( hsv_t ) * 256, PU_STATIC, NULL );
+
+	for( int32_t ind = 0; ind < 256; ++ind )
+	{
+		ToHSV( &wipe_hsv[ ind ], &wipe_palette[ ind ] );
+	}
+
+	return 1;
+}
+
+#define WIPE_BLEND_TICS 50
+
+int wipe_updateBlend( int width, int height, uint64_t ticks )
+{
+	wipe_progress = M_MIN( wipe_progress + 1, WIPE_BLEND_TICS );
+	double_t progress = (double_t)wipe_progress / WIPE_BLEND_TICS;
+
+	pixel_t* lhs = wipe_scr_start;
+	pixel_t* rhs = wipe_scr_end;
+	pixel_t* dest = wipe_scr;
+
+	pixel_t* end = wipe_scr + ( width * height );
+
+	while( dest < end )
+	{
+		rgb_t* leftentry = wipe_palette + *lhs;
+		rgb_t* rightentry = wipe_palette + *rhs;
+
+		rgb_t currrgb;
+		hsv_t currhsv;
+		Blend( &currrgb, leftentry, rightentry, progress );
+		ToHSV( &currhsv, &currrgb );
+
+		*dest = ClosestMatch( &currhsv );
+
+		++lhs;
+		++rhs;
+		++dest;
+	}
+
+	return wipe_progress >= WIPE_BLEND_TICS;
+}
+
+int wipe_exitBlend( int width, int height, uint64_t ticks )
+{
+	Z_Free( wipe_hsv );
+
+	return 1;
+}
+
 int
 wipe_StartScreen
 ( int	x,
@@ -246,6 +368,23 @@ wipe_EndScreen
     return 0;
 }
 
+
+typedef int (*wipefunc_t)( int, int, uint64_t );
+
+typedef struct wipe_s
+{
+	wipefunc_t		init;
+	wipefunc_t		update;
+	wipefunc_t		exit;
+} wipe_t;
+
+static wipe_t wipes[] =
+{
+	{ wipe_initColorXForm,	wipe_doColorXForm,	wipe_exitColorXForm		},
+	{ wipe_initMelt,		wipe_doMelt,		wipe_exitMelt			},
+	{ wipe_initBlend,		wipe_updateBlend,	wipe_exitBlend			},
+};
+
 int
 wipe_ScreenWipe
 ( int	wipeno,
@@ -256,39 +395,29 @@ wipe_ScreenWipe
   uint64_t	ticks )
 {
     int rc;
-    static int (*wipes[])(int, int, uint64_t) =
-    {
-	wipe_initColorXForm,
-	wipe_doColorXForm,
-	wipe_exitColorXForm,
-
-	wipe_initMelt,
-	wipe_doMelt,
-	wipe_exitMelt
-    };
 
 	wipe_scr = I_VideoBuffer;
 
-    // initial stuff
-    if (!go)
-    {
-	go = 1;
-	// wipe_scr = (pixel_t *) Z_Malloc(width*height, PU_STATIC, 0); // DEBUG
-	(*wipes[wipeno*3])(width, height, ticks);
-    }
+	// initial stuff
+	if (!go)
+	{
+		go = 1;
+		memcpy(wipe_scr, wipe_scr_start, width*height*sizeof(*wipe_scr));
+		(*wipes[wipeno].init)(width, height, ticks);
+	}
 
-    // do a piece of wipe-in
-    V_MarkRect(0, 0, width, height);
-    rc = (*wipes[wipeno*3+1])(width, height, ticks);
-    //  V_DrawBlock(x, y, 0, width, height, wipe_scr); // DEBUG
+	// do a piece of wipe-in
+	V_MarkRect(0, 0, width, height);
+	rc = (*wipes[wipeno].update)(width, height, ticks);
+	//  V_DrawBlock(x, y, 0, width, height, wipe_scr); // DEBUG
 
-    // final stuff
-    if (rc)
-    {
-	go = 0;
-	(*wipes[wipeno*3+2])(width, height, ticks);
-    }
+	// final stuff
+	if (rc)
+	{
+		go = 0;
+		(*wipes[wipeno].exit)(width, height, ticks);
+	}
 
-    return !go;
+	return !go;
 }
 
