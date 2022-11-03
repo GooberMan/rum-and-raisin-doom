@@ -966,8 +966,8 @@ void M_DrawEpisode(void)
 
 void M_VerifyNightmare(int key)
 {
-    if (key != key_menu_confirm)
-	return;
+	if (key != key_menu_confirm)
+		return;
 		
 	episodeinfo_t* epinfo;
 	
@@ -980,8 +980,8 @@ void M_VerifyNightmare(int key)
 		epinfo = D_GameflowGetEpisode( gamemode == commercial ? 0 : epi + 1 );
 	}
 
-    G_DeferedInitNew(nightmare, epinfo->first_map, false);
-    M_ClearMenus ();
+	G_DeferedInitNew( nightmare, epinfo->first_map, false );
+	M_ClearMenus();
 }
 
 void M_ChooseSkill(int choice)
@@ -2254,7 +2254,7 @@ typedef struct windowsizes_s
 	const char*		asstring;
 } windowsizes_t;
 
-#define WINDOWDIM( w, h )				{ w, h, res_unknown, 1.0, #w "x" #h }
+#define WINDOWDIM( w, h, c )			{ w, h, c, 1.0, #w "x" #h }
 #define WINDOWDIM_SCALED( w, h, c, s )	{ w, h, c, s, #w "x" #h }
 #define WINDOW_MINWIDTH 800
 #define WINDOW_MINHEIGHT 600
@@ -2263,24 +2263,29 @@ static windowsizes_t window_sizes_scaled[] =
 {
 	// It doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
 	// Be warned that the Dashboard will be basically impossible to use if you add smaller options.
-	WINDOWDIM( 800,			600		),
-	WINDOWDIM( 960,			720		),
-	WINDOWDIM( 1024,		768		),
-	WINDOWDIM( 1280,		960		),
-	WINDOWDIM( 1600,		1200	),
-	WINDOWDIM( 1920,		1440	),
-	WINDOWDIM( 2560,		1920	),
-	WINDOWDIM( 3840,		2880	),
-	WINDOWDIM( 1280,		720		),
-	WINDOWDIM( 1600,		900		),
-	WINDOWDIM( 1920,		1080	),
-	WINDOWDIM( 2560,		1440	),
-	WINDOWDIM( 3840,		2160	),
-	WINDOWDIM( 1600,		686		),
-	WINDOWDIM( 1920,		822		),
-	WINDOWDIM( 2560,		1080	),
-	WINDOWDIM( 3440,		1440	),
-	WINDOWDIM( 5160,		2160	),
+	WINDOWDIM( 800,			600,		res_4_3		),
+	WINDOWDIM( 960,			720,		res_4_3		),
+	WINDOWDIM( 1024,		768,		res_4_3		),
+	WINDOWDIM( 1280,		960,		res_4_3		),
+	WINDOWDIM( 1600,		1200,		res_4_3		),
+	WINDOWDIM( 1920,		1440,		res_4_3		),
+	WINDOWDIM( 2560,		1920,		res_4_3		),
+	WINDOWDIM( 3840,		2880,		res_4_3		),
+	WINDOWDIM( 1280,		720,		res_16_9	),
+	WINDOWDIM( 1600,		900,		res_16_9	),
+	WINDOWDIM( 1920,		1080,		res_16_9	),
+	WINDOWDIM( 2560,		1440,		res_16_9	),
+	WINDOWDIM( 3840,		2160,		res_16_9	),
+	WINDOWDIM( 1600,		686,		res_21_9	),
+	WINDOWDIM( 1920,		822,		res_21_9	),
+	WINDOWDIM( 2560,		1080,		res_21_9	),
+	WINDOWDIM( 3440,		1440,		res_21_9	),
+	WINDOWDIM( 5160,		2160,		res_21_9	),
+	WINDOWDIM( 2560,		720,		res_32_9	),
+	WINDOWDIM( 3200,		900,		res_32_9	),
+	WINDOWDIM( 3840,		1080,		res_32_9	),
+	WINDOWDIM( 5120,		1440,		res_32_9	),
+	WINDOWDIM( 7680,		2160,		res_32_9	),
 };
 static int32_t window_sizes_scaled_count = sizeof( window_sizes_scaled ) / sizeof( *window_sizes_scaled );
 static int32_t window_width_working;
@@ -2900,23 +2905,16 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 				igNextColumn();
 				igPushItemWidth( 180.f );
-				igPushIDPtr( &window_dimensions_current );
-				if( igBeginCombo( "", window_dimensions_current, ImGuiComboFlags_None ) )
+				windowsizes_t* newresolution = M_DashboardResolutionPicker( &window_dimensions_current, window_dimensions_current
+																			, window_sizes_scaled, window_sizes_scaled_count
+																			, window_width, window_height );
+				if( newresolution )
 				{
-					for( index = 0; index < window_sizes_scaled_count; ++index )
-					{
-						selected = window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height;
-						if( igSelectableBool( window_sizes_scaled[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
-						{
-							window_dimensions_current = window_sizes_scaled[ index ].asstring;
-							window_width_working = window_sizes_scaled[ index ].width;
-							window_height_working = window_sizes_scaled[ index ].height;
-							I_SetWindowDimensions( window_width_working, window_height_working );
-						}
-					}
-					igEndCombo();
+					window_dimensions_current = newresolution->asstring;
+					window_width_working = newresolution->width;
+					window_height_working = newresolution->height;
+					I_SetWindowDimensions( window_width_working, window_height_working );
 				}
-				igPopID();
 				igPopItemWidth();
 
 				igNextColumn();
