@@ -182,6 +182,13 @@ typedef uint8_t byte;
 typedef uint8_t pixel_t;
 typedef int16_t dpixel_t;
 
+typedef struct rgb_s
+{
+	pixel_t r;
+	pixel_t g;
+	pixel_t b;
+} rgb_t;
+
 #include <limits.h>
 
 #ifdef _WIN32
