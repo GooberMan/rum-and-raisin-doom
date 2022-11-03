@@ -24,55 +24,7 @@
 #include "doomtype.h"
 #include "i_vbuffer.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
-// Screen width and height.
-// Every compiler will do literal calculations at compile time these days, so let's be always correct about it.
-// Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
-// and SCREENHEIGHT_4_3 to be 4:3 correct.
-
-#define VANILLA_SCREENWIDTH 320
-#define VANILLA_SCREENHEIGHT 200
-
-#define V_VIRTUALWIDTH 320
-#define V_VIRTUALHEIGHT 200
-
-// TODO: We need to redo this to be pure integer math. Fixed/float results in inaccuracies at different resolutions :-(
-#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / aspect_adjusted_render_width )
-#define V_WIDTHMULTIPLIER ( ( aspect_adjusted_render_width << FRACBITS ) / V_VIRTUALWIDTH )
-
-#define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / render_height )
-#define V_HEIGHTMULTIPLIER ( ( render_height << FRACBITS ) / V_VIRTUALHEIGHT )
-
-typedef boolean (*grabmouse_callback_t)(void);
-
-// Called by D_DoomMain,
-// determines the hardware configuration
-// and sets up the video mode
-void I_InitGraphics( void );
-void I_InitBuffers( int32_t numbuffers );
-void I_UpdateMouseGrab( void );
-
-vbuffer_t* I_GetRenderBuffer( int32_t index );
-vbuffer_t* I_GetCurrentRenderBuffer( void );
-void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );
-void I_SetNumBuffers( int32_t count );
-
-SDL_Window* I_GetWindow( void );
-SDL_Renderer* I_GetRenderer( void );
-int32_t I_GetRefreshRate( void );
-
-void I_GraphicsCheckCommandLine(void);
-
-void I_ShutdownGraphics(void);
-
-void I_ToggleFullScreen(void);
-void I_SetWindowDimensions( int32_t w, int32_t h );
-void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s );
-
-typedef enum vsync_e
+DOOM_C_API typedef enum vsync_e
 {
 	VSync_Off,
 	VSync_Native,
@@ -103,67 +55,114 @@ typedef enum vsync_e
 	VSync_Max,
 } vsync_t;
 
-boolean I_VideoSetVSync( vsync_t vsyncval );
-vsync_t I_VideoGetVSync( void );
-boolean I_VideoSupportsVSync( vsync_t vsyncval );
+DOOM_C_API typedef enum renderdimensions_e
+{
+	RD_None,
+	RD_MatchWindow,
+	RD_Independent,
+} renderdimensions_t;
+
+// Screen width and height.
+// Every compiler will do literal calculations at compile time these days, so let's be always correct about it.
+// Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
+// and SCREENHEIGHT_4_3 to be 4:3 correct.
+
+#define VANILLA_SCREENWIDTH 320
+#define VANILLA_SCREENHEIGHT 200
+
+#define V_VIRTUALWIDTH 320
+#define V_VIRTUALHEIGHT 200
+
+// TODO: We need to redo this to be pure integer math. Fixed/float results in inaccuracies at different resolutions :-(
+#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / aspect_adjusted_render_width )
+#define V_WIDTHMULTIPLIER ( ( aspect_adjusted_render_width << FRACBITS ) / V_VIRTUALWIDTH )
+
+#define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / render_height )
+#define V_HEIGHTMULTIPLIER ( ( render_height << FRACBITS ) / V_VIRTUALHEIGHT )
+
+DOOM_C_API typedef boolean (*grabmouse_callback_t)(void);
+
+// Called by D_DoomMain,
+// determines the hardware configuration
+// and sets up the video mode
+DOOM_C_API void I_InitGraphics( void );
+DOOM_C_API void I_InitBuffers( int32_t numbuffers );
+DOOM_C_API void I_UpdateMouseGrab( void );
+
+DOOM_C_API vbuffer_t* I_GetRenderBuffer( int32_t index );
+DOOM_C_API vbuffer_t* I_GetCurrentRenderBuffer( void );
+DOOM_C_API void I_SetRenderBufferValidColumns( int32_t index, int32_t begin, int32_t end );
+DOOM_C_API void I_SetNumBuffers( int32_t count );
+
+DOOM_C_API SDL_Window* I_GetWindow( void );
+DOOM_C_API SDL_Renderer* I_GetRenderer( void );
+DOOM_C_API int32_t I_GetRefreshRate( void );
+
+DOOM_C_API void I_GraphicsCheckCommandLine(void);
+
+DOOM_C_API void I_ShutdownGraphics(void);
+
+DOOM_C_API void I_ToggleFullScreen(void);
+DOOM_C_API void I_SetWindowDimensions( int32_t w, int32_t h );
+DOOM_C_API void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s );
+
+DOOM_C_API boolean I_VideoSetVSync( vsync_t vsyncval );
+DOOM_C_API vsync_t I_VideoGetVSync( void );
+DOOM_C_API boolean I_VideoSupportsVSync( vsync_t vsyncval );
 
 // Takes full 8 bit values.
-void I_SetPalette (byte* palette);
-int I_GetPaletteIndex(int r, int g, int b);
+DOOM_C_API void I_SetPalette (byte* palette);
+DOOM_C_API int I_GetPaletteIndex(int r, int g, int b);
 
-void I_FinishUpdate( vbuffer_t* activebuffer );
+DOOM_C_API void I_FinishUpdate( vbuffer_t* activebuffer );
 
-void I_ReadScreen (pixel_t* scr);
+DOOM_C_API void I_ReadScreen (pixel_t* scr);
 
-void I_SetWindowTitle(const char *title);
+DOOM_C_API void I_SetWindowTitle(const char *title);
 
-void I_CheckIsScreensaver(void);
-void I_SetGrabMouseCallback(grabmouse_callback_t func);
+DOOM_C_API void I_CheckIsScreensaver(void);
+DOOM_C_API void I_SetGrabMouseCallback(grabmouse_callback_t func);
 
-void I_DisplayFPSDots(boolean dots_on);
-void I_BindVideoVariables(void);
+DOOM_C_API void I_DisplayFPSDots(boolean dots_on);
+DOOM_C_API void I_BindVideoVariables(void);
 
-void I_InitWindowTitle(void);
-void I_InitWindowIcon(void);
+DOOM_C_API void I_InitWindowTitle(void);
+DOOM_C_API void I_InitWindowIcon(void);
 
 // Called before processing any tics in a frame (just after displaying a frame).
 // Time consuming syncronous operations are performed here (joystick reading).
 
-void I_StartFrame (void);
+DOOM_C_API void I_StartFrame (void);
 
 // Called before processing each tic in a frame.
 // Quick syncronous operations are performed here.
 
-void I_StartTic (void);
+DOOM_C_API void I_StartTic (void);
 
 // Enable the loading disk image displayed when reading from disk.
 
-void I_EnableLoadingDisk(int xoffs, int yoffs);
+DOOM_C_API void I_EnableLoadingDisk(int xoffs, int yoffs);
 
-void I_VideoClearBuffer( float_t r, float_t g, float_t b, float_t a );
+DOOM_C_API void I_VideoClearBuffer( float_t r, float_t g, float_t b, float_t a );
 
-extern boolean screenvisible;
+DOOM_C_API extern boolean screenvisible;
 
-extern int32_t vanilla_keyboard_mapping;
-extern boolean screensaver_mode;
-extern int32_t usegamma;
-extern pixel_t *I_VideoBuffer;
+DOOM_C_API extern int32_t vanilla_keyboard_mapping;
+DOOM_C_API extern boolean screensaver_mode;
+DOOM_C_API extern int32_t usegamma;
+DOOM_C_API extern pixel_t *I_VideoBuffer;
 
-extern int32_t screen_width;
-extern int32_t screen_height;
-extern int32_t fullscreen;
-extern int32_t aspect_ratio_correct;
-extern int32_t integer_scaling;
-extern int32_t vga_porch_flash;
+DOOM_C_API extern int32_t screen_width;
+DOOM_C_API extern int32_t screen_height;
+DOOM_C_API extern int32_t fullscreen;
+DOOM_C_API extern int32_t aspect_ratio_correct;
+DOOM_C_API extern int32_t integer_scaling;
+DOOM_C_API extern int32_t vga_porch_flash;
 
-extern char *window_position;
-void I_GetWindowPosition(int *x, int *y, int w, int h);
+DOOM_C_API extern char *window_position;
+DOOM_C_API void I_GetWindowPosition(int *x, int *y, int w, int h);
 
 // Joystic/gamepad hysteresis
-extern uint64_t joywait;
-
-#ifdef __cplusplus
-}
-#endif
+DOOM_C_API extern uint64_t joywait;
 
 #endif

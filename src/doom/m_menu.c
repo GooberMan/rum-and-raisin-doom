@@ -2765,7 +2765,16 @@ windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windo
 	{
 		for( int32_t currcat = 0; currcat < res_unknown; ++currcat )
 		{
-			if( igBeginMenu( resolutioncatstrings[ currcat ], true ) )
+			int32_t catcount = 0;
+			for( int32_t currsize = 0; currsize < numsizes; ++currsize )
+			{
+				if( sizes[ currsize ].category == currcat )
+				{
+					++catcount;
+				}
+			}
+
+			if( catcount && igBeginMenu( resolutioncatstrings[ currcat ], true ) )
 			{
 				for( int32_t currsize = 0; currsize < numsizes; ++currsize )
 				{
@@ -2814,6 +2823,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t maxrendercontexts;
 	extern int32_t vsync_mode;
 	extern int32_t wipe_style;
+	extern int32_t render_dimensions_mode;
 
 	controlsection_t*	currsection;
 
@@ -3025,11 +3035,38 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igColumns( 2, "", false );
 				igSetColumnWidth( 0, columwidth );
 
+#if 0
+				igText( "Mach window size" );
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushIDPtr( &render_dimensions_mode );
+				WorkingBool = false;
+				WorkingInt = render_dimensions_mode == RD_MatchWindow;
+				if( igCheckbox( "", (bool*)&WorkingInt ) )
+				{
+					render_dimensions_mode = WorkingInt ? RD_MatchWindow : RD_Independent;
+					if( render_dimensions_mode == RD_MatchWindow )
+					{
+						I_SetRenderDimensions( window_width, window_height, 1 );
+					}
+				}
+				igPopID();
+				igNextColumn();
+#endif
+
 				igText( "Size" );
 				igNextColumn();
 				igPushItemWidth( 180.f );
 
-				windowsizes_t* newresolution = M_DashboardResolutionPicker( &render_dimensions_current, render_dimensions_current
+				const char* workingstring = render_dimensions_current;
+				if( render_dimensions_mode == RD_MatchWindow )
+				{
+					igPushItemFlag( ImGuiItemFlags_Disabled, true );
+					igPushStyleVarFloat( ImGuiStyleVar_Alpha, 0.2f );
+					workingstring = "Matches window";
+				}
+
+				windowsizes_t* newresolution = M_DashboardResolutionPicker( &render_dimensions_current, workingstring
 																			, render_sizes, render_sizes_count
 																			, render_width, render_height );
 				if( newresolution )
@@ -3037,6 +3074,12 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 					render_dimensions_current = newresolution->asstring;
 					I_SetRenderDimensions( newresolution->width, newresolution->height, newresolution->postscaling );
 					R_RebalanceContexts();
+				}
+
+				if( render_dimensions_mode == RD_MatchWindow )
+				{
+					igPopItemFlag();
+					igPopStyleVar( 1 );
 				}
 
 				igPopItemWidth();

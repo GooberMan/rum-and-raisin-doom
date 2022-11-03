@@ -163,14 +163,7 @@ int32_t vsync_mode = VSync_Native;
 int32_t window_width = DEFAULT_WINDOW_WIDTH;
 int32_t window_height = DEFAULT_WINDOW_HEIGHT;
 
-enum renderdimensions_e
-{
-	RMD_MatchWindow,
-	RMD_OperatingSystemScale,
-	RMD_Independent,
-};
-
-int32_t render_dimensions_mode = RMD_Independent;
+int32_t render_dimensions_mode = RD_Independent;
 int32_t render_width = DEFAULT_RENDER_WIDTH;
 int32_t render_height = DEFAULT_RENDER_HEIGHT;
 int32_t render_post_scaling = DEFAULT_RENDER_POSTSCALING;
@@ -184,8 +177,6 @@ int32_t queued_render_post_scaling = DEFAULT_RENDER_POSTSCALING;
 int32_t queued_num_render_buffers = 1;
 
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
-
-int32_t fullscreen_width = 0, fullscreen_height = 0;
 
 int32_t display_width = 0;
 int32_t display_height = 0;
@@ -444,14 +435,6 @@ void I_PerformFullscreen(void)
 {
     fullscreen = queued_fullscreen;
 
-    // TODO: Consider implementing fullscreen toggle for SDL_WINDOW_FULLSCREEN
-    // (mode-changing) setup. This is hard because we have to shut down and
-    // restart again.
-    //if (fullscreen_width != 0 || fullscreen_height != 0)
-    //{
-    //    return;
-    //}
-
 #if FULLSCREEN_BORDERLESS
     if (fullscreen)
     {
@@ -489,12 +472,23 @@ void I_PerformFullscreen(void)
 void I_ToggleFullScreen(void)
 {
 	queued_fullscreen = !fullscreen;
+
+	if( render_dimensions_mode == RD_MatchWindow )
+	{
+		queued_render_width = ( fullscreen ? display_width : window_width );
+		queued_render_height = ( fullscreen ? display_height : window_height );
+	}
 }
 
 void I_SetWindowDimensions( int32_t w, int32_t h )
 {
 	queued_window_width = w;
 	queued_window_height = h;
+	if( render_dimensions_mode == RD_MatchWindow )
+	{
+		queued_render_width = w;
+		queued_render_height = h;
+	}
 }
 
 void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s )
@@ -830,6 +824,11 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 				SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 				queued_window_width = window_width;
 				queued_window_height = window_height;
+				if( render_dimensions_mode == RD_MatchWindow )
+				{
+					queued_render_width = render_width =		( fullscreen ? display_width : window_width );
+					queued_render_height = render_height =		( fullscreen ? display_height : window_height );
+				}
             }
             CreateUpscaledTexture();
             need_resize = false;
@@ -1339,6 +1338,12 @@ static void SetVideoMode(void)
 	display_width = mode.w;
 	display_height = mode.h;
 
+	if( render_dimensions_mode == RD_MatchWindow )
+	{
+		queued_render_width = render_width =		( fullscreen ? display_width : window_width );
+		queued_render_height = render_height =		( fullscreen ? display_height : window_height );
+	}
+
     w = window_width;
     h = window_height;
 
@@ -1647,13 +1652,6 @@ void I_InitGraphics( void )
         fullscreen = true;
     }
 
-	if( render_dimensions_mode == RMD_MatchWindow )
-	{
-		render_width = window_width;
-		render_height = window_height;
-		// TODO: Scale back down for aspect ratio stuff... although I think I might go ahead and baleete all that.
-	}
-
 	if( render_post_scaling )
 	{
 		actualheight = (int32_t)( render_height * 1.2 );
@@ -1666,15 +1664,6 @@ void I_InitGraphics( void )
     // Create the game window; this may switch graphic modes depending
     // on configuration.
     SetVideoMode();
-
-	if ( render_post_scaling == 1 )
-	{
-		actualheight = (int32_t)( render_height * 1.2 );
-	}
-	else
-	{
-		actualheight = render_height;
-	}
 
 	// Important: Set the "logical size" of the rendering context. At the same
 	// time this also defines the aspect ratio that is preserved while scaling
@@ -1804,8 +1793,6 @@ void I_BindVideoVariables(void)
     M_BindIntVariable("integer_scaling",           &integer_scaling);
     M_BindIntVariable("vga_porch_flash",           &vga_porch_flash);
     M_BindIntVariable("startup_delay",             &startup_delay);
-    M_BindIntVariable("fullscreen_width",          &fullscreen_width);
-    M_BindIntVariable("fullscreen_height",         &fullscreen_height);
     M_BindIntVariable("max_scaling_buffer_pixels", &max_scaling_buffer_pixels);
     M_BindIntVariable("window_width",              &window_width);
     M_BindIntVariable("window_height",             &window_height);
