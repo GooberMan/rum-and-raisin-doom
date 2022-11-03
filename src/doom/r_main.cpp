@@ -124,9 +124,6 @@ extern "C"
 
 	player_t*				viewplayer;
 
-	// 0 = high, 1 = low
-	int32_t					detailshift;	
-
 	//
 	// precalculated math tables
 	//
@@ -178,7 +175,6 @@ extern "C"
 
 	boolean		setsizeneeded;
 	int		setblocks;
-	int		setdetail;
 
 	extern int32_t remove_limits;
 	extern int detailLevel;
@@ -674,7 +670,7 @@ rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, an
 	// both sines are allways positive
 	sinea = FixedToRendFixed( renderfinesine[ anglea >> RENDERANGLETOFINESHIFT ] );
 	sineb = FixedToRendFixed( renderfinesine[ angleb >> RENDERANGLETOFINESHIFT ] );
-	num = RendFixedMul( projection, sineb ) << detailshift;
+	num = RendFixedMul( projection, sineb );
 	den = RendFixedMul( distance, sinea );
 
 	if (den >= 0 && den > RendFixedToInt( num ) )
@@ -981,8 +977,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	}
 	else if( voidcleartype == Void_Sky )
 	{
-		skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
-		skycontext.iscale = FixedToRendFixed( pspriteiscale>>detailshift );
+		skycontext.colfunc = colfuncs[ M_MIN( ( pspriteiscale  >> 12 ), 15 ) ];
+		skycontext.iscale = FixedToRendFixed( pspriteiscale );
 		skycontext.texturemid = skytexturemid;
 		skycontext.output = rendercontext->buffer;
 		skycontext.output.data += skycontext.output.pitch * viewwindowx + viewwindowy;
@@ -1179,20 +1175,8 @@ R_SetViewSize
 {
     setsizeneeded = true;
     setblocks = blocks;
-    setdetail = detail;
 	R_RebalanceContexts();
 }
-
-typedef enum detail_e
-{
-	DT_NATIVE,
-	DT_CRISPY,
-	DT_ORIGINALHIGH,
-	DT_ORIGINALLOW,
-	DT_VIRTUAL,
-
-	DT_COUNT
-} detail_t;
 
 //
 // R_ExecuteSetViewSize
@@ -1225,38 +1209,6 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 
 	setsizeneeded = false;
 
-	//switch( setdetail )
-	//{
-	//case DT_NATIVE:
-	//case DT_VIRTUAL:
-	//	scaledviewwidth = SCREENWIDTH;
-	//	viewheight = SCREENHEIGHT;
-	//	detailshift = 0;
-	//	break;
-	//case DT_CRISPY:
-	//	scaledviewwidth = 640;
-	//	viewheight = 400;
-	//	detailshift = 0;
-	//case DT_ORIGINALHIGH:
-	//	scaledviewwidth = 320;
-	//	viewheight = 200;
-	//	detailshift = 1;
-	//	break;
-	//case DT_ORIGINALLOW:
-	//	scaledviewwidth = 160;
-	//	viewheight = 200;
-	//	detailshift = 1;
-	//	break;
-	//}
-	//
-    //viewwidth = scaledviewwidth>>detailshift;
-	//
-    //if (setblocks < 11)
-    //{
-	//	scaledviewwidth = setblocks*viewwidth/10;
-	//	viewheight = (setblocks*(SCREENHEIGHT-SBARHEIGHT)/10)&~7;
-    //}
-
 	if (setblocks == 11)
 	{
 		scaledviewwidth = render_width;
@@ -1268,8 +1220,7 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 		viewheight = (setblocks * ( render_height - SBARHEIGHT ) / 10 );// & ~7;
 	}
 
-	detailshift = setdetail;
-	viewwidth = scaledviewwidth >> detailshift;
+	viewwidth = scaledviewwidth;
 
 	centery = viewheight /2;
 	centerx = viewwidth /2;
@@ -1277,7 +1228,7 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	centeryfrac = IntToFixed( centery );
 	projection = RendFixedMul( FixedToRendFixed( centerxfrac ), perspective_mul );
 
-	colfuncbase = COLFUNC_NUM * ( detailshift );
+	colfuncbase = COLFUNC_NUM;
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
 
 	R_InitBuffer (scaledviewwidth, viewheight);
@@ -1319,7 +1270,7 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	{
 		rend_fixed_t dy = IntToRendFixed( i- viewheight / 2 ) + RENDFRACUNIT / 2;
 		dy = llabs( dy );
-		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( ( viewwidth << detailshift ) / 2 ), dy ), perspective_mul );
+		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( viewwidth / 2 ), dy ), perspective_mul );
 	}
 	
 	if( distscale )
@@ -1341,7 +1292,7 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 		startmap = ( (LIGHTLEVELS - 1 - i ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
 		for ( j=0 ; j < MAXLIGHTSCALE ; j++ )
 		{
-			level = startmap - j * render_width / ( viewwidth << detailshift ) / DISTMAP;
+			level = startmap - j * render_width / viewwidth / DISTMAP;
 
 			if (level < 0)
 			{

@@ -151,6 +151,19 @@ char	endstring[160];
 
 static boolean opldev;
 
+typedef enum categorytofocus_e
+{
+	cat_none,
+	cat_screen,
+	cat_sound,
+
+	cat_max
+} categorytofocus_t;
+
+static boolean				debugwindow_options = false;
+static categorytofocus_t	debugwindow_tofocus = cat_none;
+
+
 //
 // MENU TYPEDEFS
 //
@@ -1779,11 +1792,19 @@ boolean M_Responder (event_t* ev)
 	    S_StartSound(NULL,sfx_swtchn);
 	    return true;
 	}
+	// TODO: make this bring up the render menu in the dashboard window
         else if (key == key_menu_detail)   // Detail toggle
         {
-	    M_ChangeDetail(0);
-	    S_StartSound(NULL,sfx_swtchn);
-	    return true;
+			dashboardactive = true;
+			debugwindow_options = true;
+			debugwindow_tofocus = cat_screen;
+			S_StartSound(NULL, dashboardopensound);
+			return true;
+
+			// Old implementation
+			//M_ChangeDetail(0);
+			//S_StartSound(NULL,sfx_swtchn);
+			//return true;
         }
         else if (key == key_menu_qsave)    // Quicksave
         {
@@ -2211,8 +2232,6 @@ static uint8_t defaultpalette[] =
 		0xFF, 0x9F, 0x43,		0xFF, 0xE7, 0x4B,		0xFF, 0x7B, 0xFF,		0xFF, 0x00, 0xFF,
 		0xCF, 0x00, 0xCF,		0x9F, 0x00, 0x9B,		0x6F, 0x00, 0x6B,		0xA7, 0x6B, 0x6B,
 };
-
-static boolean debugwindow_options = false;
 
 typedef struct windowsizes_s
 {
@@ -2689,6 +2708,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 	bool WorkingBool = false;
 	int32_t WorkingInt = 0;
+	int32_t additionaltabflag = 0;
 
 	bool doresize = false;
 
@@ -2802,7 +2822,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igEndTabItem();
 		}
 
-		if( igBeginTabItem( "Screen", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		additionaltabflag = debugwindow_tofocus == cat_screen ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+		if( igBeginTabItem( "Screen", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | additionaltabflag ) )
 		{
 			igPushScrollableArea( "Screen", zerosize );
 
@@ -2983,7 +3004,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igEndTabItem();
 		}
 
-		if( igBeginTabItem( "Sound", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		additionaltabflag = debugwindow_tofocus == cat_sound ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+		if( igBeginTabItem( "Sound", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | additionaltabflag ) )
 		{
 			igPushScrollableArea( "Sound", zerosize );
 
@@ -3259,6 +3281,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 		igEndTabBar();
 	}
+
+	debugwindow_tofocus = cat_none;
 }
 
 static void M_DashboardNewGame( const char* itemname, void* data )

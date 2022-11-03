@@ -91,12 +91,7 @@ extern int32_t			fixedcolormapindex;
 #define NUMCOLORMAPS			34
 
 
-// Blocky/low detail mode.
-//B remove this?
-//  0 = high, 1 = low
-extern int32_t	detailshift;
 extern int32_t	fuzz_style;
-
 
 //
 // Function pointers to switch refresh/drawing functions.

@@ -161,12 +161,12 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	colcontext_t	skycontext;
 
-	skycontext.colfunc = colfuncs[ M_MIN( ( ( pspriteiscale >> detailshift ) >> 12 ), 15 ) ];
+	skycontext.colfunc = colfuncs[ M_MIN( ( pspriteiscale >> 12 ), 15 ) ];
 
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
-	skycontext.iscale = FixedToRendFixed( pspriteiscale>>detailshift );
+	skycontext.iscale = FixedToRendFixed( pspriteiscale );
 	skycontext.texturemid = skytexturemid;
 
 	// This isn't a constant though...

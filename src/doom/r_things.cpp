@@ -383,7 +383,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
 	
-	spritecolcontext.iscale = FixedToRendFixed( abs(vis->xiscale)>>detailshift );
+	spritecolcontext.iscale = FixedToRendFixed( abs(vis->xiscale) );
 	spritecolcontext.texturemid = FixedToRendFixed( vis->texturemid );
 	frac = vis->startfrac;
 	spritecontext->spryscale = FixedToRendFixed( vis->scale );
@@ -583,7 +583,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	// store information in a vissprite
 	vis = R_NewVisSprite( spritecontext );
 	vis->mobjflags = thing->flags;
-	vis->scale = xscale<<detailshift;
+	vis->scale = xscale;
 	vis->gx = thingx;
 	vis->gy = thingy;
 	vis->gz = thingz;
@@ -631,7 +631,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	else
 	{
 		// diminished light
-		index = xscale>>(LIGHTSCALESHIFT-detailshift);
+		index = xscale>>(LIGHTSCALESHIFT);
 		if( LIGHTSCALEMUL != FRACUNIT )
 		{
 			index = RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
@@ -752,7 +752,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	vis->texturemid = IntToFixed( BASEYCENTER ) + FRACUNIT / 2 -( psp->sy - spritetopoffset[ lump ] );
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
-	vis->scale = pspritescale<<detailshift;
+	vis->scale = pspritescale;
 
 	if (flip)
 	{
