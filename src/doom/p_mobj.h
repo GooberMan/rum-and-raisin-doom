@@ -204,6 +204,7 @@ typedef struct mobjinstance_s
 	angle_t					angle;
 	spritenum_t				sprite;
 	int32_t					frame;
+	int32_t					teleported;
 } mobjinstance_t;
 
 
@@ -289,6 +290,8 @@ typedef struct mobj_s
 
     // Thing being chased/attacked for tracers.
     struct mobj_s*	tracer;	
+
+	uint64_t teleporttic;
     
 } mobj_t;
 

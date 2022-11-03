@@ -1755,10 +1755,24 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 	if( interpolate_this_frame )
 	{
 		viewlerp	= framepercent * ( RENDFRACUNIT - 1 );
+		bool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
 
-		rend_fixed_t adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewlerp );
-		rend_fixed_t adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewlerp );
-		rend_fixed_t adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewlerp );
+		rend_fixed_t adjustedviewx;
+		rend_fixed_t adjustedviewy;
+		rend_fixed_t adjustedviewz;
+
+		if( player->mo->curr.teleported )
+		{
+			adjustedviewx = selectcurr ? player->mo->curr.x : player->mo->prev.x;
+			adjustedviewy = selectcurr ? player->mo->curr.y : player->mo->prev.y;
+			adjustedviewz = selectcurr ? player->mo->curr.z : player->mo->prev.z;
+		}
+		else
+		{
+			adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewlerp );
+			adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewlerp );
+			adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewlerp );
+		}
 
 		{
 			viewx = RendFixedToFixed( adjustedviewx );
@@ -1767,7 +1781,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 			viewangle = player->mo->curr.angle + viewangleoffset;
 		}
 
-		if( !demoplayback && isconsoleplayer && player->playerstate != PST_DEAD )
+		if( !demoplayback && isconsoleplayer && player->playerstate != PST_DEAD && !player->mo->reactiontime )
 		{
 			int64_t mouseamount = R_PeekEvents();
 			int64_t newangle = viewangle;
@@ -1777,26 +1791,32 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 		}
 		else
 		{
-			int64_t start	= player->mo->prev.angle;
-			int64_t end		= player->mo->curr.angle;
-			int64_t path	= end - start;
-			if( llabs( path ) > ANG180 )
+			rend_fixed_t result;
+			if( player->mo->curr.teleported )
 			{
-				constexpr int64_t ANG360 = (int64_t)ANG_MAX + 1ll;
-				if( end > start )
-				{
-					start += ANG360;
-				}
-				else
-				{
-					end += ANG360;
-				}
+				result = selectcurr ? player->mo->curr.angle : player->mo->prev.angle;
 			}
-			rend_fixed_t result = RendFixedLerp( start, end, viewlerp );
+			else
+			{
+				int64_t start	= player->mo->prev.angle;
+				int64_t end		= player->mo->curr.angle;
+				int64_t path	= end - start;
+				if( llabs( path ) > ANG180 )
+				{
+					constexpr int64_t ANG360 = (int64_t)ANG_MAX + 1ll;
+					if( end > start )
+					{
+						start += ANG360;
+					}
+					else
+					{
+						end += ANG360;
+					}
+				}
+				result = RendFixedLerp( start, end, viewlerp );
+			}
 			viewangle = (angle_t)( result & ANG_MAX );
 		}
-
-		bool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
 
 		for( int32_t index : iota( 0, numsectors ) )
 		{

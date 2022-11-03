@@ -184,6 +184,7 @@ void P_UpdateInstanceData( void )
 			mobj->curr.angle = mobj->angle;
 			mobj->curr.sprite = mobj->sprite;
 			mobj->curr.frame = mobj->frame;
+			mobj->curr.teleported = mobj->teleporttic == gametic;
 		}
 	}
 }

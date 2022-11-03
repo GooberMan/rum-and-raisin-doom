@@ -462,11 +462,20 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 
 	if( interpolate_this_frame )
 	{
-		thingx = RendFixedToFixed( RendFixedLerp( thing->prev.x, thing->curr.x, viewlerp ) );
-		thingy = RendFixedToFixed( RendFixedLerp( thing->prev.y, thing->curr.y, viewlerp ) );
-		thingz = RendFixedToFixed( RendFixedLerp( thing->prev.z, thing->curr.z, viewlerp ) );
-
 		boolean selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
+		if( thing->curr.teleported )
+		{
+			thingx = RendFixedToFixed( selectcurr ? thing->curr.x : thing->prev.x );
+			thingy = RendFixedToFixed( selectcurr ? thing->curr.y : thing->prev.y );
+			thingz = RendFixedToFixed( selectcurr ? thing->curr.z : thing->prev.z );
+		}
+		else
+		{
+			thingx = RendFixedToFixed( RendFixedLerp( thing->prev.x, thing->curr.x, viewlerp ) );
+			thingy = RendFixedToFixed( RendFixedLerp( thing->prev.y, thing->curr.y, viewlerp ) );
+			thingz = RendFixedToFixed( RendFixedLerp( thing->prev.z, thing->curr.z, viewlerp ) );
+		}
+
 		thingframe = selectcurr ? thing->curr.frame : thing->prev.frame;
 		thingsprite = selectcurr ? thing->curr.sprite : thing->prev.sprite;
 		thingangle = selectcurr ? thing->curr.angle : thing->prev.angle;
