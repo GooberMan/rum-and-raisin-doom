@@ -779,6 +779,13 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(render_height),
 
     //!
+    // Backbuffer post-scaling. 0 for none, 1 for VGA-style rectangular pixels
+    //
+
+    CONFIG_VARIABLE_INT(render_post_scaling),
+
+
+    //!
     // Backbuffer mode. 0 = match window, 1 = OS scaling, 2 = arbitrary
     //
 

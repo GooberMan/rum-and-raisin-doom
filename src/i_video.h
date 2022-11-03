@@ -70,7 +70,7 @@ void I_ShutdownGraphics(void);
 
 void I_ToggleFullScreen(void);
 void I_SetWindowDimensions( int32_t w, int32_t h );
-void I_SetRenderDimensions( int32_t w, int32_t h );
+void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s );
 
 typedef enum vsync_e
 {

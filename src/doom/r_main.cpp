@@ -788,10 +788,11 @@ void R_InitTextureMapping (void)
 void R_InitAspectAdjustedValues()
 {
 	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
-	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_height ) );
+	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_post_scaling ? render_height : (int32_t)( render_height / 1.2 ) ) );
 	rend_fixed_t		perspective_mul = RendFixedDiv( original_perspective, current_perspective );
 
 	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( render_width ), perspective_mul );
+
 	aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
 	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / 320;
 	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
@@ -1190,6 +1191,8 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	int32_t				startmap;
 	int32_t				colfuncbase;
 
+	int32_t actualheight = render_post_scaling ? render_height * 1.2 : render_height;
+
 	rend_fixed_t		original_perspective	= RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
 	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_height ) );
 	rend_fixed_t		perspective_mul			= RendFixedDiv( original_perspective, current_perspective );
@@ -1531,6 +1534,7 @@ void R_RenderDimensionsChanged( void )
 	R_InitLightTables();
 	R_InitPointToAngle();
 	R_InitTables();
+	R_InitAspectAdjustedValues();
 	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
 	R_ExecuteSetViewSize();

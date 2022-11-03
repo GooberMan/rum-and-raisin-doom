@@ -2234,6 +2234,11 @@ typedef enum resolutioncat_e
 	res_21_9,
 	res_32_9,
 
+	res_post_4_3,
+	res_post_16_9,
+	res_post_21_9,
+	res_post_32_9,
+	
 	res_unknown,
 } resolutioncat_t;
 
@@ -2243,6 +2248,12 @@ static const char* resolutioncatstrings[] =
 	"16:9",
 	"21:9",
 	"32:9",
+
+	"4:3 post-scaled",
+	"16:9 post-scaled",
+	"21:9 post-scaled",
+	"32:9 post-scaled",
+
 };
 
 typedef struct windowsizes_s
@@ -2250,12 +2261,12 @@ typedef struct windowsizes_s
 	int32_t			width;
 	int32_t			height;
 	resolutioncat_t	category;
-	double_t		scaletobuffer;
+	int32_t			postscaling;
 	const char*		asstring;
 } windowsizes_t;
 
-#define WINDOWDIM( w, h, c )			{ w, h, c, 1.0, #w "x" #h }
-#define WINDOWDIM_SCALED( w, h, c, s )	{ w, h, c, s, #w "x" #h }
+#define WINDOWDIM( w, h, c )			{ w, h, c, 0, #w "x" #h }
+#define WINDOWDIM_SCALED( w, h, c )		{ w, h, c, 1, #w "x" #h " post-scaled" }
 #define WINDOW_MINWIDTH 800
 #define WINDOW_MINHEIGHT 600
 
@@ -2294,39 +2305,82 @@ static const char* window_dimensions_current = NULL;
 
 static windowsizes_t render_sizes[] =
 {
-	WINDOWDIM_SCALED( 320,		200,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 426,		200,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 560,		200,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 854,		200,	res_32_9,	1.2 ),
-	WINDOWDIM_SCALED( 640,		400,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 854,		400,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 1120,		400,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 1706,		400,	res_32_9,	1.2 ),
-	WINDOWDIM_SCALED( 1280,		800,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 1706,		800,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 2240,		800,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 3414,		800,	res_32_9,	1.2 ),
-	WINDOWDIM_SCALED( 1440,		900,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 1920,		900,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 2520,		900,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 3840,		900,	res_32_9,	1.2 ),
-	WINDOWDIM_SCALED( 1600,		1000,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 2132,		1000,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 2800,		1000,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 4266,		1000,	res_32_9,	1.2 ),
-	WINDOWDIM_SCALED( 1920,		1200,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 2560,		1200,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 3360,		1200,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 5120,		1200,	res_32_9,	1.2 ),
-	WINDOWDIM_SCALED( 2560,		1600,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 3414,		1600,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 4480,		1600,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 2880,		1800,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 3840,		1800,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 5040,		1800,	res_21_9,	1.2 ),
-	WINDOWDIM_SCALED( 3200,		2000,	res_4_3,	1.2 ),
-	WINDOWDIM_SCALED( 4266,		2000,	res_16_9,	1.2 ),
-	WINDOWDIM_SCALED( 5600,		2000,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 320,		200,	res_post_4_3	),
+	WINDOWDIM_SCALED( 426,		200,	res_post_16_9	),
+	WINDOWDIM_SCALED( 560,		200,	res_post_21_9	),
+	WINDOWDIM_SCALED( 854,		200,	res_post_32_9	),
+	WINDOWDIM_SCALED( 640,		400,	res_post_4_3	),
+	WINDOWDIM_SCALED( 854,		400,	res_post_16_9	),
+	WINDOWDIM_SCALED( 1120,		400,	res_post_21_9	),
+	WINDOWDIM_SCALED( 1706,		400,	res_post_32_9	),
+	WINDOWDIM_SCALED( 1280,		800,	res_post_4_3	),
+	WINDOWDIM_SCALED( 1706,		800,	res_post_16_9	),
+	WINDOWDIM_SCALED( 2240,		800,	res_post_21_9	),
+	WINDOWDIM_SCALED( 3414,		800,	res_post_32_9	),
+	WINDOWDIM_SCALED( 1440,		900,	res_post_4_3	),
+	WINDOWDIM_SCALED( 1920,		900,	res_post_16_9	),
+	WINDOWDIM_SCALED( 2520,		900,	res_post_21_9	),
+	WINDOWDIM_SCALED( 3840,		900,	res_post_32_9	),
+	WINDOWDIM_SCALED( 1600,		1000,	res_post_4_3	),
+	WINDOWDIM_SCALED( 2132,		1000,	res_post_16_9	),
+	WINDOWDIM_SCALED( 2800,		1000,	res_post_21_9	),
+	WINDOWDIM_SCALED( 4266,		1000,	res_post_32_9	),
+	WINDOWDIM_SCALED( 1920,		1200,	res_post_4_3	),
+	WINDOWDIM_SCALED( 2560,		1200,	res_post_16_9	),
+	WINDOWDIM_SCALED( 3360,		1200,	res_post_21_9	),
+	WINDOWDIM_SCALED( 5120,		1200,	res_post_32_9	),
+	WINDOWDIM_SCALED( 2560,		1600,	res_post_4_3	),
+	WINDOWDIM_SCALED( 3414,		1600,	res_post_16_9	),
+	WINDOWDIM_SCALED( 4480,		1600,	res_post_21_9	),
+	WINDOWDIM_SCALED( 2880,		1800,	res_post_4_3	),
+	WINDOWDIM_SCALED( 3840,		1800,	res_post_16_9	),
+	WINDOWDIM_SCALED( 5040,		1800,	res_post_21_9	),
+	WINDOWDIM_SCALED( 3200,		2000,	res_post_4_3	),
+	WINDOWDIM_SCALED( 4266,		2000,	res_post_16_9	),
+	WINDOWDIM_SCALED( 5600,		2000,	res_post_21_9	),
+
+	WINDOWDIM(	320,		240,	res_4_3		),
+	WINDOWDIM(	426,		240,	res_16_9	),
+	WINDOWDIM(	560,		240,	res_21_9	),
+	WINDOWDIM(	854,		240,	res_32_9	),
+	WINDOWDIM(	640,		480,	res_4_3		),
+	WINDOWDIM(	854,		480,	res_16_9	),
+	WINDOWDIM(	1120,		480,	res_21_9	),
+	WINDOWDIM(	1706,		480,	res_32_9	),
+	WINDOWDIM(	960,		720,	res_4_3		),
+	WINDOWDIM(	1280,		720,	res_16_9	),
+	WINDOWDIM(	1680,		720,	res_21_9	),
+	WINDOWDIM(	2560,		720,	res_32_9	),
+	WINDOWDIM(	1200,		900,	res_4_3		),
+	WINDOWDIM(	1600,		900,	res_16_9	),
+	WINDOWDIM(	2100,		900,	res_21_9	),
+	WINDOWDIM(	3200,		900,	res_32_9	),
+	WINDOWDIM(	1280,		960,	res_4_3		),
+	WINDOWDIM(	1706,		960,	res_16_9	),
+	WINDOWDIM(	2240,		960,	res_21_9	),
+	WINDOWDIM(	3414,		960,	res_32_9	),
+	WINDOWDIM(	1440,		1080,	res_4_3		),
+	WINDOWDIM(	1920,		1080,	res_16_9	),
+	WINDOWDIM(	2520,		1080,	res_21_9	),
+	WINDOWDIM(	3840,		1080,	res_32_9	),
+	WINDOWDIM(	1600,		1200,	res_4_3		),
+	WINDOWDIM(	2132,		1200,	res_16_9	),
+	WINDOWDIM(	2800,		1200,	res_21_9	),
+	WINDOWDIM(	4266,		1200,	res_32_9	),
+	WINDOWDIM(	1920,		1440,	res_4_3		),
+	WINDOWDIM(	2560,		1440,	res_16_9	),
+	WINDOWDIM(	3360,		1440,	res_21_9	),
+	WINDOWDIM(	5120,		1440,	res_32_9	),
+	WINDOWDIM(	2560,		1820,	res_4_3		),
+	WINDOWDIM(	3414,		1820,	res_16_9	),
+	WINDOWDIM(	4480,		1820,	res_21_9	),
+	WINDOWDIM(	2880,		2160,	res_4_3		),
+	WINDOWDIM(	3840,		2160,	res_16_9	),
+	WINDOWDIM(	5040,		2160,	res_21_9	),
+	WINDOWDIM(	3200,		2400,	res_4_3		),
+	WINDOWDIM(	4266,		2400,	res_16_9	),
+	WINDOWDIM(	5600,		2400,	res_21_9	),
+
 };
 
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
@@ -2981,7 +3035,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				if( newresolution )
 				{
 					render_dimensions_current = newresolution->asstring;
-					I_SetRenderDimensions( newresolution->width, newresolution->height );
+					I_SetRenderDimensions( newresolution->width, newresolution->height, newresolution->postscaling );
 					R_RebalanceContexts();
 				}
 

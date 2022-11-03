@@ -530,6 +530,7 @@ void D_RunFrame()
 
 	int32_t prev_render_width = render_width;
 	int32_t prev_render_height = render_height;
+	int32_t prev_render_post_scaling = render_post_scaling;
 
 	boolean dofinishupdate = true;
 
@@ -559,7 +560,7 @@ void D_RunFrame()
 	else
 	{
 		// TODO: Callbacks or something
-		if( prev_render_width != render_width || prev_render_height != render_height )
+		if( prev_render_width != render_width || prev_render_height != render_height || prev_render_post_scaling != render_post_scaling )
 		{
 			R_RenderDimensionsChanged();
 		}

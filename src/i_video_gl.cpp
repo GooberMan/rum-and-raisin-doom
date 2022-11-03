@@ -48,6 +48,7 @@ extern "C"
 
 	extern int32_t render_width;
 	extern int32_t render_height;
+	extern int32_t render_post_scaling;
 	extern int32_t window_width;
 	extern int32_t window_height;
 	extern int32_t display_width;
@@ -681,7 +682,7 @@ DOOM_C_API void I_VideoRenderGLBackbuffer( void )
 	const int32_t& this_width	= fullscreen ? display_width : window_width;
 	const int32_t& this_height	= fullscreen ? display_height : window_height;
 
-	int32_t actual_height = render_height * 1.2;
+	int32_t actual_height = render_post_scaling ? render_height * 1.2 : render_height;
 
 	int32_t viewport_x = 0;
 	int32_t viewport_y = 0;

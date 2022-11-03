@@ -153,11 +153,12 @@ int32_t vsync_mode = VSync_Native;
 
 // Screen width and height, from configuration file.
 
-#define DEFAULT_WINDOW_WIDTH	1280
-#define DEFAULT_WINDOW_HEIGHT	720
-#define DEFAULT_RENDER_WIDTH	1706
-#define DEFAULT_RENDER_HEIGHT	800
-#define DEFAULT_FULLSCREEN		0
+#define DEFAULT_WINDOW_WIDTH		1280
+#define DEFAULT_WINDOW_HEIGHT		720
+#define DEFAULT_RENDER_WIDTH		1706
+#define DEFAULT_RENDER_HEIGHT		800
+#define DEFAULT_RENDER_POSTSCALING	1
+#define DEFAULT_FULLSCREEN			0
 
 int32_t window_width = DEFAULT_WINDOW_WIDTH;
 int32_t window_height = DEFAULT_WINDOW_HEIGHT;
@@ -172,12 +173,14 @@ enum renderdimensions_e
 int32_t render_dimensions_mode = RMD_Independent;
 int32_t render_width = DEFAULT_RENDER_WIDTH;
 int32_t render_height = DEFAULT_RENDER_HEIGHT;
+int32_t render_post_scaling = DEFAULT_RENDER_POSTSCALING;
 
 int32_t queued_window_width = DEFAULT_WINDOW_WIDTH;
 int32_t queued_window_height = DEFAULT_WINDOW_HEIGHT;
 int32_t queued_fullscreen = DEFAULT_FULLSCREEN;
 int32_t queued_render_width = DEFAULT_RENDER_WIDTH;
 int32_t queued_render_height = DEFAULT_RENDER_HEIGHT;
+int32_t queued_render_post_scaling = DEFAULT_RENDER_POSTSCALING;
 int32_t queued_num_render_buffers = 1;
 
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
@@ -196,8 +199,6 @@ static int32_t max_scaling_buffer_pixels = 16000000;
 int32_t fullscreen = DEFAULT_FULLSCREEN;
 
 // Aspect ratio correction mode
-
-int32_t aspect_ratio_correct = true;
 int32_t actualheight;
 
 // Force integer scales for resolution-independent rendering
@@ -496,10 +497,11 @@ void I_SetWindowDimensions( int32_t w, int32_t h )
 	queued_window_height = h;
 }
 
-void I_SetRenderDimensions( int32_t w, int32_t h )
+void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s )
 {
 	queued_render_width = w;
 	queued_render_height = h;
+	queued_render_post_scaling = s;
 }
 
 void I_GetEvent(void)
@@ -1614,6 +1616,7 @@ void I_InitGraphics( void )
 	queued_fullscreen = fullscreen;
 	queued_render_width = render_width;
 	queued_render_height = render_height;
+	queued_render_post_scaling = render_post_scaling;
 
     // Pass through the XSCREENSAVER_WINDOW environment variable to 
     // SDL_WINDOWID, to embed the SDL window into the Xscreensaver
@@ -1651,9 +1654,9 @@ void I_InitGraphics( void )
 		// TODO: Scale back down for aspect ratio stuff... although I think I might go ahead and baleete all that.
 	}
 
-	if (aspect_ratio_correct == 1)
+	if( render_post_scaling )
 	{
-		actualheight = (int32_t)( render_height * 1.2f );
+		actualheight = (int32_t)( render_height * 1.2 );
 	}
 	else
 	{
@@ -1664,9 +1667,9 @@ void I_InitGraphics( void )
     // on configuration.
     SetVideoMode();
 
-	if ( aspect_ratio_correct == 1 )
+	if ( render_post_scaling == 1 )
 	{
-		actualheight = ( render_height * 1200 / 1000 );
+		actualheight = (int32_t)( render_height * 1.2 );
 	}
 	else
 	{
@@ -1722,6 +1725,7 @@ void I_InitBuffers( int32_t numbuffers )
 	queued_num_render_buffers = numbuffers;
 	queued_render_width = render_width;
 	queued_render_height = render_height;
+	queued_render_post_scaling = render_post_scaling;
 	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
 
 	buffers_initialised = true;
@@ -1734,6 +1738,20 @@ void I_StartFrame (void)
 {
 	if( buffers_initialised )
 	{
+		if( queued_render_post_scaling != render_post_scaling )
+		{
+			render_post_scaling = queued_render_post_scaling;
+
+			if ( render_post_scaling == 1 )
+			{
+				actualheight = (int32_t)( render_height * 1.2 );
+			}
+			else
+			{
+				actualheight = render_height;
+			}
+		}
+
 		if( queued_render_width != render_width
 			|| queued_render_height != render_height
 			|| queued_num_render_buffers != renderbuffercount )
@@ -1741,9 +1759,9 @@ void I_StartFrame (void)
 			render_height = blit_rect.w = queued_render_height;
 			render_width = blit_rect.h = queued_render_width;
 
-			if ( aspect_ratio_correct == 1 )
+			if ( render_post_scaling == 1 )
 			{
-				actualheight = ( render_height * 1200 / 1000 );
+				actualheight = (int32_t)( render_height * 1.2 );
 			}
 			else
 			{
@@ -1783,7 +1801,6 @@ void I_BindVideoVariables(void)
     M_BindIntVariable("use_mouse",                 &usemouse);
     M_BindIntVariable("fullscreen",                &fullscreen);
     M_BindIntVariable("video_display",             &video_display);
-    M_BindIntVariable("aspect_ratio_correct",      &aspect_ratio_correct);
     M_BindIntVariable("integer_scaling",           &integer_scaling);
     M_BindIntVariable("vga_porch_flash",           &vga_porch_flash);
     M_BindIntVariable("startup_delay",             &startup_delay);
@@ -1799,6 +1816,7 @@ void I_BindVideoVariables(void)
 
 	M_BindIntVariable("render_width",				&render_width);
 	M_BindIntVariable("render_height",				&render_height);
+    M_BindIntVariable("render_post_scaling",		&render_post_scaling);
 	M_BindIntVariable("render_dimensions_mode",		&render_dimensions_mode);
 	M_BindIntVariable("vsync_mode",					&vsync_mode);
 
