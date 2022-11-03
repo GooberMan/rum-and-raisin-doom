@@ -1242,14 +1242,16 @@ void M_ChangeSensitivity(int choice)
 void M_ChangeDetail(int choice)
 {
     choice = 0;
-    detailLevel = 1 - detailLevel;
+    detailLevel = 0;
 
-    R_SetViewSize (screenblocks, detailLevel);
+	dashboardactive = true;
+	debugwindow_options = true;
+	debugwindow_tofocus = cat_screen;
 
-    if (!detailLevel)
-	players[consoleplayer].message = DEH_String(DETAILHI);
-    else
-	players[consoleplayer].message = DEH_String(DETAILLO);
+    //if (!detailLevel)
+	//players[consoleplayer].message = DEH_String(DETAILHI);
+    //else
+	//players[consoleplayer].message = DEH_String(DETAILLO);
 }
 
 
@@ -1792,19 +1794,11 @@ boolean M_Responder (event_t* ev)
 	    S_StartSound(NULL,sfx_swtchn);
 	    return true;
 	}
-	// TODO: make this bring up the render menu in the dashboard window
         else if (key == key_menu_detail)   // Detail toggle
         {
-			dashboardactive = true;
-			debugwindow_options = true;
-			debugwindow_tofocus = cat_screen;
-			S_StartSound(NULL, dashboardopensound);
+			M_ChangeDetail(0);
+			S_StartSound(NULL,sfx_swtchn);
 			return true;
-
-			// Old implementation
-			//M_ChangeDetail(0);
-			//S_StartSound(NULL,sfx_swtchn);
-			//return true;
         }
         else if (key == key_menu_qsave)    // Quicksave
         {
@@ -2314,9 +2308,11 @@ static windowsizes_t render_sizes[] =
 	WINDOWDIM_SCALED( 1600,		1000,	res_4_3,	1.2 ),
 	WINDOWDIM_SCALED( 2132,		1000,	res_16_9,	1.2 ),
 	WINDOWDIM_SCALED( 2800,		1000,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 4266,		1000,	res_32_9,	1.2 ),
 	WINDOWDIM_SCALED( 1920,		1200,	res_4_3,	1.2 ),
 	WINDOWDIM_SCALED( 2560,		1200,	res_16_9,	1.2 ),
 	WINDOWDIM_SCALED( 3360,		1200,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 5120,		1200,	res_32_9,	1.2 ),
 	WINDOWDIM_SCALED( 2560,		1600,	res_4_3,	1.2 ),
 	WINDOWDIM_SCALED( 3414,		1600,	res_16_9,	1.2 ),
 	WINDOWDIM_SCALED( 4480,		1600,	res_21_9,	1.2 ),
@@ -2329,8 +2325,6 @@ static windowsizes_t render_sizes[] =
 };
 
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
-static int32_t render_width_working;
-static int32_t render_height_working;
 static const char* render_dimensions_current = NULL;
 
 static const char* disk_icon_strings[] =
@@ -2702,29 +2696,26 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 	igPopID();
 }
 
-void M_DashboardResolutionPicker( )
+windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windowsizes_t* sizes, int32_t numsizes, int32_t currwidth, int32_t currheight )
 {
-	igPushIDPtr( &render_dimensions_current );
+	windowsizes_t* set = NULL;
 
-	// ImGuiNextWindowDataFlags_HasSizeConstraint
-	if( igBeginCombo( "", render_dimensions_current, ImGuiWindowFlags_None ) )
+	igPushIDPtr( id );
+
+	if( igBeginCombo( "", preview, ImGuiWindowFlags_None ) )
 	{
 		for( int32_t currcat = 0; currcat < res_unknown; ++currcat )
 		{
 			if( igBeginMenu( resolutioncatstrings[ currcat ], true ) )
 			{
-				for( int32_t currsize = 0; currsize < render_sizes_count; ++currsize )
+				for( int32_t currsize = 0; currsize < numsizes; ++currsize )
 				{
-					if( render_sizes[ currsize ].category == currcat )
+					if( sizes[ currsize ].category == currcat )
 					{
-						boolean selected = render_width == render_sizes[ currsize ].width && render_height == render_sizes[ currsize ].height;
-						if( igSelectableBool( render_sizes[ currsize ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+						boolean selected = currwidth == sizes[ currsize ].width && currheight == sizes[ currsize ].height;
+						if( igSelectableBool( sizes[ currsize ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
 						{
-							render_dimensions_current = render_sizes[ currsize ].asstring;
-							render_width_working = render_sizes[ currsize ].width;
-							render_height_working = render_sizes[ currsize ].height;
-							I_SetRenderDimensions( render_width_working, render_height_working );
-							R_RebalanceContexts();
+							set = &sizes[ currsize ];
 						}
 					}
 				}
@@ -2736,6 +2727,8 @@ void M_DashboardResolutionPicker( )
 		igEndCombo();
 	}
 	igPopID();
+
+	return set;
 }
 
 void M_DashboardOptionsWindow( const char* itemname, void* data )
@@ -2984,12 +2977,20 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igNextColumn();
 				igPushItemWidth( 180.f );
 
-				M_DashboardResolutionPicker();
+				windowsizes_t* newresolution = M_DashboardResolutionPicker( &render_dimensions_current, render_dimensions_current
+																			, render_sizes, render_sizes_count
+																			, render_width, render_height );
+				if( newresolution )
+				{
+					render_dimensions_current = newresolution->asstring;
+					I_SetRenderDimensions( newresolution->width, newresolution->height );
+					R_RebalanceContexts();
+				}
 
 				igPopItemWidth();
 				igNextColumn();
 
-				igText( "Software backbuffers" );
+				igText( "Chain length" );
 				igNextColumn();
 				igPushIDPtr( &fullscreen );
 				if( igSliderInt( "", &num_software_backbuffers, 1, 3, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
@@ -3121,7 +3122,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			if( igSliderInt( "", &screenblocks, 3, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
 				screenSize = screenblocks - 3;
-				R_SetViewSize (screenblocks, detailLevel);
+				R_SetViewSize (screenblocks, 0);
 			}
 			igPopItemWidth();
 			igPopID();
@@ -3148,7 +3149,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 			if( doresize )
 			{
-				R_SetViewSize (screenblocks, detailLevel);
+				R_SetViewSize (screenblocks, 0);
 			}
 
 			igNextColumn();
@@ -3194,19 +3195,6 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igPopID();
 
 			igNextColumn();
-			igText( "Low detail" );
-			igNextColumn();
-			WorkingBool = !!detailLevel;
-			igPushIDPtr( &detailLevel );
-			if( igCheckbox( "", &WorkingBool ) )
-			{
-				detailLevel = (int32_t)WorkingBool;
-				players[consoleplayer].message = DEH_String( !detailLevel ? DETAILHI : DETAILLO );
-				R_SetViewSize (screenblocks, detailLevel);
-			}
-			igPopID();
-			igNextColumn();
-
 			igText( "Messages" );
 			igNextColumn();
 			WorkingBool = !!showMessages;

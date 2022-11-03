@@ -43,17 +43,6 @@ static pixel_t*	wipe_scr_start;
 static pixel_t*	wipe_scr_end;
 static pixel_t*	wipe_scr;
 
-typedef struct hsv_s
-{
-	double_t hue;
-	double_t saturation;
-	double_t value;
-} hsv_t;
-
-static uint64_t wipe_progress;
-static rgb_t* wipe_palette;
-static hsv_t* wipe_hsv;
-
 extern int32_t render_width;
 extern int32_t render_height;
 
@@ -234,115 +223,6 @@ wipe_exitMelt
     return 0;
 }
 
-void ToHSV( hsv_t* dest, rgb_t* source )
-{
-	pixel_t min = M_MIN( M_MIN( source->r, source->g ), source->b );
-	pixel_t max = M_MAX( M_MAX( source->r, source->g ), source->b );
-
-	dest->value = max / 255.0;
-	double_t delta = max - min;
-	if( delta == 0 )
-	{
-		dest->hue = dest->saturation = 0;
-	}
-	else
-	{
-		dest->saturation = max > 0 ? delta / max : 0;
-
-		if( max == source->r )
-		{
-			dest->hue = 60 * fmod( ( ( source->g - source->b ) / delta ), 6 );
-		}
-		else if( max == source->g )
-		{
-			dest->hue = 60 * ( ( ( source->b - source->r ) / delta ) + 2 );
-		}
-		else
-		{
-			dest->hue = 60 * ( ( ( source->r - source->g ) / delta ) + 2 );
-		}
-	}
-}
-
-void Blend( rgb_t* output, rgb_t* lhs, rgb_t* rhs, double_t percent )
-{
-	output->r = ( 1.0 - percent ) * lhs->r + percent * rhs->r;
-	output->g = ( 1.0 - percent ) * lhs->g + percent * rhs->g;
-	output->b = ( 1.0 - percent ) * lhs->b + percent * rhs->b;
-}
-
-int32_t ClosestMatch( hsv_t* source )
-{
-	double_t distance = 720.0; // Get a better value;
-	int32_t result = -1;
-
-	for( hsv_t* val = wipe_hsv; val < wipe_hsv + 256; ++val )
-	{
-		double_t thisdistance = M_MIN( fabs( source->value - val->value ), 360 - fabs( val->value - source->value ) );
-		if( thisdistance < distance )
-		{
-			result = val - wipe_hsv;
-			distance = thisdistance;
-		}
-	}
-
-	return result;
-}
-
-int wipe_initBlend( int width, int height, uint64_t ticks )
-{
-	wipe_progress = 0;
-	wipe_palette = (rgb_t*)W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE );
-	wipe_hsv = Z_Malloc( sizeof( hsv_t ) * 256, PU_STATIC, NULL );
-
-	for( int32_t ind = 0; ind < 256; ++ind )
-	{
-		ToHSV( &wipe_hsv[ ind ], &wipe_palette[ ind ] );
-	}
-
-	return 1;
-}
-
-#define WIPE_BLEND_TICS 50
-
-int wipe_updateBlend( int width, int height, uint64_t ticks )
-{
-	wipe_progress = M_MIN( wipe_progress + 1, WIPE_BLEND_TICS );
-	double_t progress = (double_t)wipe_progress / WIPE_BLEND_TICS;
-
-	pixel_t* lhs = wipe_scr_start;
-	pixel_t* rhs = wipe_scr_end;
-	pixel_t* dest = wipe_scr;
-
-	pixel_t* end = wipe_scr + ( width * height );
-
-	while( dest < end )
-	{
-		rgb_t* leftentry = wipe_palette + *lhs;
-		rgb_t* rightentry = wipe_palette + *rhs;
-
-		rgb_t currrgb;
-		hsv_t currhsv;
-		Blend( &currrgb, leftentry, rightentry, progress );
-		ToHSV( &currhsv, &currrgb );
-
-		*dest = ClosestMatch( &currhsv );
-
-		++lhs;
-		++rhs;
-		++dest;
-	}
-
-	return wipe_progress >= WIPE_BLEND_TICS;
-}
-
-int wipe_exitBlend( int width, int height, uint64_t ticks )
-{
-	Z_Free( wipe_hsv );
-
-	return 1;
-}
-
 int
 wipe_StartScreen
 ( int	x,
@@ -382,7 +262,6 @@ static wipe_t wipes[] =
 {
 	{ wipe_initColorXForm,	wipe_doColorXForm,	wipe_exitColorXForm		},
 	{ wipe_initMelt,		wipe_doMelt,		wipe_exitMelt			},
-	{ wipe_initBlend,		wipe_updateBlend,	wipe_exitBlend			},
 };
 
 int
