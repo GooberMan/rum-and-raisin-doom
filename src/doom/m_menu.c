@@ -2233,16 +2233,35 @@ static uint8_t defaultpalette[] =
 		0xCF, 0x00, 0xCF,		0x9F, 0x00, 0x9B,		0x6F, 0x00, 0x6B,		0xA7, 0x6B, 0x6B,
 };
 
+typedef enum resolutioncat_e
+{
+	res_4_3,
+	res_16_9,
+	res_21_9,
+	res_32_9,
+
+	res_unknown,
+} resolutioncat_t;
+
+static const char* resolutioncatstrings[] =
+{
+	"4:3",
+	"16:9",
+	"21:9",
+	"32:9",
+};
+
 typedef struct windowsizes_s
 {
 	int32_t			width;
 	int32_t			height;
+	resolutioncat_t	category;
 	double_t		scaletobuffer;
 	const char*		asstring;
 } windowsizes_t;
 
-#define WINDOWDIM( w, h )			{ w, h, 1.0, #w "x" #h }
-#define WINDOWDIM_SCALED( w, h, s )	{ w, h, s, #w "x" #h }
+#define WINDOWDIM( w, h )				{ w, h, res_unknown, 1.0, #w "x" #h }
+#define WINDOWDIM_SCALED( w, h, c, s )	{ w, h, c, s, #w "x" #h }
 #define WINDOW_MINWIDTH 800
 #define WINDOW_MINHEIGHT 600
 
@@ -2276,33 +2295,37 @@ static const char* window_dimensions_current = NULL;
 
 static windowsizes_t render_sizes[] =
 {
-	WINDOWDIM_SCALED( 320,		200,	1.2 ),
-	WINDOWDIM_SCALED( 426,		200,	1.2 ),
-	WINDOWDIM_SCALED( 560,		200,	1.2 ),
-	WINDOWDIM_SCALED( 640,		400,	1.2 ),
-	WINDOWDIM_SCALED( 854,		400,	1.2 ),
-	WINDOWDIM_SCALED( 1120,		400,	1.2 ),
-	WINDOWDIM_SCALED( 1280,		800,	1.2 ),
-	WINDOWDIM_SCALED( 1706,		800,	1.2 ),
-	WINDOWDIM_SCALED( 2240,		800,	1.2 ),
-	WINDOWDIM_SCALED( 1440,		900,	1.2 ),
-	WINDOWDIM_SCALED( 1920,		900,	1.2 ),
-	WINDOWDIM_SCALED( 2520,		900,	1.2 ),
-	WINDOWDIM_SCALED( 1600,		1000,	1.2 ),
-	WINDOWDIM_SCALED( 2132,		1000,	1.2 ),
-	WINDOWDIM_SCALED( 2800,		1000,	1.2 ),
-	WINDOWDIM_SCALED( 1920,		1200,	1.2 ),
-	WINDOWDIM_SCALED( 2560,		1200,	1.2 ),
-	WINDOWDIM_SCALED( 3360,		1200,	1.2 ),
-	WINDOWDIM_SCALED( 2560,		1600,	1.2 ),
-	WINDOWDIM_SCALED( 3414,		1600,	1.2 ),
-	WINDOWDIM_SCALED( 4480,		1600,	1.2 ),
-	WINDOWDIM_SCALED( 2880,		1800,	1.2 ),
-	WINDOWDIM_SCALED( 3840,		1800,	1.2 ),
-	WINDOWDIM_SCALED( 5040,		1800,	1.2 ),
-	WINDOWDIM_SCALED( 3200,		2000,	1.2 ),
-	WINDOWDIM_SCALED( 4266,		2000,	1.2 ),
-	WINDOWDIM_SCALED( 5600,		2000,	1.2 ),
+	WINDOWDIM_SCALED( 320,		200,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 426,		200,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 560,		200,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 854,		200,	res_32_9,	1.2 ),
+	WINDOWDIM_SCALED( 640,		400,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 854,		400,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 1120,		400,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 1706,		400,	res_32_9,	1.2 ),
+	WINDOWDIM_SCALED( 1280,		800,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 1706,		800,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 2240,		800,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 3414,		800,	res_32_9,	1.2 ),
+	WINDOWDIM_SCALED( 1440,		900,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 1920,		900,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 2520,		900,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 3840,		900,	res_32_9,	1.2 ),
+	WINDOWDIM_SCALED( 1600,		1000,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 2132,		1000,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 2800,		1000,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 1920,		1200,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 2560,		1200,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 3360,		1200,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 2560,		1600,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 3414,		1600,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 4480,		1600,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 2880,		1800,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 3840,		1800,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 5040,		1800,	res_21_9,	1.2 ),
+	WINDOWDIM_SCALED( 3200,		2000,	res_4_3,	1.2 ),
+	WINDOWDIM_SCALED( 4266,		2000,	res_16_9,	1.2 ),
+	WINDOWDIM_SCALED( 5600,		2000,	res_21_9,	1.2 ),
 };
 
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
@@ -2679,6 +2702,42 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 	igPopID();
 }
 
+void M_DashboardResolutionPicker( )
+{
+	igPushIDPtr( &render_dimensions_current );
+
+	// ImGuiNextWindowDataFlags_HasSizeConstraint
+	if( igBeginCombo( "", render_dimensions_current, ImGuiWindowFlags_None ) )
+	{
+		for( int32_t currcat = 0; currcat < res_unknown; ++currcat )
+		{
+			if( igBeginMenu( resolutioncatstrings[ currcat ], true ) )
+			{
+				for( int32_t currsize = 0; currsize < render_sizes_count; ++currsize )
+				{
+					if( render_sizes[ currsize ].category == currcat )
+					{
+						boolean selected = render_width == render_sizes[ currsize ].width && render_height == render_sizes[ currsize ].height;
+						if( igSelectableBool( render_sizes[ currsize ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+						{
+							render_dimensions_current = render_sizes[ currsize ].asstring;
+							render_width_working = render_sizes[ currsize ].width;
+							render_height_working = render_sizes[ currsize ].height;
+							I_SetRenderDimensions( render_width_working, render_height_working );
+							R_RebalanceContexts();
+						}
+					}
+				}
+
+				igEndMenu();
+			}
+		}
+
+		igEndCombo();
+	}
+	igPopID();
+}
+
 void M_DashboardOptionsWindow( const char* itemname, void* data )
 {
 	extern int32_t fullscreen;
@@ -2924,24 +2983,9 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igText( "Size" );
 				igNextColumn();
 				igPushItemWidth( 180.f );
-				igPushIDPtr( &render_dimensions_current );
-				if( igBeginCombo( "", render_dimensions_current, ImGuiComboFlags_None ) )
-				{
-					for( index = 0; index < render_sizes_count; ++index )
-					{
-						selected = render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height;
-						if( igSelectableBool( render_sizes[ index ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
-						{
-							render_dimensions_current = render_sizes[ index ].asstring;
-							render_width_working = render_sizes[ index ].width;
-							render_height_working = render_sizes[ index ].height;
-							I_SetRenderDimensions( render_width_working, render_height_working );
-							R_RebalanceContexts();
-						}
-					}
-					igEndCombo();
-				}
-				igPopID();
+
+				M_DashboardResolutionPicker();
+
 				igPopItemWidth();
 				igNextColumn();
 
