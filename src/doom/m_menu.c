@@ -3124,28 +3124,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igText( "Wipe style" );
 			igNextColumn();
 			igPushIDPtr( &wipe_style );
-			//igRadioButtonIntPtr( "Color Xform", &wipe_style, wipe_ColorXForm );
-			//igSameLine( 0, -1 );
 			igRadioButtonIntPtr( "Melt", &wipe_style, wipe_Melt );
 			igPopID();
-
-			//igNextColumn();
-			//igText( "Span func override" );
-			//igNextColumn();
-			//igPushIDPtr( &span_override );
-			//if( igBeginCombo( "", span_override_strings[ span_override ], ImGuiComboFlags_None ) )
-			//{
-			//	for( index = 0; index < span_override_strings_count; ++index )
-			//	{
-			//		selected = index == span_override;
-			//		if( igSelectableBool( span_override_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
-			//		{
-			//			span_override = index;
-			//		}
-			//	}
-			//	igEndCombo();
-			//}
-			//igPopID();
 
 			igNextColumn();
 			igText( "Low detail" );
