@@ -292,6 +292,8 @@ typedef struct mobj_s
     struct mobj_s*	tracer;	
 
 	uint64_t teleporttic;
+
+	int32_t resurrection_count;
     
 } mobj_t;
 

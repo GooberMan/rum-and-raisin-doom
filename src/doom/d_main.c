@@ -599,6 +599,7 @@ void D_RunFrame()
 	M_PROFILE_POP( __FUNCTION__ );
 
 	I_TerminalRender();
+
 	I_FinishUpdate( NULL );
 
 	frametime = I_GetTimeUS() - start;

@@ -1222,6 +1222,8 @@ P_SetupLevel
     int		i;
     DoomString lumpname;
     int		lumpnum;
+
+	session = { };
 	
     totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
     wminfo.partime = 180;

@@ -664,7 +664,11 @@ P_TouchSpecialThing
     }
 	
     if (special->flags & MF_COUNTITEM)
-	player->itemcount++;
+	{
+		player->itemcount++;
+		++session.total_found_items_global;
+		++session.total_found_items[ player - players ];
+	}
     P_RemoveMobj (special);
     player->bonuscount += BONUSADD;
     if (player == &players[consoleplayer])
@@ -680,32 +684,45 @@ P_KillMobj
 ( mobj_t*	source,
   mobj_t*	target )
 {
-    mobjtype_t	item;
-    mobj_t*	mo;
+	mobjtype_t	item;
+	mobj_t*	mo;
 	
-    target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
+	target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
 
-    if (target->type != MT_SKULL)
+	if (target->type != MT_SKULL)
 	target->flags &= ~MF_NOGRAVITY;
 
-    target->flags |= MF_CORPSE|MF_DROPOFF;
-    target->height >>= 2;
+	target->flags |= MF_CORPSE|MF_DROPOFF;
+	target->height >>= 2;
 
-    if (source && source->player)
-    {
-	// count for intermission
-	if (target->flags & MF_COUNTKILL)
-	    source->player->killcount++;	
+	if( target->flags & MF_COUNTKILL )
+	{
+		if( target->resurrection_count > 0 ) ++session.total_resurrected_monster_kills_global;
+		else ++session.total_monster_kills_global;
+	}
 
-	if (target->player)
-	    source->player->frags[target->player-players]++;
-    }
-    else if (!netgame && (target->flags & MF_COUNTKILL) )
-    {
-	// count all monster deaths,
-	// even those caused by other monsters
-	players[0].killcount++;
-    }
+	if (source && source->player)
+	{
+		// count for intermission
+		if (target->flags & MF_COUNTKILL)
+		{
+			source->player->killcount++;
+			if( target->resurrection_count > 0 ) ++session.total_resurrected_monster_kills[ source->player - players ];
+			else ++session.total_monster_kills[ source->player - players ];
+		}
+
+		if (target->player)
+			source->player->frags[target->player-players]++;
+
+	}
+	else if (!netgame && (target->flags & MF_COUNTKILL) )
+	{
+		// count all monster deaths,
+		// even those caused by other monsters
+		players[0].killcount++;
+		if( target->resurrection_count > 0 ) ++session.total_resurrected_monster_kills[ 0 ];
+		else ++session.total_monster_kills[ 0 ];
+	}
     
     if (target->player)
     {

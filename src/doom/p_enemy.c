@@ -1225,6 +1225,8 @@ void A_VileChase (mobj_t* actor)
 		    corpsehit->flags = info->flags;
 		    corpsehit->health = info->spawnhealth;
 		    corpsehit->target = NULL;
+			++corpsehit->resurrection_count;
+			++session.resurrected_monsters;
 
 		    return;
 		}

@@ -2714,6 +2714,245 @@ static const char* vsync_strings[ VSync_Max ] =
 	"360Hz",			// VSync_360Hz
 };
 
+sessionstats_t session;
+
+#define GS_Stat_OriginalMonsters	0x0000000000000001ull
+#define GS_Stat_AllMonsters			0x0000000000000002ull
+#define GS_Stat_AllItems			0x0000000000000004ull
+#define GS_Stat_AllSecrets			0x0000000000000008ull
+#define GS_Stat_KillsOriginal		0x0000000000000010ull
+#define GS_Stat_KillsResurrected	0x0000000000000020ull
+#define GS_Stat_KillsAll			0x0000000000000040ull
+#define GS_Stat_FoundItems			0x0000000000000100ull
+#define GS_Stat_FoundSecrets		0x0000000000000200ull
+#define GS_Stat_Time				0x0000000000001000ull
+#define GS_Stats					0x000000000000FFFFull
+
+#define GS_Player_Current			0x0000000000000000ull
+#define GS_Player_One				0x0000000001000000ull
+#define GS_Player_Two				0x0000000002000000ull
+#define GS_Player_Three				0x0000000004000000ull
+#define GS_Player_Four				0x0000000008000000ull
+#define GS_Players					0x000000000F000000ull
+
+#define GS_Label_Time				0x0000010000000000ull
+#define GS_Label_Kills				0x0000020000000000ull
+#define GS_Label_Items				0x0000040000000000ull
+#define GS_Label_Secrets			0x0000080000000000ull
+#define GS_Labels					0x0000FF0000000000ull
+
+#define GS_Layout_Spacing			0x0001000000000000ull
+#define GS_Layout_NewLine			0x0002000000000000ull
+#define GS_Layout_Colon				0x0004000000000000ull
+#define GS_Layout_Slash				0x0008000000000000ull
+#define GS_Layouts					0x00FF000000000000ull
+
+#define GS_Modifier_Remaining		0x0100000000000000ull
+#define GS_Modifier_Brackets		0x0200000000000000ull
+#define GS_Modifier_ShortForm		0x0400000000000000ull
+#define GS_Modifiers				0xFF00000000000000ull
+
+static uint64_t statreport[] =
+{
+	GS_Label_Time | GS_Modifier_ShortForm,
+	GS_Layout_Colon,
+	GS_Layout_Spacing,
+	GS_Stat_Time,
+
+	GS_Layout_NewLine,
+
+	GS_Label_Kills | GS_Modifier_ShortForm,
+	GS_Layout_Colon,
+	GS_Layout_Spacing,
+	GS_Stat_KillsAll,
+	GS_Layout_Slash,
+	GS_Stat_AllMonsters,
+
+	GS_Layout_Spacing,
+	GS_Layout_Spacing,
+	GS_Layout_Spacing,
+
+	GS_Label_Items | GS_Modifier_ShortForm,
+	GS_Layout_Colon,
+	GS_Layout_Spacing,
+	GS_Stat_FoundItems,
+	GS_Layout_Slash,
+	GS_Stat_AllItems,
+
+	GS_Layout_Spacing,
+	GS_Layout_Spacing,
+	GS_Layout_Spacing,
+
+	GS_Label_Secrets | GS_Modifier_ShortForm,
+	GS_Layout_Colon,
+	GS_Layout_Spacing,
+	GS_Stat_FoundSecrets,
+	GS_Layout_Slash,
+	GS_Stat_AllSecrets,
+};
+static int32_t numstatreports = arrlen( statreport );
+
+void M_DashboardGameStatsContents( double_t scale )
+{
+	float_t oldscale = igGetCurrentWindow()->FontWindowScale;
+
+	igSetWindowFontScale( scale * 0.9 );
+
+	int32_t numlines = 1;
+	for( int32_t ind = 0; ind < numstatreports; ++ind )
+	{
+		if( statreport[ ind ] & GS_Layout_NewLine ) ++numlines;
+	}
+
+	//for( int32_t ind = numlines; ind < 4; ++ind )
+	//{
+	//	igNewLine();
+	//}
+
+	char buffer[ 512 ];
+	char* dest = buffer;
+
+	char workingbuffer[ 64 ];
+
+	for( int32_t ind = 0; ind < numstatreports; ++ind )
+	{
+		switch( statreport[ ind ] & GS_Layouts )
+		{
+		case GS_Layout_Spacing:
+			*dest++ = ' ';
+			break;
+		case GS_Layout_NewLine:
+			igText( buffer );
+			dest = buffer;
+			buffer[ 0 ] = 0;
+			break;
+		case GS_Layout_Colon:
+			*dest++ = ':';
+			break;
+		case GS_Layout_Slash:
+			*dest++ = '/';
+			break;
+		default:
+			break;
+		}
+
+		const char* formatstring = "%s";
+		if( statreport[ ind ] & GS_Modifier_Remaining ) formatstring = "Remaining %s";
+		else if( statreport[ ind ] & GS_Modifier_Brackets ) formatstring = "(%s)";
+
+		workingbuffer[ 0 ] = 0;
+
+		uint32_t milliseconds;
+		uint32_t seconds;
+		uint32_t minutes;
+
+		switch( statreport[ ind ] & GS_Stats )
+		{
+		case GS_Stat_OriginalMonsters:
+			M_snprintf( workingbuffer, 64, "%d", session.start_total_monsters );
+			break;
+		case GS_Stat_AllMonsters:
+			M_snprintf( workingbuffer, 64, "%d", session.start_total_monsters + session.resurrected_monsters );
+			break;
+		case GS_Stat_AllItems:
+			M_snprintf( workingbuffer, 64, "%d", session.start_total_items );
+			break;
+		case GS_Stat_AllSecrets:
+			M_snprintf( workingbuffer, 64, "%d", session.start_total_secrets );
+			break;
+		case GS_Stat_KillsOriginal:
+			M_snprintf( workingbuffer, 64, "%d", session.total_monster_kills_global );
+			break;
+		case GS_Stat_KillsResurrected:
+			M_snprintf( workingbuffer, 64, "%d", session.total_resurrected_monster_kills_global );
+			break;
+		case GS_Stat_KillsAll:
+			M_snprintf( workingbuffer, 64, "%d", session.total_monster_kills_global + session.total_resurrected_monster_kills_global );
+			break;
+		case GS_Stat_FoundItems:
+			M_snprintf( workingbuffer, 64, "%d", session.total_found_items_global );
+			break;
+		case GS_Stat_FoundSecrets:
+			M_snprintf( workingbuffer, 64, "%d", session.total_found_secrets_global );
+			break;
+		case GS_Stat_Time:
+			milliseconds = ( ( gametic % 35 ) * 10000 ) / 350;
+			seconds = ( gametic / 35 ) % 60;
+			minutes = ( gametic / 35 ) / 60;
+			M_snprintf( workingbuffer, 64, "%d:%02d.%03d", minutes, seconds, milliseconds );
+			break;
+		default:
+			break;
+		}
+
+		bool shortform = statreport[ ind ] & GS_Modifier_ShortForm;
+
+		switch( statreport[ ind ] & GS_Labels )
+		{
+		case GS_Label_Time:
+			M_snprintf( workingbuffer, 64, "Time" );
+			break;
+		case GS_Label_Kills:
+			M_snprintf( workingbuffer, 64, "Kills" );
+			break;
+		case GS_Label_Items:
+			M_snprintf( workingbuffer, 64, "Items" );
+			break;
+		case GS_Label_Secrets:
+			M_snprintf( workingbuffer, 64, "Secrets" );
+			break;
+		default:
+			break;
+		}
+
+		if( ( statreport[ ind ] & GS_Labels ) && shortform )
+		{
+			workingbuffer[ 1 ] = 0;
+		}
+
+		if( workingbuffer[ 0 ] != 0 )
+		{
+			dest += M_snprintf( dest, 512, formatstring, workingbuffer );
+		}
+	}
+
+	if( buffer[ 0 ] )
+	{
+		igText( buffer );
+	}
+
+
+	igSetWindowFontScale( oldscale );
+}
+
+void M_DashboardGameStatsWindow( )
+{
+	ImGuiIO* IO = igGetIO();
+	double_t globalscale = IO->DisplaySize.y / 240.0;
+	double_t scalemod = 0.75;
+	double_t currscale = globalscale * scalemod;
+
+	ImGuiStyle original = *igGetStyle();
+	ImGuiStyle_ScaleAllSizes( igGetStyle(), 0 );
+
+	#define STATS_WIDTH 210
+	#define STATS_HEIGHT 25
+
+	ImVec2 windowsize = { STATS_WIDTH * currscale, STATS_HEIGHT * currscale };
+	ImVec2 windowpos = { ( IO->DisplaySize.x - ( 320 * globalscale ) ) * 0.5 , IO->DisplaySize.y - (32 * 1.2 /*ST_HEIGHT*/ + STATS_HEIGHT * scalemod ) * globalscale };
+	igSetNextWindowSize( windowsize, ImGuiCond_Always );
+	igSetNextWindowPos( windowpos, ImGuiCond_Always, zerosize );
+
+	#define STATS_FLAGS ( ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs )
+	if( igBegin( "Stats for nerds", NULL, STATS_FLAGS ) )
+	{
+		M_DashboardGameStatsContents( currscale );
+	}
+	igEnd();
+
+	*igGetStyle() = original;
+}
+
 static float columwidth = 200.f;
 
 static void M_DashboardControlsRemapping(	const char* itemname,
@@ -3036,7 +3275,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igSetColumnWidth( 0, columwidth );
 
 #if 0
-				igText( "Mach window size" );
+				igText( "Match window size" );
 				igNextColumn();
 				igPushItemWidth( 180.f );
 				igPushIDPtr( &render_dimensions_mode );

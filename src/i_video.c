@@ -974,6 +974,12 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 			I_VideoRenderGLBackbuffer();
 		}
 
+		GLuint fonttexture = igGetIO()->Fonts->TexID;
+		glBindTexture( GL_TEXTURE_2D, fonttexture );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glBindTexture( GL_TEXTURE_2D, 0 );
+
 		M_RenderDashboard( actualwindowwidth, actualwindowheight, I_VideoGetGLIntermediate() );
 	}
 

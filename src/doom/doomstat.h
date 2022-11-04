@@ -44,7 +44,27 @@ extern "C" {
 
 #include "net_defs.h"
 
+typedef struct sessionstats_s
+{
+	int32_t		start_total_monsters;
+	int32_t		start_total_secrets;
+	int32_t		start_total_items;
 
+	int32_t		resurrected_monsters;
+	int32_t		total_resurrected_monster_kills[ MAXPLAYERS ];
+	int32_t		total_resurrected_monster_kills_global;
+
+	int32_t		total_monster_kills[ MAXPLAYERS ];
+	int32_t		total_monster_kills_global;
+
+	int32_t		total_found_secrets[ MAXPLAYERS ];
+	int32_t		total_found_secrets_global;
+
+	int32_t		total_found_items[ MAXPLAYERS ];
+	int32_t		total_found_items_global;
+} sessionstats_t;
+
+extern sessionstats_t session;
 
 // ------------------------
 // Command line parameters.

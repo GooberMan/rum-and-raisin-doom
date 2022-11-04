@@ -1119,6 +1119,8 @@ void P_PlayerInSpecialSector (player_t* player)
 	player->secretcount++;
 	sector->special = 0;
 	sector->secretstate = Secret_Discovered;
+	++session.total_found_secrets_global;
+	++session.total_found_secrets[ player - players ];
 	break;
 			
       case 11:
@@ -1506,6 +1508,7 @@ void P_SpawnSpecials (void)
 	  case 9:
 	    // SECRET SECTOR
 	    totalsecret++;
+		++session.start_total_secrets;
 	    break;
 	    
 	  case 10:
