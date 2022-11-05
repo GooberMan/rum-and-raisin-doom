@@ -2876,9 +2876,9 @@ void M_DashboardGameStatsContents( double_t scale )
 			M_snprintf( workingbuffer, 64, "%d", session.total_found_secrets_global );
 			break;
 		case GS_Stat_Time:
-			milliseconds = ( ( gametic % 35 ) * 10000 ) / 350;
-			seconds = ( gametic / 35 ) % 60;
-			minutes = ( gametic / 35 ) / 60;
+			milliseconds = ( ( session.level_time % 35 ) * 10000 ) / 350;
+			seconds = ( session.level_time / 35 ) % 60;
+			minutes = ( session.level_time / 35 ) / 60;
 			M_snprintf( workingbuffer, 64, "%d:%02d.%03d", minutes, seconds, milliseconds );
 			break;
 		default:

@@ -244,5 +244,7 @@ void P_Ticker (void)
 	P_UpdateInstanceData();
 
     // for par times
-    leveltime++;	
+    leveltime++;
+	session.level_time = leveltime;
+	++session.session_time;
 }

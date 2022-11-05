@@ -62,6 +62,9 @@ typedef struct sessionstats_s
 
 	int32_t		total_found_items[ MAXPLAYERS ];
 	int32_t		total_found_items_global;
+
+	uint64_t	level_time;
+	uint64_t	session_time;
 } sessionstats_t;
 
 extern sessionstats_t session;
