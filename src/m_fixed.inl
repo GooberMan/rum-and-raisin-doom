@@ -35,6 +35,11 @@ INLINE fixed_t FixedDiv(fixed_t a, fixed_t b)
 	return (fixed_t) result;
 }
 
+INLINE fixed_t FixedRound( fixed_t a )
+{
+	return ( a & ~FRACMASK ) + ( ( a & ( 1 << ( FRACBITS - 1 ) ) ) << 1 );
+}
+
 INLINE rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b )
 {
 	rend_fixed_t result = ( a * b ) >> RENDFRACBITS;

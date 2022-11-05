@@ -98,6 +98,9 @@ typedef int64_t rend_fixed_t;
 INLINE fixed_t FixedMul( fixed_t a, fixed_t b );
 INLINE fixed_t FixedDiv( fixed_t a, fixed_t b );
 
+// Rounds to nearest whole number
+INLINE fixed_t FixedRound( fixed_t a );
+
 INLINE rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b );
 INLINE rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
 INLINE rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixed_t percent );
@@ -110,6 +113,8 @@ INLINE rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixe
 
 #define FixedToRendFixed( x ) ( (rend_fixed_t)( x ) << RENDFRACTOFRACBITS )
 #define RendFixedToFixed( x ) ( (fixed_t)RENDFRACFILLFIXED( ( x ) >> RENDFRACTOFRACBITS, ( x ) ) )
+
+#define DoubleToRendFixed( x ) ( IntToRendFixed( (rend_fixed_t)( floor( x ) ) ) | (rend_fixed_t)( ( x - floor( x ) ) * RENDFRACUNIT ) )
 
 #include "m_fixed.inl"
 

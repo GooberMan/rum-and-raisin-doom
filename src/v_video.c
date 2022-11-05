@@ -349,7 +349,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	colcontext_t	column;
 
 	int32_t			widthdiff = ( render_width - aspect_adjusted_render_width ) >> 1;
-	rend_fixed_t	yscale = FixedToRendFixed( V_HEIGHTMULTIPLIER );
+	rend_fixed_t	yscale = ( IntToRendFixed( render_height ) / V_VIRTUALHEIGHT );
 
 	x -= SHORT( patch->leftoffset );
 	y -= SHORT( patch->topoffset );
@@ -392,15 +392,15 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	column.colormap			= NULL;
 	column.translation		= NULL;
 	column.texturemid		= 0;
-	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale );
-	column.yl				= FixedToInt( y * V_HEIGHTMULTIPLIER );
-	column.yh				= FixedToInt( M_MIN( y + clippedheight, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1;
+	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale ) + 1;
+	column.yl				= FixedToInt( FixedRound( y * V_HEIGHTMULTIPLIER ) );
+	column.yh				= FixedToInt( FixedRound( M_MIN( y + clippedheight, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
 
 	rend_fixed_t xwidth		= IntToRendFixed( patch->width );
 	rend_fixed_t xsource	= IntToRendFixed( clippedx );
 
-	column.x = widthdiff + FixedToInt( x * V_WIDTHMULTIPLIER );
-	int32_t xstop = widthdiff + FixedToInt( ( x + clippedwidth ) * V_WIDTHMULTIPLIER );
+	column.x = widthdiff + FixedToInt( FixedRound( x * V_WIDTHMULTIPLIER ) );
+	int32_t xstop = widthdiff + FixedToInt( FixedRound( ( x + clippedwidth ) * V_WIDTHMULTIPLIER ) );
 
 	rend_fixed_t	xscale = RendFixedDiv( IntToRendFixed( clippedwidth ), IntToRendFixed( xstop - column.x ) );
 
@@ -420,8 +420,8 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 		{
 			int32_t thisy		= y + patchcol->topdelta;
 			column.source		= (byte*)patchcol + 3;
-			column.yl			= FixedToInt( thisy * V_HEIGHTMULTIPLIER );
-			column.yh			= FixedToInt( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1;
+			column.yl			= FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) );
+			column.yh			= FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
 			R_BackbufferDrawColumn( &column );
 
 			patchcol = (column_t *)( (byte *)patchcol + patchcol->length + 4 );
