@@ -237,6 +237,7 @@ boolean D_Display( double_t framepercent )
 
 	boolean ispaused = renderpaused = ( paused
 										|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) ) );
+	renderpaused |= menuactive;
 
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
