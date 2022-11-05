@@ -486,14 +486,15 @@ typedef struct menuentry_s
 
 typedef void (*renderchild_t)( menuentry_t* );
 
-typedef enum firstlaunchstate_e
+typedef enum launchstate_e
 {
-	FL_None,
-	FL_Welcome,
-	FL_Options,
+	LS_None,
+	LS_Welcome,
+	LS_Options,
+	LS_Launcher,
 
-	FL_Max,
-} firstlaunchstate_t;
+	LS_Max,
+} launchstate_t;
 
 static menuentry_t* M_FindDashboardCategory( const char* category_name );
 static void M_RenderDashboardChildren( menuentry_t** children );
@@ -513,7 +514,8 @@ extern "C"
 	int32_t					dashboardpausesplaysim = true;
 	int32_t					dashboardopensound = 0;
 	int32_t					dashboardclosesound = 0;
-	int32_t					first_launch = FL_Welcome;
+	int32_t					first_launch = LS_Welcome;
+	int32_t					current_launch_state = LS_None;
 	int32_t					mapkeybuttonvalue = -1;
 
 	extern int32_t			render_width;
@@ -567,6 +569,8 @@ DOOM_C_API void S_StartSound( void *origin, int sound_id );
 DOOM_C_API void M_DashboardOptionsInit();
 DOOM_C_API void M_DashboardOptionsWindow( const char* itemname, void* data );
 DOOM_C_API const char* M_FindNameForKey( remapping_t type, int32_t key );
+
+void M_DashboardLauncherWindow();
 
 static void M_DashboardPrepareRender()
 {
@@ -797,12 +801,12 @@ static void M_DashboardFirstLaunchWindow()
 		{
 			// This is annoying, need to reset style colour so that checkboxes/sliders/etc look right
 			igPopStyleColor( 1 );
-			switch( first_launch )
+			switch( current_launch_state )
 			{
-			case FL_Welcome:
+			case LS_Welcome:
 				M_DashboardWelcomeWindow( "Welcome", NULL );
 				break;
-			case FL_Options:
+			case LS_Options:
 				M_DashboardOptionsWindow( "Welcome", NULL );
 				break;
 			default:
@@ -817,15 +821,31 @@ static void M_DashboardFirstLaunchWindow()
 			igPopStyleColor( 1 );
 		}
 
-		constexpr ImVec2 buttonsize = { 40.f, 25.f };
-		const char* buttontext = first_launch == FL_Options ? "Play!" : "Next";
-		igSetCursorPosX( igGetCursorPosX() + framesize.x - buttonsize.x );
+		constexpr ImVec2 nextbuttonsize = { 50.f, 25.f };
+		constexpr ImVec2 launcherbuttonsize = { 75.f, 25.f };
+		constexpr float buttonpadding = 15;
+		constexpr float framepadding = 10;
 
-		if( igButton( buttontext, buttonsize ) )
+		float cursorx = igGetCursorPosX();
+		
+		//if( current_launch_state == LS_Options )
+		//{
+		//	igSetCursorPosX( cursorx + framesize.x - nextbuttonsize.x - launcherbuttonsize.x - buttonpadding - framepadding );
+		//	if( igButton( "Launcher", launcherbuttonsize ) )
+		//	{
+		//		current_launch_state = LS_Launcher;
+		//	}
+		//	igSameLine( 0, -1 );
+		//}
+
+		const char* buttontext = current_launch_state == LS_Options ? "Play!" : "Next";
+		igSetCursorPosX( cursorx + framesize.x - nextbuttonsize.x - framepadding );
+
+		if( igButton( buttontext, nextbuttonsize ) )
 		{
-			if( ++first_launch >= FL_Max )
+			if( ++current_launch_state >= LS_Launcher )
 			{
-				first_launch = FL_None;
+				current_launch_state = LS_None;
 			}
 		}
 	}
@@ -834,17 +854,24 @@ static void M_DashboardFirstLaunchWindow()
 
 void M_DashboardFirstLaunch( void )
 {
+	current_launch_state = first_launch;
+
 	if( M_ParmExists( "-firstlaunch" ) )
 	{
-		first_launch = FL_Welcome;
+		current_launch_state = first_launch = LS_Welcome;
 	}
 
 	if( M_ParmExists( "-options" ) )
 	{
-		first_launch = FL_Options;
+		current_launch_state = LS_Options;
 	}
 
-	if( first_launch )
+	if( M_ParmExists( "-launcher" ) )
+	{
+		current_launch_state = LS_Launcher;
+	}
+
+	if( current_launch_state )
 	{
 #if USE_IMGUI
 		M_DashboardOptionsInit();
@@ -853,7 +880,7 @@ void M_DashboardFirstLaunch( void )
 		I_UpdateMouseGrab();
 		SDL_Renderer* renderer = I_GetRenderer();
 
-		while( first_launch != FL_None )
+		while( current_launch_state != LS_None )
 		{
 			I_StartTic();
 			I_StartFrame();
@@ -869,7 +896,8 @@ void M_DashboardFirstLaunch( void )
 			SDL_RenderClear( renderer );
 
 			M_DashboardPrepareRender();
-			M_DashboardFirstLaunchWindow();
+			if( current_launch_state != LS_Launcher ) M_DashboardFirstLaunchWindow();
+			else M_DashboardLauncherWindow();
 			M_DashboardFinaliseRender();
 
 			SDL_RenderPresent( renderer );
@@ -881,7 +909,7 @@ void M_DashboardFirstLaunch( void )
 
 		dashboardactive = false;
 #endif // USE_IMGUI
-		first_launch = FL_None;
+		first_launch = LS_None;
 	}
 }
 
@@ -1178,6 +1206,8 @@ void M_RenderDashboardBackbufferContents( int32_t backbufferid )
 #endif
 }
 
+DOOM_C_API void M_DashboardGameStatsWindow( );
+
 void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backbufferid )
 {
 	// ImGui time!
@@ -1270,6 +1300,8 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 
 		++thiswindow;
 	}
+
+	M_DashboardGameStatsWindow( );
 	
 	M_DashboardFinaliseRender();
 #endif // USE_IMGUI

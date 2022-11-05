@@ -143,6 +143,7 @@ int32_t				enable_frame_interpolation = 1;
 extern int32_t		maxrendercontexts;
 extern int32_t		num_render_contexts;
 extern int32_t		num_software_backbuffers;
+extern int32_t		stats_style;
 extern boolean		rendersplitvisualise;
 
 boolean refreshstatusbar = true;
@@ -478,6 +479,8 @@ void D_BindVariables(void)
     M_BindIntVariable("show_diskicon",          &show_diskicon);
 	M_BindIntVariable("num_render_contexts",    &num_render_contexts);
 	M_BindIntVariable("num_software_backbuffers", &num_software_backbuffers);
+
+	M_BindIntVariable("stats_style",			&stats_style );
 
     // Multiplayer chat macros
 

@@ -22,10 +22,6 @@
 #ifndef __DOOMTYPE__
 #define __DOOMTYPE__
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
 #include "config.h"
 
 #if defined(_MSC_VER) && !defined(__cplusplus) && !defined( inline )
@@ -158,31 +154,31 @@ extern "C" {
 // Using the built-in type for boolean in C++ causes size mismatches in C code.
 // Need to go whole hog on the C++ conversion to deal with this effectively.
 
-typedef int32_t boolean;
+DOOM_C_API typedef int32_t boolean;
 
 #else
 
 // [R&R] TODO: Switching to stdbool.h breaks clang.
 // Some structs store booleans. This could be why.
 // Investigate further.
-typedef enum boolean_s
+DOOM_C_API typedef enum boolean_s
 {
     false, 
     true
 } boolean_t;
 
-typedef int32_t boolean;
+DOOM_C_API typedef int32_t boolean;
 
 //#include <stdbool.h>
 //typedef bool boolean;
 
 #endif
 
-typedef uint8_t byte;
-typedef uint8_t pixel_t;
-typedef int16_t dpixel_t;
+DOOM_C_API typedef uint8_t byte;
+DOOM_C_API typedef uint8_t pixel_t;
+DOOM_C_API typedef int16_t dpixel_t;
 
-typedef struct rgb_s
+DOOM_C_API typedef struct rgb_s
 {
 	pixel_t r;
 	pixel_t g;
@@ -206,10 +202,6 @@ typedef struct rgb_s
 #endif
 
 #define arrlen(array) (sizeof(array) / sizeof(*array))
-
-#if defined( __cplusplus )
-}
-#endif // defined( __cplusplus )
 
 #endif
 

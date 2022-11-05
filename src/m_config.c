@@ -911,6 +911,12 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(fuzz_style),
 
     //!
+    // @game doom
+    // Values are 0 = original, 1 = standard
+    //
+	CONFIG_VARIABLE_INT(stats_style),
+
+    //!
     // Sound output sample rate, in Hz.  Typical values to use are
     // 11025, 22050, 44100 and 48000.
     //

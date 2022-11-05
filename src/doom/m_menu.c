@@ -90,6 +90,14 @@ int			mouseSensitivity = 5;
 
 // Show messages has default, 0 = off, 1 = on
 int			showMessages = 1;
+
+typedef enum statsstyle_s
+{
+	stats_none,
+	stats_standard,
+} statsstyle_t;
+
+int32_t		stats_style = stats_none;
 	
 
 // Blocky mode, has default, 0 = high, 1 = normal
@@ -2778,7 +2786,6 @@ static uint64_t statreport[] =
 
 	GS_Layout_Spacing,
 	GS_Layout_Spacing,
-	GS_Layout_Spacing,
 
 	GS_Label_Items | GS_Modifier_ShortForm,
 	GS_Layout_Colon,
@@ -2787,7 +2794,6 @@ static uint64_t statreport[] =
 	GS_Layout_Slash,
 	GS_Stat_AllItems,
 
-	GS_Layout_Spacing,
 	GS_Layout_Spacing,
 	GS_Layout_Spacing,
 
@@ -2950,6 +2956,10 @@ void M_DashboardGameStatsContents( double_t scale )
 
 void M_DashboardGameStatsWindow( )
 {
+	if( gamestate != GS_LEVEL || stats_style == stats_none || automapactive || demoplayback || dashboardactive )
+	{
+		return;
+	}
 	ImGuiIO* IO = igGetIO();
 	double_t globalscale = IO->DisplaySize.y / 240.0;
 	double_t scalemod = 0.75;
@@ -2962,7 +2972,8 @@ void M_DashboardGameStatsWindow( )
 	#define STATS_HEIGHT 25
 
 	ImVec2 windowsize = { STATS_WIDTH * currscale, STATS_HEIGHT * currscale };
-	ImVec2 windowpos = { ( IO->DisplaySize.x - ( 320 * globalscale ) ) * 0.5 , IO->DisplaySize.y - (32 * 1.2 /*ST_HEIGHT*/ + STATS_HEIGHT * scalemod ) * globalscale };
+	ImVec2 windowpos = { ( IO->DisplaySize.x - ( 320 * globalscale ) ) * 0.5,
+						 IO->DisplaySize.y - ( ( screenblocks > 10 ? 0 : 32 * 1.2 /*ST_HEIGHT*/ ) + STATS_HEIGHT * scalemod ) * globalscale };
 	igSetNextWindowSize( windowsize, ImGuiCond_Always );
 	igSetNextWindowPos( windowpos, ImGuiCond_Always, zerosize );
 
@@ -3569,6 +3580,17 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				showMessages = (int32_t)WorkingBool;
 				players[consoleplayer].message = DEH_String( !showMessages ? MSGOFF : MSGON );
 				message_dontfuckwithme = true;
+			}
+			igPopID();
+			igNextColumn();
+
+			igText( "Display stats" );
+			igNextColumn();
+			WorkingBool = stats_style == stats_standard;
+			igPushIDPtr( &stats_style );
+			if( igCheckbox( "", &WorkingBool ) )
+			{
+				stats_style = WorkingBool ? stats_standard : stats_none;
 			}
 			igPopID();
 			igNextColumn();
