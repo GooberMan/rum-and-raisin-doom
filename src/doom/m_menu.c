@@ -2238,6 +2238,8 @@ typedef enum resolutioncat_e
 	res_post_16_9,
 	res_post_21_9,
 	res_post_32_9,
+
+	res_named,
 	
 	res_unknown,
 } resolutioncat_t;
@@ -2254,6 +2256,7 @@ static const char* resolutioncatstrings[] =
 	"21:9 post-scaled",
 	"32:9 post-scaled",
 
+	"Make it look like"
 };
 
 typedef struct windowsizes_s
@@ -2265,8 +2268,9 @@ typedef struct windowsizes_s
 	const char*		asstring;
 } windowsizes_t;
 
-#define WINDOWDIM( w, h, c )			{ w, h, c, 0, #w "x" #h }
-#define WINDOWDIM_SCALED( w, h, c )		{ w, h, c, 1, #w "x" #h " post-scaled" }
+#define WINDOWDIM( w, h, c )				{ w, h, c, 0, #w "x" #h }
+#define WINDOWDIM_SCALED( w, h, c )			{ w, h, c, 1, #w "x" #h " post-scaled" }
+#define WINDOWDIM_NAMED_SCALED( w, h, n )	{ w, h, res_named, 1, n }
 #define WINDOW_MINWIDTH 800
 #define WINDOW_MINHEIGHT 600
 
@@ -2381,6 +2385,10 @@ static windowsizes_t render_sizes[] =
 	// WINDOWDIM(	4266,		2400,	res_16_9	),
 	// WINDOWDIM(	5600,		2400,	res_21_9	),
 
+	WINDOWDIM_NAMED_SCALED( 320,	200,	"Vanilla" ),
+	WINDOWDIM_NAMED_SCALED( 426,	200,	"Vanilla Widescreen" ),
+	WINDOWDIM_NAMED_SCALED( 640,	400,	"Crispy Doom" ),
+	WINDOWDIM_NAMED_SCALED( 854,	400,	"Crispy Doom Widescreen" ),
 };
 
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
@@ -3325,7 +3333,15 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 																			, render_width, render_height );
 				if( newresolution )
 				{
-					render_dimensions_current = newresolution->asstring;
+					const char* newstring = newresolution->asstring;
+					for( index = 0; index < render_sizes_count; ++index )
+					{
+						if( render_sizes[ index ].category == res_named && newresolution->width == render_sizes[ index ].width && newresolution->height == render_sizes[ index ].height )
+						{
+							newstring = render_sizes[ index ].asstring;
+						}
+					}
+					render_dimensions_current = newstring;
 					I_SetRenderDimensions( newresolution->width, newresolution->height, newresolution->postscaling );
 					R_RebalanceContexts();
 				}
