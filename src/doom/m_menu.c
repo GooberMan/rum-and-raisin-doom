@@ -2792,6 +2792,22 @@ static uint64_t statreport[] =
 };
 static int32_t numstatreports = arrlen( statreport );
 
+void M_DashboardDropShadowText( const char* text )
+{
+	ImVec2 cursor;
+	ImVec2 newcursor;
+	igGetCursorPos( &cursor );
+	newcursor = cursor;
+	newcursor.x += 2;
+	newcursor.y += 2;
+	igSetCursorPos( newcursor );
+	igPushStyleColorU32( ImGuiCol_Text, IM_COL32_BLACK );
+	igText( text );
+	igPopStyleColor( 1 );
+	igSetCursorPos( cursor );
+	igText( text );
+}
+
 void M_DashboardGameStatsContents( double_t scale )
 {
 	float_t oldscale = igGetCurrentWindow()->FontWindowScale;
@@ -2822,7 +2838,7 @@ void M_DashboardGameStatsContents( double_t scale )
 			*dest++ = ' ';
 			break;
 		case GS_Layout_NewLine:
-			igText( buffer );
+			M_DashboardDropShadowText( buffer );
 			dest = buffer;
 			buffer[ 0 ] = 0;
 			break;
@@ -2918,9 +2934,8 @@ void M_DashboardGameStatsContents( double_t scale )
 
 	if( buffer[ 0 ] )
 	{
-		igText( buffer );
+		M_DashboardDropShadowText( buffer );
 	}
-
 
 	igSetWindowFontScale( oldscale );
 }
