@@ -653,7 +653,7 @@ void R_InitPointToAngle (void)
 // Defining the original maximum as a function of your
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
-#define MAXSCALE ( 128 * ( frame_width / 320 ) )
+#define MAXSCALE ( 128 * ( frame_width / VANILLA_SCREENWIDTH ) )
 #define MAXSCALE_FIXED IntToRendFixed( MAXSCALE )
 
 rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle )
@@ -802,7 +802,7 @@ void R_InitAspectAdjustedValues()
 	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( render_width ), perspective_mul );
 
 	aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
-	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / 320;
+	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / VANILLA_SCREENWIDTH;
 	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
 
 	frame_adjusted_width = aspect_adjusted_render_width;
@@ -832,12 +832,8 @@ void R_InitLightTables (void)
 		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
 		for (j=0 ; j<MAXLIGHTZ ; j++)
 		{
-			scale = FixedDiv( IntToFixed( frame_adjusted_width / 2 ), ( j + 1 ) << LIGHTZSHIFT );
+			scale = FixedDiv( IntToFixed( VANILLA_SCREENWIDTH / 2 ), ( j + 1 ) << LIGHTZSHIFT );
 			scale >>= LIGHTSCALESHIFT;
-			if( LIGHTSCALEMUL != RENDFRACUNIT )
-			{
-				scale = RendFixedToInt( RendFixedMul( IntToRendFixed( scale ), LIGHTSCALEMUL ) );
-			}
 
 			level = startmap - scale/DISTMAP;
 
@@ -1340,10 +1336,9 @@ void R_UpdateFrameValues( void )
 	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( frame_width ), perspective_mul );
 
 	frame_adjusted_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
-	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / 320;
+	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / VANILLA_SCREENWIDTH;
 	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
 
-	R_InitLightTables();
 	R_ExecuteSetViewSize( true );
 }
 
@@ -1618,9 +1613,6 @@ void R_RenderDimensionsChanged( void )
 	frame_width = render_width;
 	frame_height = render_height;
 	V_RestoreBuffer();
-	R_InitLightTables();
-	R_InitPointToAngle();
-	R_InitTables();
 	R_InitAspectAdjustedValues();
 	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
