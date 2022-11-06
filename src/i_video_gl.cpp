@@ -53,6 +53,8 @@ extern "C"
 	extern int32_t window_height;
 	extern int32_t display_width;
 	extern int32_t display_height;
+	extern int32_t frame_width;
+	extern int32_t frame_height;
 	extern int32_t fullscreen;
 	extern int32_t video_display;
 	extern int32_t vsync_mode;
@@ -152,6 +154,7 @@ static const char* basic_fragment_shader =
 	"precision highp float;\n"
 	"\n"
 	"uniform sampler2D	diffuse;\n"
+	"uniform vec2		texturescale;\n"
 	"\n"
 	"in vec2 curruv;\n"
 	"\n"
@@ -159,7 +162,7 @@ static const char* basic_fragment_shader =
 	"\n"
 	"void main()\n"
 	"{\n"
-	"	colour = texture( diffuse, curruv ).xyz;\n"
+	"	colour = texture( diffuse, curruv * texturescale ).xyz;\n"
 	"}\n"
 	"\n";
 
@@ -397,6 +400,7 @@ struct ShaderProgram
 
 	GLint	texture1location;
 	GLint	texture2location;
+	GLint	texturescalelocation;
 };
 
 static ShaderProgram translate_backbuffer;
@@ -451,6 +455,7 @@ void GenerateProgram( ShaderProgram& output, const char* vertex, const char* fra
 
 	output.texture1location = glGetUniformLocation( output.program, texture1uniform );
 	output.texture2location = texture2uniform ? glGetUniformLocation( output.program, texture2uniform ) : -1;
+	output.texturescalelocation = glGetUniformLocation( output.program, "texturescale" );
 }
 
 void SetupVSync()
@@ -730,6 +735,9 @@ DOOM_C_API void I_VideoRenderGLBackbuffer( void )
 	glBindVertexArray( transposed_quad.vba );
 	glUseProgram( copy_backbuffer.program );
 	glUniform1i( copy_backbuffer.texture1location, 0 );
+
+	auto scale = MakeRawVec( (float_t)frame_width / (float_t)render_width, (float_t)frame_height / (float_t)render_height );
+	glUniform2fv( copy_backbuffer.texturescalelocation, 1, (float_t*)&scale );
 
 	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 
