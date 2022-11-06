@@ -32,11 +32,7 @@ extern "C" {
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
 // Does not need to be in a threaded context
-extern vertclip_t*	negonearray;
-extern vertclip_t*	screenheightarray;
 
-extern fixed_t		pspritescale;
-extern fixed_t		pspriteiscale;
 // End global constants
 
 void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* context, column_t* column );

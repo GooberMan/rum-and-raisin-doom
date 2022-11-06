@@ -56,12 +56,6 @@ extern vbuffer_t* dest_buffer;
 //
 
 
-int32_t			viewwidth;
-int32_t			scaledviewwidth;
-int32_t			viewheight;
-int32_t			viewwindowx;
-int32_t			viewwindowy; 
-
 // Color tables for different players,
 //  translate a limited part to another
 //  (color ramps used for  suit colors).
@@ -76,7 +70,8 @@ byte			translations[3][256];
 #include "m_profile.h"
 
 // status bar height at bottom of screen
-#define SBARHEIGHT		( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
+#define SBARHEIGHT( drs )				( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIERVAL( drs->frame_height ) >> FRACBITS ) >> FRACBITS )
+
 
 static vbuffer_t background_data;
 
@@ -203,7 +198,7 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 	simddest	= ( simd_int8x16_t* )( basedest - overlap );
 
 	fracstep	= context->iscale << 4;
-	frac		= context->texturemid + ( context->yl - centery ) * context->iscale;
+	frac		= context->texturemid + ( context->yl - drs_current->centery ) * context->iscale;
 
 	fracbase	= frac - context->iscale * overlap;
 
@@ -293,7 +288,7 @@ namespace DrawColumn
 
 		static INLINE size_t StartPos( colcontext_t*& context )
 		{
-			return context->texturemid + ( context->yl - centery ) * context->iscale;
+			return context->texturemid + ( context->yl - drs_current->centery ) * context->iscale;
 		}
 	};
 
@@ -313,7 +308,7 @@ namespace DrawColumn
 		{
 			// TODO: This isn't accurate enough, needs to be more like the backbuffer lookup
 			//return context->texturemid;
-			return context->texturemid + ( context->yl - centery ) * context->iscale;
+			return context->texturemid + ( context->yl - drs_current->centery ) * context->iscale;
 		}
 	};
 
@@ -574,7 +569,7 @@ void R_DrawColumnLow( colcontext_t* context )
     // Determine scaling,
     //  which is the only mapping to be done.
     fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-centery)*fracstep; 
+    frac = context->texturemid + (context->yl-drs_current->centery)*fracstep; 
 
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
@@ -756,7 +751,7 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 
     // Looks familiar.
     fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-centery)*fracstep; 
+    frac = context->texturemid + (context->yl-drs_current->centery)*fracstep; 
 
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
@@ -798,7 +793,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 	pixel_t*			darkercolormap = colormaps + 12*256;
 	pixel_t*			samplecolormap;
 
-	rend_fixed_t		originalcolfrac = RendFixedDiv( IntToRendFixed( 200 ), IntToRendFixed( viewheight ) );
+	rend_fixed_t		originalcolfrac = RendFixedDiv( IntToRendFixed( 200 ), IntToRendFixed( drs_current->viewheight ) );
 	rend_fixed_t		oldfrac = 0;
 	rend_fixed_t		newfrac = 0;
 
@@ -818,7 +813,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 
     // Looks familiar.
     fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-centery)*fracstep; 
+    frac = context->texturemid + (context->yl-drs_current->centery)*fracstep; 
 
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
@@ -914,20 +909,17 @@ void R_InitTranslationTables (void)
 //  for getting the framebuffer address
 //  of a pixel to draw.
 //
-void
-R_InitBuffer
-( int		width,
-  int		height ) 
+void R_InitBuffer( drsdata_t* current, int width, int height )
 { 
     // Handle resize,
     //  e.g. smaller view windows
     //  with border and/or status bar.
-    viewwindowx = (frame_width-width) >> 1; 
+    current->viewwindowx = (current->frame_width - width) >> 1; 
     // Samw with base row offset.
-    if (width == frame_width) 
-		viewwindowy = 0;
+    if (width == current->frame_width) 
+		current->viewwindowy = 0;
     else 
-		viewwindowy = (frame_height-SBARHEIGHT-height) >> 1;
+		current->viewwindowy = (current->frame_height-SBARHEIGHT( drs_current )-height) >> 1;
 
 	//background_data.width = background_data.height = 0;
 	//if (background_data.data != NULL)
@@ -974,10 +966,10 @@ void R_FillBackScreen (void)
 	vbuffer_t src;
 	vbuffer_t inflated;
 
-	int32_t viewx = FixedToInt( FixedDiv( IntToFixed( viewwindowx ),		V_WIDTHMULTIPLIER ) );
-	int32_t viewy = FixedToInt( FixedDiv( IntToFixed( viewwindowy ),		V_HEIGHTMULTIPLIER ) );
-	int32_t vieww = FixedToInt( FixedDiv( IntToFixed( scaledviewwidth ),	V_WIDTHMULTIPLIER ) );
-	int32_t viewh = FixedToInt( FixedDiv( IntToFixed( viewheight ),			V_HEIGHTMULTIPLIER ) );
+	int32_t viewx = FixedToInt( FixedDiv( IntToFixed( drs_current->viewwindowx ),		V_WIDTHMULTIPLIER ) );
+	int32_t viewy = FixedToInt( FixedDiv( IntToFixed( drs_current->viewwindowy ),		V_HEIGHTMULTIPLIER ) );
+	int32_t vieww = FixedToInt( FixedDiv( IntToFixed( drs_current->scaledviewwidth ),	V_WIDTHMULTIPLIER ) );
+	int32_t viewh = FixedToInt( FixedDiv( IntToFixed( drs_current->viewheight ),			V_HEIGHTMULTIPLIER ) );
 
     int		x;
     int		y; 
@@ -994,7 +986,7 @@ void R_FillBackScreen (void)
     // If we are running full screen, there is no need to do any of this,
     // and the background buffer can be freed if it was previously in use.
 
-	if( scaledviewwidth == render_width
+	if( drs_current->scaledviewwidth == render_width
 		|| background_data.width != render_width
 		|| background_data.height != render_height )
 	{
@@ -1005,7 +997,7 @@ void R_FillBackScreen (void)
 			memset( &background_data, 0, sizeof( background_data ) );
 		}
 
-		if( scaledviewwidth == render_width )
+		if( drs_current->scaledviewwidth == render_width )
 		{
 			return;
 		}
@@ -1160,33 +1152,33 @@ void R_DrawViewBorder (void)
     int		ofs;
     int		i; 
  
-    if (scaledviewwidth == render_width) 
+    if (drs_current->scaledviewwidth == drs_current->frame_width) 
 	return; 
   
-    top = (render_height-SBARHEIGHT-viewheight)/2;
-    side = (render_width-scaledviewwidth)/2;
+    top = (drs_current->frame_height - SBARHEIGHT( drs_current ) - drs_current->viewheight)/2;
+    side = (drs_current->frame_width - drs_current->scaledviewwidth)/2;
 
 	ofs = 0;
 	for( i = 0; i < side; ++i )
 	{
-		R_VideoErase( ofs, render_height - SBARHEIGHT );
-		ofs += render_height;
+		R_VideoErase( ofs, drs_current->frame_height - SBARHEIGHT( drs_current ) );
+		ofs += drs_current->frame_height;
 	}
 
 	for( i = side; i < render_width - side; ++i )
 	{
 		R_VideoErase( ofs, top );
-		R_VideoErase( ofs + render_height - SBARHEIGHT - top, top );
-		ofs += render_height;
+		R_VideoErase( ofs + drs_current->frame_height - SBARHEIGHT( drs_current ) - top, top );
+		ofs += drs_current->frame_height;
 	}
 
 	for( i = render_width - side; i < render_width; ++i )
 	{
-		R_VideoErase( ofs, render_height - SBARHEIGHT );
-		ofs += render_height;
+		R_VideoErase( ofs, drs_current->frame_height - SBARHEIGHT( drs_current ) );
+		ofs += drs_current->frame_height;
 	}
 
-    V_MarkRect (0,0,render_width, render_height-SBARHEIGHT); 
+    V_MarkRect (0,0,drs_current->frame_width, drs_current->frame_height-SBARHEIGHT( drs_current )); 
 } 
  
  

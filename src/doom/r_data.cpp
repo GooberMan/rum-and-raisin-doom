@@ -299,7 +299,6 @@ void R_GenerateComposite (int texnum)
 	int32_t				index;
 	column_t*			patchcol;
 	int16_t*			collump;
-	uint32_t*			colofs;
 	int32_t				patchy = 0;
 	
 	texture = textures[texnum];
@@ -774,7 +773,7 @@ void R_InitTextures (void)
     temp2 = W_GetNumForName (DEH_String("S_END")) - 1;
     temp3 = ((temp2-temp1+63)/64) + ((numtextures+63)/64);
 
-	constexpr int32_t ExtraDots = 6;
+	constexpr int32_t ExtraDots = 5;
 	DoomString output;
 	output.reserve( temp3 + ExtraDots + 2 );
 
@@ -1076,10 +1075,6 @@ void R_PrecacheLevel (void)
     int			lump;
 
     texture_t*		texture;
-
-	int				currmapindex;
-	lighttable_t*	currmap;
-	int				currflatbyte;
 
 	compositelookup.clear();
 	{

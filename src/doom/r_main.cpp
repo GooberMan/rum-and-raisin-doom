@@ -55,7 +55,7 @@ extern "C"
 
 	#include "tables.h"
 
-	#define SBARHEIGHT				( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
+	#define SBARHEIGHT( drs )				( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIERVAL( drs->frame_height ) >> FRACBITS ) >> FRACBITS )
 
 	// Fineangles in the SCREENWIDTH wide window.
 	// If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
@@ -100,13 +100,6 @@ extern "C"
 	lighttable_t*			fixedcolormap;
 	int32_t					fixedcolormapindex;
 
-	int32_t					centerx;
-	int32_t					centery;
-
-	fixed_t					centerxfrac;
-	fixed_t					centeryfrac;
-	rend_fixed_t			projection;
-
 	// just for profiling purposes
 	int32_t					framecount;	
 
@@ -138,33 +131,10 @@ extern "C"
 	drsdata_t*				drs_current = NULL;
 	drsdata_t				drs_allocation_data;
 
-	//
-	// precalculated math tables
-	//
-	angle_t					clipangle;
-
-	// The viewangletox[viewangle + FINEANGLES/4] lookup
-	// maps the visible view angles to screen X coordinates,
-	// flattening the arc to a flat projection plane.
-	// There will be many angles mapped to the same X. 
-
-	int32_t				viewangletox[RENDERFINEANGLES/2];
-
-	// The xtoviewangleangle[] table maps a screen pixel
-	// to the lowest viewangle that maps back to x ranges
-	// from clipangle to -clipangle.
-	angle_t*			xtoviewangle = NULL;
-
-	lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
-	lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
-	int32_t				scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];
-	lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
-	int32_t				zlightindex[LIGHTLEVELS][MAXLIGHTZ];
-	colfunc_t			colfuncs[ COLFUNC_COUNT ];
-
 	// bumped light from gun blasts
 	int32_t				extralight;
 
+	colfunc_t			colfuncs[ COLFUNC_COUNT ];
 	colfunc_t			transcolfunc;
 
 	int32_t				fuzz_style = Fuzz_Adjusted;
@@ -180,10 +150,10 @@ extern "C"
 	const uint64_t whacky_void_microseconds = 1200000;
 	int32_t voidcleartype = Void_NoClear;
 
-	int32_t aspect_adjusted_render_width = 0;
-	rend_fixed_t aspect_adjusted_scaled_divide = 0;
-	rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
-	rend_fixed_t frame_adjusted_scaled_mul = RENDFRACUNIT;
+	// These are all used outside of the rendering module
+	int32_t			frame_width;
+	int32_t			frame_adjusted_width;
+	int32_t			frame_height;
 
 	extern int32_t enable_frame_interpolation;
 	int32_t interpolate_this_frame = 0;
@@ -202,10 +172,6 @@ extern "C"
 	extern int32_t span_override;
 
 	extern uint64_t frametime;
-
-	int32_t frame_width = 0;
-	int32_t frame_height = 0;
-	int32_t frame_adjusted_width = 0;
 }
 
 // Actually expects C++ linkage
@@ -689,7 +655,7 @@ rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, an
 	// both sines are allways positive
 	sinea = FixedToRendFixed( renderfinesine[ anglea >> RENDERANGLETOFINESHIFT ] );
 	sineb = FixedToRendFixed( renderfinesine[ angleb >> RENDERANGLETOFINESHIFT ] );
-	num = RendFixedMul( projection, sineb );
+	num = RendFixedMul( drs_current->projection, sineb );
 	den = RendFixedMul( distance, sinea );
 
 	if (den >= 0 && den > RendFixedToInt( num ) )
@@ -734,6 +700,14 @@ void R_InitTables (void)
 #endif // RENDERQUALITYSHIFT > 0
 }
 
+void R_DRSApply( drsdata_t* current )
+{
+	frame_width					= current->frame_width;
+	frame_adjusted_width		= current->frame_adjusted_width;
+	frame_height				= current->frame_height;
+
+	drs_current					= current;
+}
 
 void R_AllocDynamicTables( void )
 {
@@ -785,22 +759,25 @@ void R_AllocDynamicTables( void )
 	drs_data = Z_MallocArray< drsdata_t >( DRSArraySize, PU_STATIC, nullptr );
 
 	int32_t totalwidth = 0;
+	int32_t totalheight = 0;
 	
 	for( int32_t currindex : iota( 0, DRSArraySize ) )
 	{
-		totalwidth += ( int32_t )( render_width * ( 1.0 - DRSStep * currindex ) );
+		double_t p = 1.0 - DRSStep * currindex;
+		totalwidth += ( int32_t )( render_width * p );
+		totalheight += ( int32_t )( render_height * p );
 	}
 
 	drs_allocation_data.viewangletox		= (int32_t*)Z_Malloc( sizeof(int32_t) * DRSNumViewAngles * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.xtoviewangle		= (angle_t*)Z_Malloc( sizeof(angle_t) * ( totalwidth + DRSArraySize ), PU_STATIC, nullptr );
-	drs_allocation_data.scalelight			= (lighttable_t***)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
-	drs_allocation_data.scalelightindex		= (int32_t**)Z_Malloc( sizeof( int32_t ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
-	drs_allocation_data.scalelightfixed		= (lighttable_t***)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightFixedEntries * DRSArraySize, PU_STATIC, nullptr );
-	drs_allocation_data.zlight				= (lighttable_t***)Z_Malloc( sizeof( lighttable_t* ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
-	drs_allocation_data.zlightindex			= (int32_t**)Z_Malloc( sizeof( int32_t ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.scalelight			= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.scalelightindex		= (int32_t*)Z_Malloc( sizeof( int32_t ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.scalelightfixed		= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightFixedEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.zlight				= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.zlightindex			= (int32_t*)Z_Malloc( sizeof( int32_t ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.negonearray			= (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * render_width, PU_STATIC, nullptr );
 	drs_allocation_data.screenheightarray	= (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * totalwidth, PU_STATIC, nullptr );
-	drs_allocation_data.yslope				= (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * totalwidth, PU_STATIC, nullptr );
+	drs_allocation_data.yslope				= (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * totalheight, PU_STATIC, nullptr );
 	drs_allocation_data.distscale			= (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * totalwidth, PU_STATIC, nullptr );
 
 	drsdata_t base = drs_allocation_data;
@@ -821,83 +798,77 @@ void R_AllocDynamicTables( void )
 		base.zlight				+= DRSNumZLightEntries;
 		base.zlightindex		+= DRSNumZLightEntries;
 		base.screenheightarray	+= base.frame_width;
-		base.yslope				+= base.frame_width;
+		base.yslope				+= base.frame_height;
 		base.distscale			+= base.frame_width;
 	}
+
+	R_DRSApply( drs_data );
 }
 
 //
 // R_InitTextureMapping
 //
-void R_InitTextureMapping( boolean subframe )
+void R_InitTextureMapping( drsdata_t* current )
 {
-    int			i;
-    int			x;
-    int			t;
-    fixed_t		focallength;
+	int			i;
+	int			x;
+	int			t;
+	fixed_t		focallength;
     
-    // Use tangent table to generate viewangletox:
-    //  viewangletox will give the next greatest x
-    //  after the view angle.
-    //
-    // Calc focallength
-    //  so FIELDOFVIEW angles covers SCREENWIDTH.
-    focallength = FixedDiv (centerxfrac,
-			    renderfinetangent[ RENDERFINEANGLES / 4 + RENDERFIELDOFVIEW / 2 ] );
+	// Use tangent table to generate viewangletox:
+	//  viewangletox will give the next greatest x
+	//  after the view angle.
+	//
+	// Calc focallength
+	//  so FIELDOFVIEW angles covers SCREENWIDTH.
+	focallength = FixedDiv( current->centerxfrac,
+				renderfinetangent[ RENDERFINEANGLES / 4 + RENDERFIELDOFVIEW / 2 ] );
 	
-    for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
-    {
+	for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
+	{
 		if ( renderfinetangent[i] > IntToFixed( 8 ) )
 			t = -1;
 		else if ( renderfinetangent[i] < IntToFixed( -8 ) )
-			t = viewwidth+1;
+			t = current->viewwidth+1;
 		else
 		{
 			t = FixedMul (renderfinetangent[i], focallength);
-			t = FixedToInt( (centerxfrac - t+FRACUNIT-1) );
+			t = FixedToInt( (current->centerxfrac - t+FRACUNIT-1) );
 
 			if (t < -1)
-			t = -1;
-			else if (t>viewwidth+1)
-			t = viewwidth+1;
+				t = -1;
+			else if (t>current->viewwidth+1)
+				t = current->viewwidth+1;
 		}
-		viewangletox[i] = t;
-    }
+		current->viewangletox[i] = t;
+	}
     
-	if( !subframe )
+	for (x=0;x<=current->viewwidth;x++)
 	{
-		// Scan viewangletox[] to generate xtoviewangle[]:
-		//  xtoviewangle will give the smallest view angle
-		//  that maps to x.	
-		if( xtoviewangle )
-		{
-			Z_Free( xtoviewangle );
-		}
-		xtoviewangle = (angle_t*)Z_Malloc( sizeof( angle_t ) * ( render_width + 1 ), PU_STATIC, NULL );
+		i = 0;
+		while (current->viewangletox[i]>x)
+			i++;
+		current->xtoviewangle[x] = (i<<RENDERANGLETOFINESHIFT)-ANG90;
 	}
 
-    for (x=0;x<=viewwidth;x++)
-    {
-		i = 0;
-		while (viewangletox[i]>x)
-			i++;
-		xtoviewangle[x] = (i<<RENDERANGLETOFINESHIFT)-ANG90;
-    }
-
-    // Take out the fencepost cases from viewangletox.
-    for (i=0 ; i<FINEANGLES/2 ; i++)
-    {
-		if (viewangletox[i] == -1)
-			viewangletox[i] = 0;
-		else if (viewangletox[i] == viewwidth+1)
-			viewangletox[i]  = viewwidth;
+	// Take out the fencepost cases from viewangletox.
+	for (i=0 ; i<FINEANGLES/2 ; i++)
+	{
+		if (current->viewangletox[i] == -1)
+		{
+			current->viewangletox[i] = 0;
+		}
+		else if (current->viewangletox[i] == current->viewwidth+1)
+		{
+			current->viewangletox[i]  = current->viewwidth;
+		}
 	}
 	
-	clipangle = xtoviewangle[0];
+	current->clipangle = current->xtoviewangle[0];
 }
 
 
-void R_InitAspectAdjustedValues()
+void R_InitAspectAdjustedValues( drsdata_t* current )
 {
 	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
 	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_post_scaling ? render_height : (int32_t)( render_height / 1.2 ) ) );
@@ -905,12 +876,12 @@ void R_InitAspectAdjustedValues()
 
 	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( render_width ), perspective_mul );
 
-	aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
-	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / VANILLA_SCREENWIDTH;
-	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
+	rend_fixed_t		aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
+	rend_fixed_t		aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / VANILLA_SCREENWIDTH;
+	rend_fixed_t		aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
 
-	frame_adjusted_width = aspect_adjusted_render_width;
-	frame_adjusted_scaled_mul = aspect_adjusted_scaled_mul;
+	current->frame_adjusted_width = aspect_adjusted_render_width;
+	current->frame_adjusted_scaled_mul = aspect_adjusted_scaled_mul;
 }
 
 
@@ -921,7 +892,7 @@ void R_InitAspectAdjustedValues()
 //
 #define DISTMAP		2
 
-void R_InitLightTables (void)
+void R_InitLightTables( drsdata_t* current )
 {
 	int		i;
 	int		j;
@@ -947,8 +918,8 @@ void R_InitLightTables (void)
 			if (level >= NUMLIGHTCOLORMAPS)
 				level = NUMLIGHTCOLORMAPS-1;
 
-			zlightindex[i][j] = level;
-			zlight[i][j] = colormaps + level*256;
+			current->zlightindex[i * MAXLIGHTZ + j] = level;
+			current->zlight[i * MAXLIGHTZ + j] = colormaps + level*256;
 		}
 	}
 }
@@ -1049,7 +1020,7 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 
 	R_ClearClipSegs( &context->bspcontext, leftclip, rightclip );
 	R_ClearDrawSegs( &context->bspcontext );
-	R_ClearPlanes( &context->planecontext, viewwidth, viewheight, viewangle );
+	R_ClearPlanes( &context->planecontext, drs_current->viewwidth, drs_current->viewheight, viewangle );
 	R_ClearSprites( &context->spritecontext );
 }
 
@@ -1089,18 +1060,18 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	}
 	else if( voidcleartype == Void_Sky )
 	{
-		skycontext.colfunc = colfuncs[ M_MIN( ( pspriteiscale  >> 12 ), 15 ) ];
-		skycontext.iscale = FixedToRendFixed( pspriteiscale );
+		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->pspriteiscale  >> 12 ), 15 ) ];
+		skycontext.iscale = FixedToRendFixed( drs_current->pspriteiscale );
 		skycontext.texturemid = skytexturemid;
 		skycontext.output = rendercontext->buffer;
-		skycontext.output.data += skycontext.output.pitch * viewwindowx + viewwindowy;
+		skycontext.output.data += skycontext.output.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
 		skycontext.yl = 0;
-		skycontext.yh = viewheight;
+		skycontext.yh = drs_current->viewheight;
 		skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
 
 		for ( x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
 		{
-			angle = ( viewangle + xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
+			angle = ( viewangle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
 
 			skycontext.x = x;
 			skycontext.source = R_GetColumn( skytexture, angle, 0 );
@@ -1294,7 +1265,7 @@ R_SetViewSize
 // R_ExecuteSetViewSize
 //
 
-DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
+void R_ExecuteSetViewSizeFor( drsdata_t* current )
 {
 	int32_t				i;
 	int32_t				j;
@@ -1302,13 +1273,13 @@ DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
 	int32_t				startmap;
 	int32_t				colfuncbase;
 
-	int32_t actualheight = render_post_scaling ? (int32_t)( frame_height * 1.2 ) : frame_height;
+	R_InitLightTables( current );
+
+	int32_t actualheight = render_post_scaling ? (int32_t)( current->frame_height * 1.2 ) : current->frame_height;
 
 	rend_fixed_t		original_perspective	= RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
-	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( frame_width ), IntToRendFixed( frame_height ) );
+	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( current->frame_width ), IntToRendFixed( current->frame_height ) );
 	rend_fixed_t		perspective_mul			= RendFixedDiv( original_perspective, current_perspective );
-
-	rend_fixed_t		perspectivecorrectscale;
 
 	rend_fixed_t		tan_fov = RendFixedDiv( current_perspective >> 1, original_perspective >> 1 );
 
@@ -1319,92 +1290,59 @@ DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
 	field_of_view_degrees = (int32_t)float_fov;
 	//int32_t		new_fov = FixedToInt( rendertantoangle[ tan_fov >> RENDERDBITS ] );
 
-	if( !subframe )
-	{
-		R_InitAspectAdjustedValues();
-	}
+	R_InitAspectAdjustedValues( current );
 
 	setsizeneeded = false;
 
 	if (setblocks == 11)
 	{
-		scaledviewwidth = frame_width;
-		viewheight = frame_height;
+		current->scaledviewwidth = frame_width;
+		current->viewheight = frame_height;
 	}
 	else
 	{
-		scaledviewwidth = setblocks * frame_width / 10;
-		viewheight = (setblocks * ( frame_height - SBARHEIGHT ) / 10 );// & ~7;
+		current->scaledviewwidth = setblocks * frame_width / 10;
+		current->viewheight = (setblocks * ( frame_height - SBARHEIGHT( current ) ) / 10 ); // & ~7;
 	}
 
-	viewwidth = scaledviewwidth;
+	current->viewwidth = current->scaledviewwidth;
 
-	centery = viewheight /2;
-	centerx = viewwidth /2;
-	centerxfrac = IntToFixed( centerx );
-	centeryfrac = IntToFixed( centery );
-	projection = RendFixedMul( FixedToRendFixed( centerxfrac ), perspective_mul );
+	current->centery = current->viewheight /2;
+	current->centerx = current->viewwidth /2;
+	current->centerxfrac = IntToFixed( current->centerx );
+	current->centeryfrac = IntToFixed( current->centery );
+	current->projection = RendFixedMul( FixedToRendFixed( current->centerxfrac ), perspective_mul );
 
 	colfuncbase = COLFUNC_NUM;
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
 
-	R_InitBuffer( scaledviewwidth, viewheight );
+	R_InitBuffer( current, current->scaledviewwidth, current->viewheight );
 	
-	R_InitTextureMapping( subframe );
+	R_InitTextureMapping( current );
 
 	// psprite scales
-	perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
+	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
 
-	pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( viewwidth ) / frame_width, perspectivecorrectscale ) );
-	pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( frame_width ) / viewwidth, perspectivecorrectscale ) );
+	current->pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( current->viewwidth ) / frame_width, perspectivecorrectscale ) );
+	current->pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( frame_width ) / current->viewwidth, perspectivecorrectscale ) );
 
-	if( !subframe )
+	for (i=0 ; i<current->viewwidth ; i++)
 	{
-		// thing clipping
-		if( screenheightarray )
-		{
-			Z_Free( screenheightarray );
-		}
-		if( negonearray )
-		{
-			Z_Free( negonearray );
-		}
-
-		screenheightarray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
-		negonearray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
-
-		// planes
-		if( yslope )
-		{
-			Z_Free( yslope );
-		}
-		yslope = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewheight, PU_STATIC, NULL );
-
-		if( distscale )
-		{
-			Z_Free( distscale );
-		}
-		distscale = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewwidth, PU_STATIC, NULL );
-
+		current->screenheightarray[i] = current->viewheight;
+		current->negonearray[i] = -1;
 	}
 
-	for (i=0 ; i<viewwidth ; i++)
+	for (i=0 ; i<current->viewheight ; i++)
 	{
-		screenheightarray[i] = viewheight;
-		negonearray[i] = -1;
-	}
-
-	for (i=0 ; i<viewheight ; i++)
-	{
-		rend_fixed_t dy = IntToRendFixed( i- viewheight / 2 ) + RENDFRACUNIT / 2;
+		rend_fixed_t dy = IntToRendFixed( i- current->viewheight / 2 ) + RENDFRACUNIT / 2;
 		dy = llabs( dy );
-		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( viewwidth / 2 ), dy ), perspective_mul );
+		current->yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( current->viewwidth / 2 ), dy ), perspective_mul );
 	}
 	
-	for ( i=0 ; i<viewwidth ; i++ )
+	for ( i=0 ; i<current->viewwidth ; i++ )
 	{
-		rend_fixed_t cosadj = FixedToRendFixed( abs( renderfinecosine[ xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] ) );
-		distscale[ i ] = RendFixedDiv( RENDFRACUNIT, cosadj );
+		rend_fixed_t cosadj = FixedToRendFixed( abs( renderfinecosine[ current->xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] ) );
+		current->distscale[ i ] = RendFixedDiv( RENDFRACUNIT, cosadj );
 	}
 
 	// Calculate the light levels to use
@@ -1414,7 +1352,7 @@ DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
 		startmap = ( (LIGHTLEVELS - 1 - i ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
 		for ( j=0 ; j < MAXLIGHTSCALE ; j++ )
 		{
-			level = startmap - j * frame_width / viewwidth / DISTMAP;
+			level = startmap - j * frame_width / current->viewwidth / DISTMAP;
 
 			if (level < 0)
 			{
@@ -1426,28 +1364,29 @@ DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
 				level = NUMLIGHTCOLORMAPS-1;
 			}
 
-			scalelight[ i ][ j ] = colormaps + level * 256;
-			scalelightindex[ i ][ j ] = level;
+			current->scalelight[ i * MAXLIGHTSCALE + j ] = colormaps + level * 256;
+			current->scalelightindex[ i * MAXLIGHTSCALE + j ] = level;
 		}
 	}
 }
 
-void R_UpdateFrameValues( void )
+void R_ExecuteSetViewSize( void )
 {
-	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
-	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( frame_width ), IntToRendFixed( render_post_scaling ? frame_height : (int32_t)( frame_height / 1.2 ) ) );
-	rend_fixed_t		perspective_mul = RendFixedDiv( original_perspective, current_perspective );
-	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( frame_width ), perspective_mul );
+	
+	//for( drsdata_t& curr : std::span( drs_data, DRSArraySize ) )
+	//{
+	//	R_ExecuteSetViewSizeFor( &curr );
+	//}
 
-	frame_adjusted_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
-	rend_fixed_t scaleddivide = IntToRendFixed( frame_adjusted_width ) / VANILLA_SCREENWIDTH;
-	frame_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, scaleddivide );
+	R_ExecuteSetViewSizeFor( drs_data );
 
-	R_ExecuteSetViewSize( true );
+	R_DRSApply( drs_data );
 }
 
 void R_RenderUpdateFrameSize( void )
 {
+	return;
+
 	int64_t targetrefresh = I_GetTargetRefreshRate();
 
 	if( dynamic_resolution_scaling == DRS_None || targetrefresh <= 0 )
@@ -1456,8 +1395,6 @@ void R_RenderUpdateFrameSize( void )
 		{
 			frame_width = render_width;
 			frame_height = render_height;
-
-			R_UpdateFrameValues();
 		}
 		return;
 	}
@@ -1485,12 +1422,10 @@ void R_RenderUpdateFrameSize( void )
 		double_t addition = ( DRS_LESS - actualpercent ) * 0.25;
 		frame_width = (int32_t)M_MIN( render_width, frame_width + render_width * addition );
 		frame_height = (int32_t)M_MIN( render_height, frame_height + render_height * addition );
-
-		R_UpdateFrameValues();
 	}
+
 	if( frame_width != oldframewidth || frame_height != oldframeheight )
 	{
-		R_UpdateFrameValues();
 	}
 }
 
@@ -1663,7 +1598,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igCheckbox( "Visualise split", (bool*)&rendersplitvisualise );
 	if( igSliderInt( "Horizontal FOV", &field_of_view_degrees, 60, 160, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 	{
-		R_ExecuteSetViewSize( true );
+		R_ExecuteSetViewSize( );
 	}
 }
 
@@ -1675,10 +1610,6 @@ void R_Init (void)
 	frame_width = render_width;
 	frame_height = render_height;
 
-	R_AllocDynamicTables();
-
-	R_InitAspectAdjustedValues();
-
     R_InitData ();
     I_TerminalPrintf( Log_None, "." );
     R_InitPointToAngle ();
@@ -1687,10 +1618,9 @@ void R_Init (void)
     // viewwidth / viewheight / detailLevel are set by the defaults
     I_TerminalPrintf( Log_None, "." );
 
+	R_AllocDynamicTables();
     R_SetViewSize (screenblocks, detailLevel);
-    R_InitPlanes ();
-    I_TerminalPrintf( Log_None, "." );
-    R_InitLightTables ();
+	R_ExecuteSetViewSize( );
     I_TerminalPrintf( Log_None, "." );
     R_InitSkyMap ();
     R_InitTranslationTables ();
@@ -1716,14 +1646,11 @@ void R_Init (void)
 void R_RenderDimensionsChanged( void )
 {
 	refreshstatusbar = true;
-	frame_width = render_width;
-	frame_height = render_height;
 	V_RestoreBuffer();
 	R_AllocDynamicTables();
-	R_InitAspectAdjustedValues();
 	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
-	R_ExecuteSetViewSize( false );
+	R_ExecuteSetViewSize( );
 	R_RebalanceContexts();
 }
 
@@ -1846,7 +1773,7 @@ void R_RenderLoadBalance()
 
 	for( auto& curr : view )
 	{
-		ThisOldWidthPercent( curr ) = (double_t)( ThisRenderData( curr ).context.endcolumn - ThisRenderData( curr ).context.begincolumn ) / viewwidth;
+		ThisOldWidthPercent( curr ) = (double_t)( ThisRenderData( curr ).context.endcolumn - ThisRenderData( curr ).context.begincolumn ) / drs_current->viewwidth;
 	
 		double_t growamount = ThisTimePercent( curr ) > idealpercentage	? -removeamount
 																		: addamount;
@@ -1860,7 +1787,7 @@ void R_RenderLoadBalance()
 	int32_t desiredwidth = 0;
 	for( auto& curr : view )
 	{
-		desiredwidth = (int32_t)( viewwidth * ThisWidthPercent( curr ) );
+		desiredwidth = (int32_t)( drs_current->viewwidth * ThisWidthPercent( curr ) );
 		if( desiredwidth <= 0 )
 		{
 			I_LogAddEntryVar( Log_Error, "Load balancing has created a render slice of %d columns, rebalancing everything", desiredwidth );
@@ -1868,12 +1795,12 @@ void R_RenderLoadBalance()
 			return;
 		}
 	
-		R_ResetContext( &ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, viewwidth ) );
+		R_ResetContext( &ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, drs_current->viewwidth ) );
 		currstart += desiredwidth;
 	}
 	
 	currstart -= desiredwidth;
-	R_ResetContext( &renderdatas[ num_render_contexts - 1 ].context, M_MAX( currstart, 0 ), viewwidth );
+	R_ResetContext( &renderdatas[ num_render_contexts - 1 ].context, M_MAX( currstart, 0 ), drs_current->viewwidth );
 }
 
 void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsoleplayer ) //__attribute__ ((optnone))
@@ -2003,7 +1930,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 		//walllightsindex = fixedcolormapindex;
 
 		for (i=0 ; i<MAXLIGHTSCALE ; i++)
-			scalelightfixed[i] = fixedcolormap;
+			drs_current->scalelightfixed[i] = fixedcolormap;
 	}
 	else
 	{
@@ -2015,9 +1942,9 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 		vbuffer_t buffer = *I_GetCurrentRenderBuffer( );
 		renderdatas[ currcontext ].context.buffer = buffer;
 
-		buffer.data += buffer.pitch * viewwindowx + viewwindowy;
-		buffer.width = viewheight;
-		buffer.height = viewwidth;
+		buffer.data += buffer.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
+		buffer.width = drs_current->viewheight;
+		buffer.height = drs_current->viewwidth;
 
 		renderdatas[ currcontext ].context.viewbuffer = buffer;
 	}
@@ -2031,12 +1958,12 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 	{
 		currstart = 0;
 
-		desiredwidth = viewwidth / num_render_contexts;
+		desiredwidth = drs_current->viewwidth / num_render_contexts;
 		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
 			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
-			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, viewwidth );
+			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, drs_current->viewwidth );
 
 			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 		}
@@ -2102,7 +2029,7 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 		for( currcontext = 1; currcontext < num_render_contexts; ++currcontext )
 		{
 			outputcolumn = renderdatas[ currcontext ].context.viewbuffer.data + renderdatas[ currcontext ].context.begincolumn * renderdatas[ currcontext ].context.viewbuffer.pitch;
-			endcolumn = outputcolumn + viewheight;
+			endcolumn = outputcolumn + drs_current->viewheight;
 
 			while( outputcolumn != endcolumn )
 			{

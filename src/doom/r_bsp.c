@@ -236,34 +236,34 @@ void R_AddLine( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* plane
 	angle1 -= viewangle;
 	angle2 -= viewangle;
 	
-	angle_t tspan = angle1 + clipangle;
-	if (tspan > 2*clipangle)
+	angle_t tspan = angle1 + drs_current->clipangle;
+	if (tspan > 2*drs_current->clipangle)
 	{
-		tspan -= 2*clipangle;
+		tspan -= 2*drs_current->clipangle;
 
 		// Totally off the left edge?
 		if (tspan >= span)
 			return;
 	
-		angle1 = clipangle;
+		angle1 = drs_current->clipangle;
 	}
-	tspan = clipangle - angle2;
-	if (tspan > 2*clipangle)
+	tspan = drs_current->clipangle - angle2;
+	if (tspan > 2*drs_current->clipangle)
 	{
-		tspan -= 2*clipangle;
+		tspan -= 2*drs_current->clipangle;
 
 		// Totally off the left edge?
 		if (tspan >= span)
 			return;	
-		angle2 = M_NEGATE( clipangle );
+		angle2 = M_NEGATE( drs_current->clipangle );
 	}
 
 	// The seg is in the view range,
 	// but not necessarily visible.
 	angle1 = ( angle1 + ANG90 ) >> RENDERANGLETOFINESHIFT;
 	angle2 = ( angle2 + ANG90 ) >> RENDERANGLETOFINESHIFT;
-	int32_t x1 = viewangletox[ angle1 ];
-	int32_t x2 = viewangletox[ angle2 ];
+	int32_t x1 = drs_current->viewangletox[ angle1 ];
+	int32_t x2 = drs_current->viewangletox[ angle2 ];
 
 	// Does not cross a pixel?
 	if (x1 == x2)
@@ -408,29 +408,29 @@ boolean R_CheckBBox( bspcontext_t* context, rend_fixed_t* bspcoord )
 	if( span >= ANG180 )
 		return true;
 
-	tspan = angle1 + clipangle;
+	tspan = angle1 + drs_current->clipangle;
 
-	if( tspan > 2 * clipangle )
+	if( tspan > 2 * drs_current->clipangle )
 	{
-		tspan -= 2 * clipangle;
+		tspan -= 2 * drs_current->clipangle;
 
 		// Totally off the left edge?
 		if( tspan >= span )
 			return false;
 
-		angle1 = clipangle;
+		angle1 = drs_current->clipangle;
 	}
 
-	tspan = clipangle - angle2;
-	if( tspan > 2 * clipangle )
+	tspan = drs_current->clipangle - angle2;
+	if( tspan > 2 * drs_current->clipangle )
 	{
-		tspan -= 2 * clipangle;
+		tspan -= 2 * drs_current->clipangle;
 
 		// Totally off the left edge?
 		if( tspan >= span )
 			return false;
 	
-		angle2 = M_NEGATE( clipangle );
+		angle2 = M_NEGATE( drs_current->clipangle );
 	}
 
 	// Find the first clippost
@@ -438,8 +438,8 @@ boolean R_CheckBBox( bspcontext_t* context, rend_fixed_t* bspcoord )
 	//  (adjacent pixels are touching).
 	angle1 = ( angle1 + ANG90 ) >> RENDERANGLETOFINESHIFT;
 	angle2 = ( angle2 + ANG90 ) >> RENDERANGLETOFINESHIFT;
-	sx1 = viewangletox[ angle1 ];
-	sx2 = viewangletox[ angle2 ];
+	sx1 = drs_current->viewangletox[ angle1 ];
+	sx2 = drs_current->viewangletox[ angle2 ];
 
 	// Does not cross a pixel.
 	if( sx1 == sx2 )

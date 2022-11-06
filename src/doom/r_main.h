@@ -38,19 +38,8 @@ extern "C" {
 extern fixed_t		viewcos;
 extern fixed_t		viewsin;
 
-extern int32_t		viewwindowx;
-extern int32_t		viewwindowy;
-
-extern int32_t		centerx;
-extern int32_t		centery;
-
-extern fixed_t		centerxfrac;
-extern fixed_t		centeryfrac;
-extern rend_fixed_t		projection;
 
 extern int32_t		validcount;
-
-extern rend_fixed_t		frame_adjusted_scaled_mul;
 
 
 //
@@ -67,16 +56,10 @@ extern rend_fixed_t		frame_adjusted_scaled_mul;
 #define MAXLIGHTSCALE		48
 #define LIGHTSCALESHIFT		12
 #define RENDLIGHTSCALESHIFT	( RENDFRACBITS - 4 )
-#define LIGHTSCALEMUL		( frame_adjusted_scaled_mul )
+#define LIGHTSCALEMUL		( drs_current->frame_adjusted_scaled_mul )
 #define MAXLIGHTZ			128
 #define LIGHTZSHIFT			20
 #define RENDLIGHTZSHIFT		( RENDFRACBITS + 4 )
-
-extern lighttable_t*	scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
-extern int32_t			scalelightindex[LIGHTLEVELS][MAXLIGHTSCALE];
-extern lighttable_t*	scalelightfixed[MAXLIGHTSCALE];
-extern lighttable_t*	zlight[LIGHTLEVELS][MAXLIGHTZ];
-extern int32_t			zlightindex[LIGHTLEVELS][MAXLIGHTZ];
 
 extern int32_t			extralight;
 extern lighttable_t*	fixedcolormap;
@@ -161,7 +144,7 @@ void R_RenderDimensionsChanged( void );
 void R_RenderUpdateFrameSize( void );
 
 // Called when +/- viewport size is required. subframe is used by dynamic resolution scaling
-void R_ExecuteSetViewSize( boolean subframe );
+void R_ExecuteSetViewSize( void );
 
 // Called after display system initialised
 void R_InitContexts( void );

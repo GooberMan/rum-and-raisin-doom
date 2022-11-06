@@ -26,9 +26,6 @@ extern "C"
 	#include "r_defs.h"
 	#include "r_state.h"
 	#include "m_misc.h"
-
-	extern rend_fixed_t*	distscale;
-	extern rend_fixed_t*	yslope;
 }
 
 template< int64_t Width, int64_t Height >
@@ -65,12 +62,12 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 
 	int32_t				nexty			= top;
 
-	angle_t				angle			= (viewangle + xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
+	angle_t				angle			= (viewangle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
 	rend_fixed_t		anglecos		= FixedToRendFixed( renderfinecosine[ angle ] );
 	rend_fixed_t		anglesin		= FixedToRendFixed( renderfinesine[ angle ] );
 
 	rend_fixed_t		currdistance	= planecontext->raster[ top ].distance;
-	rend_fixed_t		currlength		= RendFixedMul( currdistance, distscale[ x ] );
+	rend_fixed_t		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 
 	rend_fixed_t		xfrac			= view_x + RendFixedMul( anglecos, currlength );
 	rend_fixed_t		yfrac			= -view_y - RendFixedMul( anglesin, currlength );
@@ -89,7 +86,7 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 	{
 		nexty			+= Leap;
 		currdistance	= planecontext->raster[ nexty ].distance;
-		currlength		= RendFixedMul( currdistance, distscale[ x ] );
+		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 		nextxfrac		= view_x + RendFixedMul( anglecos, currlength );
 		nextyfrac		= -view_y - RendFixedMul( anglesin, currlength );
 
@@ -151,7 +148,7 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 	{
 		nexty			+= count;
 		currdistance	= planecontext->raster[ nexty ].distance;
-		currlength		= RendFixedMul( currdistance, distscale[ x ] );
+		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 		nextxfrac		= view_x + RendFixedMul( anglecos, currlength );
 		nextyfrac		= -view_y - RendFixedMul( anglesin, currlength );
 
@@ -177,7 +174,7 @@ template< int64_t Width, int64_t Height >
 INLINE void R_Prepare( int32_t y, planecontext_t* planecontext )
 {
 	constexpr int64_t Size = Width * Height;
-	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), yslope[ y ] );
+	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), drs_current->yslope[ y ] );
 
 	// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
 	//if( planecontext->planezlight != planecontext->raster[ y ].zlight )
@@ -188,8 +185,8 @@ INLINE void R_Prepare( int32_t y, planecontext_t* planecontext )
 		}
 		else
 		{
-			int32_t lightindex = (int32_t)M_CLAMP( ( planecontext->raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
-			lightindex = zlightindex[ planecontext->planezlightindex ][ lightindex ];
+			int32_t lookup = (int32_t)M_CLAMP( ( planecontext->raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
+			int32_t lightindex = drs_current->zlightindex[ planecontext->planezlightindex * MAXLIGHTZ + lookup ];
 			planecontext->raster[ y ].sourceoffset = lightindex * Size;
 		}
 
@@ -242,7 +239,7 @@ INLINE void ChooseRegionWidthHeightRasteriser( planecontext_t* planecontext, ras
 		int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
 	
 		planecontext->planezlightindex = light;
-		planecontext->planezlight = zlight[ light ];
+		planecontext->planezlight = &drs_current->zlight[ light * MAXLIGHTZ ];
 
 		R_Prepare< Width, Height >( thisregion, planecontext );
 		ChooseRasteriser< Leap, LeapLog2, Width, Height >( planecontext, thisregion );

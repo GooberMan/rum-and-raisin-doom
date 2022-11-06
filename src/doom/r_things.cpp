@@ -49,14 +49,6 @@ extern "C"
 
 	// Constant arrays, don't need to live in a context
 
-	//  used for psprite clipping and initializing clipping
-	vertclip_t*		negonearray = NULL;
-	vertclip_t*		screenheightarray = NULL;
-
-	fixed_t			pspritescale;
-	fixed_t			pspriteiscale;
-
-	//
 	// INITIALIZATION FUNCTIONS
 	//
 
@@ -273,8 +265,8 @@ void R_ClearSprites ( spritecontext_t* spritecontext )
 {
 	spritecontext->nextvissprite = spritecontext->vissprites;
 
-	spritecontext->clipbot = R_AllocateScratch< vertclip_t >( viewwidth );
-	spritecontext->cliptop = R_AllocateScratch< vertclip_t >( viewwidth );
+	spritecontext->clipbot = R_AllocateScratch< vertclip_t >( drs_current->viewwidth );
+	spritecontext->cliptop = R_AllocateScratch< vertclip_t >( drs_current->viewwidth );
 }
 
 
@@ -320,7 +312,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 		if( isfuzz )
 		{
 			colcontext->yl = M_MAX( colcontext->yl, 1 );
-			colcontext->yh = M_MIN( colcontext->yh, viewheight - 1 );
+			colcontext->yh = M_MIN( colcontext->yh, drs_current->viewheight - 1 );
 		}
 
 		if (colcontext->yh >= spritecontext->mfloorclip[colcontext->x])
@@ -387,7 +379,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	spritecolcontext.texturemid = FixedToRendFixed( vis->texturemid );
 	frac = vis->startfrac;
 	spritecontext->spryscale = FixedToRendFixed( vis->scale );
-	spritecontext->sprtopscreen = FixedToRendFixed( centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
+	spritecontext->sprtopscreen = FixedToRendFixed( drs_current->centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
 	
 	prevfuzzcolumn = -1;
 	for (spritecolcontext.x=vis->x1 ; spritecolcontext.x<=vis->x2 ; spritecolcontext.x++, frac += vis->xiscale)
@@ -511,7 +503,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		return;
 	}
 
-	xscale = FixedDiv( RendFixedToFixed( projection ), tz);
+	xscale = FixedDiv( RendFixedToFixed( drs_current->projection ), tz);
 	
 	gxt = -FixedMul(tr_x,viewsin); 
 	gyt = FixedMul(tr_y,viewcos); 
@@ -563,7 +555,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 
 	// calculate edges of the shape
 	tx -= spriteoffset[lump];
-	x1 = FixedToInt( centerxfrac + FixedMul( tx, xscale ) );
+	x1 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, xscale ) );
 
 	// off the right side?
 	if (x1 > spritecontext->rightclip)
@@ -572,7 +564,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	}
 
 	tx += spritewidth[lump];
-	x2 = FixedToInt( centerxfrac + FixedMul( tx, xscale) ) - 1;
+	x2 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, xscale) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -670,15 +662,15 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 
 	if (lightnum < 0)
 	{
-		spritecontext->spritelights = scalelight[0];
+		spritecontext->spritelights = drs_current->scalelight;
 	}
 	else if (lightnum >= LIGHTLEVELS)
 	{
-		spritecontext->spritelights = scalelight[LIGHTLEVELS-1];
+		spritecontext->spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * ( LIGHTLEVELS-1 ) ];
 	}
 	else
 	{
-		spritecontext->spritelights = scalelight[lightnum];
+		spritecontext->spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * lightnum ];
 	}
 
 	// Handle all things in sector.
@@ -729,7 +721,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	tx = psp->sx - IntToFixed( V_VIRTUALWIDTH / 2 );
 	
 	tx -= spriteoffset[lump];	
-	x1 = FixedToInt( centerxfrac + FixedMul( tx, pspritescale ) );
+	x1 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescale ) );
 
 	// off the right side
 	if (x1 > spritecontext->rightclip)
@@ -738,7 +730,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	}
 
 	tx +=  spritewidth[lump];
-	x2 = FixedToInt( centerxfrac + FixedMul( tx, pspritescale ) ) - 1;
+	x2 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescale ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -752,18 +744,18 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	vis->texturemid = IntToFixed( BASEYCENTER ) + FRACUNIT / 2 -( psp->sy - spritetopoffset[ lump ] );
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
-	vis->scale = pspritescale;
+	vis->scale = drs_current->pspritescale;
 
 	if (flip)
 	{
-		vis->xscale = -pspritescale;
-		vis->xiscale = -pspriteiscale;
+		vis->xscale = -drs_current->pspritescale;
+		vis->xiscale = -drs_current->pspriteiscale;
 		vis->startfrac = spritewidth[lump]-1;
 	}
 	else
 	{
-		vis->xscale = pspritescale;
-		vis->xiscale = pspriteiscale;
+		vis->xscale = drs_current->pspritescale;
+		vis->xiscale = drs_current->pspriteiscale;
 		vis->startfrac = 0;
 	}
 
@@ -817,20 +809,20 @@ void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
 
 	if (lightnum < 0)
 	{
-		spritecontext->spritelights = scalelight[0];
+		spritecontext->spritelights = drs_current->scalelight;
 	}
 	else if (lightnum >= LIGHTLEVELS)
 	{
-		spritecontext->spritelights = scalelight[LIGHTLEVELS-1];
+		spritecontext->spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * ( LIGHTLEVELS-1 ) ];
 	}
 	else
 	{
-		spritecontext->spritelights = scalelight[lightnum];
+		spritecontext->spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * lightnum ];
 	}
 
 	// clip to screen bounds
-	spritecontext->mfloorclip = screenheightarray;
-	spritecontext->mceilingclip = negonearray;
+	spritecontext->mfloorclip = drs_current->screenheightarray;
+	spritecontext->mceilingclip = drs_current->negonearray;
 
 	// add all active psprites
 	for (i=0, psp=viewplayer->psprites; i<NUMPSPRITES; i++,psp++)
@@ -1037,7 +1029,7 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	for (x = spr->x1 ; x<=spr->x2 ; x++)
 	{
 		if (clipbot[x] == -2)
-			clipbot[x] = viewheight;
+			clipbot[x] = drs_current->viewheight;
 
 		if (cliptop[x] == -2)
 			cliptop[x] = -1;

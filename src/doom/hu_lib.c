@@ -142,16 +142,16 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     int			lh;
     int			y;
 
-    int			viewx = FixedDiv( viewwindowx, V_WIDTHMULTIPLIER );
-	int			viewy = FixedDiv( viewwindowy, V_HEIGHTMULTIPLIER );
-	int			viewh = FixedDiv( viewheight, V_HEIGHTMULTIPLIER );
+    int			viewx = FixedDiv( drs_current->viewwindowx, V_WIDTHMULTIPLIER );
+	int			viewy = FixedDiv( drs_current->viewwindowy, V_HEIGHTMULTIPLIER );
+	int			viewh = FixedDiv( drs_current->viewheight, V_HEIGHTMULTIPLIER );
 
     // Only erases when NOT in automap and the screen is reduced,
     // and the text must either need updating or refreshing
     // (because of a recent change back from the automap)
 
     if (!automapactive &&
-	viewwindowx && l->needsupdate)
+	drs_current->viewwindowx && l->needsupdate)
     {
 	lh = SHORT(l->f[0]->height) + 1;
 	for ( y=l->y; y< l->y + lh; y++ )

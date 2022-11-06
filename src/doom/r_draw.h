@@ -92,7 +92,7 @@ void R_VideoEraseRegion( int x, int y, int width, int height );
 extern byte*				translationtables;
 extern texturecomposite_t**	flatlookup;
 
-void R_InitBuffer( int width, int height );
+void R_InitBuffer( drsdata_t* current, int width, int height );
 
 
 // Initialize color translation tables,

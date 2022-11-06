@@ -39,9 +39,6 @@ extern "C"
 
 	#include "m_misc.h"
 
-	rend_fixed_t*		yslope = NULL;
-	rend_fixed_t*		distscale = NULL;
-
 	int32_t				span_override = Span_None;
 
 	extern int			numflats;
@@ -50,15 +47,6 @@ extern "C"
 
 #include "m_container.h"
 #include "m_profile.h"
-
-//
-// R_InitPlanes
-// Only at game startup.
-//
-DOOM_C_API void R_InitPlanes (void)
-{
-  // Doh!
-}
 
 //
 // R_ClearPlanes
@@ -70,15 +58,15 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 
 	{
 		M_PROFILE_NAMED( "Clip clear" );
-		context->floorclip = R_AllocateScratch< vertclip_t >( viewwidth, viewheight );
-		context->ceilingclip = R_AllocateScratch< vertclip_t >( viewwidth, -1 );
+		context->floorclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, drs_current->viewheight );
+		context->ceilingclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, -1 );
 	}
 
 	context->lastopening = context->openings;
 
 	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * ( numflats + numtextures ) );
 
-	context->raster = R_AllocateScratch< rastercache_t >( viewheight );
+	context->raster = R_AllocateScratch< rastercache_t >( drs_current->viewheight );
 }
 
 //
@@ -161,12 +149,12 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 
 	colcontext_t	skycontext;
 
-	skycontext.colfunc = colfuncs[ M_MIN( ( pspriteiscale >> 12 ), 15 ) ];
+	skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->pspriteiscale >> 12 ), 15 ) ];
 
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
-	skycontext.iscale = FixedToRendFixed( pspriteiscale );
+	skycontext.iscale = FixedToRendFixed( drs_current->pspriteiscale );
 	skycontext.texturemid = skytexturemid;
 
 	// This isn't a constant though...
@@ -187,7 +175,7 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 				skycontext.yh = line.bottom;
 				skycontext.x = x;
 
-				int32_t angle = ( viewangle + xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
+				int32_t angle = ( viewangle + drs_current->xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
 				// Sky is allways drawn full bright,
 				//  i.e. colormaps[0] is used.
 				// Because of this hack, sky is not affected

@@ -24,20 +24,6 @@
 
 #include "r_data.h"
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Visplane related.
-extern rend_fixed_t*	yslope;
-extern rend_fixed_t*	distscale;
-
-#ifdef __cplusplus
-}
-#endif
-
-DOOM_C_API void R_InitPlanes (void);
 DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle );
 
 #ifdef RANGECHECK

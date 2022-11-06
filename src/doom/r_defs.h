@@ -783,15 +783,30 @@ typedef struct drsdata_s
 	double_t			percentage;
 	int32_t				frame_width;
 	int32_t				frame_height;
+	int32_t				frame_adjusted_width;
+	int32_t				frame_adjusted_scaled_mul;
 
 	angle_t				clipangle;
+	int32_t				centerx;
+	int32_t				centery;
+	fixed_t				centerxfrac;
+	fixed_t				centeryfrac;
+	rend_fixed_t		projection;
+	int32_t				viewwidth;
+	int32_t				scaledviewwidth;
+	int32_t				viewheight;
+	int32_t				viewwindowx;
+	int32_t				viewwindowy;
+	fixed_t				pspritescale;
+	fixed_t				pspriteiscale;
+
 	int32_t*			viewangletox;
 	angle_t*			xtoviewangle;
-	lighttable_t***		scalelight;
-	int32_t**			scalelightindex;
-	lighttable_t***		scalelightfixed;
-	lighttable_t***		zlight;
-	int32_t**			zlightindex;
+	lighttable_t**		scalelight;
+	int32_t*			scalelightindex;
+	lighttable_t**		scalelightfixed;
+	lighttable_t**		zlight;
+	int32_t*			zlightindex;
 	vertclip_t*			negonearray;
 	vertclip_t*			screenheightarray;
 	rend_fixed_t*		yslope;

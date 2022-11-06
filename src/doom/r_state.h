@@ -46,10 +46,6 @@ extern fixed_t*		spritetopoffset;
 
 extern lighttable_t*	colormaps;
 
-extern int32_t		viewwidth;
-extern int32_t		scaledviewwidth;
-extern int32_t		viewheight;
-
 extern int32_t		render_width;
 extern int32_t		render_height;
 extern int32_t		render_post_scaling;
@@ -119,12 +115,7 @@ extern rend_fixed_t	viewlerp;
 extern angle_t		viewangle;
 extern player_t*	viewplayer;
 
-// ?
-extern angle_t		clipangle;
-
-extern int32_t		viewangletox[ RENDERFINEANGLES/2 ];
-extern angle_t*		xtoviewangle;
-
+// All the old global tables now live in the current DRS dataset
 extern drsdata_t*	drs_current;
 
 #if defined( __cplusplus )

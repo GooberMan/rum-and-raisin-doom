@@ -80,6 +80,8 @@ DOOM_C_API typedef enum renderdimensions_e
 #define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / frame_height )
 #define V_HEIGHTMULTIPLIER ( ( frame_height << FRACBITS ) / V_VIRTUALHEIGHT )
 
+#define V_HEIGHTMULTIPLIERVAL( x ) ( ( x << FRACBITS ) / V_VIRTUALHEIGHT )
+
 DOOM_C_API typedef boolean (*grabmouse_callback_t)(void);
 
 // Called by D_DoomMain,

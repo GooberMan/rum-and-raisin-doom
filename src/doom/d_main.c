@@ -247,7 +247,7 @@ boolean D_Display( double_t framepercent )
 	// change the view size if needed
 	if (setsizeneeded)
 	{
-		R_ExecuteSetViewSize( false );
+		R_ExecuteSetViewSize( );
 		oldgamestate = -1; // force background redraw
 		borderdrawcount = 3;
 	}
@@ -284,11 +284,11 @@ boolean D_Display( double_t framepercent )
 			// Slight hack to get around the fact that we memset everything now for the automap
 			redrawsbar = true;
 		}
-		if (wipe || (viewheight != render_height && fullscreen))
+		if (wipe || (drs_current->viewheight != drs_current->frame_height && fullscreen))
 			redrawsbar = true;
 		if (inhelpscreensstate && !inhelpscreens)
 			redrawsbar = true;              // just put away the help screen
-		fullscreen = viewheight == render_height;
+		fullscreen = drs_current->viewheight == drs_current->frame_height;
 		break;
 
 	case GS_INTERMISSION:
@@ -329,7 +329,7 @@ boolean D_Display( double_t framepercent )
 	}
 
 	// see if the border needs to be updated to the screen
-	if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != render_width)
+	if (gamestate == GS_LEVEL && !automapactive && drs_current->scaledviewwidth != drs_current->frame_width)
 	{
 		if (menuactive || menuactivestate || !viewactivestate)
 			borderdrawcount = 3;
@@ -355,7 +355,7 @@ boolean D_Display( double_t framepercent )
 		}
 		else
 		{
-			y = FixedDiv( viewwindowy, V_HEIGHTMULTIPLIER ) + 4;
+			y = FixedDiv( drs_current->viewwindowy, V_HEIGHTMULTIPLIER ) + 4;
 		}
 
 		pausepatch = (patch_t*)W_CacheLumpName( DEH_String("M_PAUSE"), PU_CACHE );
@@ -643,7 +643,7 @@ void D_DoomLoop (void)
     TryRunTics();
 
     V_RestoreBuffer();
-    R_ExecuteSetViewSize( false );
+    R_ExecuteSetViewSize( );
 
     D_StartGameLoop();
 

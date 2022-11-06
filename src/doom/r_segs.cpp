@@ -154,7 +154,7 @@ DOOM_C_API void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontex
 	else
 		walllightsindex = lightnum;
 		
-	walllights = scalelight[ walllightsindex ];
+	walllights = &drs_current->scalelight[ walllightsindex * MAXLIGHTSCALE ];
 
 	maskedtexturecol = ds->maskedtexturecol;
 
@@ -187,7 +187,7 @@ DOOM_C_API void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontex
 		// calculate lighting
 		if (maskedtexturecol[spritecolcontext.x] != MASKEDTEXCOL_INVALID)
 		{
-			spritecontext->sprtopscreen = FixedToRendFixed( centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
+			spritecontext->sprtopscreen = FixedToRendFixed( drs_current->centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
 			spritecolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), spritecontext->spryscale );
 
 			if( !fixedcolormap )
@@ -333,7 +333,7 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 		if (segcontext->segtextured)
 		{
 			// calculate texture offset
-			angle = (wallcontext->centerangle + xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
+			angle = (wallcontext->centerangle + drs_current->xtoviewangle[currx])>>RENDERANGLETOFINESHIFT;
 			texturecolumn = RendFixedToInt( wallcontext->offset - RendFixedMul( FixedToRendFixed( renderfinetangent[angle] ), wallcontext->distance ) );
 			// calculate lighting
 			index = (int32_t)( wallcontext->scale >> RENDLIGHTSCALESHIFT );
@@ -351,7 +351,7 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 			}
 			else
 			{
-				colormapindex = wallcontext->lightsindex < NUMLIGHTCOLORMAPS ? scalelightindex[ wallcontext->lightsindex ][ index ] : wallcontext->lightsindex;
+				colormapindex = wallcontext->lightsindex < NUMLIGHTCOLORMAPS ? drs_current->scalelightindex[ wallcontext->lightsindex * MAXLIGHTSCALE + index ] : wallcontext->lightsindex;
 			}
 			wallcolcontext.x = currx;
 			wallcolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), wallcontext->scale );
@@ -379,7 +379,7 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 #endif
 			R_RangeCheck();
 			wallcolcontext.colfunc( &wallcolcontext );
-			planecontext->ceilingclip[currx] = viewheight;
+			planecontext->ceilingclip[currx] = drs_current->viewheight;
 			planecontext->floorclip[currx] = -1;
 		}
 		else
@@ -534,7 +534,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 	}
 		
 #ifdef RANGECHECK
-	if (start >=viewwidth || start > stop)
+	if (start >=drs_current->viewwidth || start > stop)
 	{
 		I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
 	}
@@ -567,14 +567,14 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		loopcontext.stopx = stop+1;
 
 		// calculate scale at both ends and step
-		bspcontext->thisdrawseg->scale1 = wallcontext->scale = R_ScaleFromGlobalAngle( viewangle + xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle );
+		bspcontext->thisdrawseg->scale1 = wallcontext->scale = R_ScaleFromGlobalAngle( viewangle + drs_current->xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle );
 
 		if( stop > start )
 		{
 			// TODO: calculate second distance? Maybe?
 			//wallcontext->distance = FixedMul( R_PointToDist( curline->v2->rend.x, curline->v2->rend.y ), sineval );
 
-			bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle( viewangle + xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle );
+			bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle( viewangle + drs_current->xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle );
 			bspcontext->thisdrawseg->scalestep = wallcontext->scalestep = 
 				( bspcontext->thisdrawseg->scale2 - wallcontext->scale ) / ( stop - start );
 		}
@@ -612,8 +612,8 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 			wallcontext->midtexturemid += bspcontext->sideinst->rowoffset;
 
 			bspcontext->thisdrawseg->silhouette = SIL_BOTH;
-			bspcontext->thisdrawseg->sprtopclip = screenheightarray;
-			bspcontext->thisdrawseg->sprbottomclip = negonearray;
+			bspcontext->thisdrawseg->sprtopclip = drs_current->screenheightarray;
+			bspcontext->thisdrawseg->sprbottomclip = drs_current->negonearray;
 			bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
 			bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
 		}
@@ -649,14 +649,14 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		
 			if (bspcontext->backsectorinst->ceilheight <= bspcontext->frontsectorinst->floorheight)
 			{
-				bspcontext->thisdrawseg->sprbottomclip = negonearray;
+				bspcontext->thisdrawseg->sprbottomclip = drs_current->negonearray;
 				bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
 				bspcontext->thisdrawseg->silhouette |= SIL_BOTTOM;
 			}
 	
 			if (bspcontext->backsectorinst->floorheight >= bspcontext->frontsectorinst->ceilheight)
 			{
-				bspcontext->thisdrawseg->sprtopclip = screenheightarray;
+				bspcontext->thisdrawseg->sprtopclip = drs_current->screenheightarray;
 				bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 			}
@@ -804,7 +804,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 				else
 					wallcontext->lightsindex = lightnum;
 		
-				wallcontext->lights = scalelight[ wallcontext->lightsindex ];
+				wallcontext->lights = &drs_current->scalelight[ wallcontext->lightsindex * MAXLIGHTSCALE ];
 			}
 		}
 
@@ -829,10 +829,10 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		worldbottom >>= 4;
 	
 		loopcontext.topstep = -RendFixedMul( wallcontext->scalestep, worldtop );
-		loopcontext.topfrac = FixedToRendFixed( centeryfrac >> 4 ) - RendFixedMul( worldtop, wallcontext->scale );
+		loopcontext.topfrac = FixedToRendFixed( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldtop, wallcontext->scale );
 
 		loopcontext.bottomstep = -RendFixedMul( wallcontext->scalestep, worldbottom );
-		loopcontext.bottomfrac = FixedToRendFixed( centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext->scale );
+		loopcontext.bottomfrac = FixedToRendFixed( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext->scale );
 	
 		if (bspcontext->backsector)
 		{	
@@ -841,13 +841,13 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 
 			if (worldhigh < worldtop)
 			{
-				loopcontext.pixhigh = FixedToRendFixed( centeryfrac >> 4 ) - RendFixedMul( worldhigh, wallcontext->scale );
+				loopcontext.pixhigh = FixedToRendFixed( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldhigh, wallcontext->scale );
 				loopcontext.pixhighstep = -RendFixedMul( wallcontext->scalestep, worldhigh );
 			}
 	
 			if (worldlow > worldbottom)
 			{
-				loopcontext.pixlow = FixedToRendFixed( centeryfrac >> 4) - RendFixedMul( worldlow, wallcontext->scale );
+				loopcontext.pixlow = FixedToRendFixed( drs_current->centeryfrac >> 4) - RendFixedMul( worldlow, wallcontext->scale );
 				loopcontext.pixlowstep = -RendFixedMul( wallcontext->scalestep, worldlow );
 			}
 		}
