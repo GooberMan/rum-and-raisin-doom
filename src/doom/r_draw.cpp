@@ -922,20 +922,20 @@ R_InitBuffer
     // Handle resize,
     //  e.g. smaller view windows
     //  with border and/or status bar.
-    viewwindowx = (render_width-width) >> 1; 
+    viewwindowx = (frame_width-width) >> 1; 
     // Samw with base row offset.
-    if (width == render_width) 
+    if (width == frame_width) 
 		viewwindowy = 0;
     else 
-		viewwindowy = (render_height-SBARHEIGHT-height) >> 1;
+		viewwindowy = (frame_height-SBARHEIGHT-height) >> 1;
 
-	background_data.width = background_data.height = 0;
-	if (background_data.data != NULL)
-	{
-		Z_Free(background_data.data);
-	}
-
-	background_data.data = NULL;
+	//background_data.width = background_data.height = 0;
+	//if (background_data.data != NULL)
+	//{
+	//	Z_Free(background_data.data);
+	//}
+	//
+	//background_data.data = NULL;
 } 
  
  

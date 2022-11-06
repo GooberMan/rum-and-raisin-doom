@@ -725,7 +725,7 @@ void R_InitTables (void)
 //
 // R_InitTextureMapping
 //
-void R_InitTextureMapping (void)
+void R_InitTextureMapping( boolean subframe )
 {
     int			i;
     int			x;
@@ -760,14 +760,17 @@ void R_InitTextureMapping (void)
 		viewangletox[i] = t;
     }
     
-    // Scan viewangletox[] to generate xtoviewangle[]:
-    //  xtoviewangle will give the smallest view angle
-    //  that maps to x.	
-	if( xtoviewangle )
+	if( !subframe )
 	{
-		Z_Free( xtoviewangle );
+		// Scan viewangletox[] to generate xtoviewangle[]:
+		//  xtoviewangle will give the smallest view angle
+		//  that maps to x.	
+		if( xtoviewangle )
+		{
+			Z_Free( xtoviewangle );
+		}
+		xtoviewangle = (angle_t*)Z_Malloc( sizeof( angle_t ) * ( render_width + 1 ), PU_STATIC, NULL );
 	}
-	xtoviewangle = (angle_t*)Z_Malloc( sizeof( angle_t) * ( viewwidth + 1 ), PU_STATIC, NULL );
 
     for (x=0;x<=viewwidth;x++)
     {
@@ -1245,9 +1248,9 @@ DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
 	colfuncbase = COLFUNC_NUM;
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
 
-	R_InitBuffer(scaledviewwidth, viewheight);
+	R_InitBuffer( scaledviewwidth, viewheight );
 	
-	R_InitTextureMapping();
+	R_InitTextureMapping( subframe );
 
 	// psprite scales
 	perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
@@ -1360,7 +1363,7 @@ void R_RenderUpdateFrameSize( void )
 		return;
 	}
 
-	double_t target = 1000000.0 / targetrefresh;
+	double_t target = 1.0 / targetrefresh;
 	double_t actual = frametime / 1000000.0;
 
 	// Tiny delta to account for natural time fluctuations
@@ -1372,17 +1375,17 @@ void R_RenderUpdateFrameSize( void )
 	int32_t oldframeheight = frame_height;
 	double_t actualpercent = actual / target;
 
-	if( actualpercent > DRS_GREATER ) 
+	if( actualpercent > DRS_GREATER )
 	{
-		double_t reduction = ( actualpercent - DRS_GREATER ) * 0.25;
-		frame_width = M_MIN( render_width * 0.5, frame_width - render_width * reduction );
-		frame_height = M_MIN( render_height * 0.5, frame_height - render_height * reduction );
+		double_t reduction = ( actualpercent - DRS_GREATER ) * 0.2;
+		frame_width = M_MAX( render_width * 0.5, frame_width - render_width * reduction );
+		frame_height = M_MAX( render_height * 0.5, frame_height - render_height * reduction );
 	}
 	else if( actualpercent < DRS_LESS )
 	{
-		double_t addition = ( DRS_LESS - actualpercent  ) * 0.25;
-		frame_width = M_MIN( render_width * 0.5, frame_width + render_width * addition );
-		frame_height = M_MIN( render_height * 0.5, frame_height + render_height * addition );
+		double_t addition = ( DRS_LESS - actualpercent ) * 0.25;
+		frame_width = M_MIN( render_width, frame_width + render_width * addition );
+		frame_height = M_MIN( render_height, frame_height + render_height * addition );
 
 		R_UpdateFrameValues();
 	}
