@@ -1336,8 +1336,8 @@ void R_UpdateFrameValues( void )
 	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( frame_width ), perspective_mul );
 
 	frame_adjusted_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
-	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / VANILLA_SCREENWIDTH;
-	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
+	rend_fixed_t scaleddivide = IntToRendFixed( frame_adjusted_width ) / VANILLA_SCREENWIDTH;
+	frame_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, scaleddivide );
 
 	R_ExecuteSetViewSize( true );
 }
