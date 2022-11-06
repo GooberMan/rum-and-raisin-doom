@@ -162,6 +162,7 @@ static boolean opldev;
 typedef enum categorytofocus_e
 {
 	cat_none,
+	cat_general,
 	cat_screen,
 	cat_sound,
 
@@ -1071,7 +1072,11 @@ void M_DrawOptions(void)
 
 void M_Options(int choice)
 {
-    M_SetupNextMenu(&OptionsDef);
+//	M_SetupNextMenu(&OptionsDef);
+
+	dashboardactive = true;
+	debugwindow_options = true;
+	debugwindow_tofocus = cat_general;
 }
 
 
@@ -1796,12 +1801,15 @@ boolean M_Responder (event_t* ev)
         }
         else if (key == key_menu_volume)   // Sound Volume
         {
-	    M_StartControlPanel ();
-	    currentMenu = &SoundDef;
-	    itemOn = sfx_vol;
-	    S_StartSound(NULL,sfx_swtchn);
-	    return true;
-	}
+			//M_StartControlPanel ();
+			//currentMenu = &SoundDef;
+			//itemOn = sfx_vol;
+			dashboardactive = true;
+			debugwindow_options = true;
+			debugwindow_tofocus = cat_sound;
+			S_StartSound(NULL,sfx_swtchn);
+			return true;
+		}
         else if (key == key_menu_detail)   // Detail toggle
         {
 			M_ChangeDetail(0);
@@ -3097,6 +3105,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t vsync_mode;
 	extern int32_t wipe_style;
 	extern int32_t render_dimensions_mode;
+	extern int32_t dynamic_resolution_scaling;
 
 	controlsection_t*	currsection;
 
@@ -3115,7 +3124,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 	if( igBeginTabBar( "Doom Options tabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton ) )
 	{
-		if( igBeginTabItem( "General", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton ) )
+		additionaltabflag = debugwindow_tofocus == cat_general ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+		if( igBeginTabItem( "General", NULL, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | additionaltabflag ) )
 		{
 			igColumns( 2, "", false );
 			igSetColumnWidth( 0, columwidth );
@@ -3374,6 +3384,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 					I_SetNumBuffers( num_software_backbuffers );
 				}
 				igPopID();
+				igNextColumn();
 
 				igColumns( 1, "", false );
 			}
