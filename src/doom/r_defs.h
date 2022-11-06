@@ -778,6 +778,27 @@ typedef struct rendercontext_s
 
 } rendercontext_t;
 
+typedef struct drsdata_s
+{
+	double_t			percentage;
+	int32_t				frame_width;
+	int32_t				frame_height;
+
+	angle_t				clipangle;
+	int32_t*			viewangletox;
+	angle_t*			xtoviewangle;
+	lighttable_t***		scalelight;
+	int32_t**			scalelightindex;
+	lighttable_t***		scalelightfixed;
+	lighttable_t***		zlight;
+	int32_t**			zlightindex;
+	vertclip_t*			negonearray;
+	vertclip_t*			screenheightarray;
+	rend_fixed_t*		yslope;
+	rend_fixed_t*		distscale;
+
+} drsdata_t;
+
 typedef enum voidclear_e
 {
 	Void_NoClear,

@@ -59,7 +59,6 @@ extern "C"
 
 	// Fineangles in the SCREENWIDTH wide window.
 	// If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
-	#define FIELDOFVIEW				( FINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
 	#define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
 
 	#define DEFAULT_RENDERCONTEXTS 4
@@ -123,6 +122,21 @@ extern "C"
 	rend_fixed_t			viewlerp;
 
 	player_t*				viewplayer;
+
+	constexpr size_t DRSNumViewAngles = RENDERFINEANGLES / 2;
+
+	constexpr size_t DRSNumScaleLightEntries = LIGHTLEVELS * MAXLIGHTSCALE;
+	constexpr size_t DRSNumScaleLightFixedEntries = MAXLIGHTSCALE;
+	constexpr size_t DRSNumZLightEntries = LIGHTLEVELS * MAXLIGHTZ;
+
+	constexpr size_t DRSNumEntries = 10;
+	constexpr size_t DRSArraySize = DRSNumEntries + 1;
+	constexpr double_t DRSMaxPercent = 0.5;
+	constexpr double_t DRSStep = DRSMaxPercent / DRSNumEntries;
+
+	drsdata_t*				drs_data = NULL;
+	drsdata_t*				drs_current = NULL;
+	drsdata_t				drs_allocation_data;
 
 	//
 	// precalculated math tables
@@ -721,6 +735,96 @@ void R_InitTables (void)
 }
 
 
+void R_AllocDynamicTables( void )
+{
+	if( drs_allocation_data.viewangletox )
+	{
+		Z_Free( drs_allocation_data.viewangletox );
+	}
+	if( drs_allocation_data.xtoviewangle )
+	{
+		Z_Free( drs_allocation_data.xtoviewangle );
+	}
+	if( drs_allocation_data.scalelight )
+	{
+		Z_Free( drs_allocation_data.scalelight );
+	}
+	if( drs_allocation_data.scalelightindex )
+	{
+		Z_Free( drs_allocation_data.scalelightindex );
+	}
+	if( drs_allocation_data.scalelightfixed )
+	{
+		Z_Free( drs_allocation_data.scalelightfixed );
+	}
+	if( drs_allocation_data.zlight )
+	{
+		Z_Free( drs_allocation_data.zlight );
+	}
+	if( drs_allocation_data.zlightindex )
+	{
+		Z_Free( drs_allocation_data.zlightindex );
+	}
+	if( drs_allocation_data.screenheightarray )
+	{
+		Z_Free( drs_allocation_data.screenheightarray );
+	}
+	if( drs_allocation_data.yslope )
+	{
+		Z_Free( drs_allocation_data.yslope );
+	}
+	if( drs_allocation_data.distscale )
+	{
+		Z_Free( drs_allocation_data.distscale );
+	}
+	if( drs_data )
+	{
+		Z_Free( drs_data );
+	}
+
+	drs_data = Z_MallocArray< drsdata_t >( DRSArraySize, PU_STATIC, nullptr );
+
+	int32_t totalwidth = 0;
+	
+	for( int32_t currindex : iota( 0, DRSArraySize ) )
+	{
+		totalwidth += ( int32_t )( render_width * ( 1.0 - DRSStep * currindex ) );
+	}
+
+	drs_allocation_data.viewangletox		= (int32_t*)Z_Malloc( sizeof(int32_t) * DRSNumViewAngles * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.xtoviewangle		= (angle_t*)Z_Malloc( sizeof(angle_t) * ( totalwidth + DRSArraySize ), PU_STATIC, nullptr );
+	drs_allocation_data.scalelight			= (lighttable_t***)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.scalelightindex		= (int32_t**)Z_Malloc( sizeof( int32_t ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.scalelightfixed		= (lighttable_t***)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightFixedEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.zlight				= (lighttable_t***)Z_Malloc( sizeof( lighttable_t* ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.zlightindex			= (int32_t**)Z_Malloc( sizeof( int32_t ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.negonearray			= (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * render_width, PU_STATIC, nullptr );
+	drs_allocation_data.screenheightarray	= (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * totalwidth, PU_STATIC, nullptr );
+	drs_allocation_data.yslope				= (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * totalwidth, PU_STATIC, nullptr );
+	drs_allocation_data.distscale			= (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * totalwidth, PU_STATIC, nullptr );
+
+	drsdata_t base = drs_allocation_data;
+	
+	for( int32_t currindex : iota( 0, DRSArraySize ) )
+	{
+		base.percentage = 1.0 - DRSStep * currindex;
+		base.frame_width = render_width * base.percentage;
+		base.frame_height = render_height * base.percentage;
+
+		drs_data[ currindex ] = base;
+
+		base.viewangletox		+= DRSNumViewAngles;
+		base.xtoviewangle		+= ( base.frame_width + 1 );
+		base.scalelight			+= DRSNumScaleLightEntries;
+		base.scalelightindex	+= DRSNumScaleLightEntries;
+		base.scalelightfixed	+= DRSNumScaleLightFixedEntries;
+		base.zlight				+= DRSNumZLightEntries;
+		base.zlightindex		+= DRSNumZLightEntries;
+		base.screenheightarray	+= base.frame_width;
+		base.yslope				+= base.frame_width;
+		base.distscale			+= base.frame_width;
+	}
+}
 
 //
 // R_InitTextureMapping
@@ -1098,7 +1202,7 @@ void R_InitContexts( void )
 	int32_t currstart;
 	int32_t incrementby;
 
-	maxrendercontexts = I_ThreadGetHardwareCount();
+	maxrendercontexts = (int32_t)I_ThreadGetHardwareCount();
 	if( num_render_contexts <= 0 )
 	{
 		num_render_contexts = maxrendercontexts;
@@ -1198,7 +1302,7 @@ DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
 	int32_t				startmap;
 	int32_t				colfuncbase;
 
-	int32_t actualheight = render_post_scaling ? frame_height * 1.2 : frame_height;
+	int32_t actualheight = render_post_scaling ? (int32_t)( frame_height * 1.2 ) : frame_height;
 
 	rend_fixed_t		original_perspective	= RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
 	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( frame_width ), IntToRendFixed( frame_height ) );
@@ -1373,14 +1477,14 @@ void R_RenderUpdateFrameSize( void )
 	if( actualpercent > DRS_GREATER )
 	{
 		double_t reduction = ( actualpercent - DRS_GREATER ) * 0.2;
-		frame_width = M_MAX( render_width * 0.5, frame_width - render_width * reduction );
-		frame_height = M_MAX( render_height * 0.5, frame_height - render_height * reduction );
+		frame_width = (int32_t)M_MAX( render_width * 0.5, frame_width - render_width * reduction );
+		frame_height = (int32_t)M_MAX( render_height * 0.5, frame_height - render_height * reduction );
 	}
 	else if( actualpercent < DRS_LESS )
 	{
 		double_t addition = ( DRS_LESS - actualpercent ) * 0.25;
-		frame_width = M_MIN( render_width, frame_width + render_width * addition );
-		frame_height = M_MIN( render_height, frame_height + render_height * addition );
+		frame_width = (int32_t)M_MIN( render_width, frame_width + render_width * addition );
+		frame_height = (int32_t)M_MIN( render_height, frame_height + render_height * addition );
 
 		R_UpdateFrameValues();
 	}
@@ -1571,6 +1675,8 @@ void R_Init (void)
 	frame_width = render_width;
 	frame_height = render_height;
 
+	R_AllocDynamicTables();
+
 	R_InitAspectAdjustedValues();
 
     R_InitData ();
@@ -1613,6 +1719,7 @@ void R_RenderDimensionsChanged( void )
 	frame_width = render_width;
 	frame_height = render_height;
 	V_RestoreBuffer();
+	R_AllocDynamicTables();
 	R_InitAspectAdjustedValues();
 	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
@@ -1788,7 +1895,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 
 	if( interpolate_this_frame )
 	{
-		viewlerp	= framepercent * ( RENDFRACUNIT - 1 );
+		viewlerp	= (rend_fixed_t)( framepercent * ( RENDFRACUNIT ) );
 		bool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
 
 		rend_fixed_t adjustedviewx;

@@ -81,10 +81,27 @@ DOOM_C_API size_t	Z_ZoneSize(void);
 #if defined( __cplusplus )
 
 template< typename _ty >
+INLINE void Z_MallocInitEntry( _ty*& val )
+{
+	new( val ) _ty;
+}
+
+template< typename _ty >
 INLINE _ty* Z_Malloc( int32_t tag, void* ptr )
 {
 	_ty* val = (_ty*)Z_Malloc( sizeof( _ty ), tag, ptr );
-	new( val ) _ty;
+	Z_MallocInitEntry( val );
+	return val;
+}
+
+template< typename _ty >
+INLINE _ty* Z_MallocArray( size_t count, int32_t tag, void* ptr )
+{
+	_ty* val = (_ty*)Z_Malloc( sizeof( _ty ) * count, tag, ptr );
+	for( _ty* curr = val; curr < val + count; ++curr )
+	{
+		Z_MallocInitEntry( curr );
+	}
 	return val;
 }
 

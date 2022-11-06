@@ -125,6 +125,8 @@ extern angle_t		clipangle;
 extern int32_t		viewangletox[ RENDERFINEANGLES/2 ];
 extern angle_t*		xtoviewangle;
 
+extern drsdata_t*	drs_current;
+
 #if defined( __cplusplus )
 }
 #endif // defined( __cplusplus )
