@@ -519,8 +519,11 @@ extern "C"
 	int32_t					mapkeybuttonvalue = -1;
 
 	extern int32_t			render_width;
+	extern int32_t			render_height;
 	extern int32_t			actualheight;
 	extern int32_t			window_width;
+	extern int32_t			frame_width;
+	extern int32_t			frame_height;
 }
 
 static int32_t			dashboard_theme = 0;
@@ -1144,10 +1147,13 @@ void M_RenderDashboardBackbufferContents( int32_t backbufferid )
 	ImVec2 imagepos;
 	igGetCursorScreenPos( &imagepos );
 
+	float_t right = (float_t)frame_width / (float_t)render_width;
+	float_t bottom = (float_t)frame_height / (float_t)render_height;
+
 	ImVec2 uvtl = { 0, 0 };
-	ImVec2 uvtr = { 0, 1 };
-	ImVec2 uvll = { 1, 0 };
-	ImVec2 uvlr = { 1, 1 };
+	ImVec2 uvtr = { 0, bottom };
+	ImVec2 uvll = { right, 0 };
+	ImVec2 uvlr = { right, bottom };
 	ImVec4 tint = { 1, 1, 1, 1 };
 	ImVec4 border = { 0, 0, 0, 0 };
 	igImageQuad( (ImTextureID)backbufferid, size, uvtl, uvtr, uvlr, uvll, tint, border );
