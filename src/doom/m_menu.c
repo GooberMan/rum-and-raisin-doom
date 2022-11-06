@@ -3408,6 +3408,17 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igPopID();
 				igNextColumn();
 
+				igText( "Dynamic resolution scaling" );
+				igNextColumn();
+				igPushIDPtr( &dynamic_resolution_scaling );
+				WorkingBool = dynamic_resolution_scaling != 0;
+				if( igCheckbox( "", &WorkingBool ) )
+				{
+					dynamic_resolution_scaling = WorkingBool ? DRS_Both : DRS_None;
+				}
+				igPopID();
+				igNextColumn();
+
 				igText( "Vsync" );
 				igNextColumn();
 				igPushIDPtr( &vsync_mode );
