@@ -633,7 +633,7 @@ void R_InitPointToAngle (void)
 // Defining the original maximum as a function of your
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
-#define MAXSCALE ( 128 * ( frame_width / VANILLA_SCREENWIDTH ) )
+#define MAXSCALE ( 128 * ( drs_current->frame_width / VANILLA_SCREENWIDTH ) )
 #define MAXSCALE_FIXED IntToRendFixed( MAXSCALE )
 
 rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle )
@@ -707,6 +707,8 @@ void R_DRSApply( drsdata_t* current )
 	frame_height				= current->frame_height;
 
 	drs_current					= current;
+
+	R_RebalanceContexts();
 }
 
 void R_AllocDynamicTables( void )
@@ -768,6 +770,8 @@ void R_AllocDynamicTables( void )
 		totalheight += ( int32_t )( render_height * p );
 	}
 
+
+	// One of these is not creating the correct amount of data...
 	drs_allocation_data.viewangletox		= (int32_t*)Z_Malloc( sizeof(int32_t) * DRSNumViewAngles * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.xtoviewangle		= (angle_t*)Z_Malloc( sizeof(angle_t) * ( totalwidth + DRSArraySize ), PU_STATIC, nullptr );
 	drs_allocation_data.scalelight			= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
@@ -1085,7 +1089,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	rendercontext->planecontext.spantype = span_override;
 	if( span_override == Span_None )
 	{
-		rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
+		rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( drs_current->frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 	}
 	if( rendercontext->planecontext.spantype == Span_Original )
 	{
@@ -1180,7 +1184,7 @@ void R_InitContexts( void )
 	}
 
 	currstart = 0;
-	incrementby = frame_width / maxrendercontexts;
+	incrementby = drs_current->frame_width / maxrendercontexts;
 
 	renderdatas = (renderdata_t*)Z_Malloc( sizeof( renderdata_t ) * maxrendercontexts, PU_STATIC, NULL );
 	memset( renderdatas, 0, sizeof( renderdata_t ) * maxrendercontexts );
@@ -1193,7 +1197,7 @@ void R_InitContexts( void )
 
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
-		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, frame_width );
+		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, drs_current->frame_width );
 
 		renderdatas[ currcontext ].context.starttime = 0;
 		renderdatas[ currcontext ].context.endtime = 1;
@@ -1296,13 +1300,13 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 	if (setblocks == 11)
 	{
-		current->scaledviewwidth = frame_width;
-		current->viewheight = frame_height;
+		current->scaledviewwidth = current->frame_width;
+		current->viewheight = current->frame_height;
 	}
 	else
 	{
-		current->scaledviewwidth = setblocks * frame_width / 10;
-		current->viewheight = (setblocks * ( frame_height - SBARHEIGHT( current ) ) / 10 ); // & ~7;
+		current->scaledviewwidth = setblocks * current->frame_width / 10;
+		current->viewheight = (setblocks * ( current->frame_height - SBARHEIGHT( current ) ) / 10 ); // & ~7;
 	}
 
 	current->viewwidth = current->scaledviewwidth;
@@ -1321,10 +1325,10 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	R_InitTextureMapping( current );
 
 	// psprite scales
-	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
+	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( current->frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
 
-	current->pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( current->viewwidth ) / frame_width, perspectivecorrectscale ) );
-	current->pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( frame_width ) / current->viewwidth, perspectivecorrectscale ) );
+	current->pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale ) );
+	current->pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale ) );
 
 	for (i=0 ; i<current->viewwidth ; i++)
 	{
@@ -1352,7 +1356,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 		startmap = ( (LIGHTLEVELS - 1 - i ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
 		for ( j=0 ; j < MAXLIGHTSCALE ; j++ )
 		{
-			level = startmap - j * frame_width / current->viewwidth / DISTMAP;
+			level = startmap - j * current->frame_width / current->viewwidth / DISTMAP;
 
 			if (level < 0)
 			{
@@ -1372,11 +1376,10 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 void R_ExecuteSetViewSize( void )
 {
-	
-	//for( drsdata_t& curr : std::span( drs_data, DRSArraySize ) )
-	//{
-	//	R_ExecuteSetViewSizeFor( &curr );
-	//}
+	for( drsdata_t& curr : std::span( drs_data, DRSArraySize - 1 ) )
+	{
+		R_ExecuteSetViewSizeFor( &curr );
+	}
 
 	R_ExecuteSetViewSizeFor( drs_data );
 
@@ -1391,11 +1394,11 @@ void R_RenderUpdateFrameSize( void )
 
 	if( dynamic_resolution_scaling == DRS_None || targetrefresh <= 0 )
 	{
-		if( frame_width != render_width || frame_height != render_height )
+		if( drs_current->frame_width != render_width || drs_current->frame_height != render_height )
 		{
-			frame_width = render_width;
-			frame_height = render_height;
+			R_DRSApply( drs_data );
 		}
+
 		return;
 	}
 
@@ -1407,25 +1410,35 @@ void R_RenderUpdateFrameSize( void )
 	#define DRS_GREATER ( 1 + DRS_DELTA )
 	#define DRS_LESS ( 1 - DRS_DELTA )
 
-	int32_t oldframewidth = frame_width;
-	int32_t oldframeheight = frame_height;
+	int32_t oldframewidth = drs_current->frame_width;
+	int32_t oldframeheight = drs_current->frame_height;
+	int32_t newframewidth = drs_current->frame_width;
+	int32_t newframeheight = drs_current->frame_height;
 	double_t actualpercent = actual / target;
 
 	if( actualpercent > DRS_GREATER )
 	{
 		double_t reduction = ( actualpercent - DRS_GREATER ) * 0.2;
-		frame_width = (int32_t)M_MAX( render_width * 0.5, frame_width - render_width * reduction );
-		frame_height = (int32_t)M_MAX( render_height * 0.5, frame_height - render_height * reduction );
+		newframewidth = (int32_t)M_MAX( render_width * 0.55, drs_current->frame_width - render_width * reduction );
+		newframeheight = (int32_t)M_MAX( render_height * 0.55, drs_current->frame_height - render_height * reduction );
 	}
 	else if( actualpercent < DRS_LESS )
 	{
 		double_t addition = ( DRS_LESS - actualpercent ) * 0.25;
-		frame_width = (int32_t)M_MIN( render_width, frame_width + render_width * addition );
-		frame_height = (int32_t)M_MIN( render_height, frame_height + render_height * addition );
+		newframewidth = (int32_t)M_MIN( render_width, drs_current->frame_width + render_width * addition );
+		newframeheight = (int32_t)M_MIN( render_height, drs_current->frame_height + render_height * addition );
 	}
 
-	if( frame_width != oldframewidth || frame_height != oldframeheight )
+	if( oldframewidth != newframewidth || oldframeheight != newframeheight )
 	{
+		for( drsdata_t& curr : std::span( drs_data, DRSArraySize - 1 ) )
+		{
+			if( newframewidth >= curr.frame_width  )
+			{
+				R_DRSApply( &curr );
+				break;
+			}
+		}
 	}
 }
 
