@@ -881,10 +881,10 @@ void R_InitTextureMapping( drsdata_t* current )
 void R_InitAspectAdjustedValues( drsdata_t* current )
 {
 	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
-	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_post_scaling ? render_height : (int32_t)( render_height / 1.2 ) ) );
+	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( current->frame_width ), IntToRendFixed( render_post_scaling ? current->frame_height : (int32_t)( current->frame_height / 1.2 ) ) );
 	rend_fixed_t		perspective_mul = RendFixedDiv( original_perspective, current_perspective );
 
-	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( render_width ), perspective_mul );
+	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( current->frame_width ), perspective_mul );
 
 	rend_fixed_t		aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
 	rend_fixed_t		aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / VANILLA_SCREENWIDTH;
@@ -1480,7 +1480,8 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 #endif // !defined( NDEBUG );
 
 		igSliderInt( "Time scale (ms)", &performancegraphscale, 5, 100, "%dms", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-		igText( "Total frame time: %0.3fms (%0.3fms actual, %d FPS)", (float)( frametime * 0.001 ), (float)( frametime_withoutpresent * 0.001 ), (int32_t)( ( 1.0 / frametime ) * 1000000.0 ) );
+		igText( "Total frame time: %0.3fms (%0.3fms actual)", (float)( frametime * 0.001 ), (float)( frametime_withoutpresent * 0.001 ) );
+		igText( "DRS scale: %d, %d FPS", (int32_t)(drs_current->percentage * 100 ), (int32_t)( ( 1.0 / frametime ) * 1000000.0 ) );
 		igNewLine();
 
 		igBeginColumns( "Performance columns", M_MIN( 2, num_render_contexts ), ImGuiColumnsFlags_NoBorder );
