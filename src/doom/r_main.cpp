@@ -86,6 +86,7 @@ extern "C"
 	int32_t					renderloadbalancing = 1;
 	boolean					rendersplitvisualise = false;
 	boolean					renderrebalancecontexts = false;
+	double_t				renderscalecontextsby = 0.0;
 	int32_t					rebalancescale = 25;
 	boolean					renderSIMDcolumns = false;
 	atomicval_t				renderthreadCPUmelter = 0;
@@ -172,6 +173,7 @@ extern "C"
 	extern int32_t span_override;
 
 	extern uint64_t frametime;
+	extern uint64_t frametime_withoutpresent;
 }
 
 // Actually expects C++ linkage
@@ -706,9 +708,13 @@ void R_DRSApply( drsdata_t* current )
 	frame_adjusted_width		= current->frame_adjusted_width;
 	frame_height				= current->frame_height;
 
+	drsdata_t* old = drs_current;
 	drs_current					= current;
 
-	R_RebalanceContexts();
+	if( old != nullptr && old != current )
+	{
+		renderscalecontextsby = current->percentage / old->percentage;
+	}
 }
 
 void R_AllocDynamicTables( void )
@@ -1388,11 +1394,9 @@ void R_ExecuteSetViewSize( void )
 
 void R_RenderUpdateFrameSize( void )
 {
-	return;
-
 	int64_t targetrefresh = I_GetTargetRefreshRate();
 
-	if( dynamic_resolution_scaling == DRS_None || targetrefresh <= 0 )
+	if( frametime_withoutpresent == 0 || dynamic_resolution_scaling == DRS_None || targetrefresh <= 0 )
 	{
 		if( drs_current->frame_width != render_width || drs_current->frame_height != render_height )
 		{
@@ -1403,10 +1407,10 @@ void R_RenderUpdateFrameSize( void )
 	}
 
 	double_t target = 1.0 / targetrefresh;
-	double_t actual = frametime / 1000000.0;
+	double_t actual = frametime_withoutpresent / 1000000.0;
 
 	// Tiny delta to account for natural time fluctuations
-	#define DRS_DELTA 0.001
+	#define DRS_DELTA 0.01
 	#define DRS_GREATER ( 1 + DRS_DELTA )
 	#define DRS_LESS ( 1 - DRS_DELTA )
 
@@ -1422,18 +1426,20 @@ void R_RenderUpdateFrameSize( void )
 		newframewidth = (int32_t)M_MAX( render_width * 0.55, drs_current->frame_width - render_width * reduction );
 		newframeheight = (int32_t)M_MAX( render_height * 0.55, drs_current->frame_height - render_height * reduction );
 	}
-	else if( actualpercent < DRS_LESS )
+	else
 	{
-		double_t addition = ( DRS_LESS - actualpercent ) * 0.25;
+		double_t addition = ( DRS_GREATER - actualpercent ) * 0.25;
 		newframewidth = (int32_t)M_MIN( render_width, drs_current->frame_width + render_width * addition );
 		newframeheight = (int32_t)M_MIN( render_height, drs_current->frame_height + render_height * addition );
 	}
+
+	constexpr int32_t Hack_RenderMoreThanVanilla = 200;
 
 	if( oldframewidth != newframewidth || oldframeheight != newframeheight )
 	{
 		for( drsdata_t& curr : std::span( drs_data, DRSArraySize - 1 ) )
 		{
-			if( newframewidth >= curr.frame_width  )
+			if( curr.frame_height >= Hack_RenderMoreThanVanilla && newframewidth >= curr.frame_width )
 			{
 				R_DRSApply( &curr );
 				break;
@@ -1474,7 +1480,7 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 #endif // !defined( NDEBUG );
 
 		igSliderInt( "Time scale (ms)", &performancegraphscale, 5, 100, "%dms", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-		igText( "Total frame time: %0.3fms (%d FPS)", (float)( frametime * 0.001 ), (int32_t)( ( 1.0 / frametime ) * 1000000.0 ) );
+		igText( "Total frame time: %0.3fms (%0.3fms actual, %d FPS)", (float)( frametime * 0.001 ), (float)( frametime_withoutpresent * 0.001 ), (int32_t)( ( 1.0 / frametime ) * 1000000.0 ) );
 		igNewLine();
 
 		igBeginColumns( "Performance columns", M_MIN( 2, num_render_contexts ), ImGuiColumnsFlags_NoBorder );
@@ -1961,6 +1967,16 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 
 		renderdatas[ currcontext ].context.viewbuffer = buffer;
 	}
+
+	if( renderloadbalancing && renderscalecontextsby > 0 )
+	{
+		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
+		{
+			renderdatas[ currcontext ].context.begincolumn *= renderscalecontextsby;
+			renderdatas[ currcontext ].context.endcolumn *= renderscalecontextsby;
+		}
+	}
+	renderscalecontextsby = 0;
 
 	if( renderloadbalancing && !renderrebalancecontexts )
 	{

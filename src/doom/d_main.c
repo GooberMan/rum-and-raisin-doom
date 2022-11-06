@@ -525,6 +525,7 @@ boolean D_GrabMouseCallback(void)
 //
 
 uint64_t frametime = 0;
+uint64_t frametime_withoutpresent = 0;
 
 int32_t wipe_style = wipe_Melt;
 
@@ -604,6 +605,8 @@ void D_RunFrame()
 	}
 
 	M_PROFILE_POP( __FUNCTION__ );
+
+	frametime_withoutpresent = I_GetTimeUS() - start;
 
 	I_TerminalRender();
 
