@@ -50,8 +50,7 @@ extern rend_fixed_t		projection;
 
 extern int32_t		validcount;
 
-extern int32_t			aspect_adjusted_render_width;
-extern rend_fixed_t		aspect_adjusted_scaled_mul;
+extern rend_fixed_t		frame_adjusted_scaled_mul;
 
 
 //
@@ -68,7 +67,7 @@ extern rend_fixed_t		aspect_adjusted_scaled_mul;
 #define MAXLIGHTSCALE		48
 #define LIGHTSCALESHIFT		12
 #define RENDLIGHTSCALESHIFT	( RENDFRACBITS - 4 )
-#define LIGHTSCALEMUL		aspect_adjusted_scaled_mul
+#define LIGHTSCALEMUL		( frame_adjusted_scaled_mul )
 #define MAXLIGHTZ			128
 #define LIGHTZSHIFT			20
 #define RENDLIGHTZSHIFT		( RENDFRACBITS + 4 )
@@ -157,6 +156,12 @@ void R_Init (void);
 
 // Called when render_width and render_height change
 void R_RenderDimensionsChanged( void );
+
+// Called every frame for dynamic resolution scaling
+void R_RenderUpdateFrameSize( void );
+
+// Called when +/- viewport size is required. subframe is used by dynamic resolution scaling
+void R_ExecuteSetViewSize( boolean subframe );
 
 // Called after display system initialised
 void R_InitContexts( void );

@@ -347,7 +347,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 }
 
 
-#define FUZZ_X_RATIO ( ( render_width * 100 ) / 320 )
+#define FUZZ_X_RATIO ( ( frame_width * 100 ) / 320 )
 //
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.

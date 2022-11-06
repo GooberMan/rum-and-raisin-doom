@@ -82,9 +82,9 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 {
 	if( context->yl != context->yh )
 	{
-		if ((unsigned)context->x >= render_width
+		if ((unsigned)context->x >= frame_width
 			|| context->yl < 0
-			|| context->yh >= render_height) 
+			|| context->yh >= frame_height) 
 		{
 			I_Error ("%s: %i to %i at %i", func, context->yl, context->yh, context->x);
 		}

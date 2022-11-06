@@ -784,6 +784,12 @@ static default_t extra_defaults_list[] =
 
     CONFIG_VARIABLE_INT(render_post_scaling),
 
+    //!
+    // Dynamic resolution. 0 = none, 1 = horizontal, 2 = vertical, 3 = both
+    //
+
+	CONFIG_VARIABLE_INT(dynamic_resolution_scaling),
+
 
     //!
     // Backbuffer mode. 0 = match window, 1 = OS scaling, 2 = arbitrary

@@ -37,9 +37,6 @@ static const size_t diskicon_threshold = 0;
 // (raw, not a patch_t) while saved_background is an equivalently-sized
 // buffer where we save the background data while the disk is on screen.
 
-extern int32_t render_width;
-extern int32_t render_height;
-
 static int32_t loading_disk_xoffs = 0;
 static int32_t loading_disk_yoffs = 0;
 static patch_t* disk_icon_patch = NULL;

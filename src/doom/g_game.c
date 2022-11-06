@@ -1565,7 +1565,6 @@ void G_DoWorldDone (void)
 // Can be called by the startup code or the menu task. 
 //
 extern boolean setsizeneeded;
-void R_ExecuteSetViewSize (void);
 
 char	savename[256];
 
@@ -1636,7 +1635,7 @@ void G_DoLoadGame (void)
     fclose(save_stream);
     
     if (setsizeneeded)
-	R_ExecuteSetViewSize ();
+	R_ExecuteSetViewSize( false );
     
     // draw the pattern into the back screen
     R_FillBackScreen ();   

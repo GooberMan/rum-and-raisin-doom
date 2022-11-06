@@ -53,6 +53,10 @@ extern int32_t		viewheight;
 extern int32_t		render_width;
 extern int32_t		render_height;
 extern int32_t		render_post_scaling;
+extern int32_t		dynamic_resolution_scaling;
+extern int32_t		frame_width;
+extern int32_t		frame_adjusted_width;
+extern int32_t		frame_height;
 
 extern int		firstflat;
 

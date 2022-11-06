@@ -74,11 +74,11 @@ DOOM_C_API typedef enum renderdimensions_e
 #define V_VIRTUALHEIGHT 200
 
 // TODO: We need to redo this to be pure integer math. Fixed/float results in inaccuracies at different resolutions :-(
-#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / aspect_adjusted_render_width )
-#define V_WIDTHMULTIPLIER ( ( aspect_adjusted_render_width << FRACBITS ) / V_VIRTUALWIDTH )
+#define V_WIDTHSTEP ( ( V_VIRTUALWIDTH << FRACBITS ) / frame_adjusted_width )
+#define V_WIDTHMULTIPLIER ( ( frame_adjusted_width << FRACBITS ) / V_VIRTUALWIDTH )
 
-#define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / render_height )
-#define V_HEIGHTMULTIPLIER ( ( render_height << FRACBITS ) / V_VIRTUALHEIGHT )
+#define V_HEIGHTSTEP ( ( V_VIRTUALHEIGHT << FRACBITS ) / frame_height )
+#define V_HEIGHTMULTIPLIER ( ( frame_height << FRACBITS ) / V_VIRTUALHEIGHT )
 
 DOOM_C_API typedef boolean (*grabmouse_callback_t)(void);
 
@@ -96,7 +96,8 @@ DOOM_C_API void I_SetNumBuffers( int32_t count );
 
 DOOM_C_API SDL_Window* I_GetWindow( void );
 DOOM_C_API SDL_Renderer* I_GetRenderer( void );
-DOOM_C_API int32_t I_GetRefreshRate( void );
+DOOM_C_API int64_t I_GetRefreshRate( void );
+DOOM_C_API int64_t I_GetTargetRefreshRate( void );
 
 DOOM_C_API void I_GraphicsCheckCommandLine(void);
 

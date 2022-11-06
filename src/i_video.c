@@ -167,6 +167,7 @@ int32_t render_dimensions_mode = RD_Independent;
 int32_t render_width = DEFAULT_RENDER_WIDTH;
 int32_t render_height = DEFAULT_RENDER_HEIGHT;
 int32_t render_post_scaling = DEFAULT_RENDER_POSTSCALING;
+int32_t dynamic_resolution_scaling = 0;
 
 int32_t queued_window_width = DEFAULT_WINDOW_WIDTH;
 int32_t queued_window_height = DEFAULT_WINDOW_HEIGHT;
@@ -1346,7 +1347,7 @@ static void SetVideoMode(void)
 
 	if( render_dimensions_mode == RD_MatchWindow )
 	{
-		queued_render_width = render_width =		( fullscreen ? display_width : window_width );
+		queued_render_width  = render_width =		( fullscreen ? display_width : window_width );
 		queued_render_height = render_height =		( fullscreen ? display_height : window_height );
 	}
 
@@ -1609,12 +1610,12 @@ SDL_Renderer* I_GetRenderer( void )
 	return renderer;
 }
 
-int32_t I_GetRefreshRate( void )
+int64_t I_GetRefreshRate( void )
 {
 	SDL_DisplayMode current;
 	SDL_GetCurrentDisplayMode( video_display, &current );
 
-	return current.refresh_rate;
+	return (int64_t)current.refresh_rate;
 }
 
 void I_InitGraphics( void )
@@ -1625,7 +1626,7 @@ void I_InitGraphics( void )
 	queued_window_width = window_width;
 	queued_window_height = window_height;
 	queued_fullscreen = fullscreen;
-	queued_render_width = render_width;
+	queued_render_width  = render_width;
 	queued_render_height = render_height;
 	queued_render_post_scaling = render_post_scaling;
 
@@ -1718,7 +1719,7 @@ void I_InitBuffers( int32_t numbuffers )
     I_SetPalette(doompal);
 
 	queued_num_render_buffers = numbuffers;
-	queued_render_width = render_width;
+	queued_render_width  = render_width;
 	queued_render_height = render_height;
 	queued_render_post_scaling = render_post_scaling;
 	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
@@ -1752,7 +1753,7 @@ void I_StartFrame (void)
 			|| queued_num_render_buffers != renderbuffercount )
 		{
 			render_height = blit_rect.w = queued_render_height;
-			render_width = blit_rect.h = queued_render_width;
+			render_width  = blit_rect.h = queued_render_width;
 
 			if ( render_post_scaling == 1 )
 			{
@@ -1810,6 +1811,7 @@ void I_BindVideoVariables(void)
 	M_BindIntVariable("render_width",				&render_width);
 	M_BindIntVariable("render_height",				&render_height);
     M_BindIntVariable("render_post_scaling",		&render_post_scaling);
+	M_BindIntVariable("dynamic_resolution_scaling",	&dynamic_resolution_scaling);
 	M_BindIntVariable("render_dimensions_mode",		&render_dimensions_mode);
 	M_BindIntVariable("vsync_mode",					&vsync_mode);
 

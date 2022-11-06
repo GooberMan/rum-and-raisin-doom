@@ -61,6 +61,7 @@ extern "C"
 typedef struct vsyncsupport_s
 {
 	bool		supported;
+	int32_t		rate;
 	int32_t		interval;
 
 	INLINE void SetSupported( int32_t i )		{ supported = true; interval = i; }
@@ -68,31 +69,31 @@ typedef struct vsyncsupport_s
 
 static vsyncsupport_t vsync_modes[ VSync_Max ] =
 {
-	{ true,		0	},		// VSync_Off
-	{ true,		1	},		// VSync_Native
-	{ false,	-1	},		// VSync_Adaptive
-	{ false,	0	},		// VSync_35Hz
-	{ false,	0	},		// VSync_36Hz
-	{ false,	0	},		// VSync_40Hz
-	{ false,	0	},		// VSync_45Hz
-	{ false,	0	},		// VSync_50Hz
-	{ false,	0	},		// VSync_60Hz
-	{ false,	0	},		// VSync_70Hz
-	{ false,	0	},		// VSync_72Hz
-	{ false,	0	},		// VSync_75Hz
-	{ false,	0	},		// VSync_90Hz
-	{ false,	0	},		// VSync_100Hz
-	{ false,	0	},		// VSync_120Hz
-	{ false,	0	},		// VSync_140Hz
-	{ false,	0	},		// VSync_144Hz
-	{ false,	0	},		// VSync_150Hz
-	{ false,	0	},		// VSync_180Hz
-	{ false,	0	},		// VSync_200Hz
-	{ false,	0	},		// VSync_240Hz
-	{ false,	0	},		// VSync_280Hz
-	{ false,	0	},		// VSync_288Hz
-	{ false,	0	},		// VSync_300Hz
-	{ false,	0	},		// VSync_360Hz
+	{ true,		0,		0	},		// VSync_Off
+	{ true,		-1,		1	},		// VSync_Native
+	{ false,	-1,		-1	},		// VSync_Adaptive
+	{ false,	35,		0	},		// VSync_36Hz
+	{ false,	36,		0	},		// VSync_35Hz
+	{ false,	40,		0	},		// VSync_40Hz
+	{ false,	45,		0	},		// VSync_45Hz
+	{ false,	50,		0	},		// VSync_50Hz
+	{ false,	60,		0	},		// VSync_60Hz
+	{ false,	70,		0	},		// VSync_70Hz
+	{ false,	72,		0	},		// VSync_72Hz
+	{ false,	75,		0	},		// VSync_75Hz
+	{ false,	90,		0	},		// VSync_90Hz
+	{ false,	100,	0	},		// VSync_100Hz
+	{ false,	120,	0	},		// VSync_120Hz
+	{ false,	140,	0	},		// VSync_140Hz
+	{ false,	144,	0	},		// VSync_144Hz
+	{ false,	150,	0	},		// VSync_150Hz
+	{ false,	180,	0	},		// VSync_180Hz
+	{ false,	200,	0	},		// VSync_200Hz
+	{ false,	240,	0	},		// VSync_240Hz
+	{ false,	280,	0	},		// VSync_280Hz
+	{ false,	288,	0	},		// VSync_288Hz
+	{ false,	300,	0	},		// VSync_300Hz
+	{ false,	360,	0	},		// VSync_360Hz
 };
 
 #ifdef __APPLE__
@@ -457,6 +458,8 @@ void SetupVSync()
 	SDL_DisplayMode mode;
 	SDL_GetDesktopDisplayMode( video_display, &mode );
 
+	vsync_modes[ VSync_Native ].rate = mode.refresh_rate;
+
 	switch( mode.refresh_rate )
 	{
 	case 50:
@@ -592,6 +595,11 @@ DOOM_C_API vsync_t I_VideoGetVSync( void )
 DOOM_C_API boolean I_VideoSupportsVSync( vsync_t vsyncval )
 {
 	return vsync_modes[ vsyncval ].supported;
+}
+
+DOOM_C_API int64_t I_GetTargetRefreshRate( void )
+{
+	return vsync_modes[ vsync_mode ].rate;
 }
 
 DOOM_C_API void I_VideoSetupGLRenderPath( void )

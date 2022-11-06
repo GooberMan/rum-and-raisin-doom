@@ -169,6 +169,7 @@ extern "C"
 	int32_t aspect_adjusted_render_width = 0;
 	rend_fixed_t aspect_adjusted_scaled_divide = 0;
 	rend_fixed_t aspect_adjusted_scaled_mul = RENDFRACUNIT;
+	rend_fixed_t frame_adjusted_scaled_mul = RENDFRACUNIT;
 
 	extern int32_t enable_frame_interpolation;
 	int32_t interpolate_this_frame = 0;
@@ -187,6 +188,10 @@ extern "C"
 	extern int32_t span_override;
 
 	extern uint64_t frametime;
+
+	int32_t frame_width = 0;
+	int32_t frame_height = 0;
+	int32_t frame_adjusted_width = 0;
 }
 
 // Actually expects C++ linkage
@@ -648,7 +653,7 @@ void R_InitPointToAngle (void)
 // Defining the original maximum as a function of your
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
-#define MAXSCALE ( 128 * ( render_width / 320 ) )
+#define MAXSCALE ( 128 * ( frame_width / 320 ) )
 #define MAXSCALE_FIXED IntToRendFixed( MAXSCALE )
 
 rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle )
@@ -796,6 +801,9 @@ void R_InitAspectAdjustedValues()
 	aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
 	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / 320;
 	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
+
+	frame_adjusted_width = aspect_adjusted_render_width;
+	frame_adjusted_scaled_mul = aspect_adjusted_scaled_mul;
 }
 
 
@@ -821,7 +829,7 @@ void R_InitLightTables (void)
 		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
 		for (j=0 ; j<MAXLIGHTZ ; j++)
 		{
-			scale = FixedDiv( IntToFixed( aspect_adjusted_render_width / 2 ), ( j + 1 ) << LIGHTZSHIFT );
+			scale = FixedDiv( IntToFixed( frame_adjusted_width / 2 ), ( j + 1 ) << LIGHTZSHIFT );
 			scale >>= LIGHTSCALESHIFT;
 			if( LIGHTSCALEMUL != RENDFRACUNIT )
 			{
@@ -1003,7 +1011,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	rendercontext->planecontext.spantype = span_override;
 	if( span_override == Span_None )
 	{
-		rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( render_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
+		rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 	}
 	if( rendercontext->planecontext.spantype == Span_Original )
 	{
@@ -1098,7 +1106,7 @@ void R_InitContexts( void )
 	}
 
 	currstart = 0;
-	incrementby = render_width / maxrendercontexts;
+	incrementby = frame_width / maxrendercontexts;
 
 	renderdatas = (renderdata_t*)Z_Malloc( sizeof( renderdata_t ) * maxrendercontexts, PU_STATIC, NULL );
 	memset( renderdatas, 0, sizeof( renderdata_t ) * maxrendercontexts );
@@ -1111,7 +1119,7 @@ void R_InitContexts( void )
 
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
-		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, render_width );
+		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, frame_width );
 
 		renderdatas[ currcontext ].context.starttime = 0;
 		renderdatas[ currcontext ].context.endtime = 1;
@@ -1183,7 +1191,7 @@ R_SetViewSize
 // R_ExecuteSetViewSize
 //
 
-DOOM_C_API void R_ExecuteSetViewSize (void)
+DOOM_C_API void R_ExecuteSetViewSize( boolean subframe )
 {
 	int32_t				i;
 	int32_t				j;
@@ -1191,10 +1199,10 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	int32_t				startmap;
 	int32_t				colfuncbase;
 
-	int32_t actualheight = render_post_scaling ? render_height * 1.2 : render_height;
+	int32_t actualheight = render_post_scaling ? frame_height * 1.2 : frame_height;
 
 	rend_fixed_t		original_perspective	= RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
-	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( render_width ), IntToRendFixed( render_height ) );
+	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( frame_width ), IntToRendFixed( frame_height ) );
 	rend_fixed_t		perspective_mul			= RendFixedDiv( original_perspective, current_perspective );
 
 	rend_fixed_t		perspectivecorrectscale;
@@ -1208,19 +1216,22 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	field_of_view_degrees = (int32_t)float_fov;
 	//int32_t		new_fov = FixedToInt( rendertantoangle[ tan_fov >> RENDERDBITS ] );
 
-	R_InitAspectAdjustedValues();
+	if( !subframe )
+	{
+		R_InitAspectAdjustedValues();
+	}
 
 	setsizeneeded = false;
 
 	if (setblocks == 11)
 	{
-		scaledviewwidth = render_width;
-		viewheight = render_height;
+		scaledviewwidth = frame_width;
+		viewheight = frame_height;
 	}
 	else
 	{
-		scaledviewwidth = setblocks * render_width / 10;
-		viewheight = (setblocks * ( render_height - SBARHEIGHT ) / 10 );// & ~7;
+		scaledviewwidth = setblocks * frame_width / 10;
+		viewheight = (setblocks * ( frame_height - SBARHEIGHT ) / 10 );// & ~7;
 	}
 
 	viewwidth = scaledviewwidth;
@@ -1234,40 +1245,51 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 	colfuncbase = COLFUNC_NUM;
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
 
-	R_InitBuffer (scaledviewwidth, viewheight);
+	R_InitBuffer(scaledviewwidth, viewheight);
 	
-	R_InitTextureMapping ();
+	R_InitTextureMapping();
 
 	// psprite scales
-	perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( render_width ), perspective_mul ) / V_VIRTUALWIDTH );
+	perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
 
-	pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( viewwidth ) / render_width, perspectivecorrectscale ) );
-	pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( render_width ) / viewwidth, perspectivecorrectscale ) );
+	pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( viewwidth ) / frame_width, perspectivecorrectscale ) );
+	pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( frame_width ) / viewwidth, perspectivecorrectscale ) );
 
-	// thing clipping
-	if( screenheightarray )
+	if( !subframe )
 	{
-		Z_Free( screenheightarray );
-	}
-	if( negonearray )
-	{
-		Z_Free( negonearray );
+		// thing clipping
+		if( screenheightarray )
+		{
+			Z_Free( screenheightarray );
+		}
+		if( negonearray )
+		{
+			Z_Free( negonearray );
+		}
+
+		screenheightarray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
+		negonearray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
+
+		// planes
+		if( yslope )
+		{
+			Z_Free( yslope );
+		}
+		yslope = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewheight, PU_STATIC, NULL );
+
+		if( distscale )
+		{
+			Z_Free( distscale );
+		}
+		distscale = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewwidth, PU_STATIC, NULL );
+
 	}
 
-	screenheightarray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
-	negonearray = (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * viewwidth, PU_STATIC, NULL );
 	for (i=0 ; i<viewwidth ; i++)
 	{
 		screenheightarray[i] = viewheight;
 		negonearray[i] = -1;
 	}
-
-	// planes
-	if( yslope )
-	{
-		Z_Free( yslope );
-	}
-	yslope = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewheight, PU_STATIC, NULL );
 
 	for (i=0 ; i<viewheight ; i++)
 	{
@@ -1276,12 +1298,6 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 		yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( viewwidth / 2 ), dy ), perspective_mul );
 	}
 	
-	if( distscale )
-	{
-		Z_Free( distscale );
-	}
-	distscale = (rend_fixed_t*)Z_Malloc( sizeof( rend_fixed_t ) * viewwidth, PU_STATIC, NULL );
-
 	for ( i=0 ; i<viewwidth ; i++ )
 	{
 		rend_fixed_t cosadj = FixedToRendFixed( abs( renderfinecosine[ xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] ) );
@@ -1295,7 +1311,7 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 		startmap = ( (LIGHTLEVELS - 1 - i ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
 		for ( j=0 ; j < MAXLIGHTSCALE ; j++ )
 		{
-			level = startmap - j * render_width / viewwidth / DISTMAP;
+			level = startmap - j * frame_width / viewwidth / DISTMAP;
 
 			if (level < 0)
 			{
@@ -1310,6 +1326,69 @@ DOOM_C_API void R_ExecuteSetViewSize (void)
 			scalelight[ i ][ j ] = colormaps + level * 256;
 			scalelightindex[ i ][ j ] = level;
 		}
+	}
+}
+
+void R_UpdateFrameValues( void )
+{
+	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
+	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( frame_width ), IntToRendFixed( render_post_scaling ? frame_height : (int32_t)( frame_height / 1.2 ) ) );
+	rend_fixed_t		perspective_mul = RendFixedDiv( original_perspective, current_perspective );
+	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( frame_width ), perspective_mul );
+
+	frame_adjusted_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
+	aspect_adjusted_scaled_divide = IntToRendFixed( aspect_adjusted_render_width ) / 320;
+	aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
+
+	R_InitLightTables();
+	R_ExecuteSetViewSize( true );
+}
+
+void R_RenderUpdateFrameSize( void )
+{
+	int64_t targetrefresh = I_GetTargetRefreshRate();
+
+	if( dynamic_resolution_scaling == DRS_None || targetrefresh <= 0 )
+	{
+		if( frame_width != render_width || frame_height != render_height )
+		{
+			frame_width = render_width;
+			frame_height = render_height;
+
+			R_UpdateFrameValues();
+		}
+		return;
+	}
+
+	double_t target = 1000000.0 / targetrefresh;
+	double_t actual = frametime / 1000000.0;
+
+	// Tiny delta to account for natural time fluctuations
+	#define DRS_DELTA 0.001
+	#define DRS_GREATER ( 1 + DRS_DELTA )
+	#define DRS_LESS ( 1 - DRS_DELTA )
+
+	int32_t oldframewidth = frame_width;
+	int32_t oldframeheight = frame_height;
+	double_t actualpercent = actual / target;
+
+	if( actualpercent > DRS_GREATER ) 
+	{
+		double_t reduction = ( actualpercent - DRS_GREATER ) * 0.25;
+		frame_width = M_MIN( render_width * 0.5, frame_width - render_width * reduction );
+		frame_height = M_MIN( render_height * 0.5, frame_height - render_height * reduction );
+	}
+	else if( actualpercent < DRS_LESS )
+	{
+		double_t addition = ( DRS_LESS - actualpercent  ) * 0.25;
+		frame_width = M_MIN( render_width * 0.5, frame_width + render_width * addition );
+		frame_height = M_MIN( render_height * 0.5, frame_height + render_height * addition );
+
+		R_UpdateFrameValues();
+	}
+	if( frame_width != oldframewidth || frame_height != oldframeheight )
+	{
+		R_UpdateFrameValues();
 	}
 }
 
@@ -1482,7 +1561,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igCheckbox( "Visualise split", (bool*)&rendersplitvisualise );
 	if( igSliderInt( "Horizontal FOV", &field_of_view_degrees, 60, 160, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 	{
-		R_ExecuteSetViewSize();
+		R_ExecuteSetViewSize( true );
 	}
 }
 
@@ -1491,6 +1570,9 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 //
 void R_Init (void)
 {
+	frame_width = render_width;
+	frame_height = render_height;
+
 	R_InitAspectAdjustedValues();
 
     R_InitData ();
@@ -1530,6 +1612,8 @@ void R_Init (void)
 void R_RenderDimensionsChanged( void )
 {
 	refreshstatusbar = true;
+	frame_width = render_width;
+	frame_height = render_height;
 	V_RestoreBuffer();
 	R_InitLightTables();
 	R_InitPointToAngle();
@@ -1537,7 +1621,7 @@ void R_RenderDimensionsChanged( void )
 	R_InitAspectAdjustedValues();
 	// Any other buffers?
 	R_SetViewSize( screenblocks, detailLevel );
-	R_ExecuteSetViewSize();
+	R_ExecuteSetViewSize( false );
 	R_RebalanceContexts();
 }
 

@@ -218,7 +218,7 @@ mapstyledata_t	map_styledata[ MapStyle_Max ] =
 #define INITSCALEMTOF (.2*RENDFRACUNIT)
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
-#define F_PANINC	( 4 * render_width / 320 )
+#define F_PANINC	( 4 * f_w / 320 )
 // how much zoom-in per tic
 // goes to 2x in 1 second
 #define M_ZOOMIN        ((int) (1.02*RENDFRACUNIT))
@@ -327,8 +327,8 @@ static int	f_y;
 //static int 	f_w;
 //static int	f_h;
 
-#define f_w ( render_width )
-#define f_h ( render_height - ST_BUFFERHEIGHT )
+#define f_w ( frame_width )
+#define f_h ( frame_height - ST_BUFFERHEIGHT )
 
 static int 	lightlev; 		// used for funky strobing effect
 static pixel_t*	fb; 			// pseudo-frame buffer

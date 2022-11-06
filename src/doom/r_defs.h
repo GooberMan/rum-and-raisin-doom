@@ -89,6 +89,14 @@ typedef int32_t					vertclip_t;
 #define RENDER_PERF_GRAPHING	1
 #define MAXPROFILETIMES			( 35 * 4 )
 
+typedef enum dynamicresolution_e
+{
+	DRS_None,
+	DRS_Horizontal	= 0x1,
+	DRS_Vertical	= 0x2,
+	DRS_Both		= DRS_Horizontal | DRS_Vertical
+} dynamicresolution_t;
+
 
 typedef struct texturecomposite_s
 {

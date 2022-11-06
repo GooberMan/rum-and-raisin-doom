@@ -206,7 +206,6 @@ void D_ProcessEvents (void)
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
 extern  boolean setsizeneeded;
 extern  int             showMessages;
-void R_ExecuteSetViewSize (void);
 
 const char* reasons[] =
 {
@@ -248,9 +247,13 @@ boolean D_Display( double_t framepercent )
 	// change the view size if needed
 	if (setsizeneeded)
 	{
-		R_ExecuteSetViewSize ();
+		R_ExecuteSetViewSize( false );
 		oldgamestate = -1; // force background redraw
 		borderdrawcount = 3;
+	}
+	else
+	{
+		R_RenderUpdateFrameSize();
 	}
 
 	// save the current screen if about to wipe
@@ -640,7 +643,7 @@ void D_DoomLoop (void)
     TryRunTics();
 
     V_RestoreBuffer();
-    R_ExecuteSetViewSize();
+    R_ExecuteSetViewSize( false );
 
     D_StartGameLoop();
 

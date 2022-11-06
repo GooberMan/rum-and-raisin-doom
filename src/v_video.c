@@ -68,13 +68,11 @@ vbuffer_t* dest_buffer;
 
 int dirtybox[4]; 
 
+extern int32_t frame_width;
+extern int32_t frame_adjusted_width;
+extern int32_t frame_height;
 extern int32_t render_width;
 extern int32_t render_height;
-
-extern int32_t		aspect_adjusted_render_width;
-extern fixed_t		aspect_adjusted_scaled_divide;
-extern fixed_t		aspect_adjusted_scaled_mul;
-
 
 // haleyjd 08/28/10: clipping callback function for patches.
 // This is needed for Chocolate Strife, which clips patches to the screen.
@@ -215,7 +213,7 @@ void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width
 
 	colcontext_t	column;
 
-	int32_t			widthdiff = ( render_width - aspect_adjusted_render_width ) >> 1;
+	int32_t			widthdiff = ( frame_width - frame_adjusted_width ) >> 1;
 	rend_fixed_t	xscale = RendFixedDiv( IntToRendFixed( 1 ), FixedToRendFixed( V_WIDTHMULTIPLIER ) );
 	rend_fixed_t	yscale = FixedToRendFixed( V_HEIGHTMULTIPLIER );
 
@@ -251,7 +249,7 @@ void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-	int32_t			widthdiff = render_width - aspect_adjusted_render_width;
+	int32_t			widthdiff = frame_width - frame_adjusted_width;
 	if( widthdiff <= 0 )
 	{
 		M_PROFILE_POP( __FUNCTION__ );
@@ -298,7 +296,7 @@ void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
 	}
 
 	xsource	= 0;
-	for( column.x = aspect_adjusted_render_width + widthdiff; column.x < render_width; ++column.x )
+	for( column.x = frame_adjusted_width + widthdiff; column.x < frame_width; ++column.x )
 	{
 		column.source = source_buffer->data + ( xsource >> RENDFRACBITS ) * source_buffer->pitch;
 		R_BackbufferDrawColumn( &column );
@@ -348,8 +346,8 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 
 	colcontext_t	column;
 
-	int32_t			widthdiff = ( render_width - aspect_adjusted_render_width ) >> 1;
-	rend_fixed_t	yscale = ( IntToRendFixed( render_height ) / V_VIRTUALHEIGHT );
+	int32_t			widthdiff = ( frame_width - frame_adjusted_width ) >> 1;
+	rend_fixed_t	yscale = ( IntToRendFixed( frame_height ) / V_VIRTUALHEIGHT );
 
 	x -= SHORT( patch->leftoffset );
 	y -= SHORT( patch->topoffset );
@@ -407,7 +405,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	for( ; column.x < xstop; ++column.x, xsource += xscale )
 	{
 		if( column.x < 0 ) continue;
-		if( column.x >= render_width ) break;
+		if( column.x >= frame_width ) break;
 
 		if( xsource >= xwidth )
 		{
@@ -471,9 +469,9 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 
 #ifdef RANGECHECK 
     if (x < 0
-     || x + SHORT(patch->width) > render_width
+     || x + SHORT(patch->width) > frame_width
      || y < 0
-     || y + SHORT(patch->height) > render_height)
+     || y + SHORT(patch->height) > frame_height)
     {
         I_Error("Bad V_DrawPatchFlipped");
     }
@@ -482,7 +480,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
     V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
 
 	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
-	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
+	virtualx += ( frame_width - frame_adjusted_width ) << ( FRACBITS - 1 );
 	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
 	virtualwidth = SHORT(patch->width) << FRACBITS;
 
@@ -542,7 +540,7 @@ void V_DrawPatchDirect(int x, int y, patch_t *patch)
 void V_EraseRegion(int x, int y, int width, int height)
 {
 	fixed_t virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
-	virtualx += ( render_width - aspect_adjusted_render_width ) << ( FRACBITS - 1 );
+	virtualx += ( frame_width - frame_adjusted_width ) << ( FRACBITS - 1 );
 	fixed_t virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
 	fixed_t virtualwidth = FixedMul( width << FRACBITS, V_WIDTHMULTIPLIER );
 	fixed_t virtualheight = FixedMul( height << FRACBITS, V_HEIGHTMULTIPLIER );
@@ -570,16 +568,16 @@ void V_DrawTLPatch(int x, int y, patch_t * patch)
     x -= SHORT(patch->leftoffset);
 
     if (x < 0
-     || x + SHORT(patch->width) > render_width 
+     || x + SHORT(patch->width) > frame_width 
      || y < 0
-     || y + SHORT(patch->height) > render_height)
+     || y + SHORT(patch->height) > frame_height)
     {
         I_Error("Bad V_DrawTLPatch");
     }
 
     col = 0;
 	// TODO: THIS NEEDS HELP
-    desttop = dest_screen + x * render_height + y;
+    desttop = dest_screen + x * frame_height + y;
 
     w = SHORT(patch->width);
     for (; col < w; x++, col++, desttop++)
@@ -602,7 +600,7 @@ void V_DrawTLPatch(int x, int y, patch_t * patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
 
-		desttop += render_height;
+		desttop += frame_height;
     }
 #endif
 }
@@ -632,7 +630,7 @@ void V_DrawXlaPatch(int x, int y, patch_t * patch)
     }
 
     col = 0;
-    desttop = dest_screen + x * render_height + y;
+    desttop = dest_screen + x * frame_height + y;
 
     w = SHORT(patch->width);
     for(; col < w; x++, col++, desttop++)
@@ -656,7 +654,7 @@ void V_DrawXlaPatch(int x, int y, patch_t * patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
 
-		desttop += render_height;
+		desttop += frame_height;
 	}
 #endif
 }
@@ -681,15 +679,15 @@ void V_DrawAltTLPatch(int x, int y, patch_t * patch)
     x -= SHORT(patch->leftoffset);
 
     if (x < 0
-     || x + SHORT(patch->width) > render_width
+     || x + SHORT(patch->width) > frame_width
      || y < 0
-     || y + SHORT(patch->height) > render_height)
+     || y + SHORT(patch->height) > frame_height)
     {
         I_Error("Bad V_DrawAltTLPatch");
     }
 
     col = 0;
-    desttop = dest_screen + x * render_height + y;
+    desttop = dest_screen + x * frame_height + y;
 
     w = SHORT(patch->width);
     for (; col < w; x++, col++, desttop++)
@@ -712,7 +710,7 @@ void V_DrawAltTLPatch(int x, int y, patch_t * patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
 
-		desttop += render_height;
+		desttop += frame_height;
 	}
 #endif
 }
@@ -738,16 +736,16 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
     x -= SHORT(patch->leftoffset);
 
     if (x < 0
-     || x + SHORT(patch->width) > render_width
+     || x + SHORT(patch->width) > frame_width
      || y < 0
-     || y + SHORT(patch->height) > render_height)
+     || y + SHORT(patch->height) > frame_height)
     {
         I_Error("Bad V_DrawShadowedPatch");
     }
 
     col = 0;
-    desttop = dest_screen + x * render_height + y;
-    desttop2 = dest_screen + (x + 2) * render_height + y + 2;
+    desttop = dest_screen + x * frame_height + y;
+    desttop2 = dest_screen + (x + 2) * frame_height + y + 2;
 
     w = SHORT(patch->width);
     for (; col < w; x++, col++, desttop++, desttop2++)
@@ -774,8 +772,8 @@ void V_DrawShadowedPatch(int x, int y, patch_t *patch)
             column = (column_t *) ((byte *) column + column->length + 4);
         }
 
-		desttop += render_height;
-		desttop2 += render_height;
+		desttop += frame_height;
+		desttop2 += frame_height;
 
     }
 #endif
@@ -816,9 +814,9 @@ void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
  
 #ifdef RANGECHECK 
     if (x < 0
-     || x + width >render_width
+     || x + width >frame_width
      || y < 0
-     || y + height > render_height)
+     || y + height > frame_height)
     {
 		I_Error ("Bad V_DrawBlock");
     }
@@ -994,7 +992,7 @@ void WritePCXfile(char *filename, pixel_t *data,
                   byte *palette)
 {
     int		i;
-    int		length;
+    int64_t	length;
     pcx_t*	pcx;
     byte*	pack;
 	
@@ -1237,7 +1235,7 @@ void V_ScreenShot(const char *format)
 
 #define MOUSE_SPEED_BOX_WIDTH  300
 #define MOUSE_SPEED_BOX_HEIGHT 15
-#define MOUSE_SPEED_BOX_X (render_width - MOUSE_SPEED_BOX_WIDTH - 10)
+#define MOUSE_SPEED_BOX_X (frame_width - MOUSE_SPEED_BOX_WIDTH - 10)
 #define MOUSE_SPEED_BOX_Y 15
 
 //
