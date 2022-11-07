@@ -963,6 +963,8 @@ static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtu
 
 void R_FillBackScreen (void) 
 { 
+	return;
+
 	vbuffer_t src;
 	vbuffer_t inflated;
 
