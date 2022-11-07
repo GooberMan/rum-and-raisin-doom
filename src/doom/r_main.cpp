@@ -772,14 +772,14 @@ void R_AllocDynamicTables( void )
 	for( int32_t currindex : iota( 0, DRSArraySize ) )
 	{
 		double_t p = 1.0 - DRSStep * currindex;
-		totalwidth += ( int32_t )( render_width * p );
+		totalwidth += ( int32_t )( render_width * p ) + 1;
 		totalheight += ( int32_t )( render_height * p );
 	}
 
 
 	// One of these is not creating the correct amount of data...
 	drs_allocation_data.viewangletox		= (int32_t*)Z_Malloc( sizeof(int32_t) * DRSNumViewAngles * DRSArraySize, PU_STATIC, nullptr );
-	drs_allocation_data.xtoviewangle		= (angle_t*)Z_Malloc( sizeof(angle_t) * ( totalwidth + DRSArraySize ), PU_STATIC, nullptr );
+	drs_allocation_data.xtoviewangle		= (angle_t*)Z_Malloc( sizeof(angle_t) * totalwidth, PU_STATIC, nullptr );
 	drs_allocation_data.scalelight			= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.scalelightindex		= (int32_t*)Z_Malloc( sizeof( int32_t ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.scalelightfixed		= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightFixedEntries * DRSArraySize, PU_STATIC, nullptr );
@@ -1382,7 +1382,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 void R_ExecuteSetViewSize( void )
 {
-	for( drsdata_t& curr : std::span( drs_data, DRSArraySize - 1 ) )
+	for( drsdata_t& curr : std::span( drs_data, DRSArraySize ) )
 	{
 		R_ExecuteSetViewSizeFor( &curr );
 	}
@@ -1406,7 +1406,7 @@ void R_RenderUpdateFrameSize( void )
 		return;
 	}
 
-	double_t target = 1.0 / targetrefresh;
+	double_t target = ( 1.0 / targetrefresh ) * 0.95;
 	double_t actual = frametime_withoutpresent / 1000000.0;
 
 	// Tiny delta to account for natural time fluctuations
@@ -1423,8 +1423,8 @@ void R_RenderUpdateFrameSize( void )
 	if( actualpercent > DRS_GREATER )
 	{
 		double_t reduction = ( actualpercent - DRS_GREATER ) * 0.2;
-		newframewidth = (int32_t)M_MAX( render_width * 0.55, drs_current->frame_width - render_width * reduction );
-		newframeheight = (int32_t)M_MAX( render_height * 0.55, drs_current->frame_height - render_height * reduction );
+		newframewidth = (int32_t)M_MAX( render_width * DRSMaxPercent, drs_current->frame_width - render_width * reduction );
+		newframeheight = (int32_t)M_MAX( render_height * DRSMaxPercent, drs_current->frame_height - render_height * reduction );
 	}
 	else
 	{
@@ -1437,7 +1437,7 @@ void R_RenderUpdateFrameSize( void )
 
 	if( oldframewidth != newframewidth || oldframeheight != newframeheight )
 	{
-		for( drsdata_t& curr : std::span( drs_data, DRSArraySize - 1 ) )
+		for( drsdata_t& curr : std::span( drs_data, DRSArraySize ) )
 		{
 			if( curr.frame_height >= Hack_RenderMoreThanVanilla && newframewidth >= curr.frame_width )
 			{
