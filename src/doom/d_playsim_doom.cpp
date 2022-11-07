@@ -47,6 +47,7 @@ extern mapinfo_t		doom_map_e2m5;
 extern mapinfo_t		doom_map_e2m6;
 extern mapinfo_t		doom_map_e2m7;
 extern mapinfo_t		doom_map_e2m8;
+extern mapinfo_t		doom_map_e2m8_pre_v1_9;
 extern mapinfo_t		doom_map_e2m9;
 
 extern mapinfo_t		doom_map_e3m1;
@@ -57,6 +58,7 @@ extern mapinfo_t		doom_map_e3m5;
 extern mapinfo_t		doom_map_e3m6;
 extern mapinfo_t		doom_map_e3m7;
 extern mapinfo_t		doom_map_e3m8;
+extern mapinfo_t		doom_map_e3m8_pre_v1_9;
 extern mapinfo_t		doom_map_e3m9;
 
 extern mapinfo_t		doom_map_e4m1;
@@ -379,11 +381,25 @@ mapinfo_t* doom_maps_episode_2[] =
 	&doom_map_e2m7, &doom_map_e2m8, &doom_map_e2m9
 };
 
+mapinfo_t* doom_maps_episode_2_pre_v1_9[] =
+{
+	&doom_map_e2m1, &doom_map_e2m2, &doom_map_e2m3,
+	&doom_map_e2m4, &doom_map_e2m5, &doom_map_e2m6,
+	&doom_map_e2m7, &doom_map_e2m8_pre_v1_9, &doom_map_e2m9
+};
+
 mapinfo_t* doom_maps_episode_3[] =
 {
 	&doom_map_e3m1, &doom_map_e3m2, &doom_map_e3m3,
 	&doom_map_e3m4, &doom_map_e3m5, &doom_map_e3m6,
 	&doom_map_e3m7, &doom_map_e3m8, &doom_map_e3m9
+};
+
+mapinfo_t* doom_maps_episode_3_pre_v1_9[] =
+{
+	&doom_map_e3m1, &doom_map_e3m2, &doom_map_e3m3,
+	&doom_map_e3m4, &doom_map_e3m5, &doom_map_e3m6,
+	&doom_map_e3m7, &doom_map_e3m8_pre_v1_9, &doom_map_e3m9
 };
 
 mapinfo_t* doom_maps_episode_4[] =
@@ -416,6 +432,17 @@ episodeinfo_t doom_episode_two =
 	&doom_map_e2m1									// first_map
 };
 
+episodeinfo_t doom_episode_two_pre_v1_9 =
+{
+	PlainFlowString( "The Shores Of Hell" ),		// name
+	FlowString( "M_EPI2" ),							// name_patch_lump
+	2,												// episode_num
+	doom_maps_episode_2_pre_v1_9,					// all_maps
+	arrlen( doom_maps_episode_2_pre_v1_9 ),			// num_maps
+	doom_map_e2m9.map_num,							// highest_map_num
+	&doom_map_e2m1									// first_map
+};
+
 episodeinfo_t doom_episode_three =
 {
 	PlainFlowString( "Inferno" ),					// name
@@ -423,6 +450,17 @@ episodeinfo_t doom_episode_three =
 	3,												// episode_num
 	doom_maps_episode_3,							// all_maps
 	arrlen( doom_maps_episode_3 ),					// num_maps
+	doom_map_e3m9.map_num,							// highest_map_num
+	&doom_map_e3m1									// first_map
+};
+
+episodeinfo_t doom_episode_three_pre_v1_9 =
+{
+	PlainFlowString( "Inferno" ),					// name
+	FlowString( "M_EPI3" ),							// name_patch_lump
+	3,												// episode_num
+	doom_maps_episode_3_pre_v1_9,					// all_maps
+	arrlen( doom_maps_episode_3_pre_v1_9 ),			// num_maps
 	doom_map_e3m9.map_num,							// highest_map_num
 	&doom_map_e3m1									// first_map
 };
@@ -474,6 +512,13 @@ episodeinfo_t* doom_episodes_registered[] =
 	&doom_episode_three
 };
 
+episodeinfo_t* doom_episodes_registered_pre_v1_9[] =
+{
+	&doom_episode_one,
+	&doom_episode_two_pre_v1_9,
+	&doom_episode_three_pre_v1_9
+};
+
 episodeinfo_t* doom_episodes_ultimate[] =
 {
 	&doom_episode_one,
@@ -496,6 +541,15 @@ gameflow_t doom_registered =
 	PlainFlowString( "DOOM Registered" ),			// name
 	doom_episodes_registered,						// episodes
 	arrlen( doom_episodes_registered ),				// num_episodes
+	PlainFlowString( "vanilla" ),					// playsim_base
+	PlainFlowString( "" )							// playsim_options
+};
+
+gameflow_t doom_registered_pre_v1_9 =
+{
+	PlainFlowString( "DOOM Registered" ),			// name
+	doom_episodes_registered_pre_v1_9,				// episodes
+	arrlen( doom_episodes_registered_pre_v1_9 ),	// num_episodes
 	PlainFlowString( "vanilla" ),					// playsim_base
 	PlainFlowString( "" )							// playsim_options
 };
@@ -915,6 +969,11 @@ static bossaction_t doom_e2m8special[] =
 	{ 21 /*MT_CYBORG*/, 52 /*exitlevel*/, 0 }
 };
 
+static bossaction_t doom_bossspecial_pre_v1_9[] =
+{
+	{ -1 /*any*/, 52 /*exitlevel*/, 0 }
+};
+
 mapinfo_t doom_map_e2m8 =
 {
 	RuntimeFlowString( levellump_format_text ),		// data_lump
@@ -930,6 +989,30 @@ mapinfo_t doom_map_e2m8 =
 	30,												// par_time
 	doom_e2m8special,								// boss_actions
 	arrlen( doom_e2m8special ),						// num_boss_actions
+	&doom_interlevel_e2finished,					// interlevel_finished
+	&doom_interlevel_e2entering,					// interlevel_entering
+	nullptr,										// next_map
+	nullptr,										// next_map_intermission
+	nullptr,										// secret_map
+	nullptr,										// secret_map_intermission
+	&doom_endgame_e2,								// endgame
+};
+
+mapinfo_t doom_map_e2m8_pre_v1_9 =
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E2M8 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_two,								// episode
+	8,												// map_num
+	Map_Doom1EndOfEpisode,							// map_flags
+	RuntimeFlowString( "e2m8" ),					// music_lump
+	FlowString( "SKY2" ),							// sky_texture
+	0,												// sky_scroll_speed
+	30,												// par_time
+	doom_bossspecial_pre_v1_9,						// boss_actions
+	arrlen( doom_bossspecial_pre_v1_9 ),			// num_boss_actions
 	&doom_interlevel_e2finished,					// interlevel_finished
 	&doom_interlevel_e2entering,					// interlevel_entering
 	nullptr,										// next_map
@@ -1155,6 +1238,30 @@ mapinfo_t doom_map_e3m8 =
 	30,												// par_time
 	doom_e3m8special,								// boss_actions
 	arrlen( doom_e3m8special ),						// num_boss_actions
+	&doom_interlevel_e3finished,					// interlevel_finished
+	&doom_interlevel_e3entering,					// interlevel_entering
+	nullptr,										// next_map
+	nullptr,										// next_map_intermission
+	nullptr,										// secret_map
+	nullptr,										// secret_map_intermission
+	&doom_endgame_e3,								// endgame
+};
+
+mapinfo_t doom_map_e3m8_pre_v1_9
+{
+	RuntimeFlowString( levellump_format_text ),		// data_lump
+	FlowString( HUSTR_E3M8 ),						// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Sandy Petersen" ),			// authors
+	&doom_episode_three,							// episode
+	8,												// map_num
+	Map_Doom1EndOfEpisode,							// map_flags
+	RuntimeFlowString( "e3m8" ),					// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	30,												// par_time
+	doom_bossspecial_pre_v1_9,						// boss_actions
+	arrlen( doom_bossspecial_pre_v1_9 ),			// num_boss_actions
 	&doom_interlevel_e3finished,					// interlevel_finished
 	&doom_interlevel_e3entering,					// interlevel_entering
 	nullptr,										// next_map

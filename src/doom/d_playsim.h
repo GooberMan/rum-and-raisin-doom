@@ -96,6 +96,7 @@ DOOM_C_API extern renderoptions_t		render;
 
 DOOM_C_API extern gameflow_t			doom_shareware;
 DOOM_C_API extern gameflow_t			doom_registered;
+DOOM_C_API extern gameflow_t			doom_registered_pre_v1_9;
 DOOM_C_API extern gameflow_t			doom_ultimate;
 DOOM_C_API extern gameflow_t			doom_2;
 DOOM_C_API extern gameflow_t			doom_tnt;
