@@ -36,6 +36,11 @@ deh_weapon.c                    \
 d_items.c          d_items.h    \
 d_main.c           d_main.h     \
 d_net.c                         \
+d_playsim.cpp      d_playsim.h  \
+d_playsim_chex.cpp              \
+d_playsim_doom.cpp d_playsim_doom2.cpp \
+d_playsim_hacx.cpp              \
+d_playsim_plutonia.cpp d_playsim_tnt.cpp \
                    doomdata.h   \
 doomdef.c          doomdef.h    \
 doomstat.c         doomstat.h   \
@@ -88,5 +93,5 @@ sounds.c           sounds.h     \
 statdump.c         statdump.h   \
 st_lib.c           st_lib.h     \
 st_stuff.c         st_stuff.h   \
-wi_stuff.c         wi_stuff.h
+wi_stuff.cpp       wi_stuff.h
 

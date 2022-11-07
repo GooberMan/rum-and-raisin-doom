@@ -62,6 +62,8 @@ aes_prng.c           aes_prng.h            \
 d_event.c            d_event.h             \
                      doomkeys.h            \
                      doomtype.h            \
+d_gameflow.cpp       d_gameflow.h          \
+d_gameflow_dmapinfo.cpp d_gameflow_umapinfo.cpp \
 d_iwad.c             d_iwad.h              \
 d_loop.c             d_loop.h              \
 d_mode.c             d_mode.h              \
