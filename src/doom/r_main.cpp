@@ -1313,7 +1313,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	}
 	else
 	{
-		current->scaledviewwidth = setblocks * current->frame_width / 10;
+		current->scaledviewwidth = setblocks * 10 * current->frame_width / 100;
 		current->viewheight = (setblocks * ( current->frame_height - SBARHEIGHT( current ) ) / 10 ); // & ~7;
 	}
 

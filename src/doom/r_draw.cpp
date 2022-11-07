@@ -963,8 +963,6 @@ static void R_RemapBackBuffer( int32_t virtualx, int32_t virtualy, int32_t virtu
 
 void R_FillBackScreen (void) 
 { 
-	return;
-
 	vbuffer_t src;
 	vbuffer_t inflated;
 
@@ -988,7 +986,7 @@ void R_FillBackScreen (void)
     // If we are running full screen, there is no need to do any of this,
     // and the background buffer can be freed if it was previously in use.
 
-	if( drs_current->scaledviewwidth == render_width
+	if( drs_current->scaledviewwidth == drs_current->frame_width
 		|| background_data.width != render_width
 		|| background_data.height != render_height )
 	{
@@ -999,7 +997,7 @@ void R_FillBackScreen (void)
 			memset( &background_data, 0, sizeof( background_data ) );
 		}
 
-		if( drs_current->scaledviewwidth == render_width )
+		if( drs_current->scaledviewwidth == drs_current->frame_width )
 		{
 			return;
 		}
