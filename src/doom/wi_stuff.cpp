@@ -1866,7 +1866,7 @@ void WI_Start(wbstartstruct_t* wbstartstruct)
     WI_initVariables(wbstartstruct);
     WI_loadData();
 
-	animation = Z_Malloc< wi_animation_t >( PU_LEVEL, NULL );
+	animation = Z_MallocAs( wi_animation_t, PU_LEVEL, NULL );
 	animation->Setup( (mapinfo_t*)wbs->currmap, (mapinfo_t*)wbs->nextmap );
 
     if (deathmatch)
