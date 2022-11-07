@@ -900,7 +900,7 @@ void M_DashboardFirstLaunch( void )
 
 			M_DashboardPrepareRender();
 			if( current_launch_state != LS_Launcher ) M_DashboardFirstLaunchWindow();
-			else M_DashboardLauncherWindow();
+			//else M_DashboardLauncherWindow();
 			M_DashboardFinaliseRender();
 
 			SDL_RenderPresent( renderer );
