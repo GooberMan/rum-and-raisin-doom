@@ -60,7 +60,7 @@ enum
 #endif // defined( __cplusplus )
 
 DOOM_C_API void		Z_Init (void);
-DOOM_C_API void*	Z_Malloc( size_t size, int tag, void *ptr );
+DOOM_C_API void*	Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void *ptr );
 DOOM_C_API void		Z_Free (void *ptr);
 DOOM_C_API void		Z_FreeTags (int lowtag, int hightag);
 DOOM_C_API void		Z_DumpHeap (int lowtag, int hightag);
@@ -71,6 +71,8 @@ DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
 DOOM_C_API size_t	Z_FreeMemory (void);
 DOOM_C_API size_t	Z_ZoneSize(void);
 
+#define Z_Malloc( size, tag, ptr ) Z_MallocTracked( __FILE__, __LINE__, size, tag, ptr )
+
 //
 // This is used to get the local FILE:LINE info from CPP
 // prior to really call the function in question.
@@ -80,6 +82,9 @@ DOOM_C_API size_t	Z_ZoneSize(void);
 
 #if defined( __cplusplus )
 
+#define Z_MallocAs( type, tag, ptr ) Z_MallocTracked< type >( __FILE__, __LINE__, tag, ptr )
+#define Z_MallocArrayAs( type, count, tag, ptr ) Z_MallocArrayTracked< type >( __FILE__, __LINE__, count, tag, ptr )
+
 template< typename _ty >
 INLINE void Z_MallocInitEntry( _ty*& val )
 {
@@ -87,17 +92,17 @@ INLINE void Z_MallocInitEntry( _ty*& val )
 }
 
 template< typename _ty >
-INLINE _ty* Z_Malloc( int32_t tag, void* ptr )
+INLINE _ty* Z_MallocTracked( const char* file, size_t line, int32_t tag, void* ptr )
 {
-	_ty* val = (_ty*)Z_Malloc( sizeof( _ty ), tag, ptr );
+	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ), tag, ptr );
 	Z_MallocInitEntry( val );
 	return val;
 }
 
 template< typename _ty >
-INLINE _ty* Z_MallocArray( size_t count, int32_t tag, void* ptr )
+INLINE _ty* Z_MallocArrayTracked( const char* file, size_t line, size_t count, int32_t tag, void* ptr )
 {
-	_ty* val = (_ty*)Z_Malloc( sizeof( _ty ) * count, tag, ptr );
+	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ) * count, tag, ptr );
 	for( _ty* curr = val; curr < val + count; ++curr )
 	{
 		Z_MallocInitEntry( curr );

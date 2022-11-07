@@ -43,12 +43,15 @@
 
 typedef struct memblock_s
 {
+	const char*	file;
+	size_t		line;
 	size_t		size;	// including the header and possibly tiny fragments
 	void**		user;
 	int			tag;	// PU_FREE if this is free
 	int			id;	// should be ZONEID
 	struct memblock_s*	next;
 	struct memblock_s*	prev;
+	size_t		padding;
 } memblock_t;
 
 
@@ -248,12 +251,7 @@ void Z_Free (void* ptr)
 //
 #define MINFRAGMENT		64
 
-
-void*
-Z_Malloc
-( size_t	size,
-  int		tag,
-  void*		user )
+void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void* user )
 {
     size_t		extra;
     memblock_t*	start;
@@ -342,6 +340,9 @@ Z_Malloc
     base->user = user;
     base->tag = tag;
 
+	base->file = file;
+	base->line = line;
+
     result  = (void *) ((byte *)base + sizeof(memblock_t));
 
     if (base->user)
@@ -369,21 +370,24 @@ Z_FreeTags
 {
     memblock_t*	block;
     memblock_t*	next;
+	memblock_t* prev;
 	
-    for (block = mainzone->blocklist.next ;
-	 block != &mainzone->blocklist ;
-	 block = next)
-    {
-	// get link before freeing
-	next = block->next;
+	for (block = mainzone->blocklist.next ;
+		block != &mainzone->blocklist ;
+		block = next)
+	{
+		// get link before freeing
+		next = block->next;
 
-	// free block?
-	if (block->tag == PU_FREE)
-	    continue;
-	
-	if (block->tag >= lowtag && block->tag <= hightag)
-	    Z_Free ( (byte *)block+sizeof(memblock_t));
-    }
+		// free block?
+		if (block->tag == PU_FREE)
+			continue;
+		
+		if (block->tag >= lowtag && block->tag <= hightag)
+			Z_Free ( (byte *)block+sizeof(memblock_t));
+
+		prev = block;
+	}
 }
 
 
