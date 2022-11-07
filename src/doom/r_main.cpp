@@ -174,6 +174,8 @@ extern "C"
 
 	extern uint64_t frametime;
 	extern uint64_t frametime_withoutpresent;
+
+	extern gamestate_t gamestate;
 }
 
 // Actually expects C++ linkage
@@ -764,7 +766,7 @@ void R_AllocDynamicTables( void )
 		Z_Free( drs_data );
 	}
 
-	drs_data = Z_MallocArray< drsdata_t >( DRSArraySize, PU_STATIC, nullptr );
+	drs_data = Z_MallocArrayAs( drsdata_t, DRSArraySize, PU_STATIC, nullptr );
 
 	int32_t totalwidth = 0;
 	int32_t totalheight = 0;
@@ -1394,6 +1396,12 @@ void R_ExecuteSetViewSize( void )
 
 void R_RenderUpdateFrameSize( void )
 {
+	if( gamestate != GS_LEVEL )
+	{
+		R_DRSApply( drs_data );
+		return;
+	}
+
 	int64_t targetrefresh = I_GetTargetRefreshRate();
 
 	if( frametime_withoutpresent == 0 || dynamic_resolution_scaling == DRS_None || targetrefresh <= 0 )
@@ -1406,7 +1414,9 @@ void R_RenderUpdateFrameSize( void )
 		return;
 	}
 
-	double_t target = ( 1.0 / targetrefresh ) * 0.95;
+	// We want 1.25 milliseconds less than the refresh to give the
+	// software buffer time to upload and display on the GPU
+	double_t target = ( 1.0 / targetrefresh ) - 0.00125;
 	double_t actual = frametime_withoutpresent / 1000000.0;
 
 	// Tiny delta to account for natural time fluctuations
