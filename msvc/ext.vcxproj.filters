@@ -19,9 +19,6 @@
     <Filter Include="Header Files\cimgui">
       <UniqueIdentifier>{f2caca81-7079-4af7-bfb1-5d71da175ae2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\imgui">
-      <UniqueIdentifier>{ae0ed67c-c9a1-4302-bc26-9dc4c218bfa1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\glad">
       <UniqueIdentifier>{70e9d577-bff6-487f-b340-58246246abfb}</UniqueIdentifier>
     </Filter>
@@ -39,6 +36,9 @@
     </Filter>
     <Filter Include="Source Files\imgui\examples">
       <UniqueIdentifier>{c5055303-1bbf-4eb3-9c1a-0b4c899089bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui">
+      <UniqueIdentifier>{ae0ed67c-c9a1-4302-bc26-9dc4c218bfa1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\imgui\examples">
       <UniqueIdentifier>{368ebb46-c6b9-4b95-946d-1a563ed59918}</UniqueIdentifier>

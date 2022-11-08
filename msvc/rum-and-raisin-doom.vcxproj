@@ -518,6 +518,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\d_gameflow.cpp" />
     <ClCompile Include="..\src\d_gameflow_umapinfo.cpp" />
+    <ClCompile Include="..\src\d_iwad.cpp" />
     <ClCompile Include="..\src\icon.c" />
     <ClCompile Include="..\src\i_log.cpp" />
     <ClCompile Include="..\src\i_terminal.cpp" />
@@ -536,8 +537,11 @@
     <ClInclude Include="..\src\m_argv.h" />
     <ClCompile Include="..\src\m_dashboard.cpp" />
     <ClCompile Include="..\src\d_gameflow_dmapinfo.cpp" />
+    <ClCompile Include="..\src\m_dashboard_launcher.cpp" />
+    <ClCompile Include="..\src\m_launcher.cpp" />
     <ClCompile Include="..\src\m_misc.c" />
     <ClInclude Include="..\src\m_dashboard.h" />
+    <ClInclude Include="..\src\m_launcher.h" />
     <ClInclude Include="..\src\m_misc.h" />
     <ClCompile Include="..\src\aes_prng.c" />
     <ClInclude Include="..\src\aes_prng.h" />
@@ -545,7 +549,6 @@
     <ClInclude Include="..\src\d_event.h" />
     <ClInclude Include="..\src\doomkeys.h" />
     <ClInclude Include="..\src\doomtype.h" />
-    <ClCompile Include="..\src\d_iwad.c" />
     <ClInclude Include="..\src\d_iwad.h" />
     <ClCompile Include="..\src\d_loop.c" />
     <ClInclude Include="..\src\d_loop.h" />

@@ -64,7 +64,7 @@ d_event.c            d_event.h             \
                      doomtype.h            \
 d_gameflow.cpp       d_gameflow.h          \
 d_gameflow_dmapinfo.cpp d_gameflow_umapinfo.cpp \
-d_iwad.c             d_iwad.h              \
+d_iwad.cpp           d_iwad.h              \
 d_loop.c             d_loop.h              \
 d_mode.c             d_mode.h              \
                      d_ticcmd.h            \
@@ -98,7 +98,9 @@ m_config.c           m_config.h            \
 m_container.h                              \
 m_controls.c         m_controls.h          \
 m_dashboard.cpp      m_dashboard.h         \
+m_dashboard_launcher.cpp                   \
 m_fixed.c m_fixed.h m_fixed.inl            \
+m_launcher.cpp       m_launcher.h          \
 m_profile.cpp        m_profile.h           \
 net_client.c         net_client.h          \
 net_common.c         net_common.h          \

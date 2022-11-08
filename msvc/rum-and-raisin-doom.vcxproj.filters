@@ -19,9 +19,6 @@
     <ClCompile Include="..\src\d_event.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\d_iwad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\d_loop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -221,6 +218,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\d_gameflow_umapinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\m_dashboard_launcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\m_launcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\d_iwad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -433,6 +439,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\d_gameflow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\m_launcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
