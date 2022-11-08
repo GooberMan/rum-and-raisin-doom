@@ -28,6 +28,9 @@
 #include "v_patch.h"
 #include "v_video.h"
 
+#include "glad/glad.h"
+#include "SDL_opengl.h"
+
 #include <filesystem>
 #include <chrono>
 #include <ranges>
@@ -47,12 +50,30 @@ void M_DashboardApplyTheme();
 void M_DashboardPrepareRender();
 void M_DashboardFinaliseRender();
 
+constexpr const char* GameModes[] =
+{
+	"Doom Shareware",
+	"Doom Registered",
+	"Doom II",
+	"Ultimate Doom",
+	"Unknown game"
+};
+
+constexpr const char* GameVariants[] =
+{
+	"Original",
+	"FreeDoom",
+	"FreeDM",
+	"BFG Edition",
+	"Unity Port"
+};
+
 namespace launcher
 {
 	struct LumpImage
 	{
-		std::vector< rgb_t >	rawdata;
-		Texture*				tex;
+		std::vector< rgba_t >	rawdata;
+		hwtexture_t*			tex;
 		int32_t					width;
 		int32_t					height;
 	};
@@ -75,7 +96,7 @@ namespace launcher
 		GameMode_t		game_mode;
 		GameVariant_t	game_variant;
 
-		LumpImage		IWAD_titlepic;
+		LumpImage		titlepic;
 	};
 
 	time_t GetLastModifiedTime( const std::filesystem::path& stdpath )
@@ -214,33 +235,40 @@ namespace launcher
 						// This is dirty
 						vbuffer_t fakebuffer = vbuffer_t();
 						fakebuffer.data = composite.data();
-						fakebuffer.width = patch->width;
-						fakebuffer.height = patch->height;
+						fakebuffer.width = patch->height;
+						fakebuffer.height = patch->width;
 						fakebuffer.pitch = patch->height;
 						fakebuffer.pixel_size_bytes = sizeof( pixel_t );
 						fakebuffer.mode = VB_Transposed;
-						fakebuffer.verticalscale = 1.0;
+						fakebuffer.verticalscale = 1.2f;
 						fakebuffer.magic_value = vbuffer_magic;
 
-						frame_width = frame_adjusted_width = patch->width;
+						frame_width = patch->width;
 						frame_height = patch->height;
+						frame_adjusted_width = patch->width * ( 1.6 / ( (double_t)patch->width / (double_t)patch->height ) );
 
 						// WIDESCREEN HACK
 						int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
 						V_UseBuffer( &fakebuffer );
 						V_DrawPatch( xpos, 0, patch );
 
-						entry.IWAD_titlepic.rawdata.resize( patch->width * patch->height );
+						entry.titlepic.rawdata.resize( patch->width * patch->height );
+						entry.titlepic.width = patch->width;
+						entry.titlepic.height = patch->height;
 
 						for( int32_t x = 0; x < patch->width; ++x )
 						{
 							pixel_t* source = composite.data() + x * patch->height;
-							rgb_t* dest = entry.IWAD_titlepic.rawdata.data() + x;
+							rgba_t* dest = entry.titlepic.rawdata.data() + x;
 							for( int32_t y = 0; y < patch->height; ++y )
 							{
-								*dest = pallette[ *source ];
+								rgb_t& entry = pallette[ *source ];
+								dest->r = entry.r;
+								dest->g = entry.g;
+								dest->b = entry.b;
+								dest->a = 0xFF;
 								++source;
-								dest += patch->height;
+								dest += patch->width;
 							}
 						}
 					}
@@ -248,6 +276,11 @@ namespace launcher
 
 				fclose( file );
 			}
+		}
+
+		if( !entry.titlepic.rawdata.empty() )
+		{
+			entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, entry.titlepic.rawdata.data() );
 		}
 
 		return entry;
@@ -261,6 +294,9 @@ namespace launcher
 
 		void PopulateWADList()
 		{
+			SDL_Window* window = I_GetWindow();
+			//SDL_GLContext texturecontext = SDL_GL_CreateContext( window );
+
 			constexpr const char* RegexString = ".+\\.wad";
 			std::regex WADRegex = std::regex( RegexString, std::regex_constants::icase );
 
@@ -287,6 +323,10 @@ namespace launcher
 					}
 				}
 			}
+
+			glFlush();
+
+			//SDL_GL_DeleteContext( texturecontext );
 		}
 
 		WADEntries				IWADs;
@@ -304,9 +344,14 @@ DoomString M_DashboardLauncherWindow()
 	dashboardactive = Dash_Launcher;
 	I_UpdateMouseGrab();
 	SDL_Renderer* renderer = I_GetRenderer();
+	SDL_Window* window = I_GetWindow();
+
+	SDL_GLContext glcontext = SDL_GL_GetCurrentContext();
 
 	launcher::Launcher launcher;
 	launcher.PopulateWADList();
+
+	SDL_GL_MakeCurrent( window, glcontext );
 
 	bool readytolaunch = false;
 	while( !readytolaunch )
@@ -325,13 +370,28 @@ DoomString M_DashboardLauncherWindow()
 		SDL_RenderClear( renderer );
 
 		M_DashboardPrepareRender();
-		for( auto& iwad : launcher.IWADs )
-		{
-			igText( iwad.full_path.c_str() );
-		}
 		if( igButton( "Cool, just play", ImVec2() ) )
 		{
 			readytolaunch = true;
+		}
+		for( auto& iwad : launcher.IWADs )
+		{
+			if( iwad.titlepic.tex )
+			{
+				constexpr ImVec2 tl = { 0, 0 };
+				constexpr ImVec2 br = { 1, 1 };
+				constexpr ImVec4 tint = { 1, 1, 1, 1 };
+				constexpr ImVec4 border = { 0, 0, 0, 0 };
+				ImVec2 size = { iwad.titlepic.width, iwad.titlepic.height * 1.2f };
+				igImage( I_TextureGetHandle( iwad.titlepic.tex ), size, tl, br, tint, border );
+				igText( iwad.filename.c_str() );
+				igText( "%s, %s", GameModes[ iwad.game_mode ], GameVariants[ iwad.game_variant ] );
+				igNewLine();
+			}
+			else
+			{
+				igText( iwad.full_path.c_str() );
+			}
 		}
 
 		M_DashboardFinaliseRender();

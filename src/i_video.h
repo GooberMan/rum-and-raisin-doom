@@ -24,7 +24,7 @@
 #include "doomtype.h"
 #include "i_vbuffer.h"
 
-DOOM_C_API struct Texture;
+DOOM_C_API typedef struct hwtexture_s hwtexture_t;
 
 DOOM_C_API typedef enum vsync_e
 {
@@ -103,6 +103,10 @@ DOOM_C_API SDL_Renderer* I_GetRenderer( void );
 DOOM_C_API int64_t I_GetRefreshRate( void );
 DOOM_C_API int64_t I_GetTargetRefreshRate( void );
 
+DOOM_C_API hwtexture_t* I_TextureCreate( int32_t width, int32_t height, void* data );
+DOOM_C_API void* I_TextureGetHandle( hwtexture_t* tex );
+DOOM_C_API void I_TextureDestroy( hwtexture_t* tex );
+
 DOOM_C_API void I_GraphicsCheckCommandLine(void);
 
 DOOM_C_API void I_ShutdownGraphics(void);
@@ -145,8 +149,6 @@ DOOM_C_API void I_StartFrame (void);
 DOOM_C_API void I_StartTic (void);
 
 // Enable the loading disk image displayed when reading from disk.
-
-DOOM_C_API void I_EnableLoadingDisk(int xoffs, int yoffs);
 
 DOOM_C_API void I_VideoClearBuffer( float_t r, float_t g, float_t b, float_t a );
 

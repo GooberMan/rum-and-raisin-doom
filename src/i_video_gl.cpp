@@ -322,26 +322,26 @@ static void GenerateBuffer( VertexBuffer& output, const std::array< _vert, len >
 	glBindVertexArray( 0 );
 }
 
-DOOM_C_API struct Texture
+DOOM_C_API typedef struct hwtexture_s
 {
 	GLuint	to;
 	GLint	internalformat;
 	GLenum	format;
 	int32_t	width;
 	int32_t	height;
-};
+} hwtexture_t;
 
 struct FrameBuffer
 {
 	GLuint		fbo;
-	Texture		rgb;
+	hwtexture_t	rgb;
 };
 
-static Texture		doom_backbuffer;
-static Texture		doom_palette;
+static hwtexture_t	doom_backbuffer;
+static hwtexture_t	doom_palette;
 static FrameBuffer	doom_rgbexpanded;
 
-static void UpdateTexture( Texture& tex, void* data )
+static void UpdateTexture( hwtexture_t& tex, void* data )
 {
 	glBindTexture( GL_TEXTURE_2D, tex.to );
 	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
@@ -350,13 +350,13 @@ static void UpdateTexture( Texture& tex, void* data )
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
-static void DestroyTexture( Texture& tex )
+static void DestroyTexture( hwtexture_t& tex )
 {
 	glDeleteTextures( 1, &tex.to );
-	memset( &tex, 0, sizeof( Texture ) );
+	memset( &tex, 0, sizeof( hwtexture_t ) );
 }
 
-static void GenerateTexture( Texture& output, GLint internalformat, GLenum format, int32_t width, int32_t height )
+static void GenerateTexture( hwtexture_t& output, GLint internalformat, GLenum format, int32_t width, int32_t height, void* data = nullptr )
 {
 	glGenTextures( 1, &output.to );
 	output.internalformat = internalformat;
@@ -366,7 +366,7 @@ static void GenerateTexture( Texture& output, GLint internalformat, GLenum forma
 	glBindTexture( GL_TEXTURE_2D, output.to );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, GL_UNSIGNED_BYTE, NULL );
+	glTexImage2D( GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, GL_UNSIGNED_BYTE, data );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
@@ -752,4 +752,22 @@ DOOM_C_API void I_VideoClearBuffer( float_t r, float_t g, float_t b, float_t a )
 {
 	glClearColor( r, g, b, a );
 	glClear( GL_COLOR_BUFFER_BIT );
+}
+
+DOOM_C_API hwtexture_t* I_TextureCreate( int32_t width, int32_t height, void* data )
+{
+	hwtexture_t* tex = new hwtexture_t;
+	GenerateTexture( *tex, GL_RGBA8, GL_RGBA, width, height, nullptr );
+	UpdateTexture( *tex, data );
+	return tex;
+}
+
+DOOM_C_API void* I_TextureGetHandle( hwtexture_t* tex )
+{
+	return (void*)tex->to;
+}
+
+DOOM_C_API void I_TextureDestroy( hwtexture_t* tex )
+{
+	DestroyTexture( *tex );
 }
