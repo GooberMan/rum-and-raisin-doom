@@ -322,7 +322,7 @@ static void GenerateBuffer( VertexBuffer& output, const std::array< _vert, len >
 	glBindVertexArray( 0 );
 }
 
-struct Texture
+DOOM_C_API struct Texture
 {
 	GLuint	to;
 	GLint	internalformat;

@@ -20,13 +20,15 @@
 #ifndef V_PATCH_H
 #define V_PATCH_H
 
+#include "doomtype.h"
+
 // Patches.
 // A patch holds one or more columns.
 // Patches are used for sprites and all masked pictures,
 // and we compose textures from the TEXTURE1/2 lists
 // of patches.
 
-typedef PACKED_STRUCT (
+DOOM_C_API typedef PACKED_STRUCT (
 {
     short		width;		// bounding box size
     short		height;
@@ -37,14 +39,14 @@ typedef PACKED_STRUCT (
 }) patch_t;
 
 // posts are runs of non masked source pixels
-typedef PACKED_STRUCT (
+DOOM_C_API typedef PACKED_STRUCT (
 {
     byte		topdelta;	// -1 is the last post in a column
     byte		length; 	// length data bytes follows
 }) post_t;
 
 // column_t is a list of 0 or more post_t, (byte)-1 terminated
-typedef post_t	column_t;
+DOOM_C_API typedef post_t	column_t;
 
 #endif 
 

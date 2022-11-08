@@ -993,3 +993,9 @@ const char *D_SuggestGameName(GameMission_t mission, GameMode_t mode)
     return "Unknown game?";
 }
 
+std::span< const char* > D_GetIWADPaths()
+{
+	BuildIWADDirList();
+
+	return std::span( iwad_dirs, num_iwad_dirs );
+}

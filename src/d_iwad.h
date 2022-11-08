@@ -50,5 +50,13 @@ DOOM_C_API const char *D_SaveGameIWADName(GameMission_t gamemission);
 DOOM_C_API const char *D_SuggestIWADName(GameMission_t mission, GameMode_t mode);
 DOOM_C_API const char *D_SuggestGameName(GameMission_t mission, GameMode_t mode);
 
+#if defined( __cplusplus )
+
+#include "m_container.h"
+
+std::span< const char* > D_GetIWADPaths();
+
+#endif // defined( __cplusplus )
+
 #endif
 

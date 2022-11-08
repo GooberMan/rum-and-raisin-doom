@@ -23,9 +23,9 @@
 #include <stdio.h>
 #include "doomtype.h"
 
-typedef struct _wad_file_s wad_file_t;
+DOOM_C_API typedef struct _wad_file_s wad_file_t;
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // Open a file for reading.
     wad_file_t *(*OpenFile)(const char *path);
@@ -39,7 +39,7 @@ typedef struct
                    void *buffer, size_t buffer_len);
 } wad_file_class_t;
 
-struct _wad_file_s
+DOOM_C_API struct _wad_file_s
 {
     // Class of this file.
     wad_file_class_t *file_class;
@@ -58,17 +58,17 @@ struct _wad_file_s
 // Open the specified file. Returns a pointer to a new wad_file_t 
 // handle for the WAD file, or NULL if it could not be opened.
 
-wad_file_t *W_OpenFile(const char *path);
+DOOM_C_API wad_file_t *W_OpenFile(const char *path);
 
 // Close the specified WAD file.
 
-void W_CloseFile(wad_file_t *wad);
+DOOM_C_API void W_CloseFile(wad_file_t *wad);
 
 // Read data from the specified file into the provided buffer.  The
 // data is read from the specified offset from the start of the file.
 // Returns the number of bytes read.
 
-size_t W_Read(wad_file_t *wad, unsigned int offset,
+DOOM_C_API size_t W_Read(wad_file_t *wad, unsigned int offset,
               void *buffer, size_t buffer_len);
 
 #endif /* #ifndef __W_FILE__ */

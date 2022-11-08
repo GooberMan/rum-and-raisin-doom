@@ -14,16 +14,18 @@
 
 #include "m_dashboard.h"
 #include "i_log.h"
+#include "i_system.h"
+#include "i_video.h"
+
+#include "m_argv.h"
+#include "m_launcher.h"
+#include "m_misc.h"
+#include "m_container.h"
 
 extern "C"
 {
-	#include "i_system.h"
-	#include "i_video.h"
-
-	#include "m_argv.h"
 	#include "m_config.h"
 	#include "m_controls.h"
-	#include "m_misc.h"
 
 	#include "cimguiglue.h"
 
@@ -33,7 +35,6 @@ extern "C"
 	#include <glad/glad.h>
 }
 
-#include "m_container.h"
 
 typedef enum menuentrytype_e
 {
@@ -491,7 +492,6 @@ typedef enum launchstate_e
 	LS_None,
 	LS_Welcome,
 	LS_Options,
-	LS_Launcher,
 
 	LS_Max,
 } launchstate_t;
@@ -573,9 +573,7 @@ DOOM_C_API void M_DashboardOptionsInit();
 DOOM_C_API void M_DashboardOptionsWindow( const char* itemname, void* data );
 DOOM_C_API const char* M_FindNameForKey( remapping_t type, int32_t key );
 
-void M_DashboardLauncherWindow();
-
-static void M_DashboardPrepareRender()
+void M_DashboardPrepareRender()
 {
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
@@ -589,7 +587,7 @@ static void M_DashboardPrepareRender()
 	igNewFrame();
 }
 
-static void M_DashboardFinaliseRender()
+void M_DashboardFinaliseRender()
 {
 	igRender();
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
@@ -778,12 +776,19 @@ static void M_DashboardWelcomeWindow( const char* itemname, void* data )
 					"liking before you play." );
 }
 
+void M_DashboardApplyTheme()
+{
+	memcpy( igGetStyle()->Colors, themes[ dashboard_theme ].colors, sizeof( igGetStyle()->Colors ) );
+}
+
 static void M_DashboardFirstLaunchWindow()
 {
+	int32_t nextlaunchstate = current_launch_state;
+
 	constexpr ImVec2 zero = { 0, 0 };
 	constexpr int32_t windowflags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
 
-	memcpy( igGetStyle()->Colors, themes[ dashboard_theme ].colors, sizeof( igGetStyle()->Colors ) );
+	M_DashboardApplyTheme();
 
 	ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 600.f ), M_MIN( igGetIO()->DisplaySize.y, 550.f ) };
 	ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
@@ -831,28 +836,31 @@ static void M_DashboardFirstLaunchWindow()
 
 		float cursorx = igGetCursorPosX();
 		
-		//if( current_launch_state == LS_Options )
-		//{
-		//	igSetCursorPosX( cursorx + framesize.x - nextbuttonsize.x - launcherbuttonsize.x - buttonpadding - framepadding );
-		//	if( igButton( "Launcher", launcherbuttonsize ) )
-		//	{
-		//		current_launch_state = LS_Launcher;
-		//	}
-		//	igSameLine( 0, -1 );
-		//}
+		if( current_launch_state == LS_Options )
+		{
+			igSetCursorPosX( cursorx + framesize.x - nextbuttonsize.x - launcherbuttonsize.x - buttonpadding - framepadding );
+			if( igButton( "Launcher", launcherbuttonsize ) )
+			{
+				M_ScheduleLauncher();
+				nextlaunchstate = LS_None;
+			}
+			igSameLine( 0, -1 );
+		}
 
 		const char* buttontext = current_launch_state == LS_Options ? "Play!" : "Next";
 		igSetCursorPosX( cursorx + framesize.x - nextbuttonsize.x - framepadding );
 
 		if( igButton( buttontext, nextbuttonsize ) )
 		{
-			if( ++current_launch_state >= LS_Launcher )
+			if( ++nextlaunchstate >= LS_Max )
 			{
-				current_launch_state = LS_None;
+				nextlaunchstate = LS_None;
 			}
 		}
 	}
 	igEnd();
+
+	current_launch_state = nextlaunchstate;
 }
 
 void M_DashboardFirstLaunch( void )
@@ -869,17 +877,12 @@ void M_DashboardFirstLaunch( void )
 		current_launch_state = LS_Options;
 	}
 
-	if( M_ParmExists( "-launcher" ) )
-	{
-		current_launch_state = LS_Launcher;
-	}
-
 	if( current_launch_state )
 	{
 #if USE_IMGUI
 		M_DashboardOptionsInit();
 
-		dashboardactive = true;
+		dashboardactive = Dash_FirstSession;
 		I_UpdateMouseGrab();
 		SDL_Renderer* renderer = I_GetRenderer();
 
@@ -899,8 +902,7 @@ void M_DashboardFirstLaunch( void )
 			SDL_RenderClear( renderer );
 
 			M_DashboardPrepareRender();
-			if( current_launch_state != LS_Launcher ) M_DashboardFirstLaunchWindow();
-			//else M_DashboardLauncherWindow();
+			M_DashboardFirstLaunchWindow();
 			M_DashboardFinaliseRender();
 
 			SDL_RenderPresent( renderer );
@@ -910,7 +912,7 @@ void M_DashboardFirstLaunch( void )
 		SDL_RenderClear( renderer );
 		SDL_RenderPresent( renderer );
 
-		dashboardactive = false;
+		dashboardactive = Dash_Inactive;
 #endif // USE_IMGUI
 		first_launch = LS_None;
 	}
@@ -1226,7 +1228,7 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 	int32_t windowflags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse;
 	if( !dashboardactive ) windowflags |= ImGuiWindowFlags_NoInputs;
 
-	memcpy( igGetStyle()->Colors, themes[ dashboard_theme ].colors, sizeof( igGetStyle()->Colors ) );
+	M_DashboardApplyTheme();
 
 	thiswindow = entries;
 

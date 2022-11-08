@@ -46,6 +46,7 @@ DOOM_C_API typedef enum dashboardmode_e
 	Dash_Inactive,
 	Dash_Normal,
 	Dash_FirstSession,
+	Dash_Launcher,
 } dashboardmode_t;
 
 DOOM_C_API typedef enum licence_e

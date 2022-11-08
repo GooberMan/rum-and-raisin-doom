@@ -24,6 +24,8 @@
 #include "doomtype.h"
 #include "i_vbuffer.h"
 
+DOOM_C_API struct Texture;
+
 DOOM_C_API typedef enum vsync_e
 {
 	VSync_Off,

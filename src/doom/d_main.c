@@ -54,7 +54,9 @@
 #include "m_misc.h"
 #include "m_menu.h"
 #include "m_dashboard.h"
+#include "m_launcher.h"
 #include "m_profile.h"
+
 #include "p_saveg.h"
 
 #include "i_endoom.h"
@@ -646,7 +648,6 @@ void D_DoomLoop (void)
     TryRunTics();
 
     V_RestoreBuffer();
-    R_ExecuteSetViewSize( );
 
     D_StartGameLoop();
 
@@ -1548,6 +1549,7 @@ void D_DoomMain (void)
 
 	// Before we go in to terminal mode, we want to allow the user to configure all options
 	M_DashboardFirstLaunch();
+	M_PerformLauncher();
 
 	I_TerminalInit();
 
@@ -1762,7 +1764,7 @@ void D_DoomMain (void)
 	// enough for our needs.
 	else if( W_CheckNumForName("DMENUPIC") >= 0 || W_CheckNumForName( "DMAPINFO" ) >= 0 )
 	{
-		if (W_CheckNumForName("D_CHG") >= 0)
+		if (W_CheckNumForName("M_CHG") >= 0)
 		{
 			gamevariant = bfgedition;
 		}

@@ -52,6 +52,21 @@ DOOM_C_API struct lumpinfo_s
     lumpindex_t next;
 };
 
+DOOM_C_API typedef PACKED_STRUCT (
+wadinfo_e {
+	// Should be "IWAD" or "PWAD".
+	char		identification[4];
+	int			numlumps;
+	int			infotableofs;
+} ) wadinfo_t;
+
+
+DOOM_C_API typedef PACKED_STRUCT (
+filelump_e {
+	int			filepos;
+	int			size;
+	char		name[8];
+} ) filelump_t;
 
 DOOM_C_API extern lumpinfo_t **lumpinfo;
 DOOM_C_API extern uint32_t numlumps;

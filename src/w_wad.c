@@ -37,22 +37,6 @@
 
 #include "w_wad.h"
 
-typedef PACKED_STRUCT (
-{
-    // Should be "IWAD" or "PWAD".
-    char		identification[4];
-    int			numlumps;
-    int			infotableofs;
-}) wadinfo_t;
-
-
-typedef PACKED_STRUCT (
-{
-    int			filepos;
-    int			size;
-    char		name[8];
-}) filelump_t;
-
 //
 // GLOBALS
 //
@@ -62,6 +46,8 @@ lumpinfo_t **lumpinfo;
 uint32_t numlumps = 0;
 
 boolean wadrenderlock = false;
+
+extern int32_t remove_limits;
 
 // Hash table for fast lookups
 static lumpindex_t *lumphash;
@@ -186,7 +172,7 @@ wad_file_t *W_AddFile (const char *filename)
 
          // Vanilla Doom doesn't like WADs with more than 4046 lumps
          // https://www.doomworld.com/vb/post/1010985
-         if (!strncmp(header.identification,"PWAD",4) && header.numlumps > 4046)
+         if (!remove_limits && !strncmp(header.identification,"PWAD",4) && header.numlumps > 4046)
          {
                  W_CloseFile(wad_file);
                  I_Error ("Error: Vanilla limit for lumps in a WAD is 4046, "
