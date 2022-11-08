@@ -24,7 +24,7 @@
 
 // The "mission" controls what game we are playing.
 
-typedef enum
+DOOM_C_API typedef enum
 {
 	doom,				// Doom 1
 	doom2,				// Doom 2
@@ -43,7 +43,7 @@ typedef enum
 // in: eg. shareware vs. registered.  So doom1.wad and doom.wad are the
 // same mission, but a different mode.
 
-typedef enum
+DOOM_C_API typedef enum
 {
     shareware,       // Doom/Heretic shareware
     registered,      // Doom/Heretic registered
@@ -54,7 +54,7 @@ typedef enum
 
 // What version are we emulating?
 
-typedef enum
+DOOM_C_API typedef enum
 {
     exe_doom_1_2,    // Doom 1.2: shareware and registered
     exe_doom_1_666,  // Doom 1.666: for shareware, registered and commercial
@@ -76,7 +76,7 @@ typedef enum
 
 // What IWAD variant are we using?
 
-typedef enum
+DOOM_C_API typedef enum
 {
     vanilla,    // Vanilla Doom
     freedoom,   // FreeDoom: Phase 1 + 2
@@ -87,7 +87,7 @@ typedef enum
 
 // Skill level.
 
-typedef enum
+DOOM_C_API typedef enum
 {
     sk_noitems = -1,        // the "-skill 0" hack
     sk_baby = 0,
@@ -97,14 +97,14 @@ typedef enum
     sk_nightmare
 } skill_t;
 
-boolean D_ValidGameMode(GameMission_t mission, GameMode_t mode);
-boolean D_ValidGameVersion(GameMission_t mission, GameVersion_t version);
-boolean D_ValidEpisodeMap(GameMission_t mission, GameMode_t mode,
+DOOM_C_API boolean D_ValidGameMode(GameMission_t mission, GameMode_t mode);
+DOOM_C_API boolean D_ValidGameVersion(GameMission_t mission, GameVersion_t version);
+DOOM_C_API boolean D_ValidEpisodeMap(GameMission_t mission, GameMode_t mode,
                           int episode, int map);
-int D_GetNumEpisodes(GameMission_t mission, GameMode_t mode);
-boolean D_IsEpisodeMap(GameMission_t mission);
-const char *D_GameMissionString(GameMission_t mission);
-const char *D_GameModeString(GameMode_t mode);
+DOOM_C_API int D_GetNumEpisodes(GameMission_t mission, GameMode_t mode);
+DOOM_C_API boolean D_IsEpisodeMap(GameMission_t mission);
+DOOM_C_API const char *D_GameMissionString(GameMission_t mission);
+DOOM_C_API const char *D_GameModeString(GameMode_t mode);
 
 #endif /* #ifndef __D_MODE__ */
 

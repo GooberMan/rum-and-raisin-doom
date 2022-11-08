@@ -22,22 +22,22 @@
 
 #include "doomtype.h"
 
-void M_LoadDefaults(void);
-void M_SaveDefaults(void);
-void M_SaveDefaultsAlternate(const char *main, const char *extra);
-void M_SetConfigDir(const char *dir);
-void M_SetMusicPackDir(void);
-void M_BindIntVariable(const char *name, int *variable);
-void M_BindFloatVariable(const char *name, float *variable);
-void M_BindStringVariable(const char *name, char **variable);
-boolean M_SetVariable(const char *name, const char *value);
-int M_GetIntVariable(const char *name);
-const char *M_GetStringVariable(const char *name);
-float M_GetFloatVariable(const char *name);
-void M_SetConfigFilenames(const char *main_config, const char *extra_config);
-char *M_GetSaveGameDir(const char *iwadname);
-char *M_GetAutoloadDir(const char *iwadname);
+DOOM_C_API void M_LoadDefaults(void);
+DOOM_C_API void M_SaveDefaults(void);
+DOOM_C_API void M_SaveDefaultsAlternate(const char *main, const char *extra);
+DOOM_C_API void M_SetConfigDir(const char *dir);
+DOOM_C_API void M_SetMusicPackDir(void);
+DOOM_C_API void M_BindIntVariable(const char *name, int *variable);
+DOOM_C_API void M_BindFloatVariable(const char *name, float *variable);
+DOOM_C_API void M_BindStringVariable(const char *name, char **variable);
+DOOM_C_API boolean M_SetVariable(const char *name, const char *value);
+DOOM_C_API int M_GetIntVariable(const char *name);
+DOOM_C_API const char *M_GetStringVariable(const char *name);
+DOOM_C_API float M_GetFloatVariable(const char *name);
+DOOM_C_API void M_SetConfigFilenames(const char *main_config, const char *extra_config);
+DOOM_C_API char *M_GetSaveGameDir(const char *iwadname);
+DOOM_C_API char *M_GetAutoloadDir(const char *iwadname);
 
-extern const char *configdir;
+DOOM_C_API extern const char *configdir;
 
 #endif

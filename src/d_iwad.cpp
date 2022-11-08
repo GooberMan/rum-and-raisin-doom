@@ -72,10 +72,10 @@ boolean D_IsIWADName(const char *name)
 #define MAX_IWAD_DIRS 128
 
 static boolean iwad_dirs_built = false;
-static char *iwad_dirs[MAX_IWAD_DIRS];
+static const char *iwad_dirs[MAX_IWAD_DIRS];
 static int num_iwad_dirs = 0;
 
-static void AddIWADDir(char *dir)
+static void AddIWADDir(const char *dir)
 {
     if (num_iwad_dirs < MAX_IWAD_DIRS)
     {
@@ -97,8 +97,8 @@ static void AddIWADDir(char *dir)
 typedef struct 
 {
     HKEY root;
-    char *path;
-    char *value;
+    const char *path;
+    const char *value;
 } registry_value_t;
 
 #define UNINSTALLER_STRING "\\uninstl.exe /S "
@@ -212,7 +212,7 @@ static registry_value_t root_path_keys[] =
 
 // Subdirectories of the above install path, where IWADs are installed.
 
-static char *root_path_subdirs[] =
+static const char *root_path_subdirs[] =
 {
     ".",
     "Doom2",
@@ -234,7 +234,7 @@ static registry_value_t steam_install_location =
 
 // Subdirs of the steam install directory where IWADs are found
 
-static char *steam_install_subdirs[] =
+static const char *steam_install_subdirs[] =
 {
     "steamapps\\common\\doom 2\\base",
     "steamapps\\common\\final doom\\base",
@@ -262,7 +262,7 @@ static char *steam_install_subdirs[] =
 #define STEAM_BFG_GUS_PATCHES \
     "steamapps\\common\\DOOM 3 BFG Edition\\base\\classicmusic\\instruments"
 
-static char *GetRegistryString(registry_value_t *reg_val)
+static const char *GetRegistryString(registry_value_t *reg_val)
 {
     HKEY key;
     DWORD len;
@@ -287,7 +287,7 @@ static char *GetRegistryString(registry_value_t *reg_val)
     {
         // Allocate a buffer for the value and read the value
 
-        result = malloc(len + 1);
+        result = (char*)malloc(len + 1);
 
         if (RegQueryValueEx(key, reg_val->value, NULL, &valtype,
                             (unsigned char *) result, &len) != ERROR_SUCCESS)
@@ -317,9 +317,9 @@ static void CheckUninstallStrings(void)
 
     for (i=0; i<arrlen(uninstall_values); ++i)
     {
-        char *val;
-        char *path;
-        char *unstr;
+        const char *val;
+        const char *path;
+        const char *unstr;
 
         val = GetRegistryString(&uninstall_values[i]);
 
@@ -332,13 +332,13 @@ static void CheckUninstallStrings(void)
 
         if (unstr == NULL)
         {
-            free(val);
+            free((void*)val);
         }
         else
         {
             path = unstr + strlen(UNINSTALLER_STRING);
 
-            AddIWADDir(path);
+            AddIWADDir((char*)path);
         }
     }
 }
@@ -351,8 +351,8 @@ static void CheckInstallRootPaths(void)
 
     for (i=0; i<arrlen(root_path_keys); ++i)
     {
-        char *install_path;
-        char *subpath;
+        const char *install_path;
+        const char *subpath;
         unsigned int j;
 
         install_path = GetRegistryString(&root_path_keys[i]);
@@ -366,10 +366,10 @@ static void CheckInstallRootPaths(void)
         {
             subpath = M_StringJoin(install_path, DIR_SEPARATOR_S,
                                    root_path_subdirs[j], NULL);
-            AddIWADDir(subpath);
+            AddIWADDir((char*)subpath);
         }
 
-        free(install_path);
+        free((void*)install_path);
     }
 }
 
@@ -378,8 +378,8 @@ static void CheckInstallRootPaths(void)
 
 static void CheckSteamEdition(void)
 {
-    char *install_path;
-    char *subpath;
+    const char *install_path;
+    const char *subpath;
     size_t i;
 
     install_path = GetRegistryString(&steam_install_location);
@@ -394,10 +394,10 @@ static void CheckSteamEdition(void)
         subpath = M_StringJoin(install_path, DIR_SEPARATOR_S,
                                steam_install_subdirs[i], NULL);
 
-        AddIWADDir(subpath);
+        AddIWADDir((char*)subpath);
     }
 
-    free(install_path);
+    free((void*)install_path);
 }
 
 // The BFG edition ships with a full set of GUS patches. If we find them,
@@ -406,8 +406,8 @@ static void CheckSteamEdition(void)
 static void CheckSteamGUSPatches(void)
 {
     const char *current_path;
-    char *install_path;
-    char *test_patch_path, *patch_path;
+    const char *install_path;
+    const char *test_patch_path, *patch_path;
 
     // Already configured? Don't stomp on the user's choices.
     current_path = M_GetStringVariable("gus_patch_path");
@@ -433,9 +433,9 @@ static void CheckSteamGUSPatches(void)
         M_SetVariable("gus_patch_path", patch_path);
     }
 
-    free(test_patch_path);
-    free(patch_path);
-    free(install_path);
+    free((void*)test_patch_path);
+    free((void*)patch_path);
+    free((void*)install_path);
 }
 
 // Default install directories for DOS Doom
@@ -477,7 +477,7 @@ static boolean DirIsFile(const char *path, const char *filename)
 // file, returning the full path to the IWAD if found, or NULL
 // if not found.
 
-static char *CheckDirectoryHasIWAD(const char *dir, const char *iwadname)
+static const char *CheckDirectoryHasIWAD(const char *dir, const char *iwadname)
 {
     char *filename; 
     char *probe;
@@ -517,9 +517,9 @@ static char *CheckDirectoryHasIWAD(const char *dir, const char *iwadname)
 // Search a directory to try to find an IWAD
 // Returns the location of the IWAD if found, otherwise NULL.
 
-static char *SearchDirectoryForIWAD(const char *dir, int mask, GameMission_t *mission)
+static const char *SearchDirectoryForIWAD(const char *dir, int mask, GameMission_t *mission)
 {
-    char *filename;
+    const char *filename;
     size_t i;
 
     for (i=0; i<arrlen(iwads); ++i) 
@@ -850,7 +850,7 @@ char *D_TryFindWADByName(const char *filename)
 
 char *D_FindIWAD(int mask, GameMission_t *mission)
 {
-    char *result;
+    const char *result;
     const char *iwadfile;
     int iwadparm;
     int i;
@@ -894,7 +894,7 @@ char *D_FindIWAD(int mask, GameMission_t *mission)
         }
     }
 
-    return result;
+    return (char*)result;
 }
 
 // Find all IWADs in the IWAD search path matching the given mask.
@@ -906,7 +906,7 @@ const iwad_t **D_FindAllIWADs(int mask)
     char *filename;
     int i;
 
-    result = malloc(sizeof(iwad_t *) * (arrlen(iwads) + 1));
+    result = (const iwad_t**)malloc(sizeof(iwad_t *) * (arrlen(iwads) + 1));
     result_len = 0;
 
     // Try to find all IWADs

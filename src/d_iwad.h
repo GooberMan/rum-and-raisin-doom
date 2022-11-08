@@ -19,6 +19,8 @@
 #ifndef __D_IWAD__
 #define __D_IWAD__
 
+#include "doomtype.h"
+
 #include "d_mode.h"
 
 #define IWAD_MASK_DOOM    ((1 << doom)           \
@@ -31,7 +33,7 @@
 #define IWAD_MASK_HEXEN   (1 << hexen)
 #define IWAD_MASK_STRIFE  (1 << strife)
 
-typedef struct
+DOOM_C_API typedef struct
 {
     const char *name;
     GameMission_t mission;
@@ -39,15 +41,14 @@ typedef struct
     const char *description;
 } iwad_t;
 
-boolean D_IsIWADName(const char *name);
-char *D_FindWADByName(const char *filename);
-char *D_TryFindWADByName(const char *filename);
-char *D_FindIWAD(int mask, GameMission_t *mission);
-const iwad_t **D_FindAllIWADs(int mask);
-const char *D_SaveGameIWADName(GameMission_t gamemission);
-const char *D_SuggestIWADName(GameMission_t mission, GameMode_t mode);
-const char *D_SuggestGameName(GameMission_t mission, GameMode_t mode);
-void D_CheckCorrectIWAD(GameMission_t mission);
+DOOM_C_API boolean D_IsIWADName(const char *name);
+DOOM_C_API char *D_FindWADByName(const char *filename);
+DOOM_C_API char *D_TryFindWADByName(const char *filename);
+DOOM_C_API char *D_FindIWAD(int mask, GameMission_t *mission);
+DOOM_C_API const iwad_t **D_FindAllIWADs(int mask);
+DOOM_C_API const char *D_SaveGameIWADName(GameMission_t gamemission);
+DOOM_C_API const char *D_SuggestIWADName(GameMission_t mission, GameMode_t mode);
+DOOM_C_API const char *D_SuggestGameName(GameMission_t mission, GameMode_t mode);
 
 #endif
 

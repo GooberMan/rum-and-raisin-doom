@@ -25,26 +25,26 @@
 //
 // MISC
 //
-extern  int	myargc;
-extern  char**	myargv;
+DOOM_C_API extern  int	myargc;
+DOOM_C_API extern  char**	myargv;
 
 // Returns the position of the given parameter
 // in the arg list (0 if not found).
-int M_CheckParm (const char* check);
+DOOM_C_API int M_CheckParm (const char* check);
 
 // Same as M_CheckParm, but checks that num_args arguments are available
 // following the specified argument.
-int M_CheckParmWithArgs(const char *check, int num_args);
+DOOM_C_API int M_CheckParmWithArgs(const char *check, int num_args);
 
-void M_FindResponseFile(void);
-void M_AddLooseFiles(void);
+DOOM_C_API void M_FindResponseFile(void);
+DOOM_C_API void M_AddLooseFiles(void);
 
 // Parameter has been specified?
 
-boolean M_ParmExists(const char *check);
+DOOM_C_API boolean M_ParmExists(const char *check);
 
 // Get name of executable used to run this program:
 
-const char *M_GetExecutableName(void);
+DOOM_C_API const char *M_GetExecutableName(void);
 
 #endif
