@@ -55,6 +55,7 @@ DOOM_C_API typedef enum licence_e
 	Licence_DearImGui,
 	Licence_cimgui,
 	Licence_WidePix,
+	Licence_InconsolataFont,
 } licence_t;
 
 DOOM_C_API typedef void (*menufunc_t)( const char* itemname, void* data );
