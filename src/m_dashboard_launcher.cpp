@@ -35,6 +35,7 @@
 #include <chrono>
 #include <ranges>
 #include <regex>
+#include <thread>
 #include <cstdio>
 
 extern "C"
@@ -70,9 +71,8 @@ constexpr const char* GameVariants[] =
 
 namespace launcher
 {
-	struct LumpImage
+	struct Image
 	{
-		std::vector< rgba_t >	rawdata;
 		hwtexture_t*			tex;
 		int32_t					width;
 		int32_t					height;
@@ -96,7 +96,7 @@ namespace launcher
 		GameMode_t		game_mode;
 		GameVariant_t	game_variant;
 
-		LumpImage		titlepic;
+		Image			titlepic;
 	};
 
 	time_t GetLastModifiedTime( const std::filesystem::path& stdpath )
@@ -128,6 +128,8 @@ namespace launcher
 
 		std::filesystem::path stdcachepath( cachepath );
 
+		std::vector< rgba_t > titlepic_raw;
+
 		WADEntry entry = WADEntry();
 		entry.filename = filename;
 		entry.full_path = path;
@@ -158,6 +160,8 @@ namespace launcher
 
 				filelump_t* titlepic	= nullptr;
 				filelump_t* dmenupic	= nullptr;
+				filelump_t* dmapinfo	= nullptr;
+				filelump_t* umapinfo	= nullptr;
 				filelump_t* playpal		= nullptr;
 				filelump_t* m_chg		= nullptr;
 				filelump_t* e1m1		= nullptr;
@@ -173,6 +177,8 @@ namespace launcher
 				{
 					if( !strncmp( lump.name, "TITLEPIC", 8 ) )			titlepic = &lump;
 					else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
+					else if( !strncmp( lump.name, "DMAPINFO", 8 ) )		dmapinfo = &lump;
+					else if( !strncmp( lump.name, "UMAPINFO", 8 ) )		umapinfo = &lump;
 					else if( !strncmp( lump.name, "PLAYPAL", 8 ) )		playpal = &lump;
 					else if( !strncmp( lump.name, "M_CHG", 8 ) )		m_chg = &lump;
 					else if( !strncmp( lump.name, "E1M1", 8 ) )			e1m1 = &lump;
@@ -205,7 +211,7 @@ namespace launcher
 					{
 						entry.game_variant = bfgedition;
 					}
-					else if( dmenupic != nullptr )
+					else if( dmenupic != nullptr || dmapinfo != nullptr )
 					{
 						entry.game_variant = unityport;
 					}
@@ -252,14 +258,14 @@ namespace launcher
 						V_UseBuffer( &fakebuffer );
 						V_DrawPatch( xpos, 0, patch );
 
-						entry.titlepic.rawdata.resize( patch->width * patch->height );
+						titlepic_raw.resize( patch->width * patch->height );
 						entry.titlepic.width = patch->width;
 						entry.titlepic.height = patch->height;
 
 						for( int32_t x = 0; x < patch->width; ++x )
 						{
 							pixel_t* source = composite.data() + x * patch->height;
-							rgba_t* dest = entry.titlepic.rawdata.data() + x;
+							rgba_t* dest = titlepic_raw.data() + x;
 							for( int32_t y = 0; y < patch->height; ++y )
 							{
 								rgb_t& entry = pallette[ *source ];
@@ -278,24 +284,51 @@ namespace launcher
 			}
 		}
 
-		if( !entry.titlepic.rawdata.empty() )
+		if( !titlepic_raw.empty() )
 		{
-			entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, entry.titlepic.rawdata.data() );
+			entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, titlepic_raw.data() );
 		}
 
 		return entry;
 	}
 
-	class Launcher
+	class WADList
 	{
 		using WADEntries = std::vector< WADEntry >;
 
 	public:
+		WADList()
+			: threaded_context( nullptr )
+			, lists_ready( false )
+		{
+			KickoffPopulate();
+		}
+
+		~WADList()
+		{
+			if( worker_thread->joinable() )
+			{
+				worker_thread->join();
+			}
+
+			delete worker_thread;
+		}
+
+		void KickoffPopulate()
+		{
+			SDL_Window* window = I_GetWindow();
+			SDL_GLContext glcontext = SDL_GL_GetCurrentContext();
+			SDL_GL_SetAttribute( SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1 );
+			threaded_context = SDL_GL_CreateContext( window );
+			SDL_GL_MakeCurrent( window, glcontext );
+
+			worker_thread = new std::thread( [ this ]() { this->PopulateWADList(); } );
+		}
 
 		void PopulateWADList()
 		{
 			SDL_Window* window = I_GetWindow();
-			//SDL_GLContext texturecontext = SDL_GL_CreateContext( window );
+			SDL_GL_MakeCurrent( window, threaded_context );
 
 			constexpr const char* RegexString = ".+\\.wad";
 			std::regex WADRegex = std::regex( RegexString, std::regex_constants::icase );
@@ -306,8 +339,8 @@ namespace launcher
 								| std::ranges::views::transform( []( const char* pathname )
 								{
 									std::error_code error;
-									auto it = std::filesystem::directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
-									if( error ) return std::filesystem::directory_iterator();
+									auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
+									if( error ) return std::filesystem::recursive_directory_iterator();
 									return it;
 								} ) )
 			{
@@ -326,11 +359,18 @@ namespace launcher
 
 			glFlush();
 
-			//SDL_GL_DeleteContext( texturecontext );
+			SDL_GL_DeleteContext( threaded_context );
+
+			lists_ready = true;
 		}
+
+		INLINE bool ListsReady() { return lists_ready.load(); }
 
 		WADEntries				IWADs;
 		WADEntries				PWADs;
+		SDL_GLContext			threaded_context;
+		std::atomic< bool >		lists_ready;
+		std::thread*			worker_thread;
 	};
 }
 
@@ -344,14 +384,8 @@ DoomString M_DashboardLauncherWindow()
 	dashboardactive = Dash_Launcher;
 	I_UpdateMouseGrab();
 	SDL_Renderer* renderer = I_GetRenderer();
-	SDL_Window* window = I_GetWindow();
 
-	SDL_GLContext glcontext = SDL_GL_GetCurrentContext();
-
-	launcher::Launcher launcher;
-	launcher.PopulateWADList();
-
-	SDL_GL_MakeCurrent( window, glcontext );
+	launcher::WADList launcher;
 
 	bool readytolaunch = false;
 	while( !readytolaunch )
@@ -374,23 +408,31 @@ DoomString M_DashboardLauncherWindow()
 		{
 			readytolaunch = true;
 		}
-		for( auto& iwad : launcher.IWADs )
+		if( launcher.ListsReady() )
 		{
-			if( iwad.titlepic.tex )
+			for( auto& iwad : launcher.IWADs )
 			{
-				constexpr ImVec2 tl = { 0, 0 };
-				constexpr ImVec2 br = { 1, 1 };
-				constexpr ImVec4 tint = { 1, 1, 1, 1 };
-				constexpr ImVec4 border = { 0, 0, 0, 0 };
-				ImVec2 size = { iwad.titlepic.width, iwad.titlepic.height * 1.2f };
-				igImage( I_TextureGetHandle( iwad.titlepic.tex ), size, tl, br, tint, border );
-				igText( iwad.filename.c_str() );
-				igText( "%s, %s", GameModes[ iwad.game_mode ], GameVariants[ iwad.game_variant ] );
-				igNewLine();
+				if( iwad.titlepic.tex )
+				{
+					constexpr ImVec2 tl = { 0, 0 };
+					constexpr ImVec2 br = { 1, 1 };
+					constexpr ImVec4 tint = { 1, 1, 1, 1 };
+					constexpr ImVec4 border = { 0, 0, 0, 0 };
+					ImVec2 size = { iwad.titlepic.width, iwad.titlepic.height * 1.2f };
+					igImage( I_TextureGetHandle( iwad.titlepic.tex ), size, tl, br, tint, border );
+					igText( iwad.filename.c_str() );
+					igText( "%s, %s", GameModes[ iwad.game_mode ], GameVariants[ iwad.game_variant ] );
+					igNewLine();
+				}
+				else
+				{
+					igText( iwad.full_path.c_str() );
+				}
 			}
-			else
+			igText( "PWADS:" );
+			for( auto& pwad : launcher.PWADs )
 			{
-				igText( iwad.full_path.c_str() );
+				igText( pwad.full_path.c_str() );
 			}
 		}
 
