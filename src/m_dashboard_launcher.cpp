@@ -24,6 +24,7 @@
 
 #include "m_config.h"
 #include "m_container.h"
+#include "m_misc.h"
 
 #include "v_patch.h"
 #include "v_video.h"
@@ -292,14 +293,15 @@ namespace launcher
 		return entry;
 	}
 
+	using WADEntries = std::vector< WADEntry >;
+
 	class WADList
 	{
-		using WADEntries = std::vector< WADEntry >;
-
 	public:
 		WADList()
 			: threaded_context( nullptr )
 			, lists_ready( false )
+			, abort_work( false )
 		{
 			KickoffPopulate();
 		}
@@ -308,6 +310,7 @@ namespace launcher
 		{
 			if( worker_thread->joinable() )
 			{
+				abort_work = true;
 				worker_thread->join();
 			}
 
@@ -346,6 +349,11 @@ namespace launcher
 			{
 				for( auto file : dir )
 				{
+					if( abort_work.load() == true )
+					{
+						break;
+					}
+
 					std::string pathstring = file.path().string();
 
 					if( std::regex_match( pathstring, WADRegex ) )
@@ -358,10 +366,9 @@ namespace launcher
 			}
 
 			glFlush();
-
 			SDL_GL_DeleteContext( threaded_context );
 
-			lists_ready = true;
+			lists_ready = !abort_work.load();
 		}
 
 		INLINE bool ListsReady() { return lists_ready.load(); }
@@ -370,7 +377,178 @@ namespace launcher
 		WADEntries				PWADs;
 		SDL_GLContext			threaded_context;
 		std::atomic< bool >		lists_ready;
+		std::atomic< bool >		abort_work;
 		std::thread*			worker_thread;
+	};
+
+	void igCentreNextElement( float_t width )
+	{
+		float_t centre = igGetWindowContentRegionWidth() * 0.5f;
+		ImVec2 cursor;
+		igGetCursorPos( &cursor );
+		cursor.x += ( centre - width / 2 );
+		igSetCursorPos( cursor );
+	}
+
+	template< typename... _args >
+	void igCentreText( const char* string, _args&... args )
+	{
+		ImVec2 textsize;
+		char buffer[ 1024 ];
+
+		M_snprintf( buffer, 1024, string, args... );
+		igCalcTextSize( &textsize, buffer, nullptr, false, -1 );
+		igCentreNextElement( textsize.x );
+		igText( buffer );
+	}
+
+	class IWADSelector
+	{
+	public:
+		IWADSelector( )
+			: iwads( nullptr )
+		{
+		}
+
+		void Setup( WADEntries& entries )
+		{
+			iwads = &entries;
+			if( !iwads->empty() )
+			{
+				left = --iwads->end();
+				middle = iwads->begin();
+				right = ++iwads->begin();
+				if( right == iwads->end() )
+				{
+					right = iwads->begin();
+				}
+			}
+			else
+			{
+				left = middle = right = iwads->end();
+			}
+		}
+
+		INLINE bool Valid() const { return iwads != nullptr && middle != iwads->end(); }
+
+		void CycleLeft()
+		{
+			right = middle;
+			middle = left;
+			if( left == iwads->begin() )
+			{
+				left = --iwads->end();
+			}
+			else
+			{
+				--left;
+			}
+		}
+
+		void CycleRight()
+		{
+			left = middle;
+			middle = right;
+			if( ++right == iwads->end() )
+			{
+				right = iwads->begin();
+			}
+		}
+
+		void Render()
+		{
+			ImVec2 basecursor;
+			ImVec2 contentregion;
+			igGetCursorPos( &basecursor );
+			igGetContentRegionAvail( &contentregion );
+
+			ImVec2 arrowsize = { 20, 140 };
+
+			ImVec2 nextcursor = basecursor;
+			nextcursor.y += arrowsize.y * 0.5f;
+			igSetCursorPos( nextcursor );
+			if( igArrowButtonEx( "iwad_left", ImGuiDir_Left, arrowsize, ImGuiButtonFlags_None ) )
+			{
+				CycleLeft();
+			}
+
+			nextcursor.x += contentregion.x - arrowsize.x;
+			igSetCursorPos( nextcursor );
+			if( igArrowButtonEx( "iwad_right", ImGuiDir_Right, arrowsize, ImGuiButtonFlags_None ) )
+			{
+				CycleRight();
+			}
+
+			nextcursor = basecursor;
+			nextcursor.x += arrowsize.x;
+			igSetCursorPos( nextcursor );
+
+			ImVec2 framesize = { contentregion.x - arrowsize.x * 2, 280 };
+
+			if( igBeginChildFrame( 667, framesize, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			{
+				constexpr ImVec2 tl = { 0, 0 };
+				constexpr ImVec2 br = { 1, 1 };
+				constexpr ImVec4 border = { 0, 0, 0, 0 };
+				constexpr ImVec4 focustint = { 1, 1, 1, 1 };
+				constexpr ImVec4 nofocustint = { 0.6, 0.6, 0.6, 0.5 };
+				constexpr ImVec2 left_tl = { 0.5, 0 };
+				constexpr ImVec2 right_br = { 0.5, 1 };
+				constexpr float_t nofocusscale = 0.4;
+
+				ImVec2 framecursor;
+
+				igGetCursorPos( &framecursor );
+
+				{
+					nextcursor = framecursor;
+					ImVec2 imgsize = { left->titlepic.width * nofocusscale, left->titlepic.height * 1.2f * nofocusscale };
+					nextcursor.y += ( framesize.y - imgsize.y ) * 0.5;
+					igSetCursorPos( nextcursor );
+					igImage( I_TextureGetHandle( left->titlepic.tex ), imgsize, left_tl, br, nofocustint, border );
+				}
+
+				{
+					nextcursor = framecursor;
+					ImVec2 imgsize = { right->titlepic.width * nofocusscale, right->titlepic.height * 1.2f * nofocusscale };
+					nextcursor.x += framesize.x - imgsize.x;
+					nextcursor.y += ( framesize.y - imgsize.y ) * 0.5;
+					igSetCursorPos( nextcursor );
+					igImage( I_TextureGetHandle( right->titlepic.tex ), imgsize, tl, right_br, nofocustint, border );
+				}
+
+				igSetCursorPos( framecursor );
+				if( middle->titlepic.tex )
+				{
+					igCentreNextElement( middle->titlepic.width );
+
+					ImVec2 size = { (float_t)middle->titlepic.width, middle->titlepic.height * 1.2f };
+					igImage( I_TextureGetHandle( middle->titlepic.tex ), size, tl, br, focustint, border );
+
+					igCentreText( middle->filename.c_str() );
+					igCentreText( "%s, %s", GameModes[ middle->game_mode ], GameVariants[ middle->game_variant ] );
+				}
+				else
+				{
+					igText( middle->full_path.c_str() );
+				}
+			}
+			igEndChildFrame();
+		}
+	private:
+		WADEntries*				iwads;
+		WADEntries::iterator	left;
+		WADEntries::iterator	middle;
+		WADEntries::iterator	right;
+	};
+
+	class LoadingIcon
+	{
+	public:
+		void Render() { }
+
+	private:
+		Image*					spinner;
 	};
 }
 
@@ -386,6 +564,8 @@ DoomString M_DashboardLauncherWindow()
 	SDL_Renderer* renderer = I_GetRenderer();
 
 	launcher::WADList launcher;
+	launcher::IWADSelector iwadselector;
+	bool setupselector = false;
 
 	bool readytolaunch = false;
 	while( !readytolaunch )
@@ -401,40 +581,37 @@ DoomString M_DashboardLauncherWindow()
 			M_DashboardResponder( ev );
 		}
 
+		if( !setupselector && launcher.ListsReady() )
+		{
+			iwadselector.Setup( launcher.IWADs );
+			setupselector = true;
+		}
+
 		SDL_RenderClear( renderer );
 
 		M_DashboardPrepareRender();
-		if( igButton( "Cool, just play", ImVec2() ) )
+
+		constexpr ImVec2 zero = { 0, 0 };
+		constexpr int32_t windowflags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
+
+		M_DashboardApplyTheme();
+
+		ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 750.f ), M_MIN( igGetIO()->DisplaySize.y, 580.f ) };
+		ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
+		igSetNextWindowSize( windowsize, ImGuiCond_Always );
+		igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
+		if( igBegin( "Launcher", NULL, windowflags ) )
 		{
-			readytolaunch = true;
-		}
-		if( launcher.ListsReady() )
-		{
-			for( auto& iwad : launcher.IWADs )
+			if( launcher.ListsReady() )
 			{
-				if( iwad.titlepic.tex )
-				{
-					constexpr ImVec2 tl = { 0, 0 };
-					constexpr ImVec2 br = { 1, 1 };
-					constexpr ImVec4 tint = { 1, 1, 1, 1 };
-					constexpr ImVec4 border = { 0, 0, 0, 0 };
-					ImVec2 size = { iwad.titlepic.width, iwad.titlepic.height * 1.2f };
-					igImage( I_TextureGetHandle( iwad.titlepic.tex ), size, tl, br, tint, border );
-					igText( iwad.filename.c_str() );
-					igText( "%s, %s", GameModes[ iwad.game_mode ], GameVariants[ iwad.game_variant ] );
-					igNewLine();
-				}
-				else
-				{
-					igText( iwad.full_path.c_str() );
-				}
+				iwadselector.Render();
 			}
-			igText( "PWADS:" );
-			for( auto& pwad : launcher.PWADs )
+			if( igButton( "Cool, just play", ImVec2() ) )
 			{
-				igText( pwad.full_path.c_str() );
+				readytolaunch = true;
 			}
 		}
+		igEnd();
 
 		M_DashboardFinaliseRender();
 
