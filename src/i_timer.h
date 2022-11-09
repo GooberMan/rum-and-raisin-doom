@@ -21,37 +21,28 @@
 #ifndef __I_TIMER__
 #define __I_TIMER__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "doomtype.h"
 
 #define TICRATE 35
 
 // Called by D_DoomLoop,
 // returns current time in tics.
-uint64_t I_GetTimeTicks( void );
+DOOM_C_API uint64_t I_GetTimeTicks( void );
 
 // returns current time in ms
-uint64_t I_GetTimeMS( void );
+DOOM_C_API uint64_t I_GetTimeMS( void );
 
 // returns current time in microseconds
-uint64_t I_GetTimeUS( void );
+DOOM_C_API uint64_t I_GetTimeUS( void );
 
 // Pause for a specified number of ms
-void I_Sleep( uint64_t ms );
+DOOM_C_API void I_Sleep( uint64_t ms );
 
 // Initialize timer
-void I_InitTimer( void );
+DOOM_C_API void I_InitTimer( void );
 
 // Wait for vertical retrace or pause a bit.
-void I_WaitVBL( uint64_t count );
-
-#ifdef __cplusplus
-}
-#endif
-
+DOOM_C_API void I_WaitVBL( uint64_t count );
 
 #endif
 
