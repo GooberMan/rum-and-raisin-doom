@@ -29,8 +29,8 @@ DOOM_C_API typedef struct hwtexture_s hwtexture_t;
 DOOM_C_API typedef enum vsync_e
 {
 	VSync_Off,
-	VSync_Native,
 	VSync_Adaptive,
+	VSync_Native,
 	VSync_35Hz,
 	VSync_36Hz,
 	VSync_40Hz,

@@ -72,8 +72,8 @@ typedef struct vsyncsupport_s
 static vsyncsupport_t vsync_modes[ VSync_Max ] =
 {
 	{ true,		0,		0	},		// VSync_Off
-	{ true,		-1,		1	},		// VSync_Native
 	{ false,	-1,		-1	},		// VSync_Adaptive
+	{ true,		-1,		1	},		// VSync_Native
 	{ false,	35,		0	},		// VSync_36Hz
 	{ false,	36,		0	},		// VSync_35Hz
 	{ false,	40,		0	},		// VSync_40Hz
