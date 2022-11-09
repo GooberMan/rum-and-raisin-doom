@@ -2405,6 +2405,8 @@ static windowsizes_t render_sizes[] =
 	WINDOWDIM_NAMED_SCALED( 426,	200,	"Vanilla Widescreen" ),
 	WINDOWDIM_NAMED_SCALED( 640,	400,	"Crispy Doom" ),
 	WINDOWDIM_NAMED_SCALED( 854,	400,	"Crispy Doom Widescreen" ),
+	WINDOWDIM_NAMED_SCALED( 960,	600,	"Unity Port 4:3" ),
+	WINDOWDIM_NAMED_SCALED( 1280,	600,	"Unity Port 16:9" ),
 };
 
 static int32_t render_sizes_count = sizeof( render_sizes ) / sizeof( *render_sizes );
@@ -2712,8 +2714,8 @@ controldesc_t mousemappings[] =
 static const char* vsync_strings[ VSync_Max ] =
 {
 	"Off",				// VSync_Off
-	"Native",			// VSync_Native
 	"Adaptive",			// VSync_Adaptive
+	"Native",			// VSync_Native
 	"35Hz",				// VSync_35Hz
 	"36Hz",				// VSync_36Hz
 	"40Hz",				// VSync_40Hz
