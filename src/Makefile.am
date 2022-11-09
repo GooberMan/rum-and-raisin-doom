@@ -98,6 +98,7 @@ m_config.c           m_config.h            \
 m_container.h                              \
 m_controls.c         m_controls.h          \
 m_dashboard.cpp      m_dashboard.h         \
+m_dashboard_font_inconsolata.cpp           \
 m_dashboard_launcher.cpp                   \
 m_fixed.c m_fixed.h m_fixed.inl            \
 m_launcher.cpp       m_launcher.h          \

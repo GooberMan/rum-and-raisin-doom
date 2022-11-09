@@ -537,6 +537,7 @@
     <ClInclude Include="..\src\m_argv.h" />
     <ClCompile Include="..\src\m_dashboard.cpp" />
     <ClCompile Include="..\src\d_gameflow_dmapinfo.cpp" />
+    <ClCompile Include="..\src\m_dashboard_font_inconsolata.cpp" />
     <ClCompile Include="..\src\m_dashboard_launcher.cpp" />
     <ClCompile Include="..\src\m_launcher.cpp" />
     <ClCompile Include="..\src\m_misc.c" />
