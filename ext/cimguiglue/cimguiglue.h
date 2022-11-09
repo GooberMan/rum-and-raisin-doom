@@ -44,6 +44,8 @@ CIMGUI_API void igImageQuad( ImTextureID user_texture_id, const ImVec2 size, con
 CIMGUI_API void igPushScrollableArea( const char* ID, ImVec2 size );
 CIMGUI_API void igPopScrollableArea( void );
 
+CIMGUI_API void igFontConfigConstruct( ImFontConfig* config );
+
 // Helpers macros to generate 32-bit encoded colors
 #ifdef IMGUI_USE_BGRA_PACKED_COLOR
 #define IM_COL32_R_SHIFT    16

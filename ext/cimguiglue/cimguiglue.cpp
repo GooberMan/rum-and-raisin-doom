@@ -108,3 +108,9 @@ CIMGUI_API void igPopScrollableArea( void )
 	igPopID();
 }
 
+inline void* operator new( size_t allocsize, void* ptr ) { return ptr; }
+
+CIMGUI_API void igFontConfigConstruct( ImFontConfig* config )
+{
+	new( (void*)config ) ImFontConfig();
+}
