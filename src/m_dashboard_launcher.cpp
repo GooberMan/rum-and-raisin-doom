@@ -17,6 +17,7 @@
 
 #include "i_log.h"
 #include "i_system.h"
+#include "i_timer.h"
 #include "i_video.h"
 
 #include "d_iwad.h"
@@ -69,6 +70,27 @@ constexpr const char* GameVariants[] =
 	"BFG Edition",
 	"Unity Port"
 };
+
+void igCentreNextElement( float_t width )
+{
+	float_t centre = igGetWindowContentRegionWidth() * 0.5f;
+	ImVec2 cursor;
+	igGetCursorPos( &cursor );
+	cursor.x += ( centre - width / 2 );
+	igSetCursorPos( cursor );
+}
+
+template< typename... _args >
+void igCentreText( const char* string, _args&... args )
+{
+	ImVec2 textsize;
+	char buffer[ 1024 ];
+
+	M_snprintf( buffer, 1024, string, args... );
+	igCalcTextSize( &textsize, buffer, nullptr, false, -1 );
+	igCentreNextElement( textsize.x );
+	igText( buffer );
+}
 
 namespace launcher
 {
@@ -381,27 +403,6 @@ namespace launcher
 		std::thread*			worker_thread;
 	};
 
-	void igCentreNextElement( float_t width )
-	{
-		float_t centre = igGetWindowContentRegionWidth() * 0.5f;
-		ImVec2 cursor;
-		igGetCursorPos( &cursor );
-		cursor.x += ( centre - width / 2 );
-		igSetCursorPos( cursor );
-	}
-
-	template< typename... _args >
-	void igCentreText( const char* string, _args&... args )
-	{
-		ImVec2 textsize;
-		char buffer[ 1024 ];
-
-		M_snprintf( buffer, 1024, string, args... );
-		igCalcTextSize( &textsize, buffer, nullptr, false, -1 );
-		igCentreNextElement( textsize.x );
-		igText( buffer );
-	}
-
 	class IWADSelector
 	{
 	public:
@@ -568,6 +569,7 @@ DoomString M_DashboardLauncherWindow()
 	bool setupselector = false;
 
 	bool readytolaunch = false;
+
 	while( !readytolaunch )
 	{
 		I_StartTic();
@@ -593,22 +595,83 @@ DoomString M_DashboardLauncherWindow()
 
 		constexpr ImVec2 zero = { 0, 0 };
 		constexpr int32_t windowflags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
+		constexpr int32_t loadingflags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs;
 
 		M_DashboardApplyTheme();
 
-		ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 750.f ), M_MIN( igGetIO()->DisplaySize.y, 580.f ) };
-		ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
-		igSetNextWindowSize( windowsize, ImGuiCond_Always );
-		igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
-		if( igBegin( "Launcher", NULL, windowflags ) )
+		if( setupselector )
 		{
-			if( launcher.ListsReady() )
+			ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 750.f ), M_MIN( igGetIO()->DisplaySize.y, 580.f ) };
+			ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
+			igSetNextWindowSize( windowsize, ImGuiCond_Always );
+			igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
+
+			if( igBegin( "Launcher", NULL, windowflags ) )
 			{
 				iwadselector.Render();
+				if( igButton( "Cool, just play", ImVec2() ) )
+				{
+					readytolaunch = true;
+				}
 			}
-			if( igButton( "Cool, just play", ImVec2() ) )
+		}
+		else
+		{
+			constexpr ImVec2 windowsize = { 140.f, 175.f };
+			constexpr ImVec2 loadingradius = { windowsize.x * 0.4, windowsize.x * 0.2 };
+
+			ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
+			igSetNextWindowSize( windowsize, ImGuiCond_Always );
+			igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
+
+			if( igBegin( "Launcher_Loading", NULL, loadingflags ) )
 			{
-				readytolaunch = true;
+				constexpr double_t cycletime = 0.5;
+				constexpr double_t pi2 = M_PI * 2.0;
+
+				double_t rotationpercent = fmod( I_GetTimeUS() / 1000000.0, cycletime ) / cycletime;
+				double_t angle = rotationpercent * pi2;
+
+				ImVec2 basecursor;
+				ImVec2 contentregion;
+				igGetCursorScreenPos( &basecursor );
+				igGetContentRegionAvail( &contentregion );
+				ImVec2 iconcursor = { basecursor.x + contentregion.x * 0.5, basecursor.y + contentregion.x * 0.5 };
+				igGetCursorPos( &basecursor );
+
+				auto rotate = [ &angle, &iconcursor ]( ImVec2& vec )
+				{
+					double_t currsin = sin( angle );
+					double_t currcos = cos( angle );
+					ImVec2 ogvec = vec;
+					vec.x = iconcursor.x
+								+ currcos * ogvec.x
+								- currsin * ogvec.y;
+					vec.y = iconcursor.y
+								+ currsin * ogvec.x
+								+ currcos * ogvec.y;
+				};
+
+				ImVec2 points[] =
+				{
+					{ 0, loadingradius.y },		{ loadingradius.x, 0 },
+					{ 0, -loadingradius.y },	{ -loadingradius.x, 0 },
+				};
+
+				rotate( points[ 0 ] );
+				rotate( points[ 1 ] );
+				rotate( points[ 2 ] );
+				rotate( points[ 3 ] );
+
+				ImDrawList* drawlist = igGetWindowDrawList();
+				ImDrawList_AddTriangleFilled( drawlist, iconcursor, points[ 0 ], points[ 1 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
+				ImDrawList_AddTriangleFilled( drawlist, iconcursor, points[ 2 ], points[ 3 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
+
+				iconcursor = basecursor;
+				iconcursor.y += contentregion.x + 3.f;
+				igSetCursorPos( iconcursor );
+				igCentreText( "Updating WAD" );
+				igCentreText( "dictionary" );
 			}
 		}
 		igEnd();
