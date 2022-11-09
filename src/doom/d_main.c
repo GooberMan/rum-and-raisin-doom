@@ -239,7 +239,7 @@ boolean D_Display( double_t framepercent )
 
 	boolean ispaused = renderpaused = ( paused
 										|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) ) );
-	renderpaused |= menuactive;
+	renderpaused |= ( menuactive && !demoplayback );
 
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -575,14 +575,15 @@ void D_RunFrame()
 			R_RenderDimensionsChanged();
 		}
 
+		// There's a bug here. Because calculating the next tick still gets latest,
+		// which is just enough to kick it over to the next tick and invalidate this
+		// percentage
 		double_t	currmicroseconds = I_GetTimeUS() % 1000000;
 		double_t	currtickbase = floor( ( currmicroseconds / 1000000.0 ) * 35.0 );
 		double_t	nexttickbase = currtickbase + 1;
 		double_t	currtick = ( currtickbase * 1000000.0 ) / 35.0;
 		double_t	nexttick = ( nexttickbase * 1000000.0 ) / 35.0;
-		// This is still not smooth enough, need to clamp to the next presentable frame.
-		// This also means working out what the monitor refresh rate is, so that we're
-		// not blindly clamping to intervals of 60.
+
 		currpercentage = ( currmicroseconds - currtick ) / ( nexttick - currtick );
 
 		// This code gives negative percentages, so we need to increment percentage by
