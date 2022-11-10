@@ -24,16 +24,26 @@
 #include "SDL_stdinc.h"
 
 #include "doomtype.h"
+
 #include "d_iwad.h"
+
 #include "i_system.h"
+
+#include "m_argv.h"
+#include "m_container.h"
 #include "m_misc.h"
-#include "m_argv.h"  // haleyjd 20110212: warning fix
 
-int		myargc;
-char**		myargv;
+extern "C"
+{
+	int						myargc;
+	const char**			myargv;
+}
 
-
-
+// This is a bit of a bodge until I properly rewrite this file in C++
+std::vector< const char* >	argvlist;
+std::vector< DoomString >	argvstorage;
+int							originalargc;
+const char**				originalargv;
 
 //
 // M_CheckParm
@@ -81,7 +91,7 @@ static void LoadResponseFile(int argv_index, const char *filename)
     int size;
     char *infile;
     char *file;
-    char **newargv;
+    const char **newargv;
     int newargc;
     int i, k;
 
@@ -103,7 +113,7 @@ static void LoadResponseFile(int argv_index, const char *filename)
     // at the end of the response file, in which case a '\0' will be
     // needed.
 
-    file = malloc(size + 1);
+    file = (char*)malloc(size + 1);
 
     i = 0;
 
@@ -123,7 +133,7 @@ static void LoadResponseFile(int argv_index, const char *filename)
 
     // Create new arguments list array
 
-    newargv = malloc(sizeof(char *) * MAXARGVS);
+    newargv = (const char**)malloc(sizeof(char *) * MAXARGVS);
     newargc = 0;
     memset(newargv, 0, sizeof(char *) * MAXARGVS);
 
@@ -311,7 +321,7 @@ static int GuessFileType(const char *name)
 
 typedef struct
 {
-    char *str;
+    const char *str;
     int type, stable;
 } argument_t;
 
@@ -328,7 +338,7 @@ static int CompareByFileType(const void *a, const void *b)
 void M_AddLooseFiles(void)
 {
     int i, types = 0;
-    char **newargv;
+    const char **newargv;
     argument_t *arguments;
 
     if (myargc < 2)
@@ -338,7 +348,7 @@ void M_AddLooseFiles(void)
 
     // allocate space for up to three additional regular parameters
 
-    arguments = malloc((myargc + 3) * sizeof(*arguments));
+    arguments = (argument_t*)malloc((myargc + 3) * sizeof(*arguments));
     memset(arguments, 0, (myargc + 3) * sizeof(*arguments));
 
     // check the command line and make sure it does not already
@@ -347,7 +357,7 @@ void M_AddLooseFiles(void)
 
     for (i = 1; i < myargc; i++)
     {
-        char *arg = myargv[i];
+        const char *arg = myargv[i];
         int type;
 
         if (strlen(arg) < 3 ||
@@ -390,7 +400,7 @@ void M_AddLooseFiles(void)
         myargc++;
     }
 
-    newargv = malloc(myargc * sizeof(*newargv));
+    newargv = (const char**)malloc( myargc * sizeof( *newargv ) );
 
     // sort the argument list by file type, except for the zeroth argument
     // which is the executable invocation itself
@@ -417,3 +427,32 @@ const char *M_GetExecutableName(void)
     return M_BaseName(myargv[0]);
 }
 
+void M_AddAdditionalArgs( std::vector< DoomString > newargs )
+{
+	originalargc = myargc;
+	originalargv = myargv;
+
+	if( std::find( newargs.begin(), newargs.end(), "-iwad" ) != newargs.end() )
+	{
+		int32_t iwadindex = M_CheckParmWithArgs( "-iwad", 1 );
+		myargv[ iwadindex ] = "-_";
+	}
+
+	size_t totalargs = myargc + newargs.size();
+
+	argvlist.reserve( totalargs );
+	argvstorage = newargs;
+
+	for( int32_t currarg : iota( 0, myargc ) )
+	{
+		argvlist.push_back( myargv[ currarg ] );
+	}
+
+	for( DoomString& currarg : argvstorage )
+	{
+		argvlist.push_back( currarg.c_str() );
+	}
+
+	myargc = argvlist.size();
+	myargv = argvlist.data();
+}

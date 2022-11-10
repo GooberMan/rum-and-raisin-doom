@@ -7,9 +7,6 @@
     <ClCompile Include="..\src\i_system.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\m_argv.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\m_misc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -230,6 +227,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\m_dashboard_font_inconsolata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\m_argv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

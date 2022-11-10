@@ -25,8 +25,8 @@
 //
 // MISC
 //
-DOOM_C_API extern  int	myargc;
-DOOM_C_API extern  char**	myargv;
+DOOM_C_API extern  int				myargc;
+DOOM_C_API extern  const char**		myargv;
 
 // Returns the position of the given parameter
 // in the arg list (0 if not found).
@@ -46,5 +46,13 @@ DOOM_C_API boolean M_ParmExists(const char *check);
 // Get name of executable used to run this program:
 
 DOOM_C_API const char *M_GetExecutableName(void);
+
+#if defined( __cplusplus )
+
+#include "m_container.h"
+
+void M_AddAdditionalArgs( std::vector< DoomString > newargs );
+
+#endif // defined( __cplusplus )
 
 #endif

@@ -30,7 +30,7 @@ AM_CXXFLAGS = -I$(top_srcdir)/ext/cimgui                     \
 COMMON_SOURCE_FILES=\
 i_main.c                                   \
 i_system.c           i_system.h            \
-m_argv.c             m_argv.h              \
+m_argv.cpp           m_argv.h              \
 m_misc.c             m_misc.h
 
 # Dedicated server (chocolate-server):
@@ -228,7 +228,7 @@ endif
 midiread : midifile.c
 	$(CC) -DTEST $(CFLAGS) @LDFLAGS@ midifile.c -o $@
 
-MUS2MID_SRC_FILES = mus2mid.c memio.c z_native.c i_system.c m_argv.c m_misc.c
+MUS2MID_SRC_FILES = mus2mid.c memio.c z_native.c i_system.c m_argv.cpp m_misc.c
 mus2mid : $(MUS2MID_SRC_FILES)
 	$(CC) -DSTANDALONE -I$(top_builddir) $(CFLAGS) @LDFLAGS@ \
               $(MUS2MID_SRC_FILES) -o $@
