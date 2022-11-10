@@ -101,6 +101,7 @@ m_dashboard.cpp      m_dashboard.h         \
 m_dashboard_font_inconsolata.cpp           \
 m_dashboard_launcher.cpp                   \
 m_fixed.c m_fixed.h m_fixed.inl            \
+m_json.cpp           m_json.h              \
 m_launcher.cpp       m_launcher.h          \
 m_profile.cpp        m_profile.h           \
 net_client.c         net_client.h          \

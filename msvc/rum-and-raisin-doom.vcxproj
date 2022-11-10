@@ -539,9 +539,12 @@
     <ClCompile Include="..\src\d_gameflow_dmapinfo.cpp" />
     <ClCompile Include="..\src\m_dashboard_font_inconsolata.cpp" />
     <ClCompile Include="..\src\m_dashboard_launcher.cpp" />
+    <ClCompile Include="..\src\m_json.cpp" />
     <ClCompile Include="..\src\m_launcher.cpp" />
     <ClCompile Include="..\src\m_misc.c" />
+    <ClInclude Include="..\src\m_conv.h" />
     <ClInclude Include="..\src\m_dashboard.h" />
+    <ClInclude Include="..\src\m_json.h" />
     <ClInclude Include="..\src\m_launcher.h" />
     <ClInclude Include="..\src\m_misc.h" />
     <ClCompile Include="..\src\aes_prng.c" />
