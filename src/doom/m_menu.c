@@ -2290,6 +2290,15 @@ typedef struct windowsizes_s
 #define WINDOW_MINWIDTH 800
 #define WINDOW_MINHEIGHT 600
 
+static windowsizes_t window_size_match =
+{
+	-1,
+	-1,
+	res_unknown,
+	1,
+	"Match window"
+};
+
 static windowsizes_t window_sizes_scaled[] =
 {
 	// It doesn't make much sense to allow lower resolutions than 800x600 for Rum and Raisin.
@@ -3038,7 +3047,7 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 	igPopID();
 }
 
-windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windowsizes_t* sizes, int32_t numsizes, int32_t currwidth, int32_t currheight )
+windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windowsizes_t* sizes, int32_t numsizes, int32_t currwidth, int32_t currheight, windowsizes_t* special, boolean specialselected )
 {
 	windowsizes_t* set = NULL;
 
@@ -3046,6 +3055,11 @@ windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windo
 
 	if( igBeginCombo( "", preview, ImGuiWindowFlags_None ) )
 	{
+		if( special && igSelectableBool( special->asstring, specialselected, ImGuiSelectableFlags_None, zerosize ) )
+		{
+			set = special;
+		}
+
 		for( int32_t currcat = 0; currcat < res_unknown; ++currcat )
 		{
 			int32_t catcount = 0;
@@ -3106,7 +3120,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t maxrendercontexts;
 	extern int32_t vsync_mode;
 	extern int32_t wipe_style;
-	extern int32_t render_dimensions_mode;
+	extern int32_t render_match_window;
 	extern int32_t dynamic_resolution_scaling;
 
 	controlsection_t*	currsection;
@@ -3256,7 +3270,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igPushItemWidth( 180.f );
 				windowsizes_t* newresolution = M_DashboardResolutionPicker( &window_dimensions_current, window_dimensions_current
 																			, window_sizes_scaled, window_sizes_scaled_count
-																			, window_width, window_height );
+																			, window_width, window_height, NULL, false );
 				if( newresolution )
 				{
 					window_dimensions_current = newresolution->asstring;
@@ -3320,40 +3334,13 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igColumns( 2, "", false );
 				igSetColumnWidth( 0, columwidth );
 
-#if 0
-				igText( "Match window size" );
-				igNextColumn();
-				igPushItemWidth( 180.f );
-				igPushIDPtr( &render_dimensions_mode );
-				WorkingBool = false;
-				WorkingInt = render_dimensions_mode == RD_MatchWindow;
-				if( igCheckbox( "", (bool*)&WorkingInt ) )
-				{
-					render_dimensions_mode = WorkingInt ? RD_MatchWindow : RD_Independent;
-					if( render_dimensions_mode == RD_MatchWindow )
-					{
-						I_SetRenderDimensions( window_width, window_height, 1 );
-					}
-				}
-				igPopID();
-				igNextColumn();
-#endif
-
 				igText( "Size" );
 				igNextColumn();
 				igPushItemWidth( 180.f );
 
-				const char* workingstring = render_dimensions_current;
-				if( render_dimensions_mode == RD_MatchWindow )
-				{
-					igPushItemFlag( ImGuiItemFlags_Disabled, true );
-					igPushStyleVarFloat( ImGuiStyleVar_Alpha, 0.2f );
-					workingstring = "Matches window";
-				}
-
-				windowsizes_t* newresolution = M_DashboardResolutionPicker( &render_dimensions_current, workingstring
+				windowsizes_t* newresolution = M_DashboardResolutionPicker( &render_dimensions_current, render_dimensions_current
 																			, render_sizes, render_sizes_count
-																			, render_width, render_height );
+																			, render_width, render_height, &window_size_match, render_match_window );
 				if( newresolution )
 				{
 					const char* newstring = newresolution->asstring;
@@ -3365,14 +3352,16 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 						}
 					}
 					render_dimensions_current = newstring;
-					I_SetRenderDimensions( newresolution->width, newresolution->height, newresolution->postscaling );
-					R_RebalanceContexts();
-				}
 
-				if( render_dimensions_mode == RD_MatchWindow )
-				{
-					igPopItemFlag();
-					igPopStyleVar( 1 );
+					if( newresolution->width < 0 || newresolution->height < 0 )
+					{
+						I_SetRenderMatchWindow();
+					}
+					else
+					{
+						I_SetRenderDimensions( newresolution->width, newresolution->height, newresolution->postscaling );
+					}
+					R_RebalanceContexts();
 				}
 
 				igPopItemWidth();
@@ -3769,25 +3758,33 @@ void M_DashboardOptionsInit()
 {
 	extern int window_width;
 	extern int window_height;
+	extern int32_t render_match_window;
 
 	int32_t index;
 
 	window_width_working = window_width;
 	window_height_working = window_height;
 
-	for( index = 0; index < window_sizes_scaled_count; ++index )
+	if( render_match_window )
 	{
-		if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
-		{
-			window_dimensions_current = window_sizes_scaled[ index ].asstring;
-		}
+		render_dimensions_current = window_size_match.asstring;
 	}
-
-	for( index = 0; index < render_sizes_count; ++index )
+	else
 	{
-		if( render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height )
+		for( index = 0; index < window_sizes_scaled_count; ++index )
 		{
-			render_dimensions_current = render_sizes[ index ].asstring;
+			if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
+			{
+				window_dimensions_current = window_sizes_scaled[ index ].asstring;
+			}
+		}
+
+		for( index = 0; index < render_sizes_count; ++index )
+		{
+			if( render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height )
+			{
+				render_dimensions_current = render_sizes[ index ].asstring;
+			}
 		}
 	}
 }

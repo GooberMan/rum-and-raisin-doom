@@ -159,11 +159,12 @@ int32_t vsync_mode = VSync_Native;
 #define DEFAULT_RENDER_HEIGHT		800
 #define DEFAULT_RENDER_POSTSCALING	1
 #define DEFAULT_FULLSCREEN			0
+#define DEFAULT_RENDER_MATCH_WINDOW	0
 
 int32_t window_width = DEFAULT_WINDOW_WIDTH;
 int32_t window_height = DEFAULT_WINDOW_HEIGHT;
 
-int32_t render_dimensions_mode = RD_Independent;
+int32_t render_match_window = DEFAULT_RENDER_MATCH_WINDOW;
 int32_t render_width = DEFAULT_RENDER_WIDTH;
 int32_t render_height = DEFAULT_RENDER_HEIGHT;
 int32_t render_post_scaling = DEFAULT_RENDER_POSTSCALING;
@@ -175,6 +176,7 @@ int32_t queued_fullscreen = DEFAULT_FULLSCREEN;
 int32_t queued_render_width = DEFAULT_RENDER_WIDTH;
 int32_t queued_render_height = DEFAULT_RENDER_HEIGHT;
 int32_t queued_render_post_scaling = DEFAULT_RENDER_POSTSCALING;
+int32_t queued_render_match_window = DEFAULT_RENDER_MATCH_WINDOW;
 int32_t queued_num_render_buffers = 1;
 
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
@@ -474,10 +476,10 @@ void I_ToggleFullScreen(void)
 {
 	queued_fullscreen = !fullscreen;
 
-	if( render_dimensions_mode == RD_MatchWindow )
+	if( render_match_window )
 	{
-		queued_render_width = ( fullscreen ? display_width : window_width );
-		queued_render_height = ( fullscreen ? display_height : window_height );
+		queued_render_width = ( queued_fullscreen ? display_width : window_width );
+		queued_render_height = ( queued_fullscreen ? display_height : window_height ) / ( render_post_scaling ? 1.2 : 1.0 );
 	}
 }
 
@@ -485,10 +487,11 @@ void I_SetWindowDimensions( int32_t w, int32_t h )
 {
 	queued_window_width = w;
 	queued_window_height = h;
-	if( render_dimensions_mode == RD_MatchWindow )
+	if( render_match_window )
 	{
 		queued_render_width = w;
-		queued_render_height = h;
+		queued_render_height = h / 1.2;
+		queued_render_post_scaling = 1;
 	}
 }
 
@@ -497,6 +500,15 @@ void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s )
 	queued_render_width = w;
 	queued_render_height = h;
 	queued_render_post_scaling = s;
+	queued_render_match_window = false;
+}
+
+void I_SetRenderMatchWindow( void )
+{
+	queued_render_width = ( fullscreen ? display_width : window_width );
+	queued_render_height = ( fullscreen ? display_height : window_height ) / 1.2;
+	queued_render_post_scaling = 1;
+	queued_render_match_window = true;
 }
 
 void I_GetEvent(void)
@@ -825,10 +837,10 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 				SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 				queued_window_width = window_width;
 				queued_window_height = window_height;
-				if( render_dimensions_mode == RD_MatchWindow )
+				if( render_match_window )
 				{
-					queued_render_width = render_width =		( fullscreen ? display_width : window_width );
-					queued_render_height = render_height =		( fullscreen ? display_height : window_height );
+					queued_render_width =		( fullscreen ? display_width : window_width );
+					queued_render_height =		( fullscreen ? display_height : window_height ) / ( render_post_scaling ? 1.2 : 1.0 );
 				}
             }
             CreateUpscaledTexture();
@@ -1345,10 +1357,10 @@ static void SetVideoMode(void)
 	display_width = mode.w;
 	display_height = mode.h;
 
-	if( render_dimensions_mode == RD_MatchWindow )
+	if( render_match_window )
 	{
 		queued_render_width  = render_width =		( fullscreen ? display_width : window_width );
-		queued_render_height = render_height =		( fullscreen ? display_height : window_height );
+		queued_render_height = render_height =		( fullscreen ? display_height : window_height ) / ( render_post_scaling ? 1.2 : 1.0 );
 	}
 
     w = window_width;
@@ -1547,7 +1559,8 @@ static void I_RefreshRenderBuffers( int32_t numbuffers, int32_t width, int32_t h
 			curr->screenbuffer.user = NULL;
 			curr->screenbuffer.width = height;
 			curr->screenbuffer.height = width;
-			curr->screenbuffer.pitch = curr->screenbuffer.data8bithandle->pitch;
+			// I BROKE PITCH SOMEWHERE IN THE GL RENDERPATH
+			curr->screenbuffer.pitch = height; //curr->screenbuffer.data8bithandle->pitch;
 			curr->screenbuffer.pixel_size_bytes = 1;
 			curr->screenbuffer.mode = VB_Transposed;
 			curr->screenbuffer.verticalscale = 1.2f;
@@ -1629,6 +1642,7 @@ void I_InitGraphics( void )
 	queued_render_width  = render_width;
 	queued_render_height = render_height;
 	queued_render_post_scaling = render_post_scaling;
+	queued_render_match_window = render_match_window;
 
     // Pass through the XSCREENSAVER_WINDOW environment variable to 
     // SDL_WINDOWID, to embed the SDL window into the Xscreensaver
@@ -1722,6 +1736,7 @@ void I_InitBuffers( int32_t numbuffers )
 	queued_render_width  = render_width;
 	queued_render_height = render_height;
 	queued_render_post_scaling = render_post_scaling;
+	queued_render_match_window = render_match_window;
 	I_RefreshRenderBuffers( numbuffers, render_width, render_height );
 
 	buffers_initialised = true;
@@ -1750,10 +1765,12 @@ void I_StartFrame (void)
 
 		if( queued_render_width != render_width
 			|| queued_render_height != render_height
-			|| queued_num_render_buffers != renderbuffercount )
+			|| queued_num_render_buffers != renderbuffercount
+			|| queued_render_match_window != render_match_window )
 		{
 			render_height = blit_rect.w = queued_render_height;
 			render_width  = blit_rect.h = queued_render_width;
+			render_match_window = queued_render_match_window;
 
 			if ( render_post_scaling == 1 )
 			{
@@ -1812,7 +1829,7 @@ void I_BindVideoVariables(void)
 	M_BindIntVariable("render_height",				&render_height);
     M_BindIntVariable("render_post_scaling",		&render_post_scaling);
 	M_BindIntVariable("dynamic_resolution_scaling",	&dynamic_resolution_scaling);
-	M_BindIntVariable("render_dimensions_mode",		&render_dimensions_mode);
+	M_BindIntVariable("render_match_window",		&render_match_window);
 	M_BindIntVariable("vsync_mode",					&vsync_mode);
 
 	// TODO: Move these to R_BindRenderVariables now that it exists

@@ -795,7 +795,7 @@ static default_t extra_defaults_list[] =
     // Backbuffer mode. 0 = match window, 1 = OS scaling, 2 = arbitrary
     //
 
-    CONFIG_VARIABLE_INT(render_dimensions_mode),
+    CONFIG_VARIABLE_INT(render_match_window),
 
 
     //!

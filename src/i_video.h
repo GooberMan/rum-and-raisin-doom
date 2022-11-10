@@ -57,13 +57,6 @@ DOOM_C_API typedef enum vsync_e
 	VSync_Max,
 } vsync_t;
 
-DOOM_C_API typedef enum renderdimensions_e
-{
-	RD_None,
-	RD_MatchWindow,
-	RD_Independent,
-} renderdimensions_t;
-
 // Screen width and height.
 // Every compiler will do literal calculations at compile time these days, so let's be always correct about it.
 // Multiply to big values so that integer divides don't lose information. Convert SCREENHEIGHT to be 16:10 correct,
@@ -114,6 +107,7 @@ DOOM_C_API void I_ShutdownGraphics(void);
 DOOM_C_API void I_ToggleFullScreen(void);
 DOOM_C_API void I_SetWindowDimensions( int32_t w, int32_t h );
 DOOM_C_API void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s );
+DOOM_C_API void I_SetRenderMatchWindow( void );
 
 DOOM_C_API boolean I_VideoSetVSync( vsync_t vsyncval );
 DOOM_C_API vsync_t I_VideoGetVSync( void );
