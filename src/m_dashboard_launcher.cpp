@@ -34,6 +34,8 @@
 #include "SDL_opengl.h"
 
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <chrono>
 #include <ranges>
 #include <regex>
@@ -70,6 +72,8 @@ constexpr const char* GameVariants[] =
 	"BFG Edition",
 	"Unity Port"
 };
+
+constexpr ImVec2 zero = { 0, 0 };
 
 void igCentreNextElement( float_t width )
 {
@@ -114,6 +118,7 @@ namespace launcher
 		DoomString		filename;
 		DoomString		full_path;
 		DoomString		cache_path;
+		DoomString		text_file;
 		uint64_t		file_length;
 		time_t			last_modified;
 		GameMode_t		game_mode;
@@ -305,6 +310,21 @@ namespace launcher
 
 				fclose( file );
 			}
+
+			std::filesystem::path textpath = stdpath;
+			textpath.replace_extension( "txt" );
+			if( std::filesystem::exists( textpath ) )
+			{
+				std::ifstream file( textpath, std::ios::in | std::ios::binary );
+				entry.text_file = DoomString( std::istreambuf_iterator< char >{ file }, { } );
+
+				size_t foundpos = 0;
+				while( ( foundpos = entry.text_file.find( "%", foundpos ) ) != std::string::npos )
+				{
+					entry.text_file.replace( foundpos, 1, "%%" );
+					foundpos += 2;
+				}
+			}
 		}
 
 		if( !titlepic_raw.empty() )
@@ -486,6 +506,8 @@ namespace launcher
 
 			ImVec2 framesize = { contentregion.x - arrowsize.x * 2, 280 };
 
+			igPushStyleVarVec2( ImGuiStyleVar_FramePadding, zero );
+
 			if( igBeginChildFrame( 667, framesize, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 			{
 				constexpr ImVec2 tl = { 0, 0 };
@@ -535,12 +557,84 @@ namespace launcher
 				}
 			}
 			igEndChildFrame();
+
+			igPopStyleVar( 1 );
 		}
 	private:
 		WADEntries*				iwads;
 		WADEntries::iterator	left;
 		WADEntries::iterator	middle;
 		WADEntries::iterator	right;
+	};
+
+	class PWADSelector
+	{
+	public:
+		PWADSelector( )
+			: pwads( nullptr )
+			, current( -1 )
+		{
+		}
+
+		void Setup( WADEntries& entries )
+		{
+			pwads = &entries;
+		}
+
+		INLINE bool Valid() const { return pwads != nullptr; }
+
+		void Render()
+		{
+			ImVec2 framesize;
+			igGetContentRegionAvail( &framesize );
+			framesize.y -= 25;
+
+			igPushStyleVarVec2( ImGuiStyleVar_FramePadding, zero );
+
+			if( igBeginChildFrame( 669, framesize, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			{
+				igColumns( 2, "PWAD_Selector", false );
+				igSetColumnWidth( 0, 150.0f );
+				igSetNextItemWidth( 145.0f );
+
+				auto getter = []( void* data, int idx, const char** out_text )
+				{
+					WADEntries* entries = (WADEntries*)data;
+					if( idx < entries->size() )
+					{
+						WADEntry& entry = (*entries)[ idx ];
+						*out_text = entry.filename.c_str();
+						return true;
+					}
+					return false;
+				};
+
+				igPushIDPtr( this );
+				igListBoxFnBoolPtr( "", &current, getter, (void*)pwads, pwads->size(), 14 );
+				igPopID();
+
+				igNextColumn();
+
+				igGetContentRegionAvail( &framesize );
+				if( igBeginChildFrame( 669, framesize, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar ) )
+				{
+					if( current >= 0 )
+					{
+						igText( (*pwads)[ current ].text_file.c_str() );
+					}
+				}
+				igEndChildFrame();
+
+				igColumns( 1, nullptr, false );
+			}
+			igEndChildFrame();
+
+			igPopStyleVar( 1 );
+		}
+
+	private:
+		WADEntries*				pwads;
+		int32_t					current;
 	};
 
 	class LoadingIcon
@@ -566,6 +660,7 @@ DoomString M_DashboardLauncherWindow()
 
 	launcher::WADList launcher;
 	launcher::IWADSelector iwadselector;
+	launcher::PWADSelector pwadselector;
 	bool setupselector = false;
 
 	bool readytolaunch = false;
@@ -586,6 +681,7 @@ DoomString M_DashboardLauncherWindow()
 		if( !setupselector && launcher.ListsReady() )
 		{
 			iwadselector.Setup( launcher.IWADs );
+			pwadselector.Setup( launcher.PWADs );
 			setupselector = true;
 		}
 
@@ -593,7 +689,6 @@ DoomString M_DashboardLauncherWindow()
 
 		M_DashboardPrepareRender();
 
-		constexpr ImVec2 zero = { 0, 0 };
 		constexpr int32_t windowflags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
 		constexpr int32_t loadingflags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs;
 
@@ -601,7 +696,7 @@ DoomString M_DashboardLauncherWindow()
 
 		if( setupselector )
 		{
-			ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 750.f ), M_MIN( igGetIO()->DisplaySize.y, 580.f ) };
+			ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 750.f ), M_MIN( igGetIO()->DisplaySize.y, 595.f ) };
 			ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
 			igSetNextWindowSize( windowsize, ImGuiCond_Always );
 			igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
@@ -609,6 +704,7 @@ DoomString M_DashboardLauncherWindow()
 			if( igBegin( "Launcher", NULL, windowflags ) )
 			{
 				iwadselector.Render();
+				pwadselector.Render();
 				if( igButton( "Cool, just play", ImVec2() ) )
 				{
 					readytolaunch = true;
