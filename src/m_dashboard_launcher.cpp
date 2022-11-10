@@ -735,7 +735,7 @@ DoomString M_DashboardLauncherWindow()
 				ImVec2 contentregion;
 				igGetCursorScreenPos( &basecursor );
 				igGetContentRegionAvail( &contentregion );
-				ImVec2 iconcursor = { basecursor.x + contentregion.x * 0.5, basecursor.y + contentregion.x * 0.5 };
+				ImVec2 iconcursor = { basecursor.x + contentregion.x * 0.5f, basecursor.y + contentregion.x * 0.5f };
 				igGetCursorPos( &basecursor );
 
 				auto rotate = [ &angle, &iconcursor ]( ImVec2& vec )
