@@ -451,6 +451,7 @@ namespace launcher
 		}
 
 		INLINE bool Valid() const { return iwads != nullptr && middle != iwads->end(); }
+		INLINE WADEntry& Selected() const { return *middle; };
 
 		void CycleLeft()
 		{
@@ -504,7 +505,9 @@ namespace launcher
 			nextcursor.x += arrowsize.x;
 			igSetCursorPos( nextcursor );
 
-			ImVec2 framesize = { contentregion.x - arrowsize.x * 2, 280 };
+			constexpr float_t frameheight = 260.0f;
+
+			ImVec2 framesize = { contentregion.x - arrowsize.x * 2, frameheight };
 
 			igPushStyleVarVec2( ImGuiStyleVar_FramePadding, zero );
 
@@ -548,7 +551,7 @@ namespace launcher
 					ImVec2 size = { (float_t)middle->titlepic.width, middle->titlepic.height * 1.2f };
 					igImage( I_TextureGetHandle( middle->titlepic.tex ), size, tl, br, focustint, border );
 
-					igCentreText( middle->filename.c_str() );
+					//igCentreText( middle->filename.c_str() );
 					igCentreText( "%s, %s", GameModes[ middle->game_mode ], GameVariants[ middle->game_variant ] );
 				}
 				else
@@ -782,6 +785,11 @@ DoomString M_DashboardLauncherWindow()
 	SDL_RenderPresent( renderer );
 
 	dashboardactive = Dash_Inactive;
+
+	if( iwadselector.Valid() )
+	{
+		parameters += "-iwad \"" + iwadselector.Selected().full_path + "\"";
+	}
 #endif // USE_IMGUI
 
 	return parameters;

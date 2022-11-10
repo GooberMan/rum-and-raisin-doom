@@ -24,6 +24,8 @@
 
 #include <cstdio>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #if defined( WIN32 )
 #define popen _popen
@@ -139,6 +141,28 @@ void M_PerformLauncher()
 		else
 		{
 			launcher_args = M_DashboardLauncherWindow();
+		}
+
+		std::vector< DoomString > params;
+		DoomString curr_param;
+
+		std::istringstream argsstream( launcher_args );
+		while( true )
+		{
+			argsstream >> std::quoted( curr_param, '\"', '\0' );
+			if( !argsstream.eof() )
+			{
+				params.push_back( curr_param );
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if( !params.empty() )
+		{
+			M_AddAdditionalArgs( params );
 		}
 	}
 }
