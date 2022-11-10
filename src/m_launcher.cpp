@@ -104,6 +104,11 @@ void M_ScheduleLauncher()
 	schedule_launcher = true;
 }
 
+boolean M_IsLauncherScheduled()
+{
+	return schedule_launcher;
+}
+
 void M_PerformLauncher()
 {
 	int32_t launcher_arg = M_CheckParm( "-launcher" );

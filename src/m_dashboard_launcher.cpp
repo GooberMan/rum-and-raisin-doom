@@ -23,6 +23,7 @@
 #include "d_iwad.h"
 #include "w_wad.h"
 
+#include "m_argv.h"
 #include "m_config.h"
 #include "m_container.h"
 #include "m_misc.h"
@@ -431,15 +432,48 @@ namespace launcher
 		{
 		}
 
-		void Setup( WADEntries& entries )
+		void Setup( WADEntries& entries, const char* defaultiwad )
 		{
 			iwads = &entries;
 			if( !iwads->empty() )
 			{
-				left = --iwads->end();
-				middle = iwads->begin();
-				right = ++iwads->begin();
-				if( right == iwads->end() )
+				if( defaultiwad )
+				{
+					std::filesystem::path iwadpath( defaultiwad );
+					std::string iwadfilename = iwadpath.filename().string();
+
+					middle = std::find_if( iwads->begin(), iwads->end(), [ iwadfilename ]( WADEntry& e )
+					{
+						return std::equal( iwadfilename.begin(), iwadfilename.end()
+											, e.filename.begin(), e.filename.end()
+											, []( char lhs, char rhs )
+											{
+												return tolower( lhs ) == tolower( rhs );
+											} );
+					} );
+
+					if( middle == iwads->end() )
+					{
+						middle = iwads->begin();
+					}
+				}
+				else
+				{
+					middle = iwads->begin();
+				}
+
+				left = middle;
+				if( left == iwads->begin() )
+				{
+					left = --iwads->end();
+				}
+				else
+				{
+					--left;
+				}
+
+				right = middle;
+				if( ++right == iwads->end() )
 				{
 					right = iwads->begin();
 				}
@@ -683,7 +717,13 @@ DoomString M_DashboardLauncherWindow()
 
 		if( !setupselector && launcher.ListsReady() )
 		{
-			iwadselector.Setup( launcher.IWADs );
+			const char* defaultiwad = nullptr;
+			int32_t iwadparam = M_CheckParmWithArgs( "-iwad", 1 );
+			if( iwadparam > 0 )
+			{
+				defaultiwad = myargv[ iwadparam + 1 ];
+			}
+			iwadselector.Setup( launcher.IWADs, defaultiwad );
 			pwadselector.Setup( launcher.PWADs );
 			setupselector = true;
 		}

@@ -941,8 +941,10 @@ static void M_DashboardFirstLaunchWindow()
 		constexpr float framepadding = 10;
 
 		float cursorx = igGetCursorPosX();
+
+		boolean tolauncher = M_IsLauncherScheduled();
 		
-		if( current_launch_state == LS_Options )
+		if( current_launch_state == LS_Options && !tolauncher )
 		{
 			igSetCursorPosX( cursorx + framesize.x - nextbuttonsize.x - launcherbuttonsize.x - buttonpadding - framepadding );
 			if( igButton( "Launcher", launcherbuttonsize ) )
@@ -953,7 +955,7 @@ static void M_DashboardFirstLaunchWindow()
 			igSameLine( 0, -1 );
 		}
 
-		const char* buttontext = current_launch_state == LS_Options ? "Play!" : "Next";
+		const char* buttontext = ( current_launch_state == LS_Options && !tolauncher ) ? "Play!" : "Next";
 		igSetCursorPosX( cursorx + framesize.x - nextbuttonsize.x - framepadding );
 
 		if( igButton( buttontext, nextbuttonsize ) )

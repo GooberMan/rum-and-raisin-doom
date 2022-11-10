@@ -1548,6 +1548,11 @@ void D_DoomMain (void)
 	I_InitGraphics();
 	M_InitDashboard();
 
+	if( M_CheckParm( "-iwad" ) == 0 )
+	{
+		M_ScheduleLauncher();
+	}
+
 	// Before we go in to terminal mode, we want to allow the user to configure all options
 	M_DashboardFirstLaunch();
 	M_PerformLauncher();
