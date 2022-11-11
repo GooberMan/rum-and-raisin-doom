@@ -12,6 +12,8 @@
 // GNU General Public License for more details.
 //
 
+// https://www.doomworld.com/idgames/api/
+
 #include "m_dashboard.h"
 #include "cimguiglue.h"
 
@@ -584,8 +586,6 @@ namespace launcher
 
 					++parsed_files;
 				}
-
-				std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
 			}
 
 			glFlush();
