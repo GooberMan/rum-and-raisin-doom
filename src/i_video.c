@@ -132,8 +132,6 @@ int32_t usemouse = 1;
 
 // Save screenshots in PNG format.
 
-int32_t png_screenshots = 0;
-
 // 0 = original, 1 = INTERPIC
 int32_t border_style = 1;
 
@@ -1823,7 +1821,6 @@ void I_BindVideoVariables(void)
     M_BindIntVariable("grabmouse",                 &grabmouse);
     M_BindStringVariable("window_position",        &window_position);
     M_BindIntVariable("usegamma",                  &usegamma);
-    M_BindIntVariable("png_screenshots",           &png_screenshots);
 
 	M_BindIntVariable("render_width",				&render_width);
 	M_BindIntVariable("render_height",				&render_height);

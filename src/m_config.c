@@ -882,13 +882,6 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(vsync_mode),
 
     //!
-    // If non-zero, save screenshots in PNG format. If zero, screenshots are
-    // saved in PCX format, as Vanilla Doom does.
-    //
-
-    CONFIG_VARIABLE_INT(png_screenshots),
-
-    //!
     // @game doom
     // Values are 0 = original, 1 = INTERPIC
     //
