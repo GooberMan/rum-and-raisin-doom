@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     // save arguments
 
     myargc = argc;
-    myargv = argv;
+    myargv = (const char**)argv;
 
     //!
     // Print the program version and exit.
