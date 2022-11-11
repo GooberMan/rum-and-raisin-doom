@@ -235,6 +235,9 @@
     <ClCompile Include="..\src\m_json.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\m_url.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\i_system.h">
@@ -454,6 +457,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\m_conv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\m_url.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

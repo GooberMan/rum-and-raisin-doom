@@ -69,6 +69,36 @@
     <Import Project="include-textscreen.props" />
     <Import Project="profiling-build.props" Condition="$(Configuration.StartsWith('Debug')) OR $(Configuration.StartsWith('Profiling'))" />
   </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release-Clang|x64'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release-Clang|Win32'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Profiling-Clang|x64'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Profiling-Clang|Win32'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Profiling|Win32'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Profiling|x64'">
+    <Import Project="vcpkg-libs.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
@@ -78,6 +108,9 @@
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgAutoLink>false</VcpkgAutoLink>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -604,8 +637,10 @@
     <ClCompile Include="..\src\m_fixed.c" />
     <ClInclude Include="..\src\m_fixed.h" />
     <ClCompile Include="..\src\m_profile.cpp" />
+    <ClCompile Include="..\src\m_url.cpp" />
     <ClCompile Include="..\src\net_client.c" />
     <ClInclude Include="..\src\m_profile.h" />
+    <ClInclude Include="..\src\m_url.h" />
     <ClInclude Include="..\src\net_client.h" />
     <ClCompile Include="..\src\net_common.c" />
     <ClInclude Include="..\src\net_common.h" />

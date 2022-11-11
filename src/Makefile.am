@@ -96,6 +96,7 @@ m_bbox.c             m_bbox.h              \
 m_cheat.c            m_cheat.h             \
 m_config.c           m_config.h            \
 m_container.h                              \
+m_conv.h                                   \
 m_controls.c         m_controls.h          \
 m_dashboard.cpp      m_dashboard.h         \
 m_dashboard_font_inconsolata.cpp           \
@@ -104,6 +105,7 @@ m_fixed.c m_fixed.h m_fixed.inl            \
 m_json.cpp           m_json.h              \
 m_launcher.cpp       m_launcher.h          \
 m_profile.cpp        m_profile.h           \
+m_url.cpp            m_url.h               \
 net_client.c         net_client.h          \
 net_common.c         net_common.h          \
 net_dedicated.c      net_dedicated.h       \
