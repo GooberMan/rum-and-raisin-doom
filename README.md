@@ -11,3 +11,13 @@ To correctly clone this repository, you will also need to initialise all submodu
 # Compiling on Ubuntu 20.whatever and having Python problems?
 
 `sudo apt-get install python-is-python3`
+
+# Compiling on Windows?
+
+First things first - you'll need to update the property sheets in the msvc folder to point to the correct locations for SDL.
+
+You'll also need to install [vcpkg](https://github.com/Microsoft/vcpkg/) and use the following libraries:
+
+`zlib:x64-windows`
+`libpng:x64-windows`
+`curl:x64-windows`
