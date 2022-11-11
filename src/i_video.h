@@ -26,6 +26,14 @@
 
 DOOM_C_API typedef struct hwtexture_s hwtexture_t;
 
+DOOM_C_API typedef enum hwtextureformat_e
+{
+	Format_RGB8,
+	Format_RGBA8,
+	Format_BGR8,
+	Format_BGRA8,
+} hwtextureformat_t;
+
 DOOM_C_API typedef enum vsync_e
 {
 	VSync_Off,
@@ -96,7 +104,7 @@ DOOM_C_API SDL_Renderer* I_GetRenderer( void );
 DOOM_C_API int64_t I_GetRefreshRate( void );
 DOOM_C_API int64_t I_GetTargetRefreshRate( void );
 
-DOOM_C_API hwtexture_t* I_TextureCreate( int32_t width, int32_t height, void* data );
+DOOM_C_API hwtexture_t* I_TextureCreate( int32_t width, int32_t height, hwtextureformat_t format, void* data );
 DOOM_C_API void* I_TextureGetHandle( hwtexture_t* tex );
 DOOM_C_API void I_TextureDestroy( hwtexture_t* tex );
 

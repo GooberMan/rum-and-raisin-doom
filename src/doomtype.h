@@ -185,6 +185,13 @@ DOOM_C_API typedef struct rgb_s
 	pixel_t b;
 } rgb_t;
 
+DOOM_C_API typedef struct bgr_s
+{
+	pixel_t b;
+	pixel_t g;
+	pixel_t r;
+} bgr_t;
+
 DOOM_C_API typedef struct rgba_s
 {
 	pixel_t r;
@@ -192,6 +199,14 @@ DOOM_C_API typedef struct rgba_s
 	pixel_t b;
 	pixel_t a;
 } rgba_t;
+
+DOOM_C_API typedef struct bgra_s
+{
+	pixel_t b;
+	pixel_t g;
+	pixel_t r;
+	pixel_t a;
+} bgra_t;
 
 #include <limits.h>
 

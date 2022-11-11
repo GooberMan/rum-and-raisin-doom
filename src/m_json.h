@@ -126,10 +126,12 @@ public:
 	}
 
 	template< typename _ty >
+	requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >
 	friend _ty to( const JSONElement& source );
 
 	template< typename _ty >
-	friend _ty& to( const JSONElement& source );
+	requires is_std_string_v< _ty >
+	friend const std::string& to( const JSONElement& source );
 
 private:
 	JSONElement( JSONElementType t )

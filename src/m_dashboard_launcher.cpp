@@ -26,6 +26,7 @@
 #include "m_argv.h"
 #include "m_config.h"
 #include "m_container.h"
+#include "m_json.h"
 #include "m_misc.h"
 
 #include "v_patch.h"
@@ -97,6 +98,41 @@ void igCentreText( const char* string, _args&... args )
 	igText( buffer );
 }
 
+void igProgressBar( float_t progress, float_t height, float_t rounding )
+{
+	ImGuiWindow* window = igGetCurrentWindow();
+	if (window->SkipItems)
+		return;
+
+	float_t width = igGetWindowContentRegionWidth();
+	ImGuiContext* context = igGetCurrentContext();
+	if( context->NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth )
+	{
+		width = context->NextItemData.Width;
+	}
+
+	ImRect bb;
+	bb.Min = bb.Max = window->DC.CursorPos;
+	bb.Max.x += width;
+	bb.Max.y += height;
+
+	igItemSizeRect( bb, -1.f );
+	if ( !igItemAdd(bb, 0, 0) )
+		return;
+
+	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32Col( ImGuiCol_FrameBg, 1.0f ), rounding, ImDrawCornerFlags_All );
+
+	bb.Min.x += rounding + 1;
+	bb.Min.y += rounding + 1;
+	bb.Max.x -= rounding + 1;
+	bb.Max.y -= rounding + 1;
+
+	bb.Max.x = bb.Min.x + ( bb.Max.x - bb.Min.x ) * progress;
+
+	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ), 0, ImDrawCornerFlags_None );
+
+}
+
 namespace launcher
 {
 	struct Image
@@ -113,8 +149,27 @@ namespace launcher
 		PWAD,
 	};
 
+	constexpr int32_t WADEntryVersion = 1;
+
+	PACKED_STRUCT( TGAHeader
+	{
+		uint8_t			id_length;
+		uint8_t			colour_map_type;
+		uint8_t			image_type;
+		uint16_t		colour_map_first;
+		uint16_t		colour_map_count;
+		uint8_t			colour_map_entry_size;
+		uint16_t		x_origin;
+		uint16_t		y_origin;
+		uint16_t		width;
+		uint16_t		height;
+		uint8_t			pixel_depth;
+		uint8_t			image_specification;
+	});
+
 	struct WADEntry
 	{
+		int32_t			version;
 		WADType			type;
 		DoomString		filename;
 		DoomString		full_path;
@@ -126,7 +181,109 @@ namespace launcher
 		GameVariant_t	game_variant;
 
 		Image			titlepic;
+		std::vector< bgra_t > titlepic_raw;
 	};
+
+	void WriteEntry( WADEntry& entry, const std::filesystem::path& stdpath )
+	{
+		std::string path = stdpath.string();
+		std::filesystem::create_directories( path );
+
+		std::filesystem::path infopath = path + "info.json";
+
+		JSONElement root = JSONElement::MakeRoot();
+		root.AddNumber( "version", entry.version );
+		root.AddNumber( "type", (int32_t)entry.type );
+		root.AddNumber( "game_mode", (int32_t)entry.game_mode );
+		root.AddNumber( "game_variant", (int32_t)entry.game_variant );
+
+		std::string converted = root.Serialise();
+		FILE* infofile = fopen( infopath.string().c_str(), "wb" );
+		fwrite( converted.c_str(), sizeof( char ), converted.size(), infofile );
+		fclose( infofile );
+
+		if( !entry.text_file.empty() )
+		{
+			std::filesystem::path textpath = path + "textfile.txt";
+			FILE* textfile = fopen( textpath.string().c_str(), "wb" );
+			fwrite( entry.text_file.c_str(), sizeof( char ), entry.text_file.size(), textfile );
+			fclose( infofile );
+		}
+
+		if( !entry.titlepic_raw.empty() )
+		{
+			std::filesystem::path titlepicpath = path + "titlepic.tga";
+
+			TGAHeader header;
+			header.id_length = 0;
+			header.colour_map_type = 0;
+			header.image_type = 2;
+			header.colour_map_first = 0;
+			header.colour_map_count = 0;
+			header.colour_map_entry_size = 0;
+			header.x_origin = 0;
+			header.y_origin = 0;
+			header.width = entry.titlepic.width;
+			header.height = entry.titlepic.height;
+			header.pixel_depth = 32;
+			header.image_specification = 8;
+
+			FILE* tgafile = fopen( titlepicpath.string().c_str(), "wb" );
+			fwrite( &header, sizeof( TGAHeader ), 1, tgafile );
+			fwrite( entry.titlepic_raw.data(), sizeof( bgra_t ), entry.titlepic_raw.size(), tgafile );
+			fclose( tgafile );
+		}
+	}
+
+	void ReadEntry( WADEntry& entry, const std::filesystem::path& stdpath )
+	{
+		std::string path = stdpath.string();
+
+		std::string infopath = path + "info.json";
+		std::string infojson;
+		infojson.resize( std::filesystem::file_size( std::filesystem::path( infopath ) ) );
+		FILE* infofile = fopen( infopath.c_str(), "rb" );
+		fread( (void*)infojson.data(), sizeof( char ), infojson.length(), infofile );
+		fclose( infofile );
+
+		JSONElement root = JSONElement::Deserialise( infojson );
+		entry.version = to< int32_t >( root[ "version" ] );
+		entry.type = (WADType)to< int32_t >( root[ "type" ] );
+		entry.game_mode = (GameMode_t)to< int32_t >( root[ "game_mode" ] );
+		entry.game_variant = (GameVariant_t)to< int32_t >( root[ "game_variant" ] );
+
+		std::string textpath = path + "textfile.txt";
+		std::filesystem::path textstdpath = std::filesystem::path( textpath );
+		if( std::filesystem::exists( textstdpath ) )
+		{
+			entry.text_file.resize( std::filesystem::file_size( textstdpath ) );
+			FILE* textfile = fopen( textpath.c_str(), "rb" );
+			fread( (void*)entry.text_file.data(), sizeof( char ), entry.text_file.length(), textfile );
+			fclose( textfile );
+		}
+
+		std::string titlepicpath = path + "titlepic.tga";
+		if( std::filesystem::exists( std::filesystem::path( titlepicpath ) ) )
+		{
+			TGAHeader header;
+			FILE* tgafile = fopen( titlepicpath.c_str(), "rb" );
+			fread( (void*)&header, sizeof( TGAHeader ), 1, tgafile );
+			entry.titlepic.width = header.width;
+			entry.titlepic.height = header.height;
+			entry.titlepic_raw.resize( header.width * header.height );
+			fread( entry.titlepic_raw.data(), sizeof( bgra_t ), header.width * header.height, tgafile );
+			fclose( tgafile );
+		}
+	}
+
+	bool WADEntryExists( const std::filesystem::path& stdpath )
+	{
+		if( std::filesystem::exists( stdpath ) )
+		{
+			return std::filesystem::exists( std::filesystem::path( stdpath.string() + "info.json" ) );
+		}
+		return false;
+	}
 
 	time_t GetLastModifiedTime( const std::filesystem::path& stdpath )
 	{
@@ -157,16 +314,19 @@ namespace launcher
 
 		std::filesystem::path stdcachepath( cachepath );
 
-		std::vector< rgba_t > titlepic_raw;
-
 		WADEntry entry = WADEntry();
+		entry.version = WADEntryVersion;
 		entry.filename = filename;
 		entry.full_path = path;
 		entry.cache_path = cachepath;
 		entry.last_modified = lastmodified;
 		entry.file_length = filelength;
 
-		if( !std::filesystem::exists( stdcachepath ) )
+		if( !M_CheckParm( "-invalidatewadcache" ) && WADEntryExists( stdcachepath ) )
+		{
+			ReadEntry( entry, stdcachepath );
+		}
+		else
 		{
 			FILE* file = fopen( path.c_str(), "rb" );
 			if( file )
@@ -287,20 +447,20 @@ namespace launcher
 						V_UseBuffer( &fakebuffer );
 						V_DrawPatch( xpos, 0, patch );
 
-						titlepic_raw.resize( patch->width * patch->height );
+						entry.titlepic_raw.resize( patch->width * patch->height );
 						entry.titlepic.width = patch->width;
 						entry.titlepic.height = patch->height;
 
 						for( int32_t x = 0; x < patch->width; ++x )
 						{
 							pixel_t* source = composite.data() + x * patch->height;
-							rgba_t* dest = titlepic_raw.data() + x;
+							bgra_t* dest = entry.titlepic_raw.data() + x;
 							for( int32_t y = 0; y < patch->height; ++y )
 							{
 								rgb_t& entry = pallette[ *source ];
-								dest->r = entry.r;
-								dest->g = entry.g;
 								dest->b = entry.b;
+								dest->g = entry.g;
+								dest->r = entry.r;
 								dest->a = 0xFF;
 								++source;
 								dest += patch->width;
@@ -326,11 +486,13 @@ namespace launcher
 					foundpos += 2;
 				}
 			}
+
+			WriteEntry( entry, stdcachepath );
 		}
 
-		if( !titlepic_raw.empty() )
+		if( !entry.titlepic_raw.empty() )
 		{
-			entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, titlepic_raw.data() );
+			entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, Format_BGRA8, entry.titlepic_raw.data() );
 		}
 
 		return entry;
@@ -345,6 +507,8 @@ namespace launcher
 			: threaded_context( nullptr )
 			, lists_ready( false )
 			, abort_work( false )
+			, total_files( 0 )
+			, parsed_files( 0 )
 		{
 			KickoffPopulate();
 		}
@@ -390,6 +554,18 @@ namespace launcher
 									return it;
 								} ) )
 			{
+				total_files += std::distance( dir, std::filesystem::recursive_directory_iterator{} );
+			}
+
+			for( auto dir : std::ranges::views::all( IWADPaths )
+								| std::ranges::views::transform( []( const char* pathname )
+								{
+									std::error_code error;
+									auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
+									if( error ) return std::filesystem::recursive_directory_iterator();
+									return it;
+								} ) )
+			{
 				for( auto file : dir )
 				{
 					if( abort_work.load() == true )
@@ -405,7 +581,11 @@ namespace launcher
 						if( entry.type == WADType::IWAD ) IWADs.push_back( entry );
 						if( entry.type == WADType::PWAD ) PWADs.push_back( entry );
 					}
+
+					++parsed_files;
 				}
+
+				std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
 			}
 
 			glFlush();
@@ -414,7 +594,16 @@ namespace launcher
 			lists_ready = !abort_work.load();
 		}
 
-		INLINE bool ListsReady() { return lists_ready.load(); }
+		INLINE bool ListsReady() const { return lists_ready.load(); }
+		INLINE double_t Progress() const
+		{
+			size_t total = total_files.load();
+			if( total > 0 )
+			{
+				return parsed_files.load() / (double_t)total;
+			}
+			return 0;
+		}
 
 		WADEntries				IWADs;
 		WADEntries				PWADs;
@@ -422,6 +611,9 @@ namespace launcher
 		std::atomic< bool >		lists_ready;
 		std::atomic< bool >		abort_work;
 		std::thread*			worker_thread;
+
+		std::atomic< size_t >	total_files;
+		std::atomic< size_t >	parsed_files;
 	};
 
 	class IWADSelector
@@ -674,14 +866,6 @@ namespace launcher
 		int32_t					current;
 	};
 
-	class LoadingIcon
-	{
-	public:
-		void Render() { }
-
-	private:
-		Image*					spinner;
-	};
 }
 
 DoomString M_DashboardLauncherWindow()
@@ -756,8 +940,8 @@ DoomString M_DashboardLauncherWindow()
 		}
 		else
 		{
-			constexpr ImVec2 windowsize = { 140.f, 175.f };
-			constexpr ImVec2 loadingradius = { windowsize.x * 0.4, windowsize.x * 0.2 };
+			constexpr ImVec2 windowsize = { 140.f, 200.f };
+			constexpr ImVec2 loadingradius = { windowsize.x * 0.4, windowsize.x * 0.175 };
 
 			ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
 			igSetNextWindowSize( windowsize, ImGuiCond_Always );
@@ -793,22 +977,25 @@ DoomString M_DashboardLauncherWindow()
 
 				ImVec2 points[] =
 				{
-					{ 0, loadingradius.y },		{ loadingradius.x, 0 },
-					{ 0, -loadingradius.y },	{ -loadingradius.x, 0 },
+					{ -loadingradius.x * 0.025f, -loadingradius.y * 0.025f },	{ 0, loadingradius.y },		{ loadingradius.x, loadingradius.y * 0.1 },
+					{ loadingradius.x * 0.025f, loadingradius.y * 0.025f },		{ 0, -loadingradius.y },	{ -loadingradius.x, -loadingradius.y * 0.1 },
 				};
 
 				rotate( points[ 0 ] );
 				rotate( points[ 1 ] );
 				rotate( points[ 2 ] );
 				rotate( points[ 3 ] );
+				rotate( points[ 4 ] );
+				rotate( points[ 5 ] );
 
 				ImDrawList* drawlist = igGetWindowDrawList();
-				ImDrawList_AddTriangleFilled( drawlist, iconcursor, points[ 0 ], points[ 1 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
-				ImDrawList_AddTriangleFilled( drawlist, iconcursor, points[ 2 ], points[ 3 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
+				ImDrawList_AddTriangleFilled( drawlist, points[ 0 ], points[ 1 ], points[ 2 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
+				ImDrawList_AddTriangleFilled( drawlist, points[ 3 ], points[ 4 ], points[ 5 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
 
 				iconcursor = basecursor;
 				iconcursor.y += contentregion.x + 3.f;
 				igSetCursorPos( iconcursor );
+				igProgressBar( launcher.Progress(), 15.f, 2.f );
 				igCentreText( "Updating WAD" );
 				igCentreText( "dictionary" );
 			}

@@ -754,10 +754,26 @@ DOOM_C_API void I_VideoClearBuffer( float_t r, float_t g, float_t b, float_t a )
 	glClear( GL_COLOR_BUFFER_BIT );
 }
 
-DOOM_C_API hwtexture_t* I_TextureCreate( int32_t width, int32_t height, void* data )
+constexpr GLint FormatToGLInternal[] =
+{
+	GL_RGB8,
+	GL_RGBA8,
+	GL_RGB8,
+	GL_RGBA8,
+};
+
+constexpr GLenum FormatToGLFormat[] =
+{
+	GL_RGB,
+	GL_RGBA,
+	GL_BGR,
+	GL_BGRA,
+};
+
+DOOM_C_API hwtexture_t* I_TextureCreate( int32_t width, int32_t height, hwtextureformat_t format, void* data )
 {
 	hwtexture_t* tex = new hwtexture_t;
-	GenerateTexture( *tex, GL_RGBA8, GL_RGBA, width, height, nullptr );
+	GenerateTexture( *tex, FormatToGLInternal[ format ], FormatToGLFormat[ format ], width, height, nullptr );
 	UpdateTexture( *tex, data );
 	return tex;
 }
