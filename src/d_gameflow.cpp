@@ -83,11 +83,11 @@ void D_GameflowCheckAndParseMapinfos( void )
 	if( ( lumpnum = W_CheckNumForName( "UMAPINFO" ) ) >= 0 )
 	{
 		D_GameflowParseUMAPINFO( lumpnum );
-		I_TerminalPrintf( Log_Startup, "UMAPINFO gameflow defined\n" );
+		I_TerminalPrintf( Log_Startup, "  UMAPINFO gameflow defined\n" );
 	}
 	else if( ( lumpnum = W_CheckNumForName( "DMAPINFO" ) ) >= 0 )
 	{
 		D_GameflowParseDMAPINFO( lumpnum );
-		I_TerminalPrintf( Log_Startup, "DMAPINFO gameflow defined\n" );
+		I_TerminalPrintf( Log_Startup, "  DMAPINFO gameflow defined\n" );
 	}
 }
