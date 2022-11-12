@@ -43,6 +43,7 @@
 #include <chrono>
 #include <ranges>
 #include <regex>
+#include <stack>
 #include <cstdio>
 
 extern "C"
@@ -80,15 +81,6 @@ constexpr const char* idgames_api_url = "https://www.doomworld.com/idgames/api/a
 
 constexpr ImVec2 zero = { 0, 0 };
 
-void igCentreNextElement( float_t width )
-{
-	float_t centre = igGetWindowContentRegionWidth() * 0.5f;
-	ImVec2 cursor;
-	igGetCursorPos( &cursor );
-	cursor.x += ( centre - width / 2 );
-	igSetCursorPos( cursor );
-}
-
 template< typename... _args >
 void igCentreText( const char* string, _args&... args )
 {
@@ -99,41 +91,6 @@ void igCentreText( const char* string, _args&... args )
 	igCalcTextSize( &textsize, buffer, nullptr, false, -1 );
 	igCentreNextElement( textsize.x );
 	igText( buffer );
-}
-
-void igProgressBar( float_t progress, float_t height, float_t rounding )
-{
-	ImGuiWindow* window = igGetCurrentWindow();
-	if (window->SkipItems)
-		return;
-
-	float_t width = igGetWindowContentRegionWidth();
-	ImGuiContext* context = igGetCurrentContext();
-	if( context->NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth )
-	{
-		width = context->NextItemData.Width;
-	}
-
-	ImRect bb;
-	bb.Min = bb.Max = window->DC.CursorPos;
-	bb.Max.x += width;
-	bb.Max.y += height;
-
-	igItemSizeRect( bb, -1.f );
-	if ( !igItemAdd(bb, 0, 0) )
-		return;
-
-	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32Col( ImGuiCol_FrameBg, 1.0f ), rounding, ImDrawCornerFlags_All );
-
-	bb.Min.x += rounding + 1;
-	bb.Min.y += rounding + 1;
-	bb.Max.x -= rounding + 1;
-	bb.Max.y -= rounding + 1;
-
-	bb.Max.x = bb.Min.x + ( bb.Max.x - bb.Min.x ) * progress;
-
-	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ), 0, ImDrawCornerFlags_None );
-
 }
 
 namespace launcher
@@ -531,6 +488,10 @@ namespace launcher
 
 		void PopulateWADList()
 		{
+			std::string contents;
+			bool successful = M_URLGetString( contents, idgames_api_url, "action=getcontents&name=levels/doom/&out=json" );
+			JSONElement converted = JSONElement::Deserialise( contents );
+
 			SDL_Window* window = I_GetWindow();
 			SDL_GL_MakeCurrent( window, threaded_context );
 
@@ -807,7 +768,7 @@ namespace launcher
 		{
 			ImVec2 framesize;
 			igGetContentRegionAvail( &framesize );
-			framesize.y -= 25;
+			framesize.y -= 30;
 
 			igPushStyleVarVec2( ImGuiStyleVar_FramePadding, zero );
 
@@ -857,6 +818,163 @@ namespace launcher
 		int32_t					current;
 	};
 
+	class LauncherPanel;
+
+	static std::stack< std::shared_ptr< LauncherPanel > >	panel_stack;
+	static JobThread* jobs = nullptr;
+
+	// Probably not worth duck typing this thing, so ye olde OO vtables it is
+	class LauncherPanel
+	{
+	public:
+		LauncherPanel() = delete;
+
+		virtual void Enter() { };
+		virtual void Exit() { };
+		virtual void Update() { };
+
+		void Render()
+		{
+			ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
+			igSetNextWindowSize( windowsize, ImGuiCond_Always );
+			igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
+		
+			if( igBegin( name.c_str(), NULL, windowflags ) )
+			{
+				RenderContents();
+			}
+			igEnd();
+		}
+
+	protected:
+		constexpr static int32_t default_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
+		constexpr static ImVec2 default_size = { 750.f, 595.f };
+
+		LauncherPanel( const char* title, ImVec2 size = default_size, int32_t flags = default_flags )
+			: name( title )
+			, windowsize( size )
+			, windowflags( flags )
+		{
+		}
+
+		virtual void RenderContents() = 0;
+
+	private:
+		std::string				name;
+		ImVec2					windowsize;
+		int32_t					windowflags;
+	};
+
+	class MainPanel : public LauncherPanel
+	{
+	public:
+		MainPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< PWADSelector >& pwad )
+			: LauncherPanel( "Launcher_Main" )
+			, readytolaunch( false )
+			, iwadselector( iwad )
+			, pwadselector( pwad )
+		{
+		}
+
+	protected:
+		virtual void RenderContents() override
+		{
+			iwadselector->Render();
+			pwadselector->Render();
+
+			constexpr ImVec2 playbuttonsize = { 50.f, 25.f };
+			constexpr float_t framepadding = 10;
+
+			ImVec2 framesize;
+			igGetContentRegionMax( &framesize );
+
+			ImVec2 cursor = { framesize.x - playbuttonsize.x - framepadding, framesize.y - playbuttonsize.y };
+			igSetCursorPos( cursor );
+
+			if( igButton( "Play!", zero ) )
+			{
+				readytolaunch = true;
+				panel_stack.pop();
+			}
+		}
+
+	private:
+		bool								readytolaunch;
+		std::shared_ptr< IWADSelector >		iwadselector;
+		std::shared_ptr< PWADSelector >		pwadselector;
+	};
+
+	class InitPanel : public LauncherPanel
+	{
+		constexpr static ImVec2 init_size		= { 140.f, 200.f };
+		constexpr static ImVec2 loading_size	= { init_size.x * 0.8, init_size.x * 0.35 };
+		constexpr static int32_t init_flags		= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs;
+		constexpr static double_t cycle_time	= 0.5;
+
+	public:
+		InitPanel()
+			: LauncherPanel( "Launcher", init_size, init_flags )
+			, hasrunlauncher( false )
+			, launcherfinished( false )
+		{
+			iwadselector = std::make_shared< IWADSelector >();
+			pwadselector = std::make_shared< PWADSelector >();
+
+			mainpanel = std::make_shared< MainPanel >( iwadselector, pwadselector );
+		}
+
+		virtual void Enter() override
+		{
+			if( !hasrunlauncher )
+			{
+				jobs->AddJob( [ this ]()
+				{
+					launcher.PopulateWADList();
+					const char* defaultiwad = nullptr;
+					int32_t iwadparam = M_CheckParmWithArgs( "-iwad", 1 );
+					if( iwadparam > 0 )
+					{
+						defaultiwad = myargv[ iwadparam + 1 ];
+					}
+					iwadselector->Setup( launcher.IWADs, defaultiwad );
+					pwadselector->Setup( launcher.PWADs );
+
+					launcherfinished = true;
+				} );
+			}
+		}
+
+		virtual void Update() override
+		{
+			if( launcherfinished )
+			{
+				panel_stack.pop();
+				panel_stack.push( mainpanel );
+			}
+		}
+
+		INLINE IWADSelector* GetIWADSelector() { return iwadselector.get(); }
+
+	protected:
+		virtual void RenderContents() override
+		{
+			constexpr double_t pi2 = M_PI * 2.0;
+
+			igCentreNextElement( loading_size.x );
+			igSpinner( loading_size, cycle_time );
+			igRoundProgressBar( launcher.Progress(), 15.f, 2.f );
+			igCentreText( "Updating WAD" );
+			igCentreText( "dictionary" );
+		}
+
+	private:
+		bool								hasrunlauncher;
+		std::atomic< bool >					launcherfinished;
+		launcher::WADList					launcher;
+		std::shared_ptr< IWADSelector >		iwadselector;
+		std::shared_ptr< PWADSelector >		pwadselector;
+		std::shared_ptr< MainPanel >		mainpanel;
+	};
 }
 
 std::string M_DashboardLauncherWindow()
@@ -870,32 +988,17 @@ std::string M_DashboardLauncherWindow()
 	I_UpdateMouseGrab();
 	SDL_Renderer* renderer = I_GetRenderer();
 
-	launcher::WADList launcher;
-	launcher::IWADSelector iwadselector;
-	launcher::PWADSelector pwadselector;
-	std::atomic< bool > setupselector = false;
 	bool readytolaunch = false;
 
-	JobThread jobs;
+	launcher::jobs = new JobThread;
+	launcher::jobs->AddJob( []() { M_URLInit(); } );
 
-	jobs.AddJob( [ &launcher, &iwadselector, &pwadselector, &setupselector ]()
-		{
-			M_URLInit();
+	std::shared_ptr< launcher::InitPanel > initpanel = std::make_shared< launcher::InitPanel >();
+	initpanel->Enter();
 
-			launcher.PopulateWADList();
-			const char* defaultiwad = nullptr;
-			int32_t iwadparam = M_CheckParmWithArgs( "-iwad", 1 );
-			if( iwadparam > 0 )
-			{
-				defaultiwad = myargv[ iwadparam + 1 ];
-			}
-			iwadselector.Setup( launcher.IWADs, defaultiwad );
-			pwadselector.Setup( launcher.PWADs );
+	launcher::panel_stack.push( initpanel );
 
-			setupselector = true;
-		} );
-
-	while( !readytolaunch )
+	while( !launcher::panel_stack.empty() )
 	{
 		I_StartTic();
 		I_StartFrame();
@@ -911,92 +1014,10 @@ std::string M_DashboardLauncherWindow()
 		SDL_RenderClear( renderer );
 
 		M_DashboardPrepareRender();
-
-		constexpr int32_t windowflags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
-		constexpr int32_t loadingflags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs;
-
 		M_DashboardApplyTheme();
 
-		if( setupselector )
-		{
-			ImVec2 windowsize = { M_MIN( igGetIO()->DisplaySize.x, 750.f ), M_MIN( igGetIO()->DisplaySize.y, 595.f ) };
-			ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
-			igSetNextWindowSize( windowsize, ImGuiCond_Always );
-			igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
-
-			if( igBegin( "Launcher", NULL, windowflags ) )
-			{
-				iwadselector.Render();
-				pwadselector.Render();
-				if( igButton( "Cool, just play", ImVec2() ) )
-				{
-					readytolaunch = true;
-				}
-			}
-		}
-		else
-		{
-			constexpr ImVec2 windowsize = { 140.f, 200.f };
-			constexpr ImVec2 loadingradius = { windowsize.x * 0.4, windowsize.x * 0.175 };
-
-			ImVec2 windowpos = { ( igGetIO()->DisplaySize.x - windowsize.x ) * 0.5f, ( igGetIO()->DisplaySize.y - windowsize.y ) * 0.5f };
-			igSetNextWindowSize( windowsize, ImGuiCond_Always );
-			igSetNextWindowPos( windowpos, ImGuiCond_Always, zero );
-
-			if( igBegin( "Launcher_Loading", NULL, loadingflags ) )
-			{
-				constexpr double_t cycletime = 0.5;
-				constexpr double_t pi2 = M_PI * 2.0;
-
-				double_t rotationpercent = fmod( I_GetTimeUS() / 1000000.0, cycletime ) / cycletime;
-				double_t angle = rotationpercent * pi2;
-
-				ImVec2 basecursor;
-				ImVec2 contentregion;
-				igGetCursorScreenPos( &basecursor );
-				igGetContentRegionAvail( &contentregion );
-				ImVec2 iconcursor = { basecursor.x + contentregion.x * 0.5f, basecursor.y + contentregion.x * 0.5f };
-				igGetCursorPos( &basecursor );
-
-				auto rotate = [ &angle, &iconcursor ]( ImVec2& vec )
-				{
-					double_t currsin = sin( angle );
-					double_t currcos = cos( angle );
-					ImVec2 ogvec = vec;
-					vec.x = iconcursor.x
-								+ currcos * ogvec.x
-								- currsin * ogvec.y;
-					vec.y = iconcursor.y
-								+ currsin * ogvec.x
-								+ currcos * ogvec.y;
-				};
-
-				ImVec2 points[] =
-				{
-					{ -loadingradius.x * 0.025f, -loadingradius.y * 0.025f },	{ 0, loadingradius.y },		{ loadingradius.x, loadingradius.y * 0.1 },
-					{ loadingradius.x * 0.025f, loadingradius.y * 0.025f },		{ 0, -loadingradius.y },	{ -loadingradius.x, -loadingradius.y * 0.1 },
-				};
-
-				rotate( points[ 0 ] );
-				rotate( points[ 1 ] );
-				rotate( points[ 2 ] );
-				rotate( points[ 3 ] );
-				rotate( points[ 4 ] );
-				rotate( points[ 5 ] );
-
-				ImDrawList* drawlist = igGetWindowDrawList();
-				ImDrawList_AddTriangleFilled( drawlist, points[ 0 ], points[ 1 ], points[ 2 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
-				ImDrawList_AddTriangleFilled( drawlist, points[ 3 ], points[ 4 ], points[ 5 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
-
-				iconcursor = basecursor;
-				iconcursor.y += contentregion.x + 3.f;
-				igSetCursorPos( iconcursor );
-				igProgressBar( launcher.Progress(), 15.f, 2.f );
-				igCentreText( "Updating WAD" );
-				igCentreText( "dictionary" );
-			}
-		}
-		igEnd();
+		launcher::panel_stack.top()->Update();
+		launcher::panel_stack.top()->Render();
 
 		M_DashboardFinaliseRender();
 
@@ -1009,9 +1030,9 @@ std::string M_DashboardLauncherWindow()
 
 	dashboardactive = Dash_Inactive;
 
-	if( iwadselector.Valid() )
+	if( initpanel->GetIWADSelector()->Valid() )
 	{
-		parameters += "-iwad \"" + iwadselector.Selected().full_path + "\"";
+		parameters += "-iwad \"" + initpanel->GetIWADSelector()->Selected().full_path + "\"";
 	}
 #endif // USE_IMGUI
 
