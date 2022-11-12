@@ -46,6 +46,12 @@ CIMGUI_API void igPopScrollableArea( void );
 
 CIMGUI_API void igFontConfigConstruct( ImFontConfig* config );
 
+CIMGUI_API void igCentreNextElement( float_t width );
+
+CIMGUI_API void igRoundProgressBar( float_t progress, float_t height, float_t rounding );
+
+CIMGUI_API void igSpinner( ImVec2 size, double_t cycletime );
+
 // Helpers macros to generate 32-bit encoded colors
 #ifdef IMGUI_USE_BGRA_PACKED_COLOR
 #define IM_COL32_R_SHIFT    16

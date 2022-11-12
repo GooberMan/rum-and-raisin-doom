@@ -90,6 +90,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
