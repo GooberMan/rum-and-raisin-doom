@@ -51,7 +51,7 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-#define DEFAULT_RAM 512 /* MiB */
+#define DEFAULT_RAM 1024 /* MiB */
 #define MIN_RAM     128  /* MiB */
 
 
