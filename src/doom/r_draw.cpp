@@ -715,8 +715,8 @@ static const int32_t adjustedfuzzoffset[] =
 
 #define ADJUSTEDFUZZTABLE ( sizeof( adjustedfuzzoffset ) / sizeof( *adjustedfuzzoffset ) )
 
-THREADLOCAL int32_t	fuzzpos = 0;
-THREADLOCAL int32_t	cachedfuzzpos = 0;
+thread_local int32_t	fuzzpos = 0;
+thread_local int32_t	cachedfuzzpos = 0;
 
 //
 // Framebuffer postprocessing.
