@@ -16,7 +16,7 @@
 
 #include <curl/curl.h>
 
-static CURL* curl = nullptr;
+thread_local CURL* curl = nullptr;
 
 void M_URLInit( void )
 {
@@ -24,21 +24,32 @@ void M_URLInit( void )
 	curl = curl_easy_init();
 }
 
-void CURL_StringWrite( char *ptr, size_t size, size_t nmemb, void *str )
+void M_URLDeinit( void )
+{
+	curl_easy_cleanup( curl );
+	curl = nullptr;
+}
+
+size_t CURL_StringWrite( char *ptr, size_t size, size_t count, void *str )
 {
 	std::string& output = *(std::string*)str;
-	output.append( ptr, nmemb );
+	output.append( ptr, count );
+
+	return size * count;
 };
 
-std::string M_URLGetString( const char* url, const char* params )
+bool M_URLGetString( std::string& output, const char* url, const char* params )
 {
-	std::string output;
+	output.clear();
 
 	curl_easy_setopt( curl, CURLOPT_URL, url );
 	curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params );
 	curl_easy_setopt( curl, CURLOPT_WRITEDATA, &output );
 	curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, &CURL_StringWrite );
-	curl_easy_perform( curl );
-
-	return output;
+	CURLcode errorcode = curl_easy_perform( curl );
+	if( errorcode != CURLE_OK )
+	{
+		output = curl_easy_strerror( errorcode );
+	}
+	return errorcode == CURLE_OK;
 }

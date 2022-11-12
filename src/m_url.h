@@ -21,12 +21,14 @@
 #define URL_C_API
 #endif
 
+// Must be initialised per-thread
 URL_C_API void M_URLInit( void );
+URL_C_API void M_URLDeinit( void );
 
 #if defined( __cplusplus )
 #include <string>
 
-std::string M_URLGetString( const char* url, const char* params );
+bool M_URLGetString( std::string& output, const char* url, const char* params );
 #endif // defined( __cplusplus );
 
 #endif //!defined( __M_URL_H__ )
