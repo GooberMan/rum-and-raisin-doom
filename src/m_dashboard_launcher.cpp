@@ -78,6 +78,7 @@ constexpr const char* GameVariants[] =
 };
 
 constexpr const char* idgames_api_url = "https://www.doomworld.com/idgames/api/api.php";
+constexpr const char* idgames_api_folder = "action=getcontents&out=json&name=";
 
 constexpr ImVec2 zero = { 0, 0 };
 
@@ -488,10 +489,6 @@ namespace launcher
 
 		void PopulateWADList()
 		{
-			std::string contents;
-			bool successful = M_URLGetString( contents, idgames_api_url, "action=getcontents&name=levels/doom/&out=json" );
-			JSONElement converted = JSONElement::Deserialise( contents );
-
 			SDL_Window* window = I_GetWindow();
 			SDL_GL_MakeCurrent( window, threaded_context );
 
@@ -818,11 +815,6 @@ namespace launcher
 		int32_t					current;
 	};
 
-	class LauncherPanel;
-
-	static std::stack< std::shared_ptr< LauncherPanel > >	panel_stack;
-	static JobThread* jobs = nullptr;
-
 	// Probably not worth duck typing this thing, so ye olde OO vtables it is
 	class LauncherPanel
 	{
@@ -865,6 +857,131 @@ namespace launcher
 		int32_t					windowflags;
 	};
 
+	static std::stack< std::shared_ptr< LauncherPanel > >	panel_stack;
+	static JobThread* jobs = nullptr;
+
+	void PushPanel( std::shared_ptr< LauncherPanel > panel )
+	{
+		if( !panel_stack.empty() )
+		{
+			// panel_stack.top()->Exit();
+		}
+		panel_stack.push( panel );
+		panel->Enter();
+	}
+
+	void PopPanel( )
+	{
+		if( !panel_stack.empty() )
+		{
+			// panel_stack.top()->Exit();
+			panel_stack.pop();
+		}
+	}
+
+	class IdgamesBrowserPanel : public LauncherPanel
+	{
+	public:
+		IdgamesBrowserPanel( const std::string& folder, const std::string& nicename, bool refresh = true )
+			: LauncherPanel( "Launcher_IdgamesBrowser" )
+			, foldername( folder )
+			, foldernicename( nicename )
+			, listready( !refresh )
+		{
+			if( !foldername.ends_with( '/' ) )
+			{
+				foldername += '/';
+			}
+			query = idgames_api_folder + foldername;
+		}
+
+		void AddFolder( const std::string& name, const std::string& nicename )
+		{
+			folders.push_back( std::make_shared< IdgamesBrowserPanel >( foldername + name, nicename ) );
+		}
+
+		virtual void Enter() override
+		{
+			if( !listready.load() )
+			{
+				jobs->AddJob( [ this ]()
+				{
+					bool successful = false;
+					std::string listing;
+					while( !successful )
+					{
+						listing.clear();
+						successful = M_URLGetString( listing, idgames_api_url, query.c_str() );
+					}
+
+					JSONElement asjson = JSONElement::Deserialise( listing.c_str() );
+					listready = true;
+				} );
+			}
+		}
+
+		constexpr const std::string& Name()			{ return foldernicename; }
+
+	protected:
+		virtual void RenderContents() override
+		{
+			constexpr ImVec2 backbuttonsize = { 50.f, 25.f };
+			constexpr float_t framepadding = 10;
+
+			ImVec2 framesize;
+			igGetContentRegionMax( &framesize );
+			framesize.y -= backbuttonsize.y + 30;
+
+			igCentreText( foldernicename.c_str() );
+
+			if( igBeginChildFrame( 999, framesize, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			{
+				if( listready )
+				{
+					for( auto& folder : folders )
+					{
+						if( igButton( folder->Name().c_str(), zero ) )
+						{
+							PushPanel( folder );
+						}
+					}
+				}
+				else
+				{
+					constexpr ImVec2 loadingsize = { 112.0f, 70.0f };
+
+					ImVec2 content;
+					ImVec2 cursorpos;
+					igGetContentRegionAvail( &content );
+					igGetCursorPos( &cursorpos );
+
+					cursorpos.x += ( content.x - loadingsize.x ) * 0.5f;
+					cursorpos.y += ( content.y - loadingsize.y ) * 0.5f;
+					igSetCursorPos( cursorpos );
+					igSpinner( loadingsize, 0.5 );
+					igCentreText( "Fetching directory" );
+				}
+			}
+			igEndChildFrame();
+
+			if( listready )
+			{
+				igSetCursorPosX( framesize.x - backbuttonsize.x - framepadding );
+				if( igButton( "Back", backbuttonsize ) )
+				{
+					PopPanel();
+				}
+			}
+		}
+
+	private:
+		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	folders;
+		std::string												foldername;
+		std::string												foldernicename;
+		std::string												query;
+		std::atomic< bool >										listready;
+	};
+
 	class MainPanel : public LauncherPanel
 	{
 	public:
@@ -874,6 +991,9 @@ namespace launcher
 			, iwadselector( iwad )
 			, pwadselector( pwad )
 		{
+			idgames = std::make_shared< IdgamesBrowserPanel >( "levels/", "Choose your game", false );
+			idgames->AddFolder( "doom/", "Doom" );
+			idgames->AddFolder( "doom2/", "Doom II" );
 		}
 
 	protected:
@@ -883,25 +1003,36 @@ namespace launcher
 			pwadselector->Render();
 
 			constexpr ImVec2 playbuttonsize = { 50.f, 25.f };
+			constexpr ImVec2 idgamessize = { 100.f, 25.f };
 			constexpr float_t framepadding = 10;
 
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
 
-			ImVec2 cursor = { framesize.x - playbuttonsize.x - framepadding, framesize.y - playbuttonsize.y };
+			ImVec2 cursor;
+
+			cursor = { framesize.x - playbuttonsize.x - framepadding - idgamessize.x - framepadding, framesize.y - playbuttonsize.y };
+			igSetCursorPos( cursor );
+			if( igButton( "Get more maps", idgamessize ) )
+			{
+				PushPanel( idgames );
+			}
+
+			cursor = { framesize.x - playbuttonsize.x - framepadding, framesize.y - playbuttonsize.y };
 			igSetCursorPos( cursor );
 
-			if( igButton( "Play!", zero ) )
+			if( igButton( "Play!", playbuttonsize ) )
 			{
 				readytolaunch = true;
-				panel_stack.pop();
+				PopPanel();
 			}
 		}
 
 	private:
-		bool								readytolaunch;
-		std::shared_ptr< IWADSelector >		iwadselector;
-		std::shared_ptr< PWADSelector >		pwadselector;
+		bool									readytolaunch;
+		std::shared_ptr< IWADSelector >			iwadselector;
+		std::shared_ptr< PWADSelector >			pwadselector;
+		std::shared_ptr< IdgamesBrowserPanel >	idgames;
 	};
 
 	class InitPanel : public LauncherPanel
@@ -941,6 +1072,7 @@ namespace launcher
 
 					launcherfinished = true;
 				} );
+				hasrunlauncher = true;
 			}
 		}
 
@@ -948,8 +1080,8 @@ namespace launcher
 		{
 			if( launcherfinished )
 			{
-				panel_stack.pop();
-				panel_stack.push( mainpanel );
+				PopPanel();
+				PushPanel( mainpanel );
 			}
 		}
 
@@ -994,9 +1126,8 @@ std::string M_DashboardLauncherWindow()
 	launcher::jobs->AddJob( []() { M_URLInit(); } );
 
 	std::shared_ptr< launcher::InitPanel > initpanel = std::make_shared< launcher::InitPanel >();
-	initpanel->Enter();
 
-	launcher::panel_stack.push( initpanel );
+	launcher::PushPanel( initpanel );
 
 	while( !launcher::panel_stack.empty() )
 	{
