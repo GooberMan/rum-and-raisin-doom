@@ -325,7 +325,8 @@ namespace umapinfo
 		DoomString			episodepatch;
 		DoomString			episodename;
 		DoomString			episodekey;
-		bool				episodeclear;
+		setboolean_t		episodeclear;
+		setboolean_t		episode;
 		std::vector< bossaction_t > bossactions;
 		bool				bossactionclear;
 
@@ -461,7 +462,7 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 		}
 		else if( lhs == "label" )
 		{
-			if( middle == "clear" )
+			if( rhs == "clear" )
 			{
 				newmap.labelclear = true;
 			}
@@ -542,7 +543,7 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 		{
 			if( rhs == "clear" )
 			{
-				newmap.episodeclear = true;
+				newmap.episodeclear = setboolean::True;
 			}
 			else
 			{
@@ -555,6 +556,7 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 				currlinestream >> std::quoted( comma );
 				currlinestream >> std::quoted( key );
 
+				newmap.episode = setboolean::True;
 				newmap.episodepatch = rhs;
 				newmap.episodename = epname;
 				newmap.episodekey = key;
@@ -564,7 +566,7 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 		{
 			if( rhs == "clear" )
 			{
-				newmap.episodeclear = true;
+				newmap.bossactionclear = true;
 			}
 			else
 			{
@@ -629,7 +631,7 @@ static void BuildNewGameInfo()
 	// for data modification. So we have to always look up existing data and conditionally
 	// modify data only if it's defined. This function's gonna get big and messy.
 
-	bool clearepisodes = std::find_if( umapinfo::maps.begin(), umapinfo::maps.end(), []( auto& v ) { return v.episodeclear == true; } ) != umapinfo::maps.end();
+	bool clearepisodes = std::find_if( umapinfo::maps.begin(), umapinfo::maps.end(), []( auto& v ) { return v.episodeclear == setboolean::True; } ) != umapinfo::maps.end();
 	int32_t newepisodenum = 0;
 	int32_t newmapnum = 0;
 
@@ -679,7 +681,7 @@ static void BuildNewGameInfo()
 	for( auto& map : umapinfo::maps )
 	{
 		bool setfirstmap = false;
-		if( !map.episodename.empty() )
+		if( map.episode == setboolean::True )
 		{
 			map.episode_num = ++newepisodenum;
 			newmapnum = 0;
