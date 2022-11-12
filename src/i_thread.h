@@ -55,4 +55,62 @@ DOOM_C_API atomicval_t I_AtomicExchange( atomicptr_t atomic, atomicval_t val );
 DOOM_C_API atomicval_t I_AtomicIncrement( atomicptr_t atomic, atomicval_t val );
 DOOM_C_API atomicval_t I_AtomicDecrement( atomicptr_t atomic, atomicval_t val );
 
+#if defined( __cplusplus )
+#include "m_container.h"
+#include <functional>
+#include <atomic>
+#include <thread>
+
+class JobThread
+{
+public:
+	enum : size_t { queue_size = 128 };
+	using func_type = std::function< void() >;
+
+	JobThread()
+		: jobs( queue_size )
+		, terminate( false )
+		, worker_thread( std::thread( [ this ]() { this->Run(); } ) )
+ 	{
+	}
+
+	~JobThread()
+	{
+		if( worker_thread.joinable() )
+		{
+			terminate = true;
+			worker_thread.join();
+		}
+	}
+
+	void AddJob( func_type&& func )
+	{
+		jobs.push( func );
+	}
+
+private:
+	void Run()
+	{
+		while( !terminate.load() )
+		{
+			if( jobs.valid() )
+			{
+				func_type& func = jobs.access();
+				func();
+				jobs.pop();
+			}
+			else
+			{
+				std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+			}
+		}
+	}
+
+	AtomicCircularQueue< func_type >	jobs;
+	std::atomic< bool >					terminate;
+	std::thread							worker_thread;
+};
+
+#endif //defined( __cplusplus )
+
 #endif // __I_THREAD__
