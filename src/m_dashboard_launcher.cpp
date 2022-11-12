@@ -12,13 +12,12 @@
 // GNU General Public License for more details.
 //
 
-// https://www.doomworld.com/idgames/api/
-
 #include "m_dashboard.h"
 #include "cimguiglue.h"
 
 #include "i_log.h"
 #include "i_system.h"
+#include "i_thread.h"
 #include "i_timer.h"
 #include "i_video.h"
 
@@ -30,6 +29,7 @@
 #include "m_container.h"
 #include "m_json.h"
 #include "m_misc.h"
+#include "m_url.h"
 
 #include "v_patch.h"
 #include "v_video.h"
@@ -43,7 +43,6 @@
 #include <chrono>
 #include <ranges>
 #include <regex>
-#include <thread>
 #include <cstdio>
 
 extern "C"
@@ -76,6 +75,8 @@ constexpr const char* GameVariants[] =
 	"BFG Edition",
 	"Unity Port"
 };
+
+constexpr const char* idgames_api_url = "https://www.doomworld.com/idgames/api/api.php";
 
 constexpr ImVec2 zero = { 0, 0 };
 
@@ -173,10 +174,10 @@ namespace launcher
 	{
 		int32_t			version;
 		WADType			type;
-		DoomString		filename;
-		DoomString		full_path;
-		DoomString		cache_path;
-		DoomString		text_file;
+		std::string		filename;
+		std::string		full_path;
+		std::string		cache_path;
+		std::string		text_file;
 		uint64_t		file_length;
 		time_t			last_modified;
 		GameMode_t		game_mode;
@@ -479,7 +480,7 @@ namespace launcher
 			if( std::filesystem::exists( textpath ) )
 			{
 				std::ifstream file( textpath, std::ios::in | std::ios::binary );
-				entry.text_file = DoomString( std::istreambuf_iterator< char >{ file }, { } );
+				entry.text_file = std::string( std::istreambuf_iterator< char >{ file }, { } );
 
 				size_t foundpos = 0;
 				while( ( foundpos = entry.text_file.find( "%", foundpos ) ) != std::string::npos )
@@ -517,13 +518,6 @@ namespace launcher
 
 		~WADList()
 		{
-			if( worker_thread->joinable() )
-			{
-				abort_work = true;
-				worker_thread->join();
-			}
-
-			delete worker_thread;
 		}
 
 		void KickoffPopulate()
@@ -533,8 +527,6 @@ namespace launcher
 			SDL_GL_SetAttribute( SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1 );
 			threaded_context = SDL_GL_CreateContext( window );
 			SDL_GL_MakeCurrent( window, glcontext );
-
-			worker_thread = new std::thread( [ this ]() { this->PopulateWADList(); } );
 		}
 
 		void PopulateWADList()
@@ -610,7 +602,6 @@ namespace launcher
 		SDL_GLContext			threaded_context;
 		std::atomic< bool >		lists_ready;
 		std::atomic< bool >		abort_work;
-		std::thread*			worker_thread;
 
 		std::atomic< size_t >	total_files;
 		std::atomic< size_t >	parsed_files;
@@ -868,9 +859,9 @@ namespace launcher
 
 }
 
-DoomString M_DashboardLauncherWindow()
+std::string M_DashboardLauncherWindow()
 {
-	DoomString parameters;
+	std::string parameters;
 
 #if USE_IMGUI
 	M_DashboardApplyTheme();
@@ -882,9 +873,27 @@ DoomString M_DashboardLauncherWindow()
 	launcher::WADList launcher;
 	launcher::IWADSelector iwadselector;
 	launcher::PWADSelector pwadselector;
-	bool setupselector = false;
-
+	std::atomic< bool > setupselector = false;
 	bool readytolaunch = false;
+
+	JobThread jobs;
+
+	jobs.AddJob( [ &launcher, &iwadselector, &pwadselector, &setupselector ]()
+		{
+			M_URLInit();
+
+			launcher.PopulateWADList();
+			const char* defaultiwad = nullptr;
+			int32_t iwadparam = M_CheckParmWithArgs( "-iwad", 1 );
+			if( iwadparam > 0 )
+			{
+				defaultiwad = myargv[ iwadparam + 1 ];
+			}
+			iwadselector.Setup( launcher.IWADs, defaultiwad );
+			pwadselector.Setup( launcher.PWADs );
+
+			setupselector = true;
+		} );
 
 	while( !readytolaunch )
 	{
@@ -897,19 +906,6 @@ DoomString M_DashboardLauncherWindow()
 				I_Quit();
 			}
 			M_DashboardResponder( ev );
-		}
-
-		if( !setupselector && launcher.ListsReady() )
-		{
-			const char* defaultiwad = nullptr;
-			int32_t iwadparam = M_CheckParmWithArgs( "-iwad", 1 );
-			if( iwadparam > 0 )
-			{
-				defaultiwad = myargv[ iwadparam + 1 ];
-			}
-			iwadselector.Setup( launcher.IWADs, defaultiwad );
-			pwadselector.Setup( launcher.PWADs );
-			setupselector = true;
 		}
 
 		SDL_RenderClear( renderer );
