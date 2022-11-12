@@ -22,21 +22,27 @@
 #include <stdlib.h>
 
 #include "doomdata.h"
-#include "m_fixed.h"
-#include "r_local.h"
+
 #include "d_gameflow.h"
+
+#include "i_log.h"
+#include "i_system.h"
+#include "i_swap.h"
+
+#include "m_argv.h"
+#include "m_bbox.h"
+#include "m_fixed.h"
+#include "m_misc.h"
+
+#include "r_local.h"
+
+#include "w_wad.h"
+
+#include "z_zone.h"
 
 extern "C"
 {
-	#include "i_log.h"
-	#include "i_system.h"
-	#include "i_swap.h"
-	#include "m_argv.h"
-	#include "m_bbox.h"
-	#include "m_misc.h"
 	#include "p_local.h"
-	#include "w_wad.h"
-	#include "z_zone.h"
 }
 
 #define MAX_DEATHMATCH_STARTS	10

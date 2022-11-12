@@ -24,9 +24,8 @@
 
 #include "m_fixed.h"
 
-
 // Bounding box coordinate storage.
-enum
+DOOM_C_API enum
 {
     BOXTOP,
     BOXBOTTOM,
@@ -35,13 +34,8 @@ enum
 };	// bbox coordinates
 
 // Bounding box functions.
-void M_ClearBox (fixed_t*	box);
+DOOM_C_API void M_ClearBox(fixed_t* box);
 
-void
-M_AddToBox
-( fixed_t*	box,
-  fixed_t	x,
-  fixed_t	y );
-
+DOOM_C_API void M_AddToBox( fixed_t* box, fixed_t x, fixed_t y );
 
 #endif

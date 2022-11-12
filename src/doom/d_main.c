@@ -56,6 +56,7 @@
 #include "m_dashboard.h"
 #include "m_launcher.h"
 #include "m_profile.h"
+#include "m_url.h"
 
 #include "p_saveg.h"
 
@@ -1546,6 +1547,7 @@ void D_DoomMain (void)
 	I_GraphicsCheckCommandLine();
 	I_InitTimer();
 	I_InitGraphics();
+	M_URLInit();
 	M_InitDashboard();
 
 	if( M_CheckParm( "-iwad" ) == 0 )

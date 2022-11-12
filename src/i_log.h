@@ -18,14 +18,10 @@
 #ifndef __I_LOG__
 #define __I_LOG__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "doomtype.h"
 #include <stdarg.h>
 
-typedef enum logtype_e
+DOOM_C_API typedef enum logtype_e
 {
 	Log_None,
 	Log_Normal,
@@ -39,18 +35,14 @@ typedef enum logtype_e
 	Log_Max
 } logtype_t;
 
-void			I_LogAddEntry( int32_t type, const char* message );
-void			I_LogAddEntryVAList( int32_t type, const char* message, va_list args );
-void			I_LogAddEntryVar( int32_t type, const char* message, ... );
+DOOM_C_API void			I_LogAddEntry( int32_t type, const char* message );
+DOOM_C_API void			I_LogAddEntryVAList( int32_t type, const char* message, va_list args );
+DOOM_C_API void			I_LogAddEntryVar( int32_t type, const char* message, ... );
 
-size_t			I_LogNumEntries();
-const char*		I_LogGetEntryText( size_t index );
-int32_t			I_LogGetEntryType( size_t index );
-const char*		I_LogGetTimestamp( size_t index );
-
-#ifdef __cplusplus
-}
-#endif
+DOOM_C_API size_t			I_LogNumEntries();
+DOOM_C_API const char*		I_LogGetEntryText( size_t index );
+DOOM_C_API int32_t			I_LogGetEntryType( size_t index );
+DOOM_C_API const char*		I_LogGetTimestamp( size_t index );
 
 #endif // __I_LOG__
 

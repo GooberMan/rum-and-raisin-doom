@@ -22,10 +22,14 @@
 
 #include "doomdef.h"
 #include "doomtype.h"
+
+#include "i_thread.h"
+#include "i_terminal.h"
+
 #include "m_container.h"
 #include "m_fixed.h"
+
 #include "r_main.h"
-#include "i_terminal.h"
 
 extern "C"
 {
@@ -50,8 +54,6 @@ extern "C"
 	#include "w_wad.h"
 
 	#include "z_zone.h"
-
-	#include "i_thread.h"
 
 	#include "tables.h"
 

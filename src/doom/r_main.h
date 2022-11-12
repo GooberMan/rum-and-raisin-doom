@@ -21,15 +21,14 @@
 #ifndef __R_MAIN__
 #define __R_MAIN__
 
+#include "r_data.h"
+#include "i_system.h"
+
 #if defined( __cplusplus )
 extern "C" {
 #endif // __cplusplus
 
 #include "d_player.h"
-#include "r_data.h"
-#include "i_system.h"
-#include "i_thread.h"
-
 
 
 //
@@ -165,6 +164,7 @@ void R_SetViewSize (int blocks, int detail);
 #if defined( __cplusplus )
 
 #include "m_container.h"
+#include "i_thread.h"
 
 template< typename _ty, typename... _args >
 INLINE _ty* R_AllocateScratch( atomicval_t numinstances, const _args&... args )

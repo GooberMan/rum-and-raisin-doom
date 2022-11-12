@@ -32,6 +32,7 @@
 #include <tuple>
 #include <array>
 #include <type_traits>
+#include <atomic>
 
 template< typename _ty, int32_t _tag = PU_STATIC >
 struct DoomAllocator
@@ -373,6 +374,39 @@ auto Concat( _c1& c1, _c2& c2, _cN&... cN )
 
 	return ConcatType( c1, concat );
 }
+
+template< typename _ty >
+class AtomicCircularQueue
+{
+public:
+	using value_type = _ty;
+
+	// Currently has no protection for buffer overrun
+
+	AtomicCircularQueue() = delete;
+	AtomicCircularQueue( size_t len )
+		: current( 0 )
+		, end( 0 )
+		, reserved( 0 )
+	{
+		data.resize( len );
+	}
+
+	_ty& access()					{ return data[ current.load() % data.size() ]; }
+	_ty pop()						{ return data[ current.fetch_add( 1 ) % data.size() ]; }
+
+	_ty& reserve( size_t& token )	{ token = reserved.fetch_add( 1 ); return data[ token ]; }
+	void commit( size_t token )		{ while( end.compare_exchange_weak( token, token + 1 ) ) { } }
+	void push( _ty& data )			{ size_t ind; reserve( ind ) = data; commit( ind ); }
+
+	bool valid()					{ return current.load() != end.load(); }
+
+private:
+	std::vector< _ty >				data;
+	std::atomic< size_t >			current;
+	std::atomic< size_t >			end;
+	std::atomic< size_t >			reserved;
+};
 
 #endif // __cplusplus
 

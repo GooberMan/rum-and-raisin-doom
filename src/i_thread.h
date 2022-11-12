@@ -19,49 +19,40 @@
 #ifndef __I_THREAD__
 #define __I_THREAD__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "doomtype.h"
 
-typedef int32_t (*threadfunc_t)( void* );
-typedef void* threadhandle_t;
-typedef ptrdiff_t atomicval_t;
-typedef atomicval_t* atomicptr_t;
+DOOM_C_API typedef int32_t (*threadfunc_t)( void* );
+DOOM_C_API typedef void* threadhandle_t;
+DOOM_C_API typedef ptrdiff_t atomicval_t;
+DOOM_C_API typedef atomicval_t* atomicptr_t;
 
-typedef void* semaphore_t;
+DOOM_C_API typedef void* semaphore_t;
 
 #ifdef _MSC_VER
-#define THREADLOCAL static __declspec(thread)
+#define THREADLOCAL DOOM_C_API static __declspec(thread)
 #else
-#define THREADLOCAL static __thread
+#define THREADLOCAL DOOM_C_API static __thread
 #endif // _MSC_VER
 
-threadhandle_t I_ThreadCreate( threadfunc_t runfunc, void* userdata );
-void I_ThreadDestroy( threadhandle_t thread );
-void I_ThreadJoin( threadhandle_t thread );
+DOOM_C_API threadhandle_t I_ThreadCreate( threadfunc_t runfunc, void* userdata );
+DOOM_C_API void I_ThreadDestroy( threadhandle_t thread );
+DOOM_C_API void I_ThreadJoin( threadhandle_t thread );
 
-size_t I_ThreadGetHardwareCount( void );
+DOOM_C_API size_t I_ThreadGetHardwareCount( void );
 
-void I_Yield( void );
+DOOM_C_API void I_Yield( void );
 
-semaphore_t I_SemaphoreCreate( int32_t initialcount );
-void I_SemaphoreAcquire( semaphore_t sem );
-void I_SemaphoreRelease( semaphore_t sem );
+DOOM_C_API semaphore_t I_SemaphoreCreate( int32_t initialcount );
+DOOM_C_API void I_SemaphoreAcquire( semaphore_t sem );
+DOOM_C_API void I_SemaphoreRelease( semaphore_t sem );
 
 // Do we need to go this cray cray?
 //atomicptr_t I_AtomicCreate( atomicval_t init );
 //void I_AtomicDestroy( void );
 
-
-atomicval_t I_AtomicLoad( atomicptr_t atomic );
-atomicval_t I_AtomicExchange( atomicptr_t atomic, atomicval_t val );
-atomicval_t I_AtomicIncrement( atomicptr_t atomic, atomicval_t val );
-atomicval_t I_AtomicDecrement( atomicptr_t atomic, atomicval_t val );
-
-#ifdef __cplusplus
-}
-#endif
+DOOM_C_API atomicval_t I_AtomicLoad( atomicptr_t atomic );
+DOOM_C_API atomicval_t I_AtomicExchange( atomicptr_t atomic, atomicval_t val );
+DOOM_C_API atomicval_t I_AtomicIncrement( atomicptr_t atomic, atomicval_t val );
+DOOM_C_API atomicval_t I_AtomicDecrement( atomicptr_t atomic, atomicval_t val );
 
 #endif // __I_THREAD__
