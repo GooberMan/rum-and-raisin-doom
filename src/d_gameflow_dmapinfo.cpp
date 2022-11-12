@@ -16,6 +16,8 @@
 #include "d_gameflow.h"
 
 #include "m_container.h"
+#include "m_conv.h"
+
 #include "w_wad.h"
 
 #include <sstream>
@@ -69,7 +71,7 @@ static void Sanitize( DoomString& currline )
 	}
 }
 
-static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
+static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 {
 	dmapinfo::map_t& newmap = *dmapinfo::maps.insert( dmapinfo::maps.end(), dmapinfo::map_t() );
 
@@ -81,7 +83,7 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 	{
 		Sanitize( currline );
 
-		std::istringstream currlinestream( currline );
+		DoomIStringStream currlinestream( currline );
 
 		currlinestream >> std::quoted( lhs );
 		currlinestream >> std::quoted( middle );
@@ -106,7 +108,7 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 		}
 		else if( lhs == "par" )
 		{
-			newmap.par_time = std::stoi( rhs );
+			newmap.par_time = to< int32_t >( rhs );
 		}
 		else if( lhs == "music" )
 		{
@@ -114,11 +116,11 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 		}
 		else if( lhs == "episodenumber" )
 		{
-			newmap.episode_number = std::stoi( rhs );
+			newmap.episode_number = to< int32_t >( rhs );
 		}
 		else if( lhs == "mapnumber" )
 		{
-			newmap.map_number = std::stoi( rhs );
+			newmap.map_number = to< int32_t >( rhs );
 		}
 		else if( lhs == "endsequence" )
 		{
@@ -133,7 +135,7 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 			currlinestream >> std::quoted( scroll );
 			if( !scroll.empty() )
 			{
-				newmap.sky_scroll_speed = std::stoi( scroll );
+				newmap.sky_scroll_speed = to< int32_t >( scroll );
 			}
 		}
 		else if( lhs == "map07special" )
@@ -145,7 +147,7 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 
 }
 
-static void ParseEpisode( std::stringstream& lumpstream, DoomString& currline )
+static void ParseEpisode( DoomStringStream& lumpstream, DoomString& currline )
 {
 	dmapinfo::episode_t& newep = *dmapinfo::episodes.insert( dmapinfo::episodes.end(), dmapinfo::episode_t() );
 
@@ -157,7 +159,7 @@ static void ParseEpisode( std::stringstream& lumpstream, DoomString& currline )
 	{
 		Sanitize( currline );
 
-		std::istringstream currlinestream( currline );
+		DoomIStringStream currlinestream( currline );
 
 		currlinestream >> std::quoted( lhs );
 		currlinestream >> std::quoted( middle );
@@ -181,7 +183,7 @@ static void ParseEpisode( std::stringstream& lumpstream, DoomString& currline )
 
 }
 
-static void ParseEndSequence( std::stringstream& lumpstream, DoomString& currline )
+static void ParseEndSequence( DoomStringStream& lumpstream, DoomString& currline )
 {
 	dmapinfo::endsequence_t& newseq = *dmapinfo::endsequences.insert( dmapinfo::endsequences.end(), dmapinfo::endsequence_t() );
 
@@ -195,7 +197,7 @@ static void ParseEndSequence( std::stringstream& lumpstream, DoomString& currlin
 	{
 		Sanitize( currline );
 
-		std::istringstream currlinestream( currline );
+		DoomIStringStream currlinestream( currline );
 
 		currlinestream >> std::quoted( lhs );
 		currlinestream >> std::quoted( middle );
@@ -410,7 +412,7 @@ void D_GameflowParseDMAPINFO( int32_t lumpnum )
 {
 	DoomString lumptext( (size_t)W_LumpLength( lumpnum ) + 1, 0 );
 	W_ReadLump( lumpnum, (void*)lumptext.c_str() );
-	std::stringstream lumpstream( lumptext );
+	DoomStringStream lumpstream( lumptext );
 	DoomString currline;
 
 	while( std::getline( lumpstream, currline ) )

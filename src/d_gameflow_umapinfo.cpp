@@ -17,9 +17,9 @@
 #include "m_fixed.h"
 #include "doomstat.h"
 #include "m_container.h"
+#include "m_conv.h"
 #include "w_wad.h"
 
-#include <sstream>
 #include <iomanip>
 
 
@@ -382,7 +382,7 @@ static void Sanitize( DoomString& currline )
 	std::replace( currline.begin(), currline.end(), '\t', ' ' );
 	currline.erase( std::remove( currline.begin(), currline.end(), '\r' ), currline.end() );
 	size_t startpos = currline.find_first_not_of( " " );
-	if( startpos != std::string::npos && startpos > 0 )
+	if( startpos != DoomString::npos && startpos > 0 )
 	{
 		currline = currline.substr( startpos );
 	}
@@ -395,9 +395,9 @@ static void ToLower( DoomString& str )
 }
 
 static void HandleIntertext( DoomString& targetstring, bool& targetclear
-							, std::stringstream& lumpstream
+							, DoomStringStream& lumpstream
 							, DoomString& currline
-							, std::istringstream& currlinestream
+							, DoomIStringStream& currlinestream
 							, DoomString& content )
 {
 	if( content == "clear" )
@@ -416,7 +416,7 @@ static void HandleIntertext( DoomString& targetstring, bool& targetclear
 
 			Sanitize( currline );
 
-			currlinestream = std::istringstream( currline );
+			currlinestream = DoomIStringStream( currline );
 
 			currlinestream >> std::quoted( content );
 			currlinestream >> std::quoted( comma );
@@ -427,7 +427,7 @@ static void HandleIntertext( DoomString& targetstring, bool& targetclear
 	}
 }
 
-static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
+static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 {
 	umapinfo::map_t& newmap = *umapinfo::maps.insert( umapinfo::maps.end(), umapinfo::map_t() );
 
@@ -439,7 +439,7 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 	{
 		Sanitize( currline );
 
-		std::istringstream currlinestream( currline );
+		DoomIStringStream currlinestream( currline );
 
 		currlinestream >> std::quoted( lhs );
 		currlinestream >> std::quoted( middle );
@@ -500,7 +500,7 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 		}
 		else if( lhs == "partime" )
 		{
-			newmap.partime = std::stoi( rhs );
+			newmap.partime = to< int32_t >( rhs );
 		}
 		else if( lhs == "endgame" )
 		{
@@ -580,8 +580,8 @@ static void ParseMap( std::stringstream& lumpstream, DoomString& currline )
 					umapinfo::bossaction_t& action = *newmap.bossactions.insert( newmap.bossactions.end(), umapinfo::bossaction_t() );
 
 					action.thingtype = found->second;
-					action.linespecial = std::stoi( linetype );
-					action.tag = std::stoi( tag );
+					action.linespecial = to< int32_t >( linetype );
+					action.tag = to< int32_t >( tag );
 				}
 			}
 		}
@@ -885,7 +885,7 @@ void D_GameflowParseUMAPINFO( int32_t lumpnum )
 {
 	DoomString lumptext( (size_t)W_LumpLength( lumpnum ) + 1, 0 );
 	W_ReadLump( lumpnum, (void*)lumptext.c_str() );
-	std::stringstream lumpstream( lumptext );
+	DoomStringStream lumpstream( lumptext );
 	DoomString currline;
 
 	while( std::getline( lumpstream, currline ) )

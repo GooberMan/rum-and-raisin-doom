@@ -26,6 +26,7 @@
 #include <span>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <map>
 #include <unordered_map>
 #include <algorithm>
@@ -123,7 +124,46 @@ using DoomUnorderedMap = std::unordered_map< _key, _val, std::hash< _key >, std:
 template< typename _key, typename _val, int32_t _tag = PU_STATIC >
 using DoomMap = std::map< _key, _val, std::less< _key > >; //, DoomAllocator< std::pair< const _key, _val >, _tag > >;
 
-using DoomString = std::basic_string< char, std::char_traits< char > >; //, DoomAllocator< char, PU_STATIC > >;
+template< typename _char >
+struct DoomStringTraits : std::char_traits< _char >
+{
+	using char_type = _char;
+
+	static constexpr bool eq( const char_type& lhs, const char_type& rhs )	{ return tolower( lhs ) == tolower( rhs ); }
+	static constexpr bool ne( const char_type& lhs, const char_type& rhs )	{ return tolower( lhs ) != tolower( rhs ); }
+	static constexpr bool lt( const char_type& lhs, const char_type& rhs )	{ return tolower( lhs ) < tolower( rhs ); }
+	static constexpr bool gt( const char_type& lhs, const char_type& rhs )	{ return tolower( lhs ) > tolower( rhs ); }
+
+	static constexpr int32_t compare( const char_type* lhs, const char_type* rhs, size_t len )
+	{
+		for( ; len > 0; --len, ++lhs, ++rhs )
+		{
+			int32_t diff = tolower( *lhs ) - tolower( *rhs );
+			if( diff != 0 )
+			{
+				return diff;
+			}
+		}
+		return 0;
+	}
+
+	static constexpr const char_type* find( const char_type* search, size_t len, char_type val )
+	{
+		val = tolower( val );
+		for( ; len > 0; --len, ++search )
+		{
+			if( tolower( *search ) == val )
+			{
+				return search;
+			}
+		}
+		return nullptr;
+	}
+};
+
+using DoomString = std::basic_string< char, DoomStringTraits< char > >; //, DoomAllocator< char, PU_STATIC > >;
+using DoomIStringStream = std::basic_istringstream< char, DoomStringTraits< char > >; //, DoomAllocator< char, PU_STATIC > >;
+using DoomStringStream = std::basic_stringstream< char, DoomStringTraits< char > >; //, DoomAllocator< char, PU_STATIC > >;
 
 // Reformatted copypasta from https://ctrpeach.io/posts/cpp20-string-literal-template-parameters/
 template< size_t _length >

@@ -22,6 +22,7 @@
 #include "doomtype.h"
 #include <type_traits>
 #include <string>
+#include <cstdlib>
 
 template< typename _ty >
 struct is_std_string : std::false_type { };
@@ -32,47 +33,49 @@ struct is_std_string< typename std::basic_string< _val, _trait, _alloc > > : std
 template< typename _ty >
 constexpr bool is_std_string_v = is_std_string< _ty >::value;
 
-// Basic types from string
-template< typename _ty, typename _str >
-requires is_std_string_v< _str > && std::is_integral_v< _ty >
-INLINE auto to( const _str& val )
+template< typename _ty >
+requires std::is_integral_v< _ty >
+INLINE _ty stringto( const char* start, size_t* index = nullptr, int base = 10 )
 {
+	char* end;
+	_ty output;
 	if constexpr( std::is_unsigned_v< _ty > )
 	{
-		return (_ty)std::stoull( val );
+		output = (_ty)strtoull( start, &end, base );
 	}
 	else
 	{
-		return (_ty)std::stoll( val );
+		output = (_ty)strtoll( start, &end, base );
 	}
+
+	if( index != nullptr )
+	{
+		*index = (size_t)( end - start );
+	}
+
+	return output;
 }
 
+// Basic types from string
 template< typename _ty, typename _str >
 requires std::is_same_v< _ty, const char* > && std::is_integral_v< _ty >
 INLINE auto to( _str val )
 {
-	if constexpr( std::is_unsigned_v< _ty > )
-	{
-		return (_ty)std::stoull( val );
-	}
-	else
-	{
-		return (_ty)std::stoll( val );
-	}
+	return stringto< _ty >( val );
+}
+
+template< typename _ty, typename _str >
+requires is_std_string_v< _str > && std::is_integral_v< _ty >
+INLINE auto to( const _str& val )
+{
+	return stringto< _ty >( val.c_str() );
 }
 
 template< typename _ty, size_t _len >
 requires std::is_integral_v< _ty >
 INLINE auto to( const char( &val )[ _len ] )
 {
-	if constexpr( std::is_unsigned_v< _ty > )
-	{
-		return (_ty)std::stoull( val );
-	}
-	else
-	{
-		return (_ty)std::stoll( val );
-	}
+	return stringto< _ty >( (const char*)val );
 }
 
 

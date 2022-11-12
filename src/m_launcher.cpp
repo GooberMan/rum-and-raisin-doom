@@ -34,7 +34,7 @@
 
 static bool schedule_launcher = false;
 
-DoomString M_DashboardLauncherWindow();
+std::string M_DashboardLauncherWindow();
 void M_DashboardPrepareRender();
 void M_DashboardFinaliseRender();
 
@@ -145,13 +145,13 @@ void M_PerformLauncher()
 		}
 		else
 		{
-			launcher_args = M_DashboardLauncherWindow();
+			launcher_args = M_DashboardLauncherWindow().c_str();
 		}
 
 		std::vector< DoomString > params;
 		DoomString curr_param;
 
-		std::istringstream argsstream( launcher_args );
+		DoomIStringStream argsstream( launcher_args );
 		while( true )
 		{
 			argsstream >> std::quoted( curr_param, '\"', '\0' );
