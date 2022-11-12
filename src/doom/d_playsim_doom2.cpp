@@ -68,8 +68,8 @@ extern intermission_t	doom2_intermission_s2;
 extern endgame_t		doom2_endgame;
 
 #define levename_format_text "CWILV%2.2d"
-#define levellump0_format_text "map0%d"
-#define levellumpn_format_text "map%d"
+#define levellump0_format_text "MAP0%d"
+#define levellumpn_format_text "MAP%d"
 
 // Helpers
 
