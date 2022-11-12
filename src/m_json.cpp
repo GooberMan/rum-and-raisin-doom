@@ -29,6 +29,70 @@ static INLINE bool IsAnyNumber( const std::string& val )
 	return std::regex_match( val, AnyNumberRegex );
 }
 
+static void Extract( std::istringstream& input, std::string& output )
+{
+	output.clear();
+	bool inquote = false;
+	bool inescape = false;
+	bool stillvalid = true;
+	while( stillvalid )
+	{
+		char current = input.get();
+
+		bool add = true;
+		inescape = inquote && current == '\\';
+
+		if( !inquote )
+		{
+			inquote = current == '\"';
+		}
+		else if( !inescape )
+		{
+			inquote = current != '\"';
+		}
+
+		if( inquote )
+		{
+			add = inescape || current != '\"';
+		}
+		else
+		{
+			stillvalid = !( std::isspace( current ) || current == '{' || current == '}' || current == '[' || current == ']' || current == ':' || current == ',' );
+			add = !std::isspace( current ) && current != '\"';
+		}
+
+		if( add ) output += current;
+
+		if( input.peek() == ':' || input.peek() == ',' || input.peek() == '{' || input.peek() == '}' || input.peek() == '[' || input.peek() == ']' )
+		{
+			stillvalid = false;
+		}
+	}
+}
+
+static void StripWhitespace( std::string& val )
+{
+	std::string::iterator curr = val.begin();
+	bool inquote = false;
+	bool inescape = false;
+	while( curr != val.end() )
+	{
+		if( !inquote ) inquote = *curr == '\"';
+		else if( !inescape ) inescape = *curr == '\\';
+
+		if( inquote && !inescape ) inquote = *curr != '\"';
+
+		if( !inquote && std::isspace( *curr ) )
+		{
+			curr = val.erase( curr );
+		}
+		else
+		{
+			++curr;
+		}
+	}
+}
+
 std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 {
 	std::string token;
@@ -37,35 +101,19 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 
 	do
 	{
-		jsonstream >> std::quoted( key );
+		Extract( jsonstream, key );
 		if( key == "}" )
 		{
 			token = key;
 			break;
 		}
-		jsonstream >> std::quoted( token );
-		jsonstream >> std::quoted( value );
-		if( value.ends_with( ',' ) )
-		{
-			value = value.substr( 0, value.size() - 1 );
-			token = ",";
-		}
-		else
-		{
-			if( value != "{" )
-			{
-				jsonstream >> std::quoted( token );
-			}
-		}
+		Extract( jsonstream, token );
+		Extract( jsonstream, value );
 
 		if( value == "{" )
 		{
 			JSONElement& newelem = AddElement( key );
 			token = newelem.DeserialiseElement( jsonstream );
-			if( token.ends_with( ',' ) )
-			{
-				token = ",";
-			}
 		}
 		else if( value == "[" )
 		{
@@ -80,6 +128,7 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 			AddString( key, value );
 		}
 
+		Extract( jsonstream, token );
 	} while( token == "," );
 
 	return token;
@@ -87,10 +136,12 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 
 JSONElement JSONElement::Deserialise( const std::string& jsondoc )
 {
-	std::istringstream jsonstream( jsondoc );
+	std::string stripped = jsondoc;
+	StripWhitespace( stripped );
+	std::istringstream jsonstream( stripped );
 
 	std::string token;
-	jsonstream >> std::quoted( token );
+	Extract( jsonstream, token );
 	if( token == "{" )
 	{
 		JSONElement root( JSONElementType::Element );
