@@ -22,11 +22,14 @@
 #include "doomtype.h"
 #include "m_container.h"
 #include "m_conv.h"
+
 #include <sstream>
+#include <ranges>
 
 enum class JSONElementType : int32_t
 {
 	Invalid,
+	Null,
 	String,
 	Number,
 	Element,
@@ -57,51 +60,97 @@ public:
 
 	std::string Serialise( size_t depth = 0 );
 
-	const JSONElement& AddString( const std::string& key, const std::string& val )
+	const JSONElement& AddNull( const std::string& key )
 	{
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
+		{
+			return empty;
+		}
+
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Null ) );
 		if( type == JSONElementType::Element )
 		{
-			JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::String ) );
+			output.key = key;
+			element_indices[ key ] = children.size() - 1;
+		}
+
+		return output;
+	}
+
+	const JSONElement& AddString( const std::string& key, const std::string& val )
+	{
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
+		{
+			return empty;
+		}
+
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::String ) );
+		if( type == JSONElementType::Element )
+		{
 			output.key = key;
 			output.value = val;
 			element_indices[ key ] = children.size() - 1;
-			return output;
 		}
 
-		return empty;
+		return output;
 	}
 
 	template< typename _ty >
 	requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >
 	const JSONElement& AddNumber( const std::string& key, const _ty val )
 	{
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
+		{
+			return empty;
+		}
+
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Number ) );
 		if( type == JSONElementType::Element )
 		{
-			JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Number ) );
 			output.key = key;
 			output.value = ::to< std::string >( val );
 			element_indices[ key ] = children.size() - 1;
-			return output;
 		}
 
-		return empty;
+		return output;
 	}
 
 	JSONElement& AddElement( const std::string& key )
 	{
-		if( type == JSONElementType::Element )
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
 		{
-			JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Element ) );
-			output.key = key;
-			element_indices[ key ] = children.size() - 1;
-			return output;
+			// THIS IS UGLY, FIX THIS
+			return (JSONElement&)empty;
 		}
 
-		// THIS IS UGLY, FIX THIS
-		return (JSONElement&)empty;
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Element ) );
+		if( type == JSONElementType::Element )
+		{
+			output.key = key;
+			element_indices[ key ] = children.size() - 1;
+		}
+
+		return output;
 	}
 
-	const JSONElement& operator[] ( const std::string& key )
+	JSONElement& AddArray( const std::string& key )
+	{
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
+		{
+			// THIS IS UGLY, FIX THIS
+			return (JSONElement&)empty;
+		}
+
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::ElementArray ) );
+		if( type == JSONElementType::Element )
+		{
+			output.key = key;
+			element_indices[ key ] = children.size() - 1;
+		}
+		return output;
+	}
+
+	const JSONElement& operator[]( const std::string& key ) const
 	{
 		if( type == JSONElementType::Element && !children.empty() )
 		{
@@ -115,7 +164,7 @@ public:
 		return empty;
 	}
 
-	const JSONElement& operator[] ( const size_t index )
+	const JSONElement& operator[]( const size_t index ) const
 	{
 		if( type == JSONElementType::ElementArray && !children.empty() )
 		{
@@ -124,6 +173,14 @@ public:
 
 		return empty;
 	}
+
+	auto Children() const
+	{
+		return std::ranges::views::take( children, type == JSONElementType::ElementArray ? children.size() : 0 );
+	}
+
+	auto& Key() const		{ return key; }
+	auto& Value() const		{ return value; }
 
 	template< typename _ty >
 	requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >
@@ -143,16 +200,20 @@ private:
 
 	const JSONElement& AddNumber( const std::string& key, const std::string& val )
 	{
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
+		{
+			return empty;
+		}
+
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Number ) );
 		if( type == JSONElementType::Element )
 		{
-			JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Number ) );
 			output.key = key;
 			output.value = val;
 			element_indices[ key ] = children.size() - 1;
-			return output;
 		}
 
-		return empty;
+		return output;
 	}
 
 

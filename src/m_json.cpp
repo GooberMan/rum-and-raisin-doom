@@ -34,21 +34,28 @@ static void Extract( std::istringstream& input, std::string& output )
 	output.clear();
 	bool inquote = false;
 	bool inescape = false;
-	bool stillvalid = true;
+	bool stillvalid = !input.eof();
 	while( stillvalid )
 	{
 		char current = input.get();
 
 		bool add = true;
-		inescape = inquote && current == '\\';
-
-		if( !inquote )
+		if( inquote && !inescape )
+		{
+			inquote = current != '\"';
+			inescape = current == '\\';
+		}
+		else if( !inquote )
 		{
 			inquote = current == '\"';
 		}
 		else if( !inescape )
 		{
-			inquote = current != '\"';
+			inescape = current == '\\';
+		}
+		else
+		{
+			inescape = false;
 		}
 
 		if( inquote )
@@ -63,7 +70,11 @@ static void Extract( std::istringstream& input, std::string& output )
 
 		if( add ) output += current;
 
-		if( input.peek() == ':' || input.peek() == ',' || input.peek() == '{' || input.peek() == '}' || input.peek() == '[' || input.peek() == ']' )
+		if( input.eof() )
+		{
+			stillvalid = false;
+		}
+		else if( !inquote && ( input.peek() == ':' || input.peek() == ',' || input.peek() == '{' || input.peek() == '}' || input.peek() == '[' || input.peek() == ']' ) )
 		{
 			stillvalid = false;
 		}
@@ -77,12 +88,25 @@ static void StripWhitespace( std::string& val )
 	bool inescape = false;
 	while( curr != val.end() )
 	{
-		if( !inquote ) inquote = *curr == '\"';
-		else if( !inescape ) inescape = *curr == '\\';
+		if( inquote && !inescape )
+		{
+			inquote = *curr != '\"';
+			inescape = *curr == '\\';
+		}
+		else if( !inquote )
+		{
+			inquote = *curr == '\"';
+		}
+		else if( !inescape )
+		{
+			inescape = *curr == '\\';
+		}
+		else
+		{
+			inescape = false;
+		}
 
-		if( inquote && !inescape ) inquote = *curr != '\"';
-
-		if( !inquote && std::isspace( *curr ) )
+		if( !inquote && std::isspace( (unsigned char)*curr ) )
 		{
 			curr = val.erase( curr );
 		}
@@ -102,10 +126,25 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 	do
 	{
 		Extract( jsonstream, key );
-		if( key == "}" )
+		if( type == JSONElementType::ElementArray )
 		{
-			token = key;
-			break;
+			if( key == "{" )
+			{
+				JSONElement& newelem = AddElement( "" );
+				newelem.DeserialiseElement( jsonstream );
+				Extract( jsonstream, token );
+				continue;
+			}
+			else if( key == "]" )
+			{
+				Extract( jsonstream, token );
+				continue;
+			}
+		}
+		else if( key == "}"  )
+		{
+			Extract( jsonstream, token );
+			continue;
 		}
 		Extract( jsonstream, token );
 		Extract( jsonstream, value );
@@ -113,11 +152,18 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 		if( value == "{" )
 		{
 			JSONElement& newelem = AddElement( key );
-			token = newelem.DeserialiseElement( jsonstream );
+			newelem.DeserialiseElement( jsonstream );
+			Extract( jsonstream, token );
 		}
 		else if( value == "[" )
 		{
-			I_Error( "Don't do this yet" );
+			JSONElement& newelem = AddArray( key );
+			newelem.DeserialiseElement( jsonstream );
+			Extract( jsonstream, token );
+		}
+		else if( value == "null" )
+		{
+			AddNull( key );
 		}
 		else if( IsAnyNumber( value ) )
 		{
