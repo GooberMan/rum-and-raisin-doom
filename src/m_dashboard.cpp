@@ -61,8 +61,9 @@ typedef struct menuentry_s menuentry_t;
 #define MAXENTRIES		256
 #define MAXNAMELENGTH	127
 
-static ImFont* font_default = nullptr;
-static ImFont* font_inconsolata = nullptr;
+ImFont* font_default = nullptr;
+ImFont* font_inconsolata = nullptr;
+ImFont* font_inconsolata_large = nullptr;
 
 // Filled out on init
 static ImVec4 theme_original[ ImGuiCol_COUNT ];
@@ -806,6 +807,7 @@ void M_InitDashboard( void )
 	config.GlyphExtraSpacing.x = 1.0f;
 	M_snprintf( config.Name, arrlen( config.Name ), InconsolataName() );
 	font_inconsolata = ImFontAtlas_AddFontFromMemoryCompressedTTF( igGetIO()->Fonts, (void*)InconsolataData(), InconsolataSize(), 14.0f, nullptr, nullptr);
+	font_inconsolata_large = ImFontAtlas_AddFontFromMemoryCompressedTTF( igGetIO()->Fonts, (void*)InconsolataData(), InconsolataSize(), 42.0f, nullptr, nullptr);
 
 	font_default = ImFontAtlas_AddFontDefault( igGetIO()->Fonts, nullptr );
 	ImFontAtlas_Build( igGetIO()->Fonts );

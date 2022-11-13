@@ -83,7 +83,75 @@ constexpr const char* cache_local			= ".rumandraisincache" DIR_SEPARATOR_S "loca
 constexpr const char* cache_download		= ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
 constexpr const char* cache_idgames			= "idgames" DIR_SEPARATOR_S;
 
+typedef struct idgamesmirror_s
+{
+	const char* url;
+	const char* location;
+} idgamesmirror_t;
+
+constexpr idgamesmirror_t MakeMirror( const char* url, const char* location )
+{
+	idgamesmirror_t mirror = { url, location };
+	return mirror;
+};
+
+constexpr idgamesmirror_t idgames_mirrors[] =
+{
+	MakeMirror( "ftp://mirrors.syringanetworks.net/idgames/", "Idaho, US (FTP)" ),
+	MakeMirror( "ftp://ftp.fu-berlin.de/pc/games/idgames/", "Berlin, DE (FTP)" ),
+	MakeMirror( "https://www.quaddicted.com/files/idgames/", "Falkenstein, DE" ),
+	MakeMirror( "https://ftpmirror1.infania.net/pub/idgames/", "Varberg, SE" ),
+	MakeMirror( "https://youfailit.net/pub/idgames/", "New York, US" ),
+	MakeMirror( "https://www.gamers.org/pub/idgames/", "Virginia, US" ),
+};
+
+constexpr auto Mirrors() { return std::span( idgames_mirrors, arrlen( idgames_mirrors ) ); }
+
 constexpr ImVec2 zero = { 0, 0 };
+
+typedef struct vec2_s
+{
+	float_t		x;
+	float_t		y;
+} vec2_t;
+
+typedef struct triangle_s
+{
+	vec2_t		p1;
+	vec2_t		p2;
+	vec2_t		p3;
+} triangle_t;
+
+constexpr vec2_t MakeVec2( float_t x, float_t y )
+{
+	vec2_t out = { x, y };
+	return out;
+}
+
+constexpr triangle_t MakeTriangle( const vec2_t& p1, const vec2_t& p2, const vec2_t& p3 )
+{
+	triangle_t out = { p1, p2, p3 };
+	return out;
+}
+
+// Icons from Google converted to triangle meshes
+
+// https://materialdesignicons.com/icon/star
+constexpr triangle_t mesh_star[] =
+{
+	MakeTriangle( MakeVec2( 0.0,0.4333333333 ),				MakeVec2( -0.5166666667,0.7416666667 ),		MakeVec2( -0.3833333333,0.1583333333 ) ),
+	MakeTriangle( MakeVec2( -0.3833333333,0.1583333333 ),	MakeVec2( -0.8333333333,-0.2333333333 ),	MakeVec2( -0.2416666667,-0.2833333333 ) ),
+	MakeTriangle( MakeVec2( -0.2416666667,-0.2833333333 ),	MakeVec2( 0.0,-0.8333333333 ),				MakeVec2( 0.2333333333,-0.2833333333 ) ),
+	MakeTriangle( MakeVec2( 0.2333333333,-0.2833333333 ),	MakeVec2( 0.825,-0.2333333333 ),			MakeVec2( 0.375,0.1583333333 ) ),
+	MakeTriangle( MakeVec2( 0.375,0.1583333333 ),			MakeVec2( 0.5083333333,0.7416666667 ),		MakeVec2( 0.0,0.4333333333 ) ),
+	MakeTriangle( MakeVec2( 0.0,0.4333333333 ),				MakeVec2( -0.3833333333,0.1583333333 ),		MakeVec2( -0.2416666667,-0.2833333333 ) ),
+	MakeTriangle( MakeVec2( -0.2416666667,-0.2833333333 ),	MakeVec2( 0.2333333333,-0.2833333333 ),		MakeVec2( 0.375,0.1583333333 ) ),
+	MakeTriangle( MakeVec2( 0.375,0.1583333333 ),			MakeVec2( 0.0,0.4333333333 ),				MakeVec2( -0.2416666667,-0.2833333333 ) )
+};
+
+// https://materialdesignicons.com/icon/download
+
+constexpr auto Star() { return std::span( mesh_star, arrlen( mesh_star ) ); }
 
 template< typename... _args >
 void igCentreText( const char* string, _args&... args )
@@ -190,6 +258,91 @@ bool igButtonCustomContents( const char* textid, const ImVec2& size, ImGuiButton
 	window->DC.CursorPos = nextcursor;
 
 	return pressed;
+}
+
+void igMesh( const triangle_t* triangles, size_t count, ImVec2 size, ImU32 colour )
+{
+	ImGuiWindow* window = igGetCurrentWindow();
+	if (window->SkipItems)
+		return;
+
+	ImVec2 iconcursor;
+	igGetCursorScreenPos( &iconcursor );
+
+	float maxdimension = size.x > size.y ? size.x : size.y;
+
+	ImRect bb;
+	bb.Min = bb.Max = window->DC.CursorPos;
+	bb.Max.x += maxdimension;
+	bb.Max.y += maxdimension;
+
+	igItemSizeRect( bb, -1.f );
+	if ( !igItemAdd(bb, 0, 0) )
+		return;
+
+	vec2_t extents = { size.x * 0.5, size.y * 0.5 };
+	vec2_t cursor = { iconcursor.x + extents.x, iconcursor.y + extents.y };
+
+	auto scale_translate = [ &extents, cursor ]( const vec2_t& val )
+	{
+		ImVec2 out = { cursor.x + val.x * extents.x, cursor.y + val.y * extents.y };
+		return out;
+	};
+
+
+	ImDrawList* drawlist = igGetWindowDrawList();
+
+	for( auto& tri : std::span( triangles, count ) )
+	{
+		ImDrawList_AddTriangleFilled( drawlist, scale_translate( tri.p1 ), scale_translate( tri.p2 ), scale_translate( tri.p3 ), colour );
+	}
+}
+
+// Convert the rating to a scalar between 0-1
+void igRating( const char* textid, double_t rating, int32_t totalstars, ImVec2 size, ImU32 colour_front, ImU32 colour_back )
+{
+	ImGuiWindow* window = igGetCurrentWindow();
+	if (window->SkipItems)
+		return;
+
+	ImGuiContext* g = igGetCurrentContext();
+	const ImGuiStyle* style = &g->Style;
+	const ImGuiID id = ImGuiWindow_GetIDStr( window, textid, nullptr );
+
+	ImVec2 pos;
+	igGetCursorScreenPos( &pos );
+	ImVec2 curr = pos;
+
+	constexpr float_t spacing = 0;
+
+	ImRect bb;
+	bb.Min = bb.Max = pos;
+	bb.Max.x += size.x * ( rating * totalstars ) + spacing * totalstars;
+	bb.Max.y += size.y;
+
+	igPushClipRect( bb.Min, bb.Max, true );
+	for( int32_t currstar : iota( 0, totalstars ) )
+	{
+		igSetCursorScreenPos( curr );
+		igMesh( mesh_star, arrlen( mesh_star ), size, colour_front );
+		curr.x += size.x + spacing;
+	}
+	igPopClipRect();
+
+	bb.Min = bb.Max = pos;
+	bb.Min.x += size.x * ( rating * totalstars ) + spacing * totalstars;
+	bb.Max.x += ( size.x + spacing ) * totalstars;
+	bb.Max.y += size.y;
+
+	curr = pos;
+	igPushClipRect( bb.Min, bb.Max, true );
+	for( int32_t currstar : iota( 0, totalstars ) )
+	{
+		igSetCursorScreenPos( curr );
+		igMesh( mesh_star, arrlen( mesh_star ), size, colour_back );
+		curr.x += size.x + spacing;
+	}
+	igPopClipRect();
 }
 
 namespace launcher
@@ -991,6 +1144,24 @@ namespace launcher
 		size_t			votes;
 	};
 
+	class IdgamesFilePanel : public LauncherPanel
+	{
+	public:
+		IdgamesFilePanel()
+			: LauncherPanel( "Launcher_IdgamesBrowser" )
+		{
+		}
+
+		virtual void Enter() override
+		{
+		}
+
+	protected:
+		virtual void RenderContents() override
+		{
+		}
+	};
+
 	class IdgamesBrowserPanel : public LauncherPanel
 	{
 	public:
@@ -1109,16 +1280,25 @@ namespace launcher
 
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
-			framesize.y -= backbuttonsize.y + 30;
+			framesize.y -= backbuttonsize.y + 74;
 
+			extern ImFont* font_inconsolata_large;
+
+			igPushFont( font_inconsolata_large );
 			igCentreText( foldernicename.c_str() );
+			igPopFont();
+
+			ImVec2 cursorpos;
+			igGetCursorPos( &cursorpos );
+			cursorpos.y += 4;
+			igSetCursorPos( cursorpos );
 
 			if( igBeginChildFrame( 999, framesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 			{
 				if( listready )
 				{
-					constexpr ImVec2 foldertilesize = { 175.f, 40.f };
-					constexpr ImVec2 filetilesize = { 175.f, 80.f };
+					constexpr ImVec2 foldertilesize = { 176.f, 40.f };
+					constexpr ImVec2 filetilesize = { 176.f, 80.f };
 
 					igPushStyleVarFloat( ImGuiStyleVar_FrameRounding, 3.f );
 
@@ -1139,8 +1319,14 @@ namespace launcher
 					{
 						if( igButtonCustomContents( file.filename.c_str(), size, ImGuiButtonFlags_None, [this, &file]( const ImVec2& size )
 						{
+							constexpr ImVec2 starsize = { 16.f, 20.f };
+							ImVec2 ratingpos;
+							igGetCursorPos( &ratingpos );
+							ratingpos.y += filetilesize.y - starsize.y - 4;
+
 							igText( file.filename.c_str() );
-							igText( "%0.2f stars", (float_t)file.rating );
+							igSetCursorPos( ratingpos );
+							igRating( "starcount", file.rating / 5.0, 5, starsize, igGetColorU32Col( ImGuiCol_Text, 1.0f ), igGetColorU32Col( ImGuiCol_TextDisabled, 1.0f ) );
 						} ) )
 						{
 						}
@@ -1153,7 +1339,6 @@ namespace launcher
 					constexpr ImVec2 loadingsize = { 112.0f, 70.0f };
 
 					ImVec2 content;
-					ImVec2 cursorpos;
 					igGetContentRegionAvail( &content );
 					igGetCursorPos( &cursorpos );
 
@@ -1170,6 +1355,7 @@ namespace launcher
 			{
 				ImVec2 cursorpos;
 				igGetCursorPos( &cursorpos );
+				cursorpos.y += 4;
 
 				if( !norefresh )
 				{
