@@ -77,8 +77,11 @@ constexpr const char* GameVariants[] =
 	"Unity Port"
 };
 
-constexpr const char* idgames_api_url = "https://www.doomworld.com/idgames/api/api.php";
-constexpr const char* idgames_api_folder = "action=getcontents&out=json&name=";
+constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
+constexpr const char* idgames_api_folder	= "action=getcontents&out=json&name=";
+constexpr const char* cache_local			= ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
+constexpr const char* cache_download		= ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
+constexpr const char* cache_idgames			= "idgames" DIR_SEPARATOR_S;
 
 constexpr ImVec2 zero = { 0, 0 };
 
@@ -92,6 +95,101 @@ void igCentreText( const char* string, _args&... args )
 	igCalcTextSize( &textsize, buffer, nullptr, false, -1 );
 	igCentreNextElement( textsize.x );
 	igText( buffer );
+}
+
+template< typename _container, typename _func >
+void igTileView( const _container& items, ImVec2 tilesize, _func&& peritem )
+{
+	ImVec2 region;
+	igGetContentRegionAvail( &region );
+	int32_t columns = M_MAX( 1, region.x / tilesize.x );
+
+	igColumns( columns, "##tileview", false );
+	for( int32_t currcol : iota( 0, columns - 1 ) )
+	{
+		igSetColumnWidth( currcol, tilesize.x + 3.f );
+	}
+
+	int32_t id = 2000;
+	for( auto& val : items )
+	{
+		if( igBeginChildEx( "##tileitem", id++, tilesize, false, ImGuiWindowFlags_None ) )
+		{
+			peritem( val, tilesize );
+		}
+		igEndChild();
+		igNextColumn();
+	}
+
+	igColumns( 1, nullptr, false );
+}
+
+// Copypasta of the imgui button code, but with our own custom framing
+template< typename _func >
+bool igButtonCustomContents( const char* textid, const ImVec2& size, ImGuiButtonFlags flags, _func&& contents )
+{
+	ImGuiWindow* window = igGetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImGuiContext* g = igGetCurrentContext();
+	const ImGuiStyle* style = &g->Style;
+	const ImGuiID id = ImGuiWindow_GetIDStr( window, textid, nullptr );
+
+	ImVec2 pos = window->DC.CursorPos;
+	if( (flags & ImGuiButtonFlags_AlignTextBaseLine) && style->FramePadding.y < window->DC.CurrLineTextBaseOffset )
+	{
+		pos.y += window->DC.CurrLineTextBaseOffset - style->FramePadding.y;
+	}
+
+	ImRect bb;
+	bb.Min = pos;
+	bb.Max = pos;
+	bb.Max.x += size.x;
+	bb.Max.y += size.y;
+
+	igItemSizeVec2( size, style->FramePadding.y );
+
+	if( !igItemAdd( bb, id, 0 ) )
+	{
+		return false;
+	}
+
+	if( window->DC.ItemFlags & ImGuiItemFlags_ButtonRepeat )
+	{
+		flags |= ImGuiButtonFlags_Repeat;
+	}
+	bool hovered = false;
+	bool held = false;
+	bool pressed = igButtonBehavior( bb, id, &hovered, &held, flags );
+
+	// Render
+	const ImU32 col = igGetColorU32Col( (held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button, 1.0f );
+	igRenderNavHighlight( bb, id, ImGuiNavHighlightFlags_TypeDefault );
+	igRenderFrame( bb.Min, bb.Max, col, true, style->FrameRounding );
+
+	ImVec2 nextcursor = window->DC.CursorPos;
+
+	const ImVec2& padding = style->FramePadding;
+	bb.Min.x += padding.x;
+	bb.Min.y += padding.y;
+	bb.Max.x -= padding.x;
+	bb.Max.y -= padding.y;
+	
+	igIndent( padding.x );
+
+	ImVec2 childsize = { bb.Max.x - bb.Min.x, bb.Max.y - bb.Min.y };
+	window->DC.CursorPos = bb.Min;
+
+	igPushClipRect( bb.Min, bb.Max, true );
+	contents( childsize );
+	igPopClipRect();
+
+	igUnindent( padding.x );
+
+	window->DC.CursorPos = nextcursor;
+
+	return pressed;
 }
 
 namespace launcher
@@ -265,7 +363,7 @@ namespace launcher
 		std::string cachepath = configdir;
 		if( cachepath.empty() ) cachepath += ".";
 		if( !cachepath.ends_with( DIR_SEPARATOR_S ) ) cachepath += DIR_SEPARATOR_S;
-		cachepath += "wadcache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S
+		cachepath += cache_local
 					+ filename
 					+ "."
 					+ std::to_string( lastmodified )
@@ -492,7 +590,7 @@ namespace launcher
 			SDL_Window* window = I_GetWindow();
 			SDL_GL_MakeCurrent( window, threaded_context );
 
-			constexpr const char* RegexString = ".+\\.wad";
+			constexpr const char* RegexString = ".+\\.wad$";
 			std::regex WADRegex = std::regex( RegexString, std::regex_constants::icase );
 
 			auto IWADPaths = D_GetIWADPaths();
@@ -794,7 +892,7 @@ namespace launcher
 				igNextColumn();
 
 				igGetContentRegionAvail( &framesize );
-				if( igBeginChildFrame( 669, framesize, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar ) )
+				if( igBeginChildFrame( 671, framesize, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar ) )
 				{
 					if( current >= 0 )
 					{
@@ -879,6 +977,20 @@ namespace launcher
 		}
 	}
 
+	struct IdgamesFile
+	{
+		std::string		fullpath;
+		std::string		filename;
+		std::string		title;
+		std::string		date;
+		std::string		author;
+		std::string		email;
+		std::string		description;
+		size_t			size;
+		double_t		rating;
+		size_t			votes;
+	};
+
 	class IdgamesBrowserPanel : public LauncherPanel
 	{
 	public:
@@ -887,12 +999,18 @@ namespace launcher
 			, foldername( folder )
 			, foldernicename( nicename )
 			, listready( !refresh )
+			, norefresh( false )
 		{
 			if( !foldername.ends_with( '/' ) )
 			{
 				foldername += '/';
 			}
 			query = idgames_api_folder + foldername;
+		}
+
+		void DisallowRefresh()
+		{
+			norefresh = true;
 		}
 
 		void AddFolder( const std::string& name, const std::string& nicename )
@@ -904,28 +1022,89 @@ namespace launcher
 		{
 			if( !listready.load() )
 			{
-				jobs->AddJob( [ this ]()
-				{
-					bool successful = false;
-					std::string listing;
-					while( !successful )
-					{
-						listing.clear();
-						successful = M_URLGetString( listing, idgames_api_url, query.c_str() );
-					}
-
-					JSONElement asjson = JSONElement::Deserialise( listing.c_str() );
-					listready = true;
-				} );
+				RefreshList();
 			}
 		}
 
 		constexpr const std::string& Name()			{ return foldernicename; }
 
 	protected:
+		void RefreshList()
+		{
+			if( norefresh )
+			{
+				return;
+			}
+
+			listready = false;
+			folders.clear();
+			files.clear();
+
+			jobs->AddJob( [ this ]()
+			{
+				bool successful = false;
+				std::string listing;
+				while( !successful )
+				{
+					listing.clear();
+					successful = M_URLGetString( listing, idgames_api_url, query.c_str() );
+				}
+
+				JSONElement asjson = JSONElement::Deserialise( listing.c_str() );
+				const JSONElement& content = asjson[ "content" ];
+				const JSONElement& dirs = content[ "dir" ];
+				for( auto& currdir : dirs.Children() )
+				{
+					const std::string& fulldir = to< std::string >( currdir[ "name" ] );
+					if( fulldir.empty() )
+					{
+						continue;
+					}
+					std::string nicename = fulldir;
+					if( nicename.ends_with( '/' ) )
+					{
+						nicename.erase( nicename.size() - 1, 1 );
+						if( nicename.empty() )
+						{
+							nicename = "[root]";
+						}
+						else
+						{
+							size_t found = nicename.find_last_of( '/' );
+							if( found != std::string::npos )
+							{
+								nicename = nicename.substr( found + 1 );
+							}
+
+						}
+					}
+					folders.push_back( std::make_shared< IdgamesBrowserPanel >( fulldir, nicename ) );
+				}
+
+				const JSONElement& idgamesfiles = content[ "file" ];
+				for( auto& currfile : idgamesfiles.Children() )
+				{
+					IdgamesFile& file = *files.insert( files.end(), IdgamesFile() );
+					file.fullpath		= to< std::string >( currfile[ "dir" ] );
+					file.filename		= to< std::string >( currfile[ "filename" ] );
+					file.title			= to< std::string >( currfile[ "title" ] );
+					file.date			= to< std::string >( currfile[ "date" ] );
+					file.author			= to< std::string >( currfile[ "author" ] );
+					file.email			= to< std::string >( currfile[ "email" ] );
+					file.description	= to< std::string >( currfile[ "description" ] );
+					file.rating			= to< double_t >( currfile[ "rating" ] );
+					file.size			= to< size_t >( currfile[ "size" ] );
+					file.votes			= to< size_t >( currfile[ "votes" ] );
+				}
+
+				listready = true;
+			} );
+		}
+
 		virtual void RenderContents() override
 		{
 			constexpr ImVec2 backbuttonsize = { 50.f, 25.f };
+			constexpr ImVec2 refreshbuttonsize = { 90.f, 25.f };
 			constexpr float_t framepadding = 10;
 
 			ImVec2 framesize;
@@ -934,17 +1113,40 @@ namespace launcher
 
 			igCentreText( foldernicename.c_str() );
 
-			if( igBeginChildFrame( 999, framesize, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			if( igBeginChildFrame( 999, framesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 			{
 				if( listready )
 				{
-					for( auto& folder : folders )
+					constexpr ImVec2 foldertilesize = { 175.f, 40.f };
+					constexpr ImVec2 filetilesize = { 175.f, 80.f };
+
+					igPushStyleVarFloat( ImGuiStyleVar_FrameRounding, 3.f );
+
+					igTileView( folders, foldertilesize, [this]( const std::shared_ptr< IdgamesBrowserPanel >& folder, const ImVec2& size )
 					{
-						if( igButton( folder->Name().c_str(), zero ) )
+						if( igButton( folder->Name().c_str(), size ) )
 						{
 							PushPanel( folder );
 						}
+					} );
+
+					if( !folders.empty() && !files.empty() )
+					{
+						igNewLine();
 					}
+
+					igTileView( files, filetilesize, [this]( const IdgamesFile& file, const ImVec2& size )
+					{
+						if( igButtonCustomContents( file.filename.c_str(), size, ImGuiButtonFlags_None, [this, &file]( const ImVec2& size )
+						{
+							igText( file.filename.c_str() );
+							igText( "%0.2f stars", (float_t)file.rating );
+						} ) )
+						{
+						}
+					} );
+
+					igPopStyleVar( 1 );
 				}
 				else
 				{
@@ -966,7 +1168,21 @@ namespace launcher
 
 			if( listready )
 			{
-				igSetCursorPosX( framesize.x - backbuttonsize.x - framepadding );
+				ImVec2 cursorpos;
+				igGetCursorPos( &cursorpos );
+
+				if( !norefresh )
+				{
+					cursorpos.x = framesize.x - backbuttonsize.x - framepadding - refreshbuttonsize.x - framepadding;
+					igSetCursorPos( cursorpos );
+					if( igButton( "Refresh", refreshbuttonsize ) )
+					{
+						RefreshList();
+					}
+				}
+
+				cursorpos.x = framesize.x - backbuttonsize.x - framepadding;
+				igSetCursorPos( cursorpos );
 				if( igButton( "Back", backbuttonsize ) )
 				{
 					PopPanel();
@@ -976,10 +1192,12 @@ namespace launcher
 
 	private:
 		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	folders;
+		std::vector< IdgamesFile >								files;
 		std::string												foldername;
 		std::string												foldernicename;
 		std::string												query;
 		std::atomic< bool >										listready;
+		bool													norefresh;
 	};
 
 	class MainPanel : public LauncherPanel
@@ -992,6 +1210,7 @@ namespace launcher
 			, pwadselector( pwad )
 		{
 			idgames = std::make_shared< IdgamesBrowserPanel >( "levels/", "Choose your game", false );
+			idgames->DisallowRefresh();
 			idgames->AddFolder( "doom/", "Doom" );
 			idgames->AddFolder( "doom2/", "Doom II" );
 		}
