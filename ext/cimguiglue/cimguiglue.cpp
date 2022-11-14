@@ -124,23 +124,26 @@ CIMGUI_API void igCentreNextElement( float_t width )
 	igSetCursorPos( cursor );
 }
 
-CIMGUI_API void igRoundProgressBar( float_t progress, float_t height, float_t rounding )
+CIMGUI_API void igRoundProgressBar( float_t progress, ImVec2 size, float_t rounding )
 {
 	ImGuiWindow* window = igGetCurrentWindow();
 	if (window->SkipItems)
 		return;
 
-	float_t width = igGetWindowContentRegionWidth();
+	if( size.x <= 0 )
+	{
+		size.x = igGetWindowContentRegionWidth();
+	}
 	ImGuiContext* context = igGetCurrentContext();
 	if( context->NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth )
 	{
-		width = context->NextItemData.Width;
+		size.x = context->NextItemData.Width;
 	}
 
 	ImRect bb;
 	bb.Min = bb.Max = window->DC.CursorPos;
-	bb.Max.x += width;
-	bb.Max.y += height;
+	bb.Max.x += size.x;
+	bb.Max.y += size.y;
 
 	igItemSizeRect( bb, -1.f );
 	if ( !igItemAdd(bb, 0, 0) )

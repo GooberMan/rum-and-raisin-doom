@@ -48,7 +48,7 @@ CIMGUI_API void igFontConfigConstruct( ImFontConfig* config );
 
 CIMGUI_API void igCentreNextElement( float_t width );
 
-CIMGUI_API void igRoundProgressBar( float_t progress, float_t height, float_t rounding );
+CIMGUI_API void igRoundProgressBar( float_t progress, ImVec2 size, float_t rounding );
 
 CIMGUI_API void igSpinner( ImVec2 size, double_t cycletime );
 
