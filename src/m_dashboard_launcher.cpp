@@ -1173,6 +1173,7 @@ namespace launcher
 			, localfilesystemop( false )
 			, currentlydoing( "Nothing" )
 			, progress( 0.0 )
+			, shouldcancel( false )
 		{
 			if( !fullpath.ends_with( '/' ) )
 			{
@@ -1245,6 +1246,7 @@ namespace launcher
 		{
 			localfilesystemop = true;
 			currentlydoing = "Downloading file";
+			shouldcancel = false;
 
 			jobs->AddJob( [ this, location ]()
 			{
@@ -1253,15 +1255,24 @@ namespace launcher
 				int64_t filedate = 0;
 				std::string error;
 
-				auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total )
+				auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total ) -> bool
 				{
 					progress = (double_t)current / (double_t)total;
+					return !shouldcancel.load();
 				} );
 
 				bool successful = false;
-				while( !successful )
+				while( !successful && !shouldcancel.load() )
 				{
+					progress = 0;
 					successful = M_URLGetBytes( data, filedate, error, location.c_str(), nullptr, progressfunc );
+				}
+
+				if( shouldcancel.load() )
+				{
+					localfilesystemop = false;
+					currentlydoing = "Nothing";
+					return;
 				}
 
 				currentlydoing = "Writing file to disk";
@@ -1280,9 +1291,34 @@ namespace launcher
 
 				downloaded = true;
 
-				currentlydoing = "Extracting files...";
+				currentlydoing = "Extracting files";
 
 				M_ZipExtractAllFromFile( downloadtozip.c_str(), extractedpath.c_str(), progressfunc );
+
+				extracted = true;
+
+				localfilesystemop = false;
+				currentlydoing = "Nothing";
+
+			} );
+		}
+
+		void ExtractFile( )
+		{
+			localfilesystemop = true;
+			currentlydoing = "Extracting files";
+
+			jobs->AddJob( [ this ]()
+			{
+				auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total ) -> bool
+				{
+					progress = (double_t)current / (double_t)total;
+					return true;
+				} );
+
+				std::string zippath = downloadpath + filename;
+
+				M_ZipExtractAllFromFile( zippath.c_str(), extractedpath.c_str(), progressfunc );
 
 				extracted = true;
 
@@ -1317,15 +1353,16 @@ namespace launcher
 			if( fileready.load() )
 			{
 				constexpr ImVec2 downloadsize = { 160.f, 50.f };
+				constexpr ImVec2 selectsize = { 250.f, 50.f };
 				constexpr ImVec2 fileopspinnersize = { 20.f, 50.f };
 				constexpr ImVec2 fileopprogresssize = { 300.f, 20.f };
 
 				if( !localfilesystemop )
 				{
 					igPushFont( font_inconsolata_medium );
-					igCentreNextElement( downloadsize.x );
 					if( !downloaded )
 					{
+						igCentreNextElement( downloadsize.x );
 						if( igButton( "Download", downloadsize ) )
 						{
 							igOpenPopup( "downloadfrom", ImGuiPopupFlags_None );
@@ -1333,11 +1370,16 @@ namespace launcher
 					}
 					else if( !extracted )
 					{
-						igButton( "Extract", downloadsize );
+						igCentreNextElement( downloadsize.x );
+						if( igButton( "Extract", downloadsize ) )
+						{
+							ExtractFile();
+						}
 					}
 					else
 					{
-						igButton( "Select for play", downloadsize );
+						igCentreNextElement( selectsize.x );
+						igButton( "Select for play", selectsize );
 					}
 					igPopFont();
 
@@ -1410,18 +1452,31 @@ namespace launcher
 				igGetCursorPos( &cursorpos );
 				cursorpos.y += 4;
 
-				cursorpos.x = framesize.x - backbuttonsize.x - framepadding - refreshbuttonsize.x - framepadding;
-				igSetCursorPos( cursorpos );
-				if( igButton( "Refresh", refreshbuttonsize ) )
+				if( localfilesystemop.load() )
 				{
-					RefreshFile();
+					cursorpos.x = framesize.x - backbuttonsize.x - framepadding;
+					igSetCursorPos( cursorpos );
+					if( igButton( "Cancel", backbuttonsize ) )
+					{
+						shouldcancel = true;
+					}
 				}
-
-				cursorpos.x = framesize.x - backbuttonsize.x - framepadding;
-				igSetCursorPos( cursorpos );
-				if( igButton( "Back", backbuttonsize ) )
+				else
 				{
-					PopPanel();
+
+					cursorpos.x = framesize.x - backbuttonsize.x - framepadding - refreshbuttonsize.x - framepadding;
+					igSetCursorPos( cursorpos );
+					if( igButton( "Refresh", refreshbuttonsize ) )
+					{
+						RefreshFile();
+					}
+
+					cursorpos.x = framesize.x - backbuttonsize.x - framepadding;
+					igSetCursorPos( cursorpos );
+					if( igButton( "Back", backbuttonsize ) )
+					{
+						PopPanel();
+					}
 				}
 			}
 		}
@@ -1454,6 +1509,7 @@ namespace launcher
 		std::atomic< bool >			localfilesystemop;
 		std::atomic< const char* >	currentlydoing;
 		std::atomic< double_t >		progress;
+		std::atomic< bool >			shouldcancel;
 	};
 
 	class IdgamesBrowserPanel : public LauncherPanel

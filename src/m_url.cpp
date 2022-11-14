@@ -39,7 +39,8 @@ int32_t CURL_Progress( void* user, curl_off_t down_total, curl_off_t down_now, c
 	if( user )
 	{
 		urlprogress_t& func = *(urlprogress_t*)user;
-		func( down_now, down_total );
+		bool continuedownload = func( down_now, down_total );
+		return continuedownload ? 0 : 1;
 	}
 
 	return 0;
