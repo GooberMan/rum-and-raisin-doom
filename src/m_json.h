@@ -188,7 +188,7 @@ public:
 
 	template< typename _ty >
 	requires is_std_string_v< _ty >
-	friend const std::string& to( const JSONElement& source );
+	friend std::string to( const JSONElement& source );
 
 private:
 	JSONElement( JSONElementType t )
@@ -240,13 +240,20 @@ INLINE _ty to( const JSONElement& source )
 
 template< typename _ty >
 requires is_std_string_v< _ty >
-INLINE const std::string& to( const JSONElement& source )
+INLINE std::string to( const JSONElement& source )
 {
+	std::string output;
 	if( source.type == JSONElementType::Number || source.type == JSONElementType::String )
 	{
-		return source.value;
+		output = source.value;
+		size_t foundpos = 0;
+		while( ( foundpos = output.find( "\\n", foundpos ) ) != std::string::npos )
+		{
+			output.replace( foundpos, 2, "\n" );
+			foundpos += 1;
+		}
 	}
-	return JSONElement::empty.value;
+	return output;
 }
 
 #endif //defined( __cplusplus )
