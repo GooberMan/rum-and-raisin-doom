@@ -1006,10 +1006,12 @@ namespace launcher
 			igGetCursorPos( &basecursor );
 			igGetContentRegionAvail( &contentregion );
 
-			ImVec2 arrowsize = { 20, 140 };
+			constexpr ImVec2 arrowsize = { 30, 70 };
+			constexpr float_t frameheight = 260.0f;
+			constexpr float_t arrow_y = ( frameheight - arrowsize.y ) * 0.5;
 
 			ImVec2 nextcursor = basecursor;
-			nextcursor.y += arrowsize.y * 0.5f;
+			nextcursor.y += arrow_y;
 			igSetCursorPos( nextcursor );
 			if( igArrowButtonEx( "iwad_left", ImGuiDir_Left, arrowsize, ImGuiButtonFlags_None ) )
 			{
@@ -1026,8 +1028,6 @@ namespace launcher
 			nextcursor = basecursor;
 			nextcursor.x += arrowsize.x;
 			igSetCursorPos( nextcursor );
-
-			constexpr float_t frameheight = 260.0f;
 
 			ImVec2 framesize = { contentregion.x - arrowsize.x * 2, frameheight };
 
@@ -1573,6 +1573,57 @@ namespace launcher
 			constexpr ImVec2 refreshbuttonsize = { 90.f, 25.f };
 			constexpr float_t framepadding = 10;
 
+			if( fileready.load() && !localfilesystemop.load() )
+			{
+				Image found = Image();
+				for( DoomFileEntry& iwad : iwads )
+				{
+					if( iwad.titlepic.tex != nullptr )
+					{
+						found = iwad.titlepic;
+						break;
+					}
+				}
+				if( !found.tex )
+				{
+					for( DoomFileEntry& pwad : pwads )
+					{
+						if( pwad.titlepic.tex != nullptr )
+						{
+							found = pwad.titlepic;
+							break;
+						}
+					}
+				}
+
+				if( found.tex )
+				{
+					ImVec2 regionavail;
+					igGetContentRegionAvail( &regionavail );
+
+					igColumns( 2, "idgames_file_columns", false );
+					igSetColumnWidth( 0, 320 );
+					igSetColumnWidth( 1, regionavail.x - 320 );
+					igColumns( 1, nullptr, false );
+
+					igColumns( 2, "idgames_file_columns", false );
+
+					igGetContentRegionAvail( &regionavail );
+					float_t scale = regionavail.x / found.width;
+
+					constexpr ImVec4 tint = { 1, 1, 1, 1 };
+					constexpr ImVec4 border = { 0, 0, 0, 0 };
+					constexpr ImVec2 tl = { 0, 0 };
+					constexpr ImVec2 br = { 1, 1 };
+
+					ImVec2 imagesize = { found.width * scale, found.height * scale };
+
+					igImage( I_TextureGetHandle( found.tex ), imagesize, tl, br, tint, border );
+
+					igNextColumn();
+				}
+			}
+
 			ImVec2 cursorpos;
 
 			igPushFont( font_inconsolata_large );
@@ -1676,6 +1727,8 @@ namespace launcher
 				}
 			}
 
+			igColumns( 1, nullptr, false );
+
 			ImVec2 framesize;
 			igGetContentRegionAvail( &framesize );
 			framesize.y -= backbuttonsize.y + 8;
@@ -1707,7 +1760,8 @@ namespace launcher
 			{
 				ImVec2 cursorpos;
 				igGetCursorPos( &cursorpos );
-				cursorpos.y += 4;
+				igGetContentRegionMax( &framesize );
+				cursorpos.y = framesize.y - backbuttonsize.y;
 
 				if( localfilesystemop.load() )
 				{
@@ -1720,7 +1774,6 @@ namespace launcher
 				}
 				else
 				{
-
 					cursorpos.x = framesize.x - backbuttonsize.x - framepadding - refreshbuttonsize.x - framepadding;
 					igSetCursorPos( cursorpos );
 					if( igButton( "Refresh", refreshbuttonsize ) )
@@ -1782,7 +1835,7 @@ namespace launcher
 							, const std::string& folder, const std::string& nicename, bool refresh = true )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
 			, iwadselector( iwad )
-			, DoomFileSelector( pwad )
+			, doomfileselector( pwad )
 			, foldername( folder )
 			, foldernicename( nicename )
 			, listready( !refresh )
@@ -1802,7 +1855,7 @@ namespace launcher
 
 		void AddFolder( const std::string& name, const std::string& nicename )
 		{
-			folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, DoomFileSelector, foldername + name, nicename ) );
+			folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, doomfileselector, foldername + name, nicename ) );
 		}
 
 		virtual void Enter() override
@@ -1865,13 +1918,13 @@ namespace launcher
 
 						}
 					}
-					folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, DoomFileSelector, fulldir, nicename ) );
+					folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, doomfileselector, fulldir, nicename ) );
 				}
 
 				const JSONElement& idgamesfiles = content[ "file" ];
 				for( auto& currfile : idgamesfiles.Children() )
 				{
-					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, DoomFileSelector
+					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
 																									, to< std::string >( currfile[ "dir" ] )
 																									, to< std::string >( currfile[ "filename" ] )
 																									, to< std::string >( currfile[ "title" ] )
@@ -1964,8 +2017,8 @@ namespace launcher
 			if( listready )
 			{
 				ImVec2 cursorpos;
-				igGetCursorPos( &cursorpos );
-				cursorpos.y += 4;
+				igGetContentRegionMax( &framesize );
+				cursorpos.y = framesize.y - backbuttonsize.y;
 
 				if( !norefresh )
 				{
@@ -1988,7 +2041,7 @@ namespace launcher
 
 	private:
 		std::shared_ptr< IWADSelector >							iwadselector;
-		std::shared_ptr< DoomFileSelector >							DoomFileSelector;
+		std::shared_ptr< DoomFileSelector >						doomfileselector;
 		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	folders;
 		std::vector< std::shared_ptr< IdgamesFilePanel > >		files;
 		std::string												foldername;
@@ -1996,6 +2049,40 @@ namespace launcher
 		std::string												query;
 		std::atomic< bool >										listready;
 		bool													norefresh;
+	};
+
+	class FileSelectorPanel : public LauncherPanel
+	{
+	public:
+		FileSelectorPanel( std::shared_ptr< DoomFileSelector >& pwad )
+			: LauncherPanel( "Launcher_FileSelector" )
+			, doomfileselector( pwad )
+		{
+		}
+
+	protected:
+		virtual void RenderContents() override
+		{
+			constexpr ImVec2 backbuttonsize = { 50.f, 25.f };
+			constexpr float_t framepadding = 10.f;
+
+			ImVec2 cursorpos;
+
+			ImVec2 contentsize;
+			igGetContentRegionMax( &contentsize );
+
+			cursorpos.x = contentsize.x - backbuttonsize.x - framepadding;
+			cursorpos.y = contentsize.y - backbuttonsize.y;
+
+			igSetCursorPos( cursorpos );
+			if( igButton( "Back", backbuttonsize ) )
+			{
+				PopPanel();
+			}
+		}
+
+	private:
+		std::shared_ptr< DoomFileSelector >						doomfileselector;
 	};
 
 	class MainPanel : public LauncherPanel
@@ -2011,16 +2098,14 @@ namespace launcher
 			idgames->DisallowRefresh();
 			idgames->AddFolder( "doom/", "Doom" );
 			idgames->AddFolder( "doom2/", "Doom II" );
+
+			fileanddehselector = std::make_shared< FileSelectorPanel >( doomfileselector );
 		}
 
 	protected:
 		virtual void RenderContents() override
 		{
 			iwadselector->Render();
-
-			constexpr ImVec2 playbuttonsize = { 50.f, 25.f };
-			constexpr ImVec2 idgamessize = { 100.f, 25.f };
-			constexpr float_t framepadding = 10;
 
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
@@ -2064,8 +2149,14 @@ namespace launcher
 			ImVec2 frameavail;
 			igGetContentRegionAvail( &frameavail );
 
+			constexpr float_t framepadding = 10;
+			constexpr float_t buttonheight = 25.f;
+			constexpr ImVec2 playbuttonsize = { 50.f, buttonheight };
+			constexpr ImVec2 pwadssize = { 150.f, buttonheight };
+			constexpr ImVec2 idgamessize = { 100.f, buttonheight };
+
 			int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelfiles", nullptr );
-			ImVec2 fileframesize = { frameavail.x, frameavail.y - playbuttonsize.y - 15 };
+			ImVec2 fileframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
 
 			if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize ) )
 			{
@@ -2091,14 +2182,22 @@ namespace launcher
 			igColumns( 1, nullptr, false );
 
 			ImVec2 cursor;
-			cursor = { framesize.x - playbuttonsize.x - framepadding - idgamessize.x - framepadding, framesize.y - playbuttonsize.y };
+
+			cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x - framepadding - idgamessize.x, framesize.y - buttonheight };
 			igSetCursorPos( cursor );
 			if( igButton( "Get more maps", idgamessize ) )
 			{
 				PushPanel( idgames );
 			}
 
-			cursor = { framesize.x - playbuttonsize.x - framepadding, framesize.y - playbuttonsize.y };
+			cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x, framesize.y - buttonheight };
+			igSetCursorPos( cursor );
+			if( igButton( "Change selected files", pwadssize ) )
+			{
+				PushPanel( fileanddehselector );
+			}
+
+			cursor = { framesize.x - framepadding - playbuttonsize.x, framesize.y - buttonheight };
 			igSetCursorPos( cursor );
 
 			if( igButton( "Play!", playbuttonsize ) )
@@ -2113,6 +2212,7 @@ namespace launcher
 		std::shared_ptr< IWADSelector >			iwadselector;
 		std::shared_ptr< DoomFileSelector >		doomfileselector;
 		std::shared_ptr< IdgamesBrowserPanel >	idgames;
+		std::shared_ptr< FileSelectorPanel >	fileanddehselector;
 	};
 
 	class InitPanel : public LauncherPanel
