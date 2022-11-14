@@ -141,6 +141,7 @@ constexpr auto PlainFlowString( const char* name )
 
 #define frame( lump, type )								{ FlowString( lump ), type, standardduration }
 #define frame_withtime( lump, type, duration )			{ FlowString( lump ), type, duration }
+#define frame_withtime_null( type, duration )			{ PlainFlowString( nullptr ), type, duration }
 #define frame_runtime( lump, type, index, frame )		{ RuntimeFlowString( lump ), type, standardduration, index, frame }
 #define frame_runtime_infinite( lump, index, frame )	{ RuntimeFlowString( lump ), Frame_Infinite, -1, index, frame }
 
@@ -200,13 +201,13 @@ static interlevelframe_t doom_frames_splat[] =
 static interlevelframe_t doom_frames_youarehereleft[] =
 {
 	frame_withtime( "WIURH0", Frame_FixedDuration, 20 ),
-	frame_withtime( nullptr, Frame_FixedDuration, 12 ),
+	frame_withtime_null( Frame_FixedDuration, 12 ),
 };
 
 static interlevelframe_t doom_frames_youarehereright[] =
 {
 	frame_withtime( "WIURH1", Frame_FixedDuration, 20 ),
-	frame_withtime( nullptr, Frame_FixedDuration, 12 ),
+	frame_withtime_null( Frame_FixedDuration, 12 ),
 };
 
 #define generate_herecond( map, levelnum ) \
