@@ -117,7 +117,10 @@ CIMGUI_API void igFontConfigConstruct( ImFontConfig* config )
 
 CIMGUI_API void igCentreNextElement( float_t width )
 {
-	float_t centre = igGetWindowContentRegionWidth() * 0.5f;
+	ImVec2 regionavail;
+	igGetContentRegionAvail( &regionavail );
+
+	float_t centre = regionavail.x * 0.5f;
 	ImVec2 cursor;
 	igGetCursorPos( &cursor );
 	cursor.x += ( centre - width / 2 );
