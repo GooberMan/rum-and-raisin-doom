@@ -443,36 +443,27 @@ std::span< const char* > M_ParamArgs( const char* param )
 	return std::span( &myargv[ 0 ], 0 );
 };
 
-void M_AddAdditionalArgs( std::vector< DoomString > newargs )
+void M_ReplaceFileParameters( std::vector< DoomString > newargs )
 {
 	originalargc = myargc;
 	originalargv = myargv;
 
-	if( std::find( newargs.begin(), newargs.end(), "-iwad" ) != newargs.end() )
+	int32_t iwadindex = M_CheckParmWithArgs( "-iwad", 1 );
+	if( iwadindex > 0 )
 	{
-		int32_t iwadindex = M_CheckParmWithArgs( "-iwad", 1 );
-		if( iwadindex > 0 )
-		{
-			myargv[ iwadindex ] = "-_";
-		}
+		myargv[ iwadindex ] = "-_";
 	}
 
-	if( std::find( newargs.begin(), newargs.end(), "-file" ) != newargs.end() )
+	int32_t fileindex = M_CheckParmWithArgs( "-file", 1 );
+	if( fileindex > 0 )
 	{
-		int32_t fileindex = M_CheckParmWithArgs( "-file", 1 );
-		if( fileindex > 0 )
-		{
-			myargv[ fileindex ] = "-_";
-		}
+		myargv[ fileindex ] = "-_";
 	}
 
-	if( std::find( newargs.begin(), newargs.end(), "-deh" ) != newargs.end() )
+	int32_t dehindex = M_CheckParmWithArgs( "-deh", 1 );
+	if( dehindex > 0 )
 	{
-		int32_t fileindex = M_CheckParmWithArgs( "-deh", 1 );
-		if( fileindex > 0 )
-		{
-			myargv[ fileindex ] = "-_";
-		}
+		myargv[ dehindex ] = "-_";
 	}
 
 	size_t totalargs = myargc + newargs.size();

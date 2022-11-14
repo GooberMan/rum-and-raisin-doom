@@ -52,7 +52,7 @@ DOOM_C_API const char *M_GetExecutableName(void);
 #include "m_container.h"
 
 std::span< const char* > M_ParamArgs( const char* check );
-void M_AddAdditionalArgs( std::vector< DoomString > newargs );
+void M_ReplaceFileParameters( std::vector< DoomString > newargs );
 
 #endif // defined( __cplusplus )
 

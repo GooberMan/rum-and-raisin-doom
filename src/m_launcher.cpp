@@ -167,7 +167,7 @@ void M_PerformLauncher()
 
 		if( !params.empty() )
 		{
-			M_AddAdditionalArgs( params );
+			M_ReplaceFileParameters( params );
 		}
 	}
 }
