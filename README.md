@@ -20,4 +20,5 @@ You'll also need to install [vcpkg](https://github.com/Microsoft/vcpkg/) and use
 
 `zlib:x64-windows`
 `libpng:x64-windows`
+`minizip:x64-windows`
 `curl:x64-windows`
