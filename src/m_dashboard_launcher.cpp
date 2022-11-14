@@ -30,6 +30,7 @@
 #include "m_json.h"
 #include "m_misc.h"
 #include "m_url.h"
+#include "m_zipfile.h"
 
 #include "v_patch.h"
 #include "v_video.h"
@@ -1252,7 +1253,7 @@ namespace launcher
 				int64_t filedate = 0;
 				std::string error;
 
-				auto progressfunc = std::function( [this]( ptrdiff_t total, ptrdiff_t current )
+				auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total )
 				{
 					progress = (double_t)current / (double_t)total;
 				} );
@@ -1278,6 +1279,13 @@ namespace launcher
 				utime( downloadtozip.c_str(), &zipfiletime );
 
 				downloaded = true;
+
+				currentlydoing = "Extracting files...";
+
+				M_ZipExtractAllFromFile( downloadtozip.c_str(), extractedpath.c_str(), progressfunc );
+
+				extracted = true;
+
 				localfilesystemop = false;
 				currentlydoing = "Nothing";
 
@@ -1360,7 +1368,7 @@ namespace launcher
 
 					cursorpos.x += fileopspinnersize.y + 5.f;
 					igSetCursorPos( cursorpos );
-					igText( "Doin' a thing..." );
+					igText( currentlydoing.load() );
 
 					cursorpos.y += fileopspinnersize.y - fileopprogresssize.y;
 					igSetCursorPos( cursorpos );
