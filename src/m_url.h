@@ -20,6 +20,7 @@
 #else
 #define URL_C_API
 #endif
+#define URL_INLINE inline
 
 // Must be initialised per-thread
 URL_C_API void M_URLInit( void );
@@ -27,8 +28,23 @@ URL_C_API void M_URLDeinit( void );
 
 #if defined( __cplusplus )
 #include <string>
+#include <functional>
 
-bool M_URLGetString( std::string& output, const char* url, const char* params );
+using urlprogress_t = std::function< void( ptrdiff_t, ptrdiff_t ) >;
+
+bool M_URLGetString( std::string& output, const char* url, const char* params, urlprogress_t* func = nullptr );
+bool M_URLGetBytes( std::vector< unsigned char >& output, int64_t& outfiletime, std::string& outerror, const char* url, const char* params, urlprogress_t* func = nullptr );
+
+URL_INLINE bool M_URLGetString( std::string& output, const char* url, const char* params, urlprogress_t& func )
+{
+	return M_URLGetString( output, url, params, &func );
+}
+
+URL_INLINE bool M_URLGetBytes( std::vector< unsigned char >& output, int64_t& outfiletime, std::string& outerror, const char* url, const char* params, urlprogress_t& func )
+{
+	return M_URLGetBytes( output, outfiletime, outerror, url, params, &func );
+}
+
 #endif // defined( __cplusplus );
 
 #endif //!defined( __M_URL_H__ )
