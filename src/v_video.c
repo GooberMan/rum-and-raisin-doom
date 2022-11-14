@@ -1029,14 +1029,20 @@ void WritePNGfile(char *filename, pixel_t *data,
 
     png_write_info(ppng, pinfo);
 
-	pixel_t* row = data;
+	byte** rowpointers = malloc( sizeof( byte* ) * height );
+
+	byte* curr = data;
 	for( i = 0; i < height; ++i )
 	{
-		png_write_row( ppng, data );
-		row += width;
+		rowpointers[ i ] = data;
+		data += width;
 	}
 
-    png_write_end(ppng, pinfo);
+	png_set_rows( ppng, pinfo, rowpointers );
+	png_write_png( ppng, pinfo, PNG_TRANSFORM_IDENTITY, NULL );
+
+	free( rowpointers );
+
     png_destroy_write_struct(&ppng, &pinfo);
     fclose(handle);
 }

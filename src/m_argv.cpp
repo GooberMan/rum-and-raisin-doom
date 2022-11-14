@@ -448,32 +448,27 @@ void M_ReplaceFileParameters( std::vector< DoomString > newargs )
 	originalargc = myargc;
 	originalargv = myargv;
 
-	int32_t iwadindex = M_CheckParmWithArgs( "-iwad", 1 );
-	if( iwadindex > 0 )
-	{
-		myargv[ iwadindex ] = "-_";
-	}
-
-	int32_t fileindex = M_CheckParmWithArgs( "-file", 1 );
-	if( fileindex > 0 )
-	{
-		myargv[ fileindex ] = "-_";
-	}
-
-	int32_t dehindex = M_CheckParmWithArgs( "-deh", 1 );
-	if( dehindex > 0 )
-	{
-		myargv[ dehindex ] = "-_";
-	}
-
 	size_t totalargs = myargc + newargs.size();
 
 	argvlist.reserve( totalargs );
 	argvstorage = newargs;
 
+	bool skip = false;
+
 	for( int32_t currarg : iota( 0, myargc ) )
 	{
-		argvlist.push_back( myargv[ currarg ] );
+		if( !strcasecmp( myargv[ currarg ], "-iwad" )
+			|| !strcasecmp( myargv[ currarg ], "-file" )
+			|| !strcasecmp( myargv[ currarg ], "-deh" ) )
+		{
+			skip = true;
+		}
+		else if( myargv[ currarg ][ 0 ] == '-' )
+		{
+			skip = false;
+		}
+
+		if( !skip ) argvlist.push_back( myargv[ currarg ] );
 	}
 
 	for( DoomString& currarg : argvstorage )
