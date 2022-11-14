@@ -464,7 +464,7 @@ struct DoomMapLoader
 			out.toptexture		= R_TextureNumForName( in.toptexture );
 			out.bottomtexture	= R_TextureNumForName( in.bottomtexture );
 			out.midtexture		= R_TextureNumForName( in.midtexture );
-			out.sector			= &Sectors()[ Read::AsIs( in.sector ) ];
+			out.sector			= in.sector >= 0 ? &Sectors()[ Read::AsIs( in.sector ) ] : nullptr; // Requiem MAP03 has sector numbers -1
 		} );
 
 		_numsides				= data.count;
