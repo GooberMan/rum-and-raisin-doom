@@ -590,7 +590,6 @@ namespace launcher
 		std::filesystem::path stdcachepath( cachepath );
 
 		DoomFileEntry entry = DoomFileEntry();
-		entry.version = DoomFileEntryVersion;
 		entry.filename = filename;
 		entry.full_path = path;
 		entry.cache_path = cachepath;
@@ -601,7 +600,8 @@ namespace launcher
 		{
 			ReadEntry( entry, stdcachepath );
 		}
-		else
+
+		if( M_CheckParm( "-invalidatewadcache" ) || entry.version != DoomFileEntryVersion )
 		{
 			if( std::regex_match( filename, DEHRegex ) )
 			{
@@ -1141,14 +1141,43 @@ namespace launcher
 			if( entry.type == DoomFileType::Dehacked ) Select( dehs, entry );
 		}
 
+		bool Deselect( DoomFileEntry& entry )
+		{
+			if( entry.type == DoomFileType::PWAD ) return Deselect( pwads, entry );
+			if( entry.type == DoomFileType::Dehacked ) return Deselect( dehs, entry );
+			return false;
+		}
+
+		int32_t ShuffleSelectedDEHForward( int32_t index )
+		{
+			return ShuffleForward( dehs, index );
+		}
+
+		int32_t ShuffleSelectedDEHBackward( int32_t index )
+		{
+			return ShuffleBackward( dehs, index );
+		}
+
+		int32_t ShuffleSelectedPWADForward( int32_t index )
+		{
+			return ShuffleForward( pwads, index );
+		}
+
+		int32_t ShuffleSelectedPWADBackward( int32_t index )
+		{
+			return ShuffleBackward( pwads, index );
+		}
+
 		INLINE bool Valid() const { return pwads.container != nullptr; }
 
+		INLINE auto& AllDEHs() { return *dehs.container; }
 		INLINE auto SelectedDEHs() { return std::ranges::views::all( dehs.selected )
 									| std::ranges::views::transform( [ this ]( int32_t index ) -> DoomFileEntry&
 									{
 										return dehs.container->at( index );
 									} ); }
 
+		INLINE auto& AllPWADs() { return *pwads.container; }
 		INLINE auto SelectedPWADs() { return std::ranges::views::all( pwads.selected )
 									| std::ranges::views::transform( [ this ]( int32_t index ) -> DoomFileEntry&
 									{
@@ -1238,7 +1267,8 @@ namespace launcher
 			{
 				DoomFileEntry& file = selection.container->at( index );
 
-				if( EqualCaseInsensitive( entry.full_path, file.full_path ) )
+				if( EqualCaseInsensitive( entry.full_path, file.full_path )
+					&& std::find( selection.selected.begin(), selection.selected.end(), index ) == selection.selected.end() ) 
 				{
 					selection.selected.push_back( index );
 					return index;
@@ -1248,6 +1278,46 @@ namespace launcher
 			return -1;
 		}
 
+		static bool Deselect( Selection& selection, DoomFileEntry& entry )
+		{
+			auto found = std::find_if( selection.container->begin(), selection.container->end(), [ &entry ]( const DoomFileEntry& file )
+				{
+					return EqualCaseInsensitive( entry.filename, file.filename );
+				} );
+			if( found != selection.container->end() )
+			{
+				int32_t index = std::distance( selection.container->begin(), found );
+				auto foundindex = std::find( selection.selected.begin(), selection.selected.end(), index );
+				if( foundindex != selection.selected.end() )
+				{
+					selection.selected.erase( foundindex );
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		static int32_t ShuffleForward( Selection& selection, int32_t index )
+		{
+			if( index < selection.selected.size() - 1 )
+			{
+				std::swap( selection.selected[ index ], selection.selected[ index + 1 ] );
+				++index;
+			}
+
+			return index;
+		}
+
+		static int32_t ShuffleBackward( Selection& selection, int32_t index )
+		{
+			if( index >= 1 && index < selection.selected.size() )
+			{
+				std::swap( selection.selected[ index ], selection.selected[ index - 1 ] );
+				--index;
+			}
+			return index;
+		}
 
 		Selection				pwads;
 		Selection				dehs;
@@ -2057,7 +2127,15 @@ namespace launcher
 		FileSelectorPanel( std::shared_ptr< DoomFileSelector >& pwad )
 			: LauncherPanel( "Launcher_FileSelector" )
 			, doomfileselector( pwad )
+			, dehselected( -1 )
+			, pwadselected( -1 )
 		{
+		}
+
+		virtual void Enter() override
+		{
+			dehselected = -1;
+			pwadselected = -1;
 		}
 
 	protected:
@@ -2066,10 +2144,248 @@ namespace launcher
 			constexpr ImVec2 backbuttonsize = { 50.f, 25.f };
 			constexpr float_t framepadding = 10.f;
 
-			ImVec2 cursorpos;
-
 			ImVec2 contentsize;
 			igGetContentRegionMax( &contentsize );
+
+			igPushFont( font_inconsolata_large );
+			igCentreText( "Change selected files" );
+			igPopFont();
+			igNewLine();
+
+			igColumns( 5, "fileselectorpanel_columns", false );
+			igSetColumnWidth( 0, 200 );
+			igSetColumnWidth( 1, 40 );
+			igSetColumnWidth( 2, 200 );
+			igSetColumnWidth( 3, 40 );
+			igColumns( 1, nullptr, false );
+
+			igColumns( 5, "fileselectorpanel_columns", false );
+			
+			// Dehacked
+			{
+				igText( "Dehacked files" );
+
+				ImVec2 availsize;
+				igGetContentRegionAvail( &availsize );
+				availsize.y -= backbuttonsize.y + framepadding;
+
+				int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "dehacked_selected_files", nullptr );
+
+				if( igBeginChildFrame( id, availsize, ImGuiWindowFlags_NoResize ) )
+				{
+					int32_t index = 0;
+					for( DoomFileEntry& entry : doomfileselector->SelectedDEHs() )
+					{
+						if( igSelectableBool( entry.filename.c_str(), dehselected == index, ImGuiSelectableFlags_None, zero ) )
+						{
+							dehselected = ( dehselected == index ? -1 : index );
+						}
+						++index;
+					}
+				}
+				igEndChildFrame();
+
+				igNextColumn();
+				igNewLine();
+
+				igGetContentRegionAvail( &availsize );
+				availsize.y -= backbuttonsize.y + framepadding;
+
+				ImVec2 cursorpos;
+				igGetCursorPos( &cursorpos );
+
+				constexpr ImVec2 buttonsize = { 20.f, 20.f };
+				if( igButtonEx( "+##dehacked_add", buttonsize, ImGuiButtonFlags_None ) )
+				{
+					igOpenPopup( "dehacked_add_popup", ImGuiPopupFlags_None );
+				}
+
+				bool isdisabled = false;
+				if( dehselected < 0 || dehselected >= doomfileselector->SelectedDEHs().size() )
+				{
+					igPushItemFlag( ImGuiItemFlags_Disabled, true );
+					isdisabled = true;
+				}
+
+				if( igArrowButtonEx( "dehacked_up", ImGuiDir_Up, buttonsize, ImGuiButtonFlags_None ) )
+				{
+					dehselected = doomfileselector->ShuffleSelectedDEHBackward( dehselected );
+				}
+				if( igArrowButtonEx( "dehacked_down", ImGuiDir_Down, buttonsize, ImGuiButtonFlags_None ) )
+				{
+					dehselected = doomfileselector->ShuffleSelectedDEHForward( dehselected );
+				}
+				if( igButtonEx( "X##dehacked_remove", buttonsize, ImGuiButtonFlags_None ) )
+				{
+					if( doomfileselector->Deselect( doomfileselector->SelectedDEHs()[ dehselected ] )
+						&& dehselected >= doomfileselector->SelectedDEHs().size() )
+					{
+						dehselected = doomfileselector->SelectedDEHs().size() - 1;
+					}
+				}
+
+				if( isdisabled )
+				{
+					igPopItemFlag();
+				}
+
+				constexpr ImVec2 popupsize = { 150.f, 300.f };
+				igSetNextWindowSize( popupsize, ImGuiCond_Always );
+				if( igBeginPopup( "dehacked_add_popup", ImGuiWindowFlags_None ) )
+				{
+					for( DoomFileEntry& entry : doomfileselector->AllDEHs() )
+					{
+						auto found = std::find_if( doomfileselector->SelectedDEHs().begin(), doomfileselector->SelectedDEHs().end(), [ &entry ]( DoomFileEntry& deh )
+						{
+							return EqualCaseInsensitive( entry.filename, deh.filename );
+						} );
+
+						if( found != doomfileselector->SelectedDEHs().end() )
+						{
+							continue;
+						}
+
+						if( igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_None, zero ) )
+						{
+							doomfileselector->Select( entry );
+						}
+					}
+					igEndPopup();
+				}
+
+				igNextColumn();
+			}
+
+			// WADs
+			{
+				igText( "PWAD files" );
+
+				ImVec2 availsize;
+				igGetContentRegionAvail( &availsize );
+				availsize.y -= backbuttonsize.y + framepadding;
+
+				int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "pwad_selected_files", nullptr );
+
+				if( igBeginChildFrame( id, availsize, ImGuiWindowFlags_NoResize ) )
+				{
+					int32_t index = 0;
+					for( DoomFileEntry& entry : doomfileselector->SelectedPWADs() )
+					{
+						if( igSelectableBool( entry.filename.c_str(), pwadselected == index, ImGuiSelectableFlags_None, zero ) )
+						{
+							pwadselected = ( pwadselected == index ? -1 : index );
+						}
+						++index;
+					}
+				}
+				igEndChildFrame();
+
+				igNextColumn();
+				igNewLine();
+
+				igGetContentRegionAvail( &availsize );
+				availsize.y -= backbuttonsize.y + framepadding;
+
+				ImVec2 cursorpos;
+				igGetCursorPos( &cursorpos );
+
+				constexpr ImVec2 buttonsize = { 20.f, 20.f };
+				if( igButtonEx( "+##pwads_add", buttonsize, ImGuiButtonFlags_None ) )
+				{
+					igOpenPopup( "pwads_add_popup", ImGuiPopupFlags_None );
+				}
+
+				bool isdisabled = false;
+				if( pwadselected < 0 || pwadselected >= doomfileselector->SelectedPWADs().size() )
+				{
+					igPushItemFlag( ImGuiItemFlags_Disabled, true );
+					isdisabled = true;
+				}
+
+				if( igArrowButtonEx( "pwads_up", ImGuiDir_Up, buttonsize, ImGuiButtonFlags_None ) )
+				{
+					pwadselected = doomfileselector->ShuffleSelectedPWADBackward( pwadselected );
+				}
+				if( igArrowButtonEx( "pwads_down", ImGuiDir_Down, buttonsize, ImGuiButtonFlags_None ) )
+				{
+					pwadselected = doomfileselector->ShuffleSelectedPWADForward( pwadselected );
+				}
+
+				if( igButtonEx( "X##pwads_remove", buttonsize, ImGuiButtonFlags_None ) )
+				{
+					if( doomfileselector->Deselect( doomfileselector->SelectedPWADs()[ pwadselected ] )
+						&& pwadselected >= doomfileselector->SelectedPWADs().size() )
+					{
+						pwadselected = doomfileselector->SelectedPWADs().size() - 1;
+					}
+				}
+
+				if( isdisabled )
+				{
+					igPopItemFlag();
+				}
+
+				constexpr ImVec2 popupsize = { 150.f, 300.f };
+				igSetNextWindowSize( popupsize, ImGuiCond_Always );
+				if( igBeginPopup( "pwads_add_popup", ImGuiWindowFlags_None ) )
+				{
+					for( DoomFileEntry& entry : doomfileselector->AllPWADs() )
+					{
+						bool found = false;
+						for( DoomFileEntry& pwad : doomfileselector->SelectedPWADs() )
+						{
+							if( EqualCaseInsensitive( entry.filename, pwad.filename ) )
+							{
+								found = true;
+							}
+							break;
+						}
+
+						if( !found && igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_None, zero ) )
+						{
+							doomfileselector->Select( entry );
+						}
+					}
+					igEndPopup();
+				}
+
+				igNextColumn();
+			}
+
+			{
+				igNewLine();
+				igText( "Most recent titlepic" );
+
+				Image found = { };
+				for( auto& entry : doomfileselector->SelectedPWADs() )
+				{
+					if( entry.titlepic.tex != nullptr )
+					{
+						found = entry.titlepic;
+					}
+				}
+
+				if( found.tex != nullptr )
+				{
+					ImVec2 imageavail;
+					igGetContentRegionAvail( &imageavail );
+
+					float_t scale = imageavail.x / found.width;
+
+					constexpr ImVec4 tint = { 1, 1, 1, 1 };
+					constexpr ImVec4 border = { 0, 0, 0, 0 };
+					constexpr ImVec2 tl = { 0, 0 };
+					constexpr ImVec2 br = { 1, 1 };
+
+					ImVec2 imagesize = { found.width * scale, found.height * scale };
+
+					igImage( I_TextureGetHandle( found.tex ), imagesize, tl, br, tint, border );
+				}
+			}
+
+			igColumns( 1, nullptr, false );
+
+			ImVec2 cursorpos;
 
 			cursorpos.x = contentsize.x - backbuttonsize.x - framepadding;
 			cursorpos.y = contentsize.y - backbuttonsize.y;
@@ -2083,6 +2399,8 @@ namespace launcher
 
 	private:
 		std::shared_ptr< DoomFileSelector >						doomfileselector;
+		int32_t													dehselected;
+		int32_t													pwadselected;
 	};
 
 	class MainPanel : public LauncherPanel
