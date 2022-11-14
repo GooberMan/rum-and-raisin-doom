@@ -852,6 +852,18 @@ namespace launcher
 		void Setup( WADEntries& entries, const char* defaultiwad )
 		{
 			iwads = &entries;
+			SetupIterators( defaultiwad );
+		}
+
+		void Add( WADEntry& entry )
+		{
+			std::string current = middle->filename;
+			iwads->push_back( entry );
+			SetupIterators( current.c_str() );
+		}
+
+		void SetupIterators( const char* defaultiwad )
+		{
 			if( !iwads->empty() )
 			{
 				if( defaultiwad )
@@ -1035,6 +1047,11 @@ namespace launcher
 			pwads = &entries;
 		}
 
+		void Add( WADEntry& entry )
+		{
+			pwads->push_back( entry );
+		}
+
 		INLINE bool Valid() const { return pwads != nullptr; }
 
 		void Render()
@@ -1158,8 +1175,11 @@ namespace launcher
 	class IdgamesFilePanel : public LauncherPanel
 	{
 	public:
-		IdgamesFilePanel( const std::string& path, const std::string& name, const std::string& t, const std::string& a, double_t r )
+		IdgamesFilePanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< PWADSelector >& pwad
+						, const std::string& path, const std::string& name, const std::string& t, const std::string& a, double_t r )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
+			, iwadselector( iwad )
+			, pwadselector( pwad )
 			, fullpath( path )
 			, filename( name )
 			, title( t )
@@ -1233,7 +1253,7 @@ namespace launcher
 				std::filesystem::path downloadfile = downloadpath + filename;
 				downloaded = std::filesystem::exists( downloadfile );
 
-				extractedpath = cache_extracted + fullpath;
+				extractedpath = cache_extracted + fullpath + filename + DIR_SEPARATOR;
 				std::replace( extractedpath.begin(), extractedpath.end(), '/', DIR_SEPARATOR );
 				extracted = std::filesystem::exists( extractedpath );
 
@@ -1293,14 +1313,57 @@ namespace launcher
 
 				currentlydoing = "Extracting files";
 
-				M_ZipExtractAllFromFile( downloadtozip.c_str(), extractedpath.c_str(), progressfunc );
-
-				extracted = true;
+				PerformExtractFile();
 
 				localfilesystemop = false;
 				currentlydoing = "Nothing";
 
 			} );
+		}
+
+		void PerformExtractFile()
+		{
+			auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total ) -> bool
+			{
+				progress = (double_t)current / (double_t)total;
+				return true;
+			} );
+
+			std::string zippath = downloadpath + filename;
+
+			M_ZipExtractAllFromFile( zippath.c_str(), extractedpath.c_str(), progressfunc );
+
+			iwads.clear();
+			pwads.clear();
+			dehfiles.clear();
+
+			std::error_code error;
+			auto directoryiterator = std::filesystem::recursive_directory_iterator( std::filesystem::path( extractedpath ), std::filesystem::directory_options::skip_permission_denied, error );
+			for( auto& file : directoryiterator )
+			{
+				std::string extension = file.path().extension().string();
+				std::for_each( extension.begin(), extension.end(), []( char& val ) { val = tolower( val ); } );
+				if( extension == ".wad" )
+				{
+					WADEntry entry = ParseWAD( file.path() );
+					if( entry.type == WADType::IWAD )
+					{
+						iwadselector->Add( entry );
+						iwads.push_back( entry );
+					}
+					else if( entry.type == WADType::PWAD )
+					{
+						pwadselector->Add( entry );
+						pwads.push_back( entry );
+					}
+				}
+				else if( extension == ".deh" )
+				{
+					dehfiles.push_back( file.path().string() );
+				}
+			}
+
+			extracted = true;
 		}
 
 		void ExtractFile( )
@@ -1310,17 +1373,7 @@ namespace launcher
 
 			jobs->AddJob( [ this ]()
 			{
-				auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total ) -> bool
-				{
-					progress = (double_t)current / (double_t)total;
-					return true;
-				} );
-
-				std::string zippath = downloadpath + filename;
-
-				M_ZipExtractAllFromFile( zippath.c_str(), extractedpath.c_str(), progressfunc );
-
-				extracted = true;
+				PerformExtractFile();
 
 				localfilesystemop = false;
 				currentlydoing = "Nothing";
@@ -1379,7 +1432,13 @@ namespace launcher
 					else
 					{
 						igCentreNextElement( selectsize.x );
-						igButton( "Select for play", selectsize );
+						if( igButton( "Select for play", selectsize ) )
+						{
+							for( auto& pwad : pwads )
+							{
+								int foo = 0;
+							}
+						}
 					}
 					igPopFont();
 
@@ -1482,41 +1541,50 @@ namespace launcher
 		}
 
 	private:
-		std::string					fullpath;
-		std::string					filename;
-		std::string					title;
-		std::string					date;
-		std::string					author;
-		std::string					email;
-		std::string					description;
-		std::string					credits;
-		std::string					base;
-		std::string					buildtime;
-		std::string					editors;
-		std::string					bugs;
-		std::string					textfile;
-		size_t						size;
-		size_t						age;
-		double_t					rating;
-		size_t						votes;
+		std::shared_ptr< IWADSelector >		iwadselector;
+		std::shared_ptr< PWADSelector >		pwadselector;
+		WADEntries							iwads;
+		WADEntries							pwads;
+		std::vector< std::string >			dehfiles;
 
-		std::string					query;
-		std::string					downloadpath;
-		std::string					extractedpath;
-		bool						downloaded;
-		bool						extracted;
-		std::atomic< bool >			fileready;
-		std::atomic< bool >			localfilesystemop;
-		std::atomic< const char* >	currentlydoing;
-		std::atomic< double_t >		progress;
-		std::atomic< bool >			shouldcancel;
+		std::string							fullpath;
+		std::string							filename;
+		std::string							title;
+		std::string							date;
+		std::string							author;
+		std::string							email;
+		std::string							description;
+		std::string							credits;
+		std::string							base;
+		std::string							buildtime;
+		std::string							editors;
+		std::string							bugs;
+		std::string							textfile;
+		size_t								size;
+		size_t								age;
+		double_t							rating;
+		size_t								votes;
+
+		std::string							query;
+		std::string							downloadpath;
+		std::string							extractedpath;
+		bool								downloaded;
+		bool								extracted;
+		std::atomic< bool >					fileready;
+		std::atomic< bool >					localfilesystemop;
+		std::atomic< const char* >			currentlydoing;
+		std::atomic< double_t >				progress;
+		std::atomic< bool >					shouldcancel;
 	};
 
 	class IdgamesBrowserPanel : public LauncherPanel
 	{
 	public:
-		IdgamesBrowserPanel( const std::string& folder, const std::string& nicename, bool refresh = true )
+		IdgamesBrowserPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< PWADSelector >& pwad
+							, const std::string& folder, const std::string& nicename, bool refresh = true )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
+			, iwadselector( iwad )
+			, pwadselector( pwad )
 			, foldername( folder )
 			, foldernicename( nicename )
 			, listready( !refresh )
@@ -1536,7 +1604,7 @@ namespace launcher
 
 		void AddFolder( const std::string& name, const std::string& nicename )
 		{
-			folders.push_back( std::make_shared< IdgamesBrowserPanel >( foldername + name, nicename ) );
+			folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, pwadselector, foldername + name, nicename ) );
 		}
 
 		virtual void Enter() override
@@ -1599,13 +1667,14 @@ namespace launcher
 
 						}
 					}
-					folders.push_back( std::make_shared< IdgamesBrowserPanel >( fulldir, nicename ) );
+					folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, pwadselector, fulldir, nicename ) );
 				}
 
 				const JSONElement& idgamesfiles = content[ "file" ];
 				for( auto& currfile : idgamesfiles.Children() )
 				{
-					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	to< std::string >( currfile[ "dir" ] )
+					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, pwadselector
+																									, to< std::string >( currfile[ "dir" ] )
 																									, to< std::string >( currfile[ "filename" ] )
 																									, to< std::string >( currfile[ "title" ] )
 																									, to< std::string >( currfile[ "author" ] )
@@ -1720,6 +1789,8 @@ namespace launcher
 		}
 
 	private:
+		std::shared_ptr< IWADSelector >							iwadselector;
+		std::shared_ptr< PWADSelector >							pwadselector;
 		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	folders;
 		std::vector< std::shared_ptr< IdgamesFilePanel > >		files;
 		std::string												foldername;
@@ -1738,7 +1809,7 @@ namespace launcher
 			, iwadselector( iwad )
 			, pwadselector( pwad )
 		{
-			idgames = std::make_shared< IdgamesBrowserPanel >( "levels/", "Choose your game", false );
+			idgames = std::make_shared< IdgamesBrowserPanel >( iwadselector, pwadselector, "levels/", "Choose your game", false );
 			idgames->DisallowRefresh();
 			idgames->AddFolder( "doom/", "Doom" );
 			idgames->AddFolder( "doom2/", "Doom II" );
