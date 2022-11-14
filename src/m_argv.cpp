@@ -427,6 +427,22 @@ const char *M_GetExecutableName(void)
     return M_BaseName(myargv[0]);
 }
 
+std::span< const char* > M_ParamArgs( const char* param )
+{
+	int32_t startparam = M_CheckParm( param );
+	if( startparam > 0 )
+	{
+		++startparam;
+		int32_t endparam = startparam;
+		while( endparam < myargc && myargv[ endparam ][ 0 ] != '-' )
+		{
+			++endparam;
+		}
+		return std::span( &myargv[ startparam ], (size_t)( endparam - startparam ) );
+	}
+	return std::span( &myargv[ 0 ], 0 );
+};
+
 void M_AddAdditionalArgs( std::vector< DoomString > newargs )
 {
 	originalargc = myargc;
@@ -444,6 +460,15 @@ void M_AddAdditionalArgs( std::vector< DoomString > newargs )
 	if( std::find( newargs.begin(), newargs.end(), "-file" ) != newargs.end() )
 	{
 		int32_t fileindex = M_CheckParmWithArgs( "-file", 1 );
+		if( fileindex > 0 )
+		{
+			myargv[ fileindex ] = "-_";
+		}
+	}
+
+	if( std::find( newargs.begin(), newargs.end(), "-deh" ) != newargs.end() )
+	{
+		int32_t fileindex = M_CheckParmWithArgs( "-deh", 1 );
 		if( fileindex > 0 )
 		{
 			myargv[ fileindex ] = "-_";
