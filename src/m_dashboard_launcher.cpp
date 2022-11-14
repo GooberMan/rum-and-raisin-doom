@@ -93,9 +93,9 @@ constexpr const char* GameVariants[] =
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
 constexpr const char* idgames_api_folder	= "action=getcontents&out=json&name=";
 constexpr const char* idgames_api_file		= "action=get&out=json&file=";
-constexpr const char* cache_local			= ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
-constexpr const char* cache_download		= ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
-constexpr const char* cache_extracted		= ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
+constexpr const char* cache_local			= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
+constexpr const char* cache_download		= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
+constexpr const char* cache_extracted		= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
 
 typedef struct idgamesmirror_s
 {
@@ -1042,9 +1042,28 @@ namespace launcher
 		{
 		}
 
-		void Setup( WADEntries& entries )
+		void Setup( WADEntries& entries, std::span< const char* > toselect )
 		{
 			pwads = &entries;
+
+			for( const char* currfile : toselect )
+			{
+				std::string entryname = std::filesystem::path( currfile ).filename().string();
+				std::for_each( entryname.begin(), entryname.end(), []( char& val ) { val = tolower( val ); } );
+
+				for( int32_t index : iota( 0, pwads->size() ) )
+				{
+					WADEntry& pwad = pwads->at( index );
+					std::string pwadname = pwad.filename;
+					std::for_each( pwadname.begin(), pwadname.end(), []( char& val ) { val = tolower( val ); } );
+
+					if( entryname == pwadname )
+					{
+						selected.push_back( index );
+						break;
+					}
+				}
+			}
 		}
 
 		void Add( WADEntry& entry )
@@ -1052,7 +1071,33 @@ namespace launcher
 			pwads->push_back( entry );
 		}
 
+		void Select( WADEntry& entry )
+		{
+			std::string entrypath = entry.full_path;
+			std::for_each( entrypath.begin(), entrypath.end(), []( char& val ) { val = tolower( val ); } );
+
+			for( int32_t index : iota( 0, pwads->size() ) )
+			{
+				WADEntry& pwad = pwads->at( index );
+
+				std::string pwadpath = pwad.full_path;
+				std::for_each( pwadpath.begin(), pwadpath.end(), []( char& val ) { val = tolower( val ); } );
+
+				if( entrypath == pwadpath )
+				{
+					selected.push_back( index );
+					break;
+				}
+			}
+		}
+
 		INLINE bool Valid() const { return pwads != nullptr; }
+
+		INLINE auto Selected() { return std::ranges::views::all( selected )
+								| std::ranges::views::transform( [ this ]( int32_t index ) -> WADEntry&
+								{
+									return pwads->at( index );
+								} ); }
 
 		void Render()
 		{
@@ -1105,6 +1150,7 @@ namespace launcher
 
 	private:
 		WADEntries*				pwads;
+		std::vector< int32_t >	selected;
 		int32_t					current;
 	};
 
@@ -1169,6 +1215,28 @@ namespace launcher
 		{
 			// panel_stack.top()->Exit();
 			panel_stack.pop();
+			if( !panel_stack.empty() )
+			{
+				panel_stack.top()->Enter();
+			}
+		}
+	}
+
+	void PopPanelToRoot( )
+	{
+		if( panel_stack.size() > 1 )
+		{
+			// panel_stack.top()->Exit();
+		}
+
+		while( panel_stack.size() > 1 )
+		{
+			panel_stack.pop();
+		}
+
+		if( panel_stack.size() > 1 )
+		{
+			panel_stack.top()->Enter();
 		}
 	}
 
@@ -1257,6 +1325,11 @@ namespace launcher
 				std::replace( extractedpath.begin(), extractedpath.end(), '/', DIR_SEPARATOR );
 				extracted = std::filesystem::exists( extractedpath );
 
+				if( extracted )
+				{
+					PerformGetWADEntries( false );
+				}
+
 				fileready = true;
 			} );
 
@@ -1321,18 +1394,8 @@ namespace launcher
 			} );
 		}
 
-		void PerformExtractFile()
+		void PerformGetWADEntries( bool addtoselector )
 		{
-			auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total ) -> bool
-			{
-				progress = (double_t)current / (double_t)total;
-				return true;
-			} );
-
-			std::string zippath = downloadpath + filename;
-
-			M_ZipExtractAllFromFile( zippath.c_str(), extractedpath.c_str(), progressfunc );
-
 			iwads.clear();
 			pwads.clear();
 			dehfiles.clear();
@@ -1348,12 +1411,12 @@ namespace launcher
 					WADEntry entry = ParseWAD( file.path() );
 					if( entry.type == WADType::IWAD )
 					{
-						iwadselector->Add( entry );
+						if( addtoselector ) iwadselector->Add( entry );
 						iwads.push_back( entry );
 					}
 					else if( entry.type == WADType::PWAD )
 					{
-						pwadselector->Add( entry );
+						if( addtoselector ) pwadselector->Add( entry );
 						pwads.push_back( entry );
 					}
 				}
@@ -1362,6 +1425,21 @@ namespace launcher
 					dehfiles.push_back( file.path().string() );
 				}
 			}
+		}
+
+		void PerformExtractFile()
+		{
+			auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total ) -> bool
+			{
+				progress = (double_t)current / (double_t)total;
+				return true;
+			} );
+
+			std::string zippath = downloadpath + filename;
+
+			M_ZipExtractAllFromFile( zippath.c_str(), extractedpath.c_str(), progressfunc );
+
+			PerformGetWADEntries( true );
 
 			extracted = true;
 		}
@@ -1436,7 +1514,12 @@ namespace launcher
 						{
 							for( auto& pwad : pwads )
 							{
-								int foo = 0;
+								pwadselector->Select( pwad );
+							}
+
+							while( panel_stack.size() > 1 )
+							{
+								PopPanelToRoot();
 							}
 						}
 					}
@@ -1819,7 +1902,6 @@ namespace launcher
 		virtual void RenderContents() override
 		{
 			iwadselector->Render();
-			pwadselector->Render();
 
 			constexpr ImVec2 playbuttonsize = { 50.f, 25.f };
 			constexpr ImVec2 idgamessize = { 100.f, 25.f };
@@ -1827,9 +1909,33 @@ namespace launcher
 
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
+			ImVec2 frameavail;
+			igGetContentRegionAvail( &frameavail );
+
+			igColumns( 2, "mainpanelcolumns", false );
+			igSetColumnWidth( 0, 150 );
+
+			igText( "Selected files" );
+			igNewLine();
+
+			int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelfiles", nullptr );
+			ImVec2 fileframesize = { 140, frameavail.y - playbuttonsize.y - 15 };
+
+			if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			{
+				for( auto& entry : pwadselector->Selected() )
+				{
+					igText( entry.filename.c_str() );
+				}
+			}
+			igEndChildFrame();
+
+			igNextColumn();
+			igText( "kek" );
+
+			igColumns( 1, nullptr, false );
 
 			ImVec2 cursor;
-
 			cursor = { framesize.x - playbuttonsize.x - framepadding - idgamessize.x - framepadding, framesize.y - playbuttonsize.y };
 			igSetCursorPos( cursor );
 			if( igButton( "Get more maps", idgamessize ) )
@@ -1886,8 +1992,27 @@ namespace launcher
 					{
 						defaultiwad = myargv[ iwadparam + 1 ];
 					}
+
+					auto createspan = []() -> std::span< const char* >
+					{
+						int32_t fileparam = M_CheckParm( "-file" );
+						if( fileparam > 0 )
+						{
+							++fileparam;
+							int32_t endparam = fileparam;
+							while( endparam < myargc && myargv[ endparam ][ 0 ] != '-' )
+							{
+								++endparam;
+							}
+							return std::span( &myargv[ fileparam ], (size_t)( endparam - fileparam + 1 ) );
+						}
+						return std::span( &myargv[ 0 ], 0 );
+					};
+
+					std::span< const char* > fileparams = createspan();
+
 					iwadselector->Setup( launcher.IWADs, defaultiwad );
-					pwadselector->Setup( launcher.PWADs );
+					pwadselector->Setup( launcher.PWADs, fileparams );
 
 					launcherfinished = true;
 				} );
@@ -1905,6 +2030,7 @@ namespace launcher
 		}
 
 		INLINE IWADSelector* GetIWADSelector() { return iwadselector.get(); }
+		INLINE PWADSelector* GetPWADSelector() { return pwadselector.get(); }
 
 	protected:
 		virtual void RenderContents() override
@@ -1986,6 +2112,19 @@ std::string M_DashboardLauncherWindow()
 	if( initpanel->GetIWADSelector()->Valid() )
 	{
 		parameters += "-iwad \"" + initpanel->GetIWADSelector()->Selected().full_path + "\"";
+	}
+
+	if( !initpanel->GetPWADSelector()->Selected().empty() )
+	{
+		if( !parameters.empty() )
+		{
+			parameters += " ";
+		}
+		parameters += "-file";
+		for( launcher::WADEntry& curr : initpanel->GetPWADSelector()->Selected() )
+		{
+			parameters += " \"" + curr.full_path + "\"";
+		}
 	}
 #endif // USE_IMGUI
 

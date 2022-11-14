@@ -435,7 +435,19 @@ void M_AddAdditionalArgs( std::vector< DoomString > newargs )
 	if( std::find( newargs.begin(), newargs.end(), "-iwad" ) != newargs.end() )
 	{
 		int32_t iwadindex = M_CheckParmWithArgs( "-iwad", 1 );
-		myargv[ iwadindex ] = "-_";
+		if( iwadindex > 0 )
+		{
+			myargv[ iwadindex ] = "-_";
+		}
+	}
+
+	if( std::find( newargs.begin(), newargs.end(), "-file" ) != newargs.end() )
+	{
+		int32_t fileindex = M_CheckParmWithArgs( "-file", 1 );
+		if( fileindex > 0 )
+		{
+			myargv[ fileindex ] = "-_";
+		}
 	}
 
 	size_t totalargs = myargc + newargs.size();
