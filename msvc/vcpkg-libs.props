@@ -7,7 +7,7 @@
     <ClCompile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>zlib.lib;libcurl.lib;libpng16.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;minizip.lib;libpng16.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

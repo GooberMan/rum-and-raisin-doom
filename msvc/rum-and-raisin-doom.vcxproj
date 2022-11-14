@@ -638,9 +638,11 @@
     <ClInclude Include="..\src\m_fixed.h" />
     <ClCompile Include="..\src\m_profile.cpp" />
     <ClCompile Include="..\src\m_url.cpp" />
+    <ClCompile Include="..\src\m_zipfile.cpp" />
     <ClCompile Include="..\src\net_client.c" />
     <ClInclude Include="..\src\m_profile.h" />
     <ClInclude Include="..\src\m_url.h" />
+    <ClInclude Include="..\src\m_zipfile.h" />
     <ClInclude Include="..\src\net_client.h" />
     <ClCompile Include="..\src\net_common.c" />
     <ClInclude Include="..\src\net_common.h" />

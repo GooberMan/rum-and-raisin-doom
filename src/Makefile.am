@@ -106,6 +106,7 @@ m_json.cpp           m_json.h              \
 m_launcher.cpp       m_launcher.h          \
 m_profile.cpp        m_profile.h           \
 m_url.cpp            m_url.h               \
+m_zipfile.cpp        m_zipfile.h           \
 net_client.c         net_client.h          \
 net_common.c         net_common.h          \
 net_dedicated.c      net_dedicated.h       \
