@@ -46,6 +46,15 @@
 #include <stack>
 #include <cstdio>
 
+#ifdef WIN32
+#include <sys/utime.h>
+#define utime _utime
+#define utimbuf _utimbuf
+#else
+#include <utime.h>
+#endif // WIN32
+
+
 extern "C"
 {
 	extern int32_t dashboardactive;
@@ -54,6 +63,9 @@ extern "C"
 	extern int32_t frame_adjusted_width;
 	extern int32_t frame_height;
 }
+
+extern ImFont* font_inconsolata_medium;
+extern ImFont* font_inconsolata_large;
 
 void M_DashboardApplyTheme();
 void M_DashboardPrepareRender();
@@ -79,9 +91,10 @@ constexpr const char* GameVariants[] =
 
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
 constexpr const char* idgames_api_folder	= "action=getcontents&out=json&name=";
+constexpr const char* idgames_api_file		= "action=get&out=json&file=";
 constexpr const char* cache_local			= ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
 constexpr const char* cache_download		= ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
-constexpr const char* cache_idgames			= "idgames" DIR_SEPARATOR_S;
+constexpr const char* cache_extracted		= ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
 
 typedef struct idgamesmirror_s
 {
@@ -153,16 +166,27 @@ constexpr triangle_t mesh_star[] =
 
 constexpr auto Star() { return std::span( mesh_star, arrlen( mesh_star ) ); }
 
+void igCentreText( const char* string )
+{
+	ImVec2 textsize;
+	igCalcTextSize( &textsize, string, nullptr, false, -1 );
+	igCentreNextElement( textsize.x );
+	igText( string );
+}
+
 template< typename... _args >
 void igCentreText( const char* string, _args&... args )
 {
-	ImVec2 textsize;
 	char buffer[ 1024 ];
 
 	M_snprintf( buffer, 1024, string, args... );
-	igCalcTextSize( &textsize, buffer, nullptr, false, -1 );
-	igCentreNextElement( textsize.x );
-	igText( buffer );
+	igCentreText( buffer );
+}
+
+template< typename... _args >
+void igCentreText( const char* string, _args&&... args )
+{
+	igCentreText( string, args... );
 }
 
 template< typename _container, typename _func >
@@ -1130,36 +1154,298 @@ namespace launcher
 		}
 	}
 
-	struct IdgamesFile
-	{
-		std::string		fullpath;
-		std::string		filename;
-		std::string		title;
-		std::string		date;
-		std::string		author;
-		std::string		email;
-		std::string		description;
-		size_t			size;
-		double_t		rating;
-		size_t			votes;
-	};
-
 	class IdgamesFilePanel : public LauncherPanel
 	{
 	public:
-		IdgamesFilePanel()
+		IdgamesFilePanel( const std::string& path, const std::string& name, const std::string& t, const std::string& a, double_t r )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
+			, fullpath( path )
+			, filename( name )
+			, title( t )
+			, author( a )
+			, size( 0 )
+			, rating( r )
+			, votes( 0 )
+			, downloaded( false )
+			, extracted( false )
+			, fileready( false )
+			, localfilesystemop( false )
+			, currentlydoing( "Nothing" )
+			, progress( 0.0 )
 		{
+			if( !fullpath.ends_with( '/' ) )
+			{
+				fullpath += '/';
+			}
+
+			query = idgames_api_file + fullpath + filename;
+
 		}
 
 		virtual void Enter() override
 		{
+			if( !fileready.load() )
+			{
+				RefreshFile();
+			}
 		}
 
+		constexpr const std::string& Filename() const	{ return filename; }
+		constexpr const std::string& Title() const		{ return title; }
+		constexpr const std::string& Author() const		{ return author; }
+		constexpr const double_t Rating() const			{ return rating; }
+
 	protected:
+		void RefreshFile()
+		{
+			fileready = false;
+
+			jobs->AddJob( [ this ]()
+			{
+				bool successful = false;
+				std::string listing;
+				while( !successful )
+				{
+					listing.clear();
+					successful = M_URLGetString( listing, idgames_api_url, query.c_str() );
+				}
+				JSONElement asjson = JSONElement::Deserialise( listing.c_str() );
+				const JSONElement& content = asjson[ "content" ];
+
+				date			= to< std::string >( content[ "date" ] );
+				email			= to< std::string >( content[ "email" ] );
+				description		= to< std::string >( content[ "description" ] );
+				credits			= to< std::string >( content[ "credits" ] );
+				base			= to< std::string >( content[ "base" ] );
+				buildtime		= to< std::string >( content[ "buildtime" ] );
+				editors			= to< std::string >( content[ "editors" ] );
+				bugs			= to< std::string >( content[ "bugs" ] );
+				textfile		= to< std::string >( content[ "textfile" ] );
+				size			= to< size_t >( content[ "size" ] );
+				age				= to< size_t >( content[ "age" ] );
+				rating			= to< double_t >( content[ "rating" ] );
+				votes			= to< size_t >( content[ "votes" ] );
+
+				downloadpath = cache_download + fullpath + filename + "_" + to< std::string >( size ) + "_" + to< std::string >( age ) + DIR_SEPARATOR_S;
+				std::replace( downloadpath.begin(), downloadpath.end(), '/', DIR_SEPARATOR );
+				std::filesystem::path downloadfile = downloadpath + filename;
+				downloaded = std::filesystem::exists( downloadfile );
+
+				extractedpath = cache_extracted + fullpath;
+				std::replace( extractedpath.begin(), extractedpath.end(), '/', DIR_SEPARATOR );
+				extracted = std::filesystem::exists( extractedpath );
+
+				fileready = true;
+			} );
+
+		}
+
+		void DownloadAndExtractFile( std::string location )
+		{
+			localfilesystemop = true;
+			currentlydoing = "Downloading file";
+
+			jobs->AddJob( [ this, location ]()
+			{
+				std::vector< byte > data;
+				data.reserve( size );
+				int64_t filedate = 0;
+				std::string error;
+
+				auto progressfunc = std::function( [this]( ptrdiff_t total, ptrdiff_t current )
+				{
+					progress = (double_t)current / (double_t)total;
+				} );
+
+				bool successful = false;
+				while( !successful )
+				{
+					successful = M_URLGetBytes( data, filedate, error, location.c_str(), nullptr, progressfunc );
+				}
+
+				currentlydoing = "Writing file to disk";
+				progress = 0;
+
+				std::filesystem::path downloadto = downloadpath;
+				std::filesystem::create_directories( downloadto );
+
+				std::string downloadtozip = downloadpath + filename;
+				FILE* zipfile = fopen( downloadtozip.c_str(), "wb" );
+				fwrite( (void*)data.data(), sizeof( char ), data.size(), zipfile );
+				fclose( zipfile );
+
+				utimbuf zipfiletime = { filedate, filedate };
+				utime( downloadtozip.c_str(), &zipfiletime );
+
+				downloaded = true;
+				localfilesystemop = false;
+				currentlydoing = "Nothing";
+
+			} );
+		}
+
 		virtual void RenderContents() override
 		{
+			constexpr ImVec2 backbuttonsize = { 50.f, 25.f };
+			constexpr ImVec2 refreshbuttonsize = { 90.f, 25.f };
+			constexpr float_t framepadding = 10;
+
+			ImVec2 cursorpos;
+
+			igPushFont( font_inconsolata_large );
+			igCentreText( !title.empty() ? title.c_str() : filename.c_str() );
+			igPopFont();
+
+			igCentreText( "by %s", author.c_str() );
+
+			constexpr ImVec2 starsize = { 20.f, 25.f };
+			igCentreNextElement( starsize.x * 5 );
+
+			igRating( "file_rating", rating / 5.0, 5, starsize, igGetColorU32Col( ImGuiCol_Text, 1.0f ), igGetColorU32Col( ImGuiCol_TextDisabled, 1.0f ) );
+			igGetCursorPos( &cursorpos );
+			cursorpos.y += 4;
+			igSetCursorPos( cursorpos );
+
+			if( fileready.load() )
+			{
+				constexpr ImVec2 downloadsize = { 160.f, 50.f };
+				constexpr ImVec2 fileopspinnersize = { 20.f, 50.f };
+				constexpr ImVec2 fileopprogresssize = { 300.f, 20.f };
+
+				if( !localfilesystemop )
+				{
+					igPushFont( font_inconsolata_medium );
+					igCentreNextElement( downloadsize.x );
+					if( !downloaded )
+					{
+						if( igButton( "Download", downloadsize ) )
+						{
+							igOpenPopup( "downloadfrom", ImGuiPopupFlags_None );
+						}
+					}
+					else if( !extracted )
+					{
+						igButton( "Extract", downloadsize );
+					}
+					else
+					{
+						igButton( "Select for play", downloadsize );
+					}
+					igPopFont();
+
+					if( igBeginPopup( "downloadfrom", ImGuiWindowFlags_None ) )
+					{
+						igText( "Choose location" );
+						igSeparator();
+						for( auto& loc : Mirrors() )
+						{
+							if( igSelectableBool( loc.location, false, ImGuiSelectableFlags_None, zero ) )
+							{
+								DownloadAndExtractFile( loc.url + fullpath + filename );
+								igCloseCurrentPopup();
+							}
+						}
+						igEndPopup();
+					}
+				}
+				else
+				{
+					ImVec2 framesize;
+					igGetContentRegionAvail( &framesize );
+					igGetCursorPos( &cursorpos );
+
+					cursorpos.x += framesize.x * 0.25f;
+					igSetCursorPos( cursorpos );
+					igSpinner( fileopspinnersize, 0.5 );
+
+					cursorpos.x += fileopspinnersize.y + 5.f;
+					igSetCursorPos( cursorpos );
+					igText( "Doin' a thing..." );
+
+					cursorpos.y += fileopspinnersize.y - fileopprogresssize.y;
+					igSetCursorPos( cursorpos );
+					ImVec2 progsize = { framesize.x * 0.5f - 5.f, fileopprogresssize.y };
+					igRoundProgressBar( progress.load(), progsize, 2.f );
+				}
+			}
+
+			ImVec2 framesize;
+			igGetContentRegionAvail( &framesize );
+			framesize.y -= backbuttonsize.y + 8;
+
+			if( igBeginChildFrame( 999, framesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			{
+				if( !fileready.load() )
+				{
+					constexpr ImVec2 loadingsize = { 112.0f, 70.0f };
+
+					ImVec2 content;
+					igGetContentRegionAvail( &content );
+					igGetCursorPos( &cursorpos );
+
+					cursorpos.x += ( content.x - loadingsize.x ) * 0.5f;
+					cursorpos.y += ( content.y - loadingsize.y ) * 0.5f;
+					igSetCursorPos( cursorpos );
+					igSpinner( loadingsize, 0.5 );
+					igCentreText( "Fetching file details" );
+				}
+				else
+				{
+					igTextWrapped( textfile.c_str() );
+				}
+			}
+			igEndChildFrame();
+
+			if( fileready.load() )
+			{
+				ImVec2 cursorpos;
+				igGetCursorPos( &cursorpos );
+				cursorpos.y += 4;
+
+				cursorpos.x = framesize.x - backbuttonsize.x - framepadding - refreshbuttonsize.x - framepadding;
+				igSetCursorPos( cursorpos );
+				if( igButton( "Refresh", refreshbuttonsize ) )
+				{
+					RefreshFile();
+				}
+
+				cursorpos.x = framesize.x - backbuttonsize.x - framepadding;
+				igSetCursorPos( cursorpos );
+				if( igButton( "Back", backbuttonsize ) )
+				{
+					PopPanel();
+				}
+			}
 		}
+
+	private:
+		std::string					fullpath;
+		std::string					filename;
+		std::string					title;
+		std::string					date;
+		std::string					author;
+		std::string					email;
+		std::string					description;
+		std::string					credits;
+		std::string					base;
+		std::string					buildtime;
+		std::string					editors;
+		std::string					bugs;
+		std::string					textfile;
+		size_t						size;
+		size_t						age;
+		double_t					rating;
+		size_t						votes;
+
+		std::string					query;
+		std::string					downloadpath;
+		std::string					extractedpath;
+		bool						downloaded;
+		bool						extracted;
+		std::atomic< bool >			fileready;
+		std::atomic< bool >			localfilesystemop;
+		std::atomic< const char* >	currentlydoing;
+		std::atomic< double_t >		progress;
 	};
 
 	class IdgamesBrowserPanel : public LauncherPanel
@@ -1255,17 +1541,11 @@ namespace launcher
 				const JSONElement& idgamesfiles = content[ "file" ];
 				for( auto& currfile : idgamesfiles.Children() )
 				{
-					IdgamesFile& file = *files.insert( files.end(), IdgamesFile() );
-					file.fullpath		= to< std::string >( currfile[ "dir" ] );
-					file.filename		= to< std::string >( currfile[ "filename" ] );
-					file.title			= to< std::string >( currfile[ "title" ] );
-					file.date			= to< std::string >( currfile[ "date" ] );
-					file.author			= to< std::string >( currfile[ "author" ] );
-					file.email			= to< std::string >( currfile[ "email" ] );
-					file.description	= to< std::string >( currfile[ "description" ] );
-					file.rating			= to< double_t >( currfile[ "rating" ] );
-					file.size			= to< size_t >( currfile[ "size" ] );
-					file.votes			= to< size_t >( currfile[ "votes" ] );
+					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	to< std::string >( currfile[ "dir" ] )
+																									, to< std::string >( currfile[ "filename" ] )
+																									, to< std::string >( currfile[ "title" ] )
+																									, to< std::string >( currfile[ "author" ] )
+																									, to< double_t >( currfile[ "rating" ] ) ) );
 				}
 
 				listready = true;
@@ -1281,8 +1561,6 @@ namespace launcher
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
 			framesize.y -= backbuttonsize.y + 74;
-
-			extern ImFont* font_inconsolata_large;
 
 			igPushFont( font_inconsolata_large );
 			igCentreText( foldernicename.c_str() );
@@ -1315,20 +1593,21 @@ namespace launcher
 						igNewLine();
 					}
 
-					igTileView( files, filetilesize, [this]( const IdgamesFile& file, const ImVec2& size )
+					igTileView( files, filetilesize, [this]( const std::shared_ptr< IdgamesFilePanel >& file, const ImVec2& size )
 					{
-						if( igButtonCustomContents( file.filename.c_str(), size, ImGuiButtonFlags_None, [this, &file]( const ImVec2& size )
+						if( igButtonCustomContents( file->Filename().c_str(), size, ImGuiButtonFlags_None, [this, &file]( const ImVec2& size )
 						{
 							constexpr ImVec2 starsize = { 16.f, 20.f };
 							ImVec2 ratingpos;
 							igGetCursorPos( &ratingpos );
 							ratingpos.y += filetilesize.y - starsize.y - 4;
 
-							igText( file.filename.c_str() );
+							igTextWrapped( !file->Title().empty() ? file->Title().c_str() : file->Filename().c_str() );
 							igSetCursorPos( ratingpos );
-							igRating( "starcount", file.rating / 5.0, 5, starsize, igGetColorU32Col( ImGuiCol_Text, 1.0f ), igGetColorU32Col( ImGuiCol_TextDisabled, 1.0f ) );
+							igRating( "starcount", file->Rating() / 5.0, 5, starsize, igGetColorU32Col( ImGuiCol_Text, 1.0f ), igGetColorU32Col( ImGuiCol_TextDisabled, 1.0f ) );
 						} ) )
 						{
+							PushPanel( file );
 						}
 					} );
 
@@ -1378,7 +1657,7 @@ namespace launcher
 
 	private:
 		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	folders;
-		std::vector< IdgamesFile >								files;
+		std::vector< std::shared_ptr< IdgamesFilePanel > >		files;
 		std::string												foldername;
 		std::string												foldernicename;
 		std::string												query;
@@ -1496,10 +1775,13 @@ namespace launcher
 		virtual void RenderContents() override
 		{
 			constexpr double_t pi2 = M_PI * 2.0;
+			constexpr ImVec2 barsize = { 0.f, 15.f };
 
 			igCentreNextElement( loading_size.x );
 			igSpinner( loading_size, cycle_time );
-			igRoundProgressBar( launcher.Progress(), 15.f, 2.f );
+
+			igRoundProgressBar( launcher.Progress(), barsize, 2.f );
+
 			igCentreText( "Updating WAD" );
 			igCentreText( "dictionary" );
 		}
