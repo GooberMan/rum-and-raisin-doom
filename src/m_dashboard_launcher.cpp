@@ -63,6 +63,8 @@ extern "C"
 	extern int32_t frame_width;
 	extern int32_t frame_adjusted_width;
 	extern int32_t frame_height;
+
+	extern uint8_t defaultpalette[];
 }
 
 extern ImFont* font_inconsolata_medium;
@@ -97,6 +99,11 @@ constexpr const char* cache_local			= "." DIR_SEPARATOR_S ".rumandraisincache" D
 constexpr const char* cache_download		= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
 constexpr const char* cache_extracted		= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
 
+constexpr const char* WADRegexString = ".+\\.wad$";
+constexpr const char* DEHRegexString = ".+\\.deh$";
+static const std::regex WADRegex = std::regex( WADRegexString, std::regex_constants::icase );
+static const std::regex DEHRegex = std::regex( DEHRegexString, std::regex_constants::icase );
+
 typedef struct idgamesmirror_s
 {
 	const char* url;
@@ -120,6 +127,33 @@ constexpr idgamesmirror_t idgames_mirrors[] =
 };
 
 constexpr auto Mirrors() { return std::span( idgames_mirrors, arrlen( idgames_mirrors ) ); }
+
+bool EqualCaseInsensitive( const std::string& lhs, const std::string& rhs )
+{
+	return std::equal( lhs.begin(), lhs.end()
+						, rhs.begin(), rhs.end()
+						, []( const char l, const char r )
+						{
+							return tolower( l ) == tolower( r );
+						} );
+}
+
+std::span< const char* > ParamArgs( const char* param )
+{
+	int32_t fileparam = M_CheckParm( param );
+	if( fileparam > 0 )
+	{
+		++fileparam;
+		int32_t endparam = fileparam;
+		while( endparam < myargc && myargv[ endparam ][ 0 ] != '-' )
+		{
+			++endparam;
+		}
+		return std::span( &myargv[ fileparam ], (size_t)( endparam - fileparam ) );
+	}
+	return std::span( &myargv[ 0 ], 0 );
+};
+
 
 constexpr ImVec2 zero = { 0, 0 };
 
@@ -379,14 +413,15 @@ namespace launcher
 		int32_t					height;
 	};
 
-	enum class WADType
+	enum class DoomFileType
 	{
 		None,
 		IWAD,
 		PWAD,
+		Dehacked,
 	};
 
-	constexpr int32_t WADEntryVersion = 1;
+	constexpr int32_t DoomFileEntryVersion = 1;
 
 	PACKED_STRUCT( TGAHeader
 	{
@@ -404,10 +439,10 @@ namespace launcher
 		uint8_t			image_specification;
 	});
 
-	struct WADEntry
+	struct DoomFileEntry
 	{
 		int32_t			version;
-		WADType			type;
+		DoomFileType	type;
 		std::string		filename;
 		std::string		full_path;
 		std::string		cache_path;
@@ -416,12 +451,13 @@ namespace launcher
 		time_t			last_modified;
 		GameMode_t		game_mode;
 		GameVariant_t	game_variant;
+		int32_t			has_dehacked_lump;
 
 		Image			titlepic;
 		std::vector< bgra_t > titlepic_raw;
 	};
 
-	void WriteEntry( WADEntry& entry, const std::filesystem::path& stdpath )
+	void WriteEntry( DoomFileEntry& entry, const std::filesystem::path& stdpath )
 	{
 		std::string path = stdpath.string();
 		std::filesystem::create_directories( path );
@@ -433,6 +469,7 @@ namespace launcher
 		root.AddNumber( "type", (int32_t)entry.type );
 		root.AddNumber( "game_mode", (int32_t)entry.game_mode );
 		root.AddNumber( "game_variant", (int32_t)entry.game_variant );
+		root.AddNumber( "has_dehacked_lump", (int32_t)entry.has_dehacked_lump );
 
 		std::string converted = root.Serialise();
 		FILE* infofile = fopen( infopath.string().c_str(), "wb" );
@@ -472,7 +509,7 @@ namespace launcher
 		}
 	}
 
-	void ReadEntry( WADEntry& entry, const std::filesystem::path& stdpath )
+	void ReadEntry( DoomFileEntry& entry, const std::filesystem::path& stdpath )
 	{
 		std::string path = stdpath.string();
 
@@ -485,9 +522,10 @@ namespace launcher
 
 		JSONElement root = JSONElement::Deserialise( infojson );
 		entry.version = to< int32_t >( root[ "version" ] );
-		entry.type = (WADType)to< int32_t >( root[ "type" ] );
+		entry.type = (DoomFileType)to< int32_t >( root[ "type" ] );
 		entry.game_mode = (GameMode_t)to< int32_t >( root[ "game_mode" ] );
 		entry.game_variant = (GameVariant_t)to< int32_t >( root[ "game_variant" ] );
+		entry.has_dehacked_lump = to< int32_t >( root[ "has_dehacked_lump" ] );
 
 		std::string textpath = path + "textfile.txt";
 		std::filesystem::path textstdpath = std::filesystem::path( textpath );
@@ -513,7 +551,7 @@ namespace launcher
 		}
 	}
 
-	bool WADEntryExists( const std::filesystem::path& stdpath )
+	bool DoomFileEntryExists( const std::filesystem::path& stdpath )
 	{
 		if( std::filesystem::exists( stdpath ) )
 		{
@@ -530,7 +568,7 @@ namespace launcher
 		return std::chrono::system_clock::to_time_t( systime );
 	}
 
-	WADEntry ParseWAD( const std::filesystem::path& stdpath )
+	DoomFileEntry ParseDoomFile( const std::filesystem::path& stdpath )
 	{
 		std::string path = stdpath.string();
 		std::string filename = stdpath.filename().string();
@@ -551,103 +589,121 @@ namespace launcher
 
 		std::filesystem::path stdcachepath( cachepath );
 
-		WADEntry entry = WADEntry();
-		entry.version = WADEntryVersion;
+		DoomFileEntry entry = DoomFileEntry();
+		entry.version = DoomFileEntryVersion;
 		entry.filename = filename;
 		entry.full_path = path;
 		entry.cache_path = cachepath;
 		entry.last_modified = lastmodified;
 		entry.file_length = filelength;
 
-		if( !M_CheckParm( "-invalidatewadcache" ) && WADEntryExists( stdcachepath ) )
+		if( !M_CheckParm( "-invalidatewadcache" ) && DoomFileEntryExists( stdcachepath ) )
 		{
 			ReadEntry( entry, stdcachepath );
 		}
 		else
 		{
-			FILE* file = fopen( path.c_str(), "rb" );
-			if( file )
+			if( std::regex_match( filename, DEHRegex ) )
 			{
-				wadinfo_t header;
-
-				fread( &header, sizeof( wadinfo_t ), 1, file );
-
-				if( !strncmp( header.identification, "IWAD", 4 ) )
+				entry.type = DoomFileType::Dehacked;
+			}
+			else
+			{
+				FILE* file = fopen( path.c_str(), "rb" );
+				if( file )
 				{
-					entry.type = WADType::IWAD;
-				}
-				else if( !strncmp( header.identification, "PWAD", 4 ) )
-				{
-					entry.type = WADType::PWAD;
-				}
+					wadinfo_t header;
 
-				std::vector< filelump_t > lumps;
-				lumps.resize( header.numlumps );
+					fread( &header, sizeof( wadinfo_t ), 1, file );
 
-				filelump_t* titlepic	= nullptr;
-				filelump_t* dmenupic	= nullptr;
-				filelump_t* dmapinfo	= nullptr;
-				filelump_t* umapinfo	= nullptr;
-				filelump_t* playpal		= nullptr;
-				filelump_t* m_chg		= nullptr;
-				filelump_t* e1m1		= nullptr;
-				filelump_t* e2m1		= nullptr;
-				filelump_t* e3m1		= nullptr;
-				filelump_t* e4m1		= nullptr;
-				filelump_t* map01		= nullptr;
-
-				fseek( file, header.infotableofs, SEEK_SET );
-				fread( lumps.data(), sizeof( filelump_t ), header.numlumps, file );
-
-				for( filelump_t& lump : lumps )
-				{
-					if( !strncmp( lump.name, "TITLEPIC", 8 ) )			titlepic = &lump;
-					else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
-					else if( !strncmp( lump.name, "DMAPINFO", 8 ) )		dmapinfo = &lump;
-					else if( !strncmp( lump.name, "UMAPINFO", 8 ) )		umapinfo = &lump;
-					else if( !strncmp( lump.name, "PLAYPAL", 8 ) )		playpal = &lump;
-					else if( !strncmp( lump.name, "M_CHG", 8 ) )		m_chg = &lump;
-					else if( !strncmp( lump.name, "E1M1", 8 ) )			e1m1 = &lump;
-					else if( !strncmp( lump.name, "E2M1", 8 ) )			e2m1 = &lump;
-					else if( !strncmp( lump.name, "E3M1", 8 ) )			e3m1 = &lump;
-					else if( !strncmp( lump.name, "E4M1", 8 ) )			e4m1 = &lump;
-					else if( !strncmp( lump.name, "MAP01", 8 ) )		map01 = &lump;
-				}
-
-				if( map01 != nullptr )
-				{
-					entry.game_mode = commercial;
-				}
-				else if( e4m1 != nullptr )
-				{
-					entry.game_mode = retail;
-				}
-				else if( e2m1 != nullptr || e3m1 != nullptr )
-				{
-					entry.game_mode = registered;
-				}
-				else if( e1m1 != nullptr )
-				{
-					entry.game_mode = entry.type == WADType::IWAD ? shareware : registered;
-				}
-
-				if( entry.type == WADType::IWAD )
-				{
-					if( m_chg != nullptr )
+					if( !strncmp( header.identification, "IWAD", 4 ) )
 					{
-						entry.game_variant = bfgedition;
+						entry.type = DoomFileType::IWAD;
 					}
-					else if( dmenupic != nullptr || dmapinfo != nullptr )
+					else if( !strncmp( header.identification, "PWAD", 4 ) )
 					{
-						entry.game_variant = unityport;
+						entry.type = DoomFileType::PWAD;
 					}
-					else
+
+					std::vector< filelump_t > lumps;
+					lumps.resize( header.numlumps );
+
+					filelump_t* dehacked	= nullptr;
+					filelump_t* titlepic	= nullptr;
+					filelump_t* dmenupic	= nullptr;
+					filelump_t* dmapinfo	= nullptr;
+					filelump_t* umapinfo	= nullptr;
+					filelump_t* playpal		= nullptr;
+					filelump_t* m_chg		= nullptr;
+					filelump_t* e1m1		= nullptr;
+					filelump_t* e2m1		= nullptr;
+					filelump_t* e3m1		= nullptr;
+					filelump_t* e4m1		= nullptr;
+					filelump_t* map01		= nullptr;
+
+					fseek( file, header.infotableofs, SEEK_SET );
+					fread( lumps.data(), sizeof( filelump_t ), header.numlumps, file );
+
+					for( filelump_t& lump : lumps )
 					{
-						entry.game_variant = vanilla;
+						if( !strncmp( lump.name, "DEHACKED", 8 ) )			dehacked = &lump;
+						else if( !strncmp( lump.name, "TITLEPIC", 8 ) )		titlepic = &lump;
+						else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
+						else if( !strncmp( lump.name, "DMAPINFO", 8 ) )		dmapinfo = &lump;
+						else if( !strncmp( lump.name, "UMAPINFO", 8 ) )		umapinfo = &lump;
+						else if( !strncmp( lump.name, "PLAYPAL", 8 ) )		playpal = &lump;
+						else if( !strncmp( lump.name, "M_CHG", 8 ) )		m_chg = &lump;
+						else if( !strncmp( lump.name, "E1M1", 8 ) )			e1m1 = &lump;
+						else if( !strncmp( lump.name, "E2M1", 8 ) )			e2m1 = &lump;
+						else if( !strncmp( lump.name, "E3M1", 8 ) )			e3m1 = &lump;
+						else if( !strncmp( lump.name, "E4M1", 8 ) )			e4m1 = &lump;
+						else if( !strncmp( lump.name, "MAP01", 8 ) )		map01 = &lump;
+					}
+
+					if( map01 != nullptr )
+					{
+						entry.game_mode = commercial;
+					}
+					else if( e4m1 != nullptr )
+					{
+						entry.game_mode = retail;
+					}
+					else if( e2m1 != nullptr || e3m1 != nullptr )
+					{
+						entry.game_mode = registered;
+					}
+					else if( e1m1 != nullptr )
+					{
+						entry.game_mode = entry.type == DoomFileType::IWAD ? shareware : registered;
+					}
+
+					// BFG edition hack, since it's actually a PWAD
+					if( entry.type == DoomFileType::PWAD
+						&& ( EqualCaseInsensitive( entry.filename, "doom.wad" ) || EqualCaseInsensitive( entry.filename, "doom2.wad" ) )
+						&& dmenupic && m_chg )
+					{
+						entry.type = DoomFileType::IWAD;
+						titlepic = dmenupic;
+					}
+
+					if( entry.type == DoomFileType::IWAD )
+					{
+						if( m_chg != nullptr )
+						{
+							entry.game_variant = bfgedition;
+						}
+						else if( dmenupic != nullptr || dmapinfo != nullptr )
+						{
+							entry.game_variant = unityport;
+						}
+						else
+						{
+							entry.game_variant = vanilla;
+						}
 					}
 
 					if( !titlepic ) titlepic = dmenupic;
-					if( titlepic && playpal )
+					if( titlepic )
 					{
 						std::vector< byte > source;
 						source.resize( titlepic->size );
@@ -655,9 +711,17 @@ namespace launcher
 						fread( source.data(), sizeof( byte ), titlepic->size, file );
 
 						std::vector< rgb_t > pallette;
-						pallette.resize( playpal->size / sizeof( rgb_t ) );
-						fseek( file, playpal->filepos, SEEK_SET );
-						fread( pallette.data(), sizeof( rgb_t ), playpal->size / sizeof( rgb_t ), file );
+						if( !playpal )
+						{
+							pallette.resize( 256 );
+							memcpy( pallette.data(), defaultpalette, sizeof( rgb_t ) * 256 );
+						}
+						else
+						{
+							pallette.resize( playpal->size / sizeof( rgb_t ) );
+							fseek( file, playpal->filepos, SEEK_SET );
+							fread( pallette.data(), sizeof( rgb_t ), playpal->size / sizeof( rgb_t ), file );
+						}
 
 						patch_t* patch = (patch_t*)source.data();
 
@@ -704,30 +768,30 @@ namespace launcher
 							}
 						}
 					}
+
+					fclose( file );
 				}
 
-				fclose( file );
-			}
-
-			std::filesystem::path textpath = stdpath;
-			textpath.replace_extension( "txt" );
-			if( std::filesystem::exists( textpath ) )
-			{
-				std::ifstream file( textpath, std::ios::in | std::ios::binary );
-				entry.text_file = std::string( std::istreambuf_iterator< char >{ file }, { } );
-
-				size_t foundpos = 0;
-				while( ( foundpos = entry.text_file.find( "%", foundpos ) ) != std::string::npos )
+				std::filesystem::path textpath = stdpath;
+				textpath.replace_extension( "txt" );
+				if( std::filesystem::exists( textpath ) )
 				{
-					entry.text_file.replace( foundpos, 1, "%%" );
-					foundpos += 2;
+					std::ifstream file( textpath, std::ios::in | std::ios::binary );
+					entry.text_file = std::string( std::istreambuf_iterator< char >{ file }, { } );
+
+					size_t foundpos = 0;
+					while( ( foundpos = entry.text_file.find( "%", foundpos ) ) != std::string::npos )
+					{
+						entry.text_file.replace( foundpos, 1, "%%" );
+						foundpos += 2;
+					}
 				}
 			}
 
 			WriteEntry( entry, stdcachepath );
 		}
 
-		if( !entry.titlepic_raw.empty() )
+		if( !entry.titlepic_raw.empty() && !entry.titlepic.tex )
 		{
 			entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, Format_BGRA8, entry.titlepic_raw.data() );
 		}
@@ -735,42 +799,34 @@ namespace launcher
 		return entry;
 	}
 
-	using WADEntries = std::vector< WADEntry >;
+	using DoomFileEntries = std::vector< DoomFileEntry >;
 
-	class WADList
+	class DoomFileList
 	{
 	public:
-		WADList()
-			: threaded_context( nullptr )
-			, lists_ready( false )
+		DoomFileList()
+			: lists_ready( false )
 			, abort_work( false )
 			, total_files( 0 )
 			, parsed_files( 0 )
 		{
-			KickoffPopulate();
 		}
 
-		~WADList()
+		~DoomFileList()
 		{
+			for( DoomFileEntry& entry : IWADs )
+			{
+				if( entry.titlepic.tex ) I_TextureDestroy( entry.titlepic.tex );
+			}
+
+			for( DoomFileEntry& entry : PWADs )
+			{
+				if( entry.titlepic.tex ) I_TextureDestroy( entry.titlepic.tex );
+			}
 		}
 
-		void KickoffPopulate()
+		void PopulateDoomFileList()
 		{
-			SDL_Window* window = I_GetWindow();
-			SDL_GLContext glcontext = SDL_GL_GetCurrentContext();
-			SDL_GL_SetAttribute( SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1 );
-			threaded_context = SDL_GL_CreateContext( window );
-			SDL_GL_MakeCurrent( window, glcontext );
-		}
-
-		void PopulateWADList()
-		{
-			SDL_Window* window = I_GetWindow();
-			SDL_GL_MakeCurrent( window, threaded_context );
-
-			constexpr const char* RegexString = ".+\\.wad$";
-			std::regex WADRegex = std::regex( RegexString, std::regex_constants::icase );
-
 			auto IWADPaths = D_GetIWADPaths();
 
 			for( auto dir : std::ranges::views::all( IWADPaths )
@@ -803,11 +859,20 @@ namespace launcher
 
 					std::string pathstring = file.path().string();
 
-					if( std::regex_match( pathstring, WADRegex ) )
+					if( std::regex_match( pathstring, WADRegex )
+						|| std::regex_match( pathstring, DEHRegex ) )
 					{
-						WADEntry entry = ParseWAD( file.path() );
-						if( entry.type == WADType::IWAD ) IWADs.push_back( entry );
-						if( entry.type == WADType::PWAD ) PWADs.push_back( entry );
+						DoomFileEntry entry = ParseDoomFile( file.path() );
+						if( entry.type == DoomFileType::IWAD )
+						{
+							if( !entry.titlepic_raw.empty() && !entry.titlepic.tex )
+							{
+								entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, Format_BGRA8, entry.titlepic_raw.data() );
+							}
+							IWADs.push_back( entry );
+						}
+						if( entry.type == DoomFileType::PWAD ) PWADs.push_back( entry );
+						if( entry.type == DoomFileType::Dehacked ) DEHs.push_back( entry );
 					}
 
 					++parsed_files;
@@ -815,7 +880,6 @@ namespace launcher
 			}
 
 			glFlush();
-			SDL_GL_DeleteContext( threaded_context );
 
 			lists_ready = !abort_work.load();
 		}
@@ -831,9 +895,9 @@ namespace launcher
 			return 0;
 		}
 
-		WADEntries				IWADs;
-		WADEntries				PWADs;
-		SDL_GLContext			threaded_context;
+		DoomFileEntries			IWADs;
+		DoomFileEntries			PWADs;
+		DoomFileEntries			DEHs;
 		std::atomic< bool >		lists_ready;
 		std::atomic< bool >		abort_work;
 
@@ -849,13 +913,13 @@ namespace launcher
 		{
 		}
 
-		void Setup( WADEntries& entries, const char* defaultiwad )
+		void Setup( DoomFileEntries& entries, const char* defaultiwad )
 		{
 			iwads = &entries;
 			SetupIterators( defaultiwad );
 		}
 
-		void Add( WADEntry& entry )
+		void Add( DoomFileEntry& entry )
 		{
 			std::string current = middle->filename;
 			iwads->push_back( entry );
@@ -871,14 +935,9 @@ namespace launcher
 					std::filesystem::path iwadpath( defaultiwad );
 					std::string iwadfilename = iwadpath.filename().string();
 
-					middle = std::find_if( iwads->begin(), iwads->end(), [ iwadfilename ]( WADEntry& e )
+					middle = std::find_if( iwads->begin(), iwads->end(), [ iwadfilename ]( DoomFileEntry& e )
 					{
-						return std::equal( iwadfilename.begin(), iwadfilename.end()
-											, e.filename.begin(), e.filename.end()
-											, []( char lhs, char rhs )
-											{
-												return tolower( lhs ) == tolower( rhs );
-											} );
+						return EqualCaseInsensitive( iwadfilename, e.filename );
 					} );
 
 					if( middle == iwads->end() )
@@ -914,7 +973,7 @@ namespace launcher
 		}
 
 		INLINE bool Valid() const { return iwads != nullptr && middle != iwads->end(); }
-		INLINE WADEntry& Selected() const { return *middle; };
+		INLINE DoomFileEntry& Selected() const { return *middle; };
 
 		void CycleLeft()
 		{
@@ -1027,77 +1086,74 @@ namespace launcher
 			igPopStyleVar( 1 );
 		}
 	private:
-		WADEntries*				iwads;
-		WADEntries::iterator	left;
-		WADEntries::iterator	middle;
-		WADEntries::iterator	right;
+		DoomFileEntries*				iwads;
+		DoomFileEntries::iterator	left;
+		DoomFileEntries::iterator	middle;
+		DoomFileEntries::iterator	right;
 	};
 
-	class PWADSelector
+	class DoomFileSelector
 	{
 	public:
-		PWADSelector( )
-			: pwads( nullptr )
+		DoomFileSelector( )
+			: pwads( { nullptr } )
+			, dehs( { nullptr } )
 			, current( -1 )
 		{
 		}
 
-		void Setup( WADEntries& entries, std::span< const char* > toselect )
+		void SetupPWADs( DoomFileEntries& entries, std::span< const char* > toselect )
 		{
-			pwads = &entries;
+			SetupSelection( pwads, entries, toselect );
+		}
 
-			for( const char* currfile : toselect )
+		void SetupDEHs( DoomFileEntries& entries, std::span< const char* > toselect )
+		{
+			SetupSelection( dehs, entries, toselect );
+		}
+
+		void Add( DoomFileEntry& entry )
+		{
+			if( entry.type == DoomFileType::PWAD ) pwads.container->push_back( entry );
+			if( entry.type == DoomFileType::Dehacked ) dehs.container->push_back( entry );
+		}
+
+		void ClearAllSelected( )
+		{
+			pwads.selected.clear();
+			dehs.selected.clear();
+		}
+
+		void Select( DoomFileEntry& entry )
+		{
+			if( entry.type == DoomFileType::PWAD )
 			{
-				std::string entryname = std::filesystem::path( currfile ).filename().string();
-				std::for_each( entryname.begin(), entryname.end(), []( char& val ) { val = tolower( val ); } );
-
-				for( int32_t index : iota( 0, pwads->size() ) )
+				int32_t index = Select( pwads, entry );
+				if( index >= 0 )
 				{
-					WADEntry& pwad = pwads->at( index );
-					std::string pwadname = pwad.filename;
-					std::for_each( pwadname.begin(), pwadname.end(), []( char& val ) { val = tolower( val ); } );
-
-					if( entryname == pwadname )
+					DoomFileEntry& local = pwads.container->at( index );
+					if( !local.titlepic_raw.empty() && !local.titlepic.tex )
 					{
-						selected.push_back( index );
-						break;
+						local.titlepic.tex = I_TextureCreate( local.titlepic.width, local.titlepic.height, Format_BGRA8, local.titlepic_raw.data() );
 					}
 				}
 			}
+			if( entry.type == DoomFileType::Dehacked ) Select( dehs, entry );
 		}
 
-		void Add( WADEntry& entry )
-		{
-			pwads->push_back( entry );
-		}
+		INLINE bool Valid() const { return pwads.container != nullptr; }
 
-		void Select( WADEntry& entry )
-		{
-			std::string entrypath = entry.full_path;
-			std::for_each( entrypath.begin(), entrypath.end(), []( char& val ) { val = tolower( val ); } );
+		INLINE auto SelectedDEHs() { return std::ranges::views::all( dehs.selected )
+									| std::ranges::views::transform( [ this ]( int32_t index ) -> DoomFileEntry&
+									{
+										return dehs.container->at( index );
+									} ); }
 
-			for( int32_t index : iota( 0, pwads->size() ) )
-			{
-				WADEntry& pwad = pwads->at( index );
-
-				std::string pwadpath = pwad.full_path;
-				std::for_each( pwadpath.begin(), pwadpath.end(), []( char& val ) { val = tolower( val ); } );
-
-				if( entrypath == pwadpath )
-				{
-					selected.push_back( index );
-					break;
-				}
-			}
-		}
-
-		INLINE bool Valid() const { return pwads != nullptr; }
-
-		INLINE auto Selected() { return std::ranges::views::all( selected )
-								| std::ranges::views::transform( [ this ]( int32_t index ) -> WADEntry&
-								{
-									return pwads->at( index );
-								} ); }
+		INLINE auto SelectedPWADs() { return std::ranges::views::all( pwads.selected )
+									| std::ranges::views::transform( [ this ]( int32_t index ) -> DoomFileEntry&
+									{
+										return pwads.container->at( index );
+									} ); }
 
 		void Render()
 		{
@@ -1115,10 +1171,10 @@ namespace launcher
 
 				auto getter = []( void* data, int idx, const char** out_text )
 				{
-					WADEntries* entries = (WADEntries*)data;
+					DoomFileEntries* entries = (DoomFileEntries*)data;
 					if( idx < entries->size() )
 					{
-						WADEntry& entry = (*entries)[ idx ];
+						DoomFileEntry& entry = (*entries)[ idx ];
 						*out_text = entry.filename.c_str();
 						return true;
 					}
@@ -1126,7 +1182,7 @@ namespace launcher
 				};
 
 				igPushIDPtr( this );
-				igListBoxFnBoolPtr( "", &current, getter, (void*)pwads, pwads->size(), 14 );
+				igListBoxFnBoolPtr( "", &current, getter, (void*)pwads.container, pwads.container->size(), 14 );
 				igPopID();
 
 				igNextColumn();
@@ -1136,7 +1192,7 @@ namespace launcher
 				{
 					if( current >= 0 )
 					{
-						igText( (*pwads)[ current ].text_file.c_str() );
+						igText( pwads.container->at( current ).text_file.c_str() );
 					}
 				}
 				igEndChildFrame();
@@ -1149,8 +1205,53 @@ namespace launcher
 		}
 
 	private:
-		WADEntries*				pwads;
-		std::vector< int32_t >	selected;
+		struct Selection
+		{
+			DoomFileEntries*		container;
+			std::vector< int32_t >	selected;
+		};
+
+		static void SetupSelection( Selection& selection, DoomFileEntries& entries, std::span< const char* > toselect )
+		{
+			selection.container = &entries;
+
+			for( const char* currfile : toselect )
+			{
+				std::string entryname = std::filesystem::path( currfile ).filename().string();
+
+				for( int32_t index : iota( 0, selection.container->size() ) )
+				{
+					DoomFileEntry& file = selection.container->at( index );
+
+					if( EqualCaseInsensitive( entryname, file.filename ) )
+					{
+						selection.selected.push_back( index );
+						break;
+					}
+				}
+			}
+		}
+
+		static int32_t Select( Selection& selection, DoomFileEntry& entry )
+		{
+			for( int32_t index : iota( 0, selection.container->size() ) )
+			{
+				DoomFileEntry& file = selection.container->at( index );
+
+				if( EqualCaseInsensitive( entry.full_path, file.full_path ) )
+				{
+					selection.selected.push_back( index );
+					return index;
+				}
+			}
+
+			return -1;
+		}
+
+
+		Selection				pwads;
+		Selection				dehs;
+
 		int32_t					current;
 	};
 
@@ -1198,6 +1299,7 @@ namespace launcher
 
 	static std::stack< std::shared_ptr< LauncherPanel > >	panel_stack;
 	static JobThread* jobs = nullptr;
+	static SDL_GLContext jobs_context = nullptr;
 
 	void PushPanel( std::shared_ptr< LauncherPanel > panel )
 	{
@@ -1243,11 +1345,11 @@ namespace launcher
 	class IdgamesFilePanel : public LauncherPanel
 	{
 	public:
-		IdgamesFilePanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< PWADSelector >& pwad
+		IdgamesFilePanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad
 						, const std::string& path, const std::string& name, const std::string& t, const std::string& a, double_t r )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
 			, iwadselector( iwad )
-			, pwadselector( pwad )
+			, doomfileselector( pwad )
 			, fullpath( path )
 			, filename( name )
 			, title( t )
@@ -1327,7 +1429,7 @@ namespace launcher
 
 				if( extracted )
 				{
-					PerformGetWADEntries( false );
+					PerformGetDoomFileEntries( false );
 				}
 
 				fileready = true;
@@ -1394,7 +1496,7 @@ namespace launcher
 			} );
 		}
 
-		void PerformGetWADEntries( bool addtoselector )
+		void PerformGetDoomFileEntries( bool addtoselector )
 		{
 			iwads.clear();
 			pwads.clear();
@@ -1404,25 +1506,31 @@ namespace launcher
 			auto directoryiterator = std::filesystem::recursive_directory_iterator( std::filesystem::path( extractedpath ), std::filesystem::directory_options::skip_permission_denied, error );
 			for( auto& file : directoryiterator )
 			{
-				std::string extension = file.path().extension().string();
-				std::for_each( extension.begin(), extension.end(), []( char& val ) { val = tolower( val ); } );
-				if( extension == ".wad" )
+				std::string filepath = file.path().string();
+				if( std::regex_match( filepath, WADRegex )
+					|| std::regex_match( filepath, DEHRegex ) )
 				{
-					WADEntry entry = ParseWAD( file.path() );
-					if( entry.type == WADType::IWAD )
+					DoomFileEntry entry = ParseDoomFile( file.path() );
+					if( entry.type == DoomFileType::IWAD )
 					{
+						if( !entry.titlepic_raw.empty() && !entry.titlepic.tex )
+						{
+							entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, Format_BGRA8, entry.titlepic_raw.data() );
+						}
+
 						if( addtoselector ) iwadselector->Add( entry );
 						iwads.push_back( entry );
 					}
-					else if( entry.type == WADType::PWAD )
+					else if( entry.type == DoomFileType::PWAD )
 					{
-						if( addtoselector ) pwadselector->Add( entry );
+						if( addtoselector ) doomfileselector->Add( entry );
 						pwads.push_back( entry );
 					}
-				}
-				else if( extension == ".deh" )
-				{
-					dehfiles.push_back( file.path().string() );
+					else if( entry.type == DoomFileType::Dehacked )
+					{
+						if( addtoselector ) doomfileselector->Add( entry );
+						dehfiles.push_back( entry );
+					}
 				}
 			}
 		}
@@ -1439,7 +1547,7 @@ namespace launcher
 
 			M_ZipExtractAllFromFile( zippath.c_str(), extractedpath.c_str(), progressfunc );
 
-			PerformGetWADEntries( true );
+			PerformGetDoomFileEntries( true );
 
 			extracted = true;
 		}
@@ -1512,9 +1620,16 @@ namespace launcher
 						igCentreNextElement( selectsize.x );
 						if( igButton( "Select for play", selectsize ) )
 						{
+							doomfileselector->ClearAllSelected();
+
+							for( auto& deh : dehfiles )
+							{
+								doomfileselector->Select( deh );
+							}
+
 							for( auto& pwad : pwads )
 							{
-								pwadselector->Select( pwad );
+								doomfileselector->Select( pwad );
 							}
 
 							while( panel_stack.size() > 1 )
@@ -1625,10 +1740,10 @@ namespace launcher
 
 	private:
 		std::shared_ptr< IWADSelector >		iwadselector;
-		std::shared_ptr< PWADSelector >		pwadselector;
-		WADEntries							iwads;
-		WADEntries							pwads;
-		std::vector< std::string >			dehfiles;
+		std::shared_ptr< DoomFileSelector >	doomfileselector;
+		DoomFileEntries						iwads;
+		DoomFileEntries						pwads;
+		DoomFileEntries						dehfiles;
 
 		std::string							fullpath;
 		std::string							filename;
@@ -1663,11 +1778,11 @@ namespace launcher
 	class IdgamesBrowserPanel : public LauncherPanel
 	{
 	public:
-		IdgamesBrowserPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< PWADSelector >& pwad
+		IdgamesBrowserPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad
 							, const std::string& folder, const std::string& nicename, bool refresh = true )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
 			, iwadselector( iwad )
-			, pwadselector( pwad )
+			, DoomFileSelector( pwad )
 			, foldername( folder )
 			, foldernicename( nicename )
 			, listready( !refresh )
@@ -1687,7 +1802,7 @@ namespace launcher
 
 		void AddFolder( const std::string& name, const std::string& nicename )
 		{
-			folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, pwadselector, foldername + name, nicename ) );
+			folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, DoomFileSelector, foldername + name, nicename ) );
 		}
 
 		virtual void Enter() override
@@ -1750,13 +1865,13 @@ namespace launcher
 
 						}
 					}
-					folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, pwadselector, fulldir, nicename ) );
+					folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, DoomFileSelector, fulldir, nicename ) );
 				}
 
 				const JSONElement& idgamesfiles = content[ "file" ];
 				for( auto& currfile : idgamesfiles.Children() )
 				{
-					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, pwadselector
+					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, DoomFileSelector
 																									, to< std::string >( currfile[ "dir" ] )
 																									, to< std::string >( currfile[ "filename" ] )
 																									, to< std::string >( currfile[ "title" ] )
@@ -1873,7 +1988,7 @@ namespace launcher
 
 	private:
 		std::shared_ptr< IWADSelector >							iwadselector;
-		std::shared_ptr< PWADSelector >							pwadselector;
+		std::shared_ptr< DoomFileSelector >							DoomFileSelector;
 		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	folders;
 		std::vector< std::shared_ptr< IdgamesFilePanel > >		files;
 		std::string												foldername;
@@ -1886,13 +2001,13 @@ namespace launcher
 	class MainPanel : public LauncherPanel
 	{
 	public:
-		MainPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< PWADSelector >& pwad )
+		MainPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad )
 			: LauncherPanel( "Launcher_Main" )
 			, readytolaunch( false )
 			, iwadselector( iwad )
-			, pwadselector( pwad )
+			, doomfileselector( pwad )
 		{
-			idgames = std::make_shared< IdgamesBrowserPanel >( iwadselector, pwadselector, "levels/", "Choose your game", false );
+			idgames = std::make_shared< IdgamesBrowserPanel >( iwadselector, doomfileselector, "levels/", "Choose your game", false );
 			idgames->DisallowRefresh();
 			idgames->AddFolder( "doom/", "Doom" );
 			idgames->AddFolder( "doom2/", "Doom II" );
@@ -1909,21 +2024,62 @@ namespace launcher
 
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
+
+			// Column width doesn't really get committed until after the column end call.
+			// As such, setting off then on fixes first frame visual glitches.
+			igColumns( 2, "mainpanelcolumns", false );
+			igSetColumnWidth( 0, framesize.x - 180 );
+			igColumns( 1, "", false );
+
+			igColumns( 2, "mainpanelcolumns", false );
+
+			igNextColumn();
+			igText( "Selected files" );
+
+			for( auto& entry : doomfileselector->SelectedPWADs() )
+			{
+				if( entry.titlepic.tex != nullptr )
+				{
+					ImVec2 imageavail;
+					igGetContentRegionAvail( &imageavail );
+
+					float_t scale = imageavail.x / entry.titlepic.width;
+
+					constexpr ImVec4 tint = { 1, 1, 1, 1 };
+					constexpr ImVec4 border = { 0, 0, 0, 0 };
+					constexpr ImVec2 tl = { 0, 0 };
+					constexpr ImVec2 br = { 1, 1 };
+
+					ImVec2 imagesize = { entry.titlepic.width * scale, entry.titlepic.height * scale };
+
+					igImage( I_TextureGetHandle( entry.titlepic.tex ), imagesize, tl, br, tint, border );
+					igSpacing();
+
+					break;
+				}
+			}
+
+			igSpacing();
+
 			ImVec2 frameavail;
 			igGetContentRegionAvail( &frameavail );
 
-			igColumns( 2, "mainpanelcolumns", false );
-			igSetColumnWidth( 0, 150 );
-
-			igText( "Selected files" );
-			igNewLine();
-
 			int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelfiles", nullptr );
-			ImVec2 fileframesize = { 140, frameavail.y - playbuttonsize.y - 15 };
+			ImVec2 fileframesize = { frameavail.x, frameavail.y - playbuttonsize.y - 15 };
 
-			if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize ) )
 			{
-				for( auto& entry : pwadselector->Selected() )
+
+				if( !doomfileselector->SelectedDEHs().empty() )
+				{
+					for( auto& entry : doomfileselector->SelectedDEHs() )
+					{
+						igText( entry.filename.c_str() );
+					}
+
+					igSpacing();
+				}
+				for( auto& entry : doomfileselector->SelectedPWADs() )
 				{
 					igText( entry.filename.c_str() );
 				}
@@ -1931,7 +2087,6 @@ namespace launcher
 			igEndChildFrame();
 
 			igNextColumn();
-			igText( "kek" );
 
 			igColumns( 1, nullptr, false );
 
@@ -1956,7 +2111,7 @@ namespace launcher
 	private:
 		bool									readytolaunch;
 		std::shared_ptr< IWADSelector >			iwadselector;
-		std::shared_ptr< PWADSelector >			pwadselector;
+		std::shared_ptr< DoomFileSelector >		doomfileselector;
 		std::shared_ptr< IdgamesBrowserPanel >	idgames;
 	};
 
@@ -1974,9 +2129,9 @@ namespace launcher
 			, launcherfinished( false )
 		{
 			iwadselector = std::make_shared< IWADSelector >();
-			pwadselector = std::make_shared< PWADSelector >();
+			doomfileselector = std::make_shared< DoomFileSelector >();
 
-			mainpanel = std::make_shared< MainPanel >( iwadselector, pwadselector );
+			mainpanel = std::make_shared< MainPanel >( iwadselector, doomfileselector );
 		}
 
 		virtual void Enter() override
@@ -1985,7 +2140,7 @@ namespace launcher
 			{
 				jobs->AddJob( [ this ]()
 				{
-					launcher.PopulateWADList();
+					launcher.PopulateDoomFileList();
 					const char* defaultiwad = nullptr;
 					int32_t iwadparam = M_CheckParmWithArgs( "-iwad", 1 );
 					if( iwadparam > 0 )
@@ -1993,26 +2148,12 @@ namespace launcher
 						defaultiwad = myargv[ iwadparam + 1 ];
 					}
 
-					auto createspan = []() -> std::span< const char* >
-					{
-						int32_t fileparam = M_CheckParm( "-file" );
-						if( fileparam > 0 )
-						{
-							++fileparam;
-							int32_t endparam = fileparam;
-							while( endparam < myargc && myargv[ endparam ][ 0 ] != '-' )
-							{
-								++endparam;
-							}
-							return std::span( &myargv[ fileparam ], (size_t)( endparam - fileparam + 1 ) );
-						}
-						return std::span( &myargv[ 0 ], 0 );
-					};
-
-					std::span< const char* > fileparams = createspan();
+					std::span< const char* > fileparams = ParamArgs( "-file" );
+					std::span< const char* > dehparams = ParamArgs( "-deh" );
 
 					iwadselector->Setup( launcher.IWADs, defaultiwad );
-					pwadselector->Setup( launcher.PWADs, fileparams );
+					doomfileselector->SetupPWADs( launcher.PWADs, fileparams );
+					doomfileselector->SetupDEHs( launcher.DEHs, dehparams );
 
 					launcherfinished = true;
 				} );
@@ -2030,7 +2171,7 @@ namespace launcher
 		}
 
 		INLINE IWADSelector* GetIWADSelector() { return iwadselector.get(); }
-		INLINE PWADSelector* GetPWADSelector() { return pwadselector.get(); }
+		INLINE DoomFileSelector* GetDoomFileSelector() { return doomfileselector.get(); }
 
 	protected:
 		virtual void RenderContents() override
@@ -2050,9 +2191,9 @@ namespace launcher
 	private:
 		bool								hasrunlauncher;
 		std::atomic< bool >					launcherfinished;
-		launcher::WADList					launcher;
+		launcher::DoomFileList				launcher;
 		std::shared_ptr< IWADSelector >		iwadselector;
-		std::shared_ptr< PWADSelector >		pwadselector;
+		std::shared_ptr< DoomFileSelector >	doomfileselector;
 		std::shared_ptr< MainPanel >		mainpanel;
 	};
 }
@@ -2070,8 +2211,18 @@ std::string M_DashboardLauncherWindow()
 
 	bool readytolaunch = false;
 
+	SDL_Window* window = I_GetWindow();
+	SDL_GLContext glcontext = SDL_GL_GetCurrentContext();
+	SDL_GL_SetAttribute( SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1 );
+	launcher::jobs_context = SDL_GL_CreateContext( window );
+	SDL_GL_MakeCurrent( window, glcontext );
+
 	launcher::jobs = new JobThread;
-	launcher::jobs->AddJob( []() { M_URLInit(); } );
+	launcher::jobs->AddJob( []()
+		{
+			SDL_GL_MakeCurrent( I_GetWindow(), launcher::jobs_context );
+			M_URLInit();
+		} );
 
 	std::shared_ptr< launcher::InitPanel > initpanel = std::make_shared< launcher::InitPanel >();
 
@@ -2114,18 +2265,33 @@ std::string M_DashboardLauncherWindow()
 		parameters += "-iwad \"" + initpanel->GetIWADSelector()->Selected().full_path + "\"";
 	}
 
-	if( !initpanel->GetPWADSelector()->Selected().empty() )
+	if( !initpanel->GetDoomFileSelector()->SelectedPWADs().empty() )
 	{
 		if( !parameters.empty() )
 		{
 			parameters += " ";
 		}
 		parameters += "-file";
-		for( launcher::WADEntry& curr : initpanel->GetPWADSelector()->Selected() )
+		for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedPWADs() )
 		{
 			parameters += " \"" + curr.full_path + "\"";
 		}
 	}
+
+	if( !initpanel->GetDoomFileSelector()->SelectedDEHs().empty() )
+	{
+		if( !parameters.empty() )
+		{
+			parameters += " ";
+		}
+		parameters += "-deh";
+		for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedDEHs() )
+		{
+			parameters += " \"" + curr.full_path + "\"";
+		}
+	}
+
+	SDL_GL_DeleteContext( launcher::jobs_context );
 #endif // USE_IMGUI
 
 	return parameters;
