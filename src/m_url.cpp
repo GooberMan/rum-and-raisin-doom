@@ -65,6 +65,10 @@ bool M_URLGetString( std::string& output, const char* url, const char* params, u
 	output.clear();
 
 	curl_easy_setopt( curl, CURLOPT_URL, url );
+	curl_easy_setopt( curl, CURLOPT_COOKIESESSION, 1 );
+	curl_easy_setopt( curl, CURLOPT_COOKIEFILE, "" );
+	curl_easy_setopt( curl, CURLOPT_FOLLOWLOCATION, 1 );
+	curl_easy_setopt( curl, CURLOPT_USERAGENT, "libcurl-agent/1.0" );
 	curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params );
 	curl_easy_setopt( curl, CURLOPT_WRITEDATA, &output );
 	curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, &CURL_StringWrite );
@@ -83,6 +87,10 @@ bool M_URLGetBytes( std::vector< unsigned char >& output, int64_t& outfiletime, 
 	outerror.clear();
 
 	curl_easy_setopt( curl, CURLOPT_URL, url );
+	curl_easy_setopt( curl, CURLOPT_COOKIESESSION, 1 );
+	curl_easy_setopt( curl, CURLOPT_COOKIEFILE, "" );
+	curl_easy_setopt( curl, CURLOPT_FOLLOWLOCATION, 1 );
+	curl_easy_setopt( curl, CURLOPT_USERAGENT, "libcurl-agent/1.0" );
 	curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params );
 	curl_easy_setopt( curl, CURLOPT_WRITEDATA, &output );
 	curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, &CURL_BytesWrite );
