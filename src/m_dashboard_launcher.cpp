@@ -906,27 +906,37 @@ namespace launcher
 		void PopulateDoomFileList()
 		{
 			auto IWADPaths = D_GetIWADPaths();
+			std::string CachePath = HOME_PATH + cache_extracted;
+			const char* CacheCStr = CachePath.c_str();
+			auto CacheSpan = std::span< const char* >( &CacheCStr, 1 );
 
-			for( auto dir : std::ranges::views::all( IWADPaths )
-								| std::ranges::views::transform( []( const char* pathname )
-								{
-									std::error_code error;
-									auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
-									if( error ) return std::filesystem::recursive_directory_iterator();
-									return it;
-								} ) )
+			// Annoying workaround for lack of concat in C++20
+			decltype( std::ranges::views::all( CacheSpan ) ) Views[] =
+			{
+				std::ranges::views::all( CacheSpan ),
+				std::ranges::views::all( IWADPaths )
+			};
+
+			for( auto dir : std::ranges::views::join( Views )
+							| std::ranges::views::transform( []( const char* pathname )
+							{
+								std::error_code error;
+								auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
+								if( error ) return std::filesystem::recursive_directory_iterator();
+								return it;
+							} ) )
 			{
 				total_files += std::distance( dir, std::filesystem::recursive_directory_iterator{} );
 			}
 
-			for( auto dir : std::ranges::views::all( IWADPaths )
-								| std::ranges::views::transform( []( const char* pathname )
-								{
-									std::error_code error;
-									auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
-									if( error ) return std::filesystem::recursive_directory_iterator();
-									return it;
-								} ) )
+			for( auto dir : std::ranges::views::join( Views )
+							| std::ranges::views::transform( []( const char* pathname )
+							{
+								std::error_code error;
+								auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
+								if( error ) return std::filesystem::recursive_directory_iterator();
+								return it;
+							} ) )
 			{
 				for( auto file : dir )
 				{
