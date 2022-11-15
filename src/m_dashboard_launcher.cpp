@@ -77,6 +77,16 @@ void M_DashboardFinaliseRender();
 
 constexpr ImVec2 zero = { 0, 0 };
 
+constexpr const char* GameMissions[] =
+{
+	"Doom",
+	"Doom II",
+	"TNT: Evilution",
+	"The Plutonia Experiment",
+	"Chex Quest",
+	"HacX",
+};
+
 constexpr const char* GameModes[] =
 {
 	"Doom Shareware",
@@ -162,23 +172,22 @@ constexpr idgamesmirror_t idgames_mirrors[] =
 	MakeMirror( "https://www.gamers.org/pub/idgames/", "Virginia, US" ),
 };
 
-constexpr const char* freedoom_url				= "https://www.github.com/freedoom/freedoom/releases/download/v0.12.1/freedoom-0.12.1.zip";
 constexpr const char* shareware_idgames_url		= "idstuff/doom/doom19s.zip";
+constexpr const char* freedoom_url				= "https://www.github.com/freedoom/freedoom/releases/download/v0.12.1/freedoom-0.12.1.zip";
+constexpr const char* hacx_idgames_url			= "themes/hacx/hacx12.zip";
 
 constexpr auto Mirrors() { return std::span( idgames_mirrors, arrlen( idgames_mirrors ) ); }
 
-constexpr const char* location_selector_id = "idgames_location";
-
-void OpenIdgamesLocationSelector()
+void OpenIdgamesLocationSelector( const char* id )
 {
-	igOpenPopup( location_selector_id, ImGuiPopupFlags_None );
+	igOpenPopup( id, ImGuiPopupFlags_None );
 }
 
-const char* IdgamesLocationSelector()
+const char* IdgamesLocationSelector( const char* id )
 {
 	const char* output = nullptr;
 
-	if( igBeginPopup( location_selector_id, ImGuiWindowFlags_None ) )
+	if( igBeginPopup( id, ImGuiWindowFlags_None ) )
 	{
 		igText( "Choose location" );
 		igSeparator();
@@ -582,6 +591,7 @@ namespace launcher
 		uint64_t		file_length;
 		time_t			last_modified;
 		GameMode_t		game_mode;
+		GameMission_t	game_mission;
 		GameVariant_t	game_variant;
 		int32_t			has_dehacked_lump;
 
@@ -759,6 +769,8 @@ namespace launcher
 					lumps.resize( header.numlumps );
 
 					filelump_t* lfreedoom	= nullptr;
+					filelump_t* ldeutex		= nullptr;
+					filelump_t* lhacxr		= nullptr;
 					filelump_t* dehacked	= nullptr;
 					filelump_t* titlepic	= nullptr;
 					filelump_t* dmenupic	= nullptr;
@@ -778,6 +790,8 @@ namespace launcher
 					for( filelump_t& lump : lumps )
 					{
 						if( !strncmp( lump.name, "FREEDOOM", 8 ) )			lfreedoom = &lump;
+						else if( !strncmp( lump.name, "_DEUTEX_", 8 ) )		ldeutex = &lump;
+						else if( !strncmp( lump.name, "HACX-R", 8 ) )		lhacxr = &lump;
 						else if( !strncmp( lump.name, "DEHACKED", 8 ) )		dehacked = &lump;
 						else if( !strncmp( lump.name, "TITLEPIC", 8 ) )		titlepic = &lump;
 						else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
@@ -809,17 +823,36 @@ namespace launcher
 						entry.game_mode = entry.type == DoomFileType::IWAD ? shareware : registered;
 					}
 
-					// BFG edition hack, since it's actually a PWAD
-					if( entry.type == DoomFileType::PWAD
-						&& ( EqualCaseInsensitive( entry.filename, "doom.wad" ) || EqualCaseInsensitive( entry.filename, "doom2.wad" ) )
-						&& dmenupic && m_chg )
+					if( entry.type == DoomFileType::PWAD )
 					{
-						entry.type = DoomFileType::IWAD;
-						titlepic = dmenupic;
+						// BFG edition hack, since it's actually a PWAD
+						if( ( EqualCaseInsensitive( entry.filename, "doom.wad" ) || EqualCaseInsensitive( entry.filename, "doom2.wad" ) )
+							&& dmenupic && m_chg )
+						{
+							entry.type = DoomFileType::IWAD;
+							titlepic = dmenupic;
+						}
+						else if( EqualCaseInsensitive( entry.filename, "chex.wad" ) && ldeutex )
+						{
+							entry.type = DoomFileType::IWAD;
+						}
 					}
 
 					if( entry.type == DoomFileType::IWAD )
 					{
+						if( map01 )
+						{
+							entry.game_mission = doom2;
+							if( lhacxr ) entry.game_mission = pack_hacx;
+							else if( EqualCaseInsensitive( entry.filename, "tnt.wad" ) ) entry.game_mission = pack_tnt;
+							else if( EqualCaseInsensitive( entry.filename, "plutonia.wad" ) ) entry.game_mission = pack_plut;
+						}
+						else if( e1m1 )
+						{
+							entry.game_mission = doom;
+							if( EqualCaseInsensitive( entry.filename, "chex.wad" ) && ldeutex ) entry.game_mission = pack_chex;
+						}
+
 						if( lfreedoom != nullptr )
 						{
 							entry.game_variant = freedoom;
@@ -1227,6 +1260,10 @@ namespace launcher
 					if( middle->game_variant == freedoom )
 					{
 						igCentreText( "Freedoom: Phase %d", middle->game_mode == commercial ? 2 : 1 );
+					}
+					else if( !( middle->game_mission == doom || middle->game_mission == doom2 ) )
+					{
+						igCentreText( "%s, %s", GameMissions[ middle->game_mission ], GameVariants[ middle->game_variant ] );
 					}
 					else
 					{
@@ -1904,7 +1941,7 @@ namespace launcher
 						igCentreNextElement( downloadsize.x );
 						if( igButton( "Download", downloadsize ) )
 						{
-							OpenIdgamesLocationSelector();
+							OpenIdgamesLocationSelector( "idgamesfile" );
 						}
 					}
 					else if( !extracted )
@@ -1940,7 +1977,7 @@ namespace launcher
 					}
 					igPopFont();
 
-					const char* url = IdgamesLocationSelector();
+					const char* url = IdgamesLocationSelector( "idgamesfile" );
 					if( url )
 					{
 						DownloadAndExtractFile( url + fullpath + filename );
@@ -2969,10 +3006,12 @@ namespace launcher
 			, initpanel( init )
 			, downloadingshareware( false )
 			, downloadingfreedoom( false )
+			, downloadinghacx( false )
 			, sharewareextracted( false )
 			, freedoomextracted( false )
+			, hacxextracted( false )
 			, downloadfinished( true )
-			, currentlydoing( nullptr )
+			, currentlydoing( "Nothing" )
 			, progress( 0 )
 		{
 		}
@@ -2988,88 +3027,90 @@ namespace launcher
 
 			igPushFont( font_inconsolata_medium );
 			igTextWrapped( "Rum and Raisin Doom needs a valid WAD file from one of the supported games to run.\n\nIf you do not have a WAD file, you can download one of these free files:" );
+			igPopFont();
 			igNewLine();
 
 			constexpr ImVec2 buttonsize = { 200.f, 50.f };
-			constexpr ImVec2 downloadingsize = { 450.f, 50.f };
-			constexpr ImVec2 spinnersize = { 20.f, 50.f };
 
-			if( downloadingshareware )
+			igPushFont( font_inconsolata_medium );
+
+			HandleGame( "Doom shareware", "iwads/doomshareware/", shareware_idgames_url, true, true, downloadingshareware, sharewareextracted );
+			HandleGame( "Freedoom", "iwads/freedoom/", freedoom_url, false, false, downloadingfreedoom, freedoomextracted );
+			HandleGame( "HacX", "iwads/hacx/", hacx_idgames_url, true, false, downloadinghacx, hacxextracted );
+
+			if( sharewareextracted || freedoomextracted || hacxextracted )
 			{
-				igPushFont( font_inconsolata );
-				igCentreNextElement( downloadingsize.x );
-				igDownloadProgressBar( "shareware_download", downloadingsize, spinnersize, 0.5, 20.f, currentlydoing.load(), progress.load() );
-				igPopFont();
-			}
-			else if( sharewareextracted )
-			{
-				igCentreText( "Doom shareware downloaded!" );
-			}
-			else
-			{
+				igSpacing();
 				igCentreNextElement( buttonsize.x );
 
-				bool disabled = downloadingshareware || downloadingfreedoom;
+				bool disabled = !downloadfinished;
 				igPushItemFlag( ImGuiItemFlags_Disabled, disabled );
 
-				if( igButton( "Doom shareware", buttonsize ) )
-				{
-					OpenIdgamesLocationSelector();
-				}
-
-				igPopItemFlag();
-
-				const char* location = IdgamesLocationSelector();
-				if( location )
-				{
-					downloadingshareware = true;
-					PerformDownload( "iwads/doomshareware/", std::string( location ) + shareware_idgames_url );
-				}
-			}
-			igNewLine();
-
-			if( downloadingfreedoom )
-			{
-				igPushFont( font_inconsolata );
-				igCentreNextElement( downloadingsize.x );
-				igDownloadProgressBar( "freedoom_download/", downloadingsize, spinnersize, 0.5, 20.f, currentlydoing.load(), progress.load() );
-				igPopFont();
-			}
-			else if( freedoomextracted )
-			{
-				igCentreText( "Freedoom downloaded!" );
-			}
-			else
-			{
-				igCentreNextElement( buttonsize.x );
-
-				bool disabled = downloadingshareware || downloadingfreedoom;
-				igPushItemFlag( ImGuiItemFlags_Disabled, disabled );
-
-				if( igButton( "Freedoom", buttonsize ) )
-				{
-					downloadingfreedoom = true;
-					PerformDownload( "iwads/freedoom/", freedoom_url );
-				}
-
-				igPopItemFlag();
-			}
-
-			if( sharewareextracted || freedoomextracted )
-			{
-				igNewLine();
-				igCentreNextElement( buttonsize.x );
 				if( igButton( "Continue", buttonsize ) )
 				{
 					PopPanel();
 					PushPanel( initpanel );
 				}
+
+				igPopItemFlag();
 			}
 
 			igPopFont();
 		}
 
-		void PerformDownload( const char* cachefoldername, const std::string& loc )
+		void HandleGame( const char* name, const char* cachefoldername, const char* url, bool isidgames, bool isshareware, std::atomic< bool >& downloading, std::atomic< bool >& extracted )
+		{
+			constexpr ImVec2 buttonsize = { 250.f, 50.f };
+			constexpr ImVec2 downloadingsize = { 450.f, 50.f };
+			constexpr ImVec2 spinnersize = { 20.f, 50.f };
+
+			if( downloading )
+			{
+				igPushFont( font_inconsolata );
+				igCentreNextElement( downloadingsize.x );
+				igDownloadProgressBar( cachefoldername, downloadingsize, spinnersize, 0.5, 20.f, currentlydoing.load(), progress.load() );
+				igPopFont();
+			}
+			else if( extracted )
+			{
+				igCentreText( "%s downloaded!", name );
+			}
+			else
+			{
+				igCentreNextElement( buttonsize.x );
+
+				bool disabled = !downloadfinished;
+				igPushItemFlag( ImGuiItemFlags_Disabled, disabled );
+
+				if( isidgames )
+				{
+					if( igButton( name, buttonsize ) )
+					{
+						OpenIdgamesLocationSelector( name );
+					}
+
+					const char* location = IdgamesLocationSelector( name );
+					if( location )
+					{
+						PerformDownload( cachefoldername, std::string( location ) + url, isshareware, downloading, extracted );
+					}
+				}
+				else
+				{
+					if( igButton( name, buttonsize ) )
+					{
+						PerformDownload( cachefoldername, url, isshareware, downloading, extracted );
+					}
+				}
+
+				igPopItemFlag();
+			}
+
+			igSpacing();
+		}
+
+
+		void PerformDownload( const char* cachefoldername, const std::string& loc, bool isshareware, std::atomic< bool >& downloading, std::atomic< bool >& extracted )
 		{
 			if( !downloadfinished )
 			{
@@ -3078,8 +3119,10 @@ namespace launcher
 
 			currentlydoing = "Downloading file";
 			downloadfinished = false;
+			downloading = true;
+			extracted = false;
 
-			jobs->AddJob( [ this, cachefoldername, loc ]()
+			jobs->AddJob( [ this, cachefoldername, loc, isshareware, &downloading, &extracted ]()
 			{
 				std::string cachefolder = cachefoldername;
 
@@ -3104,11 +3147,14 @@ namespace launcher
 					return true;
 				} );
 
-				bool successful = false;
-				while( !successful )
+				progress = 0;
+				bool successful = M_URLGetBytes( data, filedate, error, loc.c_str(), nullptr, progressfunc );
+				if( !successful )
 				{
-					progress = 0;
-					successful = M_URLGetBytes( data, filedate, error, loc.c_str(), nullptr, progressfunc );
+					currentlydoing = "Failed to download";
+					downloading = false;
+					downloadfinished = true;
+					return;
 				}
 
 				currentlydoing = "Writing file to disk";
@@ -3124,12 +3170,12 @@ namespace launcher
 				utimbuf zipfiletime = { filedate, filedate };
 				utime( downloadtozip.c_str(), &zipfiletime );
 
-				currentlydoing = downloadingshareware ? "Extracting original archive" : "Extracting files";
+				currentlydoing = isshareware ? "Extracting original archive" : "Extracting files";
 
 				std::filesystem::create_directories( extractedpath );
 				M_ZipExtractAllFromFile( downloadtozip.c_str(), extractedloc.c_str(), progressfunc );
 
-				if( downloadingshareware )
+				if( isshareware )
 				{
 					std::string fullextractedloc = HOME_PATH + cache_extracted + cachefolder + "final" DIR_SEPARATOR_S;
 					std::replace( fullextractedloc.begin(), fullextractedloc.end(), '/', DIR_SEPARATOR );
@@ -3140,8 +3186,9 @@ namespace launcher
 					M_ZipExtractFromICE( extractedloc.c_str(), fullextractedloc.c_str(), progressfunc );
 				}
 
-				if( downloadingfreedoom ) { freedoomextracted = true; downloadingfreedoom = false; }
-				if( downloadingshareware ) { sharewareextracted = true; downloadingshareware = false; }
+				currentlydoing = "Nothing";
+				extracted = true;
+				downloading = false;
 				downloadfinished = true;
 			} );
 		}
@@ -3150,8 +3197,10 @@ namespace launcher
 		InitPanel*							initpanel;
 		std::atomic< bool >					downloadingshareware;
 		std::atomic< bool >					downloadingfreedoom;
+		std::atomic< bool >					downloadinghacx;
 		std::atomic< bool >					sharewareextracted;
 		std::atomic< bool >					freedoomextracted;
+		std::atomic< bool >					hacxextracted;
 		std::atomic< bool >					downloadfinished;
 		std::atomic< const char* >			currentlydoing;
 		std::atomic< double_t >				progress;
