@@ -22,6 +22,7 @@
 using zipprogress_t = std::function< bool( ptrdiff_t, ptrdiff_t ) >;
 
 bool M_ZipExtractAllFromFile( const char* intputfile, const char* outputfolder, zipprogress_t& progressfunc );
+bool M_ZipExtractFromICE( const char* inputfolder, const char* outputfolder, zipprogress_t& progressfunc );
 
 #endif // defined( __cplusplus )
 
