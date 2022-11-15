@@ -251,7 +251,7 @@ void igCentreText( const char* string, _args&&... args )
 }
 
 template< typename _container, typename _func >
-void igTileView( const _container& items, ImVec2 tilesize, _func&& peritem )
+void igTileView( _container& items, ImVec2 tilesize, _func& peritem )
 {
 	ImVec2 region;
 	igGetContentRegionAvail( &region );
@@ -276,6 +276,19 @@ void igTileView( const _container& items, ImVec2 tilesize, _func&& peritem )
 
 	igColumns( 1, nullptr, false );
 }
+
+template< typename _container, typename _func >
+void igTileView( _container& items, ImVec2 tilesize, _func&& peritem )
+{
+	igTileView( items, tilesize, peritem );
+}
+
+template< typename _rangeview, typename _func >
+void igTileView( _rangeview&& items, ImVec2 tilesize, _func&& peritem )
+{
+	igTileView( items, tilesize, peritem );
+}
+
 
 // Copypasta of the imgui button code, but with our own custom framing
 template< typename _func >
@@ -1478,7 +1491,9 @@ namespace launcher
 	{
 	public:
 		IdgamesFilePanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad
-						, const std::string& path, const std::string& name, const std::string& t, const std::string& a, double_t r )
+						, const std::string& path, const std::string& name
+						, const size_t sz, const size_t ag
+						, const std::string& t, const std::string& a, double_t r )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
 			, iwadselector( iwad )
 			, doomfileselector( pwad )
@@ -1486,7 +1501,8 @@ namespace launcher
 			, filename( name )
 			, title( t )
 			, author( a )
-			, size( 0 )
+			, size( sz )
+			, age( ag )
 			, rating( r )
 			, votes( 0 )
 			, downloaded( false )
@@ -1504,6 +1520,14 @@ namespace launcher
 
 			query = idgames_api_file + fullpath + filename;
 
+			downloadpath = cache_download + fullpath + filename + "_" + to< std::string >( size ) + "_" + to< std::string >( age ) + DIR_SEPARATOR_S;
+			std::replace( downloadpath.begin(), downloadpath.end(), '/', DIR_SEPARATOR );
+			std::filesystem::path downloadfile = downloadpath + filename;
+			downloaded = std::filesystem::exists( downloadfile );
+
+			extractedpath = cache_extracted + fullpath + filename + DIR_SEPARATOR;
+			std::replace( extractedpath.begin(), extractedpath.end(), '/', DIR_SEPARATOR );
+			extracted = std::filesystem::exists( extractedpath );
 		}
 
 		virtual ~IdgamesFilePanel() { }
@@ -1520,6 +1544,8 @@ namespace launcher
 		constexpr const std::string& Title() const		{ return title; }
 		constexpr const std::string& Author() const		{ return author; }
 		constexpr const double_t Rating() const			{ return rating; }
+		constexpr const bool Downloaded() const			{ return downloaded; }
+		constexpr const bool Extracted() const			{ return extracted; }
 
 	protected:
 		void RefreshFile()
@@ -1962,12 +1988,84 @@ namespace launcher
 		std::atomic< bool >					shouldcancel;
 	};
 
+	class IdgamesFilter
+	{
+	public:
+		IdgamesFilter()
+			: appliedfilters( "<no filter>" )
+			, downloaded( false )
+			, min_rating( 0 )
+		{
+		}
+
+		void Render()
+		{
+			if( igButton( "Filter options", zero ) )
+			{
+				igOpenPopup( "filter_options", ImGuiPopupFlags_None );
+			}
+
+			igSameLine( 0, -1 );
+			igText( appliedfilters.c_str() );
+			igSpacing();
+
+			if( igBeginPopup( "filter_options", ImGuiWindowFlags_None ) )
+			{
+				bool refresh = false;
+				refresh |= igCheckbox( "Downloaded", &downloaded );
+				refresh |= igSliderFloat( "Rating", &min_rating, 0.f, 5.f, "%0.1f", ImGuiSliderFlags_AlwaysClamp );
+				igEndPopup();
+
+				if( refresh ) UpdateApplied();
+			}
+		}
+
+		auto Filter( std::vector< std::shared_ptr< IdgamesFilePanel > >& files )
+		{
+			return std::views::all( files )
+				| std::views::filter( [ this ]( std::shared_ptr< IdgamesFilePanel >& file )
+					{
+						return ( !downloaded || file->Downloaded() )
+							&& ( file->Rating() >= min_rating );
+					} );
+		}
+
+	private:
+		void UpdateApplied()
+		{
+			appliedfilters.clear();
+
+			auto append = [ this ]( const std::string& str )
+			{
+				if( !appliedfilters.empty() )
+				{
+					appliedfilters += ", ";
+				}
+				appliedfilters += str;
+			};
+
+			if( downloaded )
+			{
+				append( "Downloaded" );
+			}
+			if( min_rating > 0 )
+			{
+				append( "Minimum rating: " + to< std::string >( min_rating ) );
+			}
+		}
+
+		std::string		appliedfilters;
+		bool			downloaded;
+		float_t			min_rating;
+	};
+
 	class IdgamesBrowserPanel : public LauncherPanel
 	{
 	public:
-		IdgamesBrowserPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad
+		IdgamesBrowserPanel( std::shared_ptr< IdgamesFilter >& filt, std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad
 							, const std::string& folder, const std::string& nicename, bool refresh = true )
 			: LauncherPanel( "Launcher_IdgamesBrowser" )
+			, filter( filt )
 			, iwadselector( iwad )
 			, doomfileselector( pwad )
 			, foldername( folder )
@@ -1991,7 +2089,7 @@ namespace launcher
 
 		void AddFolder( const std::string& name, const std::string& nicename )
 		{
-			folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, doomfileselector, foldername + name, nicename ) );
+			folders.push_back( std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, foldername + name, nicename ) );
 		}
 
 		virtual void Enter() override
@@ -2054,7 +2152,7 @@ namespace launcher
 
 						}
 					}
-					folders.push_back( std::make_shared< IdgamesBrowserPanel >( iwadselector, doomfileselector, fulldir, nicename ) );
+					folders.push_back( std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, fulldir, nicename ) );
 				}
 
 				const JSONElement& idgamesfiles = content[ "file" ];
@@ -2063,6 +2161,8 @@ namespace launcher
 					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
 																									, to< std::string >( currfile[ "dir" ] )
 																									, to< std::string >( currfile[ "filename" ] )
+																									, to< size_t >( currfile[ "size" ] )
+																									, to< size_t >( currfile[ "age" ] )
 																									, to< std::string >( currfile[ "title" ] )
 																									, to< std::string >( currfile[ "author" ] )
 																									, to< double_t >( currfile[ "rating" ] ) ) );
@@ -2080,16 +2180,21 @@ namespace launcher
 
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
-			framesize.y -= backbuttonsize.y + 74;
+			framesize.y -= backbuttonsize.y + 98;
 
 			igPushFont( font_inconsolata_large );
 			igCentreText( foldernicename.c_str() );
 			igPopFont();
+			igSpacing();
+
+			if( !norefresh )
+			{
+				filter->Render();
+				igSpacing();
+			}
 
 			ImVec2 cursorpos;
 			igGetCursorPos( &cursorpos );
-			cursorpos.y += 4;
-			igSetCursorPos( cursorpos );
 
 			if( igBeginChildFrame( 999, framesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 			{
@@ -2113,7 +2218,7 @@ namespace launcher
 						igNewLine();
 					}
 
-					igTileView( files, filetilesize, [this]( const std::shared_ptr< IdgamesFilePanel >& file, const ImVec2& size )
+					igTileView( filter->Filter( files ), filetilesize, [this]( const std::shared_ptr< IdgamesFilePanel >& file, const ImVec2& size )
 					{
 						if( igButtonCustomContents( file->Filename().c_str(), size, ImGuiButtonFlags_None, [this, &file]( const ImVec2& size )
 						{
@@ -2176,6 +2281,7 @@ namespace launcher
 		}
 
 	private:
+		std::shared_ptr< IdgamesFilter >						filter;
 		std::shared_ptr< IWADSelector >							iwadselector;
 		std::shared_ptr< DoomFileSelector >						doomfileselector;
 		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	folders;
@@ -2488,7 +2594,9 @@ namespace launcher
 			, doomfileselector( pwad )
 			, launchoptions( &options )
 		{
-			idgames = std::make_shared< IdgamesBrowserPanel >( iwadselector, doomfileselector, "levels/", "Choose your game", false );
+			filter = std::make_shared< IdgamesFilter >();
+
+			idgames = std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, "levels/", "Choose your game", false );
 			idgames->DisallowRefresh();
 			idgames->AddFolder( "doom/", "Doom" );
 			idgames->AddFolder( "doom2/", "Doom II" );
@@ -2648,6 +2756,7 @@ namespace launcher
 		std::shared_ptr< IWADSelector >			iwadselector;
 		std::shared_ptr< DoomFileSelector >		doomfileselector;
 		std::shared_ptr< IdgamesBrowserPanel >	idgames;
+		std::shared_ptr< IdgamesFilter >		filter;
 		std::shared_ptr< FileSelectorPanel >	fileanddehselector;
 		LaunchOptions*							launchoptions;
 	};
