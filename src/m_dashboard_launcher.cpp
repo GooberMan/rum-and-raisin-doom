@@ -67,12 +67,15 @@ extern "C"
 	extern uint8_t defaultpalette[];
 }
 
+extern ImFont* font_inconsolata;
 extern ImFont* font_inconsolata_medium;
 extern ImFont* font_inconsolata_large;
 
 void M_DashboardApplyTheme();
 void M_DashboardPrepareRender();
 void M_DashboardFinaliseRender();
+
+constexpr ImVec2 zero = { 0, 0 };
 
 constexpr const char* GameModes[] =
 {
@@ -127,6 +130,7 @@ constexpr const char* GameVersionsCommand[] =
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
 constexpr const char* idgames_api_folder	= "action=getcontents&out=json&name=";
 constexpr const char* idgames_api_file		= "action=get&out=json&file=";
+
 constexpr const char* cache_local			= ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
 constexpr const char* cache_download		= ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
 constexpr const char* cache_extracted		= ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
@@ -158,7 +162,41 @@ constexpr idgamesmirror_t idgames_mirrors[] =
 	MakeMirror( "https://www.gamers.org/pub/idgames/", "Virginia, US" ),
 };
 
+constexpr const char* freedoom_url				= "https://www.github.com/freedoom/freedoom/releases/download/v0.12.1/freedoom-0.12.1.zip";
+constexpr const char* shareware_idgames_url		= "idstuff/doom/doom19s.zip";
+
 constexpr auto Mirrors() { return std::span( idgames_mirrors, arrlen( idgames_mirrors ) ); }
+
+constexpr const char* location_selector_id = "idgames_location";
+
+void OpenIdgamesLocationSelector()
+{
+	igOpenPopup( location_selector_id, ImGuiPopupFlags_None );
+}
+
+const char* IdgamesLocationSelector()
+{
+	const char* output = nullptr;
+
+	if( igBeginPopup( location_selector_id, ImGuiWindowFlags_None ) )
+	{
+		igText( "Choose location" );
+		igSeparator();
+
+		for( auto& loc : Mirrors() )
+		{
+			if( igSelectableBool( loc.location, false, ImGuiSelectableFlags_None, zero ) )
+			{
+				output = loc.url;
+				igCloseCurrentPopup();
+			}
+		}
+
+		igEndPopup();
+	}
+
+	return output;
+}
 
 bool EqualCaseInsensitive( const std::string& lhs, const std::string& rhs )
 {
@@ -185,9 +223,6 @@ std::span< const char* > ParamArgs( const char* param )
 	}
 	return std::span( &myargv[ 0 ], 0 );
 };
-
-
-constexpr ImVec2 zero = { 0, 0 };
 
 typedef struct vec2_s
 {
@@ -449,6 +484,23 @@ void igRating( const char* textid, double_t rating, int32_t totalstars, ImVec2 s
 	igPopClipRect();
 }
 
+void igDownloadProgressBar( const char* textid, ImVec2 totalsize, ImVec2 spinnersize, float_t spinnerspeed, float_t barheight, const char* currentlydoing, float_t progress )
+{
+	ImVec2 cursorpos;
+	igGetCursorPos( &cursorpos );
+
+	igSpinner( spinnersize, spinnerspeed );
+
+	cursorpos.x += totalsize.y + 5.f;
+	igSetCursorPos( cursorpos );
+	igText( currentlydoing );
+
+	cursorpos.y += totalsize.y - barheight;
+	igSetCursorPos( cursorpos );
+	ImVec2 progsize = { totalsize.x - totalsize.y - 5.f, barheight };
+	igRoundProgressBar( progress, progsize, 2.f );
+}
+
 namespace launcher
 {
 	struct Image
@@ -706,6 +758,7 @@ namespace launcher
 					std::vector< filelump_t > lumps;
 					lumps.resize( header.numlumps );
 
+					filelump_t* lfreedoom	= nullptr;
 					filelump_t* dehacked	= nullptr;
 					filelump_t* titlepic	= nullptr;
 					filelump_t* dmenupic	= nullptr;
@@ -724,7 +777,8 @@ namespace launcher
 
 					for( filelump_t& lump : lumps )
 					{
-						if( !strncmp( lump.name, "DEHACKED", 8 ) )			dehacked = &lump;
+						if( !strncmp( lump.name, "FREEDOOM", 8 ) )			lfreedoom = &lump;
+						else if( !strncmp( lump.name, "DEHACKED", 8 ) )		dehacked = &lump;
 						else if( !strncmp( lump.name, "TITLEPIC", 8 ) )		titlepic = &lump;
 						else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
 						else if( !strncmp( lump.name, "DMAPINFO", 8 ) )		dmapinfo = &lump;
@@ -766,7 +820,11 @@ namespace launcher
 
 					if( entry.type == DoomFileType::IWAD )
 					{
-						if( m_chg != nullptr )
+						if( lfreedoom != nullptr )
+						{
+							entry.game_variant = freedoom;
+						}
+						else if( m_chg != nullptr )
 						{
 							entry.game_variant = bfgedition;
 						}
@@ -905,6 +963,10 @@ namespace launcher
 
 		void PopulateDoomFileList()
 		{
+			IWADs.clear();
+			PWADs.clear();
+			DEHs.clear();
+
 			auto IWADPaths = D_GetIWADPaths();
 			std::string CachePath = HOME_PATH + cache_extracted;
 			const char* CacheCStr = CachePath.c_str();
@@ -1162,7 +1224,14 @@ namespace launcher
 					igImage( I_TextureGetHandle( middle->titlepic.tex ), size, tl, br, focustint, border );
 
 					//igCentreText( middle->filename.c_str() );
-					igCentreText( "%s, %s", GameModes[ middle->game_mode ], GameVariants[ middle->game_variant ] );
+					if( middle->game_variant == freedoom )
+					{
+						igCentreText( "Freedoom: Phase %d", middle->game_mode == commercial ? 2 : 1 );
+					}
+					else
+					{
+						igCentreText( "%s, %s", GameModes[ middle->game_mode ], GameVariants[ middle->game_variant ] );
+					}
 				}
 				else
 				{
@@ -1456,11 +1525,11 @@ namespace launcher
 		int32_t					windowflags;
 	};
 
-	static std::stack< std::shared_ptr< LauncherPanel > >	panel_stack;
+	static std::stack< LauncherPanel* >	panel_stack;
 	static JobThread* jobs = nullptr;
 	static SDL_GLContext jobs_context = nullptr;
 
-	void PushPanel( std::shared_ptr< LauncherPanel > panel )
+	void PushPanel( LauncherPanel* panel )
 	{
 		if( !panel_stack.empty() )
 		{
@@ -1468,6 +1537,12 @@ namespace launcher
 		}
 		panel_stack.push( panel );
 		panel->Enter();
+	}
+
+	template< typename _ty >
+	void PushPanel( std::shared_ptr< _ty > panel )
+	{
+		PushPanel( panel.get() );
 	}
 
 	void PopPanel( )
@@ -1829,7 +1904,7 @@ namespace launcher
 						igCentreNextElement( downloadsize.x );
 						if( igButton( "Download", downloadsize ) )
 						{
-							igOpenPopup( "downloadfrom", ImGuiPopupFlags_None );
+							OpenIdgamesLocationSelector();
 						}
 					}
 					else if( !extracted )
@@ -1865,19 +1940,10 @@ namespace launcher
 					}
 					igPopFont();
 
-					if( igBeginPopup( "downloadfrom", ImGuiWindowFlags_None ) )
+					const char* url = IdgamesLocationSelector();
+					if( url )
 					{
-						igText( "Choose location" );
-						igSeparator();
-						for( auto& loc : Mirrors() )
-						{
-							if( igSelectableBool( loc.location, false, ImGuiSelectableFlags_None, zero ) )
-							{
-								DownloadAndExtractFile( loc.url + fullpath + filename );
-								igCloseCurrentPopup();
-							}
-						}
-						igEndPopup();
+						DownloadAndExtractFile( url + fullpath + filename );
 					}
 				}
 				else
@@ -2775,6 +2841,8 @@ namespace launcher
 		LaunchOptions*							launchoptions;
 	};
 
+	class NoIWADPanel;
+
 	class InitPanel : public LauncherPanel
 	{
 		constexpr static ImVec2 init_size		= { 140.f, 200.f };
@@ -2785,25 +2853,38 @@ namespace launcher
 	public:
 		InitPanel()
 			: LauncherPanel( "Launcher", init_size, init_flags )
-			, hasrunlauncher( false )
-			, launcherfinished( false )
+			, forcenoiwad( false )
+			, hasrunpopulate( false )
+			, filelistfinished( false )
 			, launchoptions( default_launch_options )
 		{
 			iwadselector = std::make_shared< IWADSelector >();
 			doomfileselector = std::make_shared< DoomFileSelector >();
 
 			mainpanel = std::make_shared< MainPanel >( launchoptions, iwadselector, doomfileselector );
+			noiwadpanel = std::make_shared< NoIWADPanel >( (InitPanel*)this );
 		}
 
 		virtual ~InitPanel() { }
 
+		inline void ForceNoIWAD()
+		{
+			forcenoiwad = true;
+		}
+
 		virtual void Enter() override
 		{
-			if( !hasrunlauncher )
+			if( forcenoiwad )
 			{
+				return;
+			}
+
+			if( !hasrunpopulate || filelist.IWADs.empty() )
+			{
+				filelistfinished = false;
 				jobs->AddJob( [ this ]()
 				{
-					launcher.PopulateDoomFileList();
+					filelist.PopulateDoomFileList();
 					const char* defaultiwad = nullptr;
 					int32_t iwadparam = M_CheckParmWithArgs( "-iwad", 1 );
 					if( iwadparam > 0 )
@@ -2814,22 +2895,38 @@ namespace launcher
 					std::span< const char* > fileparams = ParamArgs( "-file" );
 					std::span< const char* > dehparams = ParamArgs( "-deh" );
 
-					iwadselector->Setup( launcher.IWADs, defaultiwad );
-					doomfileselector->SetupPWADs( launcher.PWADs, fileparams );
-					doomfileselector->SetupDEHs( launcher.DEHs, dehparams );
+					iwadselector->Setup( filelist.IWADs, defaultiwad );
+					doomfileselector->SetupPWADs( filelist.PWADs, fileparams );
+					doomfileselector->SetupDEHs( filelist.DEHs, dehparams );
 
-					launcherfinished = true;
+					filelistfinished = true;
 				} );
-				hasrunlauncher = true;
+				hasrunpopulate = true;
 			}
 		}
 
 		virtual void Update() override
 		{
-			if( launcherfinished )
+			if( forcenoiwad )
+			{
+				forcenoiwad = false;
+				PopPanel();
+				PushPanel( noiwadpanel );
+				return;
+			}
+
+			if( filelistfinished )
 			{
 				PopPanel();
-				PushPanel( mainpanel );
+				if( filelist.IWADs.empty() )
+				{
+					PopPanel();
+					PushPanel( noiwadpanel );
+				}
+				else
+				{
+					PushPanel( mainpanel );
+				}
 			}
 		}
 
@@ -2846,20 +2943,218 @@ namespace launcher
 			igCentreNextElement( loading_size.x );
 			igSpinner( loading_size, cycle_time );
 
-			igRoundProgressBar( launcher.Progress(), barsize, 2.f );
+			igRoundProgressBar( filelist.Progress(), barsize, 2.f );
 
 			igCentreText( "Updating WAD" );
 			igCentreText( "dictionary" );
 		}
 
 	private:
-		bool								hasrunlauncher;
-		std::atomic< bool >					launcherfinished;
-		launcher::DoomFileList				launcher;
+		bool								forcenoiwad;
+		bool								hasrunpopulate;
+		std::atomic< bool >					filelistfinished;
+		launcher::DoomFileList				filelist;
 		std::shared_ptr< IWADSelector >		iwadselector;
 		std::shared_ptr< DoomFileSelector >	doomfileselector;
 		std::shared_ptr< MainPanel >		mainpanel;
+		std::shared_ptr< NoIWADPanel >		noiwadpanel;
 		LaunchOptions						launchoptions;
+	};
+
+	class NoIWADPanel : public LauncherPanel
+	{
+	public:
+		NoIWADPanel( InitPanel* init )
+			: LauncherPanel ( "Launcher_NoIWAD" )
+			, initpanel( init )
+			, downloadingshareware( false )
+			, downloadingfreedoom( false )
+			, sharewareextracted( false )
+			, freedoomextracted( false )
+			, downloadfinished( true )
+			, currentlydoing( nullptr )
+			, progress( 0 )
+		{
+		}
+
+	protected:
+		virtual void RenderContents() override
+		{
+			igPushFont( font_inconsolata_large );
+			igCentreText( "No data found" );
+			igPopFont();
+			igNewLine();
+			igNewLine();
+
+			igPushFont( font_inconsolata_medium );
+			igTextWrapped( "Rum and Raisin Doom needs a valid WAD file from one of the supported games to run.\n\nIf you do not have a WAD file, you can download one of these free files:" );
+			igNewLine();
+
+			constexpr ImVec2 buttonsize = { 200.f, 50.f };
+			constexpr ImVec2 downloadingsize = { 450.f, 50.f };
+			constexpr ImVec2 spinnersize = { 20.f, 50.f };
+
+			if( downloadingshareware )
+			{
+				igPushFont( font_inconsolata );
+				igCentreNextElement( downloadingsize.x );
+				igDownloadProgressBar( "shareware_download", downloadingsize, spinnersize, 0.5, 20.f, currentlydoing.load(), progress.load() );
+				igPopFont();
+			}
+			else if( sharewareextracted )
+			{
+				igCentreText( "Doom shareware downloaded!" );
+			}
+			else
+			{
+				igCentreNextElement( buttonsize.x );
+
+				bool disabled = downloadingshareware || downloadingfreedoom;
+				igPushItemFlag( ImGuiItemFlags_Disabled, disabled );
+
+				if( igButton( "Doom shareware", buttonsize ) )
+				{
+					OpenIdgamesLocationSelector();
+				}
+
+				igPopItemFlag();
+
+				const char* location = IdgamesLocationSelector();
+				if( location )
+				{
+					downloadingshareware = true;
+					PerformDownload( "iwads/doomshareware/", std::string( location ) + shareware_idgames_url );
+				}
+			}
+			igNewLine();
+
+			if( downloadingfreedoom )
+			{
+				igPushFont( font_inconsolata );
+				igCentreNextElement( downloadingsize.x );
+				igDownloadProgressBar( "freedoom_download/", downloadingsize, spinnersize, 0.5, 20.f, currentlydoing.load(), progress.load() );
+				igPopFont();
+			}
+			else if( freedoomextracted )
+			{
+				igCentreText( "Freedoom downloaded!" );
+			}
+			else
+			{
+				igCentreNextElement( buttonsize.x );
+
+				bool disabled = downloadingshareware || downloadingfreedoom;
+				igPushItemFlag( ImGuiItemFlags_Disabled, disabled );
+
+				if( igButton( "Freedoom", buttonsize ) )
+				{
+					downloadingfreedoom = true;
+					PerformDownload( "iwads/freedoom/", freedoom_url );
+				}
+
+				igPopItemFlag();
+			}
+
+			if( sharewareextracted || freedoomextracted )
+			{
+				igNewLine();
+				igCentreNextElement( buttonsize.x );
+				if( igButton( "Continue", buttonsize ) )
+				{
+					PopPanel();
+					PushPanel( initpanel );
+				}
+			}
+
+			igPopFont();
+		}
+
+		void PerformDownload( const char* cachefoldername, const std::string& loc )
+		{
+			if( !downloadfinished )
+			{
+				return;
+			}
+
+			currentlydoing = "Downloading file";
+			downloadfinished = false;
+
+			jobs->AddJob( [ this, cachefoldername, loc ]()
+			{
+				std::string cachefolder = cachefoldername;
+
+				std::filesystem::path filenamepath = loc;
+				std::string filename = filenamepath.filename().string();
+
+				std::string downloadloc = HOME_PATH + cache_download + cachefolder;
+				std::replace( downloadloc.begin(), downloadloc.end(), '/', DIR_SEPARATOR );
+				std::filesystem::path downloadpath = downloadloc;
+
+				std::string extractedloc = HOME_PATH + cache_extracted + cachefolder;
+				std::replace( extractedloc.begin(), extractedloc.end(), '/', DIR_SEPARATOR );
+				std::filesystem::path extractedpath = extractedloc;
+
+				std::vector< byte > data;
+				int64_t filedate = 0;
+				std::string error;
+
+				auto progressfunc = std::function( [this]( ptrdiff_t current, ptrdiff_t total ) -> bool
+				{
+					progress = (double_t)current / (double_t)total;
+					return true;
+				} );
+
+				bool successful = false;
+				while( !successful )
+				{
+					progress = 0;
+					successful = M_URLGetBytes( data, filedate, error, loc.c_str(), nullptr, progressfunc );
+				}
+
+				currentlydoing = "Writing file to disk";
+				progress = 0;
+
+				std::filesystem::create_directories( downloadpath );
+
+				std::string downloadtozip = downloadloc + filename;
+				FILE* zipfile = fopen( downloadtozip.c_str(), "wb" );
+				fwrite( (void*)data.data(), sizeof( char ), data.size(), zipfile );
+				fclose( zipfile );
+
+				utimbuf zipfiletime = { filedate, filedate };
+				utime( downloadtozip.c_str(), &zipfiletime );
+
+				currentlydoing = downloadingshareware ? "Extracting original archive" : "Extracting files";
+
+				std::filesystem::create_directories( extractedpath );
+				M_ZipExtractAllFromFile( downloadtozip.c_str(), extractedloc.c_str(), progressfunc );
+
+				if( downloadingshareware )
+				{
+					std::string fullextractedloc = HOME_PATH + cache_extracted + cachefolder + "final" DIR_SEPARATOR_S;
+					std::replace( fullextractedloc.begin(), fullextractedloc.end(), '/', DIR_SEPARATOR );
+					std::filesystem::path fullextractedpath = fullextractedloc;
+
+					currentlydoing = "Extracting final files";
+					std::filesystem::create_directories( fullextractedpath );
+					M_ZipExtractFromICE( extractedloc.c_str(), fullextractedloc.c_str(), progressfunc );
+				}
+
+				if( downloadingfreedoom ) { freedoomextracted = true; downloadingfreedoom = false; }
+				if( downloadingshareware ) { sharewareextracted = true; downloadingshareware = false; }
+				downloadfinished = true;
+			} );
+		}
+
+	private:
+		InitPanel*							initpanel;
+		std::atomic< bool >					downloadingshareware;
+		std::atomic< bool >					downloadingfreedoom;
+		std::atomic< bool >					sharewareextracted;
+		std::atomic< bool >					freedoomextracted;
+		std::atomic< bool >					downloadfinished;
+		std::atomic< const char* >			currentlydoing;
+		std::atomic< double_t >				progress;
 	};
 }
 
@@ -2890,6 +3185,10 @@ std::string M_DashboardLauncherWindow()
 		} );
 
 	std::shared_ptr< launcher::InitPanel > initpanel = std::make_shared< launcher::InitPanel >();
+	if( M_CheckParm( "-forcenoiwad" ) )
+	{
+		initpanel->ForceNoIWAD();
+	}
 
 	launcher::PushPanel( initpanel );
 
