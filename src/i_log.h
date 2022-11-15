@@ -35,6 +35,8 @@ DOOM_C_API typedef enum logtype_e
 	Log_Max
 } logtype_t;
 
+DOOM_C_API void			I_LogDebug( const char* message );
+
 DOOM_C_API void			I_LogAddEntry( int32_t type, const char* message );
 DOOM_C_API void			I_LogAddEntryVAList( int32_t type, const char* message, va_list args );
 DOOM_C_API void			I_LogAddEntryVar( int32_t type, const char* message, ... );

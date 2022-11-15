@@ -82,6 +82,23 @@ INLINE void PrintEntryToConsole( logentry_t& entry )
 }
 #endif // _WIN32
 
+DOOM_C_API void I_LogDebug( const char* message )
+{
+#if defined( _WIN32 )
+	static const char* lastmessage = nullptr;
+	if( lastmessage == message )
+	{
+		OutputDebugString( "DUPLICATE: " );
+	}
+	lastmessage = message;
+
+	OutputDebugString( message );
+	OutputDebugString( "\n" );
+#else // Non-windows platforms dump to console
+	printf( "%s\n", entry.message.c_str() );
+#endif // _WIN32
+}
+
 DOOM_C_API void I_LogAddEntry( int32_t type, const char* message )
 {
 	if( type == Log_None )
