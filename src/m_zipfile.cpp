@@ -170,7 +170,10 @@ bool M_ZipExtractFromICE( const char* inputfolder, const char* outputfolder, zip
 		return false;
 	}
 
-	size_t seekto = header.e_cblp == 0 ? header.e_cp * 512 : ( header.e_cp - 1 ) * 512 + header.e_cblp;
+	size_t zipstart;
+	size_t seekto;
+	
+	zipstart = seekto = header.e_cblp == 0 ? header.e_cp * 512 : ( header.e_cp - 1 ) * 512 + header.e_cblp;
 
 	std::filesystem::path outputpath = outputfolder;
 	std::filesystem::create_directories( outputpath );
@@ -179,21 +182,21 @@ bool M_ZipExtractFromICE( const char* inputfolder, const char* outputfolder, zip
 	
 	FILE* output = fopen( outputfile.string().c_str(), "wb" );
 	
-	char buffer[ 4096 ];
+	uint8_t buffer[ 4096 ];
+	std::vector< uint8_t > filecontents;
+
 	int32_t nextfileindex = 2;
 	while( input && output )
 	{
 		fseek( input, seekto, SEEK_SET );
 
 		size_t read = 0;
-		size_t bytes_in_buffer = 0;
 		do
 		{
 			read = fread( buffer, 1, 4096, input );
 			if( read > 0 )
 			{
-				bytes_in_buffer = read;
-				fwrite( buffer, 1, read, output );
+				filecontents.insert( filecontents.end(), buffer, buffer + read );
 			}
 		} while( read > 0 );
 		fclose( input );
@@ -208,9 +211,10 @@ bool M_ZipExtractFromICE( const char* inputfolder, const char* outputfolder, zip
 		else
 		{
 			size_t length = ftell( output );
-			// We need to patch up the central directory record to not account for
-			// the executable data we've stripped
-			
+
+			// We need to patch up the central directory to account for
+			// stripping of the executable segment. This includes every
+			// file entry.
 			PACKED_STRUCT( CentralDirectory
 			{
 				uint8_t		signature[ 4 ];
@@ -223,12 +227,42 @@ bool M_ZipExtractFromICE( const char* inputfolder, const char* outputfolder, zip
 				uint16_t	comment_length;
 			} );
 
-			CentralDirectory directory = *( CentralDirectory* )( buffer + bytes_in_buffer - sizeof( CentralDirectory ) );
-			directory.central_directory_offset = length - sizeof( CentralDirectory ) - directory.central_directory_size;
+			PACKED_STRUCT( CentralFileHeader
+			{
+				uint8_t		signature[ 4 ];
+				uint16_t	version;
+				uint16_t	version_needed;
+				uint16_t	flags;
+				uint16_t	compression;
+				uint16_t	mod_time;
+				uint16_t	mod_date;
+				uint32_t	crc32;
+				uint32_t	compressed_size;
+				uint32_t	uncompressed_size;
+				uint16_t	filename_len;
+				uint16_t	extrafield_len;
+				uint16_t	comment_len;
+				uint16_t	disk_number_start;
+				uint16_t	internal_attributes;
+				uint32_t	external_attributes;
+				uint32_t	local_header_offset;
+			} );
 
-			fseek( output, sizeof( CentralDirectory ), SEEK_END );
-			fwrite( &directory, sizeof( CentralDirectory ), 1, output );
+			uint8_t* fileend = filecontents.data() + filecontents.size();
+			CentralDirectory* directory = (CentralDirectory*)( fileend - sizeof( CentralDirectory ) );
+			
+			directory->central_directory_offset -= zipstart;
 
+			uint8_t* currheaderpos = fileend - sizeof( CentralDirectory ) - directory->central_directory_size;
+			uint8_t* currheaderend = fileend - sizeof( CentralDirectory );
+			while( currheaderpos < currheaderend )
+			{
+				CentralFileHeader* header = (CentralFileHeader*)currheaderpos;
+				header->local_header_offset -= zipstart;
+				currheaderpos += sizeof( CentralFileHeader ) + header->filename_len  + header->extrafield_len + header->comment_len;
+			}
+
+			fwrite( (void*)filecontents.data(), 1, filecontents.size(), output );
 			fclose( output );
 		}
 	}
