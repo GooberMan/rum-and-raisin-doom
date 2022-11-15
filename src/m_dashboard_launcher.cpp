@@ -118,12 +118,18 @@ constexpr const char* GameVersionsCommand[] =
 	"final2",
 };
 
+#ifdef WIN32
+#define HOME_PATH ( std::string( std::getenv( "USERPROFILE" ) ) + "\\Saved Games\\" )
+#else
+#define HOME_PATH std::string( "~/" )
+#endif
+
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
 constexpr const char* idgames_api_folder	= "action=getcontents&out=json&name=";
 constexpr const char* idgames_api_file		= "action=get&out=json&file=";
-constexpr const char* cache_local			= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
-constexpr const char* cache_download		= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
-constexpr const char* cache_extracted		= "." DIR_SEPARATOR_S ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
+constexpr const char* cache_local			= ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
+constexpr const char* cache_download		= ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
+constexpr const char* cache_extracted		= ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
 
 constexpr const char* WADRegexString = ".+\\.wad$";
 constexpr const char* DEHRegexString = ".+\\.deh$";
@@ -650,16 +656,14 @@ namespace launcher
 		time_t lastmodified = GetLastModifiedTime( stdpath );
 		size_t filelength = std::filesystem::file_size( stdpath );
 
-		std::string cachepath = configdir;
-		if( cachepath.empty() ) cachepath += ".";
-		if( !cachepath.ends_with( DIR_SEPARATOR_S ) ) cachepath += DIR_SEPARATOR_S;
-		cachepath += cache_local
-					+ filename
-					+ "."
-					+ std::to_string( lastmodified )
-					+ "."
-					+ std::to_string( filelength )
-					+ DIR_SEPARATOR_S;
+		std::string cachepath = HOME_PATH
+								+ cache_local
+								+ filename
+								+ "."
+								+ std::to_string( lastmodified )
+								+ "."
+								+ std::to_string( filelength )
+								+ DIR_SEPARATOR_S;
 
 		std::filesystem::path stdcachepath( cachepath );
 
@@ -1520,12 +1524,12 @@ namespace launcher
 
 			query = idgames_api_file + fullpath + filename;
 
-			downloadpath = cache_download + fullpath + filename + "_" + to< std::string >( size ) + "_" + to< std::string >( age ) + DIR_SEPARATOR_S;
+			downloadpath = HOME_PATH + cache_download + fullpath + filename + "_" + to< std::string >( size ) + "_" + to< std::string >( age ) + DIR_SEPARATOR_S;
 			std::replace( downloadpath.begin(), downloadpath.end(), '/', DIR_SEPARATOR );
 			std::filesystem::path downloadfile = downloadpath + filename;
 			downloaded = std::filesystem::exists( downloadfile );
 
-			extractedpath = cache_extracted + fullpath + filename + DIR_SEPARATOR;
+			extractedpath = HOME_PATH + cache_extracted + fullpath + filename + DIR_SEPARATOR;
 			std::replace( extractedpath.begin(), extractedpath.end(), '/', DIR_SEPARATOR );
 			extracted = std::filesystem::exists( extractedpath );
 		}
@@ -1578,12 +1582,12 @@ namespace launcher
 				rating			= to< double_t >( content[ "rating" ] );
 				votes			= to< size_t >( content[ "votes" ] );
 
-				downloadpath = cache_download + fullpath + filename + "_" + to< std::string >( size ) + "_" + to< std::string >( age ) + DIR_SEPARATOR_S;
+				downloadpath = HOME_PATH + cache_download + fullpath + filename + "_" + to< std::string >( size ) + "_" + to< std::string >( age ) + DIR_SEPARATOR_S;
 				std::replace( downloadpath.begin(), downloadpath.end(), '/', DIR_SEPARATOR );
 				std::filesystem::path downloadfile = downloadpath + filename;
 				downloaded = std::filesystem::exists( downloadfile );
 
-				extractedpath = cache_extracted + fullpath + filename + DIR_SEPARATOR;
+				extractedpath = HOME_PATH + cache_extracted + fullpath + filename + DIR_SEPARATOR;
 				std::replace( extractedpath.begin(), extractedpath.end(), '/', DIR_SEPARATOR );
 				extracted = std::filesystem::exists( extractedpath );
 
