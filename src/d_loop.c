@@ -122,11 +122,11 @@ static int player_class;
 
 // 35 fps clock adjusted by offsetms milliseconds
 
-static uint64_t GetAdjustedTime(void)
+static uint64_t GetAdjustedTime( uint64_t microseconds )
 {
     uint64_t time_ms;
 
-    time_ms = I_GetTimeMS();
+    time_ms = microseconds ? microseconds / 1000ull : I_GetTimeMS();
 
     if (new_sync)
     {
@@ -203,17 +203,19 @@ static boolean BuildNewTic(void)
 //
 uint64_t	lasttime;
 
-void NetUpdate (void)
+uint64_t NetUpdate(void)
 {
     uint64_t nowtime;
     uint64_t newtics;
+	uint64_t thistime;
+
     int	i;
 
     // If we are running with singletics (timing a demo), this
     // is all done separately.
 
     if (singletics)
-        return;
+        return 0;
 
     // Run network subsystems
 
@@ -221,7 +223,8 @@ void NetUpdate (void)
     NET_SV_Run();
 
     // check time
-    nowtime = GetAdjustedTime() / ticdup;
+	thistime = I_GetTimeUS();
+    nowtime = GetAdjustedTime( thistime ) / ticdup;
     newtics = nowtime - lasttime;
 
     lasttime = nowtime;
@@ -246,6 +249,8 @@ void NetUpdate (void)
             break;
         }
     }
+
+	return thistime;
 }
 
 static void D_Disconnected(void)
@@ -303,7 +308,7 @@ void D_ReceiveTic(ticcmd_t *ticcmds, boolean *players_mask)
 
 void D_StartGameLoop(void)
 {
-    lasttime = GetAdjustedTime() / ticdup;
+    lasttime = GetAdjustedTime( 0 ) / ticdup;
 }
 
 //
@@ -676,6 +681,7 @@ static void SinglePlayerClear(ticcmd_set_t *set)
 //
 
 int32_t sleeponzerotics = 0;
+uint64_t synctime = 0;
 
 boolean TryRunTics (void)
 {
@@ -697,11 +703,12 @@ boolean TryRunTics (void)
 
     if (singletics)
     {
+		synctime = GetAdjustedTime( 0 ); 
         BuildNewTic();
     }
     else
     {
-        NetUpdate ();
+        synctime = NetUpdate();
     }
 
     lowtic = GetLowTic();

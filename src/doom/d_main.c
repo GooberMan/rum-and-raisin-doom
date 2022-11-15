@@ -532,6 +532,8 @@ uint64_t frametime_withoutpresent = 0;
 
 int32_t wipe_style = wipe_Melt;
 
+extern uint64_t synctime;
+
 void D_RunFrame()
 {
 	uint64_t nowtime;
@@ -576,10 +578,12 @@ void D_RunFrame()
 			R_RenderDimensionsChanged();
 		}
 
+		TryRunTics (); // will run at least one tic
+
 		// There's a bug here. Because calculating the next tick still gets latest,
 		// which is just enough to kick it over to the next tick and invalidate this
 		// percentage
-		double_t	currmicroseconds = I_GetTimeUS() % 1000000;
+		double_t	currmicroseconds = fmod( synctime, 1000000.0 );
 		double_t	currtickbase = floor( ( currmicroseconds / 1000000.0 ) * 35.0 );
 		double_t	nexttickbase = currtickbase + 1;
 		double_t	currtick = ( currtickbase * 1000000.0 ) / 35.0;
@@ -594,7 +598,6 @@ void D_RunFrame()
 		//double_t	currframe = ( currframebase * 1000000.0 ) / 60.0;
 		//currpercentage = ( currframe - currtick ) / ( nexttick - currtick );
 
-		TryRunTics (); // will run at least one tic
 
 		S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
 
