@@ -3053,7 +3053,7 @@ windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windo
 
 	igPushIDPtr( id );
 
-	if( igBeginCombo( "", preview, ImGuiWindowFlags_None ) )
+	if( igBeginCombo( "", preview, ImGuiComboFlags_None ) )
 	{
 		if( special && igSelectableBool( special->asstring, specialselected, ImGuiSelectableFlags_None, zerosize ) )
 		{

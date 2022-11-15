@@ -92,6 +92,32 @@ constexpr const char* GameVariants[] =
 	"Unity Port"
 };
 
+constexpr const char* GameVersions[] =
+{
+	"Doom 1.2",
+	"Doom 1.666",
+	"Doom 1.7/1.7a",
+	"Doom 1.8",
+	"Doom 1.9",
+	"Hacx",
+	"Ultimate Doom",
+	"Final Doom",
+	"Final Doom (alt)",
+};
+
+constexpr const char* GameVersionsCommand[] =
+{
+	"1.2",
+	"1.666",
+	"1.7",
+	"1.8",
+	"1.9",
+	"hacx",
+	"ultimate",
+	"final",
+	"final2",
+};
+
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
 constexpr const char* idgames_api_folder	= "action=getcontents&out=json&name=";
 constexpr const char* idgames_api_file		= "action=get&out=json&file=";
@@ -339,7 +365,7 @@ void igMesh( const triangle_t* triangles, size_t count, ImVec2 size, ImU32 colou
 	if ( !igItemAdd(bb, 0, 0) )
 		return;
 
-	vec2_t extents = { size.x * 0.5, size.y * 0.5 };
+	vec2_t extents = { size.x * 0.5f, size.y * 0.5f };
 	vec2_t cursor = { iconcursor.x + extents.x, iconcursor.y + extents.y };
 
 	auto scale_translate = [ &extents, cursor ]( const vec2_t& val )
@@ -422,6 +448,41 @@ namespace launcher
 	};
 
 	constexpr int32_t DoomFileEntryVersion = 1;
+
+	struct LaunchOptions
+	{
+		static constexpr int32_t demo_name_length = 128;
+
+		int32_t		game_version;
+
+		int32_t		start_episode;
+		int32_t		start_map;
+		int32_t		start_skill;
+		bool		solo_net;
+
+		bool		fast_monsters;
+		bool		no_monsters;
+		bool		respawn_monsters;
+		bool		no_widepix;
+
+		bool		record_demo;
+		char		demo_name[ demo_name_length ];
+	};
+
+	constexpr LaunchOptions default_launch_options =
+	{
+		-1,			// game_version
+		0,			// start_episode
+		0,			// start_map
+		-1,			// start_skill
+		false,		// solo_net
+		false,		// fast_monsters
+		false,		// no_monsters
+		false,		// respawn_monsters
+		false,		// no_widepix
+		false,		// record_demo
+		{}			// demo_name
+	};
 
 	PACKED_STRUCT( TGAHeader
 	{
@@ -1330,6 +1391,7 @@ namespace launcher
 	{
 	public:
 		LauncherPanel() = delete;
+		virtual ~LauncherPanel() { }
 
 		virtual void Enter() { };
 		virtual void Exit() { };
@@ -1443,6 +1505,8 @@ namespace launcher
 			query = idgames_api_file + fullpath + filename;
 
 		}
+
+		virtual ~IdgamesFilePanel() { }
 
 		virtual void Enter() override
 		{
@@ -1918,6 +1982,8 @@ namespace launcher
 			query = idgames_api_folder + foldername;
 		}
 
+		virtual ~IdgamesBrowserPanel() { }
+
 		void DisallowRefresh()
 		{
 			norefresh = true;
@@ -2124,13 +2190,16 @@ namespace launcher
 	class FileSelectorPanel : public LauncherPanel
 	{
 	public:
-		FileSelectorPanel( std::shared_ptr< DoomFileSelector >& pwad )
+		FileSelectorPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad )
 			: LauncherPanel( "Launcher_FileSelector" )
+			, iwadselector( iwad )
 			, doomfileselector( pwad )
 			, dehselected( -1 )
 			, pwadselected( -1 )
 		{
 		}
+
+		virtual ~FileSelectorPanel() { }
 
 		virtual void Enter() override
 		{
@@ -2235,17 +2304,17 @@ namespace launcher
 				{
 					for( DoomFileEntry& entry : doomfileselector->AllDEHs() )
 					{
-						auto found = std::find_if( doomfileselector->SelectedDEHs().begin(), doomfileselector->SelectedDEHs().end(), [ &entry ]( DoomFileEntry& deh )
+						bool found = false;
+						for( DoomFileEntry& deh : doomfileselector->SelectedDEHs() )
 						{
-							return EqualCaseInsensitive( entry.filename, deh.filename );
-						} );
-
-						if( found != doomfileselector->SelectedDEHs().end() )
-						{
-							continue;
+							if( EqualCaseInsensitive( entry.filename, deh.filename ) )
+							{
+								found = true;
+								break;
+							}
 						}
 
-						if( igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_None, zero ) )
+						if( !found && igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_DontClosePopups, zero ) )
 						{
 							doomfileselector->Select( entry );
 						}
@@ -2337,11 +2406,11 @@ namespace launcher
 							if( EqualCaseInsensitive( entry.filename, pwad.filename ) )
 							{
 								found = true;
+								break;
 							}
-							break;
 						}
 
-						if( !found && igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_None, zero ) )
+						if( !found && igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_DontClosePopups, zero ) )
 						{
 							doomfileselector->Select( entry );
 						}
@@ -2363,6 +2432,11 @@ namespace launcher
 					{
 						found = entry.titlepic;
 					}
+				}
+
+				if( found.tex == nullptr )
+				{
+					found = iwadselector->Selected().titlepic;
 				}
 
 				if( found.tex != nullptr )
@@ -2398,6 +2472,7 @@ namespace launcher
 		}
 
 	private:
+		std::shared_ptr< IWADSelector >							iwadselector;
 		std::shared_ptr< DoomFileSelector >						doomfileselector;
 		int32_t													dehselected;
 		int32_t													pwadselected;
@@ -2406,19 +2481,22 @@ namespace launcher
 	class MainPanel : public LauncherPanel
 	{
 	public:
-		MainPanel( std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad )
+		MainPanel( LaunchOptions& options, std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad )
 			: LauncherPanel( "Launcher_Main" )
 			, readytolaunch( false )
 			, iwadselector( iwad )
 			, doomfileselector( pwad )
+			, launchoptions( &options )
 		{
 			idgames = std::make_shared< IdgamesBrowserPanel >( iwadselector, doomfileselector, "levels/", "Choose your game", false );
 			idgames->DisallowRefresh();
 			idgames->AddFolder( "doom/", "Doom" );
 			idgames->AddFolder( "doom2/", "Doom II" );
 
-			fileanddehselector = std::make_shared< FileSelectorPanel >( doomfileselector );
+			fileanddehselector = std::make_shared< FileSelectorPanel >( iwadselector, doomfileselector );
 		}
+
+		virtual ~MainPanel() { }
 
 	protected:
 		virtual void RenderContents() override
@@ -2435,6 +2513,46 @@ namespace launcher
 			igColumns( 1, "", false );
 
 			igColumns( 2, "mainpanelcolumns", false );
+
+			igText( "Executable version" );
+			igSameLine( 0, -1 );
+			igSetNextItemWidth( 150 );
+			if( igBeginCombo( "", launchoptions->game_version < 0 ? "Limit removing" : GameVersions[ launchoptions->game_version ], ImGuiComboFlags_None ) )
+			{
+				if( igSelectableBool( "Limit removing", launchoptions->game_version < 0, ImGuiSelectableFlags_None, zero ) ) launchoptions->game_version = -1;
+
+				for( int32_t index : iota( 0, arrlen( GameVersions ) ) )
+				{
+					if( igSelectableBool( GameVersions[ index ], launchoptions->game_version == index, ImGuiSelectableFlags_None, zero ) )
+					{
+						launchoptions->game_version = index;
+					}
+				}
+				igEndCombo();
+			}
+
+			int32_t mode = iwadselector->Selected().game_mode;
+			if( mode != commercial )
+			{
+				int32_t episode_count = mode == shareware ? 1 : mode == registered ? 3 : 4;
+
+				igSetNextItemWidth( 50 );
+				igSliderInt( "Episode", &launchoptions->start_episode, 0, episode_count, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+				igSameLine( 0, 10 );
+			}
+			igSetNextItemWidth( 100 );
+			igSliderInt( "Map", &launchoptions->start_map, 0, mode != commercial ? 9 : 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+
+			igSetNextItemWidth( 50 );
+			igSliderInt( "Start skill", &launchoptions->start_skill, -1, 5, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+
+			igCheckbox( "Solo net", &launchoptions->solo_net );
+
+			igCheckbox( "Fast monsters", &launchoptions->fast_monsters );
+			igCheckbox( "No monsters", &launchoptions->no_monsters );
+			igCheckbox( "Respawn monsters", &launchoptions->respawn_monsters );
+
+			igCheckbox( "Don't load widepix", &launchoptions->no_widepix );
 
 			igNextColumn();
 			igText( "Selected files" );
@@ -2531,6 +2649,7 @@ namespace launcher
 		std::shared_ptr< DoomFileSelector >		doomfileselector;
 		std::shared_ptr< IdgamesBrowserPanel >	idgames;
 		std::shared_ptr< FileSelectorPanel >	fileanddehselector;
+		LaunchOptions*							launchoptions;
 	};
 
 	class InitPanel : public LauncherPanel
@@ -2545,12 +2664,15 @@ namespace launcher
 			: LauncherPanel( "Launcher", init_size, init_flags )
 			, hasrunlauncher( false )
 			, launcherfinished( false )
+			, launchoptions( default_launch_options )
 		{
 			iwadselector = std::make_shared< IWADSelector >();
 			doomfileselector = std::make_shared< DoomFileSelector >();
 
-			mainpanel = std::make_shared< MainPanel >( iwadselector, doomfileselector );
+			mainpanel = std::make_shared< MainPanel >( launchoptions, iwadselector, doomfileselector );
 		}
+
+		virtual ~InitPanel() { }
 
 		virtual void Enter() override
 		{
@@ -2590,6 +2712,7 @@ namespace launcher
 
 		INLINE IWADSelector* GetIWADSelector() { return iwadselector.get(); }
 		INLINE DoomFileSelector* GetDoomFileSelector() { return doomfileselector.get(); }
+		INLINE LaunchOptions& GetLaunchOptions() { return launchoptions; }
 
 	protected:
 		virtual void RenderContents() override
@@ -2613,6 +2736,7 @@ namespace launcher
 		std::shared_ptr< IWADSelector >		iwadselector;
 		std::shared_ptr< DoomFileSelector >	doomfileselector;
 		std::shared_ptr< MainPanel >		mainpanel;
+		LaunchOptions						launchoptions;
 	};
 }
 
@@ -2680,16 +2804,12 @@ std::string M_DashboardLauncherWindow()
 
 	if( initpanel->GetIWADSelector()->Valid() )
 	{
-		parameters += "-iwad \"" + initpanel->GetIWADSelector()->Selected().full_path + "\"";
+		parameters += " -iwad \"" + initpanel->GetIWADSelector()->Selected().full_path + "\"";
 	}
 
 	if( !initpanel->GetDoomFileSelector()->SelectedPWADs().empty() )
 	{
-		if( !parameters.empty() )
-		{
-			parameters += " ";
-		}
-		parameters += "-file";
+		parameters += " -file";
 		for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedPWADs() )
 		{
 			parameters += " \"" + curr.full_path + "\"";
@@ -2698,15 +2818,65 @@ std::string M_DashboardLauncherWindow()
 
 	if( !initpanel->GetDoomFileSelector()->SelectedDEHs().empty() )
 	{
-		if( !parameters.empty() )
-		{
-			parameters += " ";
-		}
-		parameters += "-deh";
+		parameters += " -deh";
 		for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedDEHs() )
 		{
 			parameters += " \"" + curr.full_path + "\"";
 		}
+	}
+
+	launcher::LaunchOptions& options = initpanel->GetLaunchOptions();
+
+	if( options.game_version >= 0 )
+	{
+		parameters += " -gameversion ";
+		parameters += GameVersionsCommand[ options.game_version ];
+	}
+
+	if( options.start_map > 0 )
+	{
+		if( initpanel->GetIWADSelector()->Selected().game_mode == commercial )
+		{
+			parameters += " -warp " + to< std::string >( options.start_map );
+		}
+		else if( options.start_episode > 0 )
+		{
+			parameters += " -warp " + to< std::string >( options.start_episode ) + " " + to< std::string >( options.start_map );
+		}
+	}
+
+	if( options.start_skill >= 0 )
+	{
+		parameters += " -skill " + to< std::string >( options.start_skill );
+	}
+
+	if( options.solo_net )
+	{
+		parameters += " -solo-net";
+	}
+
+	if( options.fast_monsters )
+	{
+		parameters += " fast";
+	}
+
+	if( options.no_monsters )
+	{
+		parameters += " -nomonsters";
+	}
+
+	if( options.respawn_monsters )
+	{
+		parameters += " -respawn";
+	}
+
+	if( options.no_widepix )
+	{
+		parameters += " -nowidepix";
+	}
+
+	if( options.record_demo && options.demo_name[ 0 ] != 0 )
+	{
 	}
 
 	SDL_GL_DeleteContext( launcher::jobs_context );
