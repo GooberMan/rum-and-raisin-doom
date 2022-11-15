@@ -1062,15 +1062,25 @@ static void D_AddWidescreenPacks()
 
 		if( gamemission == doom )
 		{
-			switch( gamemode )
+			if( gamevariant == freedoom )
 			{
-			case retail:					widescreenpackname = "doom.ultimate.widepix"; break;
-			case registered:				widescreenpackname = "doom.registered.widepix"; break;
-			case shareware:					widescreenpackname = "doom.shareware.widepix"; break;
-			default:						break;
+				widescreenpackname = "freedoom1.widepix";
+			}
+			else
+			{
+				switch( gamemode )
+				{
+				case retail:					widescreenpackname = "doom.ultimate.widepix"; break;
+				case registered:				widescreenpackname = "doom.registered.widepix"; break;
+				case shareware:					widescreenpackname = "doom.shareware.widepix"; break;
+				default:						break;
+				}
 			}
 		}
-		else if( gamemission == doom2 )		widescreenpackname = "doom2.widepix";
+		else if( gamemission == doom2 )
+		{
+			widescreenpackname = gamevariant == freedoom ? "freedoom2.widepix" : "doom2.widepix";
+		}
 		else if( gamemission == pack_tnt )	widescreenpackname = "tnt.widepix";
 		else if( gamemission == pack_plut )	widescreenpackname = "plutonia.widepix";
 		else if( gamemission == pack_chex )	widescreenpackname = "chex.widepix";
