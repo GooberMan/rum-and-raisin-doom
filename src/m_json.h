@@ -174,11 +174,8 @@ public:
 		return empty;
 	}
 
-	auto Children() const
-	{
-		return std::ranges::views::take( children, type == JSONElementType::ElementArray ? children.size() : 0 );
-	}
-
+	bool HasChildren() const { return type == JSONElementType::ElementArray && !children.empty(); }
+	auto& Children() const	{ return children; }
 	auto& Key() const		{ return key; }
 	auto& Value() const		{ return value; }
 

@@ -2244,45 +2244,51 @@ namespace launcher
 				JSONElement asjson = JSONElement::Deserialise( listing.c_str() );
 				const JSONElement& content = asjson[ "content" ];
 				const JSONElement& dirs = content[ "dir" ];
-				for( auto& currdir : dirs.Children() )
+				if( dirs.HasChildren() )
 				{
-					const std::string& fulldir = to< std::string >( currdir[ "name" ] );
-					if( fulldir.empty() )
+					for( auto& currdir : dirs.Children() )
 					{
-						continue;
-					}
-					std::string nicename = fulldir;
-					if( nicename.ends_with( '/' ) )
-					{
-						nicename.erase( nicename.size() - 1, 1 );
-						if( nicename.empty() )
+						const std::string& fulldir = to< std::string >( currdir[ "name" ] );
+						if( fulldir.empty() )
 						{
-							nicename = "[root]";
+							continue;
 						}
-						else
+						std::string nicename = fulldir;
+						if( nicename.ends_with( '/' ) )
 						{
-							size_t found = nicename.find_last_of( '/' );
-							if( found != std::string::npos )
+							nicename.erase( nicename.size() - 1, 1 );
+							if( nicename.empty() )
 							{
-								nicename = nicename.substr( found + 1 );
+								nicename = "[root]";
 							}
+							else
+							{
+								size_t found = nicename.find_last_of( '/' );
+								if( found != std::string::npos )
+								{
+									nicename = nicename.substr( found + 1 );
+								}
 
+							}
 						}
+						folders.push_back( std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, fulldir, nicename ) );
 					}
-					folders.push_back( std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, fulldir, nicename ) );
 				}
 
 				const JSONElement& idgamesfiles = content[ "file" ];
-				for( auto& currfile : idgamesfiles.Children() )
+				if( idgamesfiles.HasChildren() )
 				{
-					auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
-																									, to< std::string >( currfile[ "dir" ] )
-																									, to< std::string >( currfile[ "filename" ] )
-																									, to< size_t >( currfile[ "size" ] )
-																									, to< size_t >( currfile[ "age" ] )
-																									, to< std::string >( currfile[ "title" ] )
-																									, to< std::string >( currfile[ "author" ] )
-																									, to< double_t >( currfile[ "rating" ] ) ) );
+					for( auto& currfile : idgamesfiles.Children() )
+					{
+						auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
+																										, to< std::string >( currfile[ "dir" ] )
+																										, to< std::string >( currfile[ "filename" ] )
+																										, to< size_t >( currfile[ "size" ] )
+																										, to< size_t >( currfile[ "age" ] )
+																										, to< std::string >( currfile[ "title" ] )
+																										, to< std::string >( currfile[ "author" ] )
+																										, to< double_t >( currfile[ "rating" ] ) ) );
+					}
 				}
 
 				listready = true;
