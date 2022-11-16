@@ -245,13 +245,13 @@ static void ParseEndSequence( DoomStringStream& lumpstream, DoomString& currline
 
 typedef struct dmapinfo_gameinfo_s
 {
-	std::unordered_map< int32_t, episodeinfo_t >				episodes;
-	std::unordered_map< DoomString, mapinfo_t >					maps;
+	std::map< int32_t, episodeinfo_t >				episodes;
+	std::map< DoomString, mapinfo_t >					maps;
 
-	std::unordered_map< int32_t, std::vector< mapinfo_t* > >	episodemaps;
+	std::map< int32_t, std::vector< mapinfo_t* > >	episodemaps;
 
-	std::unordered_map< DoomString, endgame_t >					endgames;
-	std::unordered_map< DoomString, intermission_t >			intermissions;
+	std::map< DoomString, endgame_t >					endgames;
+	std::map< DoomString, intermission_t >			intermissions;
 
 	std::vector< episodeinfo_t* >								episodelist;
 

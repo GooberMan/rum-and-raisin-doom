@@ -33,7 +33,7 @@ typedef enum class setboolean_e
 #define ThingType( x ) { #x, __COUNTER__ }
 namespace umapinfo
 {
-	static std::unordered_map< DoomString, int32_t > type_name_lookup =
+	static std::map< DoomString, int32_t > type_name_lookup =
 	{
 		ThingType( DoomPlayer ),
 		ThingType( ZombieMan ),
@@ -593,18 +593,18 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 
 typedef struct umapinfo_gameinfo_s
 {
-	std::unordered_map< int32_t, episodeinfo_t >				episodes;
-	std::unordered_map< DoomString, mapinfo_t >					maps;
-	std::unordered_map< DoomString, interlevel_t >				interlevels;
-	std::unordered_map< DoomString, intermission_t >			intermission_normal;
-	std::unordered_map< DoomString, intermission_t >			intermission_secret;
+	std::map< int32_t, episodeinfo_t >				episodes;
+	std::map< DoomString, mapinfo_t >					maps;
+	std::map< DoomString, interlevel_t >				interlevels;
+	std::map< DoomString, intermission_t >			intermission_normal;
+	std::map< DoomString, intermission_t >			intermission_secret;
 
-	std::unordered_map< int32_t, std::vector< mapinfo_t* > >	episodemaps;
-	std::unordered_map< DoomString, std::vector< bossaction_t > > mapbossactions;
+	std::map< int32_t, std::vector< mapinfo_t* > >	episodemaps;
+	std::map< DoomString, std::vector< bossaction_t > > mapbossactions;
 
-	std::unordered_map< DoomString, endgame_t >					endgames;
-	std::unordered_map< DoomString, intermission_t >			intermissions;
-	std::unordered_map< DoomString, intermission_t >			secretintermissions;
+	std::map< DoomString, endgame_t >					endgames;
+	std::map< DoomString, intermission_t >			intermissions;
+	std::map< DoomString, intermission_t >			secretintermissions;
 
 	std::vector< episodeinfo_t* >								episodelist;
 
