@@ -932,6 +932,9 @@ namespace launcher
 					filelump_t* lfreedoom	= nullptr;
 					filelump_t* ldeutex		= nullptr;
 					filelump_t* lhacxr		= nullptr;
+					filelump_t* lloading	= nullptr;
+					filelump_t* ltitle		= nullptr;
+					filelump_t* lstartup	= nullptr;
 					filelump_t* dehacked	= nullptr;
 					filelump_t* titlepic	= nullptr;
 					filelump_t* dmenupic	= nullptr;
@@ -953,6 +956,9 @@ namespace launcher
 						if( !strncmp( lump.name, "FREEDOOM", 8 ) )			lfreedoom = &lump;
 						else if( !strncmp( lump.name, "_DEUTEX_", 8 ) )		ldeutex = &lump;
 						else if( !strncmp( lump.name, "HACX-R", 8 ) )		lhacxr = &lump;
+						else if( !strncmp( lump.name, "LOADING", 8 ) )		lloading = &lump;
+						else if( !strncmp( lump.name, "TITLE", 8 ) )		ltitle = &lump;
+						else if( !strncmp( lump.name, "STARTUP", 8 ) )		lstartup = &lump;
 						else if( !strncmp( lump.name, "DEHACKED", 8 ) )		dehacked = &lump;
 						else if( !strncmp( lump.name, "TITLEPIC", 8 ) )		titlepic = &lump;
 						else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
@@ -1001,7 +1007,15 @@ namespace launcher
 
 					if( entry.type == DoomFileType::IWAD )
 					{
-						if( map01 )
+						if( lloading && ltitle )
+						{
+							entry.game_mission = heretic;
+						}
+						else if( lstartup && ltitle )
+						{
+							entry.game_mission = hexen;
+						}
+						else if( map01 )
 						{
 							entry.game_mission = doom2;
 							if( lhacxr ) entry.game_mission = pack_hacx;
@@ -1202,7 +1216,7 @@ namespace launcher
 						|| std::regex_match( pathstring, DEHRegex ) )
 					{
 						DoomFileEntry entry = ParseDoomFile( file.path() );
-						if( entry.type == DoomFileType::IWAD )
+						if( entry.type == DoomFileType::IWAD && entry.game_mission != heretic && entry.game_mission != hexen )
 						{
 							if( !entry.titlepic_raw.empty() && !entry.titlepic.tex )
 							{
