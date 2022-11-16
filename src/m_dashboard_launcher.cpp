@@ -750,6 +750,7 @@ namespace launcher
 		GameMode_t		game_mode;
 		GameMission_t	game_mission;
 		GameVariant_t	game_variant;
+		int32_t			is_voices_iwad;
 		int32_t			has_dehacked_lump;
 
 		Image			titlepic;
@@ -767,7 +768,9 @@ namespace launcher
 		root.AddNumber( "version", entry.version );
 		root.AddNumber( "type", (int32_t)entry.type );
 		root.AddNumber( "game_mode", (int32_t)entry.game_mode );
+		root.AddNumber( "game_mission", (int32_t)entry.game_mission );
 		root.AddNumber( "game_variant", (int32_t)entry.game_variant );
+		root.AddNumber( "is_voices_iwad", (int32_t)entry.is_voices_iwad );
 		root.AddNumber( "has_dehacked_lump", (int32_t)entry.has_dehacked_lump );
 
 		std::string converted = root.Serialise();
@@ -935,6 +938,9 @@ namespace launcher
 					filelump_t* lloading	= nullptr;
 					filelump_t* ltitle		= nullptr;
 					filelump_t* lstartup	= nullptr;
+					filelump_t* lendstrf	= nullptr;
+					filelump_t* lv_start	= nullptr;
+					filelump_t* lv_end		= nullptr;
 					filelump_t* dehacked	= nullptr;
 					filelump_t* titlepic	= nullptr;
 					filelump_t* dmenupic	= nullptr;
@@ -959,6 +965,9 @@ namespace launcher
 						else if( !strncmp( lump.name, "LOADING", 8 ) )		lloading = &lump;
 						else if( !strncmp( lump.name, "TITLE", 8 ) )		ltitle = &lump;
 						else if( !strncmp( lump.name, "STARTUP", 8 ) )		lstartup = &lump;
+						else if( !strncmp( lump.name, "ENDSTRF", 8 ) )		lendstrf = &lump;
+						else if( !strncmp( lump.name, "V_START", 8 ) )		lv_start = &lump;
+						else if( !strncmp( lump.name, "V_END", 8 ) )		lv_end = &lump;
 						else if( !strncmp( lump.name, "DEHACKED", 8 ) )		dehacked = &lump;
 						else if( !strncmp( lump.name, "TITLEPIC", 8 ) )		titlepic = &lump;
 						else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
@@ -1014,6 +1023,15 @@ namespace launcher
 						else if( lstartup && ltitle )
 						{
 							entry.game_mission = hexen;
+						}
+						else if( lendstrf )
+						{
+							entry.game_mission = strife;
+						}
+						else if( lv_start && lv_end )
+						{
+							entry.game_mission = strife;
+							entry.is_voices_iwad = 1;
 						}
 						else if( map01 )
 						{
@@ -1216,7 +1234,7 @@ namespace launcher
 						|| std::regex_match( pathstring, DEHRegex ) )
 					{
 						DoomFileEntry entry = ParseDoomFile( file.path() );
-						if( entry.type == DoomFileType::IWAD && entry.game_mission != heretic && entry.game_mission != hexen )
+						if( entry.type == DoomFileType::IWAD && entry.game_mission != heretic && entry.game_mission != hexen && entry.game_mission != strife )
 						{
 							if( !entry.titlepic_raw.empty() && !entry.titlepic.tex )
 							{
