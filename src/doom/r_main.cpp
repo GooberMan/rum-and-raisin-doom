@@ -201,8 +201,8 @@ constexpr int32_t viewwidthforblocks[] =
 	320,
 };
 
-constexpr auto AllRenderDatas() { return std::span( renderdatas, maxrendercontexts ); }
-constexpr auto CurrentRenderDatas() { return std::span( renderdatas, num_render_contexts ); }
+INLINE auto AllRenderDatas()			{ return std::span( renderdatas, maxrendercontexts ); }
+INLINE auto CurrentRenderDatas()		{ return std::span( renderdatas, num_render_contexts ); }
 
 
 #include "m_dashboard.h"
