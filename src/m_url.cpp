@@ -28,7 +28,7 @@ size_t CURL_StringWrite( char *ptr, size_t size, size_t count, void *str )
 
 size_t CURL_BytesWrite( unsigned char *ptr, size_t size, size_t count, void *bytes )
 {
-	std::vector< unsigned char >& output = *(std::vector< byte >*)bytes;
+	std::vector< uint8_t >& output = *(std::vector< uint8_t >*)bytes;
 	output.insert( output.end(), ptr, ptr + count );
 
 	return size * count;
@@ -81,7 +81,7 @@ bool M_URLGetString( std::string& output, const char* url, const char* params, u
 	return errorcode == CURLE_OK;
 }
 
-bool M_URLGetBytes( std::vector< unsigned char >& output, int64_t& outfiletime, std::string& outerror, const char* url, const char* params, urlprogress_t* func )
+bool M_URLGetBytes( std::vector< uint8_t >& output, int64_t& outfiletime, std::string& outerror, const char* url, const char* params, urlprogress_t* func )
 {
 	output.clear();
 	outerror.clear();

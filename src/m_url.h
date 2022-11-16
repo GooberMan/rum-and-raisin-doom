@@ -29,12 +29,13 @@ URL_C_API void M_URLDeinit( void );
 #if defined( __cplusplus )
 #include <string>
 #include <functional>
+#include <cstddef>
 
 // Return true to continue downloading
 using urlprogress_t = std::function< bool( ptrdiff_t, ptrdiff_t ) >;
 
 bool M_URLGetString( std::string& output, const char* url, const char* params, urlprogress_t* func = nullptr );
-bool M_URLGetBytes( std::vector< unsigned char >& output, int64_t& outfiletime, std::string& outerror, const char* url, const char* params, urlprogress_t* func = nullptr );
+bool M_URLGetBytes( std::vector< uint8_t >& output, int64_t& outfiletime, std::string& outerror, const char* url, const char* params, urlprogress_t* func = nullptr );
 
 URL_INLINE bool M_URLGetString( std::string& output, const char* url, const char* params, urlprogress_t& func )
 {

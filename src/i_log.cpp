@@ -95,7 +95,7 @@ DOOM_C_API void I_LogDebug( const char* message )
 	OutputDebugString( message );
 	OutputDebugString( "\n" );
 #else // Non-windows platforms dump to console
-	printf( "%s\n", entry.message.c_str() );
+	printf( "%s\n", message );
 #endif // _WIN32
 }
 

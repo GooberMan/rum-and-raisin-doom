@@ -18,6 +18,7 @@
 #if defined( __cplusplus )
 
 #include <functional>
+#include <cstddef>
 
 using zipprogress_t = std::function< bool( ptrdiff_t, ptrdiff_t ) >;
 

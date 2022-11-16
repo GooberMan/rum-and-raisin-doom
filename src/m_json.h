@@ -24,7 +24,7 @@
 #include "m_conv.h"
 
 #include <sstream>
-#include <ranges>
+#include <cstddef>
 
 enum class JSONElementType : int32_t
 {
