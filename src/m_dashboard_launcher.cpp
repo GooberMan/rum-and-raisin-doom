@@ -1783,13 +1783,9 @@ namespace launcher
 
 	void PopPanelToRoot( )
 	{
-		if( panel_stack.size() > 1 )
-		{
-			// panel_stack.top()->Exit();
-		}
-
 		while( panel_stack.size() > 1 )
 		{
+			// panel_stack.top()->Exit();
 			panel_stack.pop();
 		}
 
@@ -1797,6 +1793,23 @@ namespace launcher
 		{
 			panel_stack.top()->Enter();
 		}
+	}
+
+	void PopPanelsAndReplaceRoot( LauncherPanel* panel )
+	{
+		while( !panel_stack.empty() )
+		{
+			// panel_stack.top()->Exit();
+			panel_stack.pop();
+		}
+
+		PushPanel( panel );
+	}
+
+	template< typename _ty >
+	void PopPanelsAndReplaceRoot( std::shared_ptr< _ty > panel )
+	{
+		PopPanelsAndReplaceRoot( panel.get() );
 	}
 
 	class IdgamesFilePanel : public LauncherPanel
@@ -2892,22 +2905,104 @@ namespace launcher
 		int32_t													pwadselected;
 	};
 
+	class FreeIWADPanel;
+
+	class DownloadMoreMapsPanel : public LauncherPanel
+	{
+	public:
+		DownloadMoreMapsPanel( std::shared_ptr< FreeIWADPanel > free, std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad )
+			: LauncherPanel( "Launcher_DownloadMore")
+			, freeiwads( free )
+			, iwadselector( iwad )
+			, doomfileselector( pwad )
+		{
+			filter = std::make_shared< IdgamesFilter >();
+
+			auto doomfolder = std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, "levels/doom/", "Doom" );
+			auto doom2folder = std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, "levels/doom2/", "Doom II" );
+
+			idgamesfolders.push_back( doomfolder );
+			idgamesfolders.push_back( doom2folder );
+		}
+
+	protected:
+		virtual void RenderContents() override
+		{
+			constexpr ImVec2 backbuttonsize = { 50.f, 25.f };
+			constexpr float_t framepadding = 10.f;
+			constexpr ImVec2 foldertilesize = { 176.f, 40.f };
+			constexpr float_t folderspacing = 10.f;
+			constexpr float_t foldertotalwidth = foldertilesize.x * 2 + folderspacing;
+
+			ImVec2 framesize;
+			igGetContentRegionMax( &framesize );
+
+			igPushFont( font_inconsolata_large );
+			igCentreText( "Download more maps" );
+			igPopFont();
+			igNewLine();
+
+			igPushFont( font_inconsolata_medium );
+			igCentreText( "Browse the idgames archive" );
+			igSpacing();
+
+			ImVec2 cursor;
+			igGetCursorPos( &cursor );
+
+			cursor.x += ( framesize.x - foldertotalwidth ) * 0.5;
+			igSetCursorPos( cursor );
+			if( igButton( "Doom", foldertilesize ) )
+			{
+				PushPanel( idgamesfolders[ 0 ] );
+			}
+			cursor.x += foldertilesize.x + folderspacing;
+			igSetCursorPos( cursor );
+			if( igButton( "Doom II", foldertilesize ) )
+			{
+				PushPanel( idgamesfolders[ 1 ] );
+			}
+			igNewLine();
+			igNewLine();
+
+			igCentreText( "Need some IWADs?" );
+			igSpacing();
+			igCentreNextElement( foldertilesize.x );
+			if( igButton( "Free IWADs", foldertilesize ) )
+			{
+				PushPanel( freeiwads );
+			}
+			igPopFont();
+
+			cursor.x = framesize.x - backbuttonsize.x - framepadding;
+			cursor.y = framesize.y - backbuttonsize.y;
+
+			igSetCursorPos( cursor );
+			if( igButton( "Back", backbuttonsize ) )
+			{
+				PopPanel();
+			}
+		}
+
+	private:
+		std::shared_ptr< IdgamesFilter >		filter;
+		std::shared_ptr< FreeIWADPanel >		freeiwads;
+		std::shared_ptr< IWADSelector >			iwadselector;
+		std::shared_ptr< DoomFileSelector >		doomfileselector;
+
+		std::vector< std::shared_ptr< IdgamesBrowserPanel > >	idgamesfolders;
+	};
+
 	class MainPanel : public LauncherPanel
 	{
 	public:
-		MainPanel( LaunchOptions& options, std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad )
+		MainPanel( LaunchOptions& options, std::shared_ptr< FreeIWADPanel >& free, std::shared_ptr< IWADSelector >& iwad, std::shared_ptr< DoomFileSelector >& pwad )
 			: LauncherPanel( "Launcher_Main" )
 			, readytolaunch( false )
 			, iwadselector( iwad )
 			, doomfileselector( pwad )
 			, launchoptions( &options )
 		{
-			filter = std::make_shared< IdgamesFilter >();
-
-			idgames = std::make_shared< IdgamesBrowserPanel >( filter, iwadselector, doomfileselector, "levels/", "Choose your game", false );
-			idgames->DisallowRefresh();
-			idgames->AddFolder( "doom/", "Doom" );
-			idgames->AddFolder( "doom2/", "Doom II" );
+			downloadmaps = std::make_shared< DownloadMoreMapsPanel >( free, iwadselector, doomfileselector );
 
 			fileanddehselector = std::make_shared< FileSelectorPanel >( iwadselector, doomfileselector );
 		}
@@ -3004,15 +3099,14 @@ namespace launcher
 			constexpr float_t framepadding = 10;
 			constexpr float_t buttonheight = 25.f;
 			constexpr ImVec2 playbuttonsize = { 50.f, buttonheight };
-			constexpr ImVec2 pwadssize = { 150.f, buttonheight };
-			constexpr ImVec2 idgamessize = { 100.f, buttonheight };
+			constexpr ImVec2 pwadssize = { 160.f, buttonheight };
+			constexpr ImVec2 idgamessize = { 140.f, buttonheight };
 
 			int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelfiles", nullptr );
 			ImVec2 fileframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
 
 			if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize ) )
 			{
-
 				if( !doomfileselector->SelectedDEHs().empty() )
 				{
 					for( auto& entry : doomfileselector->SelectedDEHs() )
@@ -3037,9 +3131,9 @@ namespace launcher
 
 			cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x - framepadding - idgamessize.x, framesize.y - buttonheight };
 			igSetCursorPos( cursor );
-			if( igButton( "Get more maps", idgamessize ) )
+			if( igButton( "Download more maps", idgamessize ) )
 			{
-				PushPanel( idgames );
+				PushPanel( downloadmaps );
 			}
 
 			cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x, framesize.y - buttonheight };
@@ -3063,13 +3157,10 @@ namespace launcher
 		bool									readytolaunch;
 		std::shared_ptr< IWADSelector >			iwadselector;
 		std::shared_ptr< DoomFileSelector >		doomfileselector;
-		std::shared_ptr< IdgamesBrowserPanel >	idgames;
-		std::shared_ptr< IdgamesFilter >		filter;
+		std::shared_ptr< DownloadMoreMapsPanel >	downloadmaps;
 		std::shared_ptr< FileSelectorPanel >	fileanddehselector;
 		LaunchOptions*							launchoptions;
 	};
-
-	class NoIWADPanel;
 
 	class InitPanel : public LauncherPanel
 	{
@@ -3089,8 +3180,8 @@ namespace launcher
 			iwadselector = std::make_shared< IWADSelector >();
 			doomfileselector = std::make_shared< DoomFileSelector >();
 
-			mainpanel = std::make_shared< MainPanel >( launchoptions, iwadselector, doomfileselector );
-			noiwadpanel = std::make_shared< NoIWADPanel >( (InitPanel*)this );
+			freeiwadpanel = std::make_shared< FreeIWADPanel >( (InitPanel*)this );
+			mainpanel = std::make_shared< MainPanel >( launchoptions, freeiwadpanel, iwadselector, doomfileselector );
 		}
 
 		virtual ~InitPanel() { }
@@ -3098,6 +3189,12 @@ namespace launcher
 		inline void ForceNoIWAD()
 		{
 			forcenoiwad = true;
+		}
+
+		inline void Repopulate()
+		{
+			forcenoiwad = false;
+			hasrunpopulate = false;
 		}
 
 		virtual void Enter() override
@@ -3138,22 +3235,19 @@ namespace launcher
 			if( forcenoiwad )
 			{
 				forcenoiwad = false;
-				PopPanel();
-				PushPanel( noiwadpanel );
+				PopPanelsAndReplaceRoot( freeiwadpanel );
 				return;
 			}
 
 			if( filelistfinished )
 			{
-				PopPanel();
 				if( filelist.IWADs.empty() )
 				{
-					PopPanel();
-					PushPanel( noiwadpanel );
+					PopPanelsAndReplaceRoot( freeiwadpanel );
 				}
 				else
 				{
-					PushPanel( mainpanel );
+					PopPanelsAndReplaceRoot( mainpanel );
 				}
 			}
 		}
@@ -3185,16 +3279,17 @@ namespace launcher
 		std::shared_ptr< IWADSelector >		iwadselector;
 		std::shared_ptr< DoomFileSelector >	doomfileselector;
 		std::shared_ptr< MainPanel >		mainpanel;
-		std::shared_ptr< NoIWADPanel >		noiwadpanel;
+		std::shared_ptr< FreeIWADPanel >	freeiwadpanel;
 		LaunchOptions						launchoptions;
 	};
 
-	class NoIWADPanel : public LauncherPanel
+	class FreeIWADPanel : public LauncherPanel
 	{
 	public:
-		NoIWADPanel( InitPanel* init )
+		FreeIWADPanel( InitPanel* init )
 			: LauncherPanel ( "Launcher_NoIWAD" )
 			, initpanel( init )
+			, noiwadmode( false )
 			, downloadingshareware( false )
 			, downloadingfreedoom( false )
 			, downloadinghacx( false )
@@ -3207,19 +3302,47 @@ namespace launcher
 		{
 		}
 
+		INLINE bool SetNoIWADMode() { noiwadmode = true; }
+
+		virtual void Enter() override
+		{
+			if( !noiwadmode )
+			{
+				sharewareextracted = ExtractedFolderExists( "iwads/doomshareware/" );
+				freedoomextracted = ExtractedFolderExists( "iwads/freedoom/" );
+				hacxextracted = ExtractedFolderExists( "iwads/hacx/" );
+			}
+		}
+
 	protected:
 		virtual void RenderContents() override
 		{
-			igPushFont( font_inconsolata_large );
-			igCentreText( "No data found" );
-			igPopFont();
-			igNewLine();
-			igNewLine();
+			if( noiwadmode )
+			{
+				igPushFont( font_inconsolata_large );
+				igCentreText( "No data found" );
+				igPopFont();
+				igNewLine();
+				igNewLine();
 
-			igPushFont( font_inconsolata_medium );
-			igTextWrapped( "Rum and Raisin Doom needs a valid WAD file from one of the supported games to run.\n\nIf you do not have a WAD file, you can download one of these free files:" );
-			igPopFont();
-			igNewLine();
+				igPushFont( font_inconsolata_medium );
+				igTextWrapped( "Rum and Raisin Doom needs a valid WAD file from one of the supported games to run.\n\nIf you do not have a WAD file, you can download one of these free files:" );
+				igPopFont();
+				igNewLine();
+			}
+			else
+			{
+				igPushFont( font_inconsolata_large );
+				igCentreText( "Free IWAD downloads" );
+				igPopFont();
+				igNewLine();
+				igNewLine();
+
+				igPushFont( font_inconsolata_medium );
+				igCentreText( "The following free IWADs are available for download:" );
+				igPopFont();
+				igNewLine();
+			}
 
 			constexpr ImVec2 buttonsize = { 200.f, 50.f };
 
@@ -3231,7 +3354,7 @@ namespace launcher
 
 			if( sharewareextracted || freedoomextracted || hacxextracted )
 			{
-				igSpacing();
+				igNewLine();
 				igCentreNextElement( buttonsize.x );
 
 				bool disabled = !downloadfinished;
@@ -3239,8 +3362,9 @@ namespace launcher
 
 				if( igButton( "Continue", buttonsize ) )
 				{
-					PopPanel();
-					PushPanel( initpanel );
+					noiwadmode = false;
+					initpanel->Repopulate();
+					PopPanelsAndReplaceRoot( initpanel );
 				}
 
 				igPopItemFlag();
@@ -3300,6 +3424,15 @@ namespace launcher
 			igSpacing();
 		}
 
+		bool ExtractedFolderExists( const char* cachefoldername )
+	{
+			std::string extractedloc = HOME_PATH + cache_extracted;
+			extractedloc += cachefoldername;
+			std::replace( extractedloc.begin(), extractedloc.end(), '/', DIR_SEPARATOR );
+			std::filesystem::path extractedpath = extractedloc;
+
+			return std::filesystem::exists( extractedpath );
+		}
 
 		void PerformDownload( const char* cachefoldername, const std::string& loc, bool isshareware, std::atomic< bool >& downloading, std::atomic< bool >& extracted )
 		{
@@ -3386,6 +3519,7 @@ namespace launcher
 
 	private:
 		InitPanel*							initpanel;
+		bool								noiwadmode;
 		std::atomic< bool >					downloadingshareware;
 		std::atomic< bool >					downloadingfreedoom;
 		std::atomic< bool >					downloadinghacx;
