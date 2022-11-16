@@ -783,8 +783,12 @@ namespace launcher
 	time_t GetLastModifiedTime( const std::filesystem::path& stdpath )
 	{
 		auto filetime = std::filesystem::last_write_time( stdpath );
+#if WIN32
 		auto utctime = std::chrono::file_clock::to_utc( filetime );
 		auto systime = std::chrono::utc_clock::to_sys( utctime );
+#else
+		auto systime = std::chrono::fileclock::to_sys( filetime );
+#endif
 		return std::chrono::system_clock::to_time_t( systime );
 	}
 
