@@ -803,7 +803,7 @@ struct DoomMapLoader
 			// Need to get zlib and libpng in here
 			I_Error( "Compressed ZDoom nodes currently unsupported" );
 
-#ifdef HAVE_LIBPNG
+#if 0
 			byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC );
 			size_t rawlength = W_LumpLength( lumpnum );
 
@@ -813,7 +813,7 @@ struct DoomMapLoader
 
 			// Decompress data here
 			//LoadZDoomNodes( rawlump, rawlength );
-#endif // HAVE_LIBPNG
+#endif
 
 			W_ReleaseLumpNum( lumpnum );
 		}

@@ -34,6 +34,9 @@ AC_CHECK_PROG(HAVE_PYTHON, python, true, false)
 PKG_CHECK_MODULES(SDL, [sdl2 >= 2.0.1])
 PKG_CHECK_MODULES(SDLMIXER, [SDL2_mixer >= 2.0.0])
 PKG_CHECK_MODULES(SDLNET, [SDL2_net >= 2.0.0])
+PKG_CHECK_MODULES(PNG, libpng >= 1.2.50)
+PKG_CHECK_MODULES(LIBCURL, [libcurl])
+PKG_CHECK_MODULES(MINIZIP, [minizip])
 
 # Check for bash-completion.
 AC_ARG_ENABLE([bash-completion],
@@ -97,28 +100,10 @@ AS_IF([test "x$with_libsamplerate" != xno], [
     ])
 ])
 
-# Check for libpng.
-AC_ARG_WITH([libpng],
-AS_HELP_STRING([--without-libpng],
-    [Build without libpng @<:@default=check@:>@]),
-[],
-[
-    [with_libpng=check]
-])
-AS_IF([test "x$with_libpng" != xno], [
-    PKG_CHECK_MODULES(PNG, libpng >= 1.2.50, [
-        AC_DEFINE([HAVE_LIBPNG], [1], [libpng installed])
-    ], [
-        AS_IF([test "x$with_libpng" != xcheck], [AC_MSG_FAILURE(
-            [--with-libpng was given, but test for libpng failed])
-        ])
-    ])
-])
-
 # TODO: We currently link everything against libraries that don't need it.
 # Use the specific library CFLAGS/LIBS variables instead of setting them here.
-CFLAGS="$CFLAGS $SDL_CFLAGS -pthread ${SAMPLERATE_CFLAGS:-} ${PNG_CFLAGS:-}"
-LDFLAGS="$LDFLAGS $SDL_LIBS -pthread -ldl ${SAMPLERATE_LIBS:-} ${PNG_LIBS:-}"
+CFLAGS="$CFLAGS $SDL_CFLAGS $PNG_CFLAGS $LIBCURL_CFLAGS $MINIZIP_CFLAGS -pthread ${SAMPLERATE_CFLAGS:-}"
+LDFLAGS="$LDFLAGS $SDL_LIBS $PNG_LIBS $LIBCURL_LIBS $MINIZIP_LIBS -pthread -ldl ${SAMPLERATE_LIBS:-}"
 AC_CHECK_LIB(m, log)
 
 AC_CHECK_HEADERS([dirent.h linux/kd.h dev/isa/spkrio.h dev/speaker/speaker.h])

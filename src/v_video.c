@@ -45,9 +45,8 @@
 #include "r_draw.h"
 
 #include "config.h"
-#ifdef HAVE_LIBPNG
+
 #include <png.h>
-#endif
 
 // TODO: There are separate RANGECHECK defines for different games, but this
 // is common code. Fix this.
@@ -956,7 +955,6 @@ void V_RestoreBuffer(void)
 // SCREEN SHOTS
 //
 
-#ifdef HAVE_LIBPNG
 //
 // WritePNGfile
 //
@@ -1046,7 +1044,6 @@ void WritePNGfile(char *filename, pixel_t *data,
     png_destroy_write_struct(&ppng, &pinfo);
     fclose(handle);
 }
-#endif
 
 //
 // V_ScreenShot
@@ -1075,12 +1072,9 @@ void V_ScreenShot(const char *format)
         I_LogAddEntry( Log_Error, "V_ScreenShot: Couldn't create a PNG" );
     }
 
-#ifdef HAVE_LIBPNG
 	WritePNGfile(lbmname, I_VideoBuffer,
 				render_height, render_width,
 				W_CacheLumpName (DEH_String("PLAYPAL"), PU_CACHE));
-#endif
-
 }
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS

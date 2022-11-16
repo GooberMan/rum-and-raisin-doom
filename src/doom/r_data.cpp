@@ -216,8 +216,6 @@ constexpr texturecomposite_t limitremovingblankwall =
 };
 
 
-DoomUnorderedMap< DoomString, compositedata_t >		compositelookup;
-
 //
 // MAPTEXTURE_T CACHING
 // When a texture is first needed,
@@ -492,7 +490,6 @@ void R_CacheCompositeFlat( int32_t flat )
 	}
 
 	compositedata_t data = { &flatcomposite[ flat ], Composite_Flat };
-	compositelookup[ flatcomposite[ flat ].name ] = data;
 
 	Z_Free( transposedflatdata );
 }
@@ -1076,17 +1073,6 @@ void R_PrecacheLevel (void)
 
     texture_t*		texture;
 
-	compositelookup.clear();
-	{
-		compositedata_t data = { (texturecomposite_t*)&blankwall, Composite_Texture };
-		compositelookup[ blankwall.name ] = data;
-	}
-	if( remove_limits )
-	{
-		compositedata_t data = { (texturecomposite_t*)&limitremovingblankwall, Composite_Texture };
-		compositelookup[ limitremovingblankwall.name ] = data;
-	}
-
 	flatpresent = (char*)Z_Malloc(numflats, PU_STATIC, NULL);
 	memset (flatpresent,0,numflats);
 	texturepresent = (char*)Z_Malloc(numtextures, PU_STATIC, NULL);
@@ -1210,7 +1196,6 @@ void R_PrecacheLevel (void)
 		R_CacheCompositeTexture( i );
 
 		compositedata_t data = { &texturecomposite[ i ], Composite_Texture };
-		compositelookup[ texturecomposite[ i ].name ] = data;
 	}
 
 	Z_Free(flatpresent);
