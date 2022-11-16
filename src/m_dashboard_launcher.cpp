@@ -311,6 +311,85 @@ auto Transform( _range& r, _func&& f )
 	return trange( r, std::function( f ) );
 }
 
+template< typename _range, typename _func >
+auto Filter( _range& r, _func&& f )
+{
+	using func_type = decltype( std::function( f ) );
+
+	class frange
+	{
+	public:
+		using value_type = typename _range::value_type;
+
+		using range_iterator = typename _range::iterator;
+
+		class iterator
+		{
+		public:
+			iterator()
+				: f( nullptr )
+			{
+			}
+
+			iterator( range_iterator _b, range_iterator _e, func_type& _f )
+				: b( _b )
+				, e( _e )
+				, f( &_f )
+			{
+				if( b != e && !(*f)( *b ) )
+				{
+					this->operator++();
+				}
+			}
+
+			iterator& operator++()
+			{
+				while( b != e )
+				{
+					if( ++b != e && (*f)( *b ) )
+					{
+						break;
+					}
+				}
+				return *this;
+			}
+
+			value_type& operator*()
+			{
+				return *b;
+			}
+
+			bool operator!=( const iterator& rhs )
+			{
+				return b != rhs.b;
+			}
+
+		private:
+			range_iterator b;
+			range_iterator e;
+			func_type* f;
+		};
+
+		frange( _range& _r, func_type&& _f )
+			: r( _r )
+			, f( _f )
+		{
+		}
+
+		INLINE iterator begin() { return iterator( r.begin(), r.end(), f ); }
+		INLINE iterator end()	{ return iterator( r.end(), r.end(), f ); }
+
+		INLINE size_t size() { return r.size(); }
+		INLINE bool empty() { return r.empty(); }
+
+	private:
+		_range& r;
+		func_type f;
+	};
+
+	return frange( r, std::function( f ) );
+}
+
 typedef struct vec2_s
 {
 	float_t		x;
@@ -787,7 +866,7 @@ namespace launcher
 		auto utctime = std::chrono::file_clock::to_utc( filetime );
 		auto systime = std::chrono::utc_clock::to_sys( utctime );
 #else
-		auto systime = std::chrono::fileclock::to_sys( filetime );
+		auto systime = std::chrono::file_clock::to_sys( filetime );
 #endif
 		return std::chrono::system_clock::to_time_t( systime );
 	}
@@ -2214,8 +2293,7 @@ namespace launcher
 
 		auto Filter( std::vector< std::shared_ptr< IdgamesFilePanel > >& files )
 		{
-			return std::views::all( files )
-				| std::views::filter( [ this ]( std::shared_ptr< IdgamesFilePanel >& file )
+			return ::Filter( files, [ this ]( std::shared_ptr< IdgamesFilePanel >& file )
 					{
 						return ( !downloaded || file->Downloaded() )
 							&& ( file->Rating() >= min_rating );
@@ -2727,7 +2805,7 @@ namespace launcher
 
 			{
 				igNewLine();
-				igText( "Most recent titlepic" );
+				igText( "Active titlepic" );
 
 				Image found = { };
 				for( auto& entry : doomfileselector->SelectedPWADs() )
