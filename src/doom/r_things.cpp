@@ -623,11 +623,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	else
 	{
 		// diminished light
-		index = xscale>>(LIGHTSCALESHIFT);
-		if( LIGHTSCALEMUL != FRACUNIT )
-		{
-			index = RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
-		}
+		index = (int32_t)RendFixedMul( FixedToRendFixed( xscale ), drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT;
 
 		if (index >= MAXLIGHTSCALE) 
 			index = MAXLIGHTSCALE-1;

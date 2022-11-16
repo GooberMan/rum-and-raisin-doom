@@ -784,7 +784,8 @@ typedef struct drsdata_s
 	int32_t				frame_width;
 	int32_t				frame_height;
 	int32_t				frame_adjusted_width;
-	int32_t				frame_adjusted_scaled_mul;
+	rend_fixed_t		frame_adjusted_light_mul;
+	int32_t				frame_blocks; // 32 pixel wide blocks, just like vanilla
 
 	angle_t				clipangle;
 	int32_t				centerx;

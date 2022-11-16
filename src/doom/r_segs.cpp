@@ -192,11 +192,7 @@ DOOM_C_API void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontex
 
 			if( !fixedcolormap )
 			{
-				index = (uint32_t)( spritecontext->spryscale >> RENDLIGHTSCALESHIFT );
-				if( LIGHTSCALEMUL != RENDFRACUNIT )
-				{
-					index = (uint32_t)RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
-				}
+				index = (uint32_t)RendFixedMul( spritecontext->spryscale, drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT;
 
 				if (index >=  MAXLIGHTSCALE )
 					index = MAXLIGHTSCALE-1;
@@ -337,12 +333,7 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 			angle = ( (wallcontext->centerangle + drs_current->xtoviewangle[currx])>>RENDERANGLETOFINESHIFT) & ( RENDERFINEMASK >> 1 );
 			texturecolumn = RendFixedToInt( wallcontext->offset - RendFixedMul( FixedToRendFixed( renderfinetangent[angle] ), wallcontext->distance ) );
 			// calculate lighting
-			index = (int32_t)( wallcontext->scale >> RENDLIGHTSCALESHIFT );
-
-			if( LIGHTSCALEMUL != RENDFRACUNIT )
-			{
-				index = RendFixedToInt( RendFixedMul( IntToRendFixed( index ), LIGHTSCALEMUL ) );
-			}
+			index = RendFixedMul( wallcontext->scale, drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT;
 
 			if (index >=  MAXLIGHTSCALE ) index = MAXLIGHTSCALE-1;
 
