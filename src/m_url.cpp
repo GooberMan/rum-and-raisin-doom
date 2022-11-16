@@ -13,6 +13,7 @@
 //
 
 #include "m_url.h"
+#include "i_log.h"
 
 #include <curl/curl.h>
 
@@ -30,7 +31,6 @@ size_t CURL_BytesWrite( unsigned char *ptr, size_t size, size_t count, void *byt
 {
 	std::vector< uint8_t >& output = *(std::vector< uint8_t >*)bytes;
 	output.insert( output.end(), ptr, ptr + count );
-
 	return size * count;
 };
 
@@ -69,15 +69,19 @@ bool M_URLGetString( std::string& output, const char* url, const char* params, u
 	curl_easy_setopt( curl, CURLOPT_COOKIEFILE, "" );
 	curl_easy_setopt( curl, CURLOPT_FOLLOWLOCATION, 1 );
 	curl_easy_setopt( curl, CURLOPT_USERAGENT, "libcurl-agent/1.0" );
-	curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params );
+	curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params ? params : "" );
 	curl_easy_setopt( curl, CURLOPT_WRITEDATA, &output );
 	curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, &CURL_StringWrite );
 	curl_easy_setopt( curl, CURLOPT_XFERINFODATA, func );
+	curl_easy_setopt( curl, CURLOPT_CONNECTTIMEOUT, 10 );
+	curl_easy_setopt( curl, CURLOPT_USE_SSL, CURLUSESSL_ALL );
+
 	CURLcode errorcode = curl_easy_perform( curl );
 	if( errorcode != CURLE_OK )
 	{
 		output = curl_easy_strerror( errorcode );
 	}
+	
 	return errorcode == CURLE_OK;
 }
 
@@ -91,19 +95,19 @@ bool M_URLGetBytes( std::vector< uint8_t >& output, int64_t& outfiletime, std::s
 	curl_easy_setopt( curl, CURLOPT_COOKIEFILE, "" );
 	curl_easy_setopt( curl, CURLOPT_FOLLOWLOCATION, 1 );
 	curl_easy_setopt( curl, CURLOPT_USERAGENT, "libcurl-agent/1.0" );
-	curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params );
+	curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params ? params : "" );
 	curl_easy_setopt( curl, CURLOPT_WRITEDATA, &output );
 	curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, &CURL_BytesWrite );
 	curl_easy_setopt( curl, CURLOPT_XFERINFODATA, func );
 	curl_easy_setopt( curl, CURLOPT_FILETIME, true );
+	curl_easy_setopt( curl, CURLOPT_CONNECTTIMEOUT, 10 );
+	curl_easy_setopt( curl, CURLOPT_USE_SSL, CURLUSESSL_ALL );
+
 	CURLcode errorcode = curl_easy_perform( curl );
 	if( errorcode != CURLE_OK )
 	{
 		outerror = curl_easy_strerror( errorcode );
 	}
-	else
-	{
-		curl_easy_getinfo( curl, CURLINFO_FILETIME_T, &outfiletime );
-	}
+
 	return errorcode == CURLE_OK;
 }

@@ -760,10 +760,7 @@ namespace launcher
 	void WriteEntry( DoomFileEntry& entry, const std::filesystem::path& stdpath )
 	{
 		std::string path = stdpath.string();
-		if( !std::filesystem::create_directories( path ) )
-		{
-			I_LogDebug( path.c_str() );
-		}
+		std::filesystem::create_directories( path );
 
 		std::filesystem::path infopath = path + "info.json";
 
