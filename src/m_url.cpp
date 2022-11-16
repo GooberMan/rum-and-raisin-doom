@@ -13,7 +13,6 @@
 //
 
 #include "m_url.h"
-#include "i_log.h"
 
 #include <curl/curl.h>
 
