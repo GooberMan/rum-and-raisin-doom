@@ -233,6 +233,84 @@ std::span< const char* > ParamArgs( const char* param )
 	return std::span( &myargv[ 0 ], 0 );
 };
 
+template< typename _range, typename _func >
+auto Transform( _range& r, _func&& f )
+{
+	using func_type = decltype( std::function( f ) );
+	using ret_type = decltype( f( *r.begin() ) );
+
+	class trange
+	{
+	public:
+		using value_type = ret_type;
+
+		using range_iterator = typename _range::iterator;
+
+		class iterator
+		{
+		public:
+			iterator()
+				: f( nullptr )
+			{
+			}
+
+			iterator( range_iterator _i, func_type& _f )
+				: it( _i )
+				, f( &_f )
+			{
+			}
+
+			iterator& operator++()
+			{
+				++it;
+				return *this;
+			}
+
+			ret_type operator*()
+			{
+				return (*f)( *it );
+			}
+
+			bool operator!=( const iterator& rhs )
+			{
+				return it != rhs.it;
+			}
+
+		private:
+			range_iterator it;
+			func_type* f;
+		};
+
+		trange( _range& _r, func_type&& _f )
+			: r( _r )
+			, f( _f )
+		{
+		}
+
+		INLINE iterator begin() { return iterator( r.begin(), f ); }
+		INLINE iterator end()	{ return iterator( r.end(), f ); }
+
+		INLINE size_t size() { return r.size(); }
+		INLINE bool empty() { return r.empty(); }
+
+		INLINE ret_type operator[]( size_t index )
+		{
+			iterator it = begin();
+			for( int32_t v = 0; v < index; ++v )
+			{
+				++it;
+			}
+			return *it;
+		}
+
+	private:
+		_range& r;
+		func_type f;
+	};
+
+	return trange( r, std::function( f ) );
+}
+
 typedef struct vec2_s
 {
 	float_t		x;
@@ -1003,17 +1081,13 @@ namespace launcher
 			auto IWADPaths = D_GetIWADPaths();
 			std::string CachePath = HOME_PATH + cache_extracted;
 			const char* CacheCStr = CachePath.c_str();
-			auto CacheSpan = std::span< const char* >( &CacheCStr, 1 );
 
-			// Annoying workaround for lack of concat in C++20
-			decltype( std::ranges::views::all( CacheSpan ) ) Views[] =
-			{
-				std::ranges::views::all( CacheSpan ),
-				std::ranges::views::all( IWADPaths )
-			};
+			// Should be a range adapter...
+			std::vector< const char* > Views;
+			Views.insert( Views.end(), IWADPaths.begin(), IWADPaths.end() );
+			Views.push_back( CacheCStr );
 
-			for( auto dir : std::ranges::views::join( Views )
-							| std::ranges::views::transform( []( const char* pathname )
+			for( auto dir : Transform( Views, []( const char* pathname )
 							{
 								std::error_code error;
 								auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
@@ -1024,8 +1098,7 @@ namespace launcher
 				total_files += std::distance( dir, std::filesystem::recursive_directory_iterator{} );
 			}
 
-			for( auto dir : std::ranges::views::join( Views )
-							| std::ranges::views::transform( []( const char* pathname )
+			for( auto dir : Transform( Views, []( const char* pathname )
 							{
 								std::error_code error;
 								auto it = std::filesystem::recursive_directory_iterator( std::filesystem::path( pathname ), std::filesystem::directory_options::skip_permission_denied, error );
@@ -1335,7 +1408,7 @@ namespace launcher
 			if( entry.type == DoomFileType::Dehacked ) Select( dehs, entry );
 		}
 
-		bool Deselect( DoomFileEntry& entry )
+		bool Deselect( const DoomFileEntry& entry )
 		{
 			if( entry.type == DoomFileType::PWAD ) return Deselect( pwads, entry );
 			if( entry.type == DoomFileType::Dehacked ) return Deselect( dehs, entry );
@@ -1365,15 +1438,13 @@ namespace launcher
 		INLINE bool Valid() const { return pwads.container != nullptr; }
 
 		INLINE auto& AllDEHs() { return *dehs.container; }
-		INLINE auto SelectedDEHs() { return std::ranges::views::all( dehs.selected )
-									| std::ranges::views::transform( [ this ]( int32_t index ) -> DoomFileEntry&
+		INLINE auto SelectedDEHs() { return Transform( dehs.selected, [ this ]( int32_t index ) -> DoomFileEntry&
 									{
 										return dehs.container->at( index );
 									} ); }
 
 		INLINE auto& AllPWADs() { return *pwads.container; }
-		INLINE auto SelectedPWADs() { return std::ranges::views::all( pwads.selected )
-									| std::ranges::views::transform( [ this ]( int32_t index ) -> DoomFileEntry&
+		INLINE auto SelectedPWADs() { return Transform( pwads.selected, [ this ]( int32_t index ) -> DoomFileEntry&
 									{
 										return pwads.container->at( index );
 									} ); }
@@ -1472,7 +1543,7 @@ namespace launcher
 			return -1;
 		}
 
-		static bool Deselect( Selection& selection, DoomFileEntry& entry )
+		static bool Deselect( Selection& selection, const DoomFileEntry& entry )
 		{
 			auto found = std::find_if( selection.container->begin(), selection.container->end(), [ &entry ]( const DoomFileEntry& file )
 				{
