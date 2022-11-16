@@ -134,7 +134,7 @@ constexpr const char* GameVersionsCommand[] =
 #ifdef WIN32
 #define HOME_PATH ( std::string( std::getenv( "USERPROFILE" ) ) + "\\Saved Games\\" )
 #else
-#define HOME_PATH std::string( "~/" )
+#define HOME_PATH ( std::string( std::getenv( "HOME" ) ) + "/" )
 #endif
 
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
@@ -759,7 +759,10 @@ namespace launcher
 	void WriteEntry( DoomFileEntry& entry, const std::filesystem::path& stdpath )
 	{
 		std::string path = stdpath.string();
-		std::filesystem::create_directories( path );
+		if( !std::filesystem::create_directories( path ) )
+		{
+			I_LogDebug( path.c_str() );
+		}
 
 		std::filesystem::path infopath = path + "info.json";
 
