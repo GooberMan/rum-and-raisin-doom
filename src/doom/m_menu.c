@@ -3407,6 +3407,12 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				{
 					dynamic_resolution_scaling = WorkingBool ? DRS_Both : DRS_None;
 				}
+				if( igIsItemHovered( ImGuiHoveredFlags_None ) )
+				{
+					igBeginTooltip();
+					igText( "This feature is currently in its early stages.\nIt looks like garbage for <1080p resolutions." );
+					igEndTooltip();
+				}
 				igPopID();
 				igNextColumn();
 
