@@ -678,6 +678,10 @@ void S_ChangeMusic(int musicnum, int looping)
 
 static musicinfo_t music_from_lump;
 
+#if !defined( WIN32 )
+#define stricmp strcasecmp
+#endif
+
 void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
 {
 	boolean wasplaying = mus_playing == &music_from_lump;
