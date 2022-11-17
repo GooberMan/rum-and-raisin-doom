@@ -3514,10 +3514,16 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igPushIDPtr( &screenblocks );
 			igPushItemWidth( 200.f );
-			if( igSliderInt( "", &screenblocks, 3, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			if( igSliderInt( "", &screenblocks, 10, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
 				screenSize = screenblocks - 3;
 				R_SetViewSize (screenblocks, 0);
+			}
+			if( igIsItemHovered( ImGuiHoveredFlags_None ) )
+			{
+				igBeginTooltip();
+				igText( "Shrinking lower than the status bar is currently broken.\nReturning when dynamic resolution scaling gets better." );
+				igEndTooltip();
 			}
 			igPopItemWidth();
 			igPopID();

@@ -1287,7 +1287,7 @@ R_SetViewSize
   int		detail )
 {
     setsizeneeded = true;
-    setblocks = blocks;
+    setblocks = M_MAX( 10, blocks );
 	R_RebalanceContexts();
 }
 
@@ -1668,6 +1668,7 @@ void R_Init (void)
     I_TerminalPrintf( Log_None, "." );
 
 	R_AllocDynamicTables();
+	screenblocks = M_MAX( 10, screenblocks );
     R_SetViewSize (screenblocks, detailLevel);
 	R_ExecuteSetViewSize( );
     I_TerminalPrintf( Log_None, "." );
