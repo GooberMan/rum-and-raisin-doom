@@ -2730,7 +2730,7 @@ float M_GetFloatVariable(const char *name)
 #define HOME_PATH_SPRINTF "%s\\Saved Games\\Rum and Raisin Doom\\"
 #define HOME_PATH_ENV "USERPROFILE"
 #else
-#define HOME_PATH_SPRINTF "%s/.local/share/rumandraisindoom/"
+#define HOME_PATH_SPRINTF "%s/.local/share/rum-and-raisin-doom/"
 #define HOME_PATH_ENV "HOME"
 #endif // WIN32
 
