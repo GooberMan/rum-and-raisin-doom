@@ -3340,7 +3340,7 @@ namespace launcher
 					char textbuffer[ 4 ] = { };
 					if( val )
 					{
-						itoa( val, textbuffer, 10 );
+						M_snprintf( textbuffer, 4, "%d", val );
 					}
 					igPushIDPtr( title );
 					igSetNextItemWidth( 150 );
@@ -3349,7 +3349,7 @@ namespace launcher
 						if( igSelectableBool( "None", val == invalidval, ImGuiSelectableFlags_None, zero ) ) val = invalidval;
 						for( int32_t map : iota( invalidval + 1, finalval + 1 ) )
 						{
-							itoa( map, textbuffer, 10 );
+							M_snprintf( textbuffer, 4, "%d", map );
 							if( igSelectableBool( textbuffer, val == map, ImGuiSelectableFlags_None, zero ) ) val = map;
 						}
 						igEndCombo();
