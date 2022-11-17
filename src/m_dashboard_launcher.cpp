@@ -3284,6 +3284,12 @@ namespace launcher
 	protected:
 		virtual void RenderContents() override
 		{
+			constexpr float_t framepadding = 10;
+			constexpr float_t buttonheight = 25.f;
+			constexpr ImVec2 playbuttonsize = { 50.f, buttonheight };
+			constexpr ImVec2 pwadssize = { 160.f, buttonheight };
+			constexpr ImVec2 idgamessize = { 140.f, buttonheight };
+
 			iwadselector->Render();
 
 			ImVec2 framesize;
@@ -3314,28 +3320,65 @@ namespace launcher
 				igEndCombo();
 			}
 
-			int32_t mode = iwadselector->Selected().game_mode;
-			if( mode != commercial )
-			{
-				int32_t episode_count = mode == shareware ? 1 : mode == registered ? 3 : 4;
-
-				igSetNextItemWidth( 50 );
-				igSliderInt( "Episode", &launchoptions->start_episode, 0, episode_count, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-				igSameLine( 0, 10 );
-			}
-			igSetNextItemWidth( 100 );
-			igSliderInt( "Map", &launchoptions->start_map, 0, mode != commercial ? 9 : 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-
-			igSetNextItemWidth( 50 );
-			igSliderInt( "Start skill", &launchoptions->start_skill, -1, 5, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-
-			igCheckbox( "Solo net", &launchoptions->solo_net );
-
-			igCheckbox( "Fast monsters", &launchoptions->fast_monsters );
-			igCheckbox( "No monsters", &launchoptions->no_monsters );
-			igCheckbox( "Respawn monsters", &launchoptions->respawn_monsters );
-
 			igCheckbox( "Don't load widepix", &launchoptions->no_widepix );
+
+			igNewLine();
+			igText( "Get straight in to the action:" );
+
+			ImVec2 frameavail;
+			igGetContentRegionAvail( &frameavail );
+
+			int32_t launchid = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelaunch", nullptr );
+			ImVec2 launchframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
+
+			if( igBeginChildFrame( launchid, launchframesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
+			{
+				auto mapchooser = []( const char* title, int32_t finalval, int32_t invalidval, int32_t& val )
+				{
+					igText( title );
+					igSameLine( 0, 10 );
+					char textbuffer[ 4 ] = { };
+					if( val )
+					{
+						itoa( val, textbuffer, 10 );
+					}
+					igPushIDPtr( title );
+					igSetNextItemWidth( 150 );
+					if( igBeginCombo( "", val ? textbuffer : "None", ImGuiComboFlags_None ) )
+					{
+						if( igSelectableBool( "None", val == invalidval, ImGuiSelectableFlags_None, zero ) ) val = invalidval;
+						for( int32_t map : iota( invalidval + 1, finalval + 1 ) )
+						{
+							itoa( map, textbuffer, 10 );
+							if( igSelectableBool( textbuffer, val == map, ImGuiSelectableFlags_None, zero ) ) val = map;
+						}
+						igEndCombo();
+					}
+					igPopID();
+				};
+
+				int32_t mode = iwadselector->Selected().game_mode;
+				if( mode != commercial )
+				{
+					int32_t episode_count = mode == shareware ? 1 : mode == registered ? 3 : 4;
+
+					if( episode_count > 1 )
+					{
+						mapchooser( "Episode", episode_count, 0, launchoptions->start_episode );
+						igSameLine( 0, 10 );
+					}
+				}
+				mapchooser( "Map", mode != commercial ? 9 : 32, 0, launchoptions->start_map );
+
+				mapchooser( "Start skill", 5, -1, launchoptions->start_skill );
+
+				igCheckbox( "Solo net", &launchoptions->solo_net );
+
+				igCheckbox( "Fast monsters", &launchoptions->fast_monsters );
+				igCheckbox( "No monsters", &launchoptions->no_monsters );
+				igCheckbox( "Respawn monsters", &launchoptions->respawn_monsters );
+			}
+			igEndChildFrame();
 
 			igNextColumn();
 			igText( "Selected files" );
@@ -3365,14 +3408,7 @@ namespace launcher
 
 			igSpacing();
 
-			ImVec2 frameavail;
 			igGetContentRegionAvail( &frameavail );
-
-			constexpr float_t framepadding = 10;
-			constexpr float_t buttonheight = 25.f;
-			constexpr ImVec2 playbuttonsize = { 50.f, buttonheight };
-			constexpr ImVec2 pwadssize = { 160.f, buttonheight };
-			constexpr ImVec2 idgamessize = { 140.f, buttonheight };
 
 			int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelfiles", nullptr );
 			ImVec2 fileframesize = { frameavail.x, frameavail.y - buttonheight - 15 };

@@ -155,11 +155,13 @@ void M_PerformLauncher()
 		while( true )
 		{
 			argsstream >> std::quoted( curr_param, '\"', '\0' );
-			if( !argsstream.eof() )
+			if( curr_param.empty() )
 			{
-				params.push_back( curr_param );
+				break;
 			}
-			else
+			params.push_back( curr_param );
+			curr_param = "";
+			if( argsstream.eof() )
 			{
 				break;
 			}
