@@ -134,7 +134,7 @@ constexpr const char* GameVersionsCommand[] =
 #ifdef WIN32
 #define HOME_PATH ( std::string( std::getenv( "USERPROFILE" ) ) + "\\Saved Games\\Rum and Raisin Doom\\" )
 #else
-#define HOME_PATH ( std::string( std::getenv( "HOME" ) ) + "/.local/share/rumandraisindoom/" )
+#define HOME_PATH ( std::string( std::getenv( "HOME" ) ) + "/.local/share/rum-and-raisin-doom/" )
 #endif
 
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
