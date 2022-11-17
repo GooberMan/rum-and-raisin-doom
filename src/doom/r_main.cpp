@@ -2053,7 +2053,7 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 
 	// NetUpdate can cause lump loads, so we wait until rendering is done before doing it again.
 	// This is a change from the vanilla renderer.
-	NetUpdate ();
+	//NetUpdate ();
 
 	wadrenderlock = true;
 

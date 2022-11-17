@@ -388,7 +388,7 @@ boolean D_Display( double_t framepercent )
 	// menus go directly to the screen
 	M_Drawer (); // menu is drawn even on top of everything
 
-	NetUpdate (); // send out any new accumulation
+	//NetUpdate (); // send out any new accumulation
 
 	if( wipe )
 	{

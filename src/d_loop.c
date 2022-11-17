@@ -742,7 +742,7 @@ boolean TryRunTics (void)
 
 	if( !sleeponzerotics && counts == 0 )
 	{
-		NetUpdate ();
+		//NetUpdate ();
 		return false;
 	}
 
@@ -750,9 +750,9 @@ boolean TryRunTics (void)
 		counts = 1;
 
     // wait for new tics if needed
-    while (!PlayersInGame() || lowtic < gametic/ticdup + counts)
+    while ( false ) //!PlayersInGame() || lowtic < gametic/ticdup + counts)
     {
-	NetUpdate ();
+	//NetUpdate ();
 
         lowtic = GetLowTic();
 
@@ -806,7 +806,7 @@ boolean TryRunTics (void)
             TicdupSquash(set);
 	}
 
-	NetUpdate ();	// check for new console commands
+	//NetUpdate ();	// check for new console commands
     }
 
 	return true;
