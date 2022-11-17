@@ -590,7 +590,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 			loopcontext.midtexture = texturetranslation[bspcontext->sidedef->midtexture];
 			// a single sided line is terminal, so it must mark ends
 			loopcontext.markfloor = loopcontext.markceiling = true;
-			if (bspcontext->linedef->flags & ML_DONTPEGBOTTOM)
+			if (bspcontext->linedef->flags & ML_DONTPEGBOTTOM && bspcontext->sideinst->midtex)
 			{
 				vtop = bspcontext->frontsectorinst->floorheight + bspcontext->sideinst->midtex->renderheight;
 				// bottom of texture at bottom
