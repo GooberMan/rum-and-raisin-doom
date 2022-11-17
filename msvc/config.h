@@ -1,7 +1,7 @@
 #define PACKAGE_NAME "Rum and Raisin Doom"
 #define PACKAGE_TARNAME "run-and-raisin-doom"
-#define PACKAGE_VERSION "0.2.3"
-#define PACKAGE_STRING "Rum and Raisin Doom 0.2.3"
+#define PACKAGE_VERSION "0.3.0"
+#define PACKAGE_STRING "Rum and Raisin Doom 0.3.0"
 #define PROGRAM_PREFIX "rum-and-raisin-"
 
 /* #undef HAVE_LIBSAMPLERATE */
