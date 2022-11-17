@@ -2,11 +2,23 @@
 
 Head to the [wiki](https://github.com/GooberMan/rum-and-raisin-doom/wiki) for more information.
 
+# Installing on Raspberry Pi?
+
+Ubuntu has made it needlessly hard to install packages from the internet. Not only do they open in the default compressed archive program, but the installer doesn't install dependencies. Instead you should use the previous package manager program, gdebi:
+
+```
+sudo apt install gdebi
+```
+
+Note that it also installs the graphical `gdebi-gtk` program if you'd rather use that once it's installed.
+
 # This repository uses submodules
 
 To correctly clone this repository, you will also need to initialise all submodules. As cimgui also has submodules, it needs to be recursive.
 
-`git submodule update --init --recursive`
+```
+git submodule update --init --recursive
+```
 
 # Compiling on Linux?
 
@@ -18,9 +30,11 @@ make
 
 Rum and Raisin Doom only supports compiling with Clang on Linux. It has also only been tested on a few Ubuntu variants, other distros are unsupported.
 
-# Compiling on Ubuntu 20.whatever and having Python problems?
+# Compiling on Ubuntu 20.x and later? Having Python problems?
 
-`sudo apt-get install python-is-python3`
+```
+sudo apt-get install python-is-python3
+```
 
 # Compiling on MacOS?
 
