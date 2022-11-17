@@ -3113,7 +3113,6 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t enable_frame_interpolation;
 	extern int32_t grabmouse;
 	extern int32_t novert;
-	extern int32_t enable_frame_interpolation;
 	extern int32_t snd_pitchshift;
 	extern int32_t num_software_backbuffers;
 	extern int32_t num_render_contexts;
@@ -3122,6 +3121,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t wipe_style;
 	extern int32_t render_match_window;
 	extern int32_t dynamic_resolution_scaling;
+	extern int32_t additional_light_boost;
+
 
 	controlsection_t*	currsection;
 
@@ -3506,6 +3507,15 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 					I_SetPalette( W_CacheLumpName( DEH_String( "PLAYPAL" ), PU_CACHE ) );
 				}
 			}
+			igPopItemWidth();
+			igPopID();
+
+			igNextColumn();
+			igText( "Light boost" );
+			igNextColumn();
+			igPushIDPtr( &additional_light_boost );
+			igPushItemWidth( 200.f );
+			igSliderInt( "", &additional_light_boost, 0, 8, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput);
 			igPopItemWidth();
 			igPopID();
 

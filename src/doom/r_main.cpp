@@ -158,6 +158,8 @@ extern "C"
 	int32_t			frame_adjusted_width;
 	int32_t			frame_height;
 
+	int32_t			additional_light_boost = 0;
+
 	extern int32_t enable_frame_interpolation;
 	int32_t interpolate_this_frame = 0;
 
@@ -1866,7 +1868,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 
 	renderscratchpos = 0;
 	viewplayer = player;
-	extralight = player->extralight;
+	extralight = player->extralight + additional_light_boost;
 
 	interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
 

@@ -879,6 +879,14 @@ static default_t extra_defaults_list[] =
     //!
     // @game doom
     //
+    // Lighting boost.
+    //
+
+	CONFIG_VARIABLE_INT(additional_light_boost),
+
+    //!
+    // @game doom
+    //
     // Vsync value that matches up to the vsync_t enumeration.
     //
 
