@@ -751,6 +751,7 @@ namespace launcher
 		GameMission_t	game_mission;
 		GameVariant_t	game_variant;
 		int32_t			is_voices_iwad;
+		int32_t			should_merge;
 		int32_t			has_dehacked_lump;
 
 		Image			titlepic;
@@ -771,6 +772,7 @@ namespace launcher
 		root.AddNumber( "game_mission", (int32_t)entry.game_mission );
 		root.AddNumber( "game_variant", (int32_t)entry.game_variant );
 		root.AddNumber( "is_voices_iwad", (int32_t)entry.is_voices_iwad );
+		root.AddNumber( "should_merge", (int32_t)entry.should_merge );
 		root.AddNumber( "has_dehacked_lump", (int32_t)entry.has_dehacked_lump );
 
 		std::string converted = root.Serialise();
@@ -822,12 +824,15 @@ namespace launcher
 		fread( (void*)infojson.data(), sizeof( char ), infojson.length(), infofile );
 		fclose( infofile );
 
-		JSONElement root = JSONElement::Deserialise( infojson );
-		entry.version = to< int32_t >( root[ "version" ] );
-		entry.type = (DoomFileType)to< int32_t >( root[ "type" ] );
-		entry.game_mode = (GameMode_t)to< int32_t >( root[ "game_mode" ] );
-		entry.game_variant = (GameVariant_t)to< int32_t >( root[ "game_variant" ] );
-		entry.has_dehacked_lump = to< int32_t >( root[ "has_dehacked_lump" ] );
+		JSONElement root			= JSONElement::Deserialise( infojson );
+		entry.version				= to< int32_t >( root[ "version" ] );
+		entry.type					= (DoomFileType)to< int32_t >( root[ "type" ] );
+		entry.game_mode				= (GameMode_t)to< int32_t >( root[ "game_mode" ] );
+		entry.game_mission			= (GameMission_t)to< int32_t >( root[ "game_mission" ] );
+		entry.game_variant			= (GameVariant_t)to< int32_t >( root[ "game_variant" ] );
+		entry.is_voices_iwad		= to< int32_t >( root[ "is_voices_iwad" ] );
+		entry.should_merge			= to< int32_t >( root[ "should_merge" ] );
+		entry.has_dehacked_lump		= to< int32_t >( root[ "has_dehacked_lump" ] );
 
 		std::string textpath = path + "textfile.txt";
 		std::filesystem::path textstdpath = std::filesystem::path( textpath );
@@ -941,6 +946,14 @@ namespace launcher
 					filelump_t* lendstrf	= nullptr;
 					filelump_t* lv_start	= nullptr;
 					filelump_t* lv_end		= nullptr;
+					filelump_t* ls_start	= nullptr;
+					filelump_t* ls_end		= nullptr;
+					filelump_t* lss_start	= nullptr;
+					filelump_t* lss_end		= nullptr;
+					filelump_t* lf_start	= nullptr;
+					filelump_t* lf_end		= nullptr;
+					filelump_t* lff_start	= nullptr;
+					filelump_t* lff_end		= nullptr;
 					filelump_t* dehacked	= nullptr;
 					filelump_t* titlepic	= nullptr;
 					filelump_t* dmenupic	= nullptr;
@@ -968,6 +981,14 @@ namespace launcher
 						else if( !strncmp( lump.name, "ENDSTRF", 8 ) )		lendstrf = &lump;
 						else if( !strncmp( lump.name, "V_START", 8 ) )		lv_start = &lump;
 						else if( !strncmp( lump.name, "V_END", 8 ) )		lv_end = &lump;
+						else if( !strncmp( lump.name, "S_START", 8 ) )		ls_start = &lump;
+						else if( !strncmp( lump.name, "S_END", 8 ) )		ls_end = &lump;
+						else if( !strncmp( lump.name, "SS_START", 8 ) )		lss_start = &lump;
+						else if( !strncmp( lump.name, "SS_END", 8 ) )		lss_end = &lump;
+						else if( !strncmp( lump.name, "F_START", 8 ) )		lf_start = &lump;
+						else if( !strncmp( lump.name, "F_END", 8 ) )		lf_end = &lump;
+						else if( !strncmp( lump.name, "FF_START", 8 ) )		lff_start = &lump;
+						else if( !strncmp( lump.name, "FF_END", 8 ) )		lff_end = &lump;
 						else if( !strncmp( lump.name, "DEHACKED", 8 ) )		dehacked = &lump;
 						else if( !strncmp( lump.name, "TITLEPIC", 8 ) )		titlepic = &lump;
 						else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
@@ -1011,6 +1032,12 @@ namespace launcher
 						else if( EqualCaseInsensitive( entry.filename, "chex.wad" ) && ldeutex )
 						{
 							entry.type = DoomFileType::IWAD;
+						}
+
+						if( ls_start || lss_start || ls_end || lss_end
+							|| lf_start || lf_end || lff_start || lff_end )
+						{
+							entry.should_merge = 1;
 						}
 					}
 
@@ -3605,10 +3632,30 @@ std::string M_DashboardLauncherWindow()
 
 	if( !initpanel->GetDoomFileSelector()->SelectedPWADs().empty() )
 	{
-		parameters += " -file";
+		int32_t filecount = 0;
+		int32_t mergecount = 0;
 		for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedPWADs() )
 		{
-			parameters += " \"" + curr.full_path + "\"";
+			if( curr.should_merge ) ++mergecount;
+			else ++filecount;
+		}
+
+		if( mergecount )
+		{
+			parameters += " -merge";
+			for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedPWADs() )
+			{
+				if( curr.should_merge ) parameters += " \"" + curr.full_path + "\"";
+			}
+		}
+
+		if( filecount )
+		{
+			parameters += " -file";
+			for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedPWADs() )
+			{
+				if( !curr.should_merge ) parameters += " \"" + curr.full_path + "\"";
+			}
 		}
 	}
 
