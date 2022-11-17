@@ -132,18 +132,18 @@ constexpr const char* GameVersionsCommand[] =
 };
 
 #ifdef WIN32
-#define HOME_PATH ( std::string( std::getenv( "USERPROFILE" ) ) + "\\Saved Games\\" )
+#define HOME_PATH ( std::string( std::getenv( "USERPROFILE" ) ) + "\\Saved Games\\Rum and Raisin Doom\\" )
 #else
-#define HOME_PATH ( std::string( std::getenv( "HOME" ) ) + "/" )
+#define HOME_PATH ( std::string( std::getenv( "HOME" ) ) + "/.local/share/rumandraisindoom/" )
 #endif
 
 constexpr const char* idgames_api_url		= "https://www.doomworld.com/idgames/api/api.php";
 constexpr const char* idgames_api_folder	= "action=getcontents&out=json&name=";
 constexpr const char* idgames_api_file		= "action=get&out=json&file=";
 
-constexpr const char* cache_local			= ".rumandraisincache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
-constexpr const char* cache_download		= ".rumandraisincache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
-constexpr const char* cache_extracted		= ".rumandraisincache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
+constexpr const char* cache_local			= "cache" DIR_SEPARATOR_S "local" DIR_SEPARATOR_S;
+constexpr const char* cache_download		= "cache" DIR_SEPARATOR_S "download" DIR_SEPARATOR_S;
+constexpr const char* cache_extracted		= "cache" DIR_SEPARATOR_S "extracted" DIR_SEPARATOR_S;
 
 constexpr const char* WADRegexString = ".+\\.wad$";
 constexpr const char* DEHRegexString = ".+\\.deh$";

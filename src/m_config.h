@@ -38,6 +38,8 @@ DOOM_C_API void M_SetConfigFilenames(const char *main_config, const char *extra_
 DOOM_C_API char *M_GetSaveGameDir(const char *iwadname);
 DOOM_C_API char *M_GetAutoloadDir(const char *iwadname);
 
+DOOM_C_API const char* M_GetHomeDir( void );
+
 DOOM_C_API extern const char *configdir;
 
 #endif

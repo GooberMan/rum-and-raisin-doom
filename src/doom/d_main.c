@@ -173,6 +173,23 @@ byte blackedgesdata[ 128 ] =
 	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
 };
 
+const char* IWADFilename()
+{
+	if( !iwadfile ) return "unknown.wad";
+
+	const char* name = iwadfile + strlen( iwadfile );
+	while( --name != iwadfile )
+	{
+		if( *name == DIR_SEPARATOR )
+		{
+			++name;
+			break;
+		}
+	}
+
+	return name;
+}
+
 void D_ConnectNetGame(void);
 void D_CheckNetGame(void);
 
@@ -1523,27 +1540,13 @@ void D_DoomMain (void)
 	blackedges.verticalscale = 1.0f;
 	blackedges.magic_value = vbuffer_magic;
 
-#ifdef _WIN32
-	//!
-	// @category obscure
-	// @platform windows
-	// @vanilla
-	//
-	// Save configuration data and savegames in c:\doomdata,
-	// allowing play from CD.
-	//
-
-	if (M_ParmExists("-cdrom"))
+	// Auto-detect the configuration dir.
+	if( M_CheckParm( "-portable" ) || M_FileExists( "rnr_portable.dat" ) )
 	{
-		I_TerminalPrintf( Log_Startup, D_CDROM );
-
-		M_SetConfigDir("c:\\doomdata\\");
+		M_SetConfigDir( "." DIR_SEPARATOR_S );
 	}
 	else
-#endif
 	{
-		// Auto-detect the configuration dir.
-
 		M_SetConfigDir(NULL);
 	}
 
@@ -1875,7 +1878,7 @@ void D_DoomMain (void)
 
         // auto-loaded files per IWAD
 
-        autoload_dir = M_GetAutoloadDir(D_SaveGameIWADName(gamemission));
+        autoload_dir = M_GetAutoloadDir( IWADFilename() );
         DEH_AutoLoadPatches(autoload_dir);
         W_AutoLoadWADs(autoload_dir);
         free(autoload_dir);
@@ -2013,7 +2016,7 @@ void D_DoomMain (void)
     // we've finished loading Dehacked patches.
     D_SetGameDescription();
 
-    savegamedir = M_GetSaveGameDir(D_SaveGameIWADName(gamemission));
+    savegamedir = M_GetSaveGameDir( IWADFilename() );
 
     // Check for -file in shareware
     if (modifiedgame && (gamevariant != freedoom))

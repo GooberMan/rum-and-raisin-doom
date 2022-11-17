@@ -1316,6 +1316,7 @@ static void I_SetupDearImGui(void)
 	int32_t retval;
 
 	imgui_context = igCreateContext( NULL );
+	imgui_context->IO.IniFilename = M_StringJoin( configdir, "dashboard.ini", NULL );
 
 	retval = CImGui_ImplSDL2_InitForOpenGL( screen, glcontext );
 	if ( !retval )

@@ -48,6 +48,9 @@
 
 const char *configdir;
 
+#define HOME_FOLDER_BUFFER_LENGTH 1024
+char home_folder[ HOME_FOLDER_BUFFER_LENGTH ] = { 0 };
+
 static char *autoload_path = "";
 
 // Default filenames for configuration files.
@@ -2723,27 +2726,18 @@ float M_GetFloatVariable(const char *name)
 // Get the path to the default configuration dir to use, if NULL
 // is passed to M_SetConfigDir.
 
+#ifdef WIN32
+#define HOME_PATH_SPRINTF "%s\\Saved Games\\Rum and Raisin Doom\\"
+#define HOME_PATH_ENV "USERPROFILE"
+#else
+#define HOME_PATH_SPRINTF "%s/.local/share/rumandraisindoom/"
+#define HOME_PATH_ENV "HOME"
+#endif // WIN32
+
 static char *GetDefaultConfigDir(void)
 {
-#if !defined(_WIN32) || defined(_WIN32_WCE)
-
-    // Configuration settings are stored in an OS-appropriate path
-    // determined by SDL.  On typical Unix systems, this might be
-    // ~/.local/share/chocolate-doom.  On Windows, we behave like
-    // Vanilla Doom and save in the current directory.
-
-    char *result;
-    char *copy;
-
-    result = SDL_GetPrefPath("", PACKAGE_TARNAME);
-    if (result != NULL)
-    {
-        copy = M_StringDuplicate(result);
-        SDL_free(result);
-        return copy;
-    }
-#endif /* #ifndef _WIN32 */
-    return M_StringDuplicate("");
+	M_snprintf( home_folder, HOME_FOLDER_BUFFER_LENGTH, HOME_PATH_SPRINTF, getenv( HOME_PATH_ENV ) );
+	return home_folder;
 }
 
 // 
@@ -2755,25 +2749,18 @@ static char *GetDefaultConfigDir(void)
 
 void M_SetConfigDir(const char *dir)
 {
-    // Use the directory that was passed, or find the default.
+	// This initialises the home folder
+	configdir = GetDefaultConfigDir();
 
-    if (dir != NULL)
-    {
-        configdir = dir;
-    }
-    else
-    {
-        configdir = GetDefaultConfigDir();
-    }
+	// Use the directory that was passed, or find the default.
+	if (dir != NULL)
+	{
+		configdir = dir;
+		printf( "Using %s for configuration and saves\n", configdir );
+	}
 
-    if (strcmp(configdir, "") != 0)
-    {
-        printf("Using %s for configuration and saves\n", configdir);
-    }
-
-    // Make the directory if it doesn't already exist:
-
-    M_MakeDirectory(configdir);
+	// Make the directory if it doesn't already exist:
+	M_MakeDirectory(configdir);
 }
 
 #define MUSIC_PACK_README \
@@ -2797,7 +2784,9 @@ void M_SetMusicPackDir(void)
         return;
     }
 
-    prefdir = SDL_GetPrefPath("", PACKAGE_TARNAME);
+//    prefdir = SDL_GetPrefPath("", PACKAGE_TARNAME);
+	prefdir = configdir;
+
     music_pack_path = M_StringJoin(prefdir, "music-packs", NULL);
 
     M_MakeDirectory(prefdir);
@@ -2847,20 +2836,11 @@ char *M_GetSaveGameDir(const char *iwadname)
 
         printf("Save directory changed to %s.\n", savegamedir);
     }
-#ifdef _WIN32
-    // In -cdrom mode, we write savegames to a specific directory
-    // in addition to configs.
-
-    else if (M_ParmExists("-cdrom"))
-    {
-        savegamedir = M_StringDuplicate(configdir);
-    }
-#endif
     // If not "doing" a configuration directory (Windows), don't "do"
     // a savegame directory, either.
     else if (!strcmp(configdir, ""))
     {
-	savegamedir = M_StringDuplicate("");
+		savegamedir = M_StringDuplicate("");
     }
     else
     {
@@ -2886,16 +2866,21 @@ char *M_GetSaveGameDir(const char *iwadname)
 // Calculate the path to the directory for autoloaded WADs/DEHs.
 // Creates the directory as necessary.
 //
+
+// NOTE: M_StringJoin usage here results in memory leaks
+
 char *M_GetAutoloadDir(const char *iwadname)
 {
     char *result;
 
     if (autoload_path == NULL || strlen(autoload_path) == 0)
     {
-        char *prefdir;
-        prefdir = SDL_GetPrefPath("", PACKAGE_TARNAME);
-        autoload_path = M_StringJoin(prefdir, "autoload", NULL);
-        SDL_free(prefdir);
+		autoload_path = configdir;
+
+        //char *prefdir;
+        //prefdir = SDL_GetPrefPath("", PACKAGE_TARNAME);
+        //autoload_path = M_StringJoin(prefdir, "autoload", NULL);
+        //SDL_free(prefdir);
     }
 
     M_MakeDirectory(autoload_path);
@@ -2908,3 +2893,7 @@ char *M_GetAutoloadDir(const char *iwadname)
     return result;
 }
 
+const char* M_GetHomeFolder( void )
+{
+	return home_folder;
+}
