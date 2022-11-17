@@ -201,10 +201,6 @@ constexpr int32_t viewwidthforblocks[] =
 	320,
 };
 
-INLINE auto AllRenderDatas()			{ return std::span( renderdatas, maxrendercontexts ); }
-INLINE auto CurrentRenderDatas()		{ return std::span( renderdatas, num_render_contexts ); }
-
-
 #include "m_dashboard.h"
 #include "m_profile.h"
 
@@ -1219,60 +1215,57 @@ void R_InitContexts( void )
 	renderdatas = (renderdata_t*)Z_Malloc( sizeof( renderdata_t ) * maxrendercontexts, PU_STATIC, NULL );
 	memset( renderdatas, 0, sizeof( renderdata_t ) * maxrendercontexts );
 
-	currcontext = 0;
-	for( renderdata_t& curr : AllRenderDatas() )
+	for( currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
 	{
-		curr.index = currcontext++;
-		curr.context.bufferindex = 0;
-		curr.context.buffer = curr.context.viewbuffer = *I_GetRenderBuffer( 0 );
+		renderdatas[ currcontext ].index = currcontext;
+		renderdatas[ currcontext ].context.bufferindex = 0;
+		renderdatas[ currcontext ].context.buffer = renderdatas[ currcontext ].context.viewbuffer = *I_GetRenderBuffer( 0 );
 
-		curr.context.begincolumn = curr.context.spritecontext.leftclip = M_MAX( currstart, 0 );
+		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
-		curr.context.endcolumn = curr.context.spritecontext.rightclip = M_MIN( currstart, drs_current->frame_width );
+		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, drs_current->frame_width );
 
-		curr.context.starttime = 0;
-		curr.context.endtime = 1;
-		curr.context.timetaken = 1;
+		renderdatas[ currcontext ].context.starttime = 0;
+		renderdatas[ currcontext ].context.endtime = 1;
+		renderdatas[ currcontext ].context.timetaken = 1;
 
-		curr.context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * ( numflats + numtextures ), PU_STATIC, NULL );
+		renderdatas[ currcontext ].context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * ( numflats + numtextures ), PU_STATIC, NULL );
 
-		R_ResetContext( &curr.context, curr.context.begincolumn, curr.context.endcolumn );
+		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
 		if( currcontext < maxrendercontexts - 1 )
 		{
-			curr.shouldrun = I_SemaphoreCreate( 0 );
-			curr.thread = I_ThreadCreate( &R_ContextThreadFunc, &curr );
+			renderdatas[ currcontext ].shouldrun = I_SemaphoreCreate( 0 );
+			renderdatas[ currcontext ].thread = I_ThreadCreate( &R_ContextThreadFunc, &renderdatas[ currcontext ] );
 		}
 
 		if( numsectors > 0 )
 		{
-			curr.context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
 		}
 	}
 }
 
 void R_RefreshContexts( void )
 {
-	if( !renderdatas )
+	int32_t currcontext;
+	if( renderdatas )
 	{
-		return;
-	}
-
-	for( renderdata_t& curr : AllRenderDatas() )
-	{
-		curr.context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+		for( currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
+		{
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
 #if RENDER_PERF_GRAPHING
-		memset( curr.context.frametimes, 0, sizeof( curr.context.frametimes) );
-		memset( curr.context.walltimes, 0, sizeof( curr.context.walltimes) );
-		memset( curr.context.flattimes, 0, sizeof( curr.context.flattimes) );
-		memset( curr.context.spritetimes, 0, sizeof( curr.context.spritetimes) );
-		memset( curr.context.findvisplanetimes, 0, sizeof( curr.context.findvisplanetimes) );
-		memset( curr.context.addspritestimes, 0, sizeof( curr.context.addspritestimes) );
-		memset( curr.context.addlinestimes, 0, sizeof( curr.context.addlinestimes) );
-		memset( curr.context.everythingelsetimes, 0, sizeof( curr.context.everythingelsetimes) );
+			memset( renderdatas[ currcontext ].context.frametimes, 0, sizeof( renderdatas[ currcontext ].context.frametimes) );
+			memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
+			memset( renderdatas[ currcontext ].context.flattimes, 0, sizeof( renderdatas[ currcontext ].context.flattimes) );
+			memset( renderdatas[ currcontext ].context.spritetimes, 0, sizeof( renderdatas[ currcontext ].context.spritetimes) );
+			memset( renderdatas[ currcontext ].context.findvisplanetimes, 0, sizeof( renderdatas[ currcontext ].context.findvisplanetimes) );
+			memset( renderdatas[ currcontext ].context.addspritestimes, 0, sizeof( renderdatas[ currcontext ].context.addspritestimes) );
+			memset( renderdatas[ currcontext ].context.addlinestimes, 0, sizeof( renderdatas[ currcontext ].context.addlinestimes) );
+			memset( renderdatas[ currcontext ].context.everythingelsetimes, 0, sizeof( renderdatas[ currcontext ].context.everythingelsetimes) );
 #endif // RENDER_PERF_GRAPHING
+		}
 	}
-
 	renderrebalancecontexts = true;
 }
 
@@ -1521,12 +1514,12 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 		igNewLine();
 
 		igBeginColumns( "Performance columns", M_MIN( 2, num_render_contexts ), ImGuiColumnsFlags_NoBorder );
-		for( renderdata_t& curr : CurrentRenderDatas() )
+		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
-			igText("Context %d", curr.index + 1 );
+			igText( "Context %d", currcontext );
 
 			// This is downright ugly. Don't ever do this
-			context = (byte*)&curr;
+			context = (byte*)&renderdatas[ currcontext ];
 			nextentry = *(int32_t*)( context + nextentryoffs );
 			frameavg = frameavgoffs >= 0 ? *(float_t*)( context + frameavgoffs ) : -1.f;
 			objsize.x = igGetColumnWidth( igGetColumnIndex() );
@@ -1866,6 +1859,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 	R_InitColFuncs();
 
 	int32_t		i;
+	int32_t		currcontext;
 	int32_t		currstart;
 	int32_t		desiredwidth;
 
@@ -1992,24 +1986,24 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 		fixedcolormap = 0;
 	}
 
-	for( renderdata_t& curr : CurrentRenderDatas() )
+	for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 	{
 		vbuffer_t buffer = *I_GetCurrentRenderBuffer( );
-		curr.context.buffer = buffer;
+		renderdatas[ currcontext ].context.buffer = buffer;
 
 		buffer.data += buffer.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
 		buffer.width = drs_current->viewheight;
 		buffer.height = drs_current->viewwidth;
 
-		curr.context.viewbuffer = buffer;
+		renderdatas[ currcontext ].context.viewbuffer = buffer;
 	}
 
 	if( renderloadbalancing && renderscalecontextsby > 0 )
 	{
-		for( renderdata_t& curr : CurrentRenderDatas() )
+		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
-			curr.context.begincolumn = (int32_t)( curr.context.begincolumn * renderscalecontextsby );
-			curr.context.endcolumn = (int32_t)( curr.context.endcolumn * renderscalecontextsby );
+			renderdatas[ currcontext ].context.begincolumn *= renderscalecontextsby;
+			renderdatas[ currcontext ].context.endcolumn *= renderscalecontextsby;
 		}
 	}
 	renderscalecontextsby = 0;
@@ -2024,13 +2018,13 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 		currstart = 0;
 
 		desiredwidth = drs_current->viewwidth / num_render_contexts;
-		for( renderdata_t& curr : CurrentRenderDatas() )
+		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
-			curr.context.begincolumn = curr.context.spritecontext.leftclip = M_MAX( currstart, 0 );
+			renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 			currstart += desiredwidth;
-			curr.context.endcolumn = curr.context.spritecontext.rightclip = M_MIN( currstart, drs_current->viewwidth );
+			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, drs_current->viewwidth );
 
-			R_ResetContext( &curr.context, curr.context.begincolumn, curr.context.endcolumn );
+			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 		}
 
 		renderrebalancecontexts = false;
@@ -2081,9 +2075,9 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconso
 
 		while( num_render_contexts > 1 && finishedcontexts != num_render_contexts )
 		{
-			for( renderdata_t& curr : CurrentRenderDatas() )
+			for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 			{
-				finishedcontexts += I_AtomicExchange( &curr.framefinished, 0 );
+				finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
 			}
 			//I_Sleep( 0 );
 		}
