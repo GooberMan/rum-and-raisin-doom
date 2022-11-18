@@ -1014,7 +1014,7 @@ mapinfo_t doom2_map_map33 =
 	&doom2_episode_hellonearth,						// episode
 	33,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "ultima" ),					// music_lump
+	RuntimeFlowString( "read_m" ),					// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	0,												// par_time
