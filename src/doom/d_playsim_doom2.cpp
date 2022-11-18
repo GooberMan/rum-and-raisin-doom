@@ -22,6 +22,7 @@ extern episodeinfo_t	doom2_episode_hellonearth;
 
 extern mapinfo_t		doom2_map_map01;
 extern mapinfo_t		doom2_map_map02;
+extern mapinfo_t		doom2_map_map02_bfg;
 extern mapinfo_t		doom2_map_map03;
 extern mapinfo_t		doom2_map_map04;
 extern mapinfo_t		doom2_map_map05;
@@ -53,8 +54,6 @@ extern mapinfo_t		doom2_map_map30;
 extern mapinfo_t		doom2_map_map31;
 extern mapinfo_t		doom2_map_map32;
 extern mapinfo_t		doom2_map_map33;
-extern mapinfo_t		doom2_map_map34;
-extern mapinfo_t		doom2_map_map35;
 
 extern interlevel_t		doom2_interlevel;
 
@@ -150,6 +149,44 @@ gameflow_t doom_2 =
 	PlainFlowString( "" )							// playsim_options
 };
 
+mapinfo_t* doom2_maps_hellonearth_bfg[] =
+{
+	&doom2_map_map01, &doom2_map_map02_bfg, &doom2_map_map03, &doom2_map_map04,
+	&doom2_map_map05, &doom2_map_map06, &doom2_map_map07, &doom2_map_map08,
+	&doom2_map_map09, &doom2_map_map10, &doom2_map_map11, &doom2_map_map12,
+	&doom2_map_map13, &doom2_map_map14, &doom2_map_map15, &doom2_map_map16,
+	&doom2_map_map17, &doom2_map_map18, &doom2_map_map19, &doom2_map_map20,
+	&doom2_map_map21, &doom2_map_map22, &doom2_map_map23, &doom2_map_map24,
+	&doom2_map_map25, &doom2_map_map26, &doom2_map_map27, &doom2_map_map28,
+	&doom2_map_map29, &doom2_map_map30, &doom2_map_map31, &doom2_map_map32,
+	&doom2_map_map33,
+};
+
+episodeinfo_t doom2_episode_hellonearth_bfg =
+{
+	PlainFlowString( "Hell On Earth" ),				// name
+	EmptyFlowString(),								// name_patch_lump
+	1,												// episode_num
+	doom2_maps_hellonearth_bfg,						// all_maps
+	arrlen( doom2_maps_hellonearth_bfg ),			// num_maps
+	doom2_map_map33.map_num,						// highest_map_num
+	&doom2_map_map01								// first_map
+};
+
+episodeinfo_t* doom2_episodes_bfg[] =
+{
+	&doom2_episode_hellonearth_bfg
+};
+
+gameflow_t doom_2_bfg =
+{
+	PlainFlowString( "DOOM 2: Hell on Earth" ),		// name
+	doom2_episodes_bfg,								// episodes
+	arrlen( doom2_episodes_bfg ),					// num_episodes
+	PlainFlowString( "vanilla" ),					// playsim_base
+	PlainFlowString( "" )							// playsim_options
+};
+
 //============================================================================
 // Maps
 //============================================================================
@@ -202,6 +239,30 @@ mapinfo_t doom2_map_map02 =
 	&doom2_map_map03,								// next_map
 	nullptr,										// next_map_intermission
 	&doom2_map_map02,								// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom2_map_map02_bfg =
+{
+	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	FlowString( HUSTR_2 ),							// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "American McGee" ),			// authors
+	&doom2_episode_hellonearth,						// episode
+	2,												// map_num
+	Map_None,										// map_flags
+	RuntimeFlowString( "stalks" ),					// music_lump
+	FlowString( "SKY1" ),							// sky_texture
+	0,												// sky_scroll_speed
+	90,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom2_interlevel,								// interlevel_finished
+	&doom2_interlevel,								// interlevel_entering
+	&doom2_map_map03,								// next_map
+	nullptr,										// next_map_intermission
+	&doom2_map_map33,								// secret_map
 	nullptr,										// secret_map_intermission
 	nullptr,										// endgame
 };
@@ -940,6 +1001,30 @@ mapinfo_t doom2_map_map32 =
 	&doom2_map_map16,								// next_map
 	nullptr,										// next_map_intermission
 	&doom2_map_map32,								// secret_map
+	nullptr,										// secret_map_intermission
+	nullptr,										// endgame
+};
+
+mapinfo_t doom2_map_map33 =
+{
+	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	PlainFlowString( "level 33: betray" ),			// name
+	RuntimeFlowString( levename_format_text ),		// name_patch_lump
+	PlainFlowString( "Michael Bukowski" ),			// authors
+	&doom2_episode_hellonearth,						// episode
+	33,												// map_num
+	Map_Secret,										// map_flags
+	RuntimeFlowString( "ultima" ),					// music_lump
+	FlowString( "SKY3" ),							// sky_texture
+	0,												// sky_scroll_speed
+	0,												// par_time
+	nullptr,										// boss_actions
+	0,												// num_boss_actions
+	&doom2_interlevel,								// interlevel_finished
+	&doom2_interlevel,								// interlevel_entering
+	&doom2_map_map03,								// next_map
+	nullptr,										// next_map_intermission
+	&doom2_map_map33,								// secret_map
 	nullptr,										// secret_map_intermission
 	nullptr,										// endgame
 };

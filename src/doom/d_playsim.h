@@ -52,6 +52,7 @@ DOOM_C_API typedef struct gameoptions_s
 	boolean					doom2_bad_secret_exit_doesnt_loop;
 	boolean					noclip_cheats_work_everywhere;
 	boolean					pre_ultimate_bossdeath_support;
+	boolean					bfg_map02_secret_exit_to_map33;
 } gameoptions_t;
 
 DOOM_C_API typedef struct wadoptions_s
@@ -99,6 +100,7 @@ DOOM_C_API extern gameflow_t			doom_registered;
 DOOM_C_API extern gameflow_t			doom_registered_pre_v1_9;
 DOOM_C_API extern gameflow_t			doom_ultimate;
 DOOM_C_API extern gameflow_t			doom_2;
+DOOM_C_API extern gameflow_t			doom_2_bfg;
 DOOM_C_API extern gameflow_t			doom_tnt;
 DOOM_C_API extern gameflow_t			doom_plutonia;
 DOOM_C_API extern gameflow_t			doom_chex;

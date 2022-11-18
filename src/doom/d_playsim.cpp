@@ -52,7 +52,8 @@ void D_RegisterPlaysim()
 		}
 		break;
 	case doom2:
-		SetGame( doom_2 );
+		if( gamevariant == bfgedition ) SetGame( doom_2_bfg );
+		else SetGame( doom_2 );
 		break;
 	case pack_tnt:
 		SetGame( doom_tnt );
