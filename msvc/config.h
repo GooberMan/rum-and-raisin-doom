@@ -4,7 +4,6 @@
 #define PACKAGE_STRING "Rum and Raisin Doom 0.3.0"
 #define PROGRAM_PREFIX "rum-and-raisin-"
 
-/* #undef HAVE_LIBSAMPLERATE */
 #define HAVE_LIBPNG
 /* #undef HAVE_DIRENT_H */
 #define HAVE_DECL_STRCASECMP 0

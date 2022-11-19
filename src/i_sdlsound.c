@@ -26,9 +26,7 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 
-#ifdef HAVE_LIBSAMPLERATE
 #include <samplerate.h>
-#endif
 
 #include "deh_str.h"
 #include "i_sound.h"
@@ -42,7 +40,6 @@
 
 #include "doomtype.h"
 
-#define LOW_PASS_FILTER
 //#define DEBUG_DUMP_WAVS
 #define NUM_CHANNELS 16
 
@@ -78,7 +75,7 @@ static allocated_sound_t *allocated_sounds_head = NULL;
 static allocated_sound_t *allocated_sounds_tail = NULL;
 static int allocated_sounds_size = 0;
 
-int use_libsamplerate = 0;
+int32_t sound_resample_type = 2;
 
 // Scale factor used when converting libsamplerate floating point numbers
 // to integers. Too high means the sounds can clip; too low means they
@@ -361,32 +358,26 @@ static void ReleaseSoundOnChannel(int channel)
     }
 }
 
-#ifdef HAVE_LIBSAMPLERATE
-
 // Returns the conversion mode for libsamplerate to use.
 
 static int SRC_ConversionMode(void)
 {
-    switch (use_libsamplerate)
+    switch (sound_resample_type)
     {
-        // 0 = disabled
-
-        default:
-        case 0:
-            return -1;
-
         // Ascending numbers give higher quality
 
-        case 1:
+        case 0:
             return SRC_LINEAR;
-        case 2:
+        case 1:
             return SRC_ZERO_ORDER_HOLD;
-        case 3:
+        case 2:
             return SRC_SINC_FASTEST;
-        case 4:
+        case 3:
             return SRC_SINC_MEDIUM_QUALITY;
-        case 5:
+        case 4:
             return SRC_SINC_BEST_QUALITY;
+		default:
+			return -1;
     }
 }
 
@@ -511,8 +502,6 @@ static boolean ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
     return true;
 }
 
-#endif
-
 static boolean ConvertibleRatio(int freq1, int freq2)
 {
     int ratio;
@@ -591,123 +580,6 @@ static void WriteWAV(char *filename, byte *data,
 }
 
 #endif
-
-// Generic sound expansion function for any sample rate.
-// Returns number of clipped samples (always 0).
-
-static boolean ExpandSoundData_SDL(sfxinfo_t *sfxinfo,
-                                   byte *data,
-                                   int samplerate,
-                                   int length)
-{
-    SDL_AudioCVT convertor;
-    allocated_sound_t *snd;
-    Mix_Chunk *chunk;
-    uint32_t expanded_length;
-
-    // Calculate the length of the expanded version of the sample.
-
-    expanded_length = (uint32_t) ((((uint64_t) length) * mixer_freq) / samplerate);
-
-    // Double up twice: 8 -> 16 bit and mono -> stereo
-
-    expanded_length *= 4;
-
-    // Allocate a chunk in which to expand the sound
-
-    snd = AllocateSound(sfxinfo, expanded_length);
-
-    if (snd == NULL)
-    {
-        return false;
-    }
-
-    chunk = &snd->chunk;
-
-    // If we can, use the standard / optimized SDL conversion routines.
-
-    if (samplerate <= mixer_freq
-     && ConvertibleRatio(samplerate, mixer_freq)
-     && SDL_BuildAudioCVT(&convertor,
-                          AUDIO_U8, 1, samplerate,
-                          mixer_format, mixer_channels, mixer_freq))
-    {
-        convertor.len = length;
-        convertor.buf = malloc(convertor.len * convertor.len_mult);
-        assert(convertor.buf != NULL);
-        memcpy(convertor.buf, data, length);
-
-        SDL_ConvertAudio(&convertor);
-
-        memcpy(chunk->abuf, convertor.buf, chunk->alen);
-        free(convertor.buf);
-    }
-    else
-    {
-        Sint16 *expanded = (Sint16 *) chunk->abuf;
-        int expanded_length;
-        int expand_ratio;
-        int i;
-
-        // Generic expansion if conversion does not work:
-        //
-        // SDL's audio conversion only works for rate conversions that are
-        // powers of 2; if the two formats are not in a direct power of 2
-        // ratio, do this naive conversion instead.
-
-        // number of samples in the converted sound
-
-        expanded_length = ((uint64_t) length * mixer_freq) / samplerate;
-        expand_ratio = (length << 8) / expanded_length;
-
-        for (i=0; i<expanded_length; ++i)
-        {
-            Sint16 sample;
-            int src;
-
-            src = (i * expand_ratio) >> 8;
-
-            sample = data[src] | (data[src] << 8);
-            sample -= 32768;
-
-            // expand 8->16 bits, mono->stereo
-
-            expanded[i * 2] = expanded[i * 2 + 1] = sample;
-        }
-
-#ifdef LOW_PASS_FILTER
-        // Perform a low-pass filter on the upscaled sound to filter
-        // out high-frequency noise from the conversion process.
-
-        {
-            float rc, dt, alpha;
-
-            // Low-pass filter for cutoff frequency f:
-            //
-            // For sampling rate r, dt = 1 / r
-            // rc = 1 / 2*pi*f
-            // alpha = dt / (rc + dt)
-
-            // Filter to the half sample rate of the original sound effect
-            // (maximum frequency, by nyquist)
-
-            dt = 1.0f / mixer_freq;
-            rc = 1.0f / (3.14f * samplerate);
-            alpha = dt / (rc + dt);
-
-            // Both channels are processed in parallel, hence [i-2]:
-
-            for (i=2; i<expanded_length * 2; ++i)
-            {
-                expanded[i] = (Sint16) (alpha * expanded[i]
-                                      + (1 - alpha) * expanded[i-2]);
-            }
-        }
-#endif /* #ifdef LOW_PASS_FILTER */
-    }
-
-    return true;
-}
 
 // Load and convert a sound effect
 // Returns true if successful
@@ -1112,29 +984,15 @@ static boolean I_SDL_InitSound(boolean _use_sfx_prefix)
         return false;
     }
 
-    ExpandSoundData = ExpandSoundData_SDL;
-
     Mix_QuerySpec(&mixer_freq, &mixer_format, &mixer_channels);
 
-#ifdef HAVE_LIBSAMPLERATE
-    if (use_libsamplerate != 0)
+    if (SRC_ConversionMode() < 0)
     {
-        if (SRC_ConversionMode() < 0)
-        {
-            I_Error("I_SDL_InitSound: Invalid value for use_libsamplerate: %i",
-                    use_libsamplerate);
-        }
+        I_Error("I_SDL_InitSound: Invalid value for sound_resample_type: %i",
+                sound_resample_type);
+    }
 
-        ExpandSoundData = ExpandSoundData_SRC;
-    }
-#else
-    if (use_libsamplerate != 0)
-    {
-        fprintf(stderr, "I_SDL_InitSound: use_libsamplerate=%i, but "
-                        "libsamplerate support not compiled in.\n",
-                        use_libsamplerate);
-    }
-#endif
+    ExpandSoundData = ExpandSoundData_SRC;
 
     Mix_AllocateChannels(NUM_CHANNELS);
 
