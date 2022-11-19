@@ -576,10 +576,10 @@ double_t CalculatePercentage()
 
 void D_RunFrame()
 {
-	uint64_t nowtime;
-	uint64_t tics;
-	static uint64_t wipestart;
-	static boolean wipe;
+	uint64_t nowtime = 0;
+	uint64_t tics = 0;
+	static uint64_t wipestart = 0;
+	static boolean wipe = false;
 
 	int32_t prev_render_width = render_width;
 	int32_t prev_render_height = render_height;
@@ -599,6 +599,11 @@ void D_RunFrame()
 	{
 		nowtime = I_GetTimeTicks();
 		tics = nowtime - wipestart;
+
+		if( tics > 1 )
+		{
+			I_LogAddEntryVar( Log_Warning, "Oh come on game, %d ticks???", (int32_t)tics );
+		}
 
 		synctime = I_GetTimeUS();
 
@@ -1988,7 +1993,8 @@ void D_DoomMain (void)
         {
             if (!strncmp(lumpinfo[i]->name, "DEHACKED", 8))
             {
-                DEH_LoadLump(i, false, false);
+				boolean allow = remove_limits ? true : false;
+                DEH_LoadLump(i, allow, allow);
                 loaded++;
             }
         }

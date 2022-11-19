@@ -35,6 +35,7 @@
 
 extern deh_section_t *deh_section_types[];
 extern const char *deh_signatures[];
+extern int32_t remove_limits;
 
 static boolean deh_initialized = false;
 
@@ -447,7 +448,7 @@ int DEH_LoadLump(int lumpnum, boolean allow_long, boolean allow_error)
     // Reset all special flags to defaults.
     deh_allow_long_strings = allow_long;
     deh_allow_long_cheats = allow_long;
-    deh_allow_extended_strings = false;
+    deh_allow_extended_strings = remove_limits ? true : false;
 
     context = DEH_OpenLump(lumpnum);
 
