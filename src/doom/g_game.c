@@ -621,8 +621,8 @@ void G_DoLoadLevel (void)
 
     // The "Sky never changes in Doom II" bug was fixed in
     // the id Anthology version of doom2.exe for Final Doom.
-    if ((gamemode == commercial)
-     && (gameversion == exe_final2 || gameversion == exe_chex))
+    if( remove_limits
+		|| ( gamemode == commercial && ( gameversion == exe_final2 || gameversion == exe_chex ) ) )
     {
 		const char* skytexturename = DEH_String( current_map->sky_texture.val );
 		skytexture = R_TextureNumForName( skytexturename );
