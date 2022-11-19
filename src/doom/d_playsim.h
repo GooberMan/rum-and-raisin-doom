@@ -55,6 +55,7 @@ DOOM_C_API typedef struct gameoptions_s
 	boolean					pre_ultimate_bossdeath_support;
 	boolean					bfg_map02_secret_exit_to_map33;
 	boolean					hud_shows_boom_combined_keys;
+	boolean					allow_sky_change_between_levels;
 } gameoptions_t;
 
 DOOM_C_API typedef struct wadoptions_s
