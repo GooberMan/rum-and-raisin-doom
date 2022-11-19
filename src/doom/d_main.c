@@ -553,6 +553,27 @@ int32_t wipe_style = wipe_Melt;
 
 extern uint64_t synctime;
 
+double_t CalculatePercentage()
+{
+	// There's a bug here. Because calculating the next tick still gets latest,
+	// which is just enough to kick it over to the next tick and invalidate this
+	// percentage
+	double_t	currmicroseconds = fmod( synctime, 1000000.0 );
+	double_t	currtickbase = floor( ( currmicroseconds / 1000000.0 ) * 35.0 );
+	double_t	nexttickbase = currtickbase + 1;
+	double_t	currtick = ( currtickbase * 1000000.0 ) / 35.0;
+	double_t	nexttick = ( nexttickbase * 1000000.0 ) / 35.0;
+
+	return ( currmicroseconds - currtick ) / ( nexttick - currtick );
+
+	// This code gives negative percentages, so we need to increment percentage by
+	// a frame if our closest frame is the one before. But we need to get monitor
+	// refresh rate to do that correctly.
+	//double_t	currframebase = floor( ( currmicroseconds / 1000000.0 ) * 60.0 );
+	//double_t	currframe = ( currframebase * 1000000.0 ) / 60.0;
+	//currpercentage = ( currframe - currtick ) / ( nexttick - currtick );
+}
+
 void D_RunFrame()
 {
 	uint64_t nowtime;
@@ -563,8 +584,6 @@ void D_RunFrame()
 	int32_t prev_render_width = render_width;
 	int32_t prev_render_height = render_height;
 	int32_t prev_render_post_scaling = render_post_scaling;
-
-	boolean dofinishupdate = true;
 
 	uint64_t start = I_GetTimeUS();
 	M_ProfileNewFrame();
@@ -578,15 +597,14 @@ void D_RunFrame()
 
 	if (wipe)
 	{
-		do
-		{
-			nowtime = I_GetTimeTicks();
-			tics = nowtime - wipestart;
-			I_Sleep(1);
-		} while (tics <= 0);
+		nowtime = I_GetTimeTicks();
+		tics = nowtime - wipestart;
 
+		synctime = I_GetTimeUS();
+
+		wipe = !wipe_ScreenWipe(wipe_style, 0, 0, render_width, render_height, tics, (rend_fixed_t)( CalculatePercentage() * ( RENDFRACUNIT ) ) );
 		wipestart = nowtime;
-		wipe = !wipe_ScreenWipe(wipe_style, 0, 0, render_width, render_height, tics);
+
 		M_Drawer ();                            // menu is drawn even on top of wipes
 	}
 	else
@@ -599,24 +617,7 @@ void D_RunFrame()
 
 		TryRunTics (); // will run at least one tic
 
-		// There's a bug here. Because calculating the next tick still gets latest,
-		// which is just enough to kick it over to the next tick and invalidate this
-		// percentage
-		double_t	currmicroseconds = fmod( synctime, 1000000.0 );
-		double_t	currtickbase = floor( ( currmicroseconds / 1000000.0 ) * 35.0 );
-		double_t	nexttickbase = currtickbase + 1;
-		double_t	currtick = ( currtickbase * 1000000.0 ) / 35.0;
-		double_t	nexttick = ( nexttickbase * 1000000.0 ) / 35.0;
-
-		currpercentage = ( currmicroseconds - currtick ) / ( nexttick - currtick );
-
-		// This code gives negative percentages, so we need to increment percentage by
-		// a frame if our closest frame is the one before. But we need to get monitor
-		// refresh rate to do that correctly.
-		//double_t	currframebase = floor( ( currmicroseconds / 1000000.0 ) * 60.0 );
-		//double_t	currframe = ( currframebase * 1000000.0 ) / 60.0;
-		//currpercentage = ( currframe - currtick ) / ( nexttick - currtick );
-
+		currpercentage = CalculatePercentage();
 
 		S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
 

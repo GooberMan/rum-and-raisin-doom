@@ -58,6 +58,7 @@ wipe_ScreenWipe
   int		y,
   int		width,
   int		height,
-  uint64_t		ticks );
+  uint64_t		ticks,
+  rend_fixed_t framepercent );
 
 #endif

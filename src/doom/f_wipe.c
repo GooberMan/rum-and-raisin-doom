@@ -22,6 +22,7 @@
 #include "z_zone.h"
 #include "i_video.h"
 #include "v_video.h"
+#include "m_fixed.h"
 #include "m_random.h"
 #include "m_misc.h"
 
@@ -113,9 +114,14 @@ wipe_exitColorXForm
 }
 
 
-static int*	y;
 #define WIPECOLUMNS 160
 #define WIPEROWS 200
+
+static int32_t ybuff1[ WIPECOLUMNS ];
+static int32_t ybuff2[ WIPECOLUMNS ];
+
+static int32_t* curry;
+static int32_t* prevy;
 
 int
 wipe_initMelt
@@ -125,17 +131,20 @@ wipe_initMelt
 {
     int i, r;
 
+	curry = ybuff1;
+	prevy = ybuff2;
+
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
-    y = (int *) Z_Malloc(WIPECOLUMNS*sizeof(int), PU_STATIC, 0);
-    y[0] = -(M_Random() % 16);
+    curry[0] = -(M_Random() % 16);
     for (i=1;i<WIPECOLUMNS;i++)
     {
 		r = ( M_Random() % 3) - 1;
-		y[i] = y[i-1] + r;
-		if (y[i] > 0) y[i] = 0;
-		else if (y[i] <= -16) y[i] = -15;
+		curry[i] = curry[i-1] + r;
+		if (curry[i] > 0) curry[i] = 0;
+		else if (curry[i] <= -16) curry[i] = -15;
     }
+	memcpy( prevy, curry, sizeof( curry ) );
 
     return 0;
 }
@@ -146,10 +155,50 @@ wipe_doMelt
   int	height,
   uint64_t	ticks )
 {
-    int		col;
-    int		j;
-    int		dy;
+	boolean	done = true;
 
+	if( ticks > 0 )
+	{
+		while( ticks-- )
+		{
+			int32_t* temp = prevy;
+			prevy = curry;
+			curry = temp;
+
+			for( int32_t col = 0; col < WIPECOLUMNS; ++col )
+			{
+				if( prevy[ col ] < 0 )
+				{
+					curry[ col ] = prevy[ col ] + 1;
+					done = false;
+				}
+				else if( prevy[ col ] < WIPEROWS )
+				{
+					int32_t dy = ( prevy[ col ] < 16 ) ? prevy[ col ] + 1 : 8;
+					curry[ col ] = M_MIN( prevy[ col ] + dy, WIPEROWS );
+
+					done = false;
+				}
+				else
+				{
+					curry[ col ] = WIPEROWS;
+				}
+			}
+		}
+	}
+	else
+	{
+		for( int32_t col = 0; col < WIPECOLUMNS; ++col )
+		{
+			done &= curry[ col ] >= WIPEROWS;
+		}
+	}
+
+	return done;
+}
+
+int wipe_renderMelt( int width, int height, rend_fixed_t percent )
+{
     pixel_t*	s;
     pixel_t*	d;
     boolean	done = true;
@@ -164,51 +213,42 @@ wipe_doMelt
 
 	memcpy( wipe_scr, wipe_scr_end, width * height * sizeof( pixel_t ) );
 
-    while (ticks--)
-    {
-		for (col=0;col<WIPECOLUMNS;col++)
+	for( int32_t col = 0; col < WIPECOLUMNS; ++col )
+	{
+		int32_t current = RendFixedToInt( RendFixedLerp( IntToRendFixed( prevy[ col ] ), IntToRendFixed( curry[ col ] ), percent ) );
+
+		if ( current < 0 )
 		{
-			if (y[col]<0)
+			currcol = col * horizblocksize / 100;
+			currcolend = ( col + 1 ) * horizblocksize / 100;
+			for(; currcol < currcolend; ++currcol)
 			{
-				y[col]++;
-				done = false;
-
-				currcol = col * horizblocksize / 100;
-				currcolend = ( col + 1 ) * horizblocksize / 100;
-				for(; currcol < currcolend; ++currcol)
-				{
-					pixel_t* source = wipe_scr_start + ( currcol * height );
-					pixel_t* dest = wipe_scr + ( currcol * height );
+				pixel_t* source = wipe_scr_start + ( currcol * height );
+				pixel_t* dest = wipe_scr + ( currcol * height );
 				
-					memcpy( dest, source, height );
-				}
-			}
-			else if (y[col] < WIPEROWS)
-			{
-				dy = (y[col] < 16) ? y[col] + 1 : 8;
-				if (y[col]+dy >= WIPEROWS) dy = WIPEROWS - y[col];
-				y[col] += dy;
-
-				currcol = col * horizblocksize / 100;
-				currcolend = ( col + 1 ) * horizblocksize / 100;
-				
-				currrow = y[col] * vertblocksize / 100;
-				
-				for(; currcol < currcolend; ++currcol)
-				{
-					pixel_t* source = wipe_scr_start + ( currcol * height );
-					pixel_t* dest = wipe_scr + ( currcol * height ) + currrow;
-				
-					memcpy( dest, source, height - currrow );
-				}
-
-				done = false;
+				memcpy( dest, source, height );
 			}
 		}
-    }
+		else if ( current < WIPEROWS )
+		{
+			currcol = col * horizblocksize / 100;
+			currcolend = ( col + 1 ) * horizblocksize / 100;
+				
+			currrow = current * vertblocksize / 100;
+				
+			for(; currcol < currcolend; ++currcol)
+			{
+				pixel_t* source = wipe_scr_start + ( currcol * height );
+				pixel_t* dest = wipe_scr + ( currcol * height ) + currrow;
+				
+				memcpy( dest, source, height - currrow );
+			}
+
+			done = false;
+		}
+	}
 
     return done;
-
 }
 
 int
@@ -217,7 +257,6 @@ wipe_exitMelt
   int	height,
   uint64_t	ticks )
 {
-    Z_Free(y);
     Z_Free(wipe_scr_start);
     Z_Free(wipe_scr_end);
     return 0;
@@ -250,18 +289,20 @@ wipe_EndScreen
 
 
 typedef int (*wipefunc_t)( int, int, uint64_t );
+typedef int (*wiperendfunc_t)( int, int, rend_fixed_t );
 
 typedef struct wipe_s
 {
 	wipefunc_t		init;
 	wipefunc_t		update;
+	wiperendfunc_t	render;
 	wipefunc_t		exit;
 } wipe_t;
 
 static wipe_t wipes[] =
 {
-	{ wipe_initColorXForm,	wipe_doColorXForm,	wipe_exitColorXForm		},
-	{ wipe_initMelt,		wipe_doMelt,		wipe_exitMelt			},
+	{ wipe_initColorXForm,	wipe_doColorXForm,	NULL,				wipe_exitColorXForm		},
+	{ wipe_initMelt,		wipe_doMelt,		wipe_renderMelt,	wipe_exitMelt			},
 };
 
 int
@@ -271,7 +312,8 @@ wipe_ScreenWipe
   int	y,
   int	width,
   int	height,
-  uint64_t	ticks )
+  uint64_t	ticks,
+  rend_fixed_t framepercent )
 {
     int rc;
 
@@ -289,6 +331,7 @@ wipe_ScreenWipe
 	V_MarkRect(0, 0, width, height);
 	rc = (*wipes[wipeno].update)(width, height, ticks);
 	//  V_DrawBlock(x, y, 0, width, height, wipe_scr); // DEBUG
+	rc = (*wipes[wipeno].render)(width, height, framepercent );
 
 	// final stuff
 	if (rc)
