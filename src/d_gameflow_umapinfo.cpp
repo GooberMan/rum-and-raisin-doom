@@ -694,11 +694,20 @@ static void BuildNewGameInfo()
 			umapinfogame.episodelist.push_back( &newepisode );
 		}
 		map.episode_num = newepisodenum;
-		map.map_num = ++newmapnum;
 		map.full_name = map.label + map.levelname;
 
-		episodeinfo_t& mapepisode = umapinfogame.episodes[ newepisodenum ];
+		episodeinfo_t& mapepisode = umapinfogame.episodes[ map.episode_num ];
 		mapinfo_t& newmap = umapinfogame.maps[ map.mapname ];
+
+		if( newmap.map_num > 0 )
+		{
+			map.map_num = newmap.map_num;
+		}
+		else
+		{
+			map.map_num = ++newmapnum;
+		}
+
 		if( setfirstmap ) umapinfogame.episodes[ map.episode_num ].first_map = &newmap;
 
 		auto& episodemaps = umapinfogame.episodemaps[ mapepisode.episode_num ];
