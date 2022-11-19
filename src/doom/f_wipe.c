@@ -331,7 +331,7 @@ wipe_ScreenWipe
 	V_MarkRect(0, 0, width, height);
 	rc = (*wipes[wipeno].update)(width, height, ticks);
 	//  V_DrawBlock(x, y, 0, width, height, wipe_scr); // DEBUG
-	rc = (*wipes[wipeno].render)(width, height, framepercent );
+	(*wipes[wipeno].render)(width, height, framepercent );
 
 	// final stuff
 	if (rc)
