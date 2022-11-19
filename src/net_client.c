@@ -99,7 +99,7 @@ typedef struct
     net_ticdiff_t cmd;
 } net_server_send_t;
 
-extern fixed_t offsetms;
+extern rend_fixed_t offsetus;
 
 static net_connection_t client_connection;
 static net_clientstate_t client_state;
@@ -214,15 +214,15 @@ static void UpdateClockSync(unsigned int seq,
     error = latency - remote_latency;
     cumul_error += error;
 
-    offsetms = KP * (FRACUNIT * error)
-             - KI * (FRACUNIT * cumul_error)
-             + (KD * FRACUNIT) * (last_error - error);
+    offsetus =	( KP * (RENDFRACUNIT * error)
+				- KI * (RENDFRACUNIT * cumul_error)
+				+ (KD * RENDFRACUNIT) * (last_error - error) ) * 1000ll;
 
     last_error = error;
     last_latency = latency;
 
-    NET_Log("client: latency %d, remote %d -> offset=%dms, cumul_error=%d",
-            latency, remote_latency, offsetms / FRACUNIT, cumul_error);
+    NET_Log("client: latency %d, remote %d -> offset=%0.3fms, cumul_error=%d",
+            latency, remote_latency, RendFixedToInt( offsetus ) / 1000.0, cumul_error);
 }
 
 // Expand a net_full_ticcmd_t, applying the diffs in cmd->cmds as

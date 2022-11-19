@@ -97,7 +97,7 @@ uint64_t		ticdup;
 
 // Amount to offset the timer for game sync.
 
-fixed_t         offsetms;
+rend_fixed_t         offsetus;
 
 // Use new client syncronisation code
 
@@ -124,19 +124,19 @@ static int player_class;
 
 static uint64_t GetAdjustedTime( uint64_t microseconds )
 {
-    uint64_t time_ms;
+    uint64_t time_us;
 
-    time_ms = microseconds ? microseconds / 1000ull : I_GetTimeMS();
+    time_us = microseconds ? microseconds : I_GetTimeUS();
 
     if (new_sync)
     {
 	// Use the adjustments from net_client.c only if we are
 	// using the new sync mode.
 
-        time_ms += (offsetms / FRACUNIT);
+        time_us += RendFixedToInt( offsetus );
     }
 
-    return (time_ms * TICRATE) / 1000ull;
+    return (time_us * TICRATE) / 1000000ull;
 }
 
 static boolean BuildNewTic(void)
@@ -343,7 +343,7 @@ void D_StartNetGame(net_gamesettings_t *settings,
 {
     int i;
 
-    offsetms = 0;
+    offsetus = 0;
     recvtic = 0;
 
     settings->consoleplayer = 0;
