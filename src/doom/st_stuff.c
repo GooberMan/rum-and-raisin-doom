@@ -320,8 +320,9 @@ static patch_t*		tallpercent;
 // 0-9, short, yellow (,different!) numbers
 static patch_t*		shortnum[10];
 
+#define TOTALCARDS NUMCARDS + 3
 // 3 key-cards, 3 skulls
-static patch_t*		keys[NUMCARDS]; 
+static patch_t*		keys[TOTALCARDS]; 
 
 // face status patches
 static patch_t*		faces[ST_NUMFACES];
@@ -876,10 +877,12 @@ void ST_updateWidgets(void)
     // update keycard multiple widgets
     for (i=0;i<3;i++)
     {
-	keyboxes[i] = plyr->cards[i] ? i : -1;
+		keyboxes[ i ] = plyr->cards[ i ] ? i : -1;
 
-	if (plyr->cards[i+3])
-	    keyboxes[i] = i+3;
+		if ( plyr->cards[ 3 + i ] )
+		{
+			keyboxes[ i ] = ( keyboxes[ i ] == -1 || keys[ 6 + i ] == NULL ? 3 : 6 ) + i;
+		}
     }
 
     // refresh everything if this is him coming back to life
@@ -1093,10 +1096,21 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
     callback(DEH_String("STTPRCNT"), &tallpercent);
 
     // key cards
-    for (i=0;i<NUMCARDS;i++)
+    for (i=0;i<TOTALCARDS;i++)
     {
-	DEH_snprintf(namebuf, 9, "STKEYS%d", i);
-        callback(namebuf, &keys[i]);
+		if( !remove_limits && i >= NUMCARDS )
+		{
+			break;
+		}
+		DEH_snprintf(namebuf, 9, "STKEYS%d", i);
+		if( i >= NUMCARDS && W_CheckNumForName( namebuf ) < 0 )
+		{
+			keys[ i ] = NULL;
+		}
+		else
+		{
+			callback(namebuf, &keys[i]);
+		}
     }
 
     // arms background
