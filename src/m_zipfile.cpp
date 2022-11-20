@@ -46,23 +46,26 @@ int64_t DOStoStdFileTime( uint32_t dostime )
 {
 	// DOS time format documented at
 	// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-dosdatetimetofiletime
+	// Except Microsoft's own documentation lies. The bitfields are more accurately documented
+	// in a random github bug report I found:
+	// https://github.com/Stuk/jszip/issues/369
 
 	struct dostime_t
 	{
-		uint16_t date;
 		uint16_t time;
+		uint16_t date;
 	};
 
 	dostime_t& time = *(dostime_t*)&dostime;
 
 	std::tm stdtime =
 	{
-		( time.time & 0x000F ),					// second
-		( time.time & 0x03F0 ) >> 4,			// minute
-		( time.time & 0xFC00 ) >> 10,			// hour
-		( time.date & 0x000F ),					// day
-		( time.date & 0x00F0 ) >> 4,			// month
-		( ( time.date & 0xFF00 ) >> 8 ) + 1970,	// year
+		( time.time & 0x001F ) * 2,				// second
+		( time.time & 0x03E0 ) >> 5,			// minute
+		( time.time & 0xF800 ) >> 11,			// hour
+		( time.date & 0x001F ),					// day
+		( ( time.date & 0x01E0 ) >> 5 ) - 1,	// month
+		( ( time.date & 0xFE00 ) >> 9 ) + 80,	// year
 		0,
 		0,
 		0
@@ -137,9 +140,9 @@ bool M_ZipExtractAllFromFile( const char* inputfile, const char* outputfolder, z
 
 					fclose( output );
 
-					//int64_t systemtime = DOStoStdFileTime( fileinfo.dosDate );
-					//utimbuf timebuff = { systemtime, systemtime };
-					//utime( writefilename.c_str(), &timebuff );
+					int64_t systemtime = DOStoStdFileTime( fileinfo.dosDate );
+					utimbuf timebuff = { systemtime, systemtime };
+					utime( writefilename.c_str(), &timebuff );
 				}
 				unzCloseCurrentFile( input );
 			}
