@@ -144,7 +144,7 @@ wipe_initMelt
 		if (curry[i] > 0) curry[i] = 0;
 		else if (curry[i] <= -16) curry[i] = -15;
     }
-	memcpy( prevy, curry, sizeof( curry ) );
+	memcpy( prevy, curry, sizeof( int32_t ) * WIPECOLUMNS );
 
     return 0;
 }
