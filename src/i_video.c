@@ -34,8 +34,6 @@
 #include "glad/glad.h"
 #include "SDL_opengl.h"
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui.h"
 #include "cimguiglue.h"
 
 #include "icon.c"

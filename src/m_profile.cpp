@@ -87,7 +87,7 @@ static void M_ProfileRenderData( profiledata_t& data )
 	{
 		int32_t flags = childdata.childcalls.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None;
 
-		bool expanded = igTreeNodeExStr( childdata.markername, flags );
+		bool expanded = igTreeNodeEx_Str( childdata.markername, flags );
 		igNextColumn();
 		igText( "%d", childdata.numcalls );
 		igNextColumn();
@@ -144,7 +144,7 @@ DOOM_C_API void M_ProfileWindow( const char* itemname, void* data )
 			for( profilethread_t* thread : ProfileThreads() )
 			{
 				bool selected = index == currthreadview;
-				if( igSelectableBool( thread->threadname.c_str(), selected, ImGuiSelectableFlags_None, zero ) )
+				if( igSelectable_Bool( thread->threadname.c_str(), selected, ImGuiSelectableFlags_None, zero ) )
 				{
 					currthreadview = index;
 				}

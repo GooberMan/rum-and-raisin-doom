@@ -65,7 +65,7 @@ DoomString M_PerformCommandLineLauncher( DoomString& command )
 
 	if( igBegin( DisplayText, nullptr, DisplayFlags ) )
 	{
-		igPushStyleColorU32( ImGuiCol_Text, IM_COL32_WHITE );
+		igPushStyleColor_U32( ImGuiCol_Text, IM_COL32_WHITE );
 		igText( DisplayText );
 		igPopStyleColor( 1 );
 	}

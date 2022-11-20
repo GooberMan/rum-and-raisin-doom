@@ -34,14 +34,14 @@
     <Filter Include="Header Files\glad\KHR">
       <UniqueIdentifier>{22f5061d-c6b6-41f1-ae4f-f7d95009bf6d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\imgui\examples">
-      <UniqueIdentifier>{c5055303-1bbf-4eb3-9c1a-0b4c899089bf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\imgui">
       <UniqueIdentifier>{ae0ed67c-c9a1-4302-bc26-9dc4c218bfa1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\imgui\examples">
+    <Filter Include="Header Files\imgui\backends">
       <UniqueIdentifier>{368ebb46-c6b9-4b95-946d-1a563ed59918}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\backends">
+      <UniqueIdentifier>{616acf0c-416b-47ac-b610-4af578cd6115}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -60,17 +60,20 @@
     <ClCompile Include="..\ext\cimgui\imgui\imgui_draw.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\ext\cimgui\imgui\imgui_demo.cpp">
-      <Filter>Source Files\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="..\ext\cimgui\imgui\imgui_widgets.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\ext\cimgui\imgui\examples\imgui_impl_opengl3.cpp">
-      <Filter>Source Files\imgui\examples</Filter>
+    <ClCompile Include="..\ext\cimgui\imgui\backends\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\imgui\backends</Filter>
     </ClCompile>
-    <ClCompile Include="..\ext\cimgui\imgui\examples\imgui_impl_sdl.cpp">
-      <Filter>Source Files\imgui\examples</Filter>
+    <ClCompile Include="..\ext\cimgui\imgui\backends\imgui_impl_sdl.cpp">
+      <Filter>Source Files\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\imgui_tables.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext\cimgui\imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -92,11 +95,14 @@
     <ClInclude Include="..\ext\cimguiglue\cimguiglue.h">
       <Filter>Header Files\cimgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\ext\cimgui\imgui\examples\imgui_impl_opengl3.h">
-      <Filter>Header Files\imgui\examples</Filter>
+    <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_opengl3.h">
+      <Filter>Header Files\imgui\backends</Filter>
     </ClInclude>
-    <ClInclude Include="..\ext\cimgui\imgui\examples\imgui_impl_sdl.h">
-      <Filter>Header Files\imgui\examples</Filter>
+    <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_sdl.h">
+      <Filter>Header Files\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ext\cimgui\imgui\imconfig.h">
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

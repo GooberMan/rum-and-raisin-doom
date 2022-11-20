@@ -55,7 +55,6 @@
 #include <utime.h>
 #endif // WIN32
 
-
 extern "C"
 {
 	extern int32_t dashboardactive;
@@ -180,7 +179,7 @@ constexpr auto Mirrors() { return std::span( idgames_mirrors, arrlen( idgames_mi
 
 void OpenIdgamesLocationSelector( const char* id )
 {
-	igOpenPopup( id, ImGuiPopupFlags_None );
+	igOpenPopup_Str( id, ImGuiPopupFlags_None );
 }
 
 const char* IdgamesLocationSelector( const char* id )
@@ -194,7 +193,7 @@ const char* IdgamesLocationSelector( const char* id )
 
 		for( auto& loc : Mirrors() )
 		{
-			if( igSelectableBool( loc.location, false, ImGuiSelectableFlags_None, zero ) )
+			if( igSelectable_Bool( loc.location, false, ImGuiSelectableFlags_None, zero ) )
 			{
 				output = loc.url;
 				igCloseCurrentPopup();
@@ -507,7 +506,7 @@ bool igButtonCustomContents( const char* textid, const ImVec2& size, ImGuiButton
 
 	ImGuiContext* g = igGetCurrentContext();
 	const ImGuiStyle* style = &g->Style;
-	const ImGuiID id = ImGuiWindow_GetIDStr( window, textid, nullptr );
+	const ImGuiID id = ImGuiWindow_GetID_Str( window, textid, nullptr );
 
 	ImVec2 pos = window->DC.CursorPos;
 	if( (flags & ImGuiButtonFlags_AlignTextBaseLine) && style->FramePadding.y < window->DC.CurrLineTextBaseOffset )
@@ -521,14 +520,14 @@ bool igButtonCustomContents( const char* textid, const ImVec2& size, ImGuiButton
 	bb.Max.x += size.x;
 	bb.Max.y += size.y;
 
-	igItemSizeVec2( size, style->FramePadding.y );
+	igItemSize_Vec2( size, style->FramePadding.y );
 
-	if( !igItemAdd( bb, id, 0 ) )
+	if( !igItemAdd( bb, id, nullptr, ImGuiItemFlags_None ) )
 	{
 		return false;
 	}
 
-	if( window->DC.ItemFlags & ImGuiItemFlags_ButtonRepeat )
+	if( g->CurrentItemFlags & ImGuiItemFlags_ButtonRepeat )
 	{
 		flags |= ImGuiButtonFlags_Repeat;
 	}
@@ -537,7 +536,7 @@ bool igButtonCustomContents( const char* textid, const ImVec2& size, ImGuiButton
 	bool pressed = igButtonBehavior( bb, id, &hovered, &held, flags );
 
 	// Render
-	const ImU32 col = igGetColorU32Col( (held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button, 1.0f );
+	const ImU32 col = igGetColorU32_Col( (held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button, 1.0f );
 	igRenderNavHighlight( bb, id, ImGuiNavHighlightFlags_TypeDefault );
 	igRenderFrame( bb.Min, bb.Max, col, true, style->FrameRounding );
 
@@ -581,8 +580,8 @@ void igMesh( const triangle_t* triangles, size_t count, ImVec2 size, ImU32 colou
 	bb.Max.x += maxdimension;
 	bb.Max.y += maxdimension;
 
-	igItemSizeRect( bb, -1.f );
-	if ( !igItemAdd(bb, 0, 0) )
+	igItemSize_Rect( bb, -1.f );
+	if ( !igItemAdd( bb, 0, nullptr, ImGuiItemFlags_None ) )
 		return;
 
 	vec2_t extents = { size.x * 0.5f, size.y * 0.5f };
@@ -612,7 +611,7 @@ void igRating( const char* textid, double_t rating, int32_t totalstars, ImVec2 s
 
 	ImGuiContext* g = igGetCurrentContext();
 	const ImGuiStyle* style = &g->Style;
-	const ImGuiID id = ImGuiWindow_GetIDStr( window, textid, nullptr );
+	const ImGuiID id = ImGuiWindow_GetID_Str( window, textid, nullptr );
 
 	ImVec2 pos;
 	igGetCursorScreenPos( &pos );
@@ -1429,7 +1428,7 @@ namespace launcher
 
 			ImVec2 framesize = { contentregion.x - arrowsize.x * 2, frameheight };
 
-			igPushStyleVarVec2( ImGuiStyleVar_FramePadding, zero );
+			igPushStyleVar_Vec2( ImGuiStyleVar_FramePadding, zero );
 
 			if( igBeginChildFrame( 667, framesize, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 			{
@@ -1597,7 +1596,7 @@ namespace launcher
 			igGetContentRegionAvail( &framesize );
 			framesize.y -= 30;
 
-			igPushStyleVarVec2( ImGuiStyleVar_FramePadding, zero );
+			igPushStyleVar_Vec2( ImGuiStyleVar_FramePadding, zero );
 
 			if( igBeginChildFrame( 669, framesize, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 			{
@@ -1617,8 +1616,8 @@ namespace launcher
 					return false;
 				};
 
-				igPushIDPtr( this );
-				igListBoxFnBoolPtr( "", &current, getter, (void*)pwads.container, pwads.container->size(), 14 );
+				igPushID_Ptr( this );
+				igListBox_FnBoolPtr( "", &current, getter, (void*)pwads.container, pwads.container->size(), 14 );
 				igPopID();
 
 				igNextColumn();
@@ -2147,7 +2146,7 @@ namespace launcher
 			constexpr ImVec2 starsize = { 20.f, 25.f };
 			igCentreNextElement( starsize.x * 5 );
 
-			igRating( "file_rating", rating / 5.0, 5, starsize, igGetColorU32Col( ImGuiCol_Text, 1.0f ), igGetColorU32Col( ImGuiCol_TextDisabled, 1.0f ) );
+			igRating( "file_rating", rating / 5.0, 5, starsize, igGetColorU32_Col( ImGuiCol_Text, 1.0f ), igGetColorU32_Col( ImGuiCol_TextDisabled, 1.0f ) );
 			igGetCursorPos( &cursorpos );
 			cursorpos.y += 4;
 			igSetCursorPos( cursorpos );
@@ -2345,7 +2344,7 @@ namespace launcher
 		{
 			if( igButton( "Filter options", zero ) )
 			{
-				igOpenPopup( "filter_options", ImGuiPopupFlags_None );
+				igOpenPopup_Str( "filter_options", ImGuiPopupFlags_None );
 			}
 
 			igSameLine( 0, -1 );
@@ -2505,14 +2504,14 @@ namespace launcher
 				{
 					for( auto& currfile : idgamesfiles.Children() )
 					{
-						auto& file = *files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
-																										, to< std::string >( currfile[ "dir" ] )
-																										, to< std::string >( currfile[ "filename" ] )
-																										, to< size_t >( currfile[ "size" ] )
-																										, to< size_t >( currfile[ "age" ] )
-																										, to< std::string >( currfile[ "title" ] )
-																										, to< std::string >( currfile[ "author" ] )
-																										, to< double_t >( currfile[ "rating" ] ) ) );
+						*files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
+																							, to< std::string >( currfile[ "dir" ] )
+																							, to< std::string >( currfile[ "filename" ] )
+																							, to< size_t >( currfile[ "size" ] )
+																							, to< size_t >( currfile[ "age" ] )
+																							, to< std::string >( currfile[ "title" ] )
+																							, to< std::string >( currfile[ "author" ] )
+																							, to< double_t >( currfile[ "rating" ] ) ) );
 					}
 				}
 
@@ -2551,9 +2550,9 @@ namespace launcher
 					constexpr ImVec2 foldertilesize = { 176.f, 40.f };
 					constexpr ImVec2 filetilesize = { 176.f, 80.f };
 
-					igPushStyleVarFloat( ImGuiStyleVar_FrameRounding, 3.f );
+					igPushStyleVar_Float( ImGuiStyleVar_FrameRounding, 3.f );
 
-					igTileView( folders, foldertilesize, [this]( const std::shared_ptr< IdgamesBrowserPanel >& folder, const ImVec2& size )
+					igTileView( folders, foldertilesize, []( const std::shared_ptr< IdgamesBrowserPanel >& folder, const ImVec2& size )
 					{
 						if( igButton( folder->Name().c_str(), size ) )
 						{
@@ -2566,9 +2565,9 @@ namespace launcher
 						igNewLine();
 					}
 
-					igTileView( filter->Filter( files ), filetilesize, [this]( const std::shared_ptr< IdgamesFilePanel >& file, const ImVec2& size )
+					igTileView( filter->Filter( files ), filetilesize, []( const std::shared_ptr< IdgamesFilePanel >& file, const ImVec2& size )
 					{
-						if( igButtonCustomContents( file->Filename().c_str(), size, ImGuiButtonFlags_None, [this, &file]( const ImVec2& size )
+						if( igButtonCustomContents( file->Filename().c_str(), size, ImGuiButtonFlags_None, [&file]( const ImVec2& size )
 						{
 							constexpr ImVec2 starsize = { 16.f, 20.f };
 							ImVec2 ratingpos;
@@ -2577,7 +2576,7 @@ namespace launcher
 
 							igTextWrapped( !file->Title().empty() ? file->Title().c_str() : file->Filename().c_str() );
 							igSetCursorPos( ratingpos );
-							igRating( "starcount", file->Rating() / 5.0, 5, starsize, igGetColorU32Col( ImGuiCol_Text, 1.0f ), igGetColorU32Col( ImGuiCol_TextDisabled, 1.0f ) );
+							igRating( "starcount", file->Rating() / 5.0, 5, starsize, igGetColorU32_Col( ImGuiCol_Text, 1.0f ), igGetColorU32_Col( ImGuiCol_TextDisabled, 1.0f ) );
 						} ) )
 						{
 							PushPanel( file );
@@ -2692,14 +2691,14 @@ namespace launcher
 				igGetContentRegionAvail( &availsize );
 				availsize.y -= backbuttonsize.y + framepadding;
 
-				int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "dehacked_selected_files", nullptr );
+				int32_t id = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "dehacked_selected_files", nullptr );
 
 				if( igBeginChildFrame( id, availsize, ImGuiWindowFlags_NoResize ) )
 				{
 					int32_t index = 0;
 					for( DoomFileEntry& entry : doomfileselector->SelectedDEHs() )
 					{
-						if( igSelectableBool( entry.filename.c_str(), dehselected == index, ImGuiSelectableFlags_None, zero ) )
+						if( igSelectable_Bool( entry.filename.c_str(), dehselected == index, ImGuiSelectableFlags_None, zero ) )
 						{
 							dehselected = ( dehselected == index ? -1 : index );
 						}
@@ -2720,7 +2719,7 @@ namespace launcher
 				constexpr ImVec2 buttonsize = { 20.f, 20.f };
 				if( igButtonEx( "+##dehacked_add", buttonsize, ImGuiButtonFlags_None ) )
 				{
-					igOpenPopup( "dehacked_add_popup", ImGuiPopupFlags_None );
+					igOpenPopup_Str( "dehacked_add_popup", ImGuiPopupFlags_None );
 				}
 
 				bool isdisabled = false;
@@ -2768,7 +2767,7 @@ namespace launcher
 							}
 						}
 
-						if( !found && igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_DontClosePopups, zero ) )
+						if( !found && igSelectable_Bool( entry.filename.c_str(), false, ImGuiSelectableFlags_DontClosePopups, zero ) )
 						{
 							doomfileselector->Select( entry );
 						}
@@ -2787,14 +2786,14 @@ namespace launcher
 				igGetContentRegionAvail( &availsize );
 				availsize.y -= backbuttonsize.y + framepadding;
 
-				int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "pwad_selected_files", nullptr );
+				int32_t id = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "pwad_selected_files", nullptr );
 
 				if( igBeginChildFrame( id, availsize, ImGuiWindowFlags_NoResize ) )
 				{
 					int32_t index = 0;
 					for( DoomFileEntry& entry : doomfileselector->SelectedPWADs() )
 					{
-						if( igSelectableBool( entry.filename.c_str(), pwadselected == index, ImGuiSelectableFlags_None, zero ) )
+						if( igSelectable_Bool( entry.filename.c_str(), pwadselected == index, ImGuiSelectableFlags_None, zero ) )
 						{
 							pwadselected = ( pwadselected == index ? -1 : index );
 						}
@@ -2815,7 +2814,7 @@ namespace launcher
 				constexpr ImVec2 buttonsize = { 20.f, 20.f };
 				if( igButtonEx( "+##pwads_add", buttonsize, ImGuiButtonFlags_None ) )
 				{
-					igOpenPopup( "pwads_add_popup", ImGuiPopupFlags_None );
+					igOpenPopup_Str( "pwads_add_popup", ImGuiPopupFlags_None );
 				}
 
 				bool isdisabled = false;
@@ -2864,7 +2863,7 @@ namespace launcher
 							}
 						}
 
-						if( !found && igSelectableBool( entry.filename.c_str(), false, ImGuiSelectableFlags_DontClosePopups, zero ) )
+						if( !found && igSelectable_Bool( entry.filename.c_str(), false, ImGuiSelectableFlags_DontClosePopups, zero ) )
 						{
 							doomfileselector->Select( entry );
 						}
@@ -3306,13 +3305,13 @@ namespace launcher
 			igText( "Executable version" );
 			igSameLine( 0, -1 );
 			igSetNextItemWidth( 150 );
-			if( igBeginCombo( "", launchoptions->game_version < 0 ? "Limit removing" : GameVersions[ launchoptions->game_version ], ImGuiComboFlags_None ) )
+			if( igBeginCombo( "##executableversion", launchoptions->game_version < 0 ? "Limit removing" : GameVersions[ launchoptions->game_version ], ImGuiComboFlags_None ) )
 			{
-				if( igSelectableBool( "Limit removing", launchoptions->game_version < 0, ImGuiSelectableFlags_None, zero ) ) launchoptions->game_version = -1;
+				if( igSelectable_Bool( "Limit removing", launchoptions->game_version < 0, ImGuiSelectableFlags_None, zero ) ) launchoptions->game_version = -1;
 
 				for( int32_t index : iota( 0, arrlen( GameVersions ) ) )
 				{
-					if( igSelectableBool( GameVersions[ index ], launchoptions->game_version == index, ImGuiSelectableFlags_None, zero ) )
+					if( igSelectable_Bool( GameVersions[ index ], launchoptions->game_version == index, ImGuiSelectableFlags_None, zero ) )
 					{
 						launchoptions->game_version = index;
 					}
@@ -3328,12 +3327,12 @@ namespace launcher
 			ImVec2 frameavail;
 			igGetContentRegionAvail( &frameavail );
 
-			int32_t launchid = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelaunch", nullptr );
+			int32_t launchid = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "mainpanelaunch", nullptr );
 			ImVec2 launchframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
 
 			if( igBeginChildFrame( launchid, launchframesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 			{
-				auto mapchooser = []( const char* title, int32_t finalval, int32_t invalidval, int32_t& val )
+				auto mapchooser = []( const char* id, const char* title, int32_t finalval, int32_t invalidval, int32_t& val )
 				{
 					igText( title );
 					igSameLine( 0, 10 );
@@ -3342,15 +3341,15 @@ namespace launcher
 					{
 						M_snprintf( textbuffer, 4, "%d", val );
 					}
-					igPushIDPtr( title );
+					igPushID_Ptr( title );
 					igSetNextItemWidth( 150 );
-					if( igBeginCombo( "", val ? textbuffer : "None", ImGuiComboFlags_None ) )
+					if( igBeginCombo( id, val ? textbuffer : "None", ImGuiComboFlags_None ) )
 					{
-						if( igSelectableBool( "None", val == invalidval, ImGuiSelectableFlags_None, zero ) ) val = invalidval;
+						if( igSelectable_Bool( "None", val == invalidval, ImGuiSelectableFlags_None, zero ) ) val = invalidval;
 						for( int32_t map : iota( invalidval + 1, finalval + 1 ) )
 						{
 							M_snprintf( textbuffer, 4, "%d", map );
-							if( igSelectableBool( textbuffer, val == map, ImGuiSelectableFlags_None, zero ) ) val = map;
+							if( igSelectable_Bool( textbuffer, val == map, ImGuiSelectableFlags_None, zero ) ) val = map;
 						}
 						igEndCombo();
 					}
@@ -3364,13 +3363,13 @@ namespace launcher
 
 					if( episode_count > 1 )
 					{
-						mapchooser( "Episode", episode_count, 0, launchoptions->start_episode );
+						mapchooser( "##episodenum", "Episode", episode_count, 0, launchoptions->start_episode );
 						igSameLine( 0, 10 );
 					}
 				}
-				mapchooser( "Map", mode != commercial ? 9 : 32, 0, launchoptions->start_map );
+				mapchooser( "##mapnum", "Map", mode != commercial ? 9 : 32, 0, launchoptions->start_map );
 
-				mapchooser( "Start skill", 5, -1, launchoptions->start_skill );
+				mapchooser( "##skillnum", "Start skill", 5, -1, launchoptions->start_skill );
 
 				igCheckbox( "Solo net", &launchoptions->solo_net );
 
@@ -3410,7 +3409,7 @@ namespace launcher
 
 			igGetContentRegionAvail( &frameavail );
 
-			int32_t id = ImGuiWindow_GetIDStr( igGetCurrentWindow(), "mainpanelfiles", nullptr );
+			int32_t id = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "mainpanelfiles", nullptr );
 			ImVec2 fileframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
 
 			if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize ) )
@@ -3557,7 +3556,6 @@ namespace launcher
 	protected:
 		virtual void RenderContents() override
 		{
-			constexpr double_t pi2 = M_PI * 2.0;
 			constexpr ImVec2 barsize = { 0.f, 15.f };
 
 			igCentreNextElement( loading_size.x );
@@ -3592,8 +3590,6 @@ std::string M_DashboardLauncherWindow()
 	dashboardactive = Dash_Launcher;
 	I_UpdateMouseGrab();
 	SDL_Renderer* renderer = I_GetRenderer();
-
-	bool readytolaunch = false;
 
 	SDL_Window* window = I_GetWindow();
 	SDL_GLContext glcontext = SDL_GL_GetCurrentContext();

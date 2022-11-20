@@ -376,7 +376,6 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	else
 	{
 		if( y < 0
-			|| y + clippedheight > V_VIRTUALHEIGHT
 			|| clippedy > 0)
 		{
 			I_Error("Bad V_DrawPatch");
@@ -1077,8 +1076,7 @@ void V_ScreenShot(const char *format)
 				W_CacheLumpName (DEH_String("PLAYPAL"), PU_CACHE));
 }
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui.h"
+#include "cimguiglue.h"
 
 #define MOUSE_SPEED_BOX_WIDTH  300
 #define MOUSE_SPEED_BOX_HEIGHT 15
@@ -1141,16 +1139,16 @@ static void DrawAcceleratingBox(int speed)
     if (linelen < redline_x)
     {
 		end.x = cursorpos.x + linelen;
-		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, white, 0.f, ImDrawCornerFlags_All );
+		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, white, 0.f, ImDrawFlags_RoundCornersAll );
     }
     else
     {
 		end.x = cursorpos.x + redline_x;
-		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, white, 0.f, ImDrawCornerFlags_All );
+		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, white, 0.f, ImDrawFlags_RoundCornersAll );
 
 		start.x = cursorpos.x + redline_x;
 		end.x = cursorpos.x + ( linelen - redline_x );
-		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, yellow, 0.f, ImDrawCornerFlags_All );
+		ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, yellow, 0.f, ImDrawFlags_RoundCornersAll );
 	}
 
 	start = cursorpos;
@@ -1160,7 +1158,7 @@ static void DrawAcceleratingBox(int speed)
 	end.x += redline_x;
 	end.y += MOUSE_SPEED_BOX_HEIGHT + 2;
 
-	ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, red, 0.f, ImDrawCornerFlags_All );
+	ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, red, 0.f, ImDrawFlags_RoundCornersAll );
 
 	igNextColumn();
 }
@@ -1193,7 +1191,7 @@ static void DrawNonAcceleratingBox(int speed)
 
 	igText( "Highest seen speed" );
 	igNextColumn();
-	ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, igColorConvertFloat4ToU32( igGetStyle()->Colors[ ImGuiCol_PlotLines ] ), 0.f, ImDrawCornerFlags_All );
+	ImDrawList_AddRectFilled( imgui_context->CurrentWindow->DrawList, start, end, igColorConvertFloat4ToU32( igGetStyle()->Colors[ ImGuiCol_PlotLines ] ), 0.f, ImDrawFlags_RoundCornersAll );
 	igNextColumn();
 }
 

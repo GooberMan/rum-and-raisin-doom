@@ -87,7 +87,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -165,7 +165,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -181,7 +181,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -197,7 +197,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -213,7 +213,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -224,19 +224,21 @@
   <ItemGroup>
     <ClCompile Include="..\ext\cimguiglue\cimguiglue.cpp" />
     <ClCompile Include="..\ext\cimgui\cimgui.cpp" />
-    <ClCompile Include="..\ext\cimgui\imgui\examples\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\ext\cimgui\imgui\examples\imgui_impl_sdl.cpp" />
+    <ClCompile Include="..\ext\cimgui\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\ext\cimgui\imgui\backends\imgui_impl_sdl.cpp" />
     <ClCompile Include="..\ext\cimgui\imgui\imgui.cpp" />
     <ClCompile Include="..\ext\cimgui\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\ext\cimgui\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\ext\cimgui\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\ext\cimgui\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\ext\glad\src\glad.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ext\cimguiglue\cimguiglue.h" />
     <ClInclude Include="..\ext\cimgui\cimgui.h" />
-    <ClInclude Include="..\ext\cimgui\imgui\examples\imgui_impl_opengl3.h" />
-    <ClInclude Include="..\ext\cimgui\imgui\examples\imgui_impl_sdl.h" />
+    <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_sdl.h" />
+    <ClInclude Include="..\ext\cimgui\imgui\imconfig.h" />
     <ClInclude Include="..\ext\cimgui\imgui\imgui.h" />
     <ClInclude Include="..\ext\cimgui\imgui\imgui_internal.h" />
     <ClInclude Include="..\ext\glad\include\glad\glad.h" />

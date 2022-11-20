@@ -70,8 +70,6 @@
 #include "am_map.h"
 
 #include "m_dashboard.h"
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui.h"
 #include "cimguiglue.h"
 
 
@@ -2445,7 +2443,7 @@ static void M_DashboardDoColour( const char* itemname, int32_t* colourindex, int
 	coloursize.x = coloursize.y = 22.f;
 	popupspacing.x = popupspacing.y = 2.f;
 
-	igPushIDPtr( colourindex );
+	igPushID_Ptr( colourindex );
 
 	igText( itemname );
 	igNextColumn();
@@ -2461,12 +2459,12 @@ static void M_DashboardDoColour( const char* itemname, int32_t* colourindex, int
 	}
 
 	igGetCursorScreenPos( &cursorpos );
-	igPushStyleColorU32( ImGuiCol_Button, colour );
-	igPushStyleColorU32( ImGuiCol_Border, IM_COL32_BLACK );
-	igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 2.f );
+	igPushStyleColor_U32( ImGuiCol_Button, colour );
+	igPushStyleColor_U32( ImGuiCol_Border, IM_COL32_BLACK );
+	igPushStyleVar_Float( ImGuiStyleVar_FrameBorderSize, 2.f );
 	if( igButton( " ", coloursize ) )
 	{
-		igOpenPopup( "colorpicker", ImGuiPopupFlags_None );
+		igOpenPopup_Str( "colorpicker", ImGuiPopupFlags_None );
 	}
 	if( *colourindex == -1 )
 	{
@@ -2498,16 +2496,16 @@ static void M_DashboardDoColour( const char* itemname, int32_t* colourindex, int
 			*colourindex = defaultval;
 		}
 
-		igPushStyleVarVec2( ImGuiStyleVar_ItemSpacing, popupspacing );
+		igPushStyleVar_Vec2( ImGuiStyleVar_ItemSpacing, popupspacing );
 
 		for( paletteindex = 0; paletteindex < 256; ++paletteindex )
 		{
-			igPushIDPtr( paletteentry );
+			igPushID_Ptr( paletteentry );
 
 			colour = IM_COL32( paletteentry[ 0 ], paletteentry[ 1 ], paletteentry[ 2 ], 255 );
-			igPushStyleColorU32( ImGuiCol_Button, colour );
-			igPushStyleColorU32( ImGuiCol_Border, paletteindex == *colourindex ? IM_COL32_WHITE : IM_COL32_BLACK );
-			igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 1.f );
+			igPushStyleColor_U32( ImGuiCol_Button, colour );
+			igPushStyleColor_U32( ImGuiCol_Border, paletteindex == *colourindex ? IM_COL32_WHITE : IM_COL32_BLACK );
+			igPushStyleVar_Float( ImGuiStyleVar_FrameBorderSize, 1.f );
 			if( igButton( " ", coloursize ) )
 			{
 				*colourindex = paletteindex;
@@ -2537,8 +2535,8 @@ static void M_DashboardDoMapColour( const char* itemname, mapstyleentry_t* curr,
 {
 	M_DashboardDoColour( itemname, &curr->val, defaultval->val, palette );
 	igSameLine( 0, -1 );
-	igPushIDPtr( curr );
-	igCheckboxFlags( "Pulsating", &curr->flags, 0x1 );
+	igPushID_Ptr( curr );
+	igCheckboxFlags_IntPtr( "Pulsating", &curr->flags, 0x1 );
 	igPopID();
 }
 
@@ -2834,7 +2832,7 @@ void M_DashboardDropShadowText( const char* text )
 	newcursor.x += 2;
 	newcursor.y += 2;
 	igSetCursorPos( newcursor );
-	igPushStyleColorU32( ImGuiCol_Text, IM_COL32_BLACK );
+	igPushStyleColor_U32( ImGuiCol_Text, IM_COL32_BLACK );
 	igText( text );
 	igPopStyleColor( 1 );
 	igSetCursorPos( cursor );
@@ -3016,15 +3014,15 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 {
 	controldesc_t*		currdesc;
 
-	igPushIDPtr( descs );
-	if( igCollapsingHeaderTreeNodeFlags( itemname, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+	igPushID_Ptr( descs );
+	if( igCollapsingHeader_TreeNodeFlags( itemname, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 	{
 		igColumns( 2, "", false );
 		igSetColumnWidth( 0, columwidth );
 
 		for( currdesc = descs; currdesc->name != NULL; ++currdesc )
 		{
-			igPushIDPtr( currdesc->name );
+			igPushID_Ptr( currdesc->name );
 			igText( currdesc->name );
 			igNextColumn();
 			M_DashboardKeyRemap( remappingtype, currdesc->value, currdesc->name );
@@ -3051,11 +3049,11 @@ windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windo
 {
 	windowsizes_t* set = NULL;
 
-	igPushIDPtr( id );
+	igPushID_Ptr( id );
 
 	if( igBeginCombo( "", preview, ImGuiComboFlags_None ) )
 	{
-		if( special && igSelectableBool( special->asstring, specialselected, ImGuiSelectableFlags_None, zerosize ) )
+		if( special && igSelectable_Bool( special->asstring, specialselected, ImGuiSelectableFlags_None, zerosize ) )
 		{
 			set = special;
 		}
@@ -3078,7 +3076,7 @@ windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windo
 					if( sizes[ currsize ].category == currcat )
 					{
 						boolean selected = currwidth == sizes[ currsize ].width && currheight == sizes[ currsize ].height;
-						if( igSelectableBool( sizes[ currsize ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
+						if( igSelectable_Bool( sizes[ currsize ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
 						{
 							set = &sizes[ currsize ];
 						}
@@ -3150,7 +3148,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igText( "Frame interpolation" );
 			igNextColumn();
 			WorkingBool = !!enable_frame_interpolation;
-			igPushIDPtr( &enable_frame_interpolation );
+			igPushID_Ptr( &enable_frame_interpolation );
 			if( igCheckbox( "", &WorkingBool ) )
 			{
 				enable_frame_interpolation = (int32_t)WorkingBool;
@@ -3161,7 +3159,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igText( "Show text startup" );
 			igNextColumn();
 			WorkingBool = !!show_text_startup;
-			igPushIDPtr( &show_text_startup );
+			igPushID_Ptr( &show_text_startup );
 			if( igCheckbox( "", &WorkingBool ) )
 			{
 				show_text_startup = (int32_t)WorkingBool;
@@ -3172,7 +3170,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igText( "Show ENDOOM" );
 			igNextColumn();
 			WorkingBool = !!show_endoom;
-			igPushIDPtr( &show_endoom );
+			igPushID_Ptr( &show_endoom );
 			if( igCheckbox( "", &WorkingBool ) )
 			{
 				show_endoom = (int32_t)WorkingBool;
@@ -3182,13 +3180,13 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 			igText( "Disk icon" );
 			igNextColumn();
-			igPushIDPtr( &show_diskicon );
+			igPushID_Ptr( &show_diskicon );
 			if( igBeginCombo( "", disk_icon_strings[ show_diskicon ], ImGuiComboFlags_None ) )
 			{
 				for( index = 0; index < disk_icon_strings_count; ++index )
 				{
 					selected = index == show_diskicon;
-					if( igSelectableBool( disk_icon_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+					if( igSelectable_Bool( disk_icon_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
 					{
 						D_SetupLoadingDisk( index );
 					}
@@ -3218,11 +3216,11 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 		{
 			igPushScrollableArea( "Mouse", zerosize );
 
-			igPushIDStr( "Mouse settings" );
-			if( igCollapsingHeaderTreeNodeFlags( "Settings", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+			igPushID_Str( "Mouse settings" );
+			if( igCollapsingHeader_TreeNodeFlags( "Settings", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
-				igCheckbox( "Grab in windowed mode", &grabmouse );
-				igCheckbox( "Disallow vertical movement", &novert );
+				igCheckbox( "Grab in windowed mode", (bool*)&grabmouse );
+				igCheckbox( "Disallow vertical movement", (bool*)&novert );
 				igNewLine();
 
 				igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
@@ -3248,8 +3246,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 		{
 			igPushScrollableArea( "Screen", zerosize );
 
-			igPushIDStr( "Window settings" );
-			if( igCollapsingHeaderTreeNodeFlags( "Window", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+			igPushID_Str( "Window settings" );
+			if( igCollapsingHeader_TreeNodeFlags( "Window", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
 				igColumns( 2, "", false );
 				igSetColumnWidth( 0, columwidth );
@@ -3318,7 +3316,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				igText( "Full screen" );
 				igNextColumn();
 				WorkingBool = !!fullscreen;
-				igPushIDPtr( &fullscreen );
+				igPushID_Ptr( &fullscreen );
 				if( igCheckbox( "", &WorkingBool ) )
 				{
 					I_ToggleFullScreen();
@@ -3329,8 +3327,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			}
 			igPopID();
 
-			igPushIDStr( "Backbuffer settings" );
-			if( igCollapsingHeaderTreeNodeFlags( "Backbuffer", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+			igPushID_Str( "Backbuffer settings" );
+			if( igCollapsingHeader_TreeNodeFlags( "Backbuffer", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
 				igColumns( 2, "", false );
 				igSetColumnWidth( 0, columwidth );
@@ -3370,7 +3368,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 				igText( "Chain length" );
 				igNextColumn();
-				igPushIDPtr( &fullscreen );
+				igPushID_Ptr( &fullscreen );
 				if( igSliderInt( "", &num_software_backbuffers, 1, 3, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 				{
 					I_SetNumBuffers( num_software_backbuffers );
@@ -3382,8 +3380,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			}
 			igPopID();
 
-			igPushIDStr( "Performance settings" );
-			if( igCollapsingHeaderTreeNodeFlags( "Performance", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+			igPushID_Str( "Performance settings" );
+			if( igCollapsingHeader_TreeNodeFlags( "Performance", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
 				igColumns( 2, "", false );
 				igSetColumnWidth( 0, columwidth );
@@ -3391,7 +3389,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				int32_t oldcount = num_render_contexts;
 				igText( "Running threads" );
 				igNextColumn();
-				igPushIDPtr( &num_render_contexts );
+				igPushID_Ptr( &num_render_contexts );
 				igSliderInt( "", &num_render_contexts, 1, maxrendercontexts, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
 				if( num_render_contexts != oldcount )
 				{
@@ -3402,7 +3400,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 				igText( "Dynamic resolution scaling" );
 				igNextColumn();
-				igPushIDPtr( &dynamic_resolution_scaling );
+				igPushID_Ptr( &dynamic_resolution_scaling );
 				WorkingBool = dynamic_resolution_scaling != 0;
 				if( igCheckbox( "", &WorkingBool ) )
 				{
@@ -3419,14 +3417,14 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 				igText( "Vsync" );
 				igNextColumn();
-				igPushIDPtr( &vsync_mode );
+				igPushID_Ptr( &vsync_mode );
 				if( igBeginCombo( "", vsync_strings[ vsync_mode ], ImGuiComboFlags_None ) )
 				{
 					for( index = 0; index < VSync_Max; ++index )
 					{
 						selected = index == vsync_mode;
 						if( I_VideoSupportsVSync( index )
-							&& igSelectableBool( vsync_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+							&& igSelectable_Bool( vsync_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
 						{
 							I_VideoSetVSync( index );
 						}
@@ -3455,14 +3453,14 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 			igText( "Pitch shifting" );
 			igNextColumn();
-			igPushIDPtr( &snd_pitchshift );
+			igPushID_Ptr( &snd_pitchshift );
 			igCheckbox( "", (bool*)&snd_pitchshift );
 			igPopID();
 			igNextColumn();
 
 			igText( "Effects" );
 			igNextColumn();
-			igPushIDPtr( &sfxVolume );
+			igPushID_Ptr( &sfxVolume );
 			igPushItemWidth( 200.f );
 			if( igSliderInt( "", &sfxVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
@@ -3473,7 +3471,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 			igText( "Music" );
 			igNextColumn();
-			igPushIDPtr( &musicVolume );
+			igPushID_Ptr( &musicVolume );
 			igPushItemWidth( 200.f );
 			if( igSliderInt( "", &musicVolume, 0, 15, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
@@ -3497,7 +3495,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 			igText( "Gamma level" );
 			igNextColumn();
-			igPushIDPtr( &usegamma );
+			igPushID_Ptr( &usegamma );
 			igPushItemWidth( 200.f );
 			if( igSliderInt( "", &usegamma, 0, 4, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput) )
 			{
@@ -3513,7 +3511,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igText( "Light boost" );
 			igNextColumn();
-			igPushIDPtr( &additional_light_boost );
+			igPushID_Ptr( &additional_light_boost );
 			igPushItemWidth( 200.f );
 			igSliderInt( "", &additional_light_boost, 0, 8, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput);
 			igPopItemWidth();
@@ -3522,7 +3520,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igText( "Screen size" );
 			igNextColumn();
-			igPushIDPtr( &screenblocks );
+			igPushID_Ptr( &screenblocks );
 			igPushItemWidth( 200.f );
 			if( igSliderInt( "", &screenblocks, 10, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
@@ -3542,20 +3540,20 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igText( "Border style" );
 			igNextColumn();
 
-			igPushIDPtr( &border_style );
-			doresize |= igRadioButtonIntPtr( "Original", &border_style, 0 );
+			igPushID_Ptr( &border_style );
+			doresize |= igRadioButton_IntPtr( "Original", &border_style, 0 );
 			igSameLine( 0, -1 );
-			doresize |= igRadioButtonIntPtr( "INTERPIC", &border_style, 1 );
+			doresize |= igRadioButton_IntPtr( "INTERPIC", &border_style, 1 );
 			igPopID();
 
 			igNextColumn();
 			igText( "Border bezels" );
 			igNextColumn();
 
-			igPushIDPtr( &border_bezel_style );
-			doresize |= igRadioButtonIntPtr( "Original", &border_bezel_style, 0 );
+			igPushID_Ptr( &border_bezel_style );
+			doresize |= igRadioButton_IntPtr( "Original", &border_bezel_style, 0 );
 			igSameLine( 0, -1 );
-			doresize |= igRadioButtonIntPtr( "Dithered", &border_bezel_style, 1 );
+			doresize |= igRadioButton_IntPtr( "Dithered", &border_bezel_style, 1 );
 			igPopID();
 
 			if( doresize )
@@ -3569,11 +3567,11 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 			int32_t style = ST_GetBorderTileStyle();
 
-			igPushIDPtr( &style );
+			igPushID_Ptr( &style );
 			WorkingBool = false;
-			WorkingBool |= igRadioButtonIntPtr( "IWAD defined", &style, 0 );
+			WorkingBool |= igRadioButton_IntPtr( "IWAD defined", &style, 0 );
 			igSameLine( 0, -1 );
-			WorkingBool |= igRadioButtonIntPtr( "FLAT5_4", &style, 1 );
+			WorkingBool |= igRadioButton_IntPtr( "FLAT5_4", &style, 1 );
 			igPopID();
 
 			if( WorkingBool )
@@ -3584,12 +3582,12 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igText( "Fuzz style" );
 			igNextColumn();
-			igPushIDPtr( &fuzz_style );
-			igRadioButtonIntPtr( "Original", &fuzz_style, Fuzz_Original );
+			igPushID_Ptr( &fuzz_style );
+			igRadioButton_IntPtr( "Original", &fuzz_style, Fuzz_Original );
 			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "Adjusted", &fuzz_style, Fuzz_Adjusted );
+			igRadioButton_IntPtr( "Adjusted", &fuzz_style, Fuzz_Adjusted );
 			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "Heatwave", &fuzz_style, Fuzz_Heatwave );
+			igRadioButton_IntPtr( "Heatwave", &fuzz_style, Fuzz_Heatwave );
 			if( igIsItemHovered( ImGuiHoveredFlags_None ) )
 			{
 				igBeginTooltip();
@@ -3601,15 +3599,15 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igText( "Wipe style" );
 			igNextColumn();
-			igPushIDPtr( &wipe_style );
-			igRadioButtonIntPtr( "Melt", &wipe_style, wipe_Melt );
+			igPushID_Ptr( &wipe_style );
+			igRadioButton_IntPtr( "Melt", &wipe_style, wipe_Melt );
 			igPopID();
 
 			igNextColumn();
 			igText( "Messages" );
 			igNextColumn();
 			WorkingBool = !!showMessages;
-			igPushIDPtr( &showMessages );
+			igPushID_Ptr( &showMessages );
 			if( igCheckbox( "", &WorkingBool ) )
 			{
 				showMessages = (int32_t)WorkingBool;
@@ -3622,7 +3620,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igText( "Display stats" );
 			igNextColumn();
 			WorkingBool = stats_style == stats_standard;
-			igPushIDPtr( &stats_style );
+			igPushID_Ptr( &stats_style );
 			if( igCheckbox( "", &WorkingBool ) )
 			{
 				stats_style = WorkingBool ? stats_standard : stats_none;
@@ -3646,12 +3644,12 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igText( "Style" );
 			igNextColumn();
 
-			igPushIDPtr( &map_style );
-			igRadioButtonIntPtr( "Custom", &map_style, MapStyle_Custom );
+			igPushID_Ptr( &map_style );
+			igRadioButton_IntPtr( "Custom", &map_style, MapStyle_Custom );
 			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "Original", &map_style, MapStyle_Original );
+			igRadioButton_IntPtr( "Original", &map_style, MapStyle_Original );
 			igSameLine( 0, -1 );
-			igRadioButtonIntPtr( "ZDoom", &map_style, MapStyle_ZDoom );
+			igRadioButton_IntPtr( "ZDoom", &map_style, MapStyle_ZDoom );
 			igPopID();
 
 			igNextColumn();
@@ -3669,9 +3667,9 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 
 				extern mapstyledata_t map_styledatacustomdefault;
 
-				igPushIDPtr( &style->background );
+				igPushID_Ptr( &style->background );
 				igColumns( 1, "", false );
-				if( igCollapsingHeaderTreeNodeFlags( "Standard", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+				if( igCollapsingHeader_TreeNodeFlags( "Standard", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 				{
 					igColumns( 2, "automapcol", false );
 
@@ -3702,9 +3700,9 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				}
 				igPopID();
 
-				igPushIDPtr( &style->nochange );
+				igPushID_Ptr( &style->nochange );
 				igColumns( 1, "", false );
-				if( igCollapsingHeaderTreeNodeFlags( "With cheat on", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+				if( igCollapsingHeader_TreeNodeFlags( "With cheat on", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 				{
 					igColumns( 2, "automapcol", false );
 					M_DashboardDoMapColour( "No Height Diff", &style->nochange, &map_styledatacustomdefault.nochange, palette );

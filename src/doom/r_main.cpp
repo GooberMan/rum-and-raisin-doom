@@ -1515,7 +1515,7 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 		igText( "DRS scale: %d, %d FPS", (int32_t)(drs_current->percentage * 100 ), (int32_t)( ( 1.0 / frametime ) * 1000000.0 ) );
 		igNewLine();
 
-		igBeginColumns( "Performance columns", M_MIN( 2, num_render_contexts ), ImGuiColumnsFlags_NoBorder );
+		igBeginColumns( "Performance columns", M_MIN( 2, num_render_contexts ), ImGuiOldColumnFlags_NoBorder );
 		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
 			igText( "Context %d", currcontext );
@@ -1536,8 +1536,8 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 					times[ currtime ] = data[ ( nextentry + currtime ) % datalen ];
 				}
 
-				igPushStyleColorVec4( ImGuiCol_PlotHistogram, barcolor );
-				igPlotHistogramFloatPtr( "Frametime", times, datalen, 0, NULL, 0.f, (float_t)performancegraphscale, objsize, sizeof(float_t) );
+				igPushStyleColor_Vec4( ImGuiCol_PlotHistogram, barcolor );
+				igPlotHistogram_FloatPtr( "Frametime", times, datalen, 0, NULL, 0.f, (float_t)performancegraphscale, objsize, sizeof(float_t) );
 				igPopStyleColor( 1 );
 
 				igSetCursorPos( cursorpos );
@@ -1561,8 +1561,8 @@ static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptr
 				sprintf( overlay, "avg: %0.2fms / %0.2fms", average, frameavg );
 			}
 
-			if( backgroundoffs >= 0 ) igPushStyleColorVec4( ImGuiCol_FrameBg, nobackground );
-			igPlotHistogramFloatPtr( "Frametime", times, datalen, 0, overlay, 0.f, (float_t)performancegraphscale, objsize, sizeof(float_t) );
+			if( backgroundoffs >= 0 ) igPushStyleColor_Vec4( ImGuiCol_FrameBg, nobackground );
+			igPlotHistogram_FloatPtr( "Frametime", times, datalen, 0, overlay, 0.f, (float_t)performancegraphscale, objsize, sizeof(float_t) );
 			if( backgroundoffs >= 0 ) igPopStyleColor( 1 );
 
 			igNewLine();
@@ -1617,7 +1617,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 		R_RebalanceContexts();
 	}
 
-	igPushIDPtr( &renderthreadCPUmelter );
+	igPushID_Ptr( &renderthreadCPUmelter );
 	if( igCheckbox( "CPU melter (nosleep)", &WorkingBool ) )
 	{
 		I_AtomicExchange( &renderthreadCPUmelter, (atomicval_t)!!WorkingBool );
@@ -1635,8 +1635,8 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igPopID();
 
 	int32_t oldbalance = renderloadbalancing;
-	igRadioButtonIntPtr( "Load balancing off", &renderloadbalancing, 0 );
-	igRadioButtonIntPtr( "Load balancing", &renderloadbalancing, 1 );
+	igRadioButton_IntPtr( "Load balancing off", &renderloadbalancing, 0 );
+	igRadioButton_IntPtr( "Load balancing", &renderloadbalancing, 1 );
 	if( oldbalance != renderloadbalancing )
 	{
 		R_RebalanceContexts();

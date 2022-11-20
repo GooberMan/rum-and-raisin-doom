@@ -76,8 +76,8 @@ CIMGUI_API void igImageQuad( ImTextureID user_texture_id, const ImVec2 size, con
 		bb.Max.x += 2;
 		bb.Max.y += 2;
 	}
-	igItemSizeRect(bb, -1.f);
-	if ( !igItemAdd(bb, 0, 0) )
+	igItemSize_Rect(bb, -1.f);
+	if ( !igItemAdd( bb, 0, nullptr, ImGuiItemFlags_None ) )
 		return;
 
 	tl = bb.Min;
@@ -87,20 +87,20 @@ CIMGUI_API void igImageQuad( ImTextureID user_texture_id, const ImVec2 size, con
 
 	if (border_col.w > 0.0f)
 	{
-		ImDrawList_AddRect( window->DrawList, bb.Min, bb.Max, igGetColorU32Vec4(border_col), 0.0f, ImDrawCornerFlags_All, 1.0f);
-		ImDrawList_AddImageQuad( window->DrawList, user_texture_id, tl, tr, lr, ll, uvtl, uvtr, uvlr, uvll, igGetColorU32Vec4(tint_col));
+		ImDrawList_AddRect( window->DrawList, bb.Min, bb.Max, igGetColorU32_Vec4(border_col), 0.0f, ImDrawCornerFlags_All, 1.0f);
+		ImDrawList_AddImageQuad( window->DrawList, user_texture_id, tl, tr, lr, ll, uvtl, uvtr, uvlr, uvll, igGetColorU32_Vec4(tint_col));
 	}
 	else
 	{
-		ImDrawList_AddImageQuad( window->DrawList, user_texture_id, tl, tr, lr, ll, uvtl, uvtr, uvlr, uvll, igGetColorU32Vec4(tint_col));
+		ImDrawList_AddImageQuad( window->DrawList, user_texture_id, tl, tr, lr, ll, uvtl, uvtr, uvlr, uvll, igGetColorU32_Vec4(tint_col));
 	}
 }
 
 CIMGUI_API void igPushScrollableArea( const char* ID, ImVec2 size )
 {
-	igPushIDStr( ID );
-	igPushStyleColorU32( ImGuiCol_ChildBg, IM_COL32_BLACK_TRANS );
-	igBeginChildStr( "ScrollArea", size, false, ImGuiWindowFlags_None );
+	igPushID_Str( ID );
+	igPushStyleColor_U32( ImGuiCol_ChildBg, IM_COL32_BLACK_TRANS );
+	igBeginChild_Str( "ScrollArea", size, false, ImGuiWindowFlags_None );
 }
 
 CIMGUI_API void igPopScrollableArea( void )
@@ -135,7 +135,10 @@ CIMGUI_API void igRoundProgressBar( float_t progress, ImVec2 size, float_t round
 
 	if( size.x <= 0 )
 	{
-		size.x = igGetWindowContentRegionWidth();
+		ImVec2 minregion, maxregion;
+		igGetWindowContentRegionMin( &minregion );
+		igGetWindowContentRegionMax( &maxregion );
+		size.x = maxregion.x - minregion.x;
 	}
 	ImGuiContext* context = igGetCurrentContext();
 	if( context->NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth )
@@ -148,11 +151,11 @@ CIMGUI_API void igRoundProgressBar( float_t progress, ImVec2 size, float_t round
 	bb.Max.x += size.x;
 	bb.Max.y += size.y;
 
-	igItemSizeRect( bb, -1.f );
-	if ( !igItemAdd(bb, 0, 0) )
+	igItemSize_Rect( bb, -1.f );
+	if ( !igItemAdd( bb, 0, nullptr, ImGuiItemFlags_None ) )
 		return;
 
-	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32Col( ImGuiCol_FrameBg, 1.0f ), rounding, ImDrawCornerFlags_All );
+	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32_Col( ImGuiCol_FrameBg, 1.0f ), rounding, ImDrawCornerFlags_All );
 
 	bb.Min.x += rounding + 1;
 	bb.Min.y += rounding + 1;
@@ -161,7 +164,7 @@ CIMGUI_API void igRoundProgressBar( float_t progress, ImVec2 size, float_t round
 
 	bb.Max.x = bb.Min.x + ( bb.Max.x - bb.Min.x ) * progress;
 
-	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ), 0, ImDrawCornerFlags_None );
+	ImDrawList_AddRectFilled( window->DrawList, bb.Min, bb.Max, igGetColorU32_Col( ImGuiCol_PlotHistogram, 1.0f ), 0, ImDrawCornerFlags_None );
 }
 
 CIMGUI_API void igSpinner( ImVec2 size, double_t cycletime )
@@ -180,8 +183,8 @@ CIMGUI_API void igSpinner( ImVec2 size, double_t cycletime )
 	bb.Max.x += maxdimension;
 	bb.Max.y += maxdimension;
 
-	igItemSizeRect( bb, -1.f );
-	if ( !igItemAdd(bb, 0, 0) )
+	igItemSize_Rect( bb, -1.f );
+	if ( !igItemAdd( bb, 0, nullptr, ImGuiItemFlags_None ) )
 		return;
 
 	constexpr double_t pi2 = 3.14159265358979323846264338327950288 * 2.0;
@@ -223,6 +226,6 @@ CIMGUI_API void igSpinner( ImVec2 size, double_t cycletime )
 	rotate( points[ 5 ] );
 
 	ImDrawList* drawlist = igGetWindowDrawList();
-	ImDrawList_AddTriangleFilled( drawlist, points[ 0 ], points[ 1 ], points[ 2 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
-	ImDrawList_AddTriangleFilled( drawlist, points[ 3 ], points[ 4 ], points[ 5 ], igGetColorU32Col( ImGuiCol_PlotHistogram, 1.0f ) );
+	ImDrawList_AddTriangleFilled( drawlist, points[ 0 ], points[ 1 ], points[ 2 ], igGetColorU32_Col( ImGuiCol_PlotHistogram, 1.0f ) );
+	ImDrawList_AddTriangleFilled( drawlist, points[ 3 ], points[ 4 ], points[ 5 ], igGetColorU32_Col( ImGuiCol_PlotHistogram, 1.0f ) );
 }

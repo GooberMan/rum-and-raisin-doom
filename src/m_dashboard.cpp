@@ -77,23 +77,23 @@ static ImVec4 theme_funkygreenhighlight[ ImGuiCol_COUNT ] =
 	{ 0.956863f, 0.945098f, 0.870588f, 0.8f },			// ImGuiCol_Text,
 	{ 0.356863f, 0.345098f, 0.270588f, 0.8f },			// ImGuiCol_TextDisabled,
 	{ 0.145098f, 0.129412f, 0.192157f, 0.9f },			// ImGuiCol_WindowBg,
-	{ 0.f, 0.f, 0.f, 0.2f },								// ImGuiCol_ChildBg,
+	{ 0.f, 0.f, 0.f, 0.2f },							// ImGuiCol_ChildBg,
 	{ 0.145098f, 0.129412f, 0.192157f, 0.901961f },		// ImGuiCol_PopupBg,
 	{ 0.545098f, 0.529412f, 0.592157f, 0.8f },			// ImGuiCol_Border,
-	{ 0.f, 0.f, 0.f, 0.8f },								// ImGuiCol_BorderShadow,
+	{ 0.f, 0.f, 0.f, 0.8f },							// ImGuiCol_BorderShadow,
 	{ 0.47451f, 0.137255f, 0.34902f, 0.4f },			// ImGuiCol_FrameBg,
 	{ 0.67451f, 0.337255f, 0.54902f, 0.4f },			// ImGuiCol_FrameBgHovered,
 	{ 0.57451f, 0.237255f, 0.44902f, 1.f },				// ImGuiCol_FrameBgActive,
 	{ 0.145098f, 0.129412f, 0.192157f, 0.8f },			// ImGuiCol_TitleBg,
 	{ 0.245098f, 0.229412f, 0.292157f, 1.f },			// ImGuiCol_TitleBgActive,
-	{ 0.f, 0.f, 0.f, 0.8f },								// ImGuiCol_TitleBgCollapsed,
-	{ 0.f, 0.f, 0.f, 0.8f },								// ImGuiCol_MenuBarBg,
+	{ 0.f, 0.f, 0.f, 0.8f },							// ImGuiCol_TitleBgCollapsed,
+	{ 0.f, 0.f, 0.f, 0.8f },							// ImGuiCol_MenuBarBg,
 	{ 0.545098f, 0.529412f, 0.592157f, 0.501961f },		// ImGuiCol_ScrollbarBg,
 	{ 0.445098f, 0.429412f, 0.492157f, 0.8f },			// ImGuiCol_ScrollbarGrab,
 	{ 0.645098f, 0.629412f, 0.692157f, 0.8f },			// ImGuiCol_ScrollbarGrabHovered,
 	{ 0.545098f, 0.529412f, 0.592157f, 1.f },			// ImGuiCol_ScrollbarGrabActive,
-	{ 0.780392f, 0.937255f, 0.f, 0.8f },					// ImGuiCol_CheckMark,
-	{ 0.780392f, 0.937255f, 0.f, 0.8f },					// ImGuiCol_SliderGrab,
+	{ 0.780392f, 0.937255f, 0.f, 0.8f },				// ImGuiCol_CheckMark,
+	{ 0.780392f, 0.937255f, 0.f, 0.8f },				// ImGuiCol_SliderGrab,
 	{ 0.880392f, 1.03725f, 0.1f, 1.f },					// ImGuiCol_SliderGrabActive,
 	{ 0.854902f, 0.0666667f, 0.368627f, 0.8f },			// ImGuiCol_Button,
 	{ 1.0549f, 0.266667f, 0.568627f, 0.8f },			// ImGuiCol_ButtonHovered,
@@ -112,16 +112,23 @@ static ImVec4 theme_funkygreenhighlight[ ImGuiCol_COUNT ] =
 	{ 0.954902f, 0.166667f, 0.468627f, 1.f },			// ImGuiCol_TabActive,
 	{ 0.854902f, 0.0666667f, 0.368627f, 0.6f },			// ImGuiCol_TabUnfocused,
 	{ 0.954902f, 0.166667f, 0.468627f, 1.f },			// ImGuiCol_TabUnfocusedActive,
-	{ 0.780392f, 0.937255f, 0.f, 0.8f },					// ImGuiCol_PlotLines,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingPreview,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingEmptyBg,
+	{ 0.780392f, 0.937255f, 0.f, 0.8f },				// ImGuiCol_PlotLines,
 	{ 0.980392f, 1.13725f, 0.2f, 0.8f },				// ImGuiCol_PlotLinesHovered,
-	{ 0.780392f, 0.937255f, 0.f, 0.8f },					// ImGuiCol_PlotHistogram,
+	{ 0.780392f, 0.937255f, 0.f, 0.8f },				// ImGuiCol_PlotHistogram,
 	{ 0.980392f, 1.13725f, 0.2f, 0.8f },				// ImGuiCol_PlotHistogramHovered,
-	{ 0.780392f, 0.937255f, 0.f, 0.4f },					// ImGuiCol_TextSelectedBg,
-	{ 0.780392f, 0.937255f, 0.f, 0.8f },					// ImGuiCol_DragDropTarget,
-	{ 1.f, 1.f, 1.f, 0.8f },								// ImGuiCol_NavHighlight,
-	{ 1.f, 1.f, 1.f, 0.8f },								// ImGuiCol_NavWindowingHighlight,
-	{ 1.f, 1.f, 1.f, 0.2f },								// ImGuiCol_NavWindowingDimBg,
-	{ 0.f, 0.f, 0.f, 0.6f },								// ImGuiCol_ModalWindowDimBg,
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableHeaderBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderStrong
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderLight
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBgAlt
+	{ 0.780392f, 0.937255f, 0.f, 0.4f },				// ImGuiCol_TextSelectedBg,
+	{ 0.780392f, 0.937255f, 0.f, 0.8f },				// ImGuiCol_DragDropTarget,
+	{ 1.f, 1.f, 1.f, 0.8f },							// ImGuiCol_NavHighlight,
+	{ 1.f, 1.f, 1.f, 0.8f },							// ImGuiCol_NavWindowingHighlight,
+	{ 1.f, 1.f, 1.f, 0.2f },							// ImGuiCol_NavWindowingDimBg,
+	{ 0.f, 0.f, 0.f, 0.6f },							// ImGuiCol_ModalWindowDimBg,
 };
 
 static ImVec4 theme_purpleyellowthing[ ImGuiCol_COUNT ] =
@@ -164,10 +171,17 @@ static ImVec4 theme_purpleyellowthing[ ImGuiCol_COUNT ] =
 	{ 0.547059f, 0.452941f, 0.856863f, 1.f },			// ImGuiCol_TabActive,
 	{ 0.447059f, 0.352941f, 0.756863f, 0.6f },			// ImGuiCol_TabUnfocused,
 	{ 0.547059f, 0.452941f, 0.856863f, 1.f },			// ImGuiCol_TabUnfocusedActive,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingPreview,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingEmptyBg,
 	{ 0.92549f, 0.643137f, 0.f, 0.8f },					// ImGuiCol_PlotLines,
 	{ 1.12549f, 0.843137f, 0.2f, 0.8f },				// ImGuiCol_PlotLinesHovered,
 	{ 0.92549f, 0.643137f, 0.f, 0.8f },					// ImGuiCol_PlotHistogram,
 	{ 1.12549f, 0.843137f, 0.2f, 0.8f },				// ImGuiCol_PlotHistogramHovered,
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableHeaderBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderStrong
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderLight
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBgAlt
 	{ 0.92549f, 0.643137f, 0.f, 0.4f },					// ImGuiCol_TextSelectedBg,
 	{ 0.92549f, 0.643137f, 0.f, 0.8f },					// ImGuiCol_DragDropTarget,
 	{ 1.f, 1.f, 1.f, 0.8f },								// ImGuiCol_NavHighlight,
@@ -217,10 +231,17 @@ static ImVec4 theme_doomedspacemarine[ ImGuiCol_COUNT ] =
 	{ 0.347059f, 0.613726f, 0.284314f, 1.f },			// ImGuiCol_TabActive,
 	{ 0.247059f, 0.513726f, 0.184314f, 0.6f },			// ImGuiCol_TabUnfocused,
 	{ 0.347059f, 0.613726f, 0.284314f, 1.f },			// ImGuiCol_TabUnfocusedActive,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingPreview,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingEmptyBg,
 	{ 1.f, 1.f, 0.137255f, 0.8f },						// ImGuiCol_PlotLines,
 	{ 1.2f, 1.2f, 0.337255f, 0.8f },					// ImGuiCol_PlotLinesHovered,
 	{ 1.f, 1.f, 0.137255f, 0.8f },						// ImGuiCol_PlotHistogram,
 	{ 1.2f, 1.2f, 0.337255f, 0.8f },					// ImGuiCol_PlotHistogramHovered,
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableHeaderBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderStrong
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderLight
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBgAlt
 	{ 1.f, 1.f, 0.137255f, 0.4f },						// ImGuiCol_TextSelectedBg,
 	{ 1.f, 1.f, 0.137255f, 0.8f },						// ImGuiCol_DragDropTarget,
 	{ 1.f, 1.f, 1.f, 0.8f },								// ImGuiCol_NavHighlight,
@@ -270,10 +291,17 @@ static ImVec4 theme_valveclassic[ ImGuiCol_COUNT ] =
 	{ 0.59f, 0.54f, 0.18f, 1.00f },					// ImGuiCol_TabActive,
 	{ 0.24f, 0.27f, 0.20f, 1.00f },					// ImGuiCol_TabUnfocused,
 	{ 0.35f, 0.42f, 0.31f, 1.00f },					// ImGuiCol_TabUnfocusedActive,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingPreview,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingEmptyBg,
 	{ 0.61f, 0.61f, 0.61f, 1.00f },					// ImGuiCol_PlotLines,
 	{ 0.59f, 0.54f, 0.18f, 1.00f },					// ImGuiCol_PlotLinesHovered,
 	{ 1.00f, 0.78f, 0.28f, 1.00f },					// ImGuiCol_PlotHistogram,
 	{ 1.00f, 0.60f, 0.00f, 1.00f },					// ImGuiCol_PlotHistogramHovered,
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableHeaderBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderStrong
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderLight
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBgAlt
 	{ 0.59f, 0.54f, 0.18f, 1.00f },					// ImGuiCol_TextSelectedBg,
 	{ 0.73f, 0.67f, 0.24f, 1.00f },					// ImGuiCol_DragDropTarget,
 	{ 0.59f, 0.54f, 0.18f, 1.00f },					// ImGuiCol_NavHighlight,
@@ -323,10 +351,17 @@ static ImVec4 theme_didntaskforthis[ ImGuiCol_COUNT ] =
 	{ 0.78f, 0.55f, 0.21f, 1.00f },					// ImGuiCol_TabActive,
 	{ 0.07f, 0.10f, 0.15f, 0.97f },					// ImGuiCol_TabUnfocused,
 	{ 0.14f, 0.26f, 0.42f, 1.00f },					// ImGuiCol_TabUnfocusedActive,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingPreview,
+	{ 0, 0, 0, 0 },										// ImGuiCol_DockingEmptyBg,
 	{ 0.61f, 0.61f, 0.61f, 1.00f },					// ImGuiCol_PlotLines,
 	{ 1.00f, 0.43f, 0.35f, 1.00f },					// ImGuiCol_PlotLinesHovered,
 	{ 0.90f, 0.70f, 0.00f, 1.00f },					// ImGuiCol_PlotHistogram,
 	{ 1.00f, 0.60f, 0.00f, 1.00f },					// ImGuiCol_PlotHistogramHovered,
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableHeaderBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderStrong
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableBorderLight
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBg
+	{ 0, 0, 0, 0 },										// ImGuiCol_TableRowBgAlt
 	{ 0.26f, 0.59f, 0.98f, 0.35f },					// ImGuiCol_TextSelectedBg,
 	{ 1.00f, 1.00f, 0.00f, 0.90f },					// ImGuiCol_DragDropTarget,
 	{ 0.26f, 0.59f, 0.98f, 1.00f },					// ImGuiCol_NavHighlight,
@@ -769,7 +804,7 @@ static void M_AboutWindow( const char* itemname, void* data )
 
 static void M_LicencesWindow( const char* itemname, void* data )
 {
-	igPushIDPtr( &licenceswindow_open );
+	igPushID_Ptr( &licenceswindow_open );
 	for( const licences_t& currlicence : Licences() )
 	{
 		if( !currlicence.inuse )
@@ -777,8 +812,8 @@ static void M_LicencesWindow( const char* itemname, void* data )
 			continue;
 		}
 
-		igPushIDPtr( currlicence.software );
-		if( igCollapsingHeaderTreeNodeFlags( currlicence.software, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
+		igPushID_Ptr( currlicence.software );
+		if( igCollapsingHeader_TreeNodeFlags( currlicence.software, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 		{
 			igText( currlicence.license );
 		}
@@ -914,7 +949,7 @@ static void M_DashboardFirstLaunchWindow()
 
 		ImVec2 framesize = { windowcontentmax.x - windowcontentmin.x, windowcontentmax.y - windowcontentmin.y - 30.f };
 
-		igPushStyleColorU32( ImGuiCol_FrameBg, IM_COL32_BLACK_TRANS );
+		igPushStyleColor_U32( ImGuiCol_FrameBg, IM_COL32_BLACK_TRANS );
 		if( igBeginChildFrame( 666, framesize, ImGuiWindowFlags_None ) )
 		{
 			// This is annoying, need to reset style colour so that checkboxes/sliders/etc look right
@@ -1038,12 +1073,12 @@ void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingnam
 
 	if( igButton( M_FindNameForKey( type, *key ), mappingsize ) )
 	{
-		igOpenPopup( "RemapKey", ImGuiPopupFlags_None );
+		igOpenPopup_Str( "RemapKey", ImGuiPopupFlags_None );
 		dashboardremappingkey = type;
 		mapkeybuttonvalue = -1;
 	}
 
-	if( igIsPopupOpenStr( "RemapKey", ImGuiPopupFlags_None ) )
+	if( igIsPopupOpen_Str( "RemapKey", ImGuiPopupFlags_None ) )
 	{
 		ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
 		WindowPos.x *= 0.5f;
@@ -1127,7 +1162,7 @@ static void M_RenderCategoryItem( menuentry_t* cat )
 static void M_RenderButtonItem( menuentry_t* cat )
 {
 	menufunc_t callback;
-	if( igMenuItemBool( cat->name, "", false, true ) )
+	if( igMenuItem_Bool( cat->name, "", false, true ) )
 	{
 		callback = cat->callback;
 		callback( cat->name, cat->data );
@@ -1143,13 +1178,13 @@ static void M_RenderCheckboxItem( menuentry_t* cat )
 
 static void M_RenderCheckboxFlagItem( menuentry_t* cat )
 {
-	igCheckboxFlags( cat->name, (uint32_t*)cat->data, *(uint32_t*)&cat->comparison );
+	igCheckboxFlags_UintPtr( cat->name, (uint32_t*)cat->data, *(uint32_t*)&cat->comparison );
 	M_RenderTooltip( cat );
 }
 
 static void M_RenderRadioButtonItem( menuentry_t* cat )
 {
-	igRadioButtonIntPtr( cat->name, (int32_t*)cat->data, cat->comparison );
+	igRadioButton_IntPtr( cat->name, (int32_t*)cat->data, cat->comparison );
 	M_RenderTooltip( cat );
 }
 
@@ -1207,9 +1242,9 @@ static int32_t M_RenderDashboardWindowActivationItems( menuentry_t** children )
 		if( child->type == MET_Window && *(boolean*)child->data )
 		{
 			++windowcount;
-			if( igMenuItemBool( child->caption, "", false, true ) )
+			if( igMenuItem_Bool( child->caption, "", false, true ) )
 			{
-				igSetWindowFocusStr( child->caption );
+				igSetWindowFocus_Str( child->caption );
 			}
 		}
 
@@ -1231,13 +1266,13 @@ void M_RenderDashboardLogContents( void )
 
 	igColumns( 2, "", false );
 	igSetColumnWidth( 0, 70.f );
-	igPushStyleColorU32( ImGuiCol_Text, LogColours()[ Log_Normal ] );
+	igPushStyleColor_U32( ImGuiCol_Text, LogColours()[ Log_Normal ] );
 
 	for( currentry = 0; currentry < numentries; ++currentry )
 	{
 		igText( I_LogGetTimestamp( currentry ) );
 		igNextColumn();
-		igPushStyleColorU32( ImGuiCol_Text, LogColours()[ I_LogGetEntryType( currentry ) ] );
+		igPushStyleColor_U32( ImGuiCol_Text, LogColours()[ I_LogGetEntryType( currentry ) ] );
 		igTextWrapped( I_LogGetEntryText( currentry ) );
 		igPopStyleColor( 1 );
 		igNextColumn();
@@ -1313,8 +1348,8 @@ void M_RenderDashboardBackbufferContents( int32_t backbufferid )
 
 			ImU32 colour = IM_COL32( palentry->r, palentry->g, palentry->b, 255 );
 
-			igPushStyleColorU32( ImGuiCol_Button, colour );
-			igPushStyleColorU32( ImGuiCol_Border, IM_COL32_BLACK );
+			igPushStyleColor_U32( ImGuiCol_Button, colour );
+			igPushStyleColor_U32( ImGuiCol_Border, IM_COL32_BLACK );
 			igPushStyleVarFloat( ImGuiStyleVar_FrameBorderSize, 2.f );
 			igButton( " ", buttonsize );
 			igPopStyleVar( 1 );
@@ -1358,8 +1393,8 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 
 			if( igBeginMenu( "Windows", true ) )
 			{
-				if( igMenuItemBool( "Backbuffer", "", false, true ) ) igSetWindowFocusStr( "Backbuffer" );
-				if( igMenuItemBool( "Log", "", false, true ) ) igSetWindowFocusStr( "Log" );
+				if( igMenuItem_Bool( "Backbuffer", "", false, true ) ) igSetWindowFocus_Str( "Backbuffer" );
+				if( igMenuItem_Bool( "Log", "", false, true ) ) igSetWindowFocus_Str( "Log" );
 
 				if( M_GetDashboardWindowsOpened( rootentry->children ) > 0 )
 				{
@@ -1383,7 +1418,7 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 		}
 		igEnd();
 
-		igPushStyleColorU32( ImGuiCol_WindowBg, IM_COL32_BLACK );
+		igPushStyleColor_U32( ImGuiCol_WindowBg, IM_COL32_BLACK );
 		igSetNextWindowSize( logsize, ImGuiCond_FirstUseEver );
 		igSetNextWindowPos( logpos, ImGuiCond_FirstUseEver, zeropivot );
 		if( igBegin( "Log", NULL, ImGuiWindowFlags_NoSavedSettings ) )
@@ -1404,7 +1439,7 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 			bool isopen = *(bool*)thiswindow->data && ( dashboardactive || ( thiswindow->properties & Menu_Overlay ) == Menu_Overlay );
 			if( isopen )
 			{
-				igPushIDPtr( thiswindow );
+				igPushID_Ptr( thiswindow );
 				{
 					igSetNextWindowSize( thiswindow->dimensions, ImGuiCond_FirstUseEver );
 					if( igBegin( thiswindow->caption, (bool*)thiswindow->data, windowflags ) )
