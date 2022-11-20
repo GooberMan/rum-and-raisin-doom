@@ -24,6 +24,14 @@
 #include <cstdio>
 #include <cstdint>
 
+#ifdef WIN32
+#include <sys/utime.h>
+#define utime _utime
+#define utimbuf _utimbuf
+#else
+#include <utime.h>
+#endif // WIN32
+
 #ifdef _WIN32
 
 #define DIR_SEPARATOR '\\'
@@ -33,6 +41,36 @@
 #define DIR_SEPARATOR '/'
 
 #endif
+
+int64_t DOStoStdFileTime( uint32_t dostime )
+{
+	// DOS time format documented at
+	// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-dosdatetimetofiletime
+
+	struct dostime_t
+	{
+		uint16_t date;
+		uint16_t time;
+	};
+
+	dostime_t& time = *(dostime_t*)&dostime;
+
+	std::tm stdtime =
+	{
+		( time.time & 0x000F ),					// second
+		( time.time & 0x03F0 ) >> 4,			// minute
+		( time.time & 0xFC00 ) >> 10,			// hour
+		( time.date & 0x000F ),					// day
+		( time.date & 0x00F0 ) >> 4,			// month
+		( ( time.date & 0xFF00 ) >> 8 ) + 1970,	// year
+		0,
+		0,
+		0
+	};
+
+	auto systemtime = std::chrono::system_clock::from_time_t( std::mktime( &stdtime ) );
+	return std::chrono::system_clock::to_time_t( systemtime );
+}
 
 bool M_ZipExtractAllFromFile( const char* inputfile, const char* outputfolder, zipprogress_t& progressfunc )
 {
@@ -81,7 +119,9 @@ bool M_ZipExtractAllFromFile( const char* inputfile, const char* outputfolder, z
 
 				if( writeto.has_filename() )
 				{
-					FILE* output = fopen( writeto.string().c_str(), "wb" );
+					std::string writefilename = writeto.string();
+
+					FILE* output = fopen( writefilename.c_str(), "wb" );
 
 					int32_t readamount = 0;
 					do
@@ -96,6 +136,10 @@ bool M_ZipExtractAllFromFile( const char* inputfile, const char* outputfolder, z
 					} while( readamount > 0 );
 
 					fclose( output );
+
+					//int64_t systemtime = DOStoStdFileTime( fileinfo.dosDate );
+					//utimbuf timebuff = { systemtime, systemtime };
+					//utime( writefilename.c_str(), &timebuff );
 				}
 				unzCloseCurrentFile( input );
 			}
