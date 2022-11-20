@@ -66,6 +66,16 @@
 #define INLINE inline
 #endif
 
+#if defined( __clang__ )
+#pragma clang diagnostic ignored "-Wduplicate-decl-specifier"
+
+#define DOOM_OPTIMISE_OFF _Pragma( "clang optimize off" )
+#define DOOM_OPTIMISE_ON _Pragma( "clang optimize on" )
+#elif defined( _MSC_VER )
+#define DOOM_OPTIMISE_OFF __pragma( optimize( "", off ) )
+#define DOOM_OPTIMISE_OFF __pragma( optimize( "", on ) )
+#endif
+
 #if !defined( NDEBUG )
 #define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME " THIS IS A DEBUG BUILD STOP PROFILING ON A DEBUG BUILD"
 #elif defined( RNR_PROFILING )
