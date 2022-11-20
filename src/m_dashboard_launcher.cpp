@@ -683,7 +683,7 @@ namespace launcher
 		Dehacked,
 	};
 
-	constexpr int32_t DoomFileEntryVersion = 1;
+	constexpr int32_t DoomFileEntryVersion = 2;
 
 	struct LaunchOptions
 	{
@@ -1087,6 +1087,11 @@ namespace launcher
 						else
 						{
 							entry.game_variant = vanilla;
+						}
+
+						if( dehacked )
+						{
+							entry.has_dehacked_lump = true;
 						}
 					}
 
