@@ -36,7 +36,7 @@
 #include "v_video.h"
 
 #include "glad/glad.h"
-#include "SDL_opengl.h"
+#include <SDL2/SDL_opengl.h>
 
 #include <filesystem>
 #include <fstream>

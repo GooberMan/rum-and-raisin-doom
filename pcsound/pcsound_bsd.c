@@ -47,8 +47,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "SDL.h"
-#include "SDL_thread.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_thread.h>
 
 #include "pcsound.h"
 #include "pcsound_internal.h"

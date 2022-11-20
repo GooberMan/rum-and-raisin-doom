@@ -27,9 +27,9 @@
 #include <windows.h>
 #endif // _WIN32
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #include "glad/glad.h"
-#include "SDL_opengl.h"
+#include <SDL2/SDL_opengl.h>
 
 extern "C"
 {

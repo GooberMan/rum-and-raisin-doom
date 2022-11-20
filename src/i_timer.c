@@ -17,7 +17,7 @@
 //      Timer functions.
 //
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 #include "i_timer.h"
 #include "z_zone.h"

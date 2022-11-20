@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "SDL_filesystem.h"
+#include <SDL2/SDL_filesystem.h>
 
 #include "config.h"
 

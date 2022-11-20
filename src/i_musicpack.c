@@ -22,8 +22,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "i_glob.h"
 #include "i_midipipe.h"

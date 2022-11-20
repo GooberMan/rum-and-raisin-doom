@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 typedef enum vbuffermode_e
 {

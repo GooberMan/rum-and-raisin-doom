@@ -27,12 +27,12 @@
 #include <windows.h>
 #endif
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 #include "m_dashboard.h"
 
 #include "glad/glad.h"
-#include "SDL_opengl.h"
+#include <SDL2/SDL_opengl.h>
 
 #include "cimguiglue.h"
 

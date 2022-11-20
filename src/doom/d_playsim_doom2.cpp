@@ -1008,7 +1008,7 @@ mapinfo_t doom2_map_map32 =
 mapinfo_t doom2_map_map33 =
 {
 	RuntimeFlowString( levellumpn_format_text ),	// data_lump
-	PlainFlowString( "level 33: betray" ),			// name
+	FlowString( PHUSTR_1 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Michael Bukowski" ),			// authors
 	&doom2_episode_hellonearth,						// episode

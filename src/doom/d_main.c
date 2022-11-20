@@ -1865,6 +1865,12 @@ void D_DoomMain (void)
         DEH_AddStringReplacement("M_SCRNSZ", "M_DISP");
     }
 
+	if( gamevariant == unityport && gamemode == commercial )
+	{
+		DEH_AddStringReplacement(HUSTR_31, "level 31: idkfa");
+		DEH_AddStringReplacement(HUSTR_32, "level 32: keen");
+	}
+
     //!
     // @category mod
     //

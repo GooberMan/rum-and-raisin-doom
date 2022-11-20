@@ -722,6 +722,8 @@ void M_DashboardPrepareRender()
 void M_DashboardFinaliseRender()
 {
 	igRender();
+	igUpdatePlatformWindows();
+
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
 }
 

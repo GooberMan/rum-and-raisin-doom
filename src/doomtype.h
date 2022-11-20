@@ -73,7 +73,7 @@
 #define DOOM_OPTIMISE_ON _Pragma( "clang optimize on" )
 #elif defined( _MSC_VER )
 #define DOOM_OPTIMISE_OFF __pragma( optimize( "", off ) )
-#define DOOM_OPTIMISE_OFF __pragma( optimize( "", on ) )
+#define DOOM_OPTIMISE_ON __pragma( optimize( "", on ) )
 #endif
 
 #if !defined( NDEBUG )

@@ -61,7 +61,6 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="include-sdl.props" />
     <Import Project="profiling-build.props" Condition="$(Configuration.StartsWith('Debug')) OR $(Configuration.StartsWith('Profiling'))" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -71,6 +70,12 @@
     <IntDir>$(SolutionDir)intermediate\windows\$(TargetName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>textscreen</TargetName>
     <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgAutoLink>false</VcpkgAutoLink>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
