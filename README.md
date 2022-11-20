@@ -42,13 +42,15 @@ Sorry, I don't have access to hardware so I haven't been able to work out why Op
 
 # Compiling on Windows?
 
-First things first - you'll need to update the property sheets in the msvc folder to point to the correct locations for SDL. This property sheet has a deletion in its future, so it is only a temporary measure.
-
-You'll also need to install [vcpkg](https://github.com/Microsoft/vcpkg/) and install the following libraries:
+[vcpkg](https://github.com/Microsoft/vcpkg/) is in active use, and requires you to install the following libraries:
 
 `zlib:x64-windows`
 `libpng:x64-windows`
 `minizip:x64-windows`
 `curl:x64-windows`
+`libsamplerate:x64-windows`
+`sdl2:x64-windows`
+`sdl2-mixer:x64-windows`
+`sdl2-net:x64-windows`
 
 Note that while the default MSVC compiler is supported, you're going to want to use the Clang configurations for non-debug builds. Unless you want to wait for over half an hour while MSVC tries to handle the template shenanigans used for the new flat renderer.
