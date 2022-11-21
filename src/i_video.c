@@ -887,6 +887,18 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 
 	int32_t render_path = 1;
 
+	// Important: Set the "logical size" of the rendering context. At the same
+	// time this also defines the aspect ratio that is preserved while scaling
+	// and stretching the texture into the window.
+	if( activebuffer->mode == VB_Transposed )
+	{
+		SDL_RenderSetLogicalSize( renderer, activebuffer->height, activebuffer->width * activebuffer->verticalscale );
+	}
+	else
+	{
+		SDL_RenderSetLogicalSize( renderer, activebuffer->width, activebuffer->height * activebuffer->verticalscale );
+	}
+
 	if( render_path == 0 )
 	{
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
@@ -899,18 +911,6 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 				palette[0].b, SDL_ALPHA_OPAQUE);
 		}
 	
-		// Important: Set the "logical size" of the rendering context. At the same
-		// time this also defines the aspect ratio that is preserved while scaling
-		// and stretching the texture into the window.
-		if( activebuffer->mode == VB_Transposed )
-		{
-			SDL_RenderSetLogicalSize( renderer, activebuffer->height, activebuffer->width * activebuffer->verticalscale );
-		}
-		else
-		{
-			SDL_RenderSetLogicalSize( renderer, activebuffer->width, activebuffer->height * activebuffer->verticalscale );
-		}
-
 		if (palette_to_set)
 		{
 			SDL_SetPaletteColors( curr->screenbuffer.data8bithandle->format->palette, palette, 0, 256 );

@@ -710,8 +710,8 @@ void M_DashboardPrepareRender()
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
-	igGetCurrentContext()->WantCaptureKeyboardNextFrame = dashboardactive;
-	igGetCurrentContext()->WantCaptureMouseNextFrame = dashboardactive;
+	igGetCurrentContext()->WantCaptureKeyboardNextFrame = !!dashboardactive;
+	igGetCurrentContext()->WantCaptureMouseNextFrame = !!dashboardactive;
 
 	CImGui_ImplOpenGL3_NewFrame();
 	CImGui_ImplSDL2_NewFrame( I_GetWindow() );
