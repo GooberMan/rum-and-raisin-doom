@@ -710,11 +710,11 @@ void M_DashboardPrepareRender()
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
+	igGetCurrentContext()->WantCaptureKeyboardNextFrame = dashboardactive;
+	igGetCurrentContext()->WantCaptureMouseNextFrame = dashboardactive;
+
 	CImGui_ImplOpenGL3_NewFrame();
 	CImGui_ImplSDL2_NewFrame( I_GetWindow() );
-
-	igGetIO()->WantCaptureKeyboard = dashboardactive;
-	igGetIO()->WantCaptureMouse = dashboardactive;
 
 	igNewFrame();
 }
@@ -722,9 +722,16 @@ void M_DashboardPrepareRender()
 void M_DashboardFinaliseRender()
 {
 	igRender();
-	igUpdatePlatformWindows();
-
 	CImGui_ImplOpenGL3_RenderDrawData( igGetDrawData() );
+
+	if( igGetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
+	{
+		SDL_Window* window = SDL_GL_GetCurrentWindow();
+		SDL_GLContext context = SDL_GL_GetCurrentContext();
+		igUpdatePlatformWindows();
+		igRenderPlatformWindowsDefault( nullptr, nullptr );
+		SDL_GL_MakeCurrent( window, context );
+	}
 }
 
 static bool M_DashboardUpdateSizes( int32_t windowwidth, int32_t windowheight )

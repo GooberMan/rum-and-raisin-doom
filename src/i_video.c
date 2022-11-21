@@ -1315,6 +1315,7 @@ static void I_SetupDearImGui(void)
 
 	imgui_context = igCreateContext( NULL );
 	imgui_context->IO.IniFilename = M_StringJoin( configdir, "dashboard.ini", NULL );
+	//imgui_context->IO.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	retval = CImGui_ImplSDL2_InitForOpenGL( screen, glcontext );
 	if ( !retval )
