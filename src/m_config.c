@@ -2809,7 +2809,7 @@ void M_SetMusicPackDir(void)
 
     free(readme_path);
     free(music_pack_path);
-    SDL_free(prefdir);
+//    SDL_free(prefdir);
 }
 
 //
