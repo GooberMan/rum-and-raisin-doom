@@ -29,7 +29,7 @@ sudo apt install clang-10 automake autoconf libtool git pkg-config libsdl2-dev l
 make
 ```
 
-Rum and Raisin Doom only supports compiling with Clang on Linux. It has also only been tested on a few Ubuntu variants, other distros are unsupported.
+Rum and Raisin Doom only supports compiling with Clang on Linux. Non-Debian based distros are currently unsupported.
 
 # Compiling on Ubuntu 20.x and later? Having Python problems?
 
