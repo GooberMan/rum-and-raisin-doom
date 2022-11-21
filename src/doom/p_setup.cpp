@@ -1278,8 +1278,7 @@ P_SetupLevel
 
 	switch( loading_code )
 	{
-	using enum LoadingCode;
-	case RnRVanilla:
+	case LoadingCode::RnRVanilla:
 		{
 			loader.LoadBlockmap( lumpnum + ML_BLOCKMAP );
 			loader.LoadVertices( lumpnum + ML_VERTEXES );
@@ -1294,7 +1293,7 @@ P_SetupLevel
 		}
 		break;
 
-	case RnRLimitRemoving:
+	case LoadingCode::RnRLimitRemoving:
 		{
 			loader.DetermineExtendedFormat( lumpnum );
 			loader.LoadExtendedBlockmap( lumpnum + ML_BLOCKMAP );
