@@ -22,8 +22,9 @@ git submodule update --init --recursive
 
 # Compiling on Linux?
 
-Use the Chocolate Doom build steps, in particular:
+Not much has changed from Chocolate Doom. I have, however, only been testing on Debian-based distros. This should work just fine if you're on such a distro:
 ```
+sudo apt install clang-10 automake autoconf libtool git pkg-config libsdl2-dev libsdl2-mixer-dev libsdl2-net-dev linpng-dev libminizip-dev libclang-dev libsamplerate1-dev
 ./autogen.sh
 make
 ```
