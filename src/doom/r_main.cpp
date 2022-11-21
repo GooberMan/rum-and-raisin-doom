@@ -1938,10 +1938,19 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 			viewangle = (angle_t)( result & ANG_MAX );
 		}
 
+		auto DoSectorHeights = []( const rend_fixed_t& prev, const rend_fixed_t& curr, const rend_fixed_t& percent, const int32_t& snap, const bool& select )
+		{
+			if( snap )
+			{
+				return select ? curr : prev;
+			}
+			return RendFixedLerp( prev, curr, percent );
+		};
+
 		for( int32_t index : iota( 0, numsectors ) )
 		{
-			rendsectors[ index ].floorheight	= RendFixedLerp( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewlerp );
-			rendsectors[ index ].ceilheight		= RendFixedLerp( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewlerp );
+			rendsectors[ index ].floorheight	= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewlerp, currsectors[ index ].snapfloor, selectcurr );
+			rendsectors[ index ].ceilheight		= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewlerp, currsectors[ index ].snapceiling, selectcurr );
 			rendsectors[ index ].lightlevel		= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
 			rendsectors[ index ].floortex		= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
 			rendsectors[ index ].ceiltex		= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;

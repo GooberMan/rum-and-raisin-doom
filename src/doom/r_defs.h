@@ -121,6 +121,9 @@ typedef struct sectorinstance_s
 	rend_fixed_t			floorheight;
 	rend_fixed_t			ceilheight;
 	rend_fixed_t			lightlevel;
+
+	int32_t					snapfloor;
+	int32_t					snapceiling;
 } sectorinstance_t;
 
 typedef struct sideinstance_s
@@ -225,6 +228,9 @@ typedef	struct
 
 	int32_t				linecount;
 	struct line_s**		lines;	// [linecount] size
+
+	int32_t				snapfloor;
+	int32_t				snapceiling;
 } sector_t;
 
 
