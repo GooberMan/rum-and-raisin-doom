@@ -216,6 +216,19 @@ bool EqualCaseInsensitive( const std::string& lhs, const std::string& rhs )
 						} );
 }
 
+void StringReplace( std::string& val, const char* findthis, const char* replacewith )
+{
+	size_t findlen = strlen( findthis );
+	size_t replacelen = strlen( replacewith );
+
+	size_t foundpos = 0;
+	while( ( foundpos = val.find( findthis, foundpos ) ) != std::string::npos )
+	{
+		val.replace( foundpos, findlen, replacewith );
+		foundpos += replacelen;
+	}
+}
+
 std::span< const char* > ParamArgs( const char* param )
 {
 	int32_t fileparam = M_CheckParm( param );
@@ -609,10 +622,6 @@ void igRating( const char* textid, double_t rating, int32_t totalstars, ImVec2 s
 	if (window->SkipItems)
 		return;
 
-	ImGuiContext* g = igGetCurrentContext();
-	const ImGuiStyle* style = &g->Style;
-	const ImGuiID id = ImGuiWindow_GetID_Str( window, textid, nullptr );
-
 	ImVec2 pos;
 	igGetCursorScreenPos( &pos );
 	ImVec2 curr = pos;
@@ -665,6 +674,119 @@ void igDownloadProgressBar( const char* textid, ImVec2 totalsize, ImVec2 spinner
 	ImVec2 progsize = { totalsize.x - totalsize.y - 5.f, barheight };
 	igRoundProgressBar( progress, progsize, 2.f );
 }
+
+typedef enum filedialogflags_e
+{
+	FD_File				= 0x00000001,
+	FD_Folder			= 0x00000002,
+
+	FD_Open				= 0x00000004,
+	FD_Save				= 0x00000008,
+
+	FD_SelectMultiple	= 0x10000000,
+} filedialogflags_t;
+
+class FileDialog
+{
+public:
+	FileDialog()
+		: currentpath( std::filesystem::current_path() )
+	{
+	}
+
+	void Open( filedialogflags_t f, const char* types = nullptr )
+	{
+		return;
+
+		/*if( !igIsPopupOpen_Str( "FileDialog", ImGuiPopupFlags_None ) )
+		{
+			igOpenPopup_Str( "FileDialog", ImGuiPopupFlags_None );
+			selected.clear();
+			wildcards.clear();
+			flags = f;
+
+			if( types )
+			{
+				std::string regexstring = types;
+				StringReplace( regexstring, ".", "\\." );
+				StringReplace( regexstring, "*", ".+" );
+				regexstring += "$";
+				wildcards.push_back( std::regex( regexstring, std::regex_constants::icase ) );
+			}
+		}*/
+	}
+
+	bool Handle()
+	{
+		/*ImGuiIO* io = igGetIO();
+
+		if( igIsPopupOpen_Str( "FileDialog", ImGuiPopupFlags_None ) )
+		{
+			constexpr ImVec2 dialogsize = { 600.f, 400.f };
+			bool selectmultiple = !!( flags & FD_SelectMultiple );
+
+			ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
+			WindowPos.x = ( WindowPos.x - dialogsize.x ) * 0.5f;
+			WindowPos.y = ( WindowPos.y - dialogsize.y ) * 0.5f;
+
+			igSetNextWindowPos( WindowPos, ImGuiCond_Always, zero );
+			igSetNextWindowSize( dialogsize, ImGuiCond_Always );
+			if( igBeginPopup( "FileDialog", ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoSavedSettings ) )
+			{
+				for( auto& file : std::filesystem::directory_iterator( std::filesystem::path( currentpath ), std::filesystem::directory_options::skip_permission_denied ) )
+				{
+					std::string asstring = file.path().filename().string();
+					if( MatchesWildcard( asstring ) )
+					{
+						auto found = std::find( selected.begin(), selected.end(), file.path() );
+						bool isselected = found != selected.end();
+						if( igSelectable_Bool( asstring.c_str(), isselected, ImGuiSelectableFlags_DontClosePopups, zero ) )
+						{
+							if( !isselected )
+							{
+								if( !selectmultiple || !io->KeyCtrl )
+								{
+									selected.clear();
+								}
+							}
+							
+							isselected = !isselected;
+							if( !isselected )
+							{
+								if( found != selected.end() ) selected.erase( found );
+							}
+							else
+							{
+								selected.push_back( file.path() );
+							}
+						}
+					}
+				}
+				igEndPopup();
+			}
+		}*/
+
+		return false;
+	}
+
+private:
+	bool MatchesWildcard( const std::string& val )
+	{
+		bool matches = wildcards.empty();
+		for( std::regex& test : wildcards )
+		{
+			matches |= std::regex_match( val, test );
+		}
+		return matches;
+	}
+
+	std::filesystem::path					currentpath;
+	std::vector< std::filesystem::path >	selected;
+	std::vector< std::regex >				wildcards;
+	filedialogflags_t						flags;
+};
+
+static FileDialog filedialog;
 
 namespace launcher
 {
@@ -882,6 +1004,9 @@ namespace launcher
 	{
 		std::string path = stdpath.string();
 		std::string filename = stdpath.filename().string();
+
+		std::string debug = "Parsing " + path;
+		I_LogDebug( debug.c_str() );
 
 		time_t lastmodified = GetLastModifiedTime( stdpath );
 		size_t filelength = std::filesystem::file_size( stdpath );
@@ -2509,7 +2634,7 @@ namespace launcher
 				{
 					for( auto& currfile : idgamesfiles.Children() )
 					{
-						*files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
+						files.insert( files.end(), std::make_shared< IdgamesFilePanel >(	iwadselector, doomfileselector
 																							, to< std::string >( currfile[ "dir" ] )
 																							, to< std::string >( currfile[ "filename" ] )
 																							, to< size_t >( currfile[ "size" ] )
@@ -2758,8 +2883,16 @@ namespace launcher
 
 				constexpr ImVec2 popupsize = { 150.f, 300.f };
 				igSetNextWindowSize( popupsize, ImGuiCond_Always );
+
+				bool opendialog = false;
 				if( igBeginPopup( "dehacked_add_popup", ImGuiWindowFlags_None ) )
 				{
+					opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
+					if( !doomfileselector->AllDEHs().empty() )
+					{
+						igSeparator();
+					}
+
 					for( DoomFileEntry& entry : doomfileselector->AllDEHs() )
 					{
 						bool found = false;
@@ -2778,6 +2911,11 @@ namespace launcher
 						}
 					}
 					igEndPopup();
+				}
+
+				if( opendialog )
+				{
+					filedialog.Open( (filedialogflags_t)( FD_File | FD_Open | FD_SelectMultiple ), "*.deh" );
 				}
 
 				igNextColumn();
@@ -2854,8 +2992,16 @@ namespace launcher
 
 				constexpr ImVec2 popupsize = { 150.f, 300.f };
 				igSetNextWindowSize( popupsize, ImGuiCond_Always );
+
+				bool opendialog = false;
 				if( igBeginPopup( "pwads_add_popup", ImGuiWindowFlags_None ) )
 				{
+					opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
+					if( !doomfileselector->AllPWADs().empty() )
+					{
+						igSeparator();
+					}
+
 					for( DoomFileEntry& entry : doomfileselector->AllPWADs() )
 					{
 						bool found = false;
@@ -2874,6 +3020,11 @@ namespace launcher
 						}
 					}
 					igEndPopup();
+				}
+
+				if( opendialog )
+				{
+					filedialog.Open( (filedialogflags_t)( FD_File | FD_Open | FD_SelectMultiple ), "*.wad" );
 				}
 
 				igNextColumn();
@@ -2916,6 +3067,11 @@ namespace launcher
 			}
 
 			igColumns( 1, nullptr, false );
+
+			if( filedialog.Handle() )
+			{
+				int foo = 0;
+			}
 
 			ImVec2 cursorpos;
 
