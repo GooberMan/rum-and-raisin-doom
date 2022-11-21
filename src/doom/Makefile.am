@@ -2,7 +2,7 @@ AM_CFLAGS = -I$(top_srcdir)/src \
             -I$(top_srcdir)/ext/cimgui                     \
             -I$(top_srcdir)/ext/cimguiglue                 \
             -I$(top_srcdir)/ext/cimgui/imgui               \
-            -I$(top_srcdir)/ext/cimgui/imgui/examples      \
+            -I$(top_srcdir)/ext/cimgui/imgui/backends      \
             -I$(top_srcdir)/ext/glad/include               \
             -I$(top_srcdir)/textscreen                     \
             @SDL_CFLAGS@ @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
@@ -11,7 +11,7 @@ AM_CXXFLAGS = -I$(top_srcdir)/src                            \
               -I$(top_srcdir)/ext/cimgui                     \
               -I$(top_srcdir)/ext/cimguiglue                 \
               -I$(top_srcdir)/ext/cimgui/imgui               \
-              -I$(top_srcdir)/ext/cimgui/imgui/examples      \
+              -I$(top_srcdir)/ext/cimgui/imgui/backends      \
               -I$(top_srcdir)/ext/glad/include               \
               -I$(top_srcdir)/textscreen                     \
               @SDL_CFLAGS@ @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
