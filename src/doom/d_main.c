@@ -1589,7 +1589,7 @@ void D_DoomMain (void)
 	{
 		I_TerminalSetMode( TM_ImmediateRender );
 	}
-	I_TerminalPrintBanner( Log_Startup, PACKAGE_STRING, TXT_COLOR_YELLOW, TXT_COLOR_BROWN );
+	I_TerminalPrintBanner( Log_Startup, PACKAGE_STRING, TXT_COLOR_YELLOW, PACKAGE_BANNER_BACK );
 	DEH_printf( "M_LoadDefaults: Load system defaults.\n" );
 
 	M_ProfileInit();
