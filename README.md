@@ -24,7 +24,7 @@ git submodule update --init --recursive
 
 Not much has changed from Chocolate Doom. I have, however, only been testing on Debian-based distros. This should work just fine if you're on such a distro:
 ```
-sudo apt install clang-10 automake autoconf libtool git pkg-config libsdl2-dev libsdl2-mixer-dev libsdl2-net-dev libpng-dev libminizip-dev libcurl4-openssl-dev libsamplerate0-dev
+sudo apt install clang-10 automake autoconf build-essential python3 python-is-python-3 libtool git pkg-config libsdl2-dev libsdl2-mixer-dev libsdl2-net-dev libpng-dev libminizip-dev libcurl4-openssl-dev libsamplerate0-dev
 ./autogen.sh
 make
 ```
