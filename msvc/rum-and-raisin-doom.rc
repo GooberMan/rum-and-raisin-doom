@@ -5,21 +5,21 @@
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "../src/manifest.xml"
 
 1 VERSIONINFO
-PRODUCTVERSION 0, 3, 0, 0
-FILEVERSION 0, 3, 0, 0
+PRODUCTVERSION 0, 3, 1, 0
+FILEVERSION 0, 3, 1, 0
 FILETYPE 1
 {
  BLOCK "StringFileInfo"
  {
   BLOCK "040904E4"
   {
-   VALUE "FileVersion", "0.3.0"
-   VALUE "FileDescription", "Rum and Raisin Doom 0.3.0"
+   VALUE "FileVersion", "0.3.1-pre"
+   VALUE "FileDescription", "Rum and Raisin Doom 0.3.1-pre"
    VALUE "InternalName", "run-and-raisin-doom"
    VALUE "CompanyName", "Ethan Watson"
    VALUE "LegalCopyright", "Copyright (C) 1993-2022. Licensed under GNU General Public License, version 2"
    VALUE "ProductName", "Rum and Raisin Doom"
-   VALUE "ProductVersion", "0.3.0"
+   VALUE "ProductVersion", "0.3.1-pre"
   }
  }
  BLOCK "VarFileInfo"
