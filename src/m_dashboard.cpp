@@ -770,6 +770,7 @@ static void M_OnDashboardCloseButton( const char* itemname, void* data )
 
 static void M_OnDashboardCoreQuit( const char* itemname, void* data )
 {
+	dashboardactive = Dash_Inactive;
 	I_Quit();
 }
 
@@ -1419,6 +1420,7 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 
 		igSetNextWindowSize( backbuffersize, changed ? ImGuiCond_Always : ImGuiCond_FirstUseEver );
 		igSetNextWindowPos( backbufferpos, ImGuiCond_FirstUseEver, zeropivot );
+		igSetNextWindowViewport( igGetMainViewport()->ID );
 		if( igBegin( "Backbuffer", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus ) )
 		{
 			igGetWindowSize( &backbuffersize );
@@ -1430,6 +1432,7 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 		igPushStyleColor_U32( ImGuiCol_WindowBg, IM_COL32_BLACK );
 		igSetNextWindowSize( logsize, ImGuiCond_FirstUseEver );
 		igSetNextWindowPos( logpos, ImGuiCond_FirstUseEver, zeropivot );
+		igSetNextWindowViewport( igGetMainViewport()->ID );
 		if( igBegin( "Log", NULL, ImGuiWindowFlags_NoSavedSettings ) )
 		{
 			igGetWindowSize( &logsize );
@@ -1451,6 +1454,11 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 				igPushID_Ptr( thiswindow );
 				{
 					igSetNextWindowSize( thiswindow->dimensions, ImGuiCond_FirstUseEver );
+					if( ( thiswindow->properties & Menu_AllowDetach ) != Menu_AllowDetach )
+					{
+						igSetNextWindowViewport( igGetMainViewport()->ID );
+					}
+
 					if( igBegin( thiswindow->caption, (bool*)thiswindow->data, windowflags ) )
 					{
 						callback = thiswindow->callback;

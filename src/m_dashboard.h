@@ -39,6 +39,7 @@ DOOM_C_API typedef enum menuproperties_e
 {
 	Menu_Normal			= 0x00000000,
 	Menu_Overlay		= 0x00000001,
+	Menu_AllowDetach	= 0x00000002,
 } menuproperties_t;
 
 DOOM_C_API typedef enum dashboardmode_e
