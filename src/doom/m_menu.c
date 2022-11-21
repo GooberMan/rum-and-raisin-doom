@@ -144,7 +144,6 @@ boolean			inhelpscreens;
 boolean			menuactive;
 extern int32_t	dashboardopensound;
 extern int32_t	dashboardclosesound;
-extern int32_t	mapkeybuttonvalue;
 
 
 #define SKULLXOFF		-32
@@ -1499,7 +1498,7 @@ boolean M_Responder (event_t* ev)
     }
 
 #if USE_IMGUI
-	if( ev->type == ev_keydown && ev->data1 == key_menu_dashboard && dashboardremappingkey == Remap_None )
+	if( ev->type == ev_keydown && ev->data1 == key_menu_dashboard && dashboardremappingtype == Remap_None )
 	{
 		dashboardactive = !dashboardactive;
 		S_StartSound(NULL, dashboardactive ? dashboardopensound : dashboardclosesound);
@@ -2538,60 +2537,6 @@ static void M_DashboardDoMapColour( const char* itemname, mapstyleentry_t* curr,
 	igPushID_Ptr( curr );
 	igCheckboxFlags_IntPtr( "Pulsating", &curr->flags, 0x1 );
 	igPopID();
-}
-
-typedef struct keyname_s
-{
-	int32_t		key;
-	const char*	name;
-} keyname_t;
-
-static keyname_t keynames[] = KEY_NAMES_ARRAY;
-
-// Matches up with MAX_MOUSE_BUTTONS
-static keyname_t mousenames[] =
-{
-	{ 0, "LEFT" },
-	{ 1, "RIGHT" },
-	{ 2, "MID" },
-	{ 3, "SCROLL UP" },
-	{ 4, "SCROLL DOWN" },
-	{ 5, "BUTTON #6" },
-	{ 6, "BUTTON #7" },
-	{ 7, "BUTTON #8" },
-};
-
-static const char* M_FindKeyName( keyname_t* keys, size_t numkeys, int32_t unboundkeynum, int32_t keytofind )
-{
-	int32_t index;
-
-	for( index = 0; index < numkeys; ++index )
-	{
-		if( keys[ index ].key == keytofind )
-		{
-			return keys[ index ].name;
-		}
-	}
-
-	if( keytofind == unboundkeynum )
-	{
-		return "<NONE>";
-	}
-
-	return "<UNKNOWN>";
-}
-
-const char* M_FindNameForKey( remapping_t type, int32_t key )
-{
-	switch( type )
-	{
-	case Remap_Key:
-		return M_FindKeyName( keynames, arrlen( keynames ), 0, key );
-	case Remap_Mouse:
-		return M_FindKeyName( mousenames, arrlen( mousenames ), -1, key );
-	default:
-		return "<UNKNOWN>";
-	}
 }
 
 typedef struct controldesc_s

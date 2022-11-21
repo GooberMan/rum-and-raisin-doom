@@ -168,7 +168,7 @@ extern  boolean statusbaractive;
 extern  boolean automapactive;	// In AutoMap mode?
 extern  boolean	menuactive;	// Menu overlayed?
 extern  int32_t dashboardactive; // R&R Dashboard, powered by Dear ImGui
-extern  int32_t dashboardremappingkey;
+extern  int32_t dashboardremappingtype;
 extern  int32_t dashboardpausesplaysim;
 extern  boolean	paused;		// Game Pause?
 extern  boolean	renderpaused;

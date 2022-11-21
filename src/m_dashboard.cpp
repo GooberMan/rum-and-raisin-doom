@@ -18,16 +18,18 @@
 #include "i_video.h"
 
 #include "m_argv.h"
+#include "m_config.h"
 #include "m_launcher.h"
 #include "m_misc.h"
 #include "m_container.h"
 
+#include "doomkeys.h"
+
+#include "cimguiglue.h"
+
 extern "C"
 {
-	#include "m_config.h"
 	#include "m_controls.h"
-
-	#include "cimguiglue.h"
 
 	#include <stdio.h>
 	#include <string.h>
@@ -407,85 +409,114 @@ typedef struct licences_s
 	const char*		license;
 } licences_t;
 
+#define LICENCE_ZLIB \
+"This software is provided 'as-is', without any express or implied\n" \
+"warranty. In no event will the authors be held liable for any damages\n" \
+"arising from the use of this software.\n" \
+"\n" \
+"Permission is granted to anyone to use this software for any purpose,\n" \
+"including commercial applications, and to alter it and redistribute it\n" \
+"freely, subject to the following restrictions:\n" \
+"\n" \
+"1. The origin of this software must not be misrepresented; you must not\n" \
+"   claim that you wrote the original software. If you use this software\n" \
+"   in a product, an acknowledgment in the product documentation would be\n" \
+"   appreciated but is not required.\n" \
+"2. Altered source versions must be plainly marked as such, and must not be\n" \
+"   misrepresented as being the original software.\n" \
+"3. This notice may not be removed or altered from any source distribution." \
+
+#define LICENCE_MIT \
+"Permission is hereby granted, free of charge, to any person obtaining a copy\n" \
+"of this software and associated documentation files (the \"Software\"), to deal\n" \
+"in the Software without restriction, including without limitation the rights\n" \
+"to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n" \
+"copies of the Software, and to permit persons to whom the Software is\n" \
+"furnished to do so, subject to the following conditions:\n" \
+"\n" \
+"The above copyright notice and this permission notice shall be included in all\n" \
+"copies or substantial portions of the Software.\n" \
+"\n" \
+"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n" \
+"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n" \
+"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n" \
+"AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n" \
+"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n" \
+"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n" \
+"SOFTWARE." \
+
+#define LICENCE_BSD_TWOCLAUSE \
+"Redistribution and use in source and binary forms, with or without\n" \
+"modification, are permitted provided that the following conditions are\n" \
+"met:\n" \
+"\n" \
+"1. Redistributions of source code must retain the above copyright\n" \
+"   notice, this list of conditions and the following disclaimer.\n" \
+"\n" \
+"2. Redistributions in binary form must reproduce the above copyright\n" \
+"   notice, this list of conditions and the following disclaimer in the\n" \
+"   documentation and/or other materials provided with the distribution.\n" \
+"\n" \
+"THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS\n" \
+"IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED\n" \
+"TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\n" \
+"PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n" \
+"HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n" \
+"SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED\n" \
+"TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\n" \
+"PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\n" \
+"LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\n" \
+"NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\n" \
+"SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE." \
+
 static licences_t licences[] =
 {
 	{ "Simple DirectMedia Layer", true,
-		"Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>\n"
+		"Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>\n"
   		"\n"
-		"This software is provided 'as-is', without any express or implied\n"
-		"warranty.  In no event will the authors be held liable for any damages\n"
-		"arising from the use of this software.\n"
+		LICENCE_ZLIB
+	},
+	{ "zlib", true,
+		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler\n"
 		"\n"
-		"Permission is granted to anyone to use this software for any purpose,\n"
-		"including commercial applications, and to alter it and redistribute it\n"
-		"freely, subject to the following restrictions:\n"
-  		"\n"
-		"1. The origin of this software must not be misrepresented; you must not\n"
-		"   claim that you wrote the original software. If you use this software\n"
-		"   in a product, an acknowledgment in the product documentation would be\n"
-		"   appreciated but is not required. \n"
-		"2. Altered source versions must be plainly marked as such, and must not be\n"
-		"   misrepresented as being the original software.\n"
-		"3. This notice may not be removed or altered from any source distribution.\n"
+		LICENCE_ZLIB
+	},
+	{ "minizip", true,
+		"Copyright (C) 1998-2010 Gilles Vollant (minizip)\n"
+		"( http://www.winimage.com/zLibDll/minizip.html )\n"
+		"\n"
+		"Modifications of Unzip for Zip64\n"
+		"Copyright (C) 2007-2008 Even Rouault\n"
+		"\n"
+		"Modifications for Zip64 support on both zip and unzip\n"
+		"Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )\n"
+		"\n"
+		LICENCE_ZLIB
+	},
+	{ "libpng", true,
+		"Copyright (c) 1995-2022 The PNG Reference Library Authors.\n"
+		"Copyright (c) 2018-2022 Cosmin Truta.\n"
+		"Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.\n"
+		"Copyright (c) 1996-1997 Andreas Dilger.\n"
+		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.\n"
+		"\n"
+		LICENCE_ZLIB
+	},
+	{ "libsamplerate", true,
+		"Copyright (c) 2012-2016, Erik de Castro Lopo <erikd@mega-nerd.com>\n"
+		"All rights reserved.\n"
+		"\n"
+		LICENCE_BSD_TWOCLAUSE
 	},
 	{ "Dear ImGui", true,
 		"Copyright (c) 2014-2022 Omar Cornut\n"
 		"\n"
-		"Permission is hereby granted, free of charge, to any person obtaining a copy\n"
-		"of this software and associated documentation files (the \"Software\"), to deal\n"
-		"in the Software without restriction, including without limitation the rights\n"
-		"to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
-		"copies of the Software, and to permit persons to whom the Software is\n"
-		"furnished to do so, subject to the following conditions:\n"
-		"\n"
-		"The above copyright notice and this permission notice shall be included in all\n"
-		"copies or substantial portions of the Software.\n"
-		"\n"
-		"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
-		"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
-		"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
-		"AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
-		"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
-		"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
-		"SOFTWARE."
+		LICENCE_MIT
 	},
 	{ "cimgui", true,
 		"Copyright (c) 2015 Stephan Dilly\n"
 		"\n"
-		"Permission is hereby granted, free of charge, to any person obtaining a copy\n"
-		"of this software and associated documentation files (the \"Software\"), to deal\n"
-		"in the Software without restriction, including without limitation the rights\n"
-		"to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
-		"copies of the Software, and to permit persons to whom the Software is\n"
-		"furnished to do so, subject to the following conditions:\n"
-		"\n"
-		"The above copyright notice and this permission notice shall be included in all\n"
-		"copies or substantial portions of the Software.\n"
-		"\n"
-		"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
-		"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
-		"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
-		"AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
-		"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
-		"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
-		"SOFTWARE."
-	},
-	{ "WidePix", true,
-		"Copyright(C) 2020 - 2021 Nash Muhandes\n"
-		"\n"
-		"LICENSE:\n"
-		"\n"
-		"You MAY use, copy, modify, merge, publish, distribute, and/or sublicense this\n"
-		"work - HOWEVER:\n"
-		"\n"
-		"- You may not sell this work\n"
-		"\n"
-		"- Your work must comply with id Software's original licenses (i.e. they must\n"
-		"only work on the game from which they originated)\n"
-		"\n"
-		"- All derivative works must credit the original authors (id Software (Doom),\n"
-		"Raven Software (Hexen/Heretic), Rogue Software (Strife), Digital Cafe (Chex),\n"
-		"Nash Muhandes)"
+		LICENCE_MIT
 	},
 	{ "Inconsolata font", true,
 		"Copyright 2006 The Inconsolata Project Authors\n"
@@ -582,6 +613,23 @@ static licences_t licences[] =
 		"FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM\n"
 		"OTHER DEALINGS IN THE FONT SOFTWARE.\n"
 	},
+	{ "WidePix", true,
+		"Copyright(C) 2020 - 2021 Nash Muhandes\n"
+		"\n"
+		"LICENSE:\n"
+		"\n"
+		"You MAY use, copy, modify, merge, publish, distribute, and/or sublicense this\n"
+		"work - HOWEVER:\n"
+		"\n"
+		"- You may not sell this work\n"
+		"\n"
+		"- Your work must comply with id Software's original licenses (i.e. they must\n"
+		"only work on the game from which they originated)\n"
+		"\n"
+		"- All derivative works must credit the original authors (id Software (Doom),\n"
+		"Raven Software (Hexen/Heretic), Rogue Software (Strife), Digital Cafe (Chex),\n"
+		"Nash Muhandes)"
+	},
 };
 
 constexpr auto Themes()
@@ -642,7 +690,8 @@ static void M_RenderSeparator( menuentry_t* cat );
 extern "C"
 {
 	int32_t					dashboardactive = Dash_Inactive;
-	int32_t					dashboardremappingkey = Remap_None;
+	int32_t					dashboardremappingtype = Remap_None;
+	int32_t					dashboardremappingkey = -1;
 	int32_t					dashboardpausesplaysim = true;
 	int32_t					dashboardopensound = 0;
 	int32_t					dashboardclosesound = 0;
@@ -703,7 +752,60 @@ static ImVec2 zeropivot = { 0, 0 };
 DOOM_C_API void S_StartSound( void *origin, int sound_id );
 DOOM_C_API void M_DashboardOptionsInit();
 DOOM_C_API void M_DashboardOptionsWindow( const char* itemname, void* data );
-DOOM_C_API const char* M_FindNameForKey( remapping_t type, int32_t key );
+
+typedef struct keyname_s
+{
+	int32_t		key;
+	const char*	name;
+} keyname_t;
+
+static keyname_t keynames[] = KEY_NAMES_ARRAY;
+
+// Matches up with MAX_MOUSE_BUTTONS
+static keyname_t mousenames[] =
+{
+	{ 0, "LEFT" },
+	{ 1, "RIGHT" },
+	{ 2, "MID" },
+	{ 3, "SCROLL UP" },
+	{ 4, "SCROLL DOWN" },
+	{ 5, "BUTTON #6" },
+	{ 6, "BUTTON #7" },
+	{ 7, "BUTTON #8" },
+};
+
+static const char* M_FindKeyName( keyname_t* keys, size_t numkeys, int32_t unboundkeynum, int32_t keytofind )
+{
+	int32_t index;
+
+	for( index = 0; index < numkeys; ++index )
+	{
+		if( keys[ index ].key == keytofind )
+		{
+			return keys[ index ].name;
+		}
+	}
+
+	if( keytofind == unboundkeynum )
+	{
+		return "<NONE>";
+	}
+
+	return "<UNKNOWN>";
+}
+
+const char* M_FindNameForKey( remapping_t type, int32_t key )
+{
+	switch( type )
+	{
+	case Remap_Key:
+		return M_FindKeyName( keynames, arrlen( keynames ), 0, key );
+	case Remap_Mouse:
+		return M_FindKeyName( mousenames, arrlen( mousenames ), -1, key );
+	default:
+		return "<UNKNOWN>";
+	}
+}
 
 void M_DashboardPrepareRender()
 {
@@ -1084,11 +1186,12 @@ void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingnam
 	if( igButton( M_FindNameForKey( type, *key ), mappingsize ) )
 	{
 		igOpenPopup_Str( "RemapKey", ImGuiPopupFlags_None );
-		dashboardremappingkey = type;
+		dashboardremappingtype = type;
+		dashboardremappingkey = *key;
 		mapkeybuttonvalue = -1;
 	}
 
-	if( igIsPopupOpen_Str( "RemapKey", ImGuiPopupFlags_None ) )
+	if( igIsPopupOpen_Str( "RemapKey", ImGuiPopupFlags_None ) && dashboardremappingkey == *key )
 	{
 		ImVec2 WindowPos = igGetCurrentContext()->IO.DisplaySize;
 		WindowPos.x *= 0.5f;
@@ -1108,7 +1211,8 @@ void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingnam
 			if( cancel )
 			{
 				igCloseCurrentPopup();
-				dashboardremappingkey = Remap_None;
+				dashboardremappingtype = Remap_None;
+				dashboardremappingkey = -1;
 				mapkeybuttonvalue = -1;
 			}
 			igEndPopup();
@@ -1118,7 +1222,7 @@ void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingnam
 
 boolean M_DashboardResponder( event_t* ev )
 {
-	switch( dashboardremappingkey )
+	switch( dashboardremappingtype )
 	{
 	case Remap_Key:
 		if( ev->type == ev_keydown )

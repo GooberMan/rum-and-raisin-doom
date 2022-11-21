@@ -53,10 +53,14 @@ DOOM_C_API typedef enum dashboardmode_e
 DOOM_C_API typedef enum licence_e
 {
 	Licence_SDL,
+	Licence_zdlib,
+	Licence_minizip,
+	Licence_libpng,
+	Licence_libsamplerate,
 	Licence_DearImGui,
 	Licence_cimgui,
-	Licence_WidePix,
 	Licence_InconsolataFont,
+	Licence_WidePix,
 } licence_t;
 
 DOOM_C_API typedef void (*menufunc_t)( const char* itemname, void* data );
