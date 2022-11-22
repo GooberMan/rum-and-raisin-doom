@@ -242,6 +242,7 @@
     <ClInclude Include="..\ext\cimguiglue\cimguiglue.h" />
     <ClInclude Include="..\ext\cimgui\cimgui.h" />
     <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_sdl.h" />
     <ClInclude Include="..\ext\cimgui\imgui\imconfig.h" />
     <ClInclude Include="..\ext\cimgui\imgui\imgui.h" />
