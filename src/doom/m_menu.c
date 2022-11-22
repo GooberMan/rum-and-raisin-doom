@@ -3730,20 +3730,25 @@ void M_DashboardOptionsInit()
 	window_width_working = window_width;
 	window_height_working = window_height;
 
+	for( index = 0; index < window_sizes_scaled_count; ++index )
+	{
+		if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
+		{
+			window_dimensions_current = window_sizes_scaled[ index ].asstring;
+		}
+	}
+
+	if( !window_dimensions_current )
+	{
+		window_dimensions_current = "Custom";
+	}
+
 	if( render_match_window )
 	{
 		render_dimensions_current = window_size_match.asstring;
 	}
 	else
 	{
-		for( index = 0; index < window_sizes_scaled_count; ++index )
-		{
-			if( window_width == window_sizes_scaled[ index ].width && window_height == window_sizes_scaled[ index ].height )
-			{
-				window_dimensions_current = window_sizes_scaled[ index ].asstring;
-			}
-		}
-
 		for( index = 0; index < render_sizes_count; ++index )
 		{
 			if( render_width == render_sizes[ index ].width && render_height == render_sizes[ index ].height )
