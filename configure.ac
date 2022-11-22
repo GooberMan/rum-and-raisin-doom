@@ -1,4 +1,4 @@
-AC_INIT(Rum and Raisin Doom, 0.3.1-pre.1,
+AC_INIT(Rum and Raisin Doom, 0.3.1-pre.2,
         nothingyet@noemail.com, rum-and-raisin-doom)
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
@@ -9,7 +9,7 @@ PACKAGE_MAINTAINER="Ethan Watson"
 PACKAGE_URL="https://github.com/GooberMan/rum-and-raisin-doom"
 PACKAGE_RDNS="org.rum_and_raisin_doom"
 
-AC_DEFINE( [PACKAGE_BANNER_BACK], [TXT_COLOR_BROWN], ["Banner colour, changes for pre-release and release builds"] )
+AC_DEFINE( [PACKAGE_BANNER_BACK], [TXT_COLOR_MAGENTA], ["Banner colour, changes for pre-release and release builds"] )
 
 AC_CONFIG_AUX_DIR(autotools)
 AC_CANONICAL_HOST
