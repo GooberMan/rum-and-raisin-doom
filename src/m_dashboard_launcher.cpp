@@ -17,6 +17,7 @@
 
 #include "i_log.h"
 #include "i_system.h"
+#include "i_swap.h"
 #include "i_thread.h"
 #include "i_timer.h"
 #include "i_video.h"
@@ -64,7 +65,9 @@ extern "C"
 	extern int32_t frame_height;
 
 	extern uint8_t defaultpalette[];
+
 }
+void R_DrawColumnInCache( column_t*	patch, byte* cache, int originy, int cacheheight );
 
 extern ImFont* font_inconsolata;
 extern ImFont* font_inconsolata_medium;
@@ -1352,25 +1355,26 @@ namespace launcher
 						std::vector< pixel_t > composite;
 						composite.resize( patch->width * patch->height * sizeof( pixel_t ) );
 
-						// This is dirty
-						vbuffer_t fakebuffer = vbuffer_t();
-						fakebuffer.data = composite.data();
-						fakebuffer.width = patch->height;
-						fakebuffer.height = patch->width;
-						fakebuffer.pitch = patch->height;
-						fakebuffer.pixel_size_bytes = sizeof( pixel_t );
-						fakebuffer.mode = VB_Transposed;
-						fakebuffer.verticalscale = 1.2f;
-						fakebuffer.magic_value = vbuffer_magic;
+						// Copy/paste and refactored from r_draw's texture composite generator
+						{
+							int32_t x1 = SHORT( patch->leftoffset );
+							int32_t x2 = M_MIN( x1 + SHORT( patch->width ), SHORT( patch->width ) );
 
-						frame_width = patch->width;
-						frame_height = patch->height;
-						frame_adjusted_width = patch->width * ( 1.6 / ( (double_t)patch->width / (double_t)patch->height ) );
+							int32_t x = M_MAX( x1, 0 );
+	
+							for ( ; x < x2 ; ++x )
+							{
+								column_t* patchcol = (column_t*)( (byte*)patch
+														+ LONG( patch->columnofs[ x - x1 ] ) );
 
-						// WIDESCREEN HACK
-						int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
-						V_UseBuffer( &fakebuffer );
-						V_DrawPatch( xpos, 0, patch );
+								int32_t patchy = patch->topoffset;
+								while( patchy < patch->height )
+								{
+									R_DrawColumnInCache( patchcol, composite.data() + x * SHORT( patch->height ), patchy, patch->height );
+									patchy += patch->height;
+								}
+							}
+						}
 
 						entry.titlepic_raw.resize( patch->width * patch->height );
 						entry.titlepic.width = patch->width;
@@ -2995,11 +2999,11 @@ namespace launcher
 				bool opendialog = false;
 				if( igBeginPopup( "dehacked_add_popup", ImGuiWindowFlags_None ) )
 				{
-					opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
-					if( !doomfileselector->AllDEHs().empty() )
-					{
-						igSeparator();
-					}
+					//opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
+					//if( !doomfileselector->AllDEHs().empty() )
+					//{
+					//	igSeparator();
+					//}
 
 					for( DoomFileEntry& entry : doomfileselector->AllDEHs() )
 					{
@@ -3104,11 +3108,11 @@ namespace launcher
 				bool opendialog = false;
 				if( igBeginPopup( "pwads_add_popup", ImGuiWindowFlags_None ) )
 				{
-					opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
-					if( !doomfileselector->AllPWADs().empty() )
-					{
-						igSeparator();
-					}
+					//opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
+					//if( !doomfileselector->AllPWADs().empty() )
+					//{
+					//	igSeparator();
+					//}
 
 					for( DoomFileEntry& entry : doomfileselector->AllPWADs() )
 					{
