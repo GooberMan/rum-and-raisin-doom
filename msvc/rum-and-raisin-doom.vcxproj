@@ -545,12 +545,14 @@
     <ClCompile Include="..\src\d_gameflow_umapinfo.cpp" />
     <ClCompile Include="..\src\d_iwad.cpp" />
     <ClCompile Include="..\src\icon.c" />
+    <ClCompile Include="..\src\i_error.cpp" />
     <ClCompile Include="..\src\i_log.cpp" />
     <ClCompile Include="..\src\i_terminal.cpp" />
     <ClCompile Include="..\src\i_thread.cpp" />
     <ClCompile Include="..\src\i_main.c" />
     <ClCompile Include="..\src\i_system.c" />
     <ClInclude Include="..\src\d_gameflow.h" />
+    <ClInclude Include="..\src\i_error.h" />
     <ClInclude Include="..\src\i_log.h" />
     <ClInclude Include="..\src\i_terminal.h" />
     <ClInclude Include="..\src\i_vbuffer.h" />

@@ -438,8 +438,10 @@ public:
 	_ty& reserve( size_t& token )	{ token = reserved.fetch_add( 1 ); return data[ token ]; }
 	void commit( size_t token )		{ while( end.compare_exchange_weak( token, token + 1 ) ) { } }
 	void push( _ty& data )			{ size_t ind; reserve( ind ) = data; commit( ind ); }
+	void push( _ty&& data )			{ push( data ); }
 
 	bool valid()					{ return current.load() != end.load(); }
+	bool empty()					{ return current.load() == end.load(); }
 
 private:
 	std::vector< _ty >				data;

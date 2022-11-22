@@ -23,6 +23,7 @@
 #include "d_ticcmd.h"
 #include "d_event.h"
 
+#include "i_error.h"
 
 DOOM_C_API typedef void (*atexit_func_t)(void);
 
@@ -51,8 +52,6 @@ DOOM_C_API ticcmd_t* I_BaseTiccmd (void);
 // Called by M_Responder when quit is selected.
 // Clean exit, displays sell blurb.
 DOOM_C_API void I_Quit (void) NORETURN;
-
-DOOM_C_API void I_Error (const char *error, ...) NORETURN PRINTF_ATTR(1, 2);
 
 DOOM_C_API void I_Tactile (int on, int off, int total);
 
