@@ -1141,6 +1141,7 @@ namespace launcher
 
 		if( M_CheckParm( "-invalidatewadcache" ) || entry.version != DoomFileEntryVersion )
 		{
+			entry.version = DoomFileEntryVersion;
 			if( std::regex_match( filename, DEHRegex ) )
 			{
 				entry.type = DoomFileType::Dehacked;
