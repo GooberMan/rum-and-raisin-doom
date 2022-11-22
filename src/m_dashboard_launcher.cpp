@@ -2488,7 +2488,9 @@ namespace launcher
 				}
 				else
 				{
-					igTextWrapped( textfile.c_str() );
+					// Skipping the format short circuits the code that causes
+					// strings to not display in full
+					igTextWrapped( "%s", textfile.c_str() );
 				}
 			}
 			igEndChildFrame();
