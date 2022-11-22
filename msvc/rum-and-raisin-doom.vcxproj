@@ -120,8 +120,7 @@
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -164,8 +163,7 @@
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -206,8 +204,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -249,8 +246,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -292,8 +288,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -335,8 +330,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -378,8 +372,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;..\ext\glad\include;..\ext\cimgui;..\ext\cimguiglue;..\ext\cimgui\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -422,8 +415,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;..\ext\glad\include;..\ext\cimgui;..\ext\cimguiglue;..\ext\cimgui\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -466,8 +458,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;..\ext\glad\include;..\ext\cimgui;..\ext\cimguiglue;..\ext\cimgui\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -510,8 +501,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);..\win32;..\ext\glad\include;..\ext\cimgui;..\ext\cimguiglue;..\ext\cimgui\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>

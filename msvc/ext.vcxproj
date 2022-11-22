@@ -84,6 +84,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -96,6 +97,7 @@
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -108,6 +110,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -124,6 +127,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -140,6 +144,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -156,6 +161,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\examples;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -172,6 +178,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -188,6 +195,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -204,6 +212,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -220,6 +229,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\ext\glad\include;$(ProjectDir)..\ext\cimgui;$(ProjectDir)..\ext\cimgui\imgui;$(ProjectDir)..\ext\cimgui\imgui\backends;$(ProjectDir)..\ext\cimguiglue;E:\projects\lib\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
