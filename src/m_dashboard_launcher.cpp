@@ -442,9 +442,18 @@ constexpr triangle_t mesh_star[] =
 	MakeTriangle( MakeVec2( 0.375,0.1583333333 ),			MakeVec2( 0.0,0.4333333333 ),				MakeVec2( -0.2416666667,-0.2833333333 ) )
 };
 
+constexpr triangle_t mesh_folder[] =
+{
+	MakeTriangle( MakeVec2( -0.49, 0.4 ), MakeVec2( -0.49, -0.4 ), MakeVec2( -0.2, 0.4 ) ),
+	MakeTriangle( MakeVec2( -0.49, -0.4 ), MakeVec2( -0.2, -0.4 ), MakeVec2( -0.2, 0.4 ) ),
+	MakeTriangle( MakeVec2( -0.2, 0.4 ), MakeVec2( -0.2, -0.25 ), MakeVec2( 0.49, 0.4 ) ),
+	MakeTriangle( MakeVec2( -0.2, -0.25 ), MakeVec2( 0.49, -0.25 ), MakeVec2( 0.49, 0.4 ) ),
+};
+
 // https://materialdesignicons.com/icon/download
 
 constexpr auto Star() { return std::span( mesh_star, arrlen( mesh_star ) ); }
+constexpr auto Folder() { return std::span( mesh_folder, arrlen( mesh_folder ) ); }
 
 void igCentreText( const char* string )
 {
@@ -691,14 +700,13 @@ class FileDialog
 public:
 	FileDialog()
 		: currentpath( std::filesystem::current_path() )
+		, currentpathstring( std::filesystem::current_path().string() )
 	{
 	}
 
 	void Open( filedialogflags_t f, const char* types = nullptr )
 	{
-		return;
-
-		/*if( !igIsPopupOpen_Str( "FileDialog", ImGuiPopupFlags_None ) )
+		if( !igIsPopupOpen_Str( "FileDialog", ImGuiPopupFlags_None ) )
 		{
 			igOpenPopup_Str( "FileDialog", ImGuiPopupFlags_None );
 			selected.clear();
@@ -707,18 +715,21 @@ public:
 
 			if( types )
 			{
+				// TODO: Multiple wildcards
 				std::string regexstring = types;
 				StringReplace( regexstring, ".", "\\." );
 				StringReplace( regexstring, "*", ".+" );
 				regexstring += "$";
 				wildcards.push_back( std::regex( regexstring, std::regex_constants::icase ) );
 			}
-		}*/
+		}
 	}
 
 	bool Handle()
 	{
-		/*ImGuiIO* io = igGetIO();
+		bool handled = false;
+
+		ImGuiIO* io = igGetIO();
 
 		if( igIsPopupOpen_Str( "FileDialog", ImGuiPopupFlags_None ) )
 		{
@@ -733,40 +744,133 @@ public:
 			igSetNextWindowSize( dialogsize, ImGuiCond_Always );
 			if( igBeginPopup( "FileDialog", ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoSavedSettings ) )
 			{
-				for( auto& file : std::filesystem::directory_iterator( std::filesystem::path( currentpath ), std::filesystem::directory_options::skip_permission_denied ) )
+				constexpr ImVec2 upsize = { 30, 20 };
+				constexpr ImVec2 foldersize = { 25, 25 };
+				constexpr ImVec2 selectablesize = { 0, foldersize.y };
+				constexpr ImVec2 cancelselectbuttonsize = { 75.f, 25.f };
+				constexpr float_t spacing = 5.f;
+
+				ImVec2 framesize;
+				igGetContentRegionMax( &framesize );
+
+				if( igButton( "Up", upsize ) )
 				{
-					std::string asstring = file.path().filename().string();
-					if( MatchesWildcard( asstring ) )
+					if( currentpath.has_parent_path() )
 					{
-						auto found = std::find( selected.begin(), selected.end(), file.path() );
-						bool isselected = found != selected.end();
-						if( igSelectable_Bool( asstring.c_str(), isselected, ImGuiSelectableFlags_DontClosePopups, zero ) )
+						currentpath = currentpath.parent_path();
+						currentpathstring = currentpath.string();
+					}
+				}
+				igSameLine( 0, 5 );
+				igText( currentpathstring.c_str() );
+
+				ImVec2 contentavail;
+				igGetContentRegionAvail( &contentavail );
+
+				contentavail.y -= cancelselectbuttonsize.y + spacing;
+
+				ImGuiID id = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "filecontents", nullptr );
+				if( igBeginChildFrame( id, contentavail, ImGuiWindowFlags_None ) )
+				{
+					for( auto& file : std::filesystem::directory_iterator( currentpath, std::filesystem::directory_options::skip_permission_denied ) )
+					{
+						if( file.is_directory() )
 						{
-							if( !isselected )
+							std::string asstring = file.path().filename().string();
+							std::string selectableid = "##" + asstring;
+
+							ImVec2 restorecursor;
+							bool selectableclicked = igSelectable_Bool( selectableid.c_str(), false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_AllowDoubleClick, selectablesize );
+							igGetCursorPos( &restorecursor );
+
+							igSameLine( 0, 0 );
+							igMesh( mesh_folder, arrlen( mesh_folder ), foldersize, igGetColorU32_Col( ImGuiCol_PlotHistogram, 1.0f ) );
+							igSameLine( 0, 5 );
+
+							ImVec2 textpos;
+							igGetCursorPos( &textpos );
+
+							ImVec2 textheight;
+							igCalcTextSize( &textheight, asstring.c_str(), nullptr, false, -1.f );
+
+							textpos.y += ( selectablesize.y - textheight.y ) * 0.5f;
+							igSetCursorPos( textpos );
+
+							igText( asstring.c_str() );
+
+							igSetCursorPos( restorecursor );
+
+							if( selectableclicked && igIsMouseDoubleClicked( ImGuiMouseButton_Left ) )
 							{
-								if( !selectmultiple || !io->KeyCtrl )
+								currentpath = file.path();
+								currentpathstring = currentpath.string();
+							}
+						}
+					}
+
+					for( auto& file : std::filesystem::directory_iterator( currentpath, std::filesystem::directory_options::skip_permission_denied ) )
+					{
+						std::string asstring = file.path().filename().string();
+						std::string selectableid = "##" + asstring;
+
+						if( MatchesWildcard( asstring ) )
+						{
+							auto found = std::find( selected.begin(), selected.end(), file.path() );
+							bool isselected = found != selected.end();
+							bool selectableclicked = igSelectable_Bool( selectableid.c_str(), isselected, ImGuiSelectableFlags_DontClosePopups, zero );
+							igSameLine( 0, 5 );
+							igText( asstring.c_str() );
+
+							if( selectableclicked )
+							{
+								if( !isselected )
 								{
-									selected.clear();
+									if( !selectmultiple || !io->KeyCtrl )
+									{
+										selected.clear();
+									}
 								}
-							}
 							
-							isselected = !isselected;
-							if( !isselected )
-							{
-								if( found != selected.end() ) selected.erase( found );
-							}
-							else
-							{
-								selected.push_back( file.path() );
+								isselected = !isselected;
+								if( !isselected )
+								{
+									if( found != selected.end() ) selected.erase( found );
+								}
+								else
+								{
+									selected.push_back( file.path() );
+								}
 							}
 						}
 					}
 				}
+				igEndChildFrame();
+
+				ImVec2 buttonpos = { framesize.x - cancelselectbuttonsize.x * 2 - spacing * 2, framesize.y - cancelselectbuttonsize.y };
+				igSetCursorPos( buttonpos );
+				if( igButton( "Cancel", cancelselectbuttonsize ) )
+				{
+					selected.clear();
+					igCloseCurrentPopup();
+					handled = true;
+				}
+
+				if( !selected.empty() )
+				{
+					buttonpos.x += cancelselectbuttonsize.x + spacing;
+					igSetCursorPos( buttonpos );
+					if( igButton( "Select", cancelselectbuttonsize ) )
+					{
+						igCloseCurrentPopup();
+						handled = true;
+					}
+				}
+
 				igEndPopup();
 			}
-		}*/
+		}
 
-		return false;
+		return handled;
 	}
 
 private:
@@ -781,6 +885,7 @@ private:
 	}
 
 	std::filesystem::path					currentpath;
+	std::string								currentpathstring;
 	std::vector< std::filesystem::path >	selected;
 	std::vector< std::regex >				wildcards;
 	filedialogflags_t						flags;
