@@ -130,8 +130,9 @@ wad_file_t *W_AddFile (const char *filename)
 		return NULL;
     }
 
-    if (strcasecmp(filename+strlen(filename)-3 , "wad" ) == 0
-	&& strcasecmp(filename+strlen(filename)-7 , "widepix" ) == 0)
+	int32_t iswad = strcasecmp( filename + M_MAX( strlen( filename ) - 3, 0 ), "wad" );
+	int32_t iswidepix = strcasecmp(filename + M_MAX( strlen( filename ) - 7, 0 ), "widepix" );
+    if ( iswad != 0	&& iswidepix != 0 )
     {
 	// single lump file
 
