@@ -297,17 +297,21 @@ constexpr size_t								BufferSize = 4096;
 thread_local bool								is_main_thread;
 thread_local char								error_message_buffer[ BufferSize ];
 
-#if defined( WIN32 )
+#ifdef WIN32
 	#include <excpt.h>
-	// Until I fix up the doombool redefinition mess, we'll forward declare the function we want from WinAPI
-	DOOM_C_API __declspec( dllimport ) int __stdcall IsDebuggerPresent( void );
-	DOOM_C_API __declspec( dllimport ) int __stdcall SetUnhandledExceptionFilter( void* filter );
+	#include <Windows.h>
+	#include <DbgHelp.h>
+
+	#include <SDL2/SDL_syswm.h>
+
 	#define IsDebuggerAttached() IsDebuggerPresent()
+	#define CALLSTACK_MESSAGE " (CTRL+C to copy)"
 #else
 	#include <execinfo.h>
 	// Needs a large chunk of code on Linux to work, but the intrinsic we pick should do things just fine
 	#define SetUnhandledExceptionFilter( filter )
 	#define IsDebuggerAttached() true
+	#define CALLSTACK_MESSAGE
 #endif
 
 #ifdef __has_builtin
@@ -342,6 +346,19 @@ void I_ErrorThread()
 	exit( -1 );
 }
 
+void I_DoErrorBox( const char* error )
+{
+#ifdef WIN32
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION( &wmInfo.version );
+	SDL_GetWindowWMInfo( I_GetWindow(), &wmInfo );
+
+	MessageBox( wmInfo.info.win.window, error, PACKAGE_STRING " fatal error", MB_OK | MB_ICONERROR | MB_APPLMODAL );
+#else
+	SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, PACKAGE_STRING, error, nullptr );
+#endif
+}
+
 void I_PostError( const char* error )
 {
 	I_LogDebug( error );
@@ -359,7 +376,7 @@ void I_PostError( const char* error )
 
 		if( !M_ParmExists( "-nogui" ) )
 		{
-			SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, PACKAGE_STRING, error, nullptr );
+			I_DoErrorBox( error );
 		}
 
 		exit( -1 );
@@ -431,7 +448,77 @@ thread_local Scratchpad< 8192 > callstack_buffer;
 #ifdef WIN32
 callstack_t GetCallstack()
 {
+	constexpr size_t NumFrames = 64;
+	
 	callstack_t output = { };
+
+	constexpr DWORD Machine = PLATFORM_ARCH == PLATFORM_ARCH_x64 ? IMAGE_FILE_MACHINE_AMD64 : IMAGE_FILE_MACHINE_I386;
+
+	HANDLE currprocess = GetCurrentProcess();
+	HANDLE currthread = GetCurrentThread();
+
+	BOOL initialised = SymInitialize( currprocess, ".", TRUE );
+	SymSetOptions( SYMOPT_CASE_INSENSITIVE | SYMOPT_LOAD_ANYTHING | SYMOPT_DEBUG );
+
+	CONTEXT capturecontext = { };
+	capturecontext.ContextFlags = CONTEXT_ALL;
+	RtlCaptureContext( &capturecontext );
+
+	STACKFRAME stackframe;
+	stackframe.AddrPC.Mode = AddrModeFlat;
+	stackframe.AddrFrame.Mode = AddrModeFlat;
+	stackframe.AddrStack.Mode = AddrModeFlat;
+#if PLATFORM_ARCH == PLATFORM_ARCH_x64
+	{
+		stackframe.AddrPC.Offset = capturecontext.Rip;
+		stackframe.AddrFrame.Offset = capturecontext.Rbp;
+		stackframe.AddrStack.Offset = capturecontext.Rsp;
+	}
+#elif PLATFORM_ARCH == PLATFORM_ARCH_x86
+	{
+		stackframe.AddrPC.Offset = capturecontext.Eip;
+		stackframe.AddrFrame.Offset = capturecontext.Ebp;
+		stackframe.AddrStack.Offset = capturecontext.Esp;
+	}
+#else
+	#error "We don't support Windows ARM yet"
+#endif
+
+	output.frames = callstack_buffer.alloc< void* >( NumFrames );
+	output.formatted = callstack_buffer.alloc< const char* >( NumFrames );
+
+	while( output.count < NumFrames && StackWalk( Machine, currprocess, currthread, &stackframe, &capturecontext , NULL, SymFunctionTableAccess, SymGetModuleBase, NULL ) )
+	{
+		output.frames[ output.count ] = (void*)stackframe.AddrPC.Offset;
+
+		auto base = SymGetModuleBase( currprocess, stackframe.AddrPC.Offset );
+		using NativeDWORD = decltype( base );
+
+		constexpr size_t SymbolMaxLength = 512;
+		PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)callstack_buffer.alloc< uint8_t >( sizeof( IMAGEHLP_SYMBOL ) + SymbolMaxLength );
+		symbol->SizeOfStruct = sizeof( SYMBOL_INFO ) + SymbolMaxLength;
+		symbol->MaxNameLength = SymbolMaxLength - 2;
+		NativeDWORD displacement = 0;
+		BOOL gotname = SymGetSymFromAddr( currprocess, stackframe.AddrPC.Offset, &displacement, symbol );
+		output.formatted[ output.count ] = symbol->Name;
+
+		IMAGEHLP_LINE line;
+		line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+		DWORD linedisplacement = 0;
+		BOOL gotline = SymGetLineFromAddr( currprocess, stackframe.AddrPC.Offset, &linedisplacement, &line );
+
+		const char* filename = M_BaseName( line.FileName );
+
+		size_t buffersize = M_snprintf( nullptr, 0, ">%s(%d): %s", filename, line.LineNumber, symbol->Name ) + 1;
+		char* buffer = callstack_buffer.alloc< char >( buffersize );
+		M_snprintf( buffer, buffersize, ">%s(%d): %s", filename, line.LineNumber, symbol->Name );
+
+		output.formatted[ output.count ] = buffer;
+
+		++output.count;
+	}
+
+	SymCleanup( currprocess );
 
 	return output;
 }
@@ -455,7 +542,7 @@ callstack_t GetCallstack()
 void I_InitError( void )
 {
 	std::set_terminate( &I_UnhandledUserException );
-	SetUnhandledExceptionFilter( &I_UnhandledStructuredException );
+	SetUnhandledExceptionFilter( (LPTOP_LEVEL_EXCEPTION_FILTER)&I_UnhandledStructuredException );
 
 	is_main_thread = true;
 
@@ -481,11 +568,11 @@ void I_Error( const char *error, ... )
 
 	callstack_t callstack = GetCallstack();
 
-	M_StringConcat( error_message_buffer, "\n\nCallstack:\n\n  ", sizeof( error_message_buffer ) );
+	M_StringConcat( error_message_buffer, "\n\nCallstack" CALLSTACK_MESSAGE ":\n\n", sizeof( error_message_buffer ) );
 	for( const char* formatted : callstack.FormattedFrames() )
 	{
 		M_StringConcat( error_message_buffer, formatted, sizeof( error_message_buffer ) );
-		M_StringConcat( error_message_buffer, "\n  ", sizeof( error_message_buffer ) );
+		M_StringConcat( error_message_buffer, "\n", sizeof( error_message_buffer ) );
 	}
 
 	I_PostError( error_message_buffer );
