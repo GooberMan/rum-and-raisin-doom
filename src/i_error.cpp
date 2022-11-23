@@ -286,16 +286,51 @@ static uint8_t endoom_error[] =
 	0x00, 0x10, 0x00, 0x10, 0x00, 0x10, 0x00, 0x10, 0x00, 0x10, 0x00, 0x10, 0x00, 0x10, 0x00, 0x10,
 };
 
+template< size_t _size >
+class Scratchpad
+{
+public:
+	Scratchpad()
+		: curr( buffer )
+	{
+	}
+
+	template< typename _ty >
+	_ty* alloc( size_t num )
+	{
+		uint8_t* output = curr;
+		curr += sizeof( _ty ) * num;
+		return (_ty*)output;
+	}
+
+private:
+	uint8_t			buffer[ _size ];
+	uint8_t*		curr;
+};
+
+typedef struct callstack_s
+{
+	void**			frames;
+	const char**	formatted;
+	size_t			count;
+
+	constexpr auto FormattedFrames() { return std::span( formatted, count ); }
+
+} callstack_t;
+
 using semaphore = std::counting_semaphore< 1 >;
 
 static std::thread*								error_thread;
 static semaphore*								error_posted;
 static semaphore*								error_wait;
 static AtomicCircularQueue< const char* >*		error_queue;
+static std::atomic< bool >						error_super_bad;
 
 constexpr size_t								BufferSize = 4096;
 thread_local bool								is_main_thread;
 thread_local char								error_message_buffer[ BufferSize ];
+
+thread_local Scratchpad< 8192 >					callstack_buffer;
 
 #ifdef WIN32
 	#include <excpt.h>
@@ -332,20 +367,6 @@ thread_local char								error_message_buffer[ BufferSize ];
 	#endif
 #endif 
 
-void I_ErrorThread()
-{
-	error_posted->acquire();
-
-	const char* firsterror = error_queue->access();
-
-	if( !M_ParmExists( "-nogui" ) )
-	{
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, PACKAGE_STRING, firsterror, nullptr );
-	}
-
-	exit( -1 );
-}
-
 void I_DoErrorBox( const char* error )
 {
 #ifdef WIN32
@@ -359,20 +380,40 @@ void I_DoErrorBox( const char* error )
 #endif
 }
 
+void I_ErrorThread()
+{
+	error_posted->acquire();
+
+	const char* firsterror = error_queue->access();
+
+	if( !M_ParmExists( "-nogui" ) )
+	{
+		I_DoErrorBox( firsterror );
+	}
+
+	exit( -1 );
+}
+
 void I_PostError( const char* error )
 {
-	I_LogDebug( error );
-
-	if( IsDebuggerAttached() )
+	if( !error_super_bad.load() )
 	{
-		DoDebugBreak();
+		I_LogDebug( error );
+
+		if( IsDebuggerAttached() )
+		{
+			DoDebugBreak();
+		}
 	}
 
 	if( is_main_thread )
 	{
-		I_TerminalSetMode( TM_ImmediateRender );
-		memcpy( TXT_GetScreenData(), endoom_error, arrlen( endoom_error ) );
-		I_TerminalRender();
+		if( !error_super_bad.load() )
+		{
+			I_TerminalSetMode( TM_ImmediateRender );
+			memcpy( TXT_GetScreenData(), endoom_error, arrlen( endoom_error ) );
+			I_TerminalRender();
+		}
 
 		if( !M_ParmExists( "-nogui" ) )
 		{
@@ -388,62 +429,6 @@ void I_PostError( const char* error )
 		error_wait->acquire();
 	}
 }
-
-void I_UnhandledUserException()
-{
-	try
-	{
-		std::rethrow_exception( std::current_exception() );
-	}
-	catch( const std::exception& e )
-	{
-		I_Error( e.what() );
-	}
-	catch( ... )
-	{
-		I_Error( "Unknown user exception" );
-	}
-}
-
-int32_t I_UnhandledStructuredException()
-{
-	I_PostError( "Unknown structed exception" );
-	return EXCEPTION_EXECUTE_HANDLER;
-}
-
-template< size_t _size >
-class Scratchpad
-{
-public:
-	Scratchpad()
-		: curr( buffer )
-	{
-	}
-
-	template< typename _ty >
-	_ty* alloc( size_t num )
-	{
-		uint8_t* output = curr;
-		curr += sizeof( _ty ) * num;
-		return (_ty*)output;
-	}
-
-private:
-	uint8_t			buffer[ _size ];
-	uint8_t*		curr;
-};
-
-typedef struct callstack_s
-{
-	void**			frames;
-	const char**	formatted;
-	size_t			count;
-
-	constexpr auto FormattedFrames() { return std::span( formatted, count ); }
-
-} callstack_t;
-
-thread_local Scratchpad< 8192 > callstack_buffer;
 
 #ifdef WIN32
 callstack_t GetCallstack()
@@ -500,7 +485,20 @@ callstack_t GetCallstack()
 		symbol->MaxNameLength = SymbolMaxLength - 2;
 		NativeDWORD displacement = 0;
 		BOOL gotname = SymGetSymFromAddr( currprocess, stackframe.AddrPC.Offset, &displacement, symbol );
-		output.formatted[ output.count ] = symbol->Name;
+		if( symbol->Name[ 0 ] == '?' )
+		{
+			output.formatted[ output.count ] = symbol->Name + 1;
+			char* curr = symbol->Name + 1;
+			while( *curr != '@' && *curr != 0 )
+			{
+				++curr;
+			}
+			*curr = 0;
+		}
+		else
+		{
+			output.formatted[ output.count ] = symbol->Name;
+		}
 
 		IMAGEHLP_LINE line;
 		line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
@@ -509,9 +507,9 @@ callstack_t GetCallstack()
 
 		const char* filename = M_BaseName( line.FileName );
 
-		size_t buffersize = M_snprintf( nullptr, 0, ">%s(%d): %s", filename, line.LineNumber, symbol->Name ) + 1;
+		size_t buffersize = M_snprintf( nullptr, 0, ">%s(%d): %s", filename, line.LineNumber, output.formatted[ output.count ] ) + 1;
 		char* buffer = callstack_buffer.alloc< char >( buffersize );
-		M_snprintf( buffer, buffersize, ">%s(%d): %s", filename, line.LineNumber, symbol->Name );
+		M_snprintf( buffer, buffersize, ">%s(%d): %s", filename, line.LineNumber, output.formatted[ output.count ] );
 
 		output.formatted[ output.count ] = buffer;
 
@@ -539,10 +537,50 @@ callstack_t GetCallstack()
 }
 #endif // Platform specific GetCallstack()
 
+void I_UnhandledUserException()
+{
+	try
+	{
+		std::rethrow_exception( std::current_exception() );
+	}
+	catch( const std::exception& e )
+	{
+		I_Error( e.what() );
+	}
+	catch( ... )
+	{
+		I_Error( "Unknown user exception" );
+	}
+}
+
+#ifdef WIN32
+int32_t I_UnhandledStructuredException()
+{
+	error_super_bad = true;
+
+	I_DoErrorBox( "Unhandled exception, press okay to retrieve callstack." );
+	callstack_t callstack = GetCallstack();
+
+	M_StringConcat( error_message_buffer, "Unhandled exception.\n\nCallstack" CALLSTACK_MESSAGE ":\n\n", sizeof( error_message_buffer ) );
+	
+	for( const char* formatted : callstack.FormattedFrames() )
+	{
+		M_StringConcat( error_message_buffer, formatted, sizeof( error_message_buffer ) );
+		M_StringConcat( error_message_buffer, "\n", sizeof( error_message_buffer ) );
+	}
+
+	I_PostError( error_message_buffer );
+
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif // WIN32
+
 void I_InitError( void )
 {
 	std::set_terminate( &I_UnhandledUserException );
+#ifdef WIN32
 	SetUnhandledExceptionFilter( (LPTOP_LEVEL_EXCEPTION_FILTER)&I_UnhandledStructuredException );
+#endif // WIN32
 
 	is_main_thread = true;
 
@@ -562,13 +600,13 @@ void I_Error( const char *error, ... )
 
 	// Write a copy of the message into buffer.
 	va_start( argptr, error );
-	memset( error_message_buffer, 0, sizeof( error_message_buffer ) );
 	M_vsnprintf( error_message_buffer, sizeof( error_message_buffer ), error, argptr );
 	va_end( argptr );
 
 	callstack_t callstack = GetCallstack();
 
 	M_StringConcat( error_message_buffer, "\n\nCallstack" CALLSTACK_MESSAGE ":\n\n", sizeof( error_message_buffer ) );
+	
 	for( const char* formatted : callstack.FormattedFrames() )
 	{
 		M_StringConcat( error_message_buffer, formatted, sizeof( error_message_buffer ) );
