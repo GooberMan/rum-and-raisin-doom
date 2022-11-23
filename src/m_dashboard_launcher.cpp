@@ -820,7 +820,7 @@ public:
 						{
 							auto found = std::find( selected.begin(), selected.end(), file.path() );
 							bool isselected = found != selected.end();
-							bool selectableclicked = igSelectable_Bool( selectableid.c_str(), isselected, ImGuiSelectableFlags_DontClosePopups, zero );
+							bool selectableclicked = igSelectable_Bool( selectableid.c_str(), isselected, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_AllowDoubleClick, zero );
 							igSameLine( 0, 5 );
 							igText( asstring.c_str() );
 
@@ -834,14 +834,26 @@ public:
 									}
 								}
 							
-								isselected = !isselected;
-								if( !isselected )
+								if( igIsMouseDoubleClicked( ImGuiMouseButton_Left ) )
 								{
-									if( found != selected.end() ) selected.erase( found );
+									if( !isselected )
+									{
+										selected.push_back( file.path() );
+									}
+									igCloseCurrentPopup();
+									handled = true;
 								}
 								else
 								{
-									selected.push_back( file.path() );
+									isselected = !isselected;
+									if( !isselected )
+									{
+										if( found != selected.end() ) selected.erase( found );
+									}
+									else
+									{
+										selected.push_back( file.path() );
+									}
 								}
 							}
 						}
@@ -875,6 +887,8 @@ public:
 
 		return handled;
 	}
+
+	constexpr const auto& Selected() const { return selected; }
 
 private:
 	bool MatchesWildcard( const std::string& val )
@@ -1129,7 +1143,7 @@ namespace launcher
 
 		DoomFileEntry entry = DoomFileEntry();
 		entry.filename = filename;
-		entry.full_path = path;
+		entry.full_path = std::filesystem::absolute( path ).string();
 		entry.cache_path = cachepath;
 		entry.last_modified = lastmodified;
 		entry.file_length = filelength;
@@ -1553,11 +1567,51 @@ namespace launcher
 			SetupIterators( defaultiwad );
 		}
 
-		void Add( DoomFileEntry& entry )
+		void Add( DoomFileEntry& entry, bool select = false )
 		{
-			std::string current = middle->filename;
+			std::string current = select ? entry.filename : middle->filename;
 			iwads->push_back( entry );
 			SetupIterators( current.c_str() );
+		}
+
+		void Select( const std::filesystem::path& path )
+		{
+			std::string fullpath = path.string();
+			auto found = std::find_if( iwads->begin(), iwads->end(), [ &fullpath ]( const DoomFileEntry& entry )
+			{
+				return EqualCaseInsensitive( fullpath, entry.full_path );
+			} );
+
+			if( found != iwads->end() )
+			{
+				middle = found;
+
+				left = middle;
+				if( left == iwads->begin() )
+				{
+					left = --iwads->end();
+				}
+				else
+				{
+					--left;
+				}
+
+				right = middle;
+				if( ++right == iwads->end() )
+				{
+					right = iwads->begin();
+				}
+			}
+		}
+
+		bool Contains( const std::filesystem::path& path )
+		{
+			std::string fullpath = path.string();
+
+			return std::find_if( iwads->begin(), iwads->end(), [ &fullpath ]( const DoomFileEntry& entry )
+			{
+				return EqualCaseInsensitive( fullpath, entry.full_path );
+			} ) != iwads->end();
 		}
 
 		void SetupIterators( const char* defaultiwad )
@@ -1763,6 +1817,20 @@ namespace launcher
 			if( entry.type == DoomFileType::Dehacked ) dehs.container->push_back( entry );
 		}
 
+		bool Contains( const std::filesystem::path& path )
+		{
+			std::string fullpath = path.string();
+
+			auto findfunc = [ &fullpath ]( const DoomFileEntry& entry )
+			{
+				return EqualCaseInsensitive( fullpath, entry.full_path );
+			};
+
+			return std::find_if( pwads.container->begin(), pwads.container->end(), findfunc ) != pwads.container->end()
+				|| std::find_if( dehs.container->begin(), dehs.container->end(), findfunc ) != dehs.container->end();
+		}
+
+
 		void ClearAllSelected( )
 		{
 			pwads.selected.clear();
@@ -1784,6 +1852,30 @@ namespace launcher
 				}
 			}
 			if( entry.type == DoomFileType::Dehacked ) Select( dehs, entry );
+		}
+
+		void Select( const std::filesystem::path& path )
+		{
+			std::string fullpath = path.string();
+
+			auto findfunc = [ &fullpath ]( const DoomFileEntry& entry )
+			{
+				return EqualCaseInsensitive( fullpath, entry.full_path );
+			};
+
+			auto found = std::find_if( pwads.container->begin(), pwads.container->end(), findfunc );
+			if( found != pwads.container->end() )
+			{
+				Select( *found );
+				return;
+			}
+
+			found = std::find_if( dehs.container->begin(), dehs.container->end(), findfunc );
+			if( found != dehs.container->end() )
+			{
+				Select( *found );
+				return;
+			}
 		}
 
 		bool Deselect( const DoomFileEntry& entry )
@@ -3177,9 +3269,40 @@ namespace launcher
 
 			igColumns( 1, nullptr, false );
 
-			if( filedialog.Handle() )
+			if( filedialog.Handle()
+				&& !filedialog.Selected().empty() )
 			{
-				int foo = 0;
+				for( auto& path : filedialog.Selected() )
+				{
+					bool foundiwad = iwadselector->Contains( path );
+					bool foundother = doomfileselector->Contains( path );
+					if( !foundiwad && !foundother )
+					{
+						DoomFileEntry entry = ParseDoomFile( path );
+						if( entry.type == DoomFileType::IWAD )
+						{
+							iwadselector->Add( entry, true );
+						}
+						if( entry.type == DoomFileType::PWAD
+							|| entry.type == DoomFileType::Dehacked )
+						{
+							doomfileselector->Add( entry );
+							doomfileselector->Select( entry );
+						}
+					}
+					else
+					{
+						if( foundiwad )
+						{
+							iwadselector->Select( path );
+						}
+						else
+						{
+							doomfileselector->Select( path );
+						}
+					}
+
+				}
 			}
 
 			ImVec2 cursorpos;
