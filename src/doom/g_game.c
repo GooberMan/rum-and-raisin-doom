@@ -198,11 +198,12 @@ static const struct
 #define NUMKEYS		256 
 #define MAX_JOY_BUTTONS 20
 
-static boolean  gamekeydown[NUMKEYS]; 
+static boolean  gamekeys[NUMKEYS]; 
+boolean* gamekeydown = gamekeys;
 static int      turnheld;		// for accelerative turning 
  
 static boolean  mousearray[MAX_MOUSE_BUTTONS + 1];
-static boolean *mousebuttons = &mousearray[1];  // allow [-1]
+boolean* mousebuttons = &mousearray[1];  // allow [-1]
 
 // mouse values are used once 
 int             mousex;
@@ -220,7 +221,7 @@ static int      joyxmove;
 static int      joyymove;
 static int      joystrafemove;
 static boolean  joyarray[MAX_JOY_BUTTONS + 1]; 
-static boolean *joybuttons = &joyarray[1];		// allow [-1] 
+boolean* joybuttons = &joyarray[1];		// allow [-1] 
  
 static int      savegameslot; 
 static char     savedescription[32]; 
@@ -322,11 +323,6 @@ static int G_NextWeapon(int direction)
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
 //
-
-#define IsBound( key ) ( key >= 0 )
-#define GameKeyDown( key ) ( IsBound( key ) && gamekeydown[ key ] )
-#define MouseButtonDown( button ) ( IsBound( button ) && mousebuttons[ button ] )
-#define JoyButtonDown( button ) ( IsBound( button ) && joybuttons[ button ] )
 
 void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic) 
 { 

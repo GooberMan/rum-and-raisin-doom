@@ -17,170 +17,181 @@
 
 #ifndef __M_CONTROLS_H__
 #define __M_CONTROLS_H__
- 
-extern int key_right;
-extern int key_left;
 
-extern int key_up;
-extern int key_down;
-extern int key_strafeleft;
-extern int key_straferight;
-extern int key_fire;
-extern int key_use;
-extern int key_strafe;
-extern int key_speed;
-extern int key_toggle_autorun;
+#include "doomtype.h"
 
-extern int key_jump;
+DOOM_C_API extern boolean* gamekeydown;
+DOOM_C_API extern boolean* mousebuttons;
+DOOM_C_API extern boolean* joybuttons;
+
+#define IsBound( key )				( key >= 0 )
+#define GameKeyDown( key )			( IsBound( key ) && gamekeydown[ key ] )
+#define MouseButtonDown( button )	( IsBound( button ) && mousebuttons[ button ] )
+#define JoyButtonDown( button )		( IsBound( button ) && joybuttons[ button ] )
  
-extern int key_flyup;
-extern int key_flydown;
-extern int key_flycenter;
-extern int key_lookup;
-extern int key_lookdown;
-extern int key_lookcenter;
-extern int key_invleft;
-extern int key_invright;
-extern int key_useartifact;
+DOOM_C_API extern int key_right;
+DOOM_C_API extern int key_left;
+
+DOOM_C_API extern int key_up;
+DOOM_C_API extern int key_down;
+DOOM_C_API extern int key_strafeleft;
+DOOM_C_API extern int key_straferight;
+DOOM_C_API extern int key_fire;
+DOOM_C_API extern int key_use;
+DOOM_C_API extern int key_strafe;
+DOOM_C_API extern int key_speed;
+DOOM_C_API extern int key_toggle_autorun;
+
+DOOM_C_API extern int key_jump;
+ 
+DOOM_C_API extern int key_flyup;
+DOOM_C_API extern int key_flydown;
+DOOM_C_API extern int key_flycenter;
+DOOM_C_API extern int key_lookup;
+DOOM_C_API extern int key_lookdown;
+DOOM_C_API extern int key_lookcenter;
+DOOM_C_API extern int key_invleft;
+DOOM_C_API extern int key_invright;
+DOOM_C_API extern int key_useartifact;
 
 // villsa [STRIFE] strife keys
-extern int key_usehealth;
-extern int key_invquery;
-extern int key_mission;
-extern int key_invpop;
-extern int key_invkey;
-extern int key_invhome;
-extern int key_invend;
-extern int key_invuse;
-extern int key_invdrop;
+DOOM_C_API extern int key_usehealth;
+DOOM_C_API extern int key_invquery;
+DOOM_C_API extern int key_mission;
+DOOM_C_API extern int key_invpop;
+DOOM_C_API extern int key_invkey;
+DOOM_C_API extern int key_invhome;
+DOOM_C_API extern int key_invend;
+DOOM_C_API extern int key_invuse;
+DOOM_C_API extern int key_invdrop;
 
-extern int key_message_refresh;
-extern int key_pause;
+DOOM_C_API extern int key_message_refresh;
+DOOM_C_API extern int key_pause;
 
-extern int key_multi_msg;
-extern int key_multi_msgplayer[8];
+DOOM_C_API extern int key_multi_msg;
+DOOM_C_API extern int key_multi_msgplayer[8];
 
-extern int key_weapon1;
-extern int key_weapon2;
-extern int key_weapon3;
-extern int key_weapon4;
-extern int key_weapon5;
-extern int key_weapon6;
-extern int key_weapon7;
-extern int key_weapon8;
+DOOM_C_API extern int key_weapon1;
+DOOM_C_API extern int key_weapon2;
+DOOM_C_API extern int key_weapon3;
+DOOM_C_API extern int key_weapon4;
+DOOM_C_API extern int key_weapon5;
+DOOM_C_API extern int key_weapon6;
+DOOM_C_API extern int key_weapon7;
+DOOM_C_API extern int key_weapon8;
 
-extern int key_arti_quartz;
-extern int key_arti_urn;
-extern int key_arti_bomb;
-extern int key_arti_tome;
-extern int key_arti_ring;
-extern int key_arti_chaosdevice;
-extern int key_arti_shadowsphere;
-extern int key_arti_wings;
-extern int key_arti_torch;
-extern int key_arti_morph;
+DOOM_C_API extern int key_arti_quartz;
+DOOM_C_API extern int key_arti_urn;
+DOOM_C_API extern int key_arti_bomb;
+DOOM_C_API extern int key_arti_tome;
+DOOM_C_API extern int key_arti_ring;
+DOOM_C_API extern int key_arti_chaosdevice;
+DOOM_C_API extern int key_arti_shadowsphere;
+DOOM_C_API extern int key_arti_wings;
+DOOM_C_API extern int key_arti_torch;
+DOOM_C_API extern int key_arti_morph;
 
-extern int key_arti_all;
-extern int key_arti_health;
-extern int key_arti_poisonbag;
-extern int key_arti_blastradius;
-extern int key_arti_teleport;
-extern int key_arti_teleportother;
-extern int key_arti_egg;
-extern int key_arti_invulnerability;
+DOOM_C_API extern int key_arti_all;
+DOOM_C_API extern int key_arti_health;
+DOOM_C_API extern int key_arti_poisonbag;
+DOOM_C_API extern int key_arti_blastradius;
+DOOM_C_API extern int key_arti_teleport;
+DOOM_C_API extern int key_arti_teleportother;
+DOOM_C_API extern int key_arti_egg;
+DOOM_C_API extern int key_arti_invulnerability;
 
-extern int key_demo_quit;
-extern int key_spy;
-extern int key_prevweapon;
-extern int key_nextweapon;
+DOOM_C_API extern int key_demo_quit;
+DOOM_C_API extern int key_spy;
+DOOM_C_API extern int key_prevweapon;
+DOOM_C_API extern int key_nextweapon;
 
-extern int key_map_north;
-extern int key_map_south;
-extern int key_map_east;
-extern int key_map_west;
-extern int key_map_zoomin;
-extern int key_map_zoomout;
-extern int key_map_toggle;
-extern int key_map_maxzoom;
-extern int key_map_follow;
-extern int key_map_grid;
-extern int key_map_mark;
-extern int key_map_clearmark;
+DOOM_C_API extern int key_map_north;
+DOOM_C_API extern int key_map_south;
+DOOM_C_API extern int key_map_east;
+DOOM_C_API extern int key_map_west;
+DOOM_C_API extern int key_map_zoomin;
+DOOM_C_API extern int key_map_zoomout;
+DOOM_C_API extern int key_map_toggle;
+DOOM_C_API extern int key_map_maxzoom;
+DOOM_C_API extern int key_map_follow;
+DOOM_C_API extern int key_map_grid;
+DOOM_C_API extern int key_map_mark;
+DOOM_C_API extern int key_map_clearmark;
 
 // menu keys:
 
-extern int key_menu_activate;
-extern int key_menu_up;
-extern int key_menu_down;
-extern int key_menu_left;
-extern int key_menu_right;
-extern int key_menu_back;
-extern int key_menu_forward;
-extern int key_menu_confirm;
-extern int key_menu_abort;
+DOOM_C_API extern int key_menu_activate;
+DOOM_C_API extern int key_menu_up;
+DOOM_C_API extern int key_menu_down;
+DOOM_C_API extern int key_menu_left;
+DOOM_C_API extern int key_menu_right;
+DOOM_C_API extern int key_menu_back;
+DOOM_C_API extern int key_menu_forward;
+DOOM_C_API extern int key_menu_confirm;
+DOOM_C_API extern int key_menu_abort;
 
-extern int key_menu_help;
-extern int key_menu_save;
-extern int key_menu_load;
-extern int key_menu_volume;
-extern int key_menu_detail;
-extern int key_menu_qsave;
-extern int key_menu_endgame;
-extern int key_menu_messages;
-extern int key_menu_qload;
-extern int key_menu_quit;
-extern int key_menu_gamma;
+DOOM_C_API extern int key_menu_help;
+DOOM_C_API extern int key_menu_save;
+DOOM_C_API extern int key_menu_load;
+DOOM_C_API extern int key_menu_volume;
+DOOM_C_API extern int key_menu_detail;
+DOOM_C_API extern int key_menu_qsave;
+DOOM_C_API extern int key_menu_endgame;
+DOOM_C_API extern int key_menu_messages;
+DOOM_C_API extern int key_menu_qload;
+DOOM_C_API extern int key_menu_quit;
+DOOM_C_API extern int key_menu_gamma;
 
-extern int key_menu_incscreen;
-extern int key_menu_decscreen;
-extern int key_menu_screenshot;
+DOOM_C_API extern int key_menu_incscreen;
+DOOM_C_API extern int key_menu_decscreen;
+DOOM_C_API extern int key_menu_screenshot;
 
-extern int key_menu_dashboard;
+DOOM_C_API extern int key_menu_dashboard;
 
-extern int mousebfire;
-extern int mousebstrafe;
-extern int mousebforward;
+DOOM_C_API extern int mousebfire;
+DOOM_C_API extern int mousebstrafe;
+DOOM_C_API extern int mousebforward;
 
-extern int mousebjump;
+DOOM_C_API extern int mousebjump;
 
-extern int mousebstrafeleft;
-extern int mousebstraferight;
-extern int mousebbackward;
-extern int mousebuse;
+DOOM_C_API extern int mousebstrafeleft;
+DOOM_C_API extern int mousebstraferight;
+DOOM_C_API extern int mousebbackward;
+DOOM_C_API extern int mousebuse;
 
-extern int mousebprevweapon;
-extern int mousebnextweapon;
-extern int mousebinvleft;
-extern int mousebinvright;
+DOOM_C_API extern int mousebprevweapon;
+DOOM_C_API extern int mousebnextweapon;
+DOOM_C_API extern int mousebinvleft;
+DOOM_C_API extern int mousebinvright;
 
-extern int joybfire;
-extern int joybstrafe;
-extern int joybuse;
-extern int joybspeed;
+DOOM_C_API extern int joybfire;
+DOOM_C_API extern int joybstrafe;
+DOOM_C_API extern int joybuse;
+DOOM_C_API extern int joybspeed;
 
-extern int joybjump;
+DOOM_C_API extern int joybjump;
 
-extern int joybstrafeleft;
-extern int joybstraferight;
+DOOM_C_API extern int joybstrafeleft;
+DOOM_C_API extern int joybstraferight;
 
-extern int joybprevweapon;
-extern int joybnextweapon;
+DOOM_C_API extern int joybprevweapon;
+DOOM_C_API extern int joybnextweapon;
 
-extern int joybmenu;
-extern int joybautomap;
+DOOM_C_API extern int joybmenu;
+DOOM_C_API extern int joybautomap;
 
-extern int dclick_use;
+DOOM_C_API extern int dclick_use;
 
-void M_BindBaseControls(void);
-void M_BindHereticControls(void);
-void M_BindHexenControls(void);
-void M_BindStrifeControls(void);
-void M_BindWeaponControls(void);
-void M_BindMapControls(void);
-void M_BindMenuControls(void);
-void M_BindChatControls(unsigned int num_players);
+DOOM_C_API void M_BindBaseControls(void);
+DOOM_C_API void M_BindHereticControls(void);
+DOOM_C_API void M_BindHexenControls(void);
+DOOM_C_API void M_BindStrifeControls(void);
+DOOM_C_API void M_BindWeaponControls(void);
+DOOM_C_API void M_BindMapControls(void);
+DOOM_C_API void M_BindMenuControls(void);
+DOOM_C_API void M_BindChatControls(unsigned int num_players);
 
-void M_ApplyPlatformDefaults(void);
+DOOM_C_API void M_ApplyPlatformDefaults(void);
 
 #endif /* #ifndef __M_CONTROLS_H__ */
 

@@ -27,6 +27,7 @@
 #include "i_terminal.h"
 
 #include "m_container.h"
+#include "m_controls.h"
 #include "m_fixed.h"
 
 #include "r_main.h"
@@ -1744,9 +1745,11 @@ extern "C"
 	extern boolean demoplayback;
 }
 
+bool isstrafing = false;
+
 int32_t R_Responder( event_t* ev ) //__attribute__ ((optnone))
 {
-	if( ev->type == ev_mouse )
+	if( !isstrafing && ev->type == ev_mouse )
 	{
 		return ev->data2 * ( mouseSensitivity + 5 ) / 10; 
 	}
@@ -1756,6 +1759,8 @@ int32_t R_Responder( event_t* ev ) //__attribute__ ((optnone))
 int32_t R_PeekEvents() //__attribute__ ((optnone))
 {
 	int32_t mouselookx = 0;
+
+	isstrafing = GameKeyDown( key_strafe ) || MouseButtonDown( mousebstrafe ) || JoyButtonDown( joybstrafe );
 
 	event_t* curr = D_PeekEvent( NULL );
 	while( curr != NULL )
