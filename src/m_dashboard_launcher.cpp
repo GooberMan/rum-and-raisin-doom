@@ -18,6 +18,9 @@
 #include "i_log.h"
 #include "i_system.h"
 #include "i_swap.h"
+// Hack for Windows
+#undef LONG
+#undef ULONG
 #include "i_thread.h"
 #include "i_timer.h"
 #include "i_video.h"
@@ -35,6 +38,11 @@
 
 #include "v_patch.h"
 #include "v_video.h"
+
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 #include "glad/glad.h"
 #include <SDL2/SDL_opengl.h>
@@ -705,6 +713,28 @@ public:
 		: currentpath( std::filesystem::current_path() )
 		, currentpathstring( std::filesystem::current_path().string() )
 	{
+#ifdef WIN32
+		DWORD drives = GetLogicalDrives();
+
+		char path[] = "a:\\";
+
+		for( int32_t index : iota( 0, 26 ) )
+		{
+			if( drives & ( 1 << index ) )
+			{
+				path[ 0 ] = 'a' + index;
+				auto stdpath = std::filesystem::path( path );
+				std::error_code errorcode;
+				// Exists check skips drives that are unreadable by host operating system
+				if( std::filesystem::exists( stdpath, errorcode ) )
+				{
+					availabledrives.push_back( path );
+				}
+			}
+		}
+#else
+		availabledrives.push_back( "/" );
+#endif // WIN32
 	}
 
 	void Open( filedialogflags_t f, const char* types = nullptr )
@@ -765,9 +795,24 @@ public:
 					}
 				}
 				igSameLine( 0, 5 );
-				igText( currentpathstring.c_str() );
 
 				ImVec2 contentavail;
+				igGetContentRegionAvail( &contentavail );
+				igSetNextItemWidth( contentavail.x );
+
+				if( igBeginCombo( "##filedialogdrive", currentpathstring.c_str(), ImGuiComboFlags_None ) )
+				{
+					for( auto& drive : availabledrives )
+					{
+						if( igSelectable_Bool( drive.c_str(), false, ImGuiSelectableFlags_None, zero ) )
+						{
+							currentpath = drive;
+							currentpathstring = drive;
+						}
+					}
+					igEndCombo();
+				}
+
 				igGetContentRegionAvail( &contentavail );
 
 				contentavail.y -= cancelselectbuttonsize.y + spacing;
@@ -901,6 +946,7 @@ private:
 		return matches;
 	}
 
+	std::vector< std::string >				availabledrives;
 	std::filesystem::path					currentpath;
 	std::string								currentpathstring;
 	std::vector< std::filesystem::path >	selected;
@@ -3233,6 +3279,7 @@ namespace launcher
 
 			{
 				igNewLine();
+				igText( "IWAD: %s", iwadselector->Selected().filename.c_str() );
 				igText( "Active titlepic" );
 
 				Image found = { };
