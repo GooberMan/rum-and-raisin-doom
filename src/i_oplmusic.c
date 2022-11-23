@@ -323,8 +323,8 @@ static opl_voice_t *voice_free_list[OPL_NUM_VOICES * 2];
 static opl_voice_t *voice_alloced_list[OPL_NUM_VOICES * 2];
 static int voice_free_num;
 static int voice_alloced_num;
-static int opl_opl3mode;
-static int num_opl_voices;
+static int opl_opl3mode = 1;
+static int num_opl_voices = OPL_NUM_VOICES * 2;
 
 // Data for each channel.
 
@@ -357,7 +357,9 @@ int opl_io_port = 0x388;
 // (as intended by the MIDI standard) rather than the backwards one
 // used by DMX due to a bug.
 
-static boolean opl_stereo_correct = false;
+static boolean opl_stereo_correct = true;
+
+extern int32_t remove_limits;
 
 // Load instrument table from GENMIDI lump:
 
@@ -1736,20 +1738,29 @@ static boolean I_OPL_InitMusic(void)
         dmxoption = snd_dmxoption != NULL ? snd_dmxoption : "";
     }
 
-    if (chip_type == OPL_INIT_OPL3 && strstr(dmxoption, "-opl3") != NULL)
-    {
-        opl_opl3mode = 1;
-        num_opl_voices = OPL_NUM_VOICES * 2;
-    }
-    else
-    {
-        opl_opl3mode = 0;
-        num_opl_voices = OPL_NUM_VOICES;
-    }
+	if( !remove_limits || strlen( dmxoption ) > 0 )
+	{
+		if (chip_type == OPL_INIT_OPL3 && strstr(dmxoption, "-opl3") != NULL)
+		{
+			opl_opl3mode = 1;
+			num_opl_voices = OPL_NUM_VOICES * 2;
+		}
+		else
+		{
+			opl_opl3mode = 0;
+			num_opl_voices = OPL_NUM_VOICES;
+		}
 
-    // Secret, undocumented DMXOPTION that reverses the stereo channels
-    // into their correct orientation.
-    opl_stereo_correct = strstr(dmxoption, "-reverse") != NULL;
+		// Secret, undocumented DMXOPTION that reverses the stereo channels
+		// into their correct orientation.
+		opl_stereo_correct = strstr(dmxoption, "-reverse") != NULL;
+	}
+	else
+	{
+		opl_opl3mode = 1;
+		num_opl_voices = OPL_NUM_VOICES * 2;
+		opl_stereo_correct = true;
+	}
 
     // Initialize all registers.
 

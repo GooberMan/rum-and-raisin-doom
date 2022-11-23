@@ -58,6 +58,11 @@ DOOM_C_API typedef struct gameoptions_s
 	boolean					allow_sky_change_between_levels;
 } gameoptions_t;
 
+DOOM_C_API typedef struct setupoptions_s
+{
+	boolean					correct_opl3_by_default;
+} setupoptions_t;
+
 DOOM_C_API typedef struct wadoptions_s
 {
 	boolean					allow_mapinfo_lumps;
@@ -91,6 +96,7 @@ DOOM_C_API typedef struct playsimoptions_s
 	demooptions_t			demo;
 	finaleoptions_t			finale;
 	gameoptions_t			game;
+	setupoptions_t			setup;
 	savegameoptions_t		savegame;
 	wadoptions_t			wad;
 } playsimoptions_t;
