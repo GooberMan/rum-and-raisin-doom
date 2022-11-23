@@ -1113,9 +1113,6 @@ namespace launcher
 		std::string path = stdpath.string();
 		std::string filename = stdpath.filename().string();
 
-		std::string debug = "Parsing " + path;
-		I_LogDebug( debug.c_str() );
-
 		time_t lastmodified = GetLastModifiedTime( stdpath );
 		size_t filelength = std::filesystem::file_size( stdpath );
 
