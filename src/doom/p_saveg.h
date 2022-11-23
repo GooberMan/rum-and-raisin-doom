@@ -45,7 +45,7 @@ char *P_SaveGameFile(int slot);
 
 // Savegame file header read/write functions
 
-boolean P_ReadSaveGameHeader(void);
+doombool P_ReadSaveGameHeader(void);
 void P_WriteSaveGameHeader(char *description);
 
 // Savegame end-of-file read/write functions
@@ -70,7 +70,7 @@ void P_ArchiveSpecials (void);
 void P_UnArchiveSpecials (void);
 
 extern FILE *save_stream;
-extern boolean savegame_error;
+extern doombool savegame_error;
 
 
 #endif

@@ -338,7 +338,7 @@ int32_t	checkcoord[12][4] =
 };
 
 
-boolean R_CheckBBox( bspcontext_t* context, rend_fixed_t* bspcoord )
+doombool R_CheckBBox( bspcontext_t* context, rend_fixed_t* bspcoord )
 {
 	int32_t			boxx;
 	int32_t			boxy;

@@ -28,7 +28,7 @@
 //
 // End-level timer (-TIMER option)
 //
-extern	boolean levelTimer;
+extern	doombool levelTimer;
 extern	int	levelTimeCount;
 
 
@@ -40,8 +40,8 @@ extern	int	levelTimeCount;
 void    P_InitPicAnims (void);
 
 // will return -1 if this is not the start of an animation
-int32_t P_GetPicAnimStart( boolean istexture, int32_t animframe );
-int32_t P_GetPicAnimLength( boolean istexture, int32_t start );
+int32_t P_GetPicAnimStart( doombool istexture, int32_t animframe );
+int32_t P_GetPicAnimLength( doombool istexture, int32_t start );
 
 int32_t P_GetPicSwitchOpposite( int32_t tex );
 
@@ -52,7 +52,7 @@ void    P_SpawnSpecials (void);
 void    P_UpdateSpecials (void);
 
 // when needed
-boolean
+doombool
 P_UseSpecialLine
 ( mobj_t*	thing,
   line_t*	line,
@@ -297,7 +297,7 @@ typedef struct
     int		count;
     plat_e	status;
     plat_e	oldstatus;
-    boolean	crush;
+    doombool	crush;
     int		tag;
     plattype_e	type;
     
@@ -502,7 +502,7 @@ typedef struct
     fixed_t	bottomheight;
     fixed_t	topheight;
     fixed_t	speed;
-    boolean	crush;
+    doombool	crush;
 
     // 1 = up, 0 = waiting, -1 = down
     int		direction;
@@ -589,7 +589,7 @@ typedef struct
 {
     thinker_t	thinker;
     floor_e	type;
-    boolean	crush;
+    doombool	crush;
     sector_t*	sector;
     int		direction;
     int		newspecial;
@@ -616,7 +616,7 @@ T_MovePlane
 ( sector_t*	sector,
   fixed_t	speed,
   fixed_t	dest,
-  boolean	crush,
+  doombool	crush,
   int		floorOrCeiling,
   int		direction );
 

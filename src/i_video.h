@@ -85,7 +85,7 @@ DOOM_C_API typedef enum vsync_e
 
 #define V_HEIGHTMULTIPLIERVAL( x ) ( ( x << FRACBITS ) / V_VIRTUALHEIGHT )
 
-DOOM_C_API typedef boolean (*grabmouse_callback_t)(void);
+DOOM_C_API typedef doombool (*grabmouse_callback_t)(void);
 
 // Called by D_DoomMain,
 // determines the hardware configuration
@@ -117,9 +117,9 @@ DOOM_C_API void I_SetWindowDimensions( int32_t w, int32_t h );
 DOOM_C_API void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s );
 DOOM_C_API void I_SetRenderMatchWindow( void );
 
-DOOM_C_API boolean I_VideoSetVSync( vsync_t vsyncval );
+DOOM_C_API doombool I_VideoSetVSync( vsync_t vsyncval );
 DOOM_C_API vsync_t I_VideoGetVSync( void );
-DOOM_C_API boolean I_VideoSupportsVSync( vsync_t vsyncval );
+DOOM_C_API doombool I_VideoSupportsVSync( vsync_t vsyncval );
 
 // Takes full 8 bit values.
 DOOM_C_API void I_SetPalette (byte* palette);
@@ -134,7 +134,7 @@ DOOM_C_API void I_SetWindowTitle(const char *title);
 DOOM_C_API void I_CheckIsScreensaver(void);
 DOOM_C_API void I_SetGrabMouseCallback(grabmouse_callback_t func);
 
-DOOM_C_API void I_DisplayFPSDots(boolean dots_on);
+DOOM_C_API void I_DisplayFPSDots(doombool dots_on);
 DOOM_C_API void I_BindVideoVariables(void);
 
 DOOM_C_API void I_InitWindowTitle(void);
@@ -154,10 +154,10 @@ DOOM_C_API void I_StartTic (void);
 
 DOOM_C_API void I_VideoClearBuffer( float_t r, float_t g, float_t b, float_t a );
 
-DOOM_C_API extern boolean screenvisible;
+DOOM_C_API extern doombool screenvisible;
 
 DOOM_C_API extern int32_t vanilla_keyboard_mapping;
-DOOM_C_API extern boolean screensaver_mode;
+DOOM_C_API extern doombool screensaver_mode;
 DOOM_C_API extern int32_t usegamma;
 DOOM_C_API extern pixel_t *I_VideoBuffer;
 

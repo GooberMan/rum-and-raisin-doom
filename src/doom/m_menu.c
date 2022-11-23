@@ -77,9 +77,9 @@ static int32_t			dashboard_currgameskill		= sk_medium;
 static int32_t			dashboard_currgameflags		= GF_None;
 
 extern patch_t*		hu_font[HU_FONTSIZE];
-extern boolean		message_dontfuckwithme;
+extern doombool		message_dontfuckwithme;
 
-extern boolean		chat_on;		// in heads-up code
+extern doombool		chat_on;		// in heads-up code
 
 //
 // defaulted values
@@ -119,7 +119,7 @@ int			messy;
 int			messageLastMenuActive;
 
 // timed message = no input from user
-boolean			messageNeedsInput;
+doombool			messageNeedsInput;
 
 void    (*messageRoutine)(int response);
 
@@ -136,12 +136,12 @@ char gammamsg[5][26] =
 int			saveStringEnter;              
 int             	saveSlot;	// which slot to save in
 int			saveCharIndex;	// which char we're editing
-static boolean          joypadSave = false; // was the save action initiated by joypad?
+static doombool          joypadSave = false; // was the save action initiated by joypad?
 // old save description before edit
 char			saveOldString[SAVESTRINGSIZE];  
 
-boolean			inhelpscreens;
-boolean			menuactive;
+doombool			inhelpscreens;
+doombool			menuactive;
 extern int32_t	dashboardopensound;
 extern int32_t	dashboardclosesound;
 
@@ -149,12 +149,12 @@ extern int32_t	dashboardclosesound;
 #define SKULLXOFF		-32
 #define LINEHEIGHT		16
 
-extern boolean		sendpause;
+extern doombool		sendpause;
 char			savegamestrings[10][SAVESTRINGSIZE];
 
 char	endstring[160];
 
-static boolean opldev;
+static doombool opldev;
 
 typedef enum categorytofocus_e
 {
@@ -166,7 +166,7 @@ typedef enum categorytofocus_e
 	cat_max
 } categorytofocus_t;
 
-static boolean				debugwindow_options = false;
+static doombool				debugwindow_options = false;
 static categorytofocus_t	debugwindow_tofocus = cat_none;
 
 
@@ -258,7 +258,7 @@ static void M_DrawThermo(int x,int y,int thermWidth,int thermDot);
 static void M_WriteText(int x, int y, const char *string);
 static int  M_StringWidth(const char *string);
 static int  M_StringHeight(const char *string);
-static void M_StartMessage(const char *string, void *routine, boolean input);
+static void M_StartMessage(const char *string, void *routine, doombool input);
 static void M_ClearMenus (void);
 
 
@@ -1331,7 +1331,7 @@ void
 M_StartMessage
 ( const char	*string,
   void*		routine,
-  boolean	input )
+  doombool	input )
 {
     messageLastMenuActive = menuactive;
     messageToPrint = 1;
@@ -1434,7 +1434,7 @@ M_WriteText
 // These keys evaluate to a "null" key in Vanilla Doom that allows weird
 // jumping in the menus. Preserve this behavior for accuracy.
 
-static boolean IsNullKey(int key)
+static doombool IsNullKey(int key)
 {
     return key == KEY_PAUSE || key == KEY_CAPSLOCK
         || key == KEY_SCRLCK || key == KEY_NUMLOCK;
@@ -1447,7 +1447,7 @@ static boolean IsNullKey(int key)
 //
 // M_Responder
 //
-boolean M_Responder (event_t* ev)
+doombool M_Responder (event_t* ev)
 {
     int             ch;
     int             key;
@@ -2068,7 +2068,7 @@ void M_Drawer (void)
 	y = V_VIRTUALHEIGHT/2 - M_StringHeight(messageString) / 2;
 	while (messageString[start] != '\0')
 	{
-	    boolean foundnewline = false;
+	    doombool foundnewline = false;
 
             for (i = 0; messageString[start + i] != '\0'; i++)
             {
@@ -2990,7 +2990,7 @@ static void M_DashboardControlsRemapping(	const char* itemname,
 	igPopID();
 }
 
-windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windowsizes_t* sizes, int32_t numsizes, int32_t currwidth, int32_t currheight, windowsizes_t* special, boolean specialselected )
+windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windowsizes_t* sizes, int32_t numsizes, int32_t currwidth, int32_t currheight, windowsizes_t* special, doombool specialselected )
 {
 	windowsizes_t* set = NULL;
 
@@ -3020,7 +3020,7 @@ windowsizes_t* M_DashboardResolutionPicker( void* id, const char* preview, windo
 				{
 					if( sizes[ currsize ].category == currcat )
 					{
-						boolean selected = currwidth == sizes[ currsize ].width && currheight == sizes[ currsize ].height;
+						doombool selected = currwidth == sizes[ currsize ].width && currheight == sizes[ currsize ].height;
 						if( igSelectable_Bool( sizes[ currsize ].asstring, selected, ImGuiSelectableFlags_None, zerosize ) )
 						{
 							set = &sizes[ currsize ];

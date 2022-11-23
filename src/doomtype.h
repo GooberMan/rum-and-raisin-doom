@@ -161,10 +161,10 @@
 
 #if defined(__cplusplus) || defined(__bool_true_false_are_defined)
 
-// Using the built-in type for boolean in C++ causes size mismatches in C code.
+// Using the built-in type for doombool in C++ causes size mismatches in C code.
 // Need to go whole hog on the C++ conversion to deal with this effectively.
 
-DOOM_C_API typedef int32_t boolean;
+DOOM_C_API typedef int32_t doombool;
 
 #else
 
@@ -177,10 +177,10 @@ DOOM_C_API typedef enum boolean_s
     true
 } boolean_t;
 
-DOOM_C_API typedef int32_t boolean;
+DOOM_C_API typedef int32_t doombool;
 
 //#include <stdbool.h>
-//typedef bool boolean;
+//typedef bool doombool;
 
 #endif
 

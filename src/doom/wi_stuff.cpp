@@ -714,7 +714,7 @@ static wi_animation_t* animation = NULL;
 
 // The ticker is used to detect keys
 //  because of timing issues in netgames.
-boolean WI_Responder(event_t* ev)
+doombool WI_Responder(event_t* ev)
 {
     return false;
 }
@@ -920,7 +920,7 @@ void WI_updateNoState(void) {
 
 }
 
-static boolean		snl_pointeron = false;
+static doombool		snl_pointeron = false;
 
 
 void WI_initShowNextLoc(void)
@@ -1020,7 +1020,7 @@ void WI_updateDeathmatchStats(void)
     int		i;
     int		j;
     
-    boolean	stillticking;
+    doombool	stillticking;
 
     if (acceleratestage && dm_state != 4)
     {
@@ -1231,7 +1231,7 @@ void WI_updateNetgameStats(void)
     int		i;
     int		fsum;
     
-    boolean	stillticking;
+    doombool	stillticking;
 
     if (acceleratestage && ng_state != 10)
     {

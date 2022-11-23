@@ -317,7 +317,7 @@ mline_t thintriangle_guy[] = {
 static int 	cheating = 0;
 static int 	grid = 0;
 
-boolean    	automapactive = false;
+doombool    	automapactive = false;
 
 // location of window on screen
 static int 	f_x;
@@ -386,7 +386,7 @@ static int followplayer = 1; // specifies whether to follow the player around
 
 cheatseq_t cheat_amap = CHEAT("iddt", 0);
 
-static boolean stopped = true;
+static doombool stopped = true;
 
 static int32_t lightnexttic = 0;
 static int32_t lightticlength = 6;
@@ -767,7 +767,7 @@ void AM_maxOutWindowScale(void)
 //
 // Handle events (user inputs) in automap mode
 //
-boolean
+doombool
 AM_Responder
 ( event_t*	ev )
 {
@@ -1055,7 +1055,7 @@ void AM_clearFB(int color)
 // faster reject and precalculated slopes.  If the speed is needed,
 // use a hash algorithm to handle  the common cases.
 //
-boolean AM_clipMline( mline_t* ml, fline_t* fl )
+doombool AM_clipMline( mline_t* ml, fline_t* fl )
 {
 	enum
 	{
@@ -1345,7 +1345,7 @@ void AM_drawGrid(int color)
 
 }
 
-int32_t AM_lookupColour( int32_t paletteindex, boolean blinking )
+int32_t AM_lookupColour( int32_t paletteindex, doombool blinking )
 {
 	return colormaps[ ( blinking ? lightlev * 256 : 0 ) + paletteindex ];
 }
@@ -1466,7 +1466,7 @@ void AM_drawWalls( mapstyledata_t* style )
 
 	for ( int32_t index = 0 ; index < numlines; ++index )
 	{
-		boolean inlist = false;
+		doombool inlist = false;
 		for( blockmap_t* list = blockmapbase + offset; *list != BLOCKMAP_INVALID; ++list )
 		{
 			if( *list == index )

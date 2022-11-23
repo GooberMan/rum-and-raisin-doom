@@ -201,7 +201,7 @@ void P_Ticker (void)
 
 	P_FlipInstanceData();
     
-	boolean ispaused = paused
+	doombool ispaused = paused
 		|| 	( !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
 
     // run the tic

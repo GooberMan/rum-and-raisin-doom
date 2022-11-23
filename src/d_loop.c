@@ -45,7 +45,7 @@
 typedef struct
 {
     ticcmd_t cmds[NET_MAXPLAYERS];
-    boolean ingame[NET_MAXPLAYERS];
+    doombool ingame[NET_MAXPLAYERS];
 } ticcmd_set_t;
 
 // Maximum time that we wait in TryRunTics() for netgame data to be
@@ -80,7 +80,7 @@ uint64_t gametic;
 // When set to true, a single tic is run each time TryRunTics() is called.
 // This is used for -timedemo mode.
 
-boolean singletics = false;
+doombool singletics = false;
 
 // Index of the local player.
 
@@ -101,7 +101,7 @@ rend_fixed_t         offsetus;
 
 // Use new client syncronisation code
 
-static boolean  new_sync = true;
+static doombool  new_sync = true;
 
 // Callback functions for loop code.
 
@@ -111,7 +111,7 @@ static loop_interface_t *loop_interface = NULL;
 // This is distinct from playeringame[] used by the game code, which may
 // modify playeringame[] when playing back multiplayer demos.
 
-static boolean local_playeringame[NET_MAXPLAYERS];
+static doombool local_playeringame[NET_MAXPLAYERS];
 
 // Requested player class "sent" to the server on connect.
 // If we are only doing a single player game then this needs to be remembered
@@ -139,7 +139,7 @@ static uint64_t GetAdjustedTime( uint64_t microseconds )
     return (time_us * TICRATE) / 1000000ull;
 }
 
-static boolean BuildNewTic(void)
+static doombool BuildNewTic(void)
 {
     uint64_t	gameticdiv;
     ticcmd_t cmd;
@@ -272,7 +272,7 @@ static void D_Disconnected(void)
 // available.
 //
 
-void D_ReceiveTic(ticcmd_t *ticcmds, boolean *players_mask)
+void D_ReceiveTic(ticcmd_t *ticcmds, doombool *players_mask)
 {
     int i;
 
@@ -432,9 +432,9 @@ void D_StartNetGame(net_gamesettings_t *settings,
     //}
 }
 
-boolean D_InitNetGame(net_connect_data_t *connect_data)
+doombool D_InitNetGame(net_connect_data_t *connect_data)
 {
-    boolean result = false;
+    doombool result = false;
     net_addr_t *addr = NULL;
     int i;
 
@@ -616,9 +616,9 @@ static void OldNetSync(void)
 
 // Returns true if there are players in the game:
 
-static boolean PlayersInGame(void)
+static doombool PlayersInGame(void)
 {
-    boolean result = false;
+    doombool result = false;
     unsigned int i;
 
     // If we are connected to a server, check if there are any players
@@ -683,7 +683,7 @@ static void SinglePlayerClear(ticcmd_set_t *set)
 int32_t sleeponzerotics = 0;
 uint64_t synctime = 0;
 
-boolean TryRunTics (void)
+doombool TryRunTics (void)
 {
 	int	i;
 	uint64_t			lowtic;
@@ -821,7 +821,7 @@ void D_RegisterLoopCallbacks(loop_interface_t *i)
 #include "m_misc.h"
 #include "w_wad.h"
 
-static boolean StrictDemos(void)
+static doombool StrictDemos(void)
 {
     //!
     // @category demo
@@ -839,7 +839,7 @@ static boolean StrictDemos(void)
 // this extension (no extensions are allowed if -strictdemos is given
 // on the command line). A warning is shown on the console using the
 // provided string describing the non-vanilla expansion.
-boolean D_NonVanillaRecord(boolean conditional, const char *feature)
+doombool D_NonVanillaRecord(doombool conditional, const char *feature)
 {
     if (!conditional || StrictDemos())
     {
@@ -855,10 +855,10 @@ boolean D_NonVanillaRecord(boolean conditional, const char *feature)
 
 // Returns true if the given lump number corresponds to data from a .lmp
 // file, as opposed to a WAD.
-static boolean IsDemoFile(int lumpnum)
+static doombool IsDemoFile(int lumpnum)
 {
     char *lower;
-    boolean result;
+    doombool result;
 
     lower = M_StringDuplicate(lumpinfo[lumpnum]->wad_file->path);
     M_ForceLowercase(lower);
@@ -876,7 +876,7 @@ static boolean IsDemoFile(int lumpnum)
 //  - The given lumpnum identifying the demo to play back identifies a
 //    demo that comes from a .lmp file, not a .wad file.
 //  - Before proceeding, a warning is shown to the user on the console.
-boolean D_NonVanillaPlayback(boolean conditional, int lumpnum,
+doombool D_NonVanillaPlayback(doombool conditional, int lumpnum,
                              const char *feature)
 {
     if (!conditional || StrictDemos())

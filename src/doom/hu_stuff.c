@@ -79,22 +79,22 @@ char			chat_char; // remove later.
 static player_t*	plr;
 patch_t*		hu_font[HU_FONTSIZE];
 static hu_textline_t	w_title;
-boolean			chat_on;
+doombool			chat_on;
 static hu_itext_t	w_chat;
-static boolean		always_off = false;
+static doombool		always_off = false;
 static char		chat_dest[MAXPLAYERS];
 static hu_itext_t w_inputbuffer[MAXPLAYERS];
 
-static boolean		message_on;
-boolean			message_dontfuckwithme;
-static boolean		message_nottobefuckedwith;
+static doombool		message_on;
+doombool			message_dontfuckwithme;
+static doombool		message_nottobefuckedwith;
 
 static hu_stext_t	w_message;
 static int		message_counter;
 
 extern int		showMessages;
 
-static boolean		headsupactive = false;
+static doombool		headsupactive = false;
 
 void HU_Init(void)
 {
@@ -311,13 +311,13 @@ static void StopChatInput(void)
     I_StopTextInput();
 }
 
-boolean HU_Responder(event_t *ev)
+doombool HU_Responder(event_t *ev)
 {
 
     static char		lastmessage[HU_MAXLINELENGTH+1];
     const char		*macromessage;
-    boolean		eatkey = false;
-    static boolean	altdown = false;
+    doombool		eatkey = false;
+    static doombool	altdown = false;
     unsigned char 	c;
     int			i;
     int			numplayers;

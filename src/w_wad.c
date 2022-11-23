@@ -45,7 +45,7 @@
 lumpinfo_t **lumpinfo;
 uint32_t numlumps = 0;
 
-boolean wadrenderlock = false;
+doombool wadrenderlock = false;
 
 extern int32_t remove_limits;
 
@@ -382,7 +382,7 @@ void *W_CacheLumpNum(lumpindex_t lumpnum, int tag)
 {
     byte *result;
     lumpinfo_t *lump;
-	boolean changed;
+	doombool changed;
 
 	if ((unsigned)lumpnum >= numlumps)
 	{
@@ -630,7 +630,7 @@ const char *W_WadNameForLump(const lumpinfo_t *lump)
 	return M_BaseName(lump->wad_file->path);
 }
 
-boolean W_IsIWADLump(const lumpinfo_t *lump)
+doombool W_IsIWADLump(const lumpinfo_t *lump)
 {
 	return lump->wad_file == lumpinfo[0]->wad_file;
 }

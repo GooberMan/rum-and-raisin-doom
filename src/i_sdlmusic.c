@@ -46,14 +46,14 @@
 
 #define MAXMIDLENGTH (96 * 1024)
 
-static boolean music_initialized = false;
+static doombool music_initialized = false;
 
 // If this is true, this module initialized SDL sound and has the 
 // responsibility to shut it down
 
-static boolean sdl_was_initialized = false;
+static doombool sdl_was_initialized = false;
 
-static boolean musicpaused = false;
+static doombool musicpaused = false;
 static int current_music_volume;
 
 char *timidity_cfg_path = "";
@@ -65,7 +65,7 @@ static char *temp_timidity_cfg = NULL;
 // is needed to inject a "dir" command so that the patches are read
 // relative to the actual config file.
 
-static boolean WriteWrapperTimidityConfig(char *write_path)
+static doombool WriteWrapperTimidityConfig(char *write_path)
 {
     char *path;
     FILE *fstream;
@@ -95,7 +95,7 @@ static boolean WriteWrapperTimidityConfig(char *write_path)
 void I_InitTimidityConfig(void)
 {
     char *env_string;
-    boolean success;
+    doombool success;
 
     temp_timidity_cfg = M_TempFile("timidity.cfg");
 
@@ -161,7 +161,7 @@ static void I_SDL_ShutdownMusic(void)
     }
 }
 
-static boolean SDLIsInitialized(void)
+static doombool SDLIsInitialized(void)
 {
     int freq, channels;
     Uint16 format;
@@ -170,7 +170,7 @@ static boolean SDLIsInitialized(void)
 }
 
 // Initialize music subsystem
-static boolean I_SDL_InitMusic(void)
+static doombool I_SDL_InitMusic(void)
 {
     // If SDL_mixer is not initialized, we have to initialize it
     // and have the responsibility to shut it down later on.
@@ -268,7 +268,7 @@ static void I_SDL_SetMusicVolume(int volume)
 
 // Start playing a mid
 
-static void I_SDL_PlaySong(void *handle, boolean looping)
+static void I_SDL_PlaySong(void *handle, doombool looping)
 {
     int loops;
 
@@ -372,12 +372,12 @@ static void I_SDL_UnRegisterSong(void *handle)
 
 // Determine whether memory block is a .mid file 
 
-static boolean IsMid(byte *mem, int len)
+static doombool IsMid(byte *mem, int len)
 {
     return len > 4 && !memcmp(mem, "MThd", 4);
 }
 
-static boolean ConvertMus(byte *musdata, int len, const char *filename)
+static doombool ConvertMus(byte *musdata, int len, const char *filename)
 {
     MEMFILE *instream;
     MEMFILE *outstream;
@@ -472,7 +472,7 @@ static void *I_SDL_RegisterSong(void *data, int len)
 }
 
 // Is the song playing?
-static boolean I_SDL_MusicIsPlaying(void)
+static doombool I_SDL_MusicIsPlaying(void)
 {
     if (!music_initialized)
     {

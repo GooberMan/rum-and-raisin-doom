@@ -66,7 +66,7 @@ DOOM_C_API void		Z_FreeTags (int lowtag, int hightag);
 DOOM_C_API void		Z_DumpHeap (int lowtag, int hightag);
 DOOM_C_API void		Z_FileDumpHeap (FILE *f);
 DOOM_C_API void		Z_CheckHeap (void);
-DOOM_C_API boolean	Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
+DOOM_C_API doombool	Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
 DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
 DOOM_C_API size_t	Z_FreeMemory (void);
 DOOM_C_API size_t	Z_ZoneSize(void);

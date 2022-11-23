@@ -34,7 +34,7 @@ static SDL_Window *hr_screen = NULL;
 static SDL_Surface *hr_surface = NULL;
 static const char *window_title = "";
 
-boolean I_SetVideoModeHR(void)
+doombool I_SetVideoModeHR(void)
 {
     int x, y;
 
@@ -233,10 +233,10 @@ void I_BlackPaletteHR(void)
 }
 
 // Check if the user has hit the escape key to abort startup.
-boolean I_CheckAbortHR(void)
+doombool I_CheckAbortHR(void)
 {
     SDL_Event ev;
-    boolean result = false;
+    doombool result = false;
 
     // Not initialized?
     if (hr_surface == NULL)

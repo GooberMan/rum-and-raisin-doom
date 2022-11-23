@@ -579,7 +579,7 @@ void SetupVSync()
 	SDL_GL_SetSwapInterval( vsync_modes[ vsync_mode ].interval );
 }
 
-DOOM_C_API boolean I_VideoSetVSync( vsync_t vsyncval )
+DOOM_C_API doombool I_VideoSetVSync( vsync_t vsyncval )
 {
 	if( vsync_modes[ vsync_mode ].supported )
 	{
@@ -597,7 +597,7 @@ DOOM_C_API vsync_t I_VideoGetVSync( void )
 	return (vsync_t)vsync_mode;
 }
 
-DOOM_C_API boolean I_VideoSupportsVSync( vsync_t vsyncval )
+DOOM_C_API doombool I_VideoSupportsVSync( vsync_t vsyncval )
 {
 	return vsync_modes[ vsyncval ].supported;
 }

@@ -38,7 +38,7 @@
 //
 
 // when zero, stop the wipe
-static boolean	go = 0;
+static doombool	go = 0;
 
 static pixel_t*	wipe_scr_start;
 static pixel_t*	wipe_scr_end;
@@ -62,7 +62,7 @@ wipe_doColorXForm
   int	height,
   uint64_t	ticks )
 {
-    boolean	changed;
+    doombool	changed;
     pixel_t*	w;
     pixel_t*	e;
     int32_t		newval;
@@ -155,7 +155,7 @@ wipe_doMelt
   int	height,
   uint64_t	ticks )
 {
-	boolean	done = true;
+	doombool	done = true;
 
 	if( ticks > 0 )
 	{
@@ -201,7 +201,7 @@ int wipe_renderMelt( int width, int height, rend_fixed_t percent )
 {
     pixel_t*	s;
     pixel_t*	d;
-    boolean	done = true;
+    doombool	done = true;
 
 	// Scale up and then down to handle arbitrary dimensions with integer math
 	int vertblocksize = height * 100 / WIPEROWS;

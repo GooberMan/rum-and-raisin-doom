@@ -42,7 +42,7 @@
 #include "w_checksum.h"
 #include "w_wad.h"
 
-extern void D_ReceiveTic(ticcmd_t *ticcmds, boolean *playeringame);
+extern void D_ReceiveTic(ticcmd_t *ticcmds, doombool *playeringame);
 
 typedef enum
 {
@@ -66,7 +66,7 @@ typedef struct
 {
     // Whether this tic has been received yet
 
-    boolean active;
+    doombool active;
 
     // Last time we sent a resend request for this tic
 
@@ -84,7 +84,7 @@ typedef struct
 {
     // Whether this slot is active yet
 
-    boolean active;
+    doombool active;
 
     // The tic number
 
@@ -115,17 +115,17 @@ char *net_client_reject_reason = NULL;
 
 // true if the client code is in use
 
-boolean net_client_connected;
+doombool net_client_connected;
 
 // true if we have received waiting data from the server,
 // and the wait data that was received.
 
-boolean net_client_received_wait_data;
+doombool net_client_received_wait_data;
 net_waitdata_t net_client_wait_data;
 
 // Waiting at the initial wait screen for the game to be launched?
 
-boolean net_waiting_for_launch = false;
+doombool net_waiting_for_launch = false;
 
 // Name that we send to the server
 
@@ -133,7 +133,7 @@ char *net_player_name = NULL;
 
 // Connected but not participating in the game (observer)
 
-boolean drone = false;
+doombool drone = false;
 
 // The last ticcmd constructed
 
@@ -152,7 +152,7 @@ static net_server_recv_t recvwindow[BACKUPTICS];
 // Whether we need to send an acknowledgement and
 // when gamedata was last received.
 
-static boolean need_to_acknowledge;
+static doombool need_to_acknowledge;
 static unsigned int gamedata_recv_time;
 
 // The latency (time between when we sent our command and we got all
@@ -649,7 +649,7 @@ static void NET_CL_CheckResends(void)
     int i;
     int resend_start, resend_end;
     unsigned int nowtime;
-    boolean maybe_deadlocked;
+    doombool maybe_deadlocked;
 
     nowtime = I_GetTimeMS();
     maybe_deadlocked = nowtime - gamedata_recv_time > 1000;
@@ -660,7 +660,7 @@ static void NET_CL_CheckResends(void)
     for (i=0; i<BACKUPTICS; ++i)
     {
         net_server_recv_t *recvobj;
-        boolean need_resend;
+        doombool need_resend;
 
         recvobj = &recvwindow[i];
 
@@ -1061,11 +1061,11 @@ static void NET_CL_SendSYN(net_connect_data_t *data)
 }
 
 // Connect to a server
-boolean NET_CL_Connect(net_addr_t *addr, net_connect_data_t *data)
+doombool NET_CL_Connect(net_addr_t *addr, net_connect_data_t *data)
 {
     int start_time;
     int last_send_time;
-    boolean sent_hole_punch;
+    doombool sent_hole_punch;
 
     server_addr = addr;
     NET_ReferenceAddress(addr);
@@ -1154,7 +1154,7 @@ boolean NET_CL_Connect(net_addr_t *addr, net_connect_data_t *data)
 
 // read game settings received from server
 
-boolean NET_CL_GetSettings(net_gamesettings_t *_settings)
+doombool NET_CL_GetSettings(net_gamesettings_t *_settings)
 {
     if (client_state != CLIENT_STATE_IN_GAME)
     {

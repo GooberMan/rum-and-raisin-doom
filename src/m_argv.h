@@ -41,7 +41,7 @@ DOOM_C_API void M_AddLooseFiles(void);
 
 // Parameter has been specified?
 
-DOOM_C_API boolean M_ParmExists(const char *check);
+DOOM_C_API doombool M_ParmExists(const char *check);
 
 // Get name of executable used to run this program:
 

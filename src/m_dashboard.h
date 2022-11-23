@@ -66,11 +66,11 @@ DOOM_C_API typedef enum licence_e
 DOOM_C_API typedef void (*menufunc_t)( const char* itemname, void* data );
 
 DOOM_C_API void M_InitDashboard( void );
-DOOM_C_API void M_DashboardSetLicenceInUse( licence_t licence, boolean inuse );
+DOOM_C_API void M_DashboardSetLicenceInUse( licence_t licence, doombool inuse );
 DOOM_C_API void M_BindDashboardVariables( void );
 DOOM_C_API void M_DashboardFirstLaunch( void );
 DOOM_C_API void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingname );
-DOOM_C_API boolean M_DashboardResponder( event_t* ev );
+DOOM_C_API doombool M_DashboardResponder( event_t* ev );
 DOOM_C_API void M_RenderDashboardLogContents( void );
 DOOM_C_API void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backbufferid );
 
@@ -79,8 +79,8 @@ DOOM_C_API void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, in
 
 DOOM_C_API void M_RegisterDashboardCategory( const char* full_path );
 DOOM_C_API void M_RegisterDashboardButton( const char* full_path, const char* tooltip, menufunc_t callback, void* callbackdata );
-DOOM_C_API void M_RegisterDashboardWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback );
-DOOM_C_API void M_RegisterDashboardCheckbox( const char* full_path, const char* tooltip, boolean* value );
+DOOM_C_API void M_RegisterDashboardWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, doombool* active, menuproperties_t properties, menufunc_t callback );
+DOOM_C_API void M_RegisterDashboardCheckbox( const char* full_path, const char* tooltip, doombool* value );
 DOOM_C_API void M_RegisterDashboardCheckboxFlag( const char* full_path, const char* tooltip, int32_t* value, int32_t flagsval );
 DOOM_C_API void M_RegisterDashboardRadioButton( const char* full_path, const char* tooltip, int32_t* value, int32_t selectedval );
 DOOM_C_API void M_RegisterDashboardSeparator( const char* category_path );

@@ -97,7 +97,7 @@ static int snd_SfxVolume;
 
 // Whether songs are mus_paused
 
-static boolean mus_paused;
+static doombool mus_paused;
 
 // Music currently being played
 
@@ -684,7 +684,7 @@ static musicinfo_t music_from_lump;
 
 void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
 {
-	boolean wasplaying = mus_playing == &music_from_lump;
+	doombool wasplaying = mus_playing == &music_from_lump;
 	if( wasplaying && stricmp( music_from_lump.name, lump->val ) == 0 )
 	{
 		return;
@@ -714,7 +714,7 @@ void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
 	S_MusicPlay( &music_from_lump, looping );
 }
 
-boolean S_MusicPlaying(void)
+doombool S_MusicPlaying(void)
 {
     return I_MusicIsPlaying();
 }

@@ -880,7 +880,7 @@ static void AES_Encrypt(aes_context_t *ctx, uint8_t *out,
     dst[3] = cpu_to_le32(b0[3]);
 }
 
-static boolean prng_enabled = false;
+static doombool prng_enabled = false;
 static aes_context_t prng_context;
 static uint32_t prng_input_counter;
 static uint32_t prng_values[4];

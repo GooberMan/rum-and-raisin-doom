@@ -18,7 +18,7 @@
 #include "doomtype.h"
 
 DOOM_C_API void M_ScheduleLauncher( void );
-DOOM_C_API boolean M_IsLauncherScheduled( void );
+DOOM_C_API doombool M_IsLauncherScheduled( void );
 DOOM_C_API void M_PerformLauncher( void );
 
 #endif // __M_LAUNCHER_H__

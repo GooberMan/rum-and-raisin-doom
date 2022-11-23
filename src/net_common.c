@@ -161,12 +161,12 @@ static void NET_Conn_ParseReliableACK(net_connection_t *conn, net_packet_t *pack
 //
 // Returns true if the packet should be discarded (incorrect sequence)
 
-static boolean NET_Conn_ReliablePacket(net_connection_t *conn, 
+static doombool NET_Conn_ReliablePacket(net_connection_t *conn, 
                                        net_packet_t *packet)
 {
     unsigned int seq;
     net_packet_t *reply;
-    boolean result;
+    doombool result;
 
     // Read the sequence number
 
@@ -215,7 +215,7 @@ static boolean NET_Conn_ReliablePacket(net_connection_t *conn,
 //
 // Returns true if eaten by common code
 
-boolean NET_Conn_Packet(net_connection_t *conn, net_packet_t *packet, 
+doombool NET_Conn_Packet(net_connection_t *conn, net_packet_t *packet, 
                         unsigned int *packet_type)
 {
     conn->keepalive_recv_time = I_GetTimeMS();
@@ -429,7 +429,7 @@ unsigned int NET_ExpandTicNum(unsigned int relative, unsigned int b)
 
 // Check that game settings are valid
 
-boolean NET_ValidGameSettings(GameMode_t mode, GameMission_t mission,
+doombool NET_ValidGameSettings(GameMode_t mode, GameMission_t mission,
                               net_gamesettings_t *settings)
 {
     if (settings->ticdup <= 0)

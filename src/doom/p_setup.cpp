@@ -49,7 +49,7 @@ extern "C"
 
 static sector_t* GetSectorAtNullAddress(void)
 {
-    static boolean null_sector_is_initialized = false;
+    static doombool null_sector_is_initialized = false;
     static sector_t null_sector;
 
     if (!null_sector_is_initialized)
@@ -258,7 +258,7 @@ struct DoomMapLoader
 	mapthing_t			_deathmatchstarts[MAX_DEATHMATCH_STARTS];
 	mapthing_t*			_deathmatch_p;
 	mapthing_t			_playerstarts[MAXPLAYERS];
-	boolean				_playerstartsingame[MAXPLAYERS];
+	doombool				_playerstartsingame[MAXPLAYERS];
 
 	lumpinfo_t*			_maplumpinfo;
 
@@ -365,7 +365,7 @@ struct DoomMapLoader
 				int32_t offsetaddition = baseoffset & ~( MaxEntries16bit - 1 );
 				int32_t lastindex = 0;
 				int32_t count = 0;
-				boolean foundproblem = false;
+				doombool foundproblem = false;
 				for( int32_t& currindex : std::span( _blockmap, numindices ) )
 				{
 					if( currindex == firstentry )
@@ -1136,7 +1136,7 @@ extern "C"
 	mapthing_t	deathmatchstarts[MAX_DEATHMATCH_STARTS];
 	mapthing_t*	deathmatch_p;
 	mapthing_t	playerstarts[MAXPLAYERS];
-	boolean		playerstartsingame[MAXPLAYERS];
+	doombool		playerstartsingame[MAXPLAYERS];
 
 	// pointer to the current map lump info struct
 	lumpinfo_t *maplumpinfo;
@@ -1152,7 +1152,7 @@ static void P_LoadThings (int lump)
     mapthing_t         *mt;
     mapthing_t          spawnthing;
     int			numthings;
-    boolean		spawn;
+    doombool		spawn;
 
     data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
     numthings = W_LumpLength (lump) / sizeof(mapthing_t);

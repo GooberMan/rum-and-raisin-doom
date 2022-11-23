@@ -20,9 +20,9 @@
 
 #include "doomtype.h"
 
-DOOM_C_API extern boolean* gamekeydown;
-DOOM_C_API extern boolean* mousebuttons;
-DOOM_C_API extern boolean* joybuttons;
+DOOM_C_API extern doombool* gamekeydown;
+DOOM_C_API extern doombool* mousebuttons;
+DOOM_C_API extern doombool* joybuttons;
 
 #define IsBound( key )				( key >= 0 )
 #define GameKeyDown( key )			( IsBound( key ) && gamekeydown[ key ] )

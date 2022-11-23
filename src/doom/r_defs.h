@@ -514,7 +514,7 @@ typedef struct spriteframe_s
 	// If false use 0 for any position.
 	// Note: as eight entries are available,
 	//  we might as well insert the same name eight times.
-	boolean				rotate;
+	doombool				rotate;
 
 	// Lump to use for view angles 0-7.
 	int16_t				lump[8];
@@ -711,7 +711,7 @@ typedef struct spritecontext_s
 
 	lighttable_t**		spritelights;
 	
-	boolean*			sectorvisited;
+	doombool*			sectorvisited;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			maskedtimetaken;

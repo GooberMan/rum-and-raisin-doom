@@ -70,8 +70,8 @@ typedef struct
 
 
 static memzone_t *mainzone;
-static boolean zero_on_free;
-static boolean scan_on_free;
+static doombool zero_on_free;
+static doombool scan_on_free;
 
 
 //
@@ -498,10 +498,10 @@ void Z_CheckHeap (void)
 //
 // Z_ChangeTag
 //
-boolean Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
+doombool Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
 {
     memblock_t*	block;
-	boolean changed;
+	doombool changed;
 	
     block = (memblock_t *) ((byte *)ptr - sizeof(memblock_t));
 

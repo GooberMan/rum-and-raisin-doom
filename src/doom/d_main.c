@@ -109,30 +109,30 @@ char *          savegamedir;
 char *          iwadfile;
 
 
-boolean		devparm;	// started game with -devparm
-boolean         nomonsters;	// checkparm of -nomonsters
-boolean         respawnparm;	// checkparm of -respawn
-boolean         fastparm;	// checkparm of -fast
+doombool		devparm;	// started game with -devparm
+doombool         nomonsters;	// checkparm of -nomonsters
+doombool         respawnparm;	// checkparm of -respawn
+doombool         fastparm;	// checkparm of -fast
 
 //extern int soundVolume;
 //extern  int	sfxVolume;
 //extern  int	musicVolume;
 
-extern  boolean	inhelpscreens;
+extern  doombool	inhelpscreens;
 
 skill_t		startskill;
 int             startepisode;
 int		startmap;
-boolean		autostart;
+doombool		autostart;
 int             startloadgame;
 
-boolean		advancedemo;
+doombool		advancedemo;
 
 // Store demo, do not accept any inputs
-boolean         storedemo;
+doombool         storedemo;
 
 // If true, the main game loop has started.
-boolean         main_loop_started = false;
+doombool         main_loop_started = false;
 
 char		wadfile[1024];		// primary wad file
 char		mapdir[1024];           // directory of development maps
@@ -148,9 +148,9 @@ extern int32_t		num_render_contexts;
 extern int32_t		num_software_backbuffers;
 extern int32_t		additional_light_boost;
 extern int32_t		stats_style;
-extern boolean		rendersplitvisualise;
+extern doombool		rendersplitvisualise;
 
-boolean refreshstatusbar = true;
+doombool refreshstatusbar = true;
 
 vbuffer_t blackedges;
 #define BLACKEDGE_VAL 0x00
@@ -225,7 +225,7 @@ void D_ProcessEvents (void)
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
-extern  boolean setsizeneeded;
+extern  doombool setsizeneeded;
 extern  int             showMessages;
 
 const char* reasons[] =
@@ -243,20 +243,20 @@ void D_TestControls( const char* itemname, void* data )
 	V_DrawMouseSpeedBox( testcontrols_mousespeed );
 }
 
-boolean D_Display( double_t framepercent )
+doombool D_Display( double_t framepercent )
 {
-    static  boolean		viewactivestate = false;
-    static  boolean		menuactivestate = false;
-    static  boolean		inhelpscreensstate = false;
-    static  boolean		fullscreen = false;
+    static  doombool		viewactivestate = false;
+    static  doombool		menuactivestate = false;
+    static  doombool		inhelpscreensstate = false;
+    static  doombool		fullscreen = false;
     static  gamestate_t		oldgamestate = -1;
     static  int			borderdrawcount;
     int				y;
-    boolean			wipe;
-    boolean			redrawsbar;
+    doombool			wipe;
+    doombool			redrawsbar;
 	patch_t*		pausepatch;
 
-	boolean ispaused = renderpaused = ( paused
+	doombool ispaused = renderpaused = ( paused
 										|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) ) );
 	renderpaused |= ( menuactive && !demoplayback );
 
@@ -525,7 +525,7 @@ void D_BindVariables(void)
 // Called to determine whether to grab the mouse pointer
 //
 
-boolean D_GrabMouseCallback(void)
+doombool D_GrabMouseCallback(void)
 {
     // Drone players don't need mouse focus
 
@@ -579,7 +579,7 @@ void D_RunFrame()
 	uint64_t nowtime = 0;
 	uint64_t tics = 0;
 	static uint64_t wipestart = 0;
-	static boolean wipe = false;
+	static doombool wipe = false;
 
 	int32_t prev_render_width = render_width;
 	int32_t prev_render_height = render_height;
@@ -1180,7 +1180,7 @@ static void D_SetGameDescription(void)
 //      print title for every printed line
 char            title[128];
 
-static boolean D_AddFile(char *filename)
+static doombool D_AddFile(char *filename)
 {
     wad_file_t *handle;
 
@@ -1268,7 +1268,7 @@ static void InitGameVersion(void)
     int demoversion;
     int p;
     int i;
-    boolean status;
+    doombool status;
 
     //! 
     // @arg <version>
@@ -1996,7 +1996,7 @@ void D_DoomMain (void)
         {
             if (!strncmp(lumpinfo[i]->name, "DEHACKED", 8))
             {
-				boolean allow = remove_limits ? true : false;
+				doombool allow = remove_limits ? true : false;
                 DEH_LoadLump(i, allow, allow);
                 loaded++;
             }

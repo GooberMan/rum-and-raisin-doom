@@ -23,70 +23,70 @@
 
 DOOM_C_API typedef struct attractoptions_s
 {
-	boolean					demo4;
+	doombool					demo4;
 } attractoptions_t;
 
 DOOM_C_API typedef struct dehackedoptions_s
 {
-	boolean					frame_966;
-	boolean					lump_from_iwads;
-	boolean					always_load_lump;
-	boolean					allow_bex;
+	doombool					frame_966;
+	doombool					lump_from_iwads;
+	doombool					always_load_lump;
+	doombool					allow_bex;
 } dehackedoptions_t;
 
 DOOM_C_API typedef struct demoopitions_s
 {
-	boolean					large_size;
-	boolean					longtics;
+	doombool					large_size;
+	doombool					longtics;
 } demooptions_t;
 
 DOOM_C_API typedef struct finaleoptions_s
 {
-	boolean					always_allow_text_skip;
-	boolean					cast_allows_mouse_presses;
+	doombool					always_allow_text_skip;
+	doombool					cast_allows_mouse_presses;
 } finaleoptions_t;
 
 DOOM_C_API typedef struct gameoptions_s
 {
-	boolean					unlimited_scrollers;
-	boolean					reset_player_visited_secret;
-	boolean					doom2_bad_secret_exit_doesnt_loop;
-	boolean					noclip_cheats_work_everywhere;
-	boolean					pre_ultimate_bossdeath_support;
-	boolean					bfg_map02_secret_exit_to_map33;
-	boolean					hud_shows_boom_combined_keys;
-	boolean					allow_sky_change_between_levels;
+	doombool					unlimited_scrollers;
+	doombool					reset_player_visited_secret;
+	doombool					doom2_bad_secret_exit_doesnt_loop;
+	doombool					noclip_cheats_work_everywhere;
+	doombool					pre_ultimate_bossdeath_support;
+	doombool					bfg_map02_secret_exit_to_map33;
+	doombool					hud_shows_boom_combined_keys;
+	doombool					allow_sky_change_between_levels;
 } gameoptions_t;
 
 DOOM_C_API typedef struct setupoptions_s
 {
-	boolean					correct_opl3_by_default;
+	doombool					correct_opl3_by_default;
 } setupoptions_t;
 
 DOOM_C_API typedef struct wadoptions_s
 {
-	boolean					allow_mapinfo_lumps;
-	boolean					extended_map_datatypes;
-	boolean					allow_unlimited_lumps;
+	doombool					allow_mapinfo_lumps;
+	doombool					extended_map_datatypes;
+	doombool					allow_unlimited_lumps;
 } wadoptions_t;
 
 DOOM_C_API typedef struct savegameoptions_s
 {
-	boolean					large_size;
-	boolean					extended_data;
+	doombool					large_size;
+	doombool					extended_data;
 } savegameoptions_t;
 
 DOOM_C_API typedef struct renderoptions_s
 {
-	boolean					unlimited_solidsegs;
-	boolean					no_medusa;
-	boolean					texture_any_height;
-	boolean					texture_any_surface;
-	boolean					texture_blank_name;
-	boolean					widescreen_assets;
-	boolean					full_rgb_range;
-	boolean					invalid_thing_frames;
-	boolean					always_update_sky_texture;
+	doombool					unlimited_solidsegs;
+	doombool					no_medusa;
+	doombool					texture_any_height;
+	doombool					texture_any_surface;
+	doombool					texture_blank_name;
+	doombool					widescreen_assets;
+	doombool					full_rgb_range;
+	doombool					invalid_thing_frames;
+	doombool					always_update_sky_texture;
 } renderoptions_t;
 
 DOOM_C_API typedef struct playsimoptions_s

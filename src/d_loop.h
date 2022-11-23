@@ -25,7 +25,7 @@
 // The callback is invoked when new players are ready. The callback
 // should return true, or return false to abort startup.
 
-typedef boolean (*netgame_startup_callback_t)(int ready_players,
+typedef doombool (*netgame_startup_callback_t)(int ready_players,
                                               int num_players);
 
 typedef struct
@@ -41,7 +41,7 @@ typedef struct
 
     // Advance the game forward one tic, using the specified player input.
 
-    void (*RunTic)(ticcmd_t *cmds, boolean *ingame);
+    void (*RunTic)(ticcmd_t *cmds, doombool *ingame);
 
     // Run the menu (runs independently of the game).
 
@@ -59,14 +59,14 @@ uint64_t NetUpdate (void);
 void D_QuitNetGame (void);
 
 //? how many ticks to run?
-boolean TryRunTics (void);
+doombool TryRunTics (void);
 
 // Called at start of game loop to initialize timers
 void D_StartGameLoop(void);
 
 // Initialize networking code and connect to server.
 
-boolean D_InitNetGame(net_connect_data_t *connect_data);
+doombool D_InitNetGame(net_connect_data_t *connect_data);
 
 // Start game with specified settings. The structure will be updated
 // with the actual settings for the game.
@@ -74,14 +74,14 @@ boolean D_InitNetGame(net_connect_data_t *connect_data);
 void D_StartNetGame(net_gamesettings_t *settings,
                     netgame_startup_callback_t callback);
 
-extern boolean singletics;
+extern doombool singletics;
 extern uint64_t gametic, ticdup;
 
 // Check if it is permitted to record a demo with a non-vanilla feature.
-boolean D_NonVanillaRecord(boolean conditional, const char *feature);
+doombool D_NonVanillaRecord(doombool conditional, const char *feature);
 
 // Check if it is permitted to play back a demo with a non-vanilla feature.
-boolean D_NonVanillaPlayback(boolean conditional, int lumpnum,
+doombool D_NonVanillaPlayback(doombool conditional, int lumpnum,
                              const char *feature);
 
 #endif

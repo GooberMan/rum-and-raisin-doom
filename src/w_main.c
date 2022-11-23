@@ -31,9 +31,9 @@
 
 // Parse the command line, merging WAD files that are sppecified.
 // Returns true if at least one file was added.
-boolean W_ParseCommandLine(void)
+doombool W_ParseCommandLine(void)
 {
-    boolean modifiedgame = false;
+    doombool modifiedgame = false;
     int p;
 
     // Merged PWADs are loaded first, because they are supposed to be 

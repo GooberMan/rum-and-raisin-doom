@@ -101,7 +101,7 @@ int32_t				renderbuffercount = 0;
 int32_t				renderbufferswidth = 0;
 int32_t				renderbuffersheight = 0;
 int32_t				current_render_buffer = 0;
-boolean				buffers_initialised = false;
+doombool				buffers_initialised = false;
 
 ImGuiContext*		imgui_context = NULL;
 
@@ -117,15 +117,15 @@ static uint32_t pixel_format;
 // palette
 
 static SDL_Color palette[256];
-static boolean palette_to_set;
+static doombool palette_to_set;
 
 // display has been set up?
 
-static boolean initialized = false;
+static doombool initialized = false;
 
 // disable mouse?
 
-static boolean nomouse = false;
+static doombool nomouse = false;
 int32_t usemouse = 1;
 
 // Save screenshots in PNG format.
@@ -208,26 +208,26 @@ static int32_t startup_delay = 1000;
 // this to be temporarily disabled via the command line.
 
 int32_t grabmouse = true;
-static boolean nograbmouse_override = false;
+static doombool nograbmouse_override = false;
 
 // If true, game is running as a screensaver
 
-boolean screensaver_mode = false;
+doombool screensaver_mode = false;
 
 // Flag indicating whether the screen is currently visible:
 // when the screen isnt visible, don't render the screen
 
-boolean screenvisible = true;
+doombool screenvisible = true;
 
 // If true, we display dots at the bottom of the screen to 
 // indicate FPS.
 
-static boolean display_fps_dots;
+static doombool display_fps_dots;
 
 // If this is true, the screen is rendered but not blitted to the
 // video buffer.
 
-static boolean noblit;
+static doombool noblit;
 
 // Callback function to invoke to determine whether to grab the 
 // mouse pointer.
@@ -236,11 +236,11 @@ static grabmouse_callback_t grabmouse_callback = NULL;
 
 // Does the window currently have focus?
 
-static boolean window_focused = true;
+static doombool window_focused = true;
 
 // Window resize state.
 
-static boolean need_resize = false;
+static doombool need_resize = false;
 static uint64_t last_resize_time = 0;
 #define RESIZE_DELAY 500ull
 
@@ -264,7 +264,7 @@ void I_VideoRenderGLBackbuffer( void );
 
 void I_VideoSetupSDLRenderPath( void );
 
-static boolean MouseShouldBeGrabbed()
+static doombool MouseShouldBeGrabbed()
 {
 	// never grab the mouse when in screensaver mode
    
@@ -316,12 +316,12 @@ void I_SetGrabMouseCallback(grabmouse_callback_t func)
 
 // Set the variable controlling FPS dots.
 
-void I_DisplayFPSDots(boolean dots_on)
+void I_DisplayFPSDots(doombool dots_on)
 {
     display_fps_dots = dots_on;
 }
 
-static void SetShowCursor(boolean show)
+static void SetShowCursor(doombool show)
 {
     if (!screensaver_mode)
     {
@@ -414,7 +414,7 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
     }
 }
 
-static boolean ToggleFullScreenKeyShortcut(SDL_Keysym *sym)
+static doombool ToggleFullScreenKeyShortcut(SDL_Keysym *sym)
 {
     Uint16 flags = (KMOD_LALT | KMOD_RALT);
 #if defined(__MACOSX__)
@@ -597,8 +597,8 @@ void I_StartTic (void)
 
 void I_UpdateMouseGrab( void )
 {
-    static boolean currently_grabbed = false;
-    boolean grab;
+    static doombool currently_grabbed = false;
+    doombool grab;
 #if MOUSE_MOVE_TO_BOTTOMRIGHT
     int32_t screen_w, screen_h;
 #endif // MOUSE_MOVE_TO_BOTTOMRIGHT

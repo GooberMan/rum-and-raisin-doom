@@ -104,7 +104,7 @@ void M_ScheduleLauncher()
 	schedule_launcher = true;
 }
 
-boolean M_IsLauncherScheduled()
+doombool M_IsLauncherScheduled()
 {
 	return schedule_launcher;
 }

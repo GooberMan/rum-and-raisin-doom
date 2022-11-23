@@ -56,7 +56,7 @@
 //
 typedef struct
 {
-    boolean	istexture;
+    doombool	istexture;
     int		picnum;
     int		basepic;
     int		numpics;
@@ -186,7 +186,7 @@ void P_InitPicAnims (void)
 	
 }
 
-int32_t P_GetPicAnimStart( boolean istexture, int32_t animframe )
+int32_t P_GetPicAnimStart( doombool istexture, int32_t animframe )
 {
 	int32_t thisanim;
 
@@ -201,7 +201,7 @@ int32_t P_GetPicAnimStart( boolean istexture, int32_t animframe )
 	return -1;
 }
 
-int32_t P_GetPicAnimLength( boolean istexture, int32_t start )
+int32_t P_GetPicAnimLength( doombool istexture, int32_t start )
 {
 	int32_t thisanim;
 
@@ -1149,7 +1149,7 @@ void P_PlayerInSpecialSector (player_t* player)
 // P_UpdateSpecials
 // Animate planes, scroll walls, etc.
 //
-boolean		levelTimer;
+doombool		levelTimer;
 int		levelTimeCount;
 
 void P_UpdateSpecials (void)

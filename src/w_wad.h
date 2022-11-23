@@ -71,7 +71,7 @@ filelump_e {
 DOOM_C_API extern lumpinfo_t **lumpinfo;
 DOOM_C_API extern uint32_t numlumps;
 
-DOOM_C_API extern boolean wadrenderlock;
+DOOM_C_API extern doombool wadrenderlock;
 
 DOOM_C_API wad_file_t *W_AddFile(const char *filename);
 DOOM_C_API void W_Reload(void);
@@ -94,6 +94,6 @@ DOOM_C_API void W_ReleaseLumpNum(lumpindex_t lump);
 DOOM_C_API void W_ReleaseLumpName(const char *name);
 
 DOOM_C_API const char *W_WadNameForLump(const lumpinfo_t *lump);
-DOOM_C_API boolean W_IsIWADLump(const lumpinfo_t *lump);
+DOOM_C_API doombool W_IsIWADLump(const lumpinfo_t *lump);
 
 #endif

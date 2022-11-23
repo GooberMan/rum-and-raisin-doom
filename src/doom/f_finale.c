@@ -73,7 +73,7 @@ static endgame_t* finaleendgame = NULL;
 
 void	F_StartCast (void);
 void	F_CastTicker (void);
-boolean F_CastResponder (event_t *ev);
+doombool F_CastResponder (event_t *ev);
 void	F_CastDrawer (void);
 
 void F_SwitchFinale()
@@ -137,7 +137,7 @@ void F_StartFinale( endgame_t* endgame )
 
 
 
-boolean F_Responder (event_t *event)
+doombool F_Responder (event_t *event)
 {
     if (finalestage == F_STAGE_CAST)
 	return F_CastResponder (event);
@@ -153,7 +153,7 @@ void F_Ticker (void)
 {
     size_t		i;
 
-	boolean didskip = false;
+	doombool didskip = false;
     
     // check for skipping
     if ( finaleintermission && !!( finaleintermission->type & Intermission_Skippable ) && finalecount > 50 )
@@ -176,7 +176,7 @@ void F_Ticker (void)
 		F_CastTicker ();
 	}
 
-	boolean advance = didskip
+	doombool advance = didskip
 		|| ( finalestage == F_STAGE_TEXT && finalecount > strlen( finaletext ) * TEXTSPEED + TEXTWAIT );
 	
 	if( advance )
@@ -286,10 +286,10 @@ castinfo_t	castorder[] = {
 int		castnum;
 int		casttics;
 state_t*	caststate;
-boolean		castdeath;
+doombool		castdeath;
 int		castframes;
 int		castonmelee;
-boolean		castattacking;
+doombool		castattacking;
 
 
 //
@@ -421,9 +421,9 @@ void F_CastTicker (void)
 // F_CastResponder
 //
 
-boolean F_CastResponder (event_t* ev)
+doombool F_CastResponder (event_t* ev)
 {
-	boolean canrespond = ev->type == ev_keydown;
+	doombool canrespond = ev->type == ev_keydown;
 
 	if( remove_limits )
 	{
@@ -511,7 +511,7 @@ void F_CastDrawer (void)
     spritedef_t*	sprdef;
     spriteframe_t*	sprframe;
     int			lump;
-    boolean		flip;
+    doombool		flip;
     patch_t*		patch;
     
 	// WIDESCREEN HACK
@@ -527,7 +527,7 @@ void F_CastDrawer (void)
     sprdef = &sprites[caststate->sprite];
     sprframe = &sprdef->spriteframes[ caststate->frame & FF_FRAMEMASK];
     lump = sprframe->lump[0];
-    flip = (boolean)sprframe->flip[0];
+    flip = (doombool)sprframe->flip[0];
 			
     patch = W_CacheLumpNum (lump+firstspritelump, PU_STATIC);
     if (flip)

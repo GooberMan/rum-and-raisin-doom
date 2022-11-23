@@ -73,7 +73,7 @@ R_InstallSpriteLump
 ( int		lump,
   unsigned	frame,
   unsigned	rotation,
-  boolean	flipped )
+  doombool	flipped )
 {
     int		r;
 	
@@ -295,7 +295,7 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 	rend_fixed_t		topscreen;
 	rend_fixed_t		bottomscreen;
 	rend_fixed_t		basetexturemid;
-	boolean				isfuzz = colcontext->colormap == NULL;
+	doombool				isfuzz = colcontext->colormap == NULL;
 	
 	basetexturemid = colcontext->texturemid;
 	
@@ -435,7 +435,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	int32_t			lump;
 
 	uint32_t		rot;
-	boolean			flip;
+	doombool			flip;
 
 	int32_t			index;
 
@@ -454,7 +454,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 
 	if( interpolate_this_frame )
 	{
-		boolean selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
+		doombool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
 		if( thing->curr.teleported )
 		{
 			thingx = RendFixedToFixed( selectcurr ? thing->curr.x : thing->prev.x );
@@ -544,13 +544,13 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		ang = R_PointToAngle( FixedToRendFixed( thingx ), FixedToRendFixed( thingy ) );
 		rot = (ang-thingangle+(unsigned)(ANG45/2)*9)>>29;
 		lump = sprframe->lump[rot];
-		flip = (boolean)sprframe->flip[rot];
+		flip = (doombool)sprframe->flip[rot];
 	}
 	else
 	{
 		// use single rotation for all views
 		lump = sprframe->lump[0];
-		flip = (boolean)sprframe->flip[0];
+		flip = (doombool)sprframe->flip[0];
 	}
 
 	// calculate edges of the shape
@@ -688,7 +688,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	spritedef_t*	sprdef;
 	spriteframe_t*	sprframe;
 	int32_t			lump;
-	boolean			flip;
+	doombool			flip;
 	vissprite_t*	vis;
 	vissprite_t		avis;
 
@@ -711,7 +711,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	sprframe = &sprdef->spriteframes[ psp->state->frame & FF_FRAMEMASK ];
 
 	lump = sprframe->lump[0];
-	flip = (boolean)sprframe->flip[0];
+	flip = (doombool)sprframe->flip[0];
 
 	// calculate edges of the shape
 	tx = psp->sx - IntToFixed( V_VIRTUALWIDTH / 2 );

@@ -23,7 +23,7 @@
 
 
 
-boolean	P_GivePower(player_t*, int);
+doombool	P_GivePower(player_t*, int);
 
 
 

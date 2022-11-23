@@ -43,7 +43,7 @@ static txt_label_t *player_labels[NET_MAXPLAYERS];
 static txt_label_t *ip_labels[NET_MAXPLAYERS];
 static txt_label_t *drone_label;
 static txt_label_t *master_msg_label;
-static boolean had_warning;
+static doombool had_warning;
 
 // Number of players we expect to be in the game. When the number is
 // reached, we auto-start the game (if we're the controller). If
@@ -207,7 +207,7 @@ static void BuildMasterStatusWindow(void)
 
 static void CheckMasterStatus(void)
 {
-    boolean added;
+    doombool added;
 
     if (!NET_Query_CheckAddedToMaster(&added))
     {
@@ -258,8 +258,8 @@ static void CloseWindow(TXT_UNCAST_ARG(widget), TXT_UNCAST_ARG(window))
 
 static void CheckSHA1Sums(void)
 {
-    boolean correct_wad, correct_deh;
-    boolean same_freedoom;
+    doombool correct_wad, correct_deh;
+    doombool same_freedoom;
     txt_window_t *window;
     txt_window_action_t *cont_button;
 

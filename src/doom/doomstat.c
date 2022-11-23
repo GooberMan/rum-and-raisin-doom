@@ -28,7 +28,7 @@ GameVersion_t   gameversion = exe_final2;
 GameVariant_t   gamevariant = vanilla;
 
 // Set if homebrew PWAD stuff has been added.
-boolean	modifiedgame;
+doombool	modifiedgame;
 
 
 

@@ -299,7 +299,7 @@ thread_local char								error_message_buffer[ BufferSize ];
 
 #if defined( WIN32 )
 	#include <excpt.h>
-	// Until I fix up the boolean redefinition mess, we'll forward declare the function we want from WinAPI
+	// Until I fix up the doombool redefinition mess, we'll forward declare the function we want from WinAPI
 	DOOM_C_API __declspec( dllimport ) int __stdcall IsDebuggerPresent( void );
 	DOOM_C_API __declspec( dllimport ) int __stdcall SetUnhandledExceptionFilter( void* filter );
 	#define IsDebuggerAttached() IsDebuggerPresent()

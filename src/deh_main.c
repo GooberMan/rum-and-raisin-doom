@@ -37,23 +37,23 @@ extern deh_section_t *deh_section_types[];
 extern const char *deh_signatures[];
 extern int32_t remove_limits;
 
-static boolean deh_initialized = false;
+static doombool deh_initialized = false;
 
 // If true, we can parse [STRINGS] sections in BEX format.
 
-boolean deh_allow_extended_strings = false;
+doombool deh_allow_extended_strings = false;
 
 // If true, we can do long string replacements.
 
-boolean deh_allow_long_strings = false;
+doombool deh_allow_long_strings = false;
 
 // If true, we can do cheat replacements longer than the originals.
 
-boolean deh_allow_long_cheats = false;
+doombool deh_allow_long_cheats = false;
 
 // If false, dehacked cheat replacements are ignored.
 
-boolean deh_apply_cheats = true;
+doombool deh_apply_cheats = true;
 
 void DEH_Checksum(sha1_digest_t digest)
 {
@@ -134,7 +134,7 @@ static deh_section_t *GetSectionByName(char *name)
 
 // Is the string passed just whitespace?
 
-static boolean IsWhitespace(char *s)
+static doombool IsWhitespace(char *s)
 {
     for (; *s; ++s)
     {
@@ -179,7 +179,7 @@ static char *CleanString(char *s)
 //
 // Returns true if read correctly
 
-boolean DEH_ParseAssignment(char *line, char **variable_name, char **value)
+doombool DEH_ParseAssignment(char *line, char **variable_name, char **value)
 {
     char *p;
 
@@ -205,7 +205,7 @@ boolean DEH_ParseAssignment(char *line, char **variable_name, char **value)
     return true;
 }
 
-static boolean CheckSignatures(deh_context_t *context)
+static doombool CheckSignatures(deh_context_t *context)
 {
     size_t i;
     char *line;
@@ -288,7 +288,7 @@ static void DEH_ParseContext(deh_context_t *context)
     deh_section_t *current_section = NULL;
     char section_name[20];
     void *tag = NULL;
-    boolean extended;
+    doombool extended;
     char *line;
 
     // Read the header and check it matches the signature
@@ -436,7 +436,7 @@ void DEH_AutoLoadPatches(const char *path)
 // Load dehacked file from WAD lump.
 // If allow_long is set, allow long strings and cheats just for this lump.
 
-int DEH_LoadLump(int lumpnum, boolean allow_long, boolean allow_error)
+int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error)
 {
     deh_context_t *context;
 
@@ -472,7 +472,7 @@ int DEH_LoadLump(int lumpnum, boolean allow_long, boolean allow_error)
     return 1;
 }
 
-int DEH_LoadLumpByName(const char *name, boolean allow_long, boolean allow_error)
+int DEH_LoadLumpByName(const char *name, doombool allow_long, doombool allow_error)
 {
     int lumpnum;
 

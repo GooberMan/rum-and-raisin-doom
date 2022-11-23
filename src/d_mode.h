@@ -97,12 +97,12 @@ DOOM_C_API typedef enum
     sk_nightmare
 } skill_t;
 
-DOOM_C_API boolean D_ValidGameMode(GameMission_t mission, GameMode_t mode);
-DOOM_C_API boolean D_ValidGameVersion(GameMission_t mission, GameVersion_t version);
-DOOM_C_API boolean D_ValidEpisodeMap(GameMission_t mission, GameMode_t mode,
+DOOM_C_API doombool D_ValidGameMode(GameMission_t mission, GameMode_t mode);
+DOOM_C_API doombool D_ValidGameVersion(GameMission_t mission, GameVersion_t version);
+DOOM_C_API doombool D_ValidEpisodeMap(GameMission_t mission, GameMode_t mode,
                           int episode, int map);
 DOOM_C_API int D_GetNumEpisodes(GameMission_t mission, GameMode_t mode);
-DOOM_C_API boolean D_IsEpisodeMap(GameMission_t mission);
+DOOM_C_API doombool D_IsEpisodeMap(GameMission_t mission);
 DOOM_C_API const char *D_GameMissionString(GameMission_t mission);
 DOOM_C_API const char *D_GameModeString(GameMode_t mode);
 

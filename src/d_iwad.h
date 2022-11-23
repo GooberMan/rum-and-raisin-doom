@@ -41,7 +41,7 @@ DOOM_C_API typedef struct
     const char *description;
 } iwad_t;
 
-DOOM_C_API boolean D_IsIWADName(const char *name);
+DOOM_C_API doombool D_IsIWADName(const char *name);
 DOOM_C_API char *D_FindWADByName(const char *filename);
 DOOM_C_API char *D_TryFindWADByName(const char *filename);
 DOOM_C_API char *D_FindIWAD(int mask, GameMission_t *mission);

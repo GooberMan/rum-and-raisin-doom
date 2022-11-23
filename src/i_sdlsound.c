@@ -54,15 +54,15 @@ struct allocated_sound_s
     allocated_sound_t *prev, *next;
 };
 
-static boolean sound_initialized = false;
+static doombool sound_initialized = false;
 
 static allocated_sound_t *channels_playing[NUM_CHANNELS];
 
 static int mixer_freq;
 static Uint16 mixer_format;
 static int mixer_channels;
-static boolean use_sfx_prefix;
-static boolean (*ExpandSoundData)(sfxinfo_t *sfxinfo,
+static doombool use_sfx_prefix;
+static doombool (*ExpandSoundData)(sfxinfo_t *sfxinfo,
                                   byte *data,
                                   int samplerate,
                                   int length) = NULL;
@@ -144,7 +144,7 @@ static void FreeAllocatedSound(allocated_sound_t *snd)
 // and free a sound that is not in use, to free up memory.  Return true
 // for success.
 
-static boolean FindAndFreeSound(void)
+static doombool FindAndFreeSound(void)
 {
     allocated_sound_t *snd;
 
@@ -388,7 +388,7 @@ static int SRC_ConversionMode(void)
 // Returns number of clipped samples.
 // DWF 2008-02-10 with cleanups by Simon Howard.
 
-static boolean ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
+static doombool ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
                                    byte *data,
                                    int samplerate,
                                    int length)
@@ -502,7 +502,7 @@ static boolean ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
     return true;
 }
 
-static boolean ConvertibleRatio(int freq1, int freq2)
+static doombool ConvertibleRatio(int freq1, int freq2)
 {
     int ratio;
 
@@ -584,7 +584,7 @@ static void WriteWAV(char *filename, byte *data,
 // Load and convert a sound effect
 // Returns true if successful
 
-static boolean CacheSFX(sfxinfo_t *sfxinfo)
+static doombool CacheSFX(sfxinfo_t *sfxinfo)
 {
     int lumpnum;
     unsigned int lumplen;
@@ -735,7 +735,7 @@ static void I_SDL_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
 
 // Load a SFX chunk into memory and ensure that it is locked.
 
-static boolean LockSound(sfxinfo_t *sfxinfo)
+static doombool LockSound(sfxinfo_t *sfxinfo)
 {
     // If the sound isn't loaded, load it now
     if (GetAllocatedSoundBySfxInfoAndPitch(sfxinfo, NORM_PITCH) == NULL)
@@ -876,7 +876,7 @@ static void I_SDL_StopSound(int handle)
 }
 
 
-static boolean I_SDL_SoundIsPlaying(int handle)
+static doombool I_SDL_SoundIsPlaying(int handle)
 {
     if (!sound_initialized || handle < 0 || handle >= NUM_CHANNELS)
     {
@@ -948,7 +948,7 @@ static int GetSliceSize(void)
     return 1024;
 }
 
-static boolean I_SDL_InitSound(boolean _use_sfx_prefix)
+static doombool I_SDL_InitSound(doombool _use_sfx_prefix)
 {
     int i;
 

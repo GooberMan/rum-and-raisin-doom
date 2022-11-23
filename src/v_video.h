@@ -43,7 +43,7 @@ DOOM_C_API extern byte *tinttable;
 // haleyjd 08/28/10: implemented for Strife support
 // haleyjd 08/28/10: Patch clipping callback, implemented to support Choco
 // Strife.
-DOOM_C_API typedef boolean (*vpatchclipfunc_t)(patch_t *, int, int);
+DOOM_C_API typedef doombool (*vpatchclipfunc_t)(patch_t *, int, int);
 DOOM_C_API void V_SetPatchClipCallback(vpatchclipfunc_t func);
 
 // Allocates buffer screens, call before R_Init.

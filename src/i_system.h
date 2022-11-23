@@ -35,7 +35,7 @@ DOOM_C_API typedef void (*atexit_func_t)(void);
 // for the zone management.
 DOOM_C_API byte*	I_ZoneBase (size_t *size);
 
-DOOM_C_API boolean I_ConsoleStdout(void);
+DOOM_C_API doombool I_ConsoleStdout(void);
 
 
 // Asynchronous interrupt functions should maintain private queues
@@ -57,13 +57,13 @@ DOOM_C_API void I_Tactile (int on, int off, int total);
 
 DOOM_C_API void *I_Realloc(void *ptr, size_t size);
 
-DOOM_C_API boolean I_GetMemoryValue(unsigned int offset, void *value, int size);
+DOOM_C_API doombool I_GetMemoryValue(unsigned int offset, void *value, int size);
 
 // Schedule a function to be called when the program exits.
 // If run_if_error is true, the function is called if the exit
 // is due to an error (I_Error)
 
-DOOM_C_API void I_AtExit(atexit_func_t func, boolean run_if_error);
+DOOM_C_API void I_AtExit(atexit_func_t func, doombool run_if_error);
 
 // Add all system-specific config file variable bindings.
 

@@ -72,11 +72,11 @@ extern sessionstats_t session;
 // ------------------------
 // Command line parameters.
 //
-extern  boolean	nomonsters;	// checkparm of -nomonsters
-extern  boolean	respawnparm;	// checkparm of -respawn
-extern  boolean	fastparm;	// checkparm of -fast
+extern  doombool	nomonsters;	// checkparm of -nomonsters
+extern  doombool	respawnparm;	// checkparm of -respawn
+extern  doombool	fastparm;	// checkparm of -fast
 
-extern  boolean	devparm;	// DEBUG: launched with -devparm
+extern  doombool	devparm;	// DEBUG: launched with -devparm
 
 
 // -----------------------------------------------------
@@ -97,7 +97,7 @@ extern GameVariant_t    gamevariant;
      gamemission == pack_hacx ? doom2 : gamemission)
 
 // Set if homebrew PWAD stuff has been added.
-extern  boolean	modifiedgame;
+extern  doombool	modifiedgame;
 
 
 // -------------------------------------------
@@ -114,7 +114,7 @@ extern	int		startmap;
 
 extern  int             startloadgame;
 
-extern  boolean		autostart;
+extern  doombool		autostart;
 
 // Selected by user. 
 extern  skill_t         gameskill;
@@ -123,11 +123,11 @@ extern  skill_t         gameskill;
 extern  int             timelimit;
 
 // Nightmare mode flag, single player.
-extern  boolean         respawnmonsters;
+extern  doombool         respawnmonsters;
 
 // Netgame? Only true if >1 player.
-extern  boolean	netgame;
-extern boolean solonetgame;
+extern  doombool	netgame;
+extern doombool solonetgame;
 
 // 0=Cooperative; 1=Deathmatch; 2=Altdeath
 extern int deathmatch;
@@ -163,23 +163,23 @@ extern int snd_DesiredSfxDevice;
 // Depending on view size - no status bar?
 // Note that there is no way to disable the
 //  status bar explicitely.
-extern  boolean statusbaractive;
+extern  doombool statusbaractive;
 
-extern  boolean automapactive;	// In AutoMap mode?
-extern  boolean	menuactive;	// Menu overlayed?
+extern  doombool automapactive;	// In AutoMap mode?
+extern  doombool	menuactive;	// Menu overlayed?
 extern  int32_t dashboardactive; // R&R Dashboard, powered by Dear ImGui
 extern  int32_t dashboardremappingtype;
 extern  int32_t dashboardpausesplaysim;
-extern  boolean	paused;		// Game Pause?
-extern  boolean	renderpaused;
+extern  doombool	paused;		// Game Pause?
+extern  doombool	renderpaused;
 
 
-extern  boolean		viewactive;
+extern  doombool		viewactive;
 
-extern  boolean		nodrawers;
+extern  doombool		nodrawers;
 
 
-extern  boolean         testcontrols;
+extern  doombool         testcontrols;
 extern  int             testcontrols_mousespeed;
 
 
@@ -212,19 +212,19 @@ extern  int	leveltime;	// tics in game play for par
 // DEMO playback/recording related stuff.
 // No demo, there is a human player in charge?
 // Disable save/end game?
-extern  boolean	usergame;
+extern  doombool	usergame;
 
 //?
-extern  boolean	demoplayback;
-extern  boolean	demorecording;
+extern  doombool	demoplayback;
+extern  doombool	demorecording;
 
 // Round angleturn in ticcmds to the nearest 256.  This is used when
 // recording Vanilla demos in netgames.
 
-extern boolean lowres_turn;
+extern doombool lowres_turn;
 
 // Quit after playing a demo from cmdline.
-extern  boolean		singledemo;	
+extern  doombool		singledemo;	
 
 
 
@@ -249,7 +249,7 @@ extern  gamestate_t     gamestate;
 extern	player_t	players[MAXPLAYERS];
 
 // Alive? Disconnected?
-extern  boolean		playeringame[MAXPLAYERS];
+extern  doombool		playeringame[MAXPLAYERS];
 
 
 // Player spawn spots for deathmatch.
@@ -259,7 +259,7 @@ extern  mapthing_t*	deathmatch_p;
 
 // Player spawn spots.
 extern  mapthing_t      playerstarts[MAXPLAYERS];
-extern  boolean         playerstartsingame[MAXPLAYERS];
+extern  doombool         playerstartsingame[MAXPLAYERS];
 // Intermission stats.
 // Parameters for world map / intermission.
 extern  wbstartstruct_t		wminfo;	
@@ -278,7 +278,7 @@ extern  wbstartstruct_t		wminfo;
 extern  char        *savegamedir;
 
 // if true, load all graphics at level load
-extern  boolean         precache;
+extern  doombool         precache;
 
 
 // wipegamestate can be set to -1

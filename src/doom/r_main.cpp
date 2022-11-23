@@ -87,11 +87,11 @@ extern "C"
 	int32_t					num_render_contexts = -1;
 	int32_t					num_software_backbuffers = 1;
 	int32_t					renderloadbalancing = 1;
-	boolean					rendersplitvisualise = false;
-	boolean					renderrebalancecontexts = false;
+	doombool					rendersplitvisualise = false;
+	doombool					renderrebalancecontexts = false;
 	double_t				renderscalecontextsby = 0.0;
 	int32_t					rebalancescale = 25;
-	boolean					renderSIMDcolumns = false;
+	doombool					renderSIMDcolumns = false;
 	atomicval_t				renderthreadCPUmelter = 0;
 	int32_t					performancegraphscale = 20;
 
@@ -164,7 +164,7 @@ extern "C"
 	extern int32_t enable_frame_interpolation;
 	int32_t interpolate_this_frame = 0;
 
-	boolean		setsizeneeded;
+	doombool		setsizeneeded;
 	int		setblocks;
 
 	extern int32_t remove_limits;
@@ -172,9 +172,9 @@ extern "C"
 	extern int screenblocks;
 	extern int numflats;
 	extern int numtextures;
-	extern boolean refreshstatusbar;
+	extern doombool refreshstatusbar;
 	extern int mouseSensitivity;
-	extern boolean renderpaused;
+	extern doombool renderpaused;
 	extern int32_t span_override;
 
 	extern uint64_t frametime;
@@ -1112,7 +1112,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		}
 	}
 		
-	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( boolean ) * numsectors );
+	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( doombool ) * numsectors );
 
 	rendercontext->planecontext.output = rendercontext->viewbuffer;
 	rendercontext->planecontext.spantype = span_override;
@@ -1244,7 +1244,7 @@ void R_InitContexts( void )
 
 		if( numsectors > 0 )
 		{
-			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (doombool*)Z_Malloc( sizeof( doombool ) * numsectors, PU_LEVEL, NULL );
 		}
 	}
 }
@@ -1256,7 +1256,7 @@ void R_RefreshContexts( void )
 	{
 		for( currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
 		{
-			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (boolean*)Z_Malloc( sizeof( boolean ) * numsectors, PU_LEVEL, NULL );
+			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (doombool*)Z_Malloc( sizeof( doombool ) * numsectors, PU_LEVEL, NULL );
 #if RENDER_PERF_GRAPHING
 			memset( renderdatas[ currcontext ].context.frametimes, 0, sizeof( renderdatas[ currcontext ].context.frametimes) );
 			memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
@@ -1480,8 +1480,8 @@ void R_RenderUpdateFrameSize( void )
 	}
 }
 
-static boolean debugwindow_renderthreadinggraphs = false;
-static boolean debugwindow_renderthreadingoptions = false;
+static doombool debugwindow_renderthreadinggraphs = false;
+static doombool debugwindow_renderthreadingoptions = false;
 
 #if RENDER_PERF_GRAPHING
 static void R_RenderGraphTab( const char* graphname, ptrdiff_t frameavgoffs, ptrdiff_t backgroundoffs, ptrdiff_t dataoffs, int32_t datalen, ptrdiff_t nextentryoffs )
@@ -1742,7 +1742,7 @@ double_t Lerp( double_t from, double_t to, double_t percent )
 
 extern "C"
 {
-	extern boolean demoplayback;
+	extern doombool demoplayback;
 }
 
 bool isstrafing = false;
@@ -1860,7 +1860,7 @@ void R_RenderLoadBalance()
 	R_ResetContext( &renderdatas[ num_render_contexts - 1 ].context, M_MAX( currstart, 0 ), drs_current->viewwidth );
 }
 
-void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsoleplayer ) //__attribute__ ((optnone))
+void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsoleplayer ) //__attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
 
@@ -2054,7 +2054,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, boolean isconsolepla
 // R_RenderView
 //
 
-void R_RenderPlayerView(player_t* player, double_t framepercent, boolean isconsoleplayer)
+void R_RenderPlayerView(player_t* player, double_t framepercent, doombool isconsoleplayer)
 {
 	M_PROFILE_FUNC();
 

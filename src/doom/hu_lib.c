@@ -31,10 +31,10 @@
 
 #include "i_log.h"
 
-// boolean : whether the screen is always erased
+// doombool : whether the screen is always erased
 #define noterased viewwindowx
 
-extern boolean	automapactive;	// in AM_map.c
+extern doombool	automapactive;	// in AM_map.c
 
 void HUlib_init(void)
 {
@@ -62,7 +62,7 @@ HUlib_initTextLine
     HUlib_clearTextLine(t);
 }
 
-boolean
+doombool
 HUlib_addCharToTextLine
 ( hu_textline_t*	t,
   char			ch )
@@ -80,7 +80,7 @@ HUlib_addCharToTextLine
 
 }
 
-boolean HUlib_delCharFromTextLine(hu_textline_t* t)
+doombool HUlib_delCharFromTextLine(hu_textline_t* t)
 {
 
     if (!t->len) return false;
@@ -96,7 +96,7 @@ boolean HUlib_delCharFromTextLine(hu_textline_t* t)
 void
 HUlib_drawTextLine
 ( hu_textline_t*	l,
-  boolean		drawcursor )
+  doombool		drawcursor )
 {
 
     int			i;
@@ -178,7 +178,7 @@ HUlib_initSText
   int		h,
   patch_t**	font,
   int		startchar,
-  boolean*	on )
+  doombool*	on )
 {
 
     int i;
@@ -272,7 +272,7 @@ HUlib_initIText
   int		y,
   patch_t**	font,
   int		startchar,
-  boolean*	on )
+  doombool*	on )
 {
     it->lm = 0; // default left margin is start of text
     it->on = on;
@@ -313,7 +313,7 @@ HUlib_addPrefixToIText
 
 // wrapper function for handling general keyed input.
 // returns true if it ate the key
-boolean
+doombool
 HUlib_keyInIText
 ( hu_itext_t*	it,
   unsigned char ch )

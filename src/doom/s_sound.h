@@ -68,7 +68,7 @@ void S_ChangeMusic(int music_id, int looping);
 void S_ChangeMusicLump( flowstring_t* lump, int32_t looping );
 
 // query if music is playing
-boolean S_MusicPlaying(void);
+doombool S_MusicPlaying(void);
 
 // Stops the music fer sure.
 void S_StopMusic(void);

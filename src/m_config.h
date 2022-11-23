@@ -30,7 +30,7 @@ DOOM_C_API void M_SetMusicPackDir(void);
 DOOM_C_API void M_BindIntVariable(const char *name, int *variable);
 DOOM_C_API void M_BindFloatVariable(const char *name, float *variable);
 DOOM_C_API void M_BindStringVariable(const char *name, char **variable);
-DOOM_C_API boolean M_SetVariable(const char *name, const char *value);
+DOOM_C_API doombool M_SetVariable(const char *name, const char *value);
 DOOM_C_API int M_GetIntVariable(const char *name);
 DOOM_C_API const char *M_GetStringVariable(const char *name);
 DOOM_C_API float M_GetFloatVariable(const char *name);

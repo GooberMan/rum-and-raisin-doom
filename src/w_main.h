@@ -20,7 +20,7 @@
 
 #include "d_mode.h"
 
-boolean W_ParseCommandLine(void);
+doombool W_ParseCommandLine(void);
 void W_CheckCorrectIWAD(GameMission_t mission);
 
 // Autoload all .wad files from the given directory:

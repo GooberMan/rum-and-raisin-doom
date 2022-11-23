@@ -39,7 +39,7 @@ extern "C"
 
 	#include "m_misc.h"
 
-	extern boolean renderSIMDcolumns;
+	extern doombool renderSIMDcolumns;
 }
 
 // OPTIMIZE: closed two sided lines as single sided
@@ -50,16 +50,16 @@ typedef struct segloopcontext_s
 	int32_t			stopx;
 
 	// True if any of the segs textures might be visible.
-	boolean			segtextured;
+	doombool			segtextured;
 
-	boolean			maskedtexture;
+	doombool			maskedtexture;
 	int32_t			toptexture;
 	int32_t			bottomtexture;
 	int32_t			midtexture;
 
 	// False if the back side is the same plane.
-	boolean			markfloor;	
-	boolean			markceiling;
+	doombool			markfloor;	
+	doombool			markceiling;
 
 	rend_fixed_t	pixhigh;
 	rend_fixed_t	pixlow;

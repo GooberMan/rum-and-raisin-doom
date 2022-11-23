@@ -658,7 +658,7 @@ typedef struct menuentry_s
 	menufunc_t			callback;
 	void*				data;
 	ImVec2				dimensions;
-	boolean				enabled;
+	doombool				enabled;
 	int32_t				comparison;
 	menuentrytype_t		type;
 	menuproperties_t	properties;
@@ -734,8 +734,8 @@ static const char* remaptypenames[ Remap_Max ] =
 	"joystick button",
 };
 
-static boolean aboutwindow_open = false;
-static boolean licenceswindow_open = false;
+static doombool aboutwindow_open = false;
+static doombool licenceswindow_open = false;
 
 static int32_t lastrenderwidth = 0;
 static int32_t lastrenderheight = 0;
@@ -990,14 +990,14 @@ void M_InitDashboard( void )
 		M_RegisterDashboardRadioButton( themefullpath, NULL, &dashboard_theme, index++ );
 	}
 
-	M_RegisterDashboardCheckbox( "Core|Pause While Active", "Multiplayer ignores this", (boolean*)&dashboardpausesplaysim );
+	M_RegisterDashboardCheckbox( "Core|Pause While Active", "Multiplayer ignores this", (doombool*)&dashboardpausesplaysim );
 	M_RegisterDashboardWindow( "Core|About", "About " PACKAGE_NAME, 0, 0, &aboutwindow_open, Menu_Normal, &M_AboutWindow );
 	M_RegisterDashboardWindow( "Core|Licences", "Licences", 0, 0, &licenceswindow_open, Menu_Normal, &M_LicencesWindow );
 	M_RegisterDashboardSeparator( "Core" );
 	M_RegisterDashboardButton( "Core|Quit", "Yes, this means quit the game", &M_OnDashboardCoreQuit, NULL );
 }
 
-void M_DashboardSetLicenceInUse( licence_t licence, boolean inuse )
+void M_DashboardSetLicenceInUse( licence_t licence, doombool inuse )
 {
 	licences[ licence ].inuse = inuse;
 }
@@ -1093,7 +1093,7 @@ static void M_DashboardFirstLaunchWindow()
 
 		float cursorx = igGetCursorPosX();
 
-		boolean tolauncher = M_IsLauncherScheduled();
+		doombool tolauncher = M_IsLauncherScheduled();
 		
 		if( current_launch_state == LS_Options && !tolauncher )
 		{
@@ -1220,7 +1220,7 @@ void M_DashboardKeyRemap( remapping_t type, int32_t* key, const char* mappingnam
 	}
 }
 
-boolean M_DashboardResponder( event_t* ev )
+doombool M_DashboardResponder( event_t* ev )
 {
 	switch( dashboardremappingtype )
 	{
@@ -1328,7 +1328,7 @@ static int32_t M_GetDashboardWindowsOpened( menuentry_t** children )
 	{
 		child = *children;
 
-		if( child->type == MET_Window && *(boolean*)child->data )
+		if( child->type == MET_Window && *(doombool*)child->data )
 		{
 			++windowcount;
 		}
@@ -1353,7 +1353,7 @@ static int32_t M_RenderDashboardWindowActivationItems( menuentry_t** children )
 	{
 		child = *children;
 
-		if( child->type == MET_Window && *(boolean*)child->data )
+		if( child->type == MET_Window && *(doombool*)child->data )
 		{
 			++windowcount;
 			if( igMenuItem_Bool( child->caption, "", false, true ) )
@@ -1731,7 +1731,7 @@ void M_RegisterDashboardButton( const char* full_path, const char* tooltip, menu
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDashboardWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, boolean* active, menuproperties_t properties, menufunc_t callback )
+void M_RegisterDashboardWindow( const char* full_path, const char* caption, int32_t initialwidth, int32_t initialheight, doombool* active, menuproperties_t properties, menufunc_t callback )
 {
 	menuentry_t* category = M_FindDashboardCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;
@@ -1757,7 +1757,7 @@ void M_RegisterDashboardWindow( const char* full_path, const char* caption, int3
 	CHECK_ELEMENTS();
 }
 
-void M_RegisterDashboardCheckbox( const char* full_path, const char* tooltip, boolean* value )
+void M_RegisterDashboardCheckbox( const char* full_path, const char* tooltip, doombool* value )
 {
 	menuentry_t* category = M_FindDashboardCategoryFromFullPath( full_path );
 	menuentry_t* currentry = nextentry++;

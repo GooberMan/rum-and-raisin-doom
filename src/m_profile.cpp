@@ -74,7 +74,7 @@ static std::atomic< int32_t >			numprofilethreads;
 
 static int32_t							currthreadview = 0;
 
-static boolean							profilewindowactive = false;
+static doombool							profilewindowactive = false;
 
 auto ProfileThreads()			{ return std::span( profilethreads, numprofilethreads ); }
 auto CurrProfileThread()		{ return profilethreads[ currthreadview ]; }
