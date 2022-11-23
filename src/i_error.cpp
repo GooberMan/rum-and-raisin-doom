@@ -333,6 +333,7 @@ thread_local char								error_message_buffer[ BufferSize ];
 thread_local Scratchpad< 8192 >					callstack_buffer;
 
 #ifdef WIN32
+	#define WIN32_LEAN_AND_MEAN
 	#include <excpt.h>
 	#include <Windows.h>
 	#include <DbgHelp.h>
