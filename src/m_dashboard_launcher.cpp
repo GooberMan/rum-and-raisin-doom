@@ -2999,11 +2999,11 @@ namespace launcher
 				bool opendialog = false;
 				if( igBeginPopup( "dehacked_add_popup", ImGuiWindowFlags_None ) )
 				{
-					//opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
-					//if( !doomfileselector->AllDEHs().empty() )
-					//{
-					//	igSeparator();
-					//}
+					opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
+					if( !doomfileselector->AllDEHs().empty() )
+					{
+						igSeparator();
+					}
 
 					for( DoomFileEntry& entry : doomfileselector->AllDEHs() )
 					{
@@ -3108,11 +3108,11 @@ namespace launcher
 				bool opendialog = false;
 				if( igBeginPopup( "pwads_add_popup", ImGuiWindowFlags_None ) )
 				{
-					//opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
-					//if( !doomfileselector->AllPWADs().empty() )
-					//{
-					//	igSeparator();
-					//}
+					opendialog = igSelectable_Bool( "Add another...", false, ImGuiSelectableFlags_None, zero );
+					if( !doomfileselector->AllPWADs().empty() )
+					{
+						igSeparator();
+					}
 
 					for( DoomFileEntry& entry : doomfileselector->AllPWADs() )
 					{
