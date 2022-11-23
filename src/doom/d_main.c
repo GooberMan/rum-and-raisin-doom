@@ -600,11 +600,6 @@ void D_RunFrame()
 		nowtime = I_GetTimeTicks();
 		tics = nowtime - wipestart;
 
-		if( tics > 1 )
-		{
-			I_LogAddEntryVar( Log_Warning, "Oh come on game, %d ticks???", (int32_t)tics );
-		}
-
 		synctime = I_GetTimeUS();
 
 		wipe = !wipe_ScreenWipe(wipe_style, 0, 0, render_width, render_height, tics, (rend_fixed_t)( CalculatePercentage() * ( RENDFRACUNIT ) ) );
