@@ -107,5 +107,8 @@
     <ClInclude Include="..\ext\cimgui\imgui\backends\imgui_impl_opengl3_loader.h">
       <Filter>Header Files\imgui\backends</Filter>
     </ClInclude>
+    <ClInclude Include="..\ext\cimguiglue\cimguiglue_config.h">
+      <Filter>Header Files\cimgui</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

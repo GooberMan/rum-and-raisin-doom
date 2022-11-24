@@ -1,5 +1,5 @@
 //
-// Copyright(C) 2020-2021 Ethan Watson
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
