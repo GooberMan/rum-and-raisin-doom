@@ -23,6 +23,8 @@
 #include "m_misc.h"
 #include "m_container.h"
 
+#include "txt_main.h"
+
 #include "doomkeys.h"
 
 #include "cimguiglue.h"
@@ -1519,6 +1521,57 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 
 				igEndMenu();
 			}
+
+			constexpr ImU32 ega_colors[] =
+			{
+				IM_COL32( 0x00, 0x00, 0x00, 0xff ),		// 0: Black
+				IM_COL32( 0x00, 0x00, 0xa8, 0xff ),		// 1: Blue
+				IM_COL32( 0x00, 0xa8, 0x00, 0xff ),		// 2: Green
+				IM_COL32( 0x00, 0xa8, 0xa8, 0xff ),		// 3: Cyan
+				IM_COL32( 0xa8, 0x00, 0x00, 0xff ),		// 4: Red
+				IM_COL32( 0xa8, 0x00, 0xa8, 0xff ),		// 5: Magenta
+				IM_COL32( 0xa8, 0x54, 0x00, 0xff ),		// 6: Brown
+				IM_COL32( 0xa8, 0xa8, 0xa8, 0xff ),		// 7: Grey
+				IM_COL32( 0x54, 0x54, 0x54, 0xff ),		// 8: Dark grey
+				IM_COL32( 0x54, 0x54, 0xfe, 0xff ),		// 9: Bright blue
+				IM_COL32( 0x54, 0xfe, 0x54, 0xff ),		// 10: Bright green
+				IM_COL32( 0x54, 0xfe, 0xfe, 0xff ),		// 11: Bright cyan
+				IM_COL32( 0xfe, 0x54, 0x54, 0xff ),		// 12: Bright red
+				IM_COL32( 0xfe, 0x54, 0xfe, 0xff ),		// 13: Bright magenta
+				IM_COL32( 0xfe, 0xfe, 0x54, 0xff ),		// 14: Yellow
+				IM_COL32( 0xfe, 0xfe, 0xfe, 0xff ),		// 15: Bright white
+			};
+
+			igPushStyleVar_Float( ImGuiStyleVar_FrameBorderSize, 0 );
+			igPushStyleVar_Float( ImGuiStyleVar_FrameRounding, 0 );
+			igPushStyleVar_Vec2( ImGuiStyleVar_FramePadding, zeropivot );
+
+			igPushStyleColor_U32( ImGuiCol_FrameBg, ega_colors[ PACKAGE_BANNER_BACK ] );
+			igPushStyleColor_U32( ImGuiCol_Text, ega_colors[ TXT_COLOR_YELLOW ] );
+
+			ImVec2 avail;
+			igGetContentRegionAvail( &avail );
+			avail.x += 7;
+			avail.y += 7;
+
+			ImGuiID id = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "rnrtitle", nullptr );
+			if( igBeginChildFrame( id, avail, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize ) )
+			{
+				igGetContentRegionAvail( &avail );
+
+				ImVec2 textsize;
+				igCalcTextSize( &textsize, PACKAGE_STRING, nullptr, true, -1.f );
+
+				ImVec2 cursor;
+				igGetCursorPos( &cursor );
+				cursor.y += ( avail.y - textsize.y ) * 0.5f;
+				igSetCursorPos( cursor );
+				igCentreText( PACKAGE_STRING );
+			}
+			igEndChildFrame();
+
+			igPopStyleColor( 2 );
+			igPopStyleVar( 3 );
 		}
 		igEndMainMenuBar();
 
