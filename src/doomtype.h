@@ -54,6 +54,27 @@
 #define PLATFORM_ARCHNAME           PLATFORM_ARCHNAME_ARM64
 #endif // architecture check
 
+#define PLATFORM_OS_NONE			0
+#define PLATFORM_OS_WINDOWS			1
+#define PLATFORM_OS_LINUX			2
+#define PLATFORM_OS_MACOS			3
+
+#define PLATFORM_OSNAME_NONE		"<unknown operating system>"
+#define PLATFORM_OSNAME_WINDOWS		"Windows"
+#define PLATFORM_OSNAME_LINUX		"Linux"
+#define PLATFORM_OSNAME_MACOS		"MacOS"
+
+#if defined( WIN32 )
+#define PLATFORM_OS					PLATFORM_OS_WINDOWS
+#define PLATFORM_OSNAME				PLATFORM_OSNAME_WINDOWS
+#elif defined( __linux__ )
+#define PLATFORM_OS					PLATFORM_OS_LINUX
+#define PLATFORM_OSNAME				PLATFORM_OSNAME_LINUX
+#elif defined( __APPLE__ )
+#define PLATFORM_OS					PLATFORM_OS_MACOS
+#define PLATFORM_OSNAME				PLATFORM_OSNAME_MACOS
+#endif
+
 #ifdef __cplusplus
 #define DOOM_C_API extern "C"
 #else
@@ -77,11 +98,11 @@
 #endif
 
 #if !defined( NDEBUG )
-#define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME " THIS IS A DEBUG BUILD STOP PROFILING ON A DEBUG BUILD"
+#define EDITION_STRING PACKAGE_STRING " " PLATFORM_OSNAME " " PLATFORM_ARCHNAME " THIS IS A DEBUG BUILD STOP PROFILING ON A DEBUG BUILD"
 #elif defined( RNR_PROFILING )
-#define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME " PROFILING BUILD (See about window for explanation)"
+#define EDITION_STRING PACKAGE_STRING " " PLATFORM_OSNAME " " PLATFORM_ARCHNAME " PROFILING BUILD (See about window for explanation)"
 #else
-#define EDITION_STRING PACKAGE_STRING " " PLATFORM_ARCHNAME
+#define EDITION_STRING PACKAGE_STRING " " PLATFORM_OSNAME " " PLATFORM_ARCHNAME
 #endif // !defined( NDEBUG )
 
 // #define macros to provide functions missing in Windows.
