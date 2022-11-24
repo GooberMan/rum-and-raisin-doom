@@ -32,6 +32,8 @@
 
 #include "r_main.h"
 
+#include "cimguiglue.h"
+
 extern "C"
 {
 	#include <stdlib.h>
@@ -43,8 +45,6 @@ extern "C"
 	#include "m_bbox.h"
 	#include "m_config.h"
 	#include "m_menu.h"
-
-	#include "cimguiglue.h"
 
 	#include "r_local.h"
 	#include "r_sky.h"

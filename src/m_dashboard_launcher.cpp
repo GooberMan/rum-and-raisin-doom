@@ -466,29 +466,6 @@ constexpr triangle_t mesh_folder[] =
 constexpr auto Star() { return std::span( mesh_star, arrlen( mesh_star ) ); }
 constexpr auto Folder() { return std::span( mesh_folder, arrlen( mesh_folder ) ); }
 
-void igCentreText( const char* string )
-{
-	ImVec2 textsize;
-	igCalcTextSize( &textsize, string, nullptr, false, -1 );
-	igCentreNextElement( textsize.x );
-	igText( string );
-}
-
-template< typename... _args >
-void igCentreText( const char* string, _args&... args )
-{
-	char buffer[ 1024 ];
-
-	M_snprintf( buffer, 1024, string, args... );
-	igCentreText( buffer );
-}
-
-template< typename... _args >
-void igCentreText( const char* string, _args&&... args )
-{
-	igCentreText( string, args... );
-}
-
 template< typename _container, typename _func >
 void igTileView( _container& items, ImVec2 tilesize, _func& peritem )
 {

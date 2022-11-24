@@ -52,6 +52,27 @@ CIMGUI_API void igRoundProgressBar( float_t progress, ImVec2 size, float_t round
 
 CIMGUI_API void igSpinner( ImVec2 size, double_t cycletime );
 
+CIMGUI_API void igCentreText( const char* string );
+
+#if defined( __cplusplus )
+
+template< typename... _args >
+void igCentreText( const char* string, _args&... args )
+{
+	char buffer[ 1024 ];
+
+	M_snprintf( buffer, 1024, string, args... );
+	igCentreText( buffer );
+}
+
+template< typename... _args >
+void igCentreText( const char* string, _args&&... args )
+{
+	igCentreText( string, args... );
+}
+
+#endif // defined( __cplusplus )
+
 // Helpers macros to generate 32-bit encoded colors
 #ifdef IMGUI_USE_BGRA_PACKED_COLOR
 #define IM_COL32_R_SHIFT    16

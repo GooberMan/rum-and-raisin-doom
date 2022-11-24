@@ -229,3 +229,11 @@ CIMGUI_API void igSpinner( ImVec2 size, double_t cycletime )
 	ImDrawList_AddTriangleFilled( drawlist, points[ 0 ], points[ 1 ], points[ 2 ], igGetColorU32_Col( ImGuiCol_PlotHistogram, 1.0f ) );
 	ImDrawList_AddTriangleFilled( drawlist, points[ 3 ], points[ 4 ], points[ 5 ], igGetColorU32_Col( ImGuiCol_PlotHistogram, 1.0f ) );
 }
+
+void igCentreText( const char* string )
+{
+	ImVec2 textsize;
+	igCalcTextSize( &textsize, string, nullptr, false, -1 );
+	igCentreNextElement( textsize.x );
+	igText( string );
+}
