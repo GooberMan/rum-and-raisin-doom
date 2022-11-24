@@ -39,6 +39,8 @@ extern "C"
 	#include <glad/glad.h>
 }
 
+#define TITLEBAR_STRING PACKAGE_STRING " " PLATFORM_OSNAME " " PLATFORM_ARCHNAME
+
 void* InconsolataData();
 uint32_t InconsolataSize();
 const char* InconsolataName();
@@ -880,7 +882,7 @@ static void M_OnDashboardCoreQuit( const char* itemname, void* data )
 
 static void M_AboutWindow( const char* itemname, void* data )
 {
-	igText( PACKAGE_STRING " " PLATFORM_ARCHNAME );
+	igText( PACKAGE_STRING " " PLATFORM_OSNAME " " PLATFORM_ARCHNAME );
 	igText( "\"Haha software render go BRRRRR!\"" );
 	igNewLine();
 	igText( "A fork of Chocolate Doom focused on speed for modern architectures." );
@@ -1560,13 +1562,13 @@ void M_RenderDashboard( int32_t windowwidth, int32_t windowheight, int32_t backb
 				igGetContentRegionAvail( &avail );
 
 				ImVec2 textsize;
-				igCalcTextSize( &textsize, PACKAGE_STRING, nullptr, true, -1.f );
+				igCalcTextSize( &textsize, TITLEBAR_STRING, nullptr, true, -1.f );
 
 				ImVec2 cursor;
 				igGetCursorPos( &cursor );
 				cursor.y += ( avail.y - textsize.y ) * 0.5f;
 				igSetCursorPos( cursor );
-				igCentreText( PACKAGE_STRING );
+				igCentreText( TITLEBAR_STRING );
 			}
 			igEndChildFrame();
 
