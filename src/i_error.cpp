@@ -530,7 +530,7 @@ callstack_t GetCallstack()
 
 	output.frames = callstack_buffer.alloc< void* >( NumFrames );
 	output.count = backtrace( output.frames, NumFrames );
-	output.formatted = backtrace_symbols( output.frames, ouput.count );
+	output.formatted = (const char**)backtrace_symbols( output.frames, output.count );
 
 	// Don't care about copying to scratchpad or freeing, we're crashing
 
@@ -615,4 +615,6 @@ void I_Error( const char *error, ... )
 	}
 
 	I_PostError( error_message_buffer );
+
+	exit( -1 );
 }

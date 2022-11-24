@@ -13,14 +13,9 @@
 //
 
 #include "m_dashboard.h"
-#include "cimguiglue.h"
 
 #include "i_log.h"
 #include "i_system.h"
-#include "i_swap.h"
-// Hack for Windows
-#undef LONG
-#undef ULONG
 #include "i_thread.h"
 #include "i_timer.h"
 #include "i_video.h"
@@ -38,6 +33,12 @@
 
 #include "v_patch.h"
 #include "v_video.h"
+
+#include "cimguiglue.h"
+
+#include <SDL2/SDL_endian.h>
+#define TOSHORT(x)  ((int16_t) SDL_SwapLE16(x))
+#define TOLONG(x)   ((int32_t) SDL_SwapLE32(x))
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -1391,20 +1392,20 @@ namespace launcher
 
 						// Copy/paste and refactored from r_draw's texture composite generator
 						{
-							int32_t x1 = SHORT( patch->leftoffset );
-							int32_t x2 = M_MIN( x1 + SHORT( patch->width ), SHORT( patch->width ) );
+							int32_t x1 = TOSHORT( patch->leftoffset );
+							int32_t x2 = M_MIN( x1 + TOSHORT( patch->width ), TOSHORT( patch->width ) );
 
 							int32_t x = M_MAX( x1, 0 );
 	
 							for ( ; x < x2 ; ++x )
 							{
 								column_t* patchcol = (column_t*)( (byte*)patch
-														+ LONG( patch->columnofs[ x - x1 ] ) );
+														+ TOLONG( patch->columnofs[ x - x1 ] ) );
 
 								int32_t patchy = patch->topoffset;
 								while( patchy < patch->height )
 								{
-									R_DrawColumnInCache( patchcol, composite.data() + x * SHORT( patch->height ), patchy, patch->height );
+									R_DrawColumnInCache( patchcol, composite.data() + x * TOSHORT( patch->height ), patchy, patch->height );
 									patchy += patch->height;
 								}
 							}
