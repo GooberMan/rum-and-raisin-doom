@@ -37,13 +37,13 @@ extern "C"
 {
 	int						myargc;
 	const char**			myargv;
+	int						originalargc;
+	const char**			originalargv;
 }
 
 // This is a bit of a bodge until I properly rewrite this file in C++
 std::vector< const char* >	argvlist;
 std::vector< DoomString >	argvstorage;
-int							originalargc;
-const char**				originalargv;
 
 //
 // M_CheckParm
