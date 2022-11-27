@@ -182,20 +182,24 @@ doombool W_ParseCommandLine(void)
     p = M_CheckParmWithArgs ("-file", 1);
     if (p)
     {
-	// the parms after p are wadfile/lump names,
-	// until end of parms or another - preceded parm
-	modifiedgame = true;            // homebrew levels
-	while (++p != myargc && myargv[p][0] != '-')
-        {
-            char *filename;
+		// the parms after p are wadfile/lump names,
+		// until end of parms or another - preceded parm
+		modifiedgame = true;            // homebrew levels
+		while (++p != myargc && myargv[p][0] != '-')
+		{
+			char *filename = NULL;
 
-            filename = D_TryFindWADByName(myargv[p]);
+			filename = D_TryFindWADByName(myargv[p]);
+			if( !filename )
+			{
+				I_Error( "Could not find %s to add.", myargv[ p ] );
+			}
 
-            I_TerminalPrintf( Log_Startup, " adding %s\n", filename);
-	    W_AddFile(filename);
-            free(filename);
-        }
-    }
+			I_TerminalPrintf( Log_Startup, " adding %s\n", filename);
+			W_AddFile(filename);
+			free(filename);
+		}
+	}
 
 //    W_PrintDirectory();
 
