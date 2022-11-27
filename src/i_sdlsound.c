@@ -75,7 +75,7 @@ static allocated_sound_t *allocated_sounds_head = NULL;
 static allocated_sound_t *allocated_sounds_tail = NULL;
 static int allocated_sounds_size = 0;
 
-int32_t sound_resample_type = 2;
+int32_t sound_resample_type = 0;
 
 // Scale factor used when converting libsamplerate floating point numbers
 // to integers. Too high means the sounds can clip; too low means they
@@ -715,7 +715,7 @@ static void I_SDL_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
 
     for (i=0; i<num_sounds; ++i)
     {
-        if ((i % DOTAMOUNT) == 0)
+        if ((i % DOTAMOUNT) == ( DOTAMOUNT - 1 ))
         {
             I_TerminalPrintf( Log_None, "." );
         }
