@@ -40,6 +40,8 @@
 #define PLATFORM_ARCHNAME_ARM32     "ARM 32-bit"
 #define PLATFORM_ARCHNAME_ARM64     "ARM 64-bit"
 
+#define ARCH_CHECK( x ) PLATFORM_ARCH == PLATFORM_ARCH_ ## x
+
 #if defined(_M_IX86) || defined(__i386) || defined(__i386__)
 #define PLATFORM_ARCH               PLATFORM_ARCH_x86
 #define PLATFORM_ARCHNAME           PLATFORM_ARCHNAME_x86
@@ -63,6 +65,8 @@
 #define PLATFORM_OSNAME_WINDOWS		"Windows"
 #define PLATFORM_OSNAME_LINUX		"Linux"
 #define PLATFORM_OSNAME_MACOS		"MacOS"
+
+#define OS_CHECK( x ) PLATFORM_OS == PLATFORM_OS_ ## x
 
 #if defined( WIN32 )
 #define PLATFORM_OS					PLATFORM_OS_WINDOWS
