@@ -579,6 +579,8 @@ void I_StartTic (void)
         return;
     }
 
+	I_ErrorUpdate();
+
     I_GetEvent();
 
     if (usemouse && !nomouse && window_focused)

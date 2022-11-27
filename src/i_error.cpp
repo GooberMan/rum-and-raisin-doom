@@ -320,8 +320,6 @@ typedef struct callstack_s
 
 using semaphore = std::counting_semaphore< 1 >;
 
-static std::thread*								error_thread;
-static semaphore*								error_posted;
 static semaphore*								error_wait;
 static AtomicCircularQueue< const char* >*		error_queue;
 
@@ -386,20 +384,6 @@ void I_DoErrorBox( const char* error )
 #endif
 }
 
-void I_ErrorThread()
-{
-	error_posted->acquire();
-
-	const char* firsterror = error_queue->access();
-
-	if( !M_ParmExists( "-nogui" ) )
-	{
-		I_DoErrorBox( firsterror );
-	}
-
-	exit( -1 );
-}
-
 void I_PostError( const char* error )
 {
 	I_LogDebug( error );
@@ -428,10 +412,32 @@ void I_PostError( const char* error )
 	else
 	{
 		error_queue->push( error );
-		error_posted->release();
 		error_wait->acquire();
 	}
 }
+
+static bool no_update = false;
+
+DOOM_C_API void I_ErrorUpdate( void )
+{
+	if( !is_main_thread )
+	{
+		I_PostError( "Attempting to I_ErrorUpdate on a thread other than main." );
+
+		exit( -1 );
+	}
+
+	if( !no_update && !error_queue->empty() )
+	{
+		no_update = true;
+		const char* firsterror = error_queue->access();
+
+		I_PostError( firsterror );
+
+		exit( -1 );
+	}
+}
+
 
 #ifdef WIN32
 callstack_t GetCallstack( CONTEXT* capturecontext = nullptr )
@@ -589,7 +595,6 @@ void I_ErrorInit( void )
 	SetUnhandledExceptionFilter( (LPTOP_LEVEL_EXCEPTION_FILTER)&I_UnhandledStructuredException );
 
 	HANDLE currprocess = GetCurrentProcess();
-	HANDLE currthread = GetCurrentThread();
 
 	BOOL initialised = SymInitialize( currprocess, ".", TRUE );
 	SymSetOptions( SYMOPT_CASE_INSENSITIVE | SYMOPT_LOAD_ANYTHING | SYMOPT_DEBUG );
@@ -603,10 +608,7 @@ void I_ErrorInit( void )
 	// popup boxes. Only the first one will be considered for the
 	// message box
 	error_queue = new AtomicCircularQueue< const char* >( 512 );
-	error_posted = new semaphore( 0 );
 	error_wait = new semaphore( 0 );
-
-	error_thread = new std::thread( [] { I_ErrorThread(); } );
 }
 
 void I_Error( const char *error, ... )

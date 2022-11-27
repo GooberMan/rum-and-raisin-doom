@@ -2092,6 +2092,8 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, doombool iscons
 
 		while( num_render_contexts > 1 && finishedcontexts != num_render_contexts )
 		{
+			I_ErrorUpdate();
+
 			for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 			{
 				finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
