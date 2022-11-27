@@ -1,4 +1,4 @@
-AC_INIT(Rum and Raisin Doom, 0.3.1-pre.3,
+AC_INIT(Rum and Raisin Doom, 0.3.1-pre.4,
         nothingyet@noemail.com, rum-and-raisin-doom)
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
@@ -9,7 +9,7 @@ PACKAGE_MAINTAINER="Ethan Watson"
 PACKAGE_URL="https://github.com/GooberMan/rum-and-raisin-doom"
 PACKAGE_RDNS="org.rum_and_raisin_doom"
 
-AC_DEFINE( [PACKAGE_BANNER_BACK], [TXT_COLOR_RED], ["Banner colour, changes for pre-release and release builds."] )
+AC_DEFINE( [PACKAGE_BANNER_BACK], [TXT_COLOR_CYAN], ["Banner colour, changes for pre-release and release builds."] )
 AC_DEFINE( [IMGUI_USER_CONFIG], ["cimguiglue_config.h"], ["Making imgui do what we want when we want."] )
 
 AC_CONFIG_AUX_DIR(autotools)
