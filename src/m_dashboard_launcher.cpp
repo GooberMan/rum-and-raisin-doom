@@ -1551,7 +1551,7 @@ namespace launcher
 				}
 			}
 
-			glFlush();
+			//glFlush();
 
 			lists_ready = !abort_work.load();
 		}
@@ -2128,7 +2128,7 @@ namespace launcher
 	};
 
 	static std::stack< LauncherPanel* >	panel_stack;
-	static JobThread* jobs = nullptr;
+	static std::shared_ptr< JobThread > jobs;
 	static SDL_GLContext jobs_context = nullptr;
 
 	void PushPanel( LauncherPanel* panel )
@@ -3958,6 +3958,7 @@ namespace launcher
 			{
 				if( filelist.IWADs.empty() )
 				{
+					freeiwadpanel->SetNoIWADMode();
 					PopPanelsAndReplaceRoot( freeiwadpanel );
 				}
 				else
@@ -4015,7 +4016,7 @@ std::string M_DashboardLauncherWindow()
 	launcher::jobs_context = SDL_GL_CreateContext( window );
 	SDL_GL_MakeCurrent( window, glcontext );
 
-	launcher::jobs = new JobThread;
+	launcher::jobs = std::make_shared< JobThread >();
 	launcher::jobs->AddJob( []()
 		{
 			SDL_GL_MakeCurrent( I_GetWindow(), launcher::jobs_context );
@@ -4059,6 +4060,14 @@ std::string M_DashboardLauncherWindow()
 	// Clear out the window before we move on
 	SDL_RenderClear( renderer );
 	SDL_RenderPresent( renderer );
+
+	launcher::jobs->AddJob( []()
+	{
+		M_URLDeinit();
+	} );
+
+	launcher::jobs->Flush();
+	launcher::jobs = nullptr;
 
 	dashboardactive = Dash_Inactive;
 

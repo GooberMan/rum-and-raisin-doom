@@ -88,6 +88,14 @@ public:
 		jobs.push( func );
 	}
 
+	void Flush()
+	{
+		while( !jobs.empty() )
+		{
+			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+		}
+	}
+
 private:
 	void Run()
 	{
