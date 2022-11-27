@@ -1530,7 +1530,7 @@ void D_DoomMain (void)
     char demolumpname[9];
     uint32_t numiwadlumps;
 
-	I_InitError();
+	I_ErrorInit();
 
 	blackedges.data8bithandle = NULL;
 	blackedges.dataARGBhandle = NULL;

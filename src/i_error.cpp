@@ -324,7 +324,8 @@ static std::thread*								error_thread;
 static semaphore*								error_posted;
 static semaphore*								error_wait;
 static AtomicCircularQueue< const char* >*		error_queue;
-static std::atomic< bool >						error_super_bad;
+
+thread_local bool								error_super_bad;
 
 constexpr size_t								BufferSize = 4096;
 thread_local bool								is_main_thread;
@@ -342,6 +343,8 @@ thread_local Scratchpad< 8192 >					callstack_buffer;
 
 	#define IsDebuggerAttached() IsDebuggerPresent()
 	#define CALLSTACK_MESSAGE " (CTRL+C to copy)"
+
+	thread_local SDL_SysWMinfo WMInfo = {};
 #else
 	#include <execinfo.h>
 	// Needs a large chunk of code on Linux to work, but the intrinsic we pick should do things just fine
@@ -371,11 +374,13 @@ thread_local Scratchpad< 8192 >					callstack_buffer;
 void I_DoErrorBox( const char* error )
 {
 #ifdef WIN32
-	SDL_SysWMinfo wmInfo;
-	SDL_VERSION( &wmInfo.version );
-	SDL_GetWindowWMInfo( I_GetWindow(), &wmInfo );
+	if( !error_super_bad )
+	{
+		SDL_VERSION( &WMInfo.version );
+		SDL_GetWindowWMInfo( I_GetWindow(), &WMInfo );
+	}
 
-	MessageBox( wmInfo.info.win.window, error, PACKAGE_STRING " fatal error", MB_OK | MB_ICONERROR | MB_APPLMODAL );
+	MessageBox( WMInfo.info.win.window, error, PACKAGE_STRING " fatal error", MB_OK | MB_ICONERROR | MB_APPLMODAL );
 #else
 	SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, PACKAGE_STRING, error, nullptr );
 #endif
@@ -397,19 +402,16 @@ void I_ErrorThread()
 
 void I_PostError( const char* error )
 {
-	if( !error_super_bad.load() )
-	{
-		I_LogDebug( error );
+	I_LogDebug( error );
 
-		if( IsDebuggerAttached() )
-		{
-			DoDebugBreak();
-		}
+	if( IsDebuggerAttached() )
+	{
+		DoDebugBreak();
 	}
 
 	if( is_main_thread )
 	{
-		if( !error_super_bad.load() )
+		if( !error_super_bad )
 		{
 			I_TerminalSetMode( TM_ImmediateRender );
 			memcpy( TXT_GetScreenData(), endoom_error, arrlen( endoom_error ) );
@@ -432,7 +434,7 @@ void I_PostError( const char* error )
 }
 
 #ifdef WIN32
-callstack_t GetCallstack()
+callstack_t GetCallstack( CONTEXT* capturecontext = nullptr )
 {
 	constexpr size_t NumFrames = 64;
 	
@@ -443,12 +445,13 @@ callstack_t GetCallstack()
 	HANDLE currprocess = GetCurrentProcess();
 	HANDLE currthread = GetCurrentThread();
 
-	BOOL initialised = SymInitialize( currprocess, ".", TRUE );
-	SymSetOptions( SYMOPT_CASE_INSENSITIVE | SYMOPT_LOAD_ANYTHING | SYMOPT_DEBUG );
-
-	CONTEXT capturecontext = { };
-	capturecontext.ContextFlags = CONTEXT_ALL;
-	RtlCaptureContext( &capturecontext );
+	CONTEXT currcontext = { };
+	if( !capturecontext )
+	{
+		currcontext.ContextFlags = CONTEXT_ALL;
+		RtlCaptureContext( &currcontext );
+		capturecontext = &currcontext;
+	}
 
 	STACKFRAME stackframe;
 	stackframe.AddrPC.Mode = AddrModeFlat;
@@ -456,15 +459,15 @@ callstack_t GetCallstack()
 	stackframe.AddrStack.Mode = AddrModeFlat;
 #if PLATFORM_ARCH == PLATFORM_ARCH_x64
 	{
-		stackframe.AddrPC.Offset = capturecontext.Rip;
-		stackframe.AddrFrame.Offset = capturecontext.Rbp;
-		stackframe.AddrStack.Offset = capturecontext.Rsp;
+		stackframe.AddrPC.Offset = capturecontext->Rip;
+		stackframe.AddrFrame.Offset = capturecontext->Rbp;
+		stackframe.AddrStack.Offset = capturecontext->Rsp;
 	}
 #elif PLATFORM_ARCH == PLATFORM_ARCH_x86
 	{
-		stackframe.AddrPC.Offset = capturecontext.Eip;
-		stackframe.AddrFrame.Offset = capturecontext.Ebp;
-		stackframe.AddrStack.Offset = capturecontext.Esp;
+		stackframe.AddrPC.Offset = capturecontext->Eip;
+		stackframe.AddrFrame.Offset = capturecontext->Ebp;
+		stackframe.AddrStack.Offset = capturecontext->Esp;
 	}
 #else
 	#error "We don't support Windows ARM yet"
@@ -473,12 +476,11 @@ callstack_t GetCallstack()
 	output.frames = callstack_buffer.alloc< void* >( NumFrames );
 	output.formatted = callstack_buffer.alloc< const char* >( NumFrames );
 
-	while( output.count < NumFrames && StackWalk( Machine, currprocess, currthread, &stackframe, &capturecontext , NULL, SymFunctionTableAccess, SymGetModuleBase, NULL ) )
+	while( output.count < NumFrames && StackWalk( Machine, currprocess, currthread, &stackframe, capturecontext , NULL, SymFunctionTableAccess, SymGetModuleBase, NULL ) )
 	{
 		output.frames[ output.count ] = (void*)stackframe.AddrPC.Offset;
 
-		auto base = SymGetModuleBase( currprocess, stackframe.AddrPC.Offset );
-		using NativeDWORD = decltype( base );
+		using NativeDWORD = decltype( SymGetModuleBase( currprocess, stackframe.AddrPC.Offset ) );
 
 		constexpr size_t SymbolMaxLength = 512;
 		PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)callstack_buffer.alloc< uint8_t >( sizeof( IMAGEHLP_SYMBOL ) + SymbolMaxLength );
@@ -516,8 +518,6 @@ callstack_t GetCallstack()
 
 		++output.count;
 	}
-
-	SymCleanup( currprocess );
 
 	return output;
 }
@@ -559,7 +559,8 @@ int32_t I_UnhandledStructuredException()
 {
 	error_super_bad = true;
 
-	I_DoErrorBox( "Unhandled exception, press okay to retrieve callstack." );
+	I_DoErrorBox( "Unhandled exception. Press okay to capture callstack." );
+
 	callstack_t callstack = GetCallstack();
 
 	M_StringConcat( error_message_buffer, "Unhandled exception.\n\nCallstack" CALLSTACK_MESSAGE ":\n\n", sizeof( error_message_buffer ) );
@@ -574,13 +575,26 @@ int32_t I_UnhandledStructuredException()
 
 	return EXCEPTION_EXECUTE_HANDLER;
 }
+
+DOOM_C_API void I_ErrorCleanup( void )
+{
+	SymCleanup( GetCurrentProcess() );
+}
 #endif // WIN32
 
-void I_InitError( void )
+void I_ErrorInit( void )
 {
 	std::set_terminate( &I_UnhandledUserException );
 #ifdef WIN32
 	SetUnhandledExceptionFilter( (LPTOP_LEVEL_EXCEPTION_FILTER)&I_UnhandledStructuredException );
+
+	HANDLE currprocess = GetCurrentProcess();
+	HANDLE currthread = GetCurrentThread();
+
+	BOOL initialised = SymInitialize( currprocess, ".", TRUE );
+	SymSetOptions( SYMOPT_CASE_INSENSITIVE | SYMOPT_LOAD_ANYTHING | SYMOPT_DEBUG );
+
+	I_AtExit( &I_ErrorCleanup, true );
 #endif // WIN32
 
 	is_main_thread = true;
