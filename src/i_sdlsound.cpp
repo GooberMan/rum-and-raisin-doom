@@ -836,6 +836,8 @@ static void I_SDL_ChangeSoundQuality( int32_t sound_quality, sfxinfo_t* sounds, 
 {
 	if( sound_quality != sound_resample_type )
 	{
+		sound_resample_type = sound_quality;
+
 		for( int32_t index = 0; index < NUM_CHANNELS; ++index )
 		{
 			ReleaseSoundOnChannel( index );
@@ -843,11 +845,12 @@ static void I_SDL_ChangeSoundQuality( int32_t sound_quality, sfxinfo_t* sounds, 
 
 		FreeAllAllocatedSounds();
 
-		sound_resample_type = sound_quality;
-
 		for( int32_t index = 0; index < num_sounds; ++index )
 		{
-			CacheSFX( &sounds[ index ] );
+			if( sounds[ index ].lumpnum != -1 )
+			{
+				CacheSFX( &sounds[ index ] );
+			}
 		}
 	}
 }
@@ -1143,5 +1146,6 @@ DOOM_C_API sound_module_t sound_sdl_module =
     I_SDL_StopSound,
     I_SDL_SoundIsPlaying,
     I_SDL_PrecacheSounds,
+	I_SDL_ChangeSoundQuality,
 };
 

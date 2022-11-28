@@ -381,9 +381,15 @@ void I_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
 
 void I_ChangeSoundQuality( int32_t sound_quality, sfxinfo_t* sounds, int num_sounds )
 {
+	extern int32_t sound_resample_type;
+
 	if( sound_module != NULL && sound_module->ChangeSoundQuality != NULL )
 	{
-		sound_module->CacheSounds( sound_quality, sounds, num_sounds );
+		sound_module->ChangeSoundQuality( sound_quality, sounds, num_sounds );
+	}
+	else
+	{
+		sound_resample_type = sound_quality;
 	}
 }
 
@@ -490,6 +496,7 @@ void I_BindSoundVariables(void)
 {
     extern char *snd_dmxoption;
     extern float libsamplerate_scale;
+	extern int32_t sound_resample_type;
 
     M_BindIntVariable("snd_musicdevice",         &snd_musicdevice);
     M_BindIntVariable("snd_sfxdevice",           &snd_sfxdevice);
@@ -510,7 +517,7 @@ void I_BindSoundVariables(void)
     M_BindStringVariable("gus_patch_path",       &gus_patch_path);
     M_BindIntVariable("gus_ram_kb",              &gus_ram_kb);
 
-    //M_BindIntVariable("use_libsamplerate",       &use_libsamplerate);
+    M_BindIntVariable("sound_resample_type",       &sound_resample_type);
     M_BindFloatVariable("libsamplerate_scale",   &libsamplerate_scale);
 }
 
