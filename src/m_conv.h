@@ -22,6 +22,7 @@
 #include "doomtype.h"
 #include <type_traits>
 #include <string>
+#include <algorithm>
 #include <cstdlib>
 
 template< typename _ty >
@@ -140,5 +141,37 @@ INLINE auto to( const _ty& val )
 {
 	return std::to_string( val );
 }
+
+template< typename _str >
+requires is_std_string_v< _str > 
+INLINE _str ToLower( const _str& str )
+{
+	_str copy = str;
+	std::transform( copy.begin(), copy.end(), copy.begin(), []( auto c ){ return std::tolower( c ); } );
+	return copy;
+}
+
+template< typename _str >
+requires is_std_string_v< _str > 
+INLINE _str& ToLower( _str& str )
+{
+	std::transform( str.begin(), str.end(), str.begin(), []( auto c ){ return std::tolower( c ); } );
+	return str;
+}
+
+template< typename _str >
+requires is_std_string_v< _str > 
+INLINE _str&& ToLower( _str&& str )
+{
+	std::transform( str.begin(), str.end(), str.begin(), []( auto c ){ return std::tolower( c ); } );
+	return std::move( str );
+}
+
+template< typename _output = DoomString >
+INLINE auto ToLower( const char* str )
+{
+	return ToLower( _output( str ) );
+}
+
 
 #endif // __M_CONV_H__
