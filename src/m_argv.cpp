@@ -35,10 +35,10 @@
 
 extern "C"
 {
-	int						myargc;
-	const char**			myargv;
-	int						originalargc;
-	const char**			originalargv;
+	int						myargc = 0;
+	const char**			myargv = nullptr;
+	int						originalargc = 0;
+	const char**			originalargv = nullptr;
 }
 
 // This is a bit of a bodge until I properly rewrite this file in C++
@@ -84,195 +84,6 @@ int M_CheckParm(const char *check)
 }
 
 #define MAXARGVS        100
-
-static void LoadResponseFile(int argv_index, const char *filename)
-{
-    FILE *handle;
-    int size;
-    char *infile;
-    char *file;
-    const char **newargv;
-    int newargc;
-    int i, k;
-
-    // Read the response file into memory
-    handle = fopen(filename, "rb");
-
-    if (handle == NULL)
-    {
-        printf ("\nNo such response file!");
-        exit(1);
-    }
-
-    printf("Found response file %s!\n", filename);
-
-    size = M_FileLength(handle);
-
-    // Read in the entire file
-    // Allocate one byte extra - this is in case there is an argument
-    // at the end of the response file, in which case a '\0' will be
-    // needed.
-
-    file = (char*)malloc(size + 1);
-
-    i = 0;
-
-    while (i < size)
-    {
-        k = fread(file + i, 1, size - i, handle);
-
-        if (k < 0)
-        {
-            I_Error("Failed to read full contents of '%s'", filename);
-        }
-
-        i += k;
-    }
-
-    fclose(handle);
-
-    // Create new arguments list array
-
-    newargv = (const char**)malloc(sizeof(char *) * MAXARGVS);
-    newargc = 0;
-    memset(newargv, 0, sizeof(char *) * MAXARGVS);
-
-    // Copy all the arguments in the list up to the response file
-
-    for (i=0; i<argv_index; ++i)
-    {
-        newargv[i] = myargv[i];
-        ++newargc;
-    }
-
-    infile = file;
-    k = 0;
-
-    while(k < size)
-    {
-        // Skip past space characters to the next argument
-
-        while(k < size && isspace(infile[k]))
-        {
-            ++k;
-        }
-
-        if (k >= size)
-        {
-            break;
-        }
-
-        // If the next argument is enclosed in quote marks, treat
-        // the contents as a single argument.  This allows long filenames
-        // to be specified.
-
-        if (infile[k] == '\"')
-        {
-            // Skip the first character(")
-            ++k;
-
-            newargv[newargc++] = &infile[k];
-
-            // Read all characters between quotes
-
-            while (k < size && infile[k] != '\"' && infile[k] != '\n')
-            {
-                ++k;
-            }
-
-            if (k >= size || infile[k] == '\n')
-            {
-                I_Error("Quotes unclosed in response file '%s'",
-                        filename);
-            }
-
-            // Cut off the string at the closing quote
-
-            infile[k] = '\0';
-            ++k;
-        }
-        else
-        {
-            // Read in the next argument until a space is reached
-
-            newargv[newargc++] = &infile[k];
-
-            while(k < size && !isspace(infile[k]))
-            {
-                ++k;
-            }
-
-            // Cut off the end of the argument at the first space
-
-            infile[k] = '\0';
-
-            ++k;
-        }
-    }
-
-    // Add arguments following the response file argument
-
-    for (i=argv_index + 1; i<myargc; ++i)
-    {
-        newargv[newargc] = myargv[i];
-        ++newargc;
-    }
-
-    myargv = newargv;
-    myargc = newargc;
-
-#if 0
-    // Disabled - Vanilla Doom does not do this.
-    // Display arguments
-
-    printf("%d command-line args:\n", myargc);
-
-    for (k=1; k<myargc; k++)
-    {
-        printf("'%s'\n", myargv[k]);
-    }
-#endif
-}
-
-//
-// Find a Response File
-//
-
-void M_FindResponseFile(void)
-{
-    int i;
-
-    for (i = 1; i < myargc; i++)
-    {
-        if (myargv[i][0] == '@')
-        {
-            LoadResponseFile(i, myargv[i] + 1);
-        }
-    }
-
-    for (;;)
-    {
-        //!
-        // @arg <filename>
-        //
-        // Load extra command line arguments from the given response file.
-        // Arguments read from the file will be inserted into the command
-        // line replacing this argument. A response file can also be loaded
-        // using the abbreviated syntax '@filename.rsp'.
-        //
-        i = M_CheckParmWithArgs("-response", 1);
-        if (i <= 0)
-        {
-            break;
-        }
-        // Replace the -response argument so that the next time through
-        // the loop we'll ignore it. Since some parameters stop reading when
-        // an argument beginning with a '-' is encountered, we keep something
-        // that starts with a '-'.
-        myargv[i] = "-_";
-        LoadResponseFile(i + 1, myargv[i + 1]);
-    }
-}
 
 #if defined(_WIN32)
 enum
@@ -362,7 +173,6 @@ void M_AddLooseFiles(void)
 
         if (strlen(arg) < 3 ||
             arg[0] == '-' ||
-            arg[0] == '@' ||
             ((!isalpha(arg[0]) || arg[1] != ':' || arg[2] != '\\') &&
             (arg[0] != '\\' || arg[1] != '\\')))
         {
@@ -441,7 +251,7 @@ std::span< const char* > M_ParamArgs( const char* param )
 		return std::span( &myargv[ startparam ], (size_t)( endparam - startparam ) );
 	}
 	return std::span( &myargv[ 0 ], 0 );
-};
+}
 
 void M_ReplaceFileParameters( std::vector< DoomString > newargs )
 {
