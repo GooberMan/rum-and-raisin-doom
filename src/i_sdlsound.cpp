@@ -2,6 +2,7 @@
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
 // Copyright(C) 2008 David Flater
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -22,23 +23,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 
 #include <samplerate.h>
 
+#include <filesystem>
+#include <fstream>
+#include <cstdio>
+
+#include "doomtype.h"
+
 #include "deh_str.h"
+
 #include "i_sound.h"
 #include "i_system.h"
 #include "i_swap.h"
 #include "i_terminal.h"
+
 #include "m_argv.h"
+#include "m_config.h"
+#include "m_conv.h"
 #include "m_misc.h"
+
 #include "w_wad.h"
+
 #include "z_zone.h"
 
-#include "doomtype.h"
+extern "C"
+{
+	// Scale factor used when converting libsamplerate floating point numbers
+	// to integers. Too high means the sounds can clip; too low means they
+	// will be too quiet. This is an amount that should avoid clipping most
+	// of the time: with all the Doom IWAD sound effects, at least. If a PWAD
+	// is used, clipping might occur.
+
+	float libsamplerate_scale = 0.65f;
+
+	int32_t sound_resample_type = 0;
+}
 
 //#define DEBUG_DUMP_WAVS
 #define NUM_CHANNELS 16
@@ -62,10 +85,10 @@ static int mixer_freq;
 static Uint16 mixer_format;
 static int mixer_channels;
 static doombool use_sfx_prefix;
-static doombool (*ExpandSoundData)(sfxinfo_t *sfxinfo,
-                                  byte *data,
-                                  int samplerate,
-                                  int length) = NULL;
+static allocated_sound_t* (*ExpandSoundData)(sfxinfo_t *sfxinfo,
+											byte *data,
+											int samplerate,
+											int length) = nullptr;
 
 // Doubly-linked list of allocated sounds.
 // When a sound is played, it is moved to the head, so that the oldest
@@ -75,15 +98,14 @@ static allocated_sound_t *allocated_sounds_head = NULL;
 static allocated_sound_t *allocated_sounds_tail = NULL;
 static int allocated_sounds_size = 0;
 
-int32_t sound_resample_type = 0;
-
-// Scale factor used when converting libsamplerate floating point numbers
-// to integers. Too high means the sounds can clip; too low means they
-// will be too quiet. This is an amount that should avoid clipping most
-// of the time: with all the Doom IWAD sound effects, at least. If a PWAD
-// is used, clipping might occur.
-
-float libsamplerate_scale = 0.65f;
+constexpr const char* outputtypes[] =
+{
+	"linear",
+	"zeroorderhold",
+	"sincfastest",
+	"sincmedium",
+	"sincbest"
+};
 
 // Hook a sound into the linked list at the head.
 
@@ -138,6 +160,17 @@ static void FreeAllocatedSound(allocated_sound_t *snd)
     allocated_sounds_size -= snd->chunk.alen;
 
     free(snd);
+}
+
+static void FreeAllAllocatedSounds()
+{
+	allocated_sound_t* curr = allocated_sounds_head;
+	while( curr != nullptr )
+	{
+		allocated_sound_t* next = curr->next;
+		FreeAllocatedSound( curr );
+		curr = next;
+	}
 }
 
 // Search from the tail backwards along the allocated sounds list, find
@@ -206,7 +239,7 @@ static allocated_sound_t *AllocateSound(sfxinfo_t *sfxinfo, size_t len)
 
     do
     {
-        snd = malloc(sizeof(allocated_sound_t) + len);
+        snd = (allocated_sound_t*)malloc(sizeof(allocated_sound_t) + len);
 
         // Out of memory?  Try to free an old sound, then loop round
         // and try again.
@@ -388,30 +421,33 @@ static int SRC_ConversionMode(void)
 // Returns number of clipped samples.
 // DWF 2008-02-10 with cleanups by Simon Howard.
 
-static doombool ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
+static allocated_sound_t* ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
                                    byte *data,
                                    int samplerate,
                                    int length)
 {
-    SRC_DATA src_data;
-    float *data_in;
-    uint32_t i, abuf_index=0, clipped=0;
-//    uint32_t alen;
-    int retn;
-    int16_t *expanded;
-    allocated_sound_t *snd;
-    Mix_Chunk *chunk;
+	SRC_DATA src_data;
+	float *data_in;
+	uint32_t i, abuf_index=0, clipped=0;
+	int32_t retn;
+	int16_t *expanded;
+	allocated_sound_t *snd;
+	Mix_Chunk *chunk;
 
     src_data.input_frames = length;
-    data_in = malloc(length * sizeof(float));
+    data_in = (float*)malloc(length * sizeof(float));
     src_data.data_in = data_in;
     src_data.src_ratio = (double)mixer_freq / samplerate;
 
     // We include some extra space here in case of rounding-up.
     src_data.output_frames = src_data.src_ratio * length + (mixer_freq / 4);
-    src_data.data_out = malloc(src_data.output_frames * sizeof(float));
+    src_data.data_out = (float*)malloc(src_data.output_frames * sizeof(float));
 
-    assert(src_data.data_in != NULL && src_data.data_out != NULL);
+
+    if( src_data.data_in == NULL || src_data.data_out == NULL )
+	{
+		I_Error( "Error allocating data for sound %s in WAD %s.", sfxinfo->name, W_WadNameForLumpNum( sfxinfo->lumpnum ) );
+	}
 
     // Convert input data to floats
 
@@ -425,8 +461,11 @@ static doombool ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
 
     // Do the sound conversion
 
-    retn = src_simple(&src_data, SRC_ConversionMode(), 1);
-    assert(retn == 0);
+	retn = src_simple(&src_data, SRC_ConversionMode(), 1);
+	if( retn != 0 )
+	{
+		I_Error( "Error resampling sound %s in WAD %s.", sfxinfo->name, W_WadNameForLumpNum( sfxinfo->lumpnum ) );
+	}
 
     // Allocate the new chunk.
 
@@ -434,9 +473,9 @@ static doombool ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
 
     snd = AllocateSound(sfxinfo, src_data.output_frames_gen * 4);
 
-    if (snd == NULL)
+    if (snd == nullptr)
     {
-        return false;
+        return nullptr;
     }
 
     chunk = &snd->chunk;
@@ -499,36 +538,7 @@ static doombool ExpandSoundData_SRC(sfxinfo_t *sfxinfo,
                         400.0 * clipped / chunk->alen);
     }
 
-    return true;
-}
-
-static doombool ConvertibleRatio(int freq1, int freq2)
-{
-    int ratio;
-
-    if (freq1 > freq2)
-    {
-        return ConvertibleRatio(freq2, freq1);
-    }
-    else if ((freq2 % freq1) != 0)
-    {
-        // Not in a direct ratio
-
-        return false;
-    }
-    else
-    {
-        // Check the ratio is a power of 2
-
-        ratio = freq2 / freq1;
-
-        while ((ratio & 1) == 0)
-        {
-            ratio = ratio >> 1;
-        }
-
-        return ratio == 1;
-    }
+    return snd;
 }
 
 #ifdef DEBUG_DUMP_WAVS
@@ -584,79 +594,168 @@ static void WriteWAV(char *filename, byte *data,
 // Load and convert a sound effect
 // Returns true if successful
 
-static doombool CacheSFX(sfxinfo_t *sfxinfo)
+// This is copypasta code, need to find a real place for it to live
+static time_t GetLastModifiedTime( const std::filesystem::path& stdpath )
 {
-    int lumpnum;
-    unsigned int lumplen;
-    int samplerate;
-    unsigned int length;
-    byte *data;
+	auto filetime = std::filesystem::last_write_time( stdpath );
+#if WIN32
+	auto utctime = std::chrono::file_clock::to_utc( filetime );
+	auto systime = std::chrono::utc_clock::to_sys( utctime );
+#else
+	auto systime = std::chrono::file_clock::to_sys( filetime );
+#endif
+	return std::chrono::system_clock::to_time_t( systime );
+}
 
-    // need to load the sound
+typedef struct sfxpath_s
+{
+	sfxinfo_t*				sfxinfo;
+	std::filesystem::path	path;
+	std::string				pathstring;
 
-    lumpnum = sfxinfo->lumpnum;
-    data = W_CacheLumpNum(lumpnum, PU_STATIC);
-    lumplen = W_LumpLength(lumpnum);
+	std::filesystem::path	folder;
+} sfxpath_t;
 
-    // Check the header, and ensure this is a valid sound
+sfxpath_t GetPath( sfxinfo_t* sfxinfo )
+{
+	sfxpath_t output = { sfxinfo };
 
-    if (lumplen < 8
-     || data[0] != 0x03 || data[1] != 0x00)
-    {
-        // Invalid sound
+	const char* WADFile = W_WadNameForLumpNum( sfxinfo->lumpnum );
+	std::filesystem::path WADFilePath = std::filesystem::absolute( WADFile );
 
-        return false;
-    }
+	time_t lastmodified = GetLastModifiedTime( WADFilePath );
+	size_t filelength = std::filesystem::file_size( WADFilePath );
 
-    // 16 bit sample rate field, 32 bit length field
+	output.pathstring = configdir;
+	output.pathstring += "cache" DIR_SEPARATOR_S "sound" DIR_SEPARATOR_S;
+	output.pathstring += M_BaseName( WADFile );
+	output.pathstring += "." + std::to_string( lastmodified ) + "." + std::to_string( filelength ) + DIR_SEPARATOR_S;
+	output.pathstring += outputtypes[ sound_resample_type ];
+	output.pathstring += DIR_SEPARATOR_S;
 
-    samplerate = (data[3] << 8) | data[2];
-    length = (data[7] << 24) | (data[6] << 16) | (data[5] << 8) | data[4];
+	output.folder = std::filesystem::path( output.pathstring );
 
-    // If the header specifies that the length of the sound is greater than
-    // the length of the lump itself, this is an invalid sound lump
+	output.pathstring += ToLower( std::string( W_GetNameForNum( sfxinfo->lumpnum ) ) ) + ".dat";
 
-    // We also discard sound lumps that are less than 49 samples long,
-    // as this is how DMX behaves - although the actual cut-off length
-    // seems to vary slightly depending on the sample rate.  This needs
-    // further investigation to better understand the correct
-    // behavior.
+	output.path = std::filesystem::path( output.pathstring );
 
-    if (length > lumplen - 8 || length <= 48)
-    {
-        return false;
-    }
+	return output;
+}
 
-    // The DMX sound library seems to skip the first 16 and last 16
-    // bytes of the lump - reason unknown.
+static allocated_sound_t* LoadFromCache( sfxpath_t& path )
+{
+	if( std::filesystem::exists( path.path ) )
+	{
+		size_t sounddatalen = std::filesystem::file_size( path.path );
+		byte* sounddata = (byte*)malloc( sounddatalen );
+		FILE* input = fopen( path.pathstring.c_str(), "rb" );
+		fread( sounddata, 1, sounddatalen, input );
+		fclose( input );
 
-    data += 16;
-    length -= 32;
+		allocated_sound_t* sound = (allocated_sound_t*)sounddata;
+		sound->sfxinfo = path.sfxinfo;
+		sound->prev = nullptr;
+		sound->next = nullptr;
+		sound->chunk.abuf = (Uint8*)( sound + 1 );
 
-    // Sample rate conversion
+		allocated_sounds_size += sounddatalen;
 
-    if (!ExpandSoundData(sfxinfo, data + 8, samplerate, length))
-    {
-        return false;
-    }
+		AllocatedSoundLink( sound );
+
+		return sound;
+	}
+
+	return nullptr;
+}
+
+static void SaveToCache( sfxpath_t& path, allocated_sound_t* data )
+{
+	std::filesystem::create_directories( path.folder );
+	FILE* output = fopen( path.pathstring.c_str(), "wb" );
+	fwrite( data, 1, sizeof( allocated_sound_t ) + data->chunk.alen, output );
+	fclose( output );
+}
+
+static allocated_sound_t* CacheSFX(sfxinfo_t *sfxinfo)
+{
+	int32_t lumpnum;
+	uint32_t lumplen;
+	int32_t samplerate;
+	uint32_t length;
+	byte *data;
+
+	// need to load the sound
+
+	sfxpath_t path = GetPath( sfxinfo );
+
+	allocated_sound_t* sound = LoadFromCache( path );
+	if( !sound )
+	{
+		lumpnum = sfxinfo->lumpnum;
+		data = (byte*)W_CacheLumpNum(lumpnum, PU_STATIC);
+		lumplen = W_LumpLength(lumpnum);
+
+		// Check the header, and ensure this is a valid sound
+
+		if (lumplen < 8
+		 || data[0] != 0x03 || data[1] != 0x00)
+		{
+			// Invalid sound
+
+			return nullptr;
+		}
+
+		// 16 bit sample rate field, 32 bit length field
+
+		samplerate = (data[3] << 8) | data[2];
+		length = (data[7] << 24) | (data[6] << 16) | (data[5] << 8) | data[4];
+
+		// If the header specifies that the length of the sound is greater than
+		// the length of the lump itself, this is an invalid sound lump
+
+		// We also discard sound lumps that are less than 49 samples long,
+		// as this is how DMX behaves - although the actual cut-off length
+		// seems to vary slightly depending on the sample rate.  This needs
+		// further investigation to better understand the correct
+		// behavior.
+
+		if (length > lumplen - 8 || length <= 48)
+		{
+			return nullptr;
+		}
+
+		// The DMX sound library seems to skip the first 16 and last 16
+		// bytes of the lump - reason unknown.
+
+		data += 16;
+		length -= 32;
+
+		// Sample rate conversion
+
+		sound = ExpandSoundData(sfxinfo, data + 8, samplerate, length);
+		if ( !sound )
+		{
+			return nullptr;
+		}
 
 #ifdef DEBUG_DUMP_WAVS
-    {
-        char filename[16];
-        allocated_sound_t * snd;
+		{
+			char filename[16];
+			allocated_sound_t * snd;
 
-        M_snprintf(filename, sizeof(filename), "%s.wav",
-                   DEH_String(sfxinfo->name));
-        snd = GetAllocatedSoundBySfxInfoAndPitch(sfxinfo, NORM_PITCH);
-        WriteWAV(filename, snd->chunk.abuf, snd->chunk.alen,mixer_freq);
-    }
+			M_snprintf(filename, sizeof(filename), "%s.wav",
+					   DEH_String(sfxinfo->name));
+			snd = GetAllocatedSoundBySfxInfoAndPitch(sfxinfo, NORM_PITCH);
+			WriteWAV(filename, snd->chunk.abuf, snd->chunk.alen,mixer_freq);
+		}
 #endif
+		// don't need the original lump any more
+		W_ReleaseLumpNum(lumpnum);
 
-    // don't need the original lump any more
-  
-    W_ReleaseLumpNum(lumpnum);
+		SaveToCache( path, sound );
+	}
 
-    return true;
+	return sound;
 }
 
 static void GetSfxLumpName(sfxinfo_t *sfx, char *buf, size_t buf_len)
@@ -731,6 +830,26 @@ static void I_SDL_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
     }
 
     I_TerminalPrintf( Log_None, "\n" );
+}
+
+static void I_SDL_ChangeSoundQuality( int32_t sound_quality, sfxinfo_t* sounds, int num_sounds )
+{
+	if( sound_quality != sound_resample_type )
+	{
+		for( int32_t index = 0; index < NUM_CHANNELS; ++index )
+		{
+			ReleaseSoundOnChannel( index );
+		}
+
+		FreeAllAllocatedSounds();
+
+		sound_resample_type = sound_quality;
+
+		for( int32_t index = 0; index < num_sounds; ++index )
+		{
+			CacheSFX( &sounds[ index ] );
+		}
+	}
 }
 
 // Load a SFX chunk into memory and ensure that it is locked.
@@ -974,14 +1093,12 @@ static doombool I_SDL_InitSound(doombool _use_sfx_prefix)
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0)
     {
-        fprintf(stderr, "Unable to set up sound.\n");
-        return false;
+        I_Error( "Unable to set up sound." );
     }
 
     if (Mix_OpenAudio(snd_samplerate, AUDIO_S16SYS, 2, GetSliceSize()) < 0)
     {
-        fprintf(stderr, "Error initialising SDL_mixer: %s\n", Mix_GetError());
-        return false;
+        I_Error( "Error initialising SDL_mixer: %s", Mix_GetError() );
     }
 
     Mix_QuerySpec(&mixer_freq, &mixer_format, &mixer_channels);
@@ -1013,7 +1130,7 @@ static snddevice_t sound_sdl_devices[] =
     SNDDEVICE_AWE32,
 };
 
-sound_module_t sound_sdl_module = 
+DOOM_C_API sound_module_t sound_sdl_module = 
 {
     sound_sdl_devices,
     arrlen(sound_sdl_devices),

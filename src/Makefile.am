@@ -83,7 +83,7 @@ i_musicpack.c                              \
 i_oplmusic.c                               \
 i_pcsound.c                                \
 i_sdlmusic.c                               \
-i_sdlsound.c                               \
+i_sdlsound.cpp                             \
 i_sound.c            i_sound.h             \
 i_terminal.cpp       i_terminal.h          \
 i_timer.c            i_timer.h             \

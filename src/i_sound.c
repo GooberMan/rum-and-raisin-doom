@@ -379,6 +379,14 @@ void I_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
     }
 }
 
+void I_ChangeSoundQuality( int32_t sound_quality, sfxinfo_t* sounds, int num_sounds )
+{
+	if( sound_module != NULL && sound_module->ChangeSoundQuality != NULL )
+	{
+		sound_module->CacheSounds( sound_quality, sounds, num_sounds );
+	}
+}
+
 void I_InitMusic(void)
 {
 }
