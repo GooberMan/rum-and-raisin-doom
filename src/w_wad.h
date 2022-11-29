@@ -97,6 +97,9 @@ DOOM_C_API const char *W_WadNameForLump(const lumpinfo_t *lump);
 DOOM_C_API const char *W_WadNameForLumpNum( lumpindex_t lump );
 DOOM_C_API const char *W_WadNameForLumpName( const char* name );
 
+DOOM_C_API const char *W_WadPathForLumpNum( lumpindex_t lump );
+DOOM_C_API const char *W_WadPathForLumpName( const char* name );
+
 DOOM_C_API doombool W_IsIWADLump(const lumpinfo_t *lump);
 
 #endif

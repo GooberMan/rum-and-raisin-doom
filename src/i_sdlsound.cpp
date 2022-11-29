@@ -620,7 +620,7 @@ sfxpath_t GetPath( sfxinfo_t* sfxinfo )
 {
 	sfxpath_t output = { sfxinfo };
 
-	const char* WADFile = W_WadNameForLumpNum( sfxinfo->lumpnum );
+	const char* WADFile = W_WadPathForLumpNum( sfxinfo->lumpnum );
 	std::filesystem::path WADFilePath = std::filesystem::absolute( WADFile );
 
 	time_t lastmodified = GetLastModifiedTime( WADFilePath );
