@@ -2,6 +2,10 @@
 
 Head to the [wiki](https://github.com/GooberMan/rum-and-raisin-doom/wiki) for more information.
 
+# Running the official releases on Windows?
+
+Install the [MSVC Runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe) before launching. You'll also need the [UCRT](https://www.microsoft.com/en-US/download/details.aspx?id=48234) installed if you're running on Windows 7 or 8 (but to be clear, those versions of Windows are unsupported).
+
 # Installing on Raspberry Pi?
 
 Ubuntu has made it needlessly hard to install packages from the internet. Not only do they open in the default compressed archive program, but the installer doesn't install dependencies. Instead you should use the previous package manager program, gdebi:
