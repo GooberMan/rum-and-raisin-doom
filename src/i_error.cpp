@@ -546,6 +546,10 @@ callstack_t GetCallstack()
 
 void I_UnhandledUserException()
 {
+	error_super_bad = true;
+	
+	I_DoErrorBox( "Unhandled exception. Press okay to capture callstack." );
+
 	try
 	{
 		std::rethrow_exception( std::current_exception() );
@@ -590,8 +594,7 @@ DOOM_C_API void I_ErrorCleanup( void )
 
 void I_ErrorInit( void )
 {
-	std::set_terminate( &I_UnhandledUserException );
-#ifdef WIN32
+#if OS_CHECK( WINDOWS )
 	SetUnhandledExceptionFilter( (LPTOP_LEVEL_EXCEPTION_FILTER)&I_UnhandledStructuredException );
 
 	HANDLE currprocess = GetCurrentProcess();
@@ -600,7 +603,8 @@ void I_ErrorInit( void )
 	SymSetOptions( SYMOPT_CASE_INSENSITIVE | SYMOPT_LOAD_ANYTHING | SYMOPT_DEBUG );
 
 	I_AtExit( &I_ErrorCleanup, true );
-#endif // WIN32
+#endif OS_CHECK( WINDOWS )
+	std::set_terminate( &I_UnhandledUserException );
 
 	is_main_thread = true;
 
