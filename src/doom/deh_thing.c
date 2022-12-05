@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "doomtype.h"
 
@@ -52,6 +53,8 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   DEH_MAPPING("Bits",                flags)
   DEH_MAPPING("Respawn frame",       raisestate)
 DEH_END_MAPPING
+
+void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 
 static void *DEH_ThingStart(deh_context_t *context, char *line)
 {
@@ -101,13 +104,20 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
     
 //    printf("Set %s to %s for mobj\n", variable_name, value);
 
-    // all values are integers
+	if( deh_allow_bex && strcmp( variable_name, "Bits" ) == 0 && !isdigit( value[ 0 ] ) )
+	{
+		DEH_BexHandleThingBits( context, value, mobj );
+	}
+	else
+	{
+		// all values are integers
 
-    ivalue = atoi(value);
-    
-    // Set the field value
+		ivalue = atoi(value);
 
-    DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
+		// Set the field value
+
+		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
+	}
 }
 
 static void DEH_ThingSHA1Sum(sha1_context_t *context)

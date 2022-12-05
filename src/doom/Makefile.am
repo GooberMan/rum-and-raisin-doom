@@ -23,7 +23,9 @@ noinst_LIBRARIES=libdoom.a
 libdoom_a_SOURCES =             \
 am_map.c           am_map.h     \
 deh_ammo.c                      \
+deh_bexptr.cpp                  \
 deh_bexstr.c                    \
+deh_bexthing.cpp                \
 deh_cheat.c                     \
 deh_doom.c                      \
 deh_frame.c                     \

@@ -108,11 +108,11 @@ extern "C"
 	void A_BrainExplode();
 }
 
-#define FuncType( x ) { #x, (actionf_t)&A_ ## x }
+#define FuncType( x ) { #x, { &A_ ## x } }
 
 static std::map< DoomString, actionf_t > PointerLookup =
 {
-	{ "NULL", (actionf_t)nullptr },
+	{ "NULL", { nullptr } },
 	FuncType( Light0 ),
 	FuncType( WeaponReady ),
 	FuncType( Lower ),
