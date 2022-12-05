@@ -1,5 +1,6 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -54,6 +55,10 @@ doombool deh_allow_long_cheats = false;
 // If false, dehacked cheat replacements are ignored.
 
 doombool deh_apply_cheats = true;
+
+// We're in BEX mode
+
+doombool deh_allow_bex = false;
 
 void DEH_Checksum(sha1_digest_t digest)
 {
@@ -113,17 +118,9 @@ static deh_section_t *GetSectionByName(char *name)
 {
     unsigned int i;
 
-    // we explicitely do not recognize [STRINGS] sections at all
-    // if extended strings are not allowed
-
-    if (!deh_allow_extended_strings && !strncasecmp("[STRINGS]", name, 9))
-    {
-        return NULL;
-    }
-
     for (i=0; deh_section_types[i] != NULL; ++i)
     {
-        if (!strcasecmp(deh_section_types[i]->name, name))
+        if (!strcasecmp(deh_section_types[i]->name, name) && ( !deh_section_types[ i ]->can_read || *deh_section_types[ i ]->can_read ) )
         {
             return deh_section_types[i];
         }
@@ -353,6 +350,12 @@ static void DEH_ParseContext(deh_context_t *context)
             {
                 // possibly the start of a new section
 
+				if( strncmp( line, "Doom version", 12 ) == 0
+					|| strncmp( line, "Patch format", 12 ) == 0 )
+				{
+					continue;
+				}
+
                 sscanf(line, "%19s", section_name);
 
                 current_section = GetSectionByName(section_name);
@@ -364,7 +367,7 @@ static void DEH_ParseContext(deh_context_t *context)
                 }
                 else
                 {
-                    //printf("unknown section name %s\n", section_name);
+                    DEH_Warning( context, "unknown section name %s", section_name );
                 }
             }
         }
@@ -385,9 +388,10 @@ int DEH_LoadFile(const char *filename)
     // Before parsing a new file, reset special override flags to false.
     // Magic comments should only apply to the file in which they were
     // defined, and shouldn't carry over to subsequent files as well.
-    deh_allow_long_strings = false;
-    deh_allow_long_cheats = false;
-    deh_allow_extended_strings = false;
+    deh_allow_long_strings = remove_limits ? true : false;
+    deh_allow_long_cheats = remove_limits ? true : false;
+    deh_allow_extended_strings = remove_limits ? true : false;
+    deh_allow_bex = remove_limits ? true : false;
 
     I_TerminalPrintf( Log_Startup, " loading %s\n", filename);
 
@@ -449,6 +453,7 @@ int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error)
     deh_allow_long_strings = allow_long;
     deh_allow_long_cheats = allow_long;
     deh_allow_extended_strings = remove_limits ? true : false;
+    deh_allow_bex = remove_limits ? true : false;
 
     context = DEH_OpenLump(lumpnum);
 

@@ -1,6 +1,7 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
 // Copyright(C) 2014 Fabian Greffrath
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -339,7 +340,7 @@ static void *DEH_BEXStrStart(deh_context_t *context, char *line)
 
     if (sscanf(line, "%9s", s) == 0 || strncmp("[STRINGS]", s, sizeof(s)))
     {
-	DEH_Warning(context, "Parse error on section start");
+	DEH_Warning(context, "Parse error on string section start");
     }
 
     return NULL;
@@ -373,4 +374,5 @@ deh_section_t deh_section_bexstr =
     DEH_BEXStrParseLine,
     NULL,
     NULL,
+	&deh_allow_extended_strings,
 };

@@ -1,5 +1,6 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,6 +22,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "i_terminal.h"
 #include "m_misc.h"
 #include "w_wad.h"
 #include "z_zone.h"
@@ -304,30 +306,24 @@ char *DEH_ReadLine(deh_context_t *context, doombool extended)
 
 void DEH_Warning(deh_context_t *context, const char *msg, ...)
 {
-    va_list args;
+	I_TerminalPrintf( Log_Warning, "%s:%i: warning:", context->filename, context->linenum );
 
-    va_start(args, msg);
-
-    fprintf(stderr, "%s:%i: warning: ", context->filename, context->linenum);
-    vfprintf(stderr, msg, args);
-    fprintf(stderr, "\n");
-
-    va_end(args);
+	va_list args;
+	va_start(args, msg);
+	I_TerminalVPrintf( Log_Warning, msg, args );
+	va_end(args);
 }
 
 void DEH_Error(deh_context_t *context, const char *msg, ...)
 {
-    va_list args;
+	I_TerminalPrintf( Log_Error, "%s:%i: error:", context->filename, context->linenum );
 
-    va_start(args, msg);
+	va_list args;
+	va_start(args, msg);
+	I_TerminalVPrintf( Log_Error, msg, args );
+	va_end(args);
 
-    fprintf(stderr, "%s:%i: ", context->filename, context->linenum);
-    vfprintf(stderr, msg, args);
-    fprintf(stderr, "\n");
-
-    va_end(args);
-
-    context->had_error = true;
+	context->had_error = true;
 }
 
 doombool DEH_HadError(deh_context_t *context)

@@ -29,20 +29,21 @@
 #define DEH_VANILLA_NUMSTATES 966
 #define DEH_VANILLA_NUMSFX 107
 
-void DEH_ParseCommandLine(void);
-int DEH_LoadFile(const char *filename);
-void DEH_AutoLoadPatches(const char *path);
-int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error);
-int DEH_LoadLumpByName(const char *name, doombool allow_long, doombool allow_error);
+DOOM_C_API void DEH_ParseCommandLine(void);
+DOOM_C_API int DEH_LoadFile(const char *filename);
+DOOM_C_API void DEH_AutoLoadPatches(const char *path);
+DOOM_C_API int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error);
+DOOM_C_API int DEH_LoadLumpByName(const char *name, doombool allow_long, doombool allow_error);
 
-doombool DEH_ParseAssignment(char *line, char **variable_name, char **value);
+DOOM_C_API doombool DEH_ParseAssignment(char *line, char **variable_name, char **value);
 
-void DEH_Checksum(sha1_digest_t digest);
+DOOM_C_API void DEH_Checksum(sha1_digest_t digest);
 
-extern doombool deh_allow_extended_strings;
-extern doombool deh_allow_long_strings;
-extern doombool deh_allow_long_cheats;
-extern doombool deh_apply_cheats;
+DOOM_C_API extern doombool deh_allow_extended_strings;
+DOOM_C_API extern doombool deh_allow_long_strings;
+DOOM_C_API extern doombool deh_allow_long_cheats;
+DOOM_C_API extern doombool deh_apply_cheats;
+DOOM_C_API extern doombool deh_allow_bex;
 
 #endif /* #ifndef DEH_MAIN_H */
 
