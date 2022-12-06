@@ -22,6 +22,8 @@
 #include "deh_str.h"
 #include "sha1.h"
 
+#include "d_gameflow.h"
+
 // These are the limits that dehacked uses (from dheinit.h in the dehacked
 // source).  If these limits are exceeded, it does not generate an error, but
 // a warning is displayed.
@@ -38,6 +40,8 @@ DOOM_C_API int DEH_LoadLumpByName(const char *name, doombool allow_long, doomboo
 DOOM_C_API doombool DEH_ParseAssignment(char *line, char **variable_name, char **value);
 
 DOOM_C_API void DEH_Checksum(sha1_digest_t digest);
+
+DOOM_C_API int32_t DEH_ParTime( mapinfo_t* map );
 
 DOOM_C_API extern doombool deh_allow_extended_strings;
 DOOM_C_API extern doombool deh_allow_long_strings;

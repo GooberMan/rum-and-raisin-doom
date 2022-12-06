@@ -1445,7 +1445,7 @@ void G_DoCompleted (void)
     wminfo.maxitems = totalitems; 
     wminfo.maxsecret = totalsecret; 
     wminfo.maxfrags = 0; 
-	wminfo.partime = current_map->par_time * TICRATE;
+	wminfo.partime = DEH_ParTime( current_map ) * TICRATE;
 
     // Set par time. Exceptions are added for purposes of
     // statcheck regression testing.

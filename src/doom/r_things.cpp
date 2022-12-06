@@ -23,24 +23,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "m_fixed.h"
 #include "doomdef.h"
+#include "m_fixed.h"
+
+#include "deh_main.h"
+
+#include "i_system.h"
+
 #include "m_profile.h"
+#include "m_misc.h"
+
 #include "r_main.h"
+#include "r_local.h"
+
+#include "w_wad.h"
+
+#include "z_zone.h"
 
 extern "C"
 {
-	#include "deh_main.h"
+	#include "doomstat.h"
 
 	#include "i_swap.h"
-	#include "i_system.h"
-	#include "z_zone.h"
-	#include "w_wad.h"
-	#include "m_misc.h"
 
-	#include "r_local.h"
-
-	#include "doomstat.h"
 
 	#define MINZ				( IntToFixed( 4 ) )
 	#define BASEYCENTER			(V_VIRTUALHEIGHT/2)

@@ -195,7 +195,7 @@ static void *DEH_BEXPtrStart( deh_context_t* context, char* line )
 
 	if ( sscanf( line, "%9s", section ) == 0 || strncmp( "[CODEPTR]", section, sizeof( section ) ) )
 	{
-		DEH_Warning(context, "Parse error on section start");
+		DEH_Warning(context, "Parse error on CODEPTR start");
 	}
 
 	return NULL;
