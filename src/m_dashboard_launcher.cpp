@@ -935,7 +935,7 @@ namespace launcher
 		Dehacked,
 	};
 
-	constexpr int32_t DoomFileEntryVersion = 3;
+	constexpr int32_t DoomFileEntryVersion = 4;
 
 	struct LaunchOptions
 	{
@@ -1342,10 +1342,11 @@ namespace launcher
 							entry.game_variant = vanilla;
 						}
 
-						if( dehacked )
-						{
-							entry.has_dehacked_lump = true;
-						}
+					}
+
+					if( dehacked )
+					{
+						entry.has_dehacked_lump = true;
 					}
 
 					if( !titlepic ) titlepic = dmenupic;
@@ -2537,14 +2538,21 @@ namespace launcher
 						{
 							doomfileselector->ClearAllSelected();
 
-							for( auto& deh : dehfiles )
-							{
-								doomfileselector->Select( deh );
-							}
+							bool adddehacked = true;
 
 							for( auto& pwad : pwads )
 							{
+								adddehacked &= !pwad.has_dehacked_lump;
+
 								doomfileselector->Select( pwad );
+							}
+
+							if( adddehacked )
+							{
+								for( auto& deh : dehfiles )
+								{
+									doomfileselector->Select( deh );
+								}
 							}
 
 							while( panel_stack.size() > 1 )
