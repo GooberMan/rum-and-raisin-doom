@@ -49,7 +49,7 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
         return NULL;
     }
     
-    if (frame_number < 0 || frame_number >= NUMSTATES)
+    if (frame_number < 0 || frame_number >= ( deh_allow_bex ? NUMSTATES : NUMSTATES_VANILLA ) )
     {
         DEH_Warning(context, "Invalid frame number: %i", frame_number);
         return NULL;
@@ -130,7 +130,7 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 
     ivalue = atoi(value);
     
-    if (!remove_limits && state == &states[NUMSTATES - 1])
+    if (!remove_limits && state == &states[NUMSTATES_VANILLA - 1])
     {
         DEH_FrameOverflow(context, variable_name, ivalue);
     }
@@ -146,7 +146,7 @@ static void DEH_FrameSHA1Sum(sha1_context_t *context)
 {
     int i;
 
-    for (i=0; i<NUMSTATES; ++i)
+    for (i=0; i<( deh_allow_bex ? NUMSTATES : NUMSTATES_VANILLA ); ++i)
     {
         DEH_StructSHA1Sum(context, &state_mapping, &states[i]);
     }

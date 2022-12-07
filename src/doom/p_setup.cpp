@@ -1393,19 +1393,14 @@ P_SetupLevel
 //
 DOOM_C_API void P_Init (void)
 {
-    P_InitSwitchList ();
-    P_InitPicAnims ();
-    R_InitSprites (sprnames);
+	P_InitSwitchList();
+	P_InitPicAnims();
+	R_InitSprites( remove_limits ? sprnames_boom : sprnames );
 
 	if( remove_limits )
 	{
 		loading_code = LoadingCode::RnRLimitRemoving;
 	}
-
-	// The original code officially doesn't work right now. But it's about time to delete it anyway...
-	//M_RegisterDashboardRadioButton( "Map|Load Path|Original", NULL, &loading_code, LoadingCode::Original );
-	M_RegisterDashboardRadioButton( "Map|Load Path|Vanilla", NULL, &loading_code, LoadingCode::RnRVanilla );
-	M_RegisterDashboardRadioButton( "Map|Load Path|Limit Removing", NULL, &loading_code, LoadingCode::RnRLimitRemoving );
 }
 
 
