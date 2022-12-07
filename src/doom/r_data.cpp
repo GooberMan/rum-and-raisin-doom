@@ -1183,11 +1183,6 @@ void R_PrecacheLevel (void)
 		if (!texturepresent[i])
 			continue;
 
-		if( i == 0 )
-		{
-			continue;
-		}
-
 		texture = textures[i];
 	
 		for (j=0 ; j<texture->patchcount ; j++)
