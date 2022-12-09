@@ -20,9 +20,9 @@
 
 //#define IMGUI_DISABLE_DEMO_WINDOWS
 
-#if defined( __linux__ ) && defined( __arm__ )
+#if defined( __linux__ ) && ( defined(M_ARM64) || defined(__aarch64__) )
 // Assuming Raspberry Pi
-#define IMGUI_IMPL_OPENGL_ES3 1
+//#define IMGUI_IMPL_OPENGL_ES3 1
 #endif // Raspberry Pi check
 
 #endif // __CIMGUIGLUE_CONFIG_H__
