@@ -547,6 +547,7 @@
     <ClCompile Include="..\src\icon.c" />
     <ClCompile Include="..\src\i_error.cpp" />
     <ClCompile Include="..\src\i_log.cpp" />
+    <ClCompile Include="..\src\i_sdlsound.cpp" />
     <ClCompile Include="..\src\i_terminal.cpp" />
     <ClCompile Include="..\src\i_thread.cpp" />
     <ClCompile Include="..\src\i_main.c" />
@@ -607,7 +608,6 @@
     <ClCompile Include="..\src\i_oplmusic.c" />
     <ClCompile Include="..\src\i_pcsound.c" />
     <ClCompile Include="..\src\i_sdlmusic.c" />
-    <ClCompile Include="..\src\i_sdlsound.c" />
     <ClCompile Include="..\src\i_sound.c" />
     <ClInclude Include="..\src\i_sound.h" />
     <ClCompile Include="..\src\i_timer.c" />

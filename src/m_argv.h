@@ -36,7 +36,6 @@ DOOM_C_API int M_CheckParm (const char* check);
 // following the specified argument.
 DOOM_C_API int M_CheckParmWithArgs(const char *check, int num_args);
 
-DOOM_C_API void M_FindResponseFile(void);
 DOOM_C_API void M_AddLooseFiles(void);
 
 // Parameter has been specified?

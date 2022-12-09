@@ -1,5 +1,6 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -224,5 +225,6 @@ deh_section_t deh_section_misc =
     DEH_MiscParseLine,
     NULL,
     DEH_MiscSHA1Sum,
+	NULL,
 };
 

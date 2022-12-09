@@ -241,22 +241,6 @@ void StringReplace( std::string& val, const char* findthis, const char* replacew
 	}
 }
 
-std::span< const char* > ParamArgs( const char* param )
-{
-	int32_t fileparam = M_CheckParm( param );
-	if( fileparam > 0 )
-	{
-		++fileparam;
-		int32_t endparam = fileparam;
-		while( endparam < myargc && myargv[ endparam ][ 0 ] != '-' )
-		{
-			++endparam;
-		}
-		return std::span( &myargv[ fileparam ], (size_t)( endparam - fileparam ) );
-	}
-	return std::span( &myargv[ 0 ], 0 );
-};
-
 template< typename _range, typename _func >
 auto Transform( _range& r, _func&& f )
 {
@@ -951,7 +935,7 @@ namespace launcher
 		Dehacked,
 	};
 
-	constexpr int32_t DoomFileEntryVersion = 2;
+	constexpr int32_t DoomFileEntryVersion = 4;
 
 	struct LaunchOptions
 	{
@@ -1358,10 +1342,11 @@ namespace launcher
 							entry.game_variant = vanilla;
 						}
 
-						if( dehacked )
-						{
-							entry.has_dehacked_lump = true;
-						}
+					}
+
+					if( dehacked )
+					{
+						entry.has_dehacked_lump = true;
 					}
 
 					if( !titlepic ) titlepic = dmenupic;
@@ -1442,12 +1427,7 @@ namespace launcher
 					std::ifstream file( textpath, std::ios::in | std::ios::binary );
 					entry.text_file = std::string( std::istreambuf_iterator< char >{ file }, { } );
 
-					size_t foundpos = 0;
-					while( ( foundpos = entry.text_file.find( "%", foundpos ) ) != std::string::npos )
-					{
-						entry.text_file.replace( foundpos, 1, "%%" );
-						foundpos += 2;
-					}
+					StringReplace( entry.text_file, "%", "%%" );
 				}
 			}
 
@@ -1456,6 +1436,11 @@ namespace launcher
 
 		if( !entry.titlepic_raw.empty() && !entry.titlepic.tex )
 		{
+			if( entry.titlepic_raw.size() != ( entry.titlepic.width * entry.titlepic.height ) )
+			{
+				I_Error( "IWAD '%' has malformed TITLEPIC", entry.filename.c_str() );
+			}
+
 			entry.titlepic.tex = I_TextureCreate( entry.titlepic.width, entry.titlepic.height, Format_BGRA8, entry.titlepic_raw.data() );
 		}
 
@@ -1551,7 +1536,7 @@ namespace launcher
 				}
 			}
 
-			glFlush();
+			//glFlush();
 
 			lists_ready = !abort_work.load();
 		}
@@ -1713,6 +1698,11 @@ namespace launcher
 
 		void Render()
 		{
+			if( !Valid() )
+			{
+				I_Error( "Attempting to render invalid IWAD selector." );
+			}
+
 			ImVec2 basecursor;
 			ImVec2 contentregion;
 			igGetCursorPos( &basecursor );
@@ -1756,11 +1746,20 @@ namespace launcher
 				constexpr ImVec2 right_br = { 0.5, 1 };
 				constexpr float_t nofocusscale = 0.4;
 
+				auto SanityCheckTex = []( hwtexture_t* tex, const char* filename )
+				{
+					if( !tex )
+					{
+						I_Error( "IWAD '%s' has no valid titlepic", filename );
+					}
+				};
+
 				ImVec2 framecursor;
 
 				igGetCursorPos( &framecursor );
 
 				{
+					SanityCheckTex( left->titlepic.tex, left->filename.c_str() );
 					nextcursor = framecursor;
 					ImVec2 imgsize = { left->titlepic.width * nofocusscale, left->titlepic.height * 1.2f * nofocusscale };
 					nextcursor.y += ( framesize.y - imgsize.y ) * 0.5;
@@ -1769,6 +1768,7 @@ namespace launcher
 				}
 
 				{
+					SanityCheckTex( right->titlepic.tex, right->filename.c_str() );
 					nextcursor = framecursor;
 					ImVec2 imgsize = { right->titlepic.width * nofocusscale, right->titlepic.height * 1.2f * nofocusscale };
 					nextcursor.x += framesize.x - imgsize.x;
@@ -1780,6 +1780,7 @@ namespace launcher
 				igSetCursorPos( framecursor );
 				if( middle->titlepic.tex )
 				{
+					SanityCheckTex( middle->titlepic.tex, middle->filename.c_str() );
 					igCentreNextElement( middle->titlepic.width );
 
 					ImVec2 size = { (float_t)middle->titlepic.width, middle->titlepic.height * 1.2f };
@@ -1810,9 +1811,9 @@ namespace launcher
 		}
 	private:
 		DoomFileEntries*				iwads;
-		DoomFileEntries::iterator	left;
-		DoomFileEntries::iterator	middle;
-		DoomFileEntries::iterator	right;
+		DoomFileEntries::iterator		left;
+		DoomFileEntries::iterator		middle;
+		DoomFileEntries::iterator		right;
 	};
 
 	class DoomFileSelector
@@ -2128,7 +2129,7 @@ namespace launcher
 	};
 
 	static std::stack< LauncherPanel* >	panel_stack;
-	static JobThread* jobs = nullptr;
+	static std::shared_ptr< JobThread > jobs;
 	static SDL_GLContext jobs_context = nullptr;
 
 	void PushPanel( LauncherPanel* panel )
@@ -2537,14 +2538,21 @@ namespace launcher
 						{
 							doomfileselector->ClearAllSelected();
 
-							for( auto& deh : dehfiles )
-							{
-								doomfileselector->Select( deh );
-							}
+							bool adddehacked = true;
 
 							for( auto& pwad : pwads )
 							{
+								adddehacked &= !pwad.has_dehacked_lump;
+
 								doomfileselector->Select( pwad );
+							}
+
+							if( adddehacked )
+							{
+								for( auto& deh : dehfiles )
+								{
+									doomfileselector->Select( deh );
+								}
 							}
 
 							while( panel_stack.size() > 1 )
@@ -3933,8 +3941,8 @@ namespace launcher
 					defaultiwad = myargv[ iwadparam + 1 ];
 				}
 
-				std::span< const char* > fileparams = ParamArgs( "-file" );
-				std::span< const char* > dehparams = ParamArgs( "-deh" );
+				std::span< const char* > fileparams = M_ParamArgs( "-file" );
+				std::span< const char* > dehparams = M_ParamArgs( "-deh" );
 
 				iwadselector->Setup( filelist.IWADs, defaultiwad );
 				doomfileselector->SetupPWADs( filelist.PWADs, fileparams );
@@ -3958,6 +3966,7 @@ namespace launcher
 			{
 				if( filelist.IWADs.empty() )
 				{
+					freeiwadpanel->SetNoIWADMode();
 					PopPanelsAndReplaceRoot( freeiwadpanel );
 				}
 				else
@@ -4013,9 +4022,13 @@ std::string M_DashboardLauncherWindow()
 	SDL_GLContext glcontext = SDL_GL_GetCurrentContext();
 	SDL_GL_SetAttribute( SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1 );
 	launcher::jobs_context = SDL_GL_CreateContext( window );
+	if( !launcher::jobs_context )
+	{
+		I_Error( "Failed to create threaded GL context." );
+	}
 	SDL_GL_MakeCurrent( window, glcontext );
 
-	launcher::jobs = new JobThread;
+	launcher::jobs = std::make_shared< JobThread >();
 	launcher::jobs->AddJob( []()
 		{
 			SDL_GL_MakeCurrent( I_GetWindow(), launcher::jobs_context );
@@ -4059,6 +4072,14 @@ std::string M_DashboardLauncherWindow()
 	// Clear out the window before we move on
 	SDL_RenderClear( renderer );
 	SDL_RenderPresent( renderer );
+
+	launcher::jobs->AddJob( []()
+	{
+		M_URLDeinit();
+	} );
+
+	launcher::jobs->Flush();
+	launcher::jobs = nullptr;
 
 	dashboardactive = Dash_Inactive;
 

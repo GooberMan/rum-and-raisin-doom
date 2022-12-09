@@ -24,26 +24,29 @@
 #include "doomstat.h"
 #include "doomtype.h"
 
+#include "deh_main.h"
+
 #include "m_container.h"
 
+#include "i_system.h"
 #include "i_terminal.h"
+
+#include "m_misc.h"
 
 #include "r_main.h"
 #include "r_data.h"
 #include "r_sky.h"
 
+#include "w_wad.h"
+
+#include "z_zone.h"
+
 extern "C"
 {
 	#include <stdio.h>
 
-	#include "deh_main.h"
 	#include "i_swap.h"
-	#include "i_system.h"
-	#include "z_zone.h"
 
-	#include "w_wad.h"
-
-	#include "m_misc.h"
 	#include "r_local.h"
 	#include "p_local.h"
 
@@ -1179,11 +1182,6 @@ void R_PrecacheLevel (void)
 	{
 		if (!texturepresent[i])
 			continue;
-
-		if( i == 0 )
-		{
-			continue;
-		}
 
 		texture = textures[i];
 	

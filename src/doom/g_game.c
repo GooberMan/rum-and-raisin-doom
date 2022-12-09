@@ -1445,7 +1445,7 @@ void G_DoCompleted (void)
     wminfo.maxitems = totalitems; 
     wminfo.maxsecret = totalsecret; 
     wminfo.maxfrags = 0; 
-	wminfo.partime = current_map->par_time * TICRATE;
+	wminfo.partime = DEH_ParTime( current_map ) * TICRATE;
 
     // Set par time. Exceptions are added for purposes of
     // statcheck regression testing.
@@ -1570,6 +1570,8 @@ void G_LoadGame (char* name)
     gameaction = ga_loadgame; 
 } 
 
+void P_UpdateInstanceData( void );
+
 void G_DoLoadGame (void) 
 { 
     int savedleveltime;
@@ -1592,7 +1594,7 @@ void G_DoLoadGame (void)
 
 	if( remove_limits && type == SaveGame_LimitRemoving )
 	{
-		P_UnArchiveLimitRemovingData();
+		P_UnArchiveLimitRemovingData( true );
 	}
 
     savegame_error = false;
@@ -1603,12 +1605,12 @@ void G_DoLoadGame (void)
         return;
     }
 
-    savedleveltime = leveltime;
-    
-    // load a base level 
-    G_InitNew (gameskill, current_map, gameflags); 
- 
-    leveltime = savedleveltime;
+	savedleveltime = leveltime;
+
+	// load a base level 
+	G_InitNew (gameskill, current_map, gameflags); 
+
+	leveltime = savedleveltime;
 
     // dearchive all the modifications
     P_UnArchivePlayers (); 
@@ -1621,6 +1623,11 @@ void G_DoLoadGame (void)
 		I_Error ("Bad savegame");
 	}
 
+	if( remove_limits && type == SaveGame_LimitRemoving )
+	{
+		P_UnArchiveLimitRemovingData( false );
+	}
+
 	if( !remove_limits && type == SaveGame_LimitRemoving )
 	{
 		extern doombool message_dontfuckwithme;
@@ -1629,9 +1636,11 @@ void G_DoLoadGame (void)
 	}
 
     fclose(save_stream);
+
+	P_UpdateInstanceData();
+
     
-    if (setsizeneeded)
-	R_ExecuteSetViewSize( );
+    if (setsizeneeded) R_ExecuteSetViewSize( );
     
     // draw the pattern into the back screen
     R_FillBackScreen ();   

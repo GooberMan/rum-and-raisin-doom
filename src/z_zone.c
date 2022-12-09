@@ -43,15 +43,16 @@
 
 typedef struct memblock_s
 {
-	const char*	file;
-	size_t		line;
-	size_t		size;	// including the header and possibly tiny fragments
-	void**		user;
-	int			tag;	// PU_FREE if this is free
-	int			id;	// should be ZONEID
+	size_t				size;	// including the header and possibly tiny fragments
+	const char*			file;
+	uint32_t			line;
+	uint32_t			datasize;
+	void**				user;
+	int					tag;	// PU_FREE if this is free
+	int					id;		// should be ZONEID
+	memdestruct_t		destructor;
 	struct memblock_s*	next;
 	struct memblock_s*	prev;
-	size_t		padding;
 } memblock_t;
 
 
@@ -190,13 +191,20 @@ void Z_Free (void* ptr)
     block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
 
     if (block->id != ZONEID)
-	I_Error ("Z_Free: freed a pointer without ZONEID");
+	{
+		I_Error ("Z_Free: freed a pointer without ZONEID");
+	}
 
     if (block->tag != PU_FREE && block->user != NULL)
     {
     	// clear the user's mark
 	    *block->user = 0;
     }
+
+	if( block->destructor )
+	{
+		block->destructor( ptr, block->datasize );
+	}
 
     // mark as free
     block->tag = PU_FREE;
@@ -251,7 +259,7 @@ void Z_Free (void* ptr)
 //
 #define MINFRAGMENT		64
 
-void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void* user )
+void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void* user, memdestruct_t destructor )
 {
     size_t		extra;
     memblock_t*	start;
@@ -259,6 +267,8 @@ void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, 
     memblock_t* newblock;
     memblock_t*	base;
     void *result;
+
+	uint32_t datasize = size;
 
     size = (size + MEM_ALIGN - 1ull) & ~(MEM_ALIGN - 1ull);
     
@@ -342,6 +352,9 @@ void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, 
 
 	base->file = file;
 	base->line = line;
+
+	base->destructor = destructor;
+	base->datasize = datasize;
 
     result  = (void *) ((byte *)base + sizeof(memblock_t));
 

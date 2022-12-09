@@ -630,6 +630,26 @@ const char *W_WadNameForLump(const lumpinfo_t *lump)
 	return M_BaseName(lump->wad_file->path);
 }
 
+const char *W_WadNameForLumpNum( lumpindex_t lump )
+{
+	return M_BaseName( lumpinfo[ lump ]->wad_file->path );
+}
+
+const char *W_WadNameForLumpName( const char* name )
+{
+	return M_BaseName( lumpinfo[ W_GetNumForName( name ) ]->wad_file->path );
+}
+
+const char *W_WadPathForLumpNum( lumpindex_t lump )
+{
+	return lumpinfo[ lump ]->wad_file->path;
+}
+
+const char *W_WadPathForLumpName( const char* name )
+{
+	return lumpinfo[ W_GetNumForName( name ) ]->wad_file->path;
+}
+
 doombool W_IsIWADLump(const lumpinfo_t *lump)
 {
 	return lump->wad_file == lumpinfo[0]->wad_file;

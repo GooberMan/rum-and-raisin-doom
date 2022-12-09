@@ -1177,12 +1177,14 @@ static void D_SetGameDescription(void)
     }
 }
 
-//      print title for every printed line
-char            title[128];
-
 static doombool D_AddFile(char *filename)
 {
     wad_file_t *handle;
+
+	if( !filename )
+	{
+		I_Error( "Attempting to add a null filename." );
+	}
 
     I_TerminalPrintf( Log_Startup, " adding %s\n", filename );
     handle = W_AddFile(filename);
@@ -1530,7 +1532,7 @@ void D_DoomMain (void)
     char demolumpname[9];
     uint32_t numiwadlumps;
 
-	I_InitError();
+	I_ErrorInit();
 
 	blackedges.data8bithandle = NULL;
 	blackedges.dataARGBhandle = NULL;

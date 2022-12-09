@@ -1,5 +1,6 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,15 +21,15 @@
 
 #include "sha1.h"
 
-typedef struct deh_context_s deh_context_t;
-typedef struct deh_section_s deh_section_t;
-typedef void (*deh_section_init_t)(void);
-typedef void *(*deh_section_start_t)(deh_context_t *context, char *line);
-typedef void (*deh_section_end_t)(deh_context_t *context, void *tag);
-typedef void (*deh_line_parser_t)(deh_context_t *context, char *line, void *tag);
-typedef void (*deh_sha1_hash_t)(sha1_context_t *context);
+DOOM_C_API typedef struct deh_context_s deh_context_t;
+DOOM_C_API typedef struct deh_section_s deh_section_t;
+DOOM_C_API typedef void (*deh_section_init_t)(void);
+DOOM_C_API typedef void *(*deh_section_start_t)(deh_context_t *context, char *line);
+DOOM_C_API typedef void (*deh_section_end_t)(deh_context_t *context, void *tag);
+DOOM_C_API typedef void (*deh_line_parser_t)(deh_context_t *context, char *line, void *tag);
+DOOM_C_API typedef void (*deh_sha1_hash_t)(sha1_context_t *context);
 
-struct deh_section_s
+DOOM_C_API struct deh_section_s
 {
     const char *name;
 
@@ -52,6 +53,10 @@ struct deh_section_s
     // Called when generating an SHA1 sum of the dehacked state
 
     deh_sha1_hash_t sha1_hash;
+
+	// Checks if current limits allow reading this section
+
+	doombool* can_read;
 };
 
 #endif /* #ifndef DEH_DEFS_H */

@@ -21,24 +21,30 @@
 
 #include "r_local.h"
 
-extern "C"
-{
 #include "deh_main.h"
 
 #include "i_system.h"
-#include "z_zone.h"
+#include "i_thread.h"
+
+#include "m_misc.h"
+
+#include "r_state.h"
+
+#include "v_video.h"
+
 #include "w_wad.h"
 
+#include "z_zone.h"
+
+extern "C"
+{
+
 // Needs access to LFB (guess what).
-#include "v_video.h"
 #include "st_stuff.h"
 #include "i_swap.h"
-#include "r_state.h"
-#include "i_thread.h"
 
 // State.
 #include "doomstat.h"
-#include "m_misc.h"
 #include "m_random.h"
 
 extern int32_t border_style;

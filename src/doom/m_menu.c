@@ -36,6 +36,8 @@
 #include "i_timer.h"
 #include "i_video.h"
 
+#include "sounds.h"
+
 #include "m_misc.h"
 #include "v_video.h"
 #include "w_wad.h"
@@ -2427,6 +2429,16 @@ static const char* disk_icon_strings[] =
 };
 static int32_t disk_icon_strings_count = arrlen( disk_icon_strings );
 
+static const char* sound_resample_quality_strings[] =
+{
+	"Linear",
+	"Zero Order Hold",
+	"Sinc (Low)",
+	"Sinc (Medium)",
+	"Sinc (High)"
+};
+static int32_t sound_resample_quality_strings_count = arrlen( sound_resample_quality_strings );
+
 static const ImVec2 zerosize = { 0, 0 };
 static const ImVec2 unmapbuttonsize = { 22, 22 };
 
@@ -3065,7 +3077,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t render_match_window;
 	extern int32_t dynamic_resolution_scaling;
 	extern int32_t additional_light_boost;
-
+	extern int32_t sound_resample_type;
 
 	controlsection_t*	currsection;
 
@@ -3400,6 +3412,29 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igPushID_Ptr( &snd_pitchshift );
 			igCheckbox( "", (bool*)&snd_pitchshift );
+			igPopID();
+			igNextColumn();
+
+			igText( "Resample quality" );
+			igNextColumn();
+			igPushID_Ptr( &sound_resample_type );
+			if( igBeginCombo( "", sound_resample_quality_strings[ sound_resample_type ], ImGuiComboFlags_None ) )
+			{
+				for( int32_t index = 0; index < sound_resample_quality_strings_count; ++index )
+				{
+					if( igSelectable_Bool( sound_resample_quality_strings[ index ], index == sound_resample_type, ImGuiSelectableFlags_None, zerosize ) )
+					{
+						I_ChangeSoundQuality( index, S_sfx, NUMSFX );
+					}
+				}
+				igEndCombo();
+			}
+			if( igIsItemHovered( ImGuiHoveredFlags_None ) )
+			{
+				igBeginTooltip();
+				igText( "This can take a while the first time you select any option." );
+				igEndTooltip();
+			}
 			igPopID();
 			igNextColumn();
 

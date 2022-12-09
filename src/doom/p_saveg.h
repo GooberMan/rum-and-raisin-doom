@@ -56,7 +56,7 @@ void P_WriteSaveGameEOF( savegametype_t type );
 savegametype_t P_ReadSaveGameType( void );
 
 void P_ArchiveLimitRemovingData( void );
-void P_UnArchiveLimitRemovingData( void );
+void P_UnArchiveLimitRemovingData( doombool gameflagsonly );
 
 // Persistent storage/archiving.
 // These are the load / save game routines.

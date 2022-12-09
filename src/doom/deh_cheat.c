@@ -143,5 +143,6 @@ deh_section_t deh_section_cheat =
     DEH_CheatParseLine,
     NULL,
     NULL,
+	NULL,
 };
 

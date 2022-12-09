@@ -24,6 +24,11 @@
 // Needed for action function pointer handling.
 #include "d_think.h"
 
+#if defined( __cplusplus )
+extern "C"
+{
+#endif
+
 typedef enum
 {
 	SPR_INVALID = -1,
@@ -165,7 +170,9 @@ typedef enum
     SPR_BRS1,
     SPR_TLMP,
     SPR_TLP2,
-    NUMSPRITES
+    NUMSPRITES_VANILLA,
+	SPR_TNT1 = NUMSPRITES_VANILLA,
+	NUMSPRITES,
 
 } spritenum_t;
 
@@ -1138,7 +1145,9 @@ typedef enum
     S_TECH2LAMP2,
     S_TECH2LAMP3,
     S_TECH2LAMP4,
-    NUMSTATES
+    NUMSTATES_VANILLA,
+	S_TNT1 = NUMSTATES_VANILLA,
+	NUMSTATES,
 } statenum_t;
 
 
@@ -1156,6 +1165,7 @@ typedef struct
 
 extern state_t	states[NUMSTATES];
 extern const char *sprnames[];
+extern const char *sprnames_boom[];
 
 typedef enum {
     MT_PLAYER,
@@ -1328,5 +1338,9 @@ typedef struct
 } mobjinfo_t;
 
 extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
+
+#if defined( __cplusplus )
+}
+#endif
 
 #endif

@@ -58,9 +58,6 @@
     <ClCompile Include="..\src\i_sdlmusic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\i_sdlsound.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\i_sound.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -242,6 +239,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\i_error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\i_sdlsound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

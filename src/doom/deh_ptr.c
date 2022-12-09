@@ -1,5 +1,6 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -66,7 +67,7 @@ static void *DEH_PointerStart(deh_context_t *context, char *line)
         return NULL;
     }
 
-    if (frame_number < 0 || frame_number >= NUMSTATES)
+    if (frame_number < 0 || frame_number >= ( deh_allow_bex ? NUMSTATES : NUMSTATES_VANILLA ) )
     {
         DEH_Warning(context, "Invalid frame number: %i", frame_number);
         return NULL;
@@ -105,7 +106,7 @@ static void DEH_PointerParseLine(deh_context_t *context, char *line, void *tag)
 
     if (!strcasecmp(variable_name, "Codep frame"))
     {
-        if (ivalue < 0 || ivalue >= NUMSTATES)
+        if ( ivalue < 0 || ivalue >= ( deh_allow_bex ? NUMSTATES : NUMSTATES_VANILLA ) )
         {
             DEH_Warning(context, "Invalid state '%i'", ivalue);
         }
@@ -124,7 +125,7 @@ static void DEH_PointerSHA1Sum(sha1_context_t *context)
 {
     int i;
 
-    for (i=0; i<NUMSTATES; ++i)
+    for (i=0; i<( deh_allow_bex ? NUMSTATES : NUMSTATES_VANILLA ); ++i)
     {
         SHA1_UpdateInt32(context, CodePointerIndex(&states[i].action));
     }
@@ -138,5 +139,6 @@ deh_section_t deh_section_pointer =
     DEH_PointerParseLine,
     NULL,
     DEH_PointerSHA1Sum,
+	NULL,
 };
 

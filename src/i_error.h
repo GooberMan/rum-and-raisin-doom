@@ -19,7 +19,8 @@
 
 #include "doomtype.h"
 
-DOOM_C_API void I_InitError( void );
+DOOM_C_API void I_ErrorInit( void );
+DOOM_C_API void I_ErrorUpdate( void );
 DOOM_C_API void I_Error(const char *error, ...) NORETURN PRINTF_ATTR(1, 2);
 
 #endif //!defined( __M_ERROR_H__ )

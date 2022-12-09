@@ -146,6 +146,62 @@ static void saveg_write32(int value)
     saveg_write8((value >> 24) & 0xff);
 }
 
+static int64_t saveg_read64(void)
+{
+	int64_t result;
+
+	result = (int64_t)saveg_read8();
+	result |= (int64_t)saveg_read8() << 8;
+	result |= (int64_t)saveg_read8() << 16;
+	result |= (int64_t)saveg_read8() << 24;
+	result |= (int64_t)saveg_read8() << 32;
+	result |= (int64_t)saveg_read8() << 40;
+	result |= (int64_t)saveg_read8() << 48;
+	result |= (int64_t)saveg_read8() << 56;
+
+	return result;
+}
+
+static uint64_t saveg_readu64(void)
+{
+	uint64_t result;
+
+	result = (uint64_t)saveg_read8();
+	result |= (uint64_t)saveg_read8() << 8;
+	result |= (uint64_t)saveg_read8() << 16;
+	result |= (uint64_t)saveg_read8() << 24;
+	result |= (uint64_t)saveg_read8() << 32;
+	result |= (uint64_t)saveg_read8() << 40;
+	result |= (uint64_t)saveg_read8() << 48;
+	result |= (uint64_t)saveg_read8() << 56;
+
+	return result;
+}
+
+static void saveg_write64( int64_t value )
+{
+	saveg_write8( value & 0xff );
+	saveg_write8( ( value >> 8 ) & 0xff );
+	saveg_write8( ( value >> 16 ) & 0xff );
+	saveg_write8( ( value >> 24 ) & 0xff );
+	saveg_write8( ( value >> 32 ) & 0xff );
+	saveg_write8( ( value >> 40 ) & 0xff );
+	saveg_write8( ( value >> 48 ) & 0xff );
+	saveg_write8( ( value >> 56 ) & 0xff );
+}
+
+static void saveg_writeu64( uint64_t value )
+{
+	saveg_write8( value & 0xff );
+	saveg_write8( ( value >> 8 ) & 0xff );
+	saveg_write8( ( value >> 16 ) & 0xff );
+	saveg_write8( ( value >> 24 ) & 0xff );
+	saveg_write8( ( value >> 32 ) & 0xff );
+	saveg_write8( ( value >> 40 ) & 0xff );
+	saveg_write8( ( value >> 48 ) & 0xff );
+	saveg_write8( ( value >> 56 ) & 0xff );
+}
+
 // Pad to 4-byte boundaries
 
 static void saveg_read_pad(void)
@@ -1475,6 +1531,7 @@ savegametype_t P_ReadSaveGameType( void )
 #define LIMITREMOVING_END		0xDEFEC7ED
 #define LIMITREMOVING_VERSION1	0x00000001
 #define LIMITREMOVING_VERSION2	0x00000002
+#define LIMITREMOVING_VERSION3	0x00000003
 
 void P_UnArchiveLimitRemovingData_Version1( void )
 {
@@ -1485,7 +1542,7 @@ void P_UnArchiveLimitRemovingData_Version1( void )
 	int32_t bytesread = saveg_read32();
 }
 
-void P_UnarchiveLimitRemovingData_Latest( int32_t bytesremaining )
+void P_UnarchiveLimitRemovingData_Version2( int32_t bytesremaining )
 {
 	extern int32_t gameflags;
 	gameflags = saveg_read32();
@@ -1500,21 +1557,200 @@ void P_UnarchiveLimitRemovingData_Latest( int32_t bytesremaining )
 	int32_t endmarker = saveg_read32();
 }
 
+#define SAVETAG_IDENTIFIER			0xDEC0DE00
+#define SAVETAG_IDENTMASK			0xFFFFFF00
+#define SAVETAG_GAMEFLAGS			0xDEC0DE01
+#define SAVETAG_SESSIONSTATS		0xDEC0DE02
+#define SAVETAG_SECTOREXTENDED		0xDEC0DE03
+#define SAVETAG_MOBJEXTENDED		0xDEC0DE04
+#define SAVETAG_INVALID				0xDECEA5ED
+#define SAVETAG_VALIDATE			0xDEF1A7ED
+
+void P_UnarchiveLimitRemovingData_Version3( doombool gameflagsonly )
+{
+	extern int32_t gameflags;
+
+	int32_t tag = saveg_read32();
+	while( tag != SAVETAG_INVALID )
+	{
+		if( ( tag & SAVETAG_IDENTMASK ) != SAVETAG_IDENTIFIER )
+		{
+			I_Error( "Invalid tag found in limit-removing savegame" );
+		}
+		int32_t byteswritten = saveg_read32();
+
+		// This is ugly, but we need the game flags before we update everything else :-(
+		if( gameflagsonly )
+		{
+			if( tag == SAVETAG_GAMEFLAGS )
+			{
+				gameflags = saveg_read32();
+			}
+			else
+			{
+				fseek( save_stream, byteswritten, SEEK_CUR );
+			}
+		}
+		else
+		{
+			switch( tag )
+			{
+			case SAVETAG_GAMEFLAGS:
+				gameflags = saveg_read32();
+				break;
+
+			case SAVETAG_SESSIONSTATS:
+				session.start_total_monsters = saveg_read32();
+				session.start_total_secrets = saveg_read32();
+				session.start_total_items = saveg_read32();
+				session.resurrected_monsters = saveg_read32();
+				session.total_resurrected_monster_kills[ 0 ] = saveg_read32();
+				session.total_resurrected_monster_kills[ 1 ] = saveg_read32();
+				session.total_resurrected_monster_kills[ 2 ] = saveg_read32();
+				session.total_resurrected_monster_kills[ 3 ] = saveg_read32();
+				session.total_resurrected_monster_kills_global = saveg_read32();
+				session.total_monster_kills[ 0 ] = saveg_read32();
+				session.total_monster_kills[ 1 ] = saveg_read32();
+				session.total_monster_kills[ 2 ] = saveg_read32();
+				session.total_monster_kills[ 3 ] = saveg_read32();
+				session.total_monster_kills_global = saveg_read32();
+				session.total_found_secrets[ 0 ] = saveg_read32();
+				session.total_found_secrets[ 1 ] = saveg_read32();
+				session.total_found_secrets[ 2 ] = saveg_read32();
+				session.total_found_secrets[ 3 ] = saveg_read32();
+				session.total_found_secrets_global = saveg_read32();
+				session.total_found_items[ 0 ] = saveg_read32();
+				session.total_found_items[ 1 ] = saveg_read32();
+				session.total_found_items[ 2 ] = saveg_read32();
+				session.total_found_items[ 3 ] = saveg_read32();
+				session.total_found_items_global = saveg_read32();
+				session.level_time = saveg_readu64();
+				session.session_time = saveg_readu64();
+				break;
+
+			case SAVETAG_SECTOREXTENDED:
+				for( sector_t* sec = sectors; sec < sectors + numsectors; ++sec )
+				{
+					sec->secretstate = saveg_read32();
+				}
+				break;
+
+			case SAVETAG_MOBJEXTENDED:
+				for( thinker_t* thinker = thinkercap.next; thinker != &thinkercap; thinker = thinker->next )
+				{
+					if( thinker->function.acp1 == (actionf_p1)P_MobjThinker )
+					{
+						mobj_t* mobj = (mobj_t*)thinker;
+						mobj->resurrection_count = saveg_read32();
+					}
+				}
+				break;
+
+			default:
+				fseek( save_stream, byteswritten, SEEK_CUR );
+				break;
+			}
+		}
+
+		if( saveg_read32() != SAVETAG_VALIDATE )
+		{
+			I_Error( "Did not find expected validation value in limit-removing save game." );
+		}
+
+		tag = saveg_read32();
+	}
+
+	int32_t endmarker = saveg_read32();
+	if( endmarker != LIMITREMOVING_END )
+	{
+		I_Error( "Failed to load limit-removing saved game correctly." );
+	}
+}
+
+
 void P_ArchiveLimitRemovingData( void )
 {
 	extern int32_t gameflags;
 
 	saveg_write32( LIMITREMOVING_BEGIN );
-	saveg_write32( LIMITREMOVING_VERSION2 );
+	saveg_write32( LIMITREMOVING_VERSION3 );
+
+	saveg_write32( SAVETAG_GAMEFLAGS );
+	saveg_write32( sizeof( int32_t ) );
 	saveg_write32( gameflags );
+	saveg_write32( SAVETAG_VALIDATE );
+
+	saveg_write32( SAVETAG_SESSIONSTATS );
+	saveg_write32( sizeof( sessionstats_t ) );
+	saveg_write32( session.start_total_monsters );
+	saveg_write32( session.start_total_secrets );
+	saveg_write32( session.start_total_items );
+	saveg_write32( session.resurrected_monsters );
+	saveg_write32( session.total_resurrected_monster_kills[ 0 ] );
+	saveg_write32( session.total_resurrected_monster_kills[ 1 ] );
+	saveg_write32( session.total_resurrected_monster_kills[ 2 ] );
+	saveg_write32( session.total_resurrected_monster_kills[ 3 ] );
+	saveg_write32( session.total_resurrected_monster_kills_global );
+	saveg_write32( session.total_monster_kills[ 0 ] );
+	saveg_write32( session.total_monster_kills[ 1 ] );
+	saveg_write32( session.total_monster_kills[ 2 ] );
+	saveg_write32( session.total_monster_kills[ 3 ] );
+	saveg_write32( session.total_monster_kills_global );
+	saveg_write32( session.total_found_secrets[ 0 ] );
+	saveg_write32( session.total_found_secrets[ 1 ] );
+	saveg_write32( session.total_found_secrets[ 2 ] );
+	saveg_write32( session.total_found_secrets[ 3 ] );
+	saveg_write32( session.total_found_secrets_global );
+	saveg_write32( session.total_found_items[ 0 ] );
+	saveg_write32( session.total_found_items[ 1 ] );
+	saveg_write32( session.total_found_items[ 2 ] );
+	saveg_write32( session.total_found_items[ 3 ] );
+	saveg_write32( session.total_found_items_global );
+	saveg_write64( session.level_time );
+	saveg_write64( session.session_time );
+	saveg_write32( SAVETAG_VALIDATE );
+
+	int32_t extrabytes = 0;
+
+	saveg_write32( SAVETAG_SECTOREXTENDED );
+	saveg_write32( numsectors * sizeof( int32_t ) );
+	for( sector_t* sec = sectors; sec < sectors + numsectors; ++sec )
+	{
+		saveg_write32( sec->secretstate );
+	}
+	saveg_write32( SAVETAG_VALIDATE );
+	extrabytes += ( numsectors + 3 ) * sizeof( int32_t );
+
+	int32_t mobjs = 0;
+	for( thinker_t* thinker = thinkercap.next; thinker != &thinkercap; thinker = thinker->next )
+	{
+		if( thinker->function.acp1 == (actionf_p1)P_MobjThinker )
+		{
+			++mobjs;
+		}
+	}
+
+	saveg_write32( SAVETAG_MOBJEXTENDED );
+	saveg_write32( mobjs * sizeof( int32_t ) );
+	for( thinker_t* thinker = thinkercap.next; thinker != &thinkercap; thinker = thinker->next )
+	{
+		if( thinker->function.acp1 == (actionf_p1)P_MobjThinker )
+		{
+			mobj_t* mobj = (mobj_t*)thinker;
+			saveg_write32( mobj->resurrection_count );
+		}
+	}
+	saveg_write32( SAVETAG_VALIDATE );
+	extrabytes += ( mobjs + 3 ) * sizeof( int32_t );
+
+	saveg_write32( SAVETAG_INVALID );
+
 	saveg_write32( LIMITREMOVING_END );
-	saveg_write32( 16 );
+	saveg_write32( 156 + extrabytes );
 }
 
-void P_UnArchiveLimitRemovingData( void )
+void P_UnArchiveLimitRemovingData( doombool gameflagsonly )
 {
-	extern int32_t gameflags;
-
 	fseek( save_stream, -5, SEEK_END );
 	int32_t byteswritten = saveg_read32();
 
@@ -1527,8 +1763,11 @@ void P_UnArchiveLimitRemovingData( void )
 	case LIMITREMOVING_VERSION1:
 		P_UnArchiveLimitRemovingData_Version1();
 		break;
+	case LIMITREMOVING_VERSION2:
+		P_UnarchiveLimitRemovingData_Version2( byteswritten - sizeof( int32_t ) * 2 );
+		break;
 	default:
-		P_UnarchiveLimitRemovingData_Latest( byteswritten - sizeof( int32_t ) * 2 );
+		P_UnarchiveLimitRemovingData_Version3( gameflagsonly );
 		break;
 	}
 
@@ -1641,35 +1880,37 @@ void P_UnArchiveWorld (void)
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
     {
-	sec->floorheight = saveg_read16() << FRACBITS;
-	sec->ceilingheight = saveg_read16() << FRACBITS;
-	sec->floorpic = saveg_read16();
-	sec->ceilingpic = saveg_read16();
-	sec->lightlevel = saveg_read16();
-	sec->special = saveg_read16();		// needed?
-	sec->tag = saveg_read16();		// needed?
-	sec->specialdata = 0;
-	sec->soundtarget = 0;
+		sec->floorheight = saveg_read16() << FRACBITS;
+		sec->ceilingheight = saveg_read16() << FRACBITS;
+		sec->floorpic = saveg_read16();
+		sec->ceilingpic = saveg_read16();
+		sec->lightlevel = saveg_read16();
+		sec->special = saveg_read16();		// needed?
+		sec->tag = saveg_read16();		// needed?
+		sec->specialdata = 0;
+		sec->soundtarget = 0;
+		sec->snapceiling = true;
+		sec->snapfloor = true;
     }
     
     // do lines
     for (i=0, li = lines ; i<numlines ; i++,li++)
     {
-	li->flags = saveg_read16();
-	li->special = saveg_read16();
-	li->tag = saveg_read16();
-	for (j=0 ; j<2 ; j++)
-	{
-	    if (li->sidenum[j] == -1)
-		continue;
-	    si = &sides[li->sidenum[j]];
-	    si->textureoffset = saveg_read16() << FRACBITS;
-	    si->rowoffset = saveg_read16() << FRACBITS;
-	    si->toptexture = saveg_read16();
-	    si->bottomtexture = saveg_read16();
-	    si->midtexture = saveg_read16();
+		li->flags = saveg_read16();
+		li->special = saveg_read16();
+		li->tag = saveg_read16();
+		for (j=0 ; j<2 ; j++)
+		{
+			if (li->sidenum[j] == -1)
+			continue;
+			si = &sides[li->sidenum[j]];
+			si->textureoffset = saveg_read16() << FRACBITS;
+			si->rowoffset = saveg_read16() << FRACBITS;
+			si->toptexture = saveg_read16();
+			si->bottomtexture = saveg_read16();
+			si->midtexture = saveg_read16();
+		}
 	}
-    }
 }
 
 

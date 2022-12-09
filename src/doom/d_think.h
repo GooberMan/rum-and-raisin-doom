@@ -32,6 +32,10 @@
 //  we will need to handle the various
 //  action functions cleanly.
 //
+#if defined( __cplusplus )
+extern "C"
+{
+#endif
 typedef  void (*actionf_v)();
 typedef  void (*actionf_p1)( void* );
 typedef  void (*actionf_p2)( void*, void* );
@@ -63,6 +67,9 @@ typedef struct thinker_s
     
 } thinker_t;
 
+#if defined( __cplusplus )
+}
+#endif
 
 
 #endif

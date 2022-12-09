@@ -403,6 +403,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\doom\am_map.c" />
+    <ClCompile Include="..\src\doom\deh_bexpars.cpp" />
+    <ClCompile Include="..\src\doom\deh_bexptr.cpp" />
+    <ClCompile Include="..\src\doom\deh_bexthing.cpp" />
     <ClCompile Include="..\src\doom\d_playsim.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_chex.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_hacx.cpp" />

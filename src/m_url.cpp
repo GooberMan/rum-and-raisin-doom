@@ -14,6 +14,8 @@
 
 #include "m_url.h"
 
+#include "i_error.h"
+
 #include <curl/curl.h>
 
 thread_local CURL* curl = nullptr;
@@ -49,6 +51,10 @@ void M_URLInit( void )
 {
 	curl_global_init( CURL_GLOBAL_ALL );
 	curl = curl_easy_init();
+	if( !curl )
+	{
+		I_Error( "Failed to create CURL context." );
+	}
 	curl_easy_setopt( curl, CURLOPT_XFERINFOFUNCTION, &CURL_Progress );
 	curl_easy_setopt( curl, CURLOPT_NOPROGRESS, 0 );
 }

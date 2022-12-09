@@ -28,9 +28,9 @@
 //
 // SoundFX struct.
 //
-typedef struct sfxinfo_struct	sfxinfo_t;
+DOOM_C_API typedef struct sfxinfo_struct	sfxinfo_t;
 
-struct sfxinfo_struct
+DOOM_C_API struct sfxinfo_struct
 {
     // tag name, used for hexen.
     const char *tagname;
@@ -71,7 +71,7 @@ struct sfxinfo_struct
 //
 // MusicInfo struct.
 //
-typedef struct
+DOOM_C_API typedef struct
 {
     // up to 6-character name
     const char *name;
@@ -87,7 +87,7 @@ typedef struct
 
 } musicinfo_t;
 
-typedef enum 
+DOOM_C_API typedef enum 
 {
     SNDDEVICE_NONE = 0,
     SNDDEVICE_PCSPEAKER = 1,
@@ -104,7 +104,7 @@ typedef enum
 
 // Interface for sound modules
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // List of sound devices that this sound module is used for.
 
@@ -149,21 +149,24 @@ typedef struct
 
     void (*CacheSounds)(sfxinfo_t *sounds, int num_sounds);
 
+	void (*ChangeSoundQuality)( int sound_quality, sfxinfo_t* sounds, int num_sounds );
+
 } sound_module_t;
 
-void I_InitSound(doombool use_sfx_prefix);
-void I_ShutdownSound(void);
-int I_GetSfxLumpNum(sfxinfo_t *sfxinfo);
-void I_UpdateSound(void);
-void I_UpdateSoundParams(int channel, int vol, int sep);
-int I_StartSound(sfxinfo_t *sfxinfo, int channel, int vol, int sep, int pitch);
-void I_StopSound(int channel);
-doombool I_SoundIsPlaying(int channel);
-void I_PrecacheSounds(sfxinfo_t *sounds, int num_sounds);
+DOOM_C_API void I_InitSound(doombool use_sfx_prefix);
+DOOM_C_API void I_ShutdownSound(void);
+DOOM_C_API int I_GetSfxLumpNum(sfxinfo_t *sfxinfo);
+DOOM_C_API void I_UpdateSound(void);
+DOOM_C_API void I_UpdateSoundParams(int channel, int vol, int sep);
+DOOM_C_API int I_StartSound(sfxinfo_t *sfxinfo, int channel, int vol, int sep, int pitch);
+DOOM_C_API void I_StopSound(int channel);
+DOOM_C_API doombool I_SoundIsPlaying(int channel);
+DOOM_C_API void I_PrecacheSounds(sfxinfo_t *sounds, int num_sounds);
+DOOM_C_API void I_ChangeSoundQuality( int32_t sound_quality, sfxinfo_t* sounds, int num_sounds );
 
 // Interface for music modules
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // List of sound devices that this music module is used for.
 
@@ -216,35 +219,35 @@ typedef struct
     void (*Poll)(void);
 } music_module_t;
 
-void I_InitMusic(void);
-void I_ShutdownMusic(void);
-void I_SetMusicVolume(int volume);
-void I_PauseSong(void);
-void I_ResumeSong(void);
-void *I_RegisterSong(void *data, int len);
-void I_UnRegisterSong(void *handle);
-void I_PlaySong(void *handle, doombool looping);
-void I_StopSong(void);
-doombool I_MusicIsPlaying(void);
+DOOM_C_API void I_InitMusic(void);
+DOOM_C_API void I_ShutdownMusic(void);
+DOOM_C_API void I_SetMusicVolume(int volume);
+DOOM_C_API void I_PauseSong(void);
+DOOM_C_API void I_ResumeSong(void);
+DOOM_C_API void *I_RegisterSong(void *data, int len);
+DOOM_C_API void I_UnRegisterSong(void *handle);
+DOOM_C_API void I_PlaySong(void *handle, doombool looping);
+DOOM_C_API void I_StopSong(void);
+DOOM_C_API doombool I_MusicIsPlaying(void);
 
-extern int snd_sfxdevice;
-extern int snd_musicdevice;
-extern int snd_samplerate;
-extern int snd_cachesize;
-extern int snd_maxslicetime_ms;
-extern char *snd_musiccmd;
-extern int snd_pitchshift;
+DOOM_C_API extern int snd_sfxdevice;
+DOOM_C_API extern int snd_musicdevice;
+DOOM_C_API extern int snd_samplerate;
+DOOM_C_API extern int snd_cachesize;
+DOOM_C_API extern int snd_maxslicetime_ms;
+DOOM_C_API extern char *snd_musiccmd;
+DOOM_C_API extern int snd_pitchshift;
 
-void I_BindSoundVariables(void);
+DOOM_C_API void I_BindSoundVariables(void);
 
 // DMX version to emulate for OPL emulation:
-typedef enum {
+DOOM_C_API typedef enum {
     opl_doom1_1_666,    // Doom 1 v1.666
     opl_doom2_1_666,    // Doom 2 v1.666, Hexen, Heretic
     opl_doom_1_9        // Doom v1.9, Strife
 } opl_driver_ver_t;
 
-void I_SetOPLDriverVer(opl_driver_ver_t ver);
+DOOM_C_API void I_SetOPLDriverVer(opl_driver_ver_t ver);
 
 #endif
 

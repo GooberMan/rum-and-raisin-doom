@@ -28,15 +28,11 @@
 #include <stdio.h>
 #include "doomtype.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
 //
 // ZONE MEMORY
 // PU - purge tags.
 
-enum
+DOOM_C_API enum
 {
     PU_STATIC = 1,                  // static entire execution time
     PU_SOUND,                       // static while playing
@@ -55,12 +51,10 @@ enum
     PU_NUM_TAGS
 };
 
-#if defined( __cplusplus )
-}
-#endif // defined( __cplusplus )
+DOOM_C_API typedef void( *memdestruct_t )( void*, size_t );
 
 DOOM_C_API void		Z_Init (void);
-DOOM_C_API void*	Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void *ptr );
+DOOM_C_API void*	Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void *ptr, memdestruct_t destructor );
 DOOM_C_API void		Z_Free (void *ptr);
 DOOM_C_API void		Z_FreeTags (int lowtag, int hightag);
 DOOM_C_API void		Z_DumpHeap (int lowtag, int hightag);
@@ -71,7 +65,7 @@ DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
 DOOM_C_API size_t	Z_FreeMemory (void);
 DOOM_C_API size_t	Z_ZoneSize(void);
 
-#define Z_Malloc( size, tag, ptr ) Z_MallocTracked( __FILE__, __LINE__, size, tag, ptr )
+#define Z_Malloc( size, tag, ptr ) Z_MallocTracked( __FILE__, __LINE__, size, tag, ptr, NULL )
 
 //
 // This is used to get the local FILE:LINE info from CPP
@@ -82,30 +76,82 @@ DOOM_C_API size_t	Z_ZoneSize(void);
 
 #if defined( __cplusplus )
 
+#include <type_traits>
+
 #define Z_MallocAs( type, tag, ptr ) Z_MallocTracked< type >( __FILE__, __LINE__, tag, ptr )
 #define Z_MallocArrayAs( type, count, tag, ptr ) Z_MallocArrayTracked< type >( __FILE__, __LINE__, count, tag, ptr )
 
 template< typename _ty >
-INLINE void Z_MallocInitEntry( _ty*& val )
+INLINE void Z_MallocConstructEntry( _ty*& val )
 {
 	new( val ) _ty;
 }
 
 template< typename _ty >
+INLINE void Z_MallocDestructEntry( _ty* val, size_t /*datasize*/ )
+{
+	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	{
+		val->~_ty();
+	}
+}
+
+template< typename _ty >
+INLINE void Z_MallocDestructEntryArray( _ty* val, size_t datasize )
+{
+	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	{
+		_ty* curr = (_ty*)( (byte*)val + datasize ) - 1;
+		while( curr >= val )
+		{
+			curr->~_ty();
+			--curr;
+		}
+	}
+}
+
+template< typename _ty >
+constexpr memdestruct_t Z_DestructorFor()
+{
+	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	{
+		return (memdestruct_t)&Z_MallocDestructEntry< _ty >;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+template< typename _ty >
+constexpr memdestruct_t Z_DestructorForArray()
+{
+	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	{
+		return (memdestruct_t)&Z_MallocDestructEntryArray< _ty >;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+
+template< typename _ty >
 INLINE _ty* Z_MallocTracked( const char* file, size_t line, int32_t tag, void* ptr )
 {
-	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ), tag, ptr );
-	Z_MallocInitEntry( val );
+	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ), tag, ptr, Z_DestructorFor< _ty >() );
+	Z_MallocConstructEntry( val );
 	return val;
 }
 
 template< typename _ty >
 INLINE _ty* Z_MallocArrayTracked( const char* file, size_t line, size_t count, int32_t tag, void* ptr )
 {
-	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ) * count, tag, ptr );
+	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ) * count, tag, ptr, Z_DestructorForArray< _ty >() );
 	for( _ty* curr = val; curr < val + count; ++curr )
 	{
-		Z_MallocInitEntry( curr );
+		Z_MallocConstructEntry( curr );
 	}
 	return val;
 }

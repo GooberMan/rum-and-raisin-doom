@@ -1,5 +1,6 @@
 //
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2020-2022 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -46,6 +47,10 @@ extern deh_section_t deh_section_thing;
 extern deh_section_t deh_section_weapon;
 // deh_bexstr.c:
 extern deh_section_t deh_section_bexstr;
+// deh_bexptr.cpp:
+extern deh_section_t deh_section_bexptr;
+// deh_bexpars.cpp:
+extern deh_section_t deh_section_bexpars;
 
 //
 // List of section types:
@@ -63,6 +68,8 @@ deh_section_t *deh_section_types[] =
     &deh_section_thing,
     &deh_section_weapon,
     &deh_section_bexstr,
+	&deh_section_bexptr,
+	&deh_section_bexpars,
     NULL
 };
 

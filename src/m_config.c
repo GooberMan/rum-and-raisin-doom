@@ -983,19 +983,14 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT_HEX(opl_io_port),
 
     //!
-    // Controls whether libsamplerate support is used for performing
-    // sample rate conversions of sound effects.  Support for this
-    // must be compiled into the program.
+    // Controls libsamplerate's type used for performing sample rate
+	// conversions of sound effects.
     //
-    // If zero, libsamplerate support is disabled.  If non-zero,
-    // libsamplerate is enabled. Increasing values roughly correspond
-    // to higher quality conversion; the higher the quality, the
-    // slower the conversion process.  Linear conversion = 1;
-    // Zero order hold = 2; Fast Sinc filter = 3; Medium quality
-    // Sinc filter = 4; High quality Sinc filter = 5.
+    // Linear conversion = 0; Zero order hold = 1; Fast Sinc filter = 2;
+	// Medium quality Sinc filter = 3; High quality Sinc filter = 4.
     //
 
-    //CONFIG_VARIABLE_INT(use_libsamplerate),
+    CONFIG_VARIABLE_INT(sound_resample_type),
 
     //!
     // Scaling factor used by libsamplerate. This is used when converting
