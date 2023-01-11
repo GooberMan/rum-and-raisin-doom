@@ -5,6 +5,7 @@ AM_CFLAGS = -I$(top_srcdir)/src \
             -I$(top_srcdir)/ext/cimgui/imgui/backends      \
             -I$(top_srcdir)/ext/glad/include               \
             -I$(top_srcdir)/textscreen                     \
+            -DIMGUI_USER_CONFIG=\"cimguiglue_config.h\"      \
             @SDL_CFLAGS@ @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
 
 AM_CXXFLAGS = -I$(top_srcdir)/src                            \
@@ -14,6 +15,7 @@ AM_CXXFLAGS = -I$(top_srcdir)/src                            \
               -I$(top_srcdir)/ext/cimgui/imgui/backends      \
               -I$(top_srcdir)/ext/glad/include               \
               -I$(top_srcdir)/textscreen                     \
+              -DIMGUI_USER_CONFIG=\"cimguiglue_config.h\"      \
               @SDL_CFLAGS@ @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
 
 EXTRA_DIST = CMakeLists.txt

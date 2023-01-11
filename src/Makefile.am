@@ -14,6 +14,7 @@ AM_CFLAGS = -I$(top_srcdir)/textscreen                     \
             -I$(top_srcdir)/ext/cimgui/imgui/backends      \
             -I$(top_srcdir)/ext/glad/include               \
             -I$(top_srcdir)/src/doom                       \
+            -DIMGUI_USER_CONFIG=\"cimguiglue_config.h\"      \
             @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
 
 AM_CXXFLAGS = -I$(top_srcdir)/ext/cimgui                     \
@@ -23,6 +24,7 @@ AM_CXXFLAGS = -I$(top_srcdir)/ext/cimgui                     \
               -I$(top_srcdir)/ext/glad/include               \
               -I$(top_srcdir)/textscreen                     \
               -I$(top_srcdir)/src/doom                       \
+              -DIMGUI_USER_CONFIG=\"cimguiglue_config.h\"      \
               @SDL_CFLAGS@ @SDLMIXER_CFLAGS@ @SDLNET_CFLAGS@
 
 # Common source files used by absolutely everything:
