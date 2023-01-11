@@ -301,6 +301,7 @@ namespace umapinfo
 	{
 		DoomString			mapname;
 		DoomString			levelname;
+		DoomString			author;
 		DoomString			label;
 		bool				labelclear;
 		DoomString			levelpic;
@@ -470,6 +471,10 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 			{
 				newmap.label = rhs;
 			}
+		}
+		else if( lhs == "author" )
+		{
+			newmap.author = rhs;
 		}
 		else if( lhs == "levelpic" )
 		{
@@ -721,7 +726,7 @@ static void BuildNewGameInfo()
 		newmap.data_lump = FlowString( map.mapname );
 		newmap.name = FlowString( map.full_name );
 		newmap.name_patch_lump = FlowString( map.levelpic );
-		newmap.authors = EmptyFlowString();
+		newmap.authors = FlowString( map.author );
 		newmap.episode = &mapepisode;
 		newmap.map_num = map.map_num;
 		// newmap.map_flags
