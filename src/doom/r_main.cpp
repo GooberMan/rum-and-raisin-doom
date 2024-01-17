@@ -108,19 +108,6 @@ extern "C"
 	// just for profiling purposes
 	int32_t					framecount;	
 
-	fixed_t					viewx;
-	fixed_t					viewy;
-	fixed_t					viewz;
-
-	angle_t					viewangle;
-
-	rend_fixed_t			viewcos;
-	rend_fixed_t			viewsin;
-
-	rend_fixed_t			viewlerp;
-
-	player_t*				viewplayer;
-
 	constexpr size_t DRSNumViewAngles = RENDERFINEANGLES / 2;
 
 	constexpr size_t DRSNumScaleLightEntries = LIGHTLEVELS * MAXLIGHTSCALE;
@@ -267,8 +254,8 @@ lineside_t BSP_PointOnSide( fixed_t x, fixed_t y, node_t* node )
 		return LS_Front;
 	}
 
-	rend_fixed_t left	= FixedMul( FixedToInt( node->divline.dy ), dx );
-	rend_fixed_t right	= FixedMul( dy , FixedToInt( node->divline.dx ) );
+	fixed_t left	= FixedMul( FixedToInt( node->divline.dy ), dx );
+	fixed_t right	= FixedMul( dy, FixedToInt( node->divline.dx ) );
 	
 	if (right < left)
 	{
@@ -378,49 +365,29 @@ doombool R_PointOnSegSide( rend_fixed_t x, rend_fixed_t y, seg_t* line )
 
 
 
-angle_t R_PointToAngle( rend_fixed_t fixed_x, rend_fixed_t fixed_y )
+angle_t R_PointToAngle( const viewpoint_t* viewpoint, rend_fixed_t fixed_x, rend_fixed_t fixed_y )
 {
-	rend_fixed_t x = fixed_x - FixedToRendFixed( viewx );
-	rend_fixed_t y = fixed_y - FixedToRendFixed( viewy );
+	rend_fixed_t x = fixed_x - viewpoint->x;
+	rend_fixed_t y = fixed_y - viewpoint->y;
 
 	if ( !x && !y )
 	{
 		return 0;
 	}
 
-	if (x>= 0)
+	if( x>= 0 )
 	{
 		// x >=0
-		if (y>= 0)
+		if( y>= 0 )
 		{
 			// y>= 0
-
-			if (x>y)
-			{
-				// octant 0
-				return rendertantoangle[ SlopeDiv_Render(y,x) ];
-			}
-			else
-			{
-				// octant 1
-				return ANG90-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
-			}
+			return ( x > y ) ? rendertantoangle[ SlopeDiv_Render(y,x) ] : ANG90 - 1 - rendertantoangle[ SlopeDiv_Render(x,y) ];
 		}
 		else
 		{
 			// y<0
 			y = -y;
-
-			if (x>y)
-			{
-				// octant 8
-				return M_NEGATE(rendertantoangle[ SlopeDiv_Render(y,x) ]);
-			}
-			else
-			{
-				// octant 7
-				return ANG270+rendertantoangle[ SlopeDiv_Render(x,y) ];
-			}
+			return ( x > y ) ? M_NEGATE( rendertantoangle[ SlopeDiv_Render(y,x) ] ) : ANG270 + rendertantoangle[ SlopeDiv_Render(x,y) ];
 		}
 	}
 	else
@@ -428,35 +395,16 @@ angle_t R_PointToAngle( rend_fixed_t fixed_x, rend_fixed_t fixed_y )
 		// x<0
 		x = -x;
 
-		if (y>= 0)
+		if( y >= 0 )
 		{
 			// y>= 0
-			if (x>y)
-			{
-				// octant 3
-				return ANG180-1-rendertantoangle[ SlopeDiv_Render(y,x) ];
-			}
-			else
-			{
-				// octant 2
-				return ANG90+ rendertantoangle[ SlopeDiv_Render(x,y) ];
-			}
+			return ( x > y ) ? ANG180 - 1 - rendertantoangle[ SlopeDiv_Render(y,x) ] : ANG90 + rendertantoangle[ SlopeDiv_Render(x,y) ];
 		}
 		else
 		{
 			// y<0
 			y = -y;
-
-			if (x>y)
-			{
-				// octant 4
-				return ANG180+rendertantoangle[ SlopeDiv_Render(y,x) ];
-			}
-			else
-			{
-				// octant 5
-				return ANG270-1-rendertantoangle[ SlopeDiv_Render(x,y) ];
-			}
+			return ( x > y ) ? ANG180 + rendertantoangle[ SlopeDiv_Render(y,x) ] : ANG270 - 1 - rendertantoangle[ SlopeDiv_Render(x,y) ];
 		}
 	}
 	return 0;
@@ -546,44 +494,25 @@ angle_t BSP_PointToAngle( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2 )
 }
 
 
-rend_fixed_t R_PointToDist( rend_fixed_t x, rend_fixed_t y )
+rend_fixed_t R_PointToDist( const viewpoint_t* viewpoint, rend_fixed_t x, rend_fixed_t y )
 {
-	angle_t			angle;
-	rend_fixed_t	dx;
-	rend_fixed_t	dy;
-	rend_fixed_t	temp;
-	rend_fixed_t	dist;
-	rend_fixed_t	frac;
+	rend_fixed_t dx = llabs( x - viewpoint->x );
+	rend_fixed_t dy = llabs( y - viewpoint->y );
 	
-	dx = llabs( x - FixedToRendFixed( viewx ) );
-	dy = llabs( y - FixedToRendFixed( viewy ) );
-	
-	if (dy>dx)
+	if( dy > dx )
 	{
-		temp = dx;
-		dx = dy;
-		dy = temp;
+		std::swap( dx, dy );
 	}
 
-	// Fix crashes in udm1.wad
-
-	if (dx != 0)
-	{
-		frac = RendFixedDiv( dy, dx );
-	}
-	else
-	{
-		frac = 0;
-	}
+	rend_fixed_t frac = (dx != 0) ? RendFixedDiv( dy, dx ) : 0;
 
 	rend_fixed_t lookup = frac >> ( RENDERDBITS + RENDFRACTOFRACBITS );
 	
-	angle = rendertantoangle[ lookup ] + ANG90;
+	angle_t angle = rendertantoangle[ lookup ] + ANG90;
 	rend_fixed_t sine = renderfinesine[ angle >> RENDERANGLETOFINESHIFT ];
 
 	// use as cosine
-	dist = RendFixedDiv( dx, sine );
-	
+	rend_fixed_t dist = RendFixedDiv( dx, sine );
 	return dist;
 }
 
@@ -1018,7 +947,7 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 
 	R_ClearClipSegs( &context->bspcontext, leftclip, rightclip );
 	R_ClearDrawSegs( &context->bspcontext );
-	R_ClearPlanes( &context->planecontext, drs_current->viewwidth, drs_current->viewheight, viewangle );
+	R_ClearPlanes( &context->planecontext, drs_current->viewwidth, drs_current->viewheight );
 	R_ClearSprites( &context->spritecontext );
 }
 
@@ -1069,7 +998,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 
 		for ( x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
 		{
-			angle = ( viewangle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
+			angle = ( rendercontext->viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
 
 			skycontext.x = x;
 			skycontext.source = R_GetColumn( skytexture, angle, 0 );
@@ -1092,13 +1021,13 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 
 	{
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
-		R_RenderBSPNode( &rendercontext->viewbuffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
+		R_RenderBSPNode( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
 	}
 	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes( &rendercontext->viewbuffer, &rendercontext->planecontext );
+	R_DrawPlanes( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->planecontext );
 	{
 		M_PROFILE_NAMED( "R_DrawMasked" );
-		R_DrawMasked( &rendercontext->viewbuffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
+		R_DrawMasked( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
 	}
 
 	rendercontext->endtime = I_GetTimeUS();
@@ -1702,10 +1631,7 @@ subsector_t* BSP_PointInSubsector( fixed_t x, fixed_t y )
 	return &subsectors[ nodenum & ~NF_SUBSECTOR ];
 }
 
-//
-// R_SetupFrame
-//
-double_t Lerp( double_t from, double_t to, double_t percent )
+constexpr double_t Lerp( const double_t from, const double_t to, const double_t percent )
 {
 	return from + ( to - from ) * percent;
 }
@@ -1752,20 +1678,16 @@ void R_RenderLoadBalance()
 	const double_t idealpercentage = 1.0 / (double_t)num_render_contexts;
 
 	double_t lastframetime = 0;
-	double_t percentagedebt = 0;
 
 	for( renderdata_t& data : RenderDatas() )
 	{
 		lastframetime += data.context.timetaken;
 	}
 
-	double_t average = lastframetime / num_render_contexts;
 	double_t timepercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	double_t oldwidthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	double_t growth[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	double_t widthpercentages[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-	double_t total = 0;
 
 	int32_t overbudgetcount = 0;
 	int32_t underbudgetcount = 0;
@@ -1806,8 +1728,6 @@ void R_RenderLoadBalance()
 																		: addamount;
 		ThisGrowth( curr ) = growamount;
 		ThisWidthPercent( curr ) = ThisOldWidthPercent( curr ) + growamount;
-	
-		total += ThisWidthPercent( curr );
 	}
 
 	int32_t currstart = 0;
@@ -1841,16 +1761,18 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	int32_t		currstart;
 	int32_t		desiredwidth;
 
+	viewpoint_t viewpoint = {};
+
 	renderscratchpos = 0;
-	viewplayer = player;
+	viewpoint.player = player;
 	extralight = player->extralight + additional_light_boost;
 
 	interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
 
 	if( interpolate_this_frame )
 	{
-		viewlerp	= (rend_fixed_t)( framepercent * ( RENDFRACUNIT ) );
-		bool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
+		viewpoint.lerp	= (rend_fixed_t)( framepercent * ( RENDFRACUNIT ) );
+		bool selectcurr = ( viewpoint.lerp >= ( RENDFRACUNIT >> 1 ) );
 
 		rend_fixed_t adjustedviewx;
 		rend_fixed_t adjustedviewy;
@@ -1864,25 +1786,25 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 		}
 		else
 		{
-			adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewlerp );
-			adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewlerp );
-			adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewlerp );
+			adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewpoint.lerp );
+			adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewpoint.lerp );
+			adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewpoint.lerp );
 		}
 
 		{
-			viewx = RendFixedToFixed( adjustedviewx );
-			viewy = RendFixedToFixed( adjustedviewy );
-			viewz = RendFixedToFixed( adjustedviewz );
-			viewangle = player->mo->curr.angle + viewangleoffset;
+			viewpoint.x = adjustedviewx;
+			viewpoint.y = adjustedviewy;
+			viewpoint.z = adjustedviewz;
+			viewpoint.angle = player->mo->curr.angle + viewangleoffset;
 		}
 
 		if( !demoplayback && isconsoleplayer && player->playerstate != PST_DEAD && !player->mo->reactiontime )
 		{
 			int64_t mouseamount = R_PeekEvents();
-			int64_t newangle = viewangle;
+			int64_t newangle = viewpoint.angle;
 			newangle -= ( ( mouseamount * 0x8 ) << FRACBITS );
 
-			viewangle = (angle_t)( newangle & ANG_MAX );
+			viewpoint.angle = (angle_t)( newangle & ANG_MAX );
 		}
 		else
 		{
@@ -1908,9 +1830,9 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 						end += ANG360;
 					}
 				}
-				result = RendFixedLerp( start, end, viewlerp );
+				result = RendFixedLerp( start, end, viewpoint.lerp );
 			}
-			viewangle = (angle_t)( result & ANG_MAX );
+			viewpoint.angle = (angle_t)( result & ANG_MAX );
 		}
 
 		auto DoSectorHeights = []( const rend_fixed_t& prev, const rend_fixed_t& curr, const rend_fixed_t& percent, const int32_t& snap, const bool& select )
@@ -1924,8 +1846,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 		for( int32_t index : iota( 0, numsectors ) )
 		{
-			rendsectors[ index ].floorheight	= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewlerp, currsectors[ index ].snapfloor, selectcurr );
-			rendsectors[ index ].ceilheight		= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewlerp, currsectors[ index ].snapceiling, selectcurr );
+			rendsectors[ index ].floorheight	= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
+			rendsectors[ index ].ceilheight		= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
 			rendsectors[ index ].lightlevel		= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
 			rendsectors[ index ].floortex		= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
 			rendsectors[ index ].ceiltex		= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
@@ -1933,8 +1855,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 		for( int32_t index : iota( 0, numsides ) )
 		{
-			rendsides[ index ].coloffset		= RendFixedLerp( prevsides[ index ].coloffset, currsides[ index ].coloffset, viewlerp );
-			rendsides[ index ].rowoffset		= RendFixedLerp( prevsides[ index ].rowoffset, currsides[ index ].rowoffset, viewlerp );
+			rendsides[ index ].coloffset		= RendFixedLerp( prevsides[ index ].coloffset, currsides[ index ].coloffset, viewpoint.lerp );
+			rendsides[ index ].rowoffset		= RendFixedLerp( prevsides[ index ].rowoffset, currsides[ index ].rowoffset, viewpoint.lerp );
 			rendsides[ index ].toptex			= selectcurr ? currsides[ index ].toptex : prevsides[ index ].toptex;
 			rendsides[ index ].midtex			= selectcurr ? currsides[ index ].midtex : prevsides[ index ].midtex;
 			rendsides[ index ].bottomtex		= selectcurr ? currsides[ index ].bottomtex : prevsides[ index ].bottomtex;
@@ -1942,31 +1864,31 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	}
 	else
 	{
-		viewx = player->mo->x;
-		viewy = player->mo->y;
-		viewz = player->viewz;
-		viewangle = player->mo->angle + viewangleoffset;
+		viewpoint.x = player->mo->x;
+		viewpoint.y = player->mo->y;
+		viewpoint.z = player->viewz;
+		viewpoint.angle = player->mo->angle + viewangleoffset;
+		viewpoint.lerp = 0;
 
 		memcpy( rendsectors, currsectors, sizeof( sectorinstance_t ) * numsectors );
 		memcpy( rendsides, currsides, sizeof( sideinstance_t ) * numsides );
 	}
 
-
-	viewsin = renderfinesine[ viewangle >> RENDERANGLETOFINESHIFT ];
-	viewcos = renderfinecosine[ viewangle >> RENDERANGLETOFINESHIFT ];
+	viewpoint.sin = renderfinesine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
+	viewpoint.cos = renderfinecosine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
 	
 	fixedcolormapindex = player->fixedcolormap;
 	if (player->fixedcolormap)
 	{
-		fixedcolormap =
-			colormaps
-			+ player->fixedcolormap*256;
+		fixedcolormap = colormaps + player->fixedcolormap * 256;
 	
 		//walllights = scalelightfixed;
 		//walllightsindex = fixedcolormapindex;
 
-		for (i=0 ; i<MAXLIGHTSCALE ; i++)
+		for( i=0; i < MAXLIGHTSCALE; ++i )
+		{
 			drs_current->scalelightfixed[i] = fixedcolormap;
+		}
 	}
 	else
 	{
@@ -1982,6 +1904,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 		buffer.width = drs_current->viewheight;
 		buffer.height = drs_current->viewwidth;
 
+		renderdatas[ currcontext ].context.viewpoint = viewpoint;
 		renderdatas[ currcontext ].context.viewbuffer = buffer;
 	}
 
@@ -2033,7 +1956,7 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, doombool iscons
 	byte* outputcolumn;
 	byte* endcolumn;
 
-	R_SetupFrame(player, framepercent, isconsoleplayer);
+	R_SetupFrame( player, framepercent, isconsoleplayer );
 
 	// NetUpdate can cause lump loads, so we wait until rendering is done before doing it again.
 	// This is a change from the vanilla renderer.

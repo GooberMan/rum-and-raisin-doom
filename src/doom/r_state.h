@@ -39,10 +39,9 @@ extern texturecomposite_t** texturelookup;
 extern texturecomposite_t** flatlookup;
 
 // needed for pre rendering (fracs)
-extern fixed_t*		spritewidth;
-
-extern fixed_t*		spriteoffset;
-extern fixed_t*		spritetopoffset;
+extern rend_fixed_t*	spritewidth;
+extern rend_fixed_t*	spriteoffset;
+extern rend_fixed_t*	spritetopoffset;
 
 extern lighttable_t*	colormaps;
 
@@ -102,18 +101,6 @@ extern sideinstance_t*		prevsides;
 extern sideinstance_t*		currsides;
 extern sideinstance_t*		rendsides;
 
-
-//
-// POV data.
-//
-extern fixed_t		viewx;
-extern fixed_t		viewy;
-extern fixed_t		viewz;
-
-extern rend_fixed_t	viewlerp;
-
-extern angle_t		viewangle;
-extern player_t*	viewplayer;
 
 // All the old global tables now live in the current DRS dataset
 extern drsdata_t*	drs_current;

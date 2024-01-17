@@ -27,6 +27,6 @@ extern "C" {
 }
 #endif
 
-DOOM_C_API void R_RasteriseRegion( planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture );
+DOOM_C_API void R_RasteriseRegion( viewpoint_t* viewpoint, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture );
 
 #endif // __I_THREAD__

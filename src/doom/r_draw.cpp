@@ -741,23 +741,15 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 { 
     int					count; 
     pixel_t*			dest;
-	pixel_t*			start;
-    rend_fixed_t		frac;
-	rend_fixed_t		lastfrac;
-    rend_fixed_t		fracstep;
 	int32_t				fuzzposbase;
 	int32_t				fuzzposadd;
 
 	fuzzposbase = fuzzpos;
 	fuzzposadd = fuzzposbase;
 
-	count = context->yh - context->yl; 
+	count = context->yh - context->yl;
 
-	start = dest = context->output.data + context->x * context->output.pitch + context->yl;
-
-    // Looks familiar.
-    fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-drs_current->centery)*fracstep; 
+	dest = context->output.data + context->x * context->output.pitch + context->yl;
 
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
@@ -772,9 +764,6 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 
 		++dest;
 
-		lastfrac = frac;
-		frac += fracstep; 
-
 		++fuzzposadd;
 	
 	} while (count--);
@@ -788,8 +777,6 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 {
     int					count; 
     pixel_t*			dest;
-    rend_fixed_t		frac;
-    rend_fixed_t		fracstep;
 	int32_t				fuzzposadd;
 	int32_t				fuzzpossample;
 
@@ -817,10 +804,6 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 	memcpy( srcbuffer, dest - 1, sizeof( pixel_t ) * ( count + 3 ) );
 	src = srcbuffer + 1;
 
-    // Looks familiar.
-    fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-drs_current->centery)*fracstep; 
-
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
     //  brighter than average).
@@ -830,8 +813,6 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 
 		++dest;
 		++src;
-
-		frac += fracstep;
 
 		oldfrac = newfrac;
 		newfrac += originalcolfrac;

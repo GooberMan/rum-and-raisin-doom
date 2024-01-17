@@ -31,13 +31,6 @@ extern "C" {
 #include "d_player.h"
 
 
-//
-// POV related.
-//
-extern rend_fixed_t		viewcos;
-extern rend_fixed_t		viewsin;
-
-
 extern int32_t		validcount;
 
 
@@ -104,10 +97,10 @@ lineside_t R_PointOnSide( rend_fixed_t x, rend_fixed_t y, node_t* node );
 
 doombool R_PointOnSegSide( rend_fixed_t x, rend_fixed_t y, seg_t* line );
 
-angle_t R_PointToAngle( rend_fixed_t fixed_x, rend_fixed_t fixed_y );
+angle_t R_PointToAngle( const viewpoint_t* viewpoint, rend_fixed_t fixed_x, rend_fixed_t fixed_y );
 angle_t BSP_PointToAngle( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2 );
 
-rend_fixed_t R_PointToDist( rend_fixed_t x, rend_fixed_t y );
+rend_fixed_t R_PointToDist( const viewpoint_t* viewpoint, rend_fixed_t x, rend_fixed_t y );
 
 rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle );
 

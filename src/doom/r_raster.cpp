@@ -55,22 +55,22 @@ INLINE void DoSample( int32_t& top
 
 template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, planecontext_t* planecontext, int32_t x, int32_t top, int32_t count )
+INLINE void R_RasteriseColumnImpl( viewpoint_t* viewpoint, planecontext_t* planecontext, int32_t x, int32_t top, int32_t count )
 {
 	pixel_t*			dest			= planecontext->output.data + x * planecontext->output.pitch + top;
 	pixel_t*			source			= planecontext->source;
 
 	int32_t				nexty			= top;
 
-	angle_t				angle			= (viewangle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
+	angle_t				angle			= (viewpoint->angle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
 	rend_fixed_t		anglecos		= renderfinecosine[ angle ];
 	rend_fixed_t		anglesin		= renderfinesine[ angle ];
 
 	rend_fixed_t		currdistance	= planecontext->raster[ top ].distance;
 	rend_fixed_t		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 
-	rend_fixed_t		xfrac			= view_x + RendFixedMul( anglecos, currlength );
-	rend_fixed_t		yfrac			= -view_y - RendFixedMul( anglesin, currlength );
+	rend_fixed_t		xfrac			= viewpoint->x + RendFixedMul( anglecos, currlength );
+	rend_fixed_t		yfrac			= -viewpoint->y - RendFixedMul( anglesin, currlength );
 	rend_fixed_t		nextxfrac;
 	rend_fixed_t		nextyfrac;
 
@@ -87,8 +87,8 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 		nexty			+= Leap;
 		currdistance	= planecontext->raster[ nexty ].distance;
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
-		nextxfrac		= view_x + RendFixedMul( anglecos, currlength );
-		nextyfrac		= -view_y - RendFixedMul( anglesin, currlength );
+		nextxfrac		= viewpoint->x + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -viewpoint->y - RendFixedMul( anglesin, currlength );
 
 		xstep =	( nextxfrac - xfrac ) >> LeapLog2;
 		ystep =	( nextyfrac - yfrac ) >> LeapLog2;
@@ -149,8 +149,8 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 		nexty			+= count;
 		currdistance	= planecontext->raster[ nexty ].distance;
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
-		nextxfrac		= view_x + RendFixedMul( anglecos, currlength );
-		nextyfrac		= -view_y - RendFixedMul( anglesin, currlength );
+		nextxfrac		= viewpoint->x + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -viewpoint->y - RendFixedMul( anglesin, currlength );
 
 		++count;
 
@@ -212,18 +212,15 @@ constexpr auto Lines( rasterregion_t* region )
 
 template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRasteriser( planecontext_t* planecontext, rasterregion_t* region )
+INLINE void ChooseRasteriser( viewpoint_t* viewpoint, planecontext_t* planecontext, rasterregion_t* region )
 {
-	rend_fixed_t view_x = FixedToRendFixed( viewx );
-	rend_fixed_t view_y = FixedToRendFixed( viewy );
-
 	int32_t x = region->minx;
 
 	for( rasterline_t& line : Lines( region ) )
 	{
 		if( line.top <= line.bottom )
 		{
-			R_RasteriseColumnImpl< Leap, LeapLog2, Width, Height >( view_x, view_y, planecontext, x, line.top, line.bottom - line.top );
+			R_RasteriseColumnImpl< Leap, LeapLog2, Width, Height >( viewpoint, planecontext, x, line.top, line.bottom - line.top );
 		}
 		++x;
 	}
@@ -231,91 +228,91 @@ INLINE void ChooseRasteriser( planecontext_t* planecontext, rasterregion_t* regi
 
 template< int32_t Leap, int32_t LeapLog2, int64_t Width, int64_t Height >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionWidthHeightRasteriser( planecontext_t* planecontext, rasterregion_t* thisregion )
+INLINE void ChooseRegionWidthHeightRasteriser( viewpoint_t* viewpoint, planecontext_t* planecontext, rasterregion_t* thisregion )
 {
 	{
-		planecontext->planeheight = abs( thisregion->height - FixedToRendFixed( viewz ) );
+		planecontext->planeheight = abs( thisregion->height - viewpoint->z );
 		int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
 	
 		planecontext->planezlightindex = light;
 		planecontext->planezlight = &drs_current->zlight[ light * MAXLIGHTZ ];
 
 		R_Prepare< Width, Height >( thisregion, planecontext );
-		ChooseRasteriser< Leap, LeapLog2, Width, Height >( planecontext, thisregion );
+		ChooseRasteriser< Leap, LeapLog2, Width, Height >( viewpoint, planecontext, thisregion );
 	}
 }
 
 template< int32_t Leap, int32_t LeapLog2, int64_t Width >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionWidthRasteriser( planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+INLINE void ChooseRegionWidthRasteriser( viewpoint_t* viewpoint, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
 	switch( texture->height )
 	{
 	case 16:
-		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 16 >( planecontext, firstregion );
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 16 >( viewpoint, planecontext, firstregion );
 		break;
 	case 32:
-		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 32 >( planecontext, firstregion );
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 32 >( viewpoint, planecontext, firstregion );
 		break;
 	case 64:
-		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 64 >( planecontext, firstregion );
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 64 >( viewpoint, planecontext, firstregion );
 		break;
 	case 128:
-		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 128 >( planecontext, firstregion );
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 128 >( viewpoint, planecontext, firstregion );
 		break;
 	case 256:
-		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 256 >( planecontext, firstregion );
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 256 >( viewpoint, planecontext, firstregion );
 		break;
 	default:
-		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 64 >( planecontext, firstregion );
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, Width, 64 >( viewpoint, planecontext, firstregion );
 		break;
 	}
 }
 
 template< int32_t Leap, int32_t LeapLog2 >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionRasteriser( planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+INLINE void ChooseRegionRasteriser( viewpoint_t* viewpoint, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
 	if( !remove_limits )
 	{
-		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, 64, 64 >( planecontext, firstregion );
+		ChooseRegionWidthHeightRasteriser< Leap, LeapLog2, 64, 64 >( viewpoint, planecontext, firstregion );
 	}
 	else
 	{
 		switch( texture->width )
 		{
 		case 8:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 8 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 8 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		case 16:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 16 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 16 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		case 32:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 32 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 32 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		case 64:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		case 128:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 128 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 128 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		case 256:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 256 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 256 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		case 512:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 512 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 512 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		case 1024:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 1024 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 1024 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		default:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( planecontext, firstregion, texture );
+			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( viewpoint, planecontext, firstregion, texture );
 			break;
 		}
 	}
 }
 
-DOOM_C_API void R_RasteriseRegion( planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+DOOM_C_API void R_RasteriseRegion( viewpoint_t* viewpoint, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
 	M_PROFILE_FUNC();
 	planecontext->source = texture->data;
@@ -323,19 +320,19 @@ DOOM_C_API void R_RasteriseRegion( planecontext_t* planecontext, rasterregion_t*
 	switch( planecontext->spantype )
 	{
 	case Span_PolyRaster_Log2_4:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( planecontext, firstregion, texture );
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( viewpoint, planecontext, firstregion, texture );
 		break;
 
 	case Span_PolyRaster_Log2_8:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( planecontext, firstregion, texture );
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( viewpoint, planecontext, firstregion, texture );
 		break;
 
 	case Span_PolyRaster_Log2_16:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( planecontext, firstregion, texture );
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( viewpoint, planecontext, firstregion, texture );
 		break;
 
 	case Span_PolyRaster_Log2_32:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( planecontext, firstregion, texture );
+		ChooseRegionRasteriser< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( viewpoint, planecontext, firstregion, texture );
 		break;
 	}
 }

@@ -417,7 +417,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 //  if it might be visible.
 //
 
-void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
+void R_ProjectSprite( viewpoint_t* viewpoint, spritecontext_t* spritecontext, mobj_t* thing)
 {
 	int32_t			x1;
 	int32_t			x2;
@@ -443,7 +443,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 
 	if( interpolate_this_frame )
 	{
-		doombool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
+		doombool selectcurr = ( viewpoint->lerp >= ( RENDFRACUNIT >> 1 ) );
 		if( thing->curr.teleported )
 		{
 			thingx = selectcurr ? thing->curr.x : thing->prev.x;
@@ -452,9 +452,9 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		}
 		else
 		{
-			thingx = RendFixedLerp( thing->prev.x, thing->curr.x, viewlerp );
-			thingy = RendFixedLerp( thing->prev.y, thing->curr.y, viewlerp );
-			thingz = RendFixedLerp( thing->prev.z, thing->curr.z, viewlerp );
+			thingx = RendFixedLerp( thing->prev.x, thing->curr.x, viewpoint->lerp );
+			thingy = RendFixedLerp( thing->prev.y, thing->curr.y, viewpoint->lerp );
+			thingz = RendFixedLerp( thing->prev.z, thing->curr.z, viewpoint->lerp );
 		}
 
 		thingframe = selectcurr ? thing->curr.frame : thing->prev.frame;
@@ -468,11 +468,11 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	}
 
 	// transform the origin point
-	rend_fixed_t tr_x = thingx - FixedToRendFixed( viewx );
-	rend_fixed_t tr_y = thingy - FixedToRendFixed( viewy );
+	rend_fixed_t tr_x = thingx - viewpoint->x;
+	rend_fixed_t tr_y = thingy - viewpoint->y;
 	
-	rend_fixed_t gxt = RendFixedMul( tr_x, viewcos ); 
-	rend_fixed_t gyt = -RendFixedMul( tr_y, viewsin );
+	rend_fixed_t gxt = RendFixedMul( tr_x, viewpoint->cos ); 
+	rend_fixed_t gyt = -RendFixedMul( tr_y, viewpoint->sin );
 
 	rend_fixed_t tz = gxt - gyt;
 
@@ -486,8 +486,8 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	rend_fixed_t xiscale = RendFixedDiv( RENDFRACUNIT, xscale );
 	rend_fixed_t yscale = RendFixedDiv( drs_current->yprojection, tz );
 	
-	gxt = -RendFixedMul( tr_x, viewsin );
-	gyt = RendFixedMul( tr_y, viewcos );
+	gxt = -RendFixedMul( tr_x, viewpoint->sin );
+	gyt = RendFixedMul( tr_y, viewpoint->cos );
 	rend_fixed_t tx = -( gyt + gxt );
 
 	// too far off the side?
@@ -522,7 +522,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	if (sprframe->rotate)
 	{
 		// choose a different rotation based on player view
-		angle_t ang = R_PointToAngle( thingx, thingy );
+		angle_t ang = R_PointToAngle( viewpoint, thingx, thingy );
 		rot = ( ang - thingangle + (uint32_t)( ANG45 / 2 ) * 9 ) >> 29;
 		lump = sprframe->lump[rot];
 		flip = (doombool)sprframe->flip[rot];
@@ -535,7 +535,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	}
 
 	// calculate edges of the shape
-	tx -= FixedToRendFixed( spriteoffset[lump] );
+	tx -= spriteoffset[lump];
 	x1 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, xscale ) );
 
 	// off the right side?
@@ -544,7 +544,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		return;
 	}
 
-	tx += FixedToRendFixed( spritewidth[lump] );
+	tx += spritewidth[lump];
 	x2 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, xscale ) ) - 1;
 
 	// off the left side
@@ -561,14 +561,14 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	vis->gx = thingx;
 	vis->gy = thingy;
 	vis->gz = thingz;
-	vis->gzt = thingz + FixedToRendFixed( spritetopoffset[ lump ] );
-	vis->texturemid = vis->gzt - FixedToRendFixed( viewz );
+	vis->gzt = thingz + spritetopoffset[ lump ];
+	vis->texturemid = vis->gzt - viewpoint->z;
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
 
 	if (flip)
 	{
-		vis->startfrac = FixedToRendFixed( spritewidth[lump] - 1 );
+		vis->startfrac = spritewidth[lump] - 1;
 		vis->xscale = -xscale;
 		vis->xiscale = -xiscale;
 	}
@@ -617,7 +617,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 // R_AddSprites
 // During BSP traversal, this adds sprites by sector.
 //
-void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
+void R_AddSprites( viewpoint_t* viewpoint, spritecontext_t* spritecontext, sector_t* sec )
 {
 	mobj_t*		thing;
 	int			lightnum;
@@ -652,7 +652,7 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 	// Handle all things in sector.
 	for (thing = sec->thinglist ; thing ; thing = thing->snext)
 	{
-		R_ProjectSprite( spritecontext, thing );
+		R_ProjectSprite( viewpoint, spritecontext, thing );
 	}
 }
 
@@ -660,7 +660,7 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 //
 // R_DrawPSprite
 //
-void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* psp )
+void R_DrawPSprite( viewpoint_t* viewpoint, vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* psp )
 {
 	int32_t			x1;
 	int32_t			x2;
@@ -695,7 +695,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	// calculate edges of the shape
 	rend_fixed_t tx = FixedToRendFixed( psp->sx ) - IntToRendFixed( V_VIRTUALWIDTH / 2 );
 	
-	tx -= FixedToRendFixed( spriteoffset[lump] );	
+	tx -= spriteoffset[lump]; 	
 	x1 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, drs_current->pspritescalex ) );
 
 	// off the right side
@@ -704,7 +704,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 		return;
 	}
 
-	tx += FixedToRendFixed( spritewidth[lump] );
+	tx += spritewidth[lump];
 	x2 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, drs_current->pspritescalex ) ) - 1;
 
 	// off the left side
@@ -716,7 +716,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	// store information in a vissprite
 	vis = &avis;
 	vis->mobjflags = 0;
-	vis->texturemid = IntToRendFixed( BASEYCENTER ) + RENDFRACUNIT / 2 -( FixedToRendFixed( psp->sy - spritetopoffset[ lump ] ) );
+	vis->texturemid = IntToRendFixed( BASEYCENTER ) + RENDFRACUNIT / 2 -( FixedToRendFixed( psp->sy ) - spritetopoffset[ lump ] );
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
 	vis->scale = drs_current->pspritescaley;
@@ -726,7 +726,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	{
 		vis->xscale = -drs_current->pspritescalex;
 		vis->xiscale = -drs_current->pspriteiscalex;
-		vis->startfrac = FixedToRendFixed( spritewidth[lump] - 1 );
+		vis->startfrac = spritewidth[lump] - 1;
 	}
 	else
 	{
@@ -742,8 +742,8 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 
 	vis->patch = lump;
 
-	if (viewplayer->powers[pw_invisibility] > 4*32
-		|| viewplayer->powers[pw_invisibility] & 8)
+	if (viewpoint->player->powers[pw_invisibility] > 4*32
+		|| viewpoint->player->powers[pw_invisibility] & 8)
 	{
 		// shadow draw
 		vis->colormap = NULL;
@@ -772,7 +772,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 //
 // R_DrawPlayerSprites
 //
-void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
+void R_DrawPlayerSprites( viewpoint_t* viewpoint, vbuffer_t* dest, spritecontext_t* spritecontext )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -781,7 +781,7 @@ void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
 	pspdef_t*	psp;
 
 	// get light level
-	lightnum = (viewplayer->mo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) + extralight;
+	lightnum = (viewpoint->player->mo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) + extralight;
 
 	if (lightnum < 0)
 	{
@@ -801,11 +801,11 @@ void R_DrawPlayerSprites ( vbuffer_t* dest, spritecontext_t* spritecontext )
 	spritecontext->mceilingclip = drs_current->negonearray;
 
 	// add all active psprites
-	for (i=0, psp=viewplayer->psprites; i<NUMPSPRITES; i++,psp++)
+	for (i=0, psp = viewpoint->player->psprites; i<NUMPSPRITES; i++,psp++)
 	{
 		if (psp->state)
 		{
-			R_DrawPSprite ( dest, spritecontext, psp );
+			R_DrawPSprite( viewpoint, dest, spritecontext, psp );
 		}
 	}
 
@@ -877,7 +877,7 @@ void R_SortVisSprites ( spritecontext_t* spritecontext )
 //
 // R_DrawSprite
 //
-void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext, vissprite_t* spr )
+void R_DrawSprite( viewpoint_t* viewpoint, vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext, vissprite_t* spr )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -945,7 +945,7 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 #if RENDER_PERF_GRAPHING
 						starttime = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
-						R_RenderMaskedSegRange( dest, bspcontext, spritecontext, ds, r1, r2 );
+						R_RenderMaskedSegRange( viewpoint, dest, bspcontext, spritecontext, ds, r1, r2 );
 #if RENDER_PERF_GRAPHING
 						endtime = I_GetTimeUS();
 						bspcontext->maskedtimetaken += ( endtime - starttime );
@@ -1037,7 +1037,7 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 //
 // R_DrawMasked
 //
-void R_DrawMasked( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext )
+void R_DrawMasked( viewpoint_t* viewpoint, vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t* bspcontext )
 {
 	vissprite_t*	spr;
 	drawseg_t*		ds;
@@ -1051,7 +1051,7 @@ void R_DrawMasked( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 				spr != &spritecontext->vsprsortedhead ;
 				spr = spr->next)
 		{
-			R_DrawSprite( dest, spritecontext, bspcontext, spr );
+			R_DrawSprite( viewpoint, dest, spritecontext, bspcontext, spr );
 		}
 	}
 
@@ -1060,7 +1060,7 @@ void R_DrawMasked( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	{
 		if (ds->maskedtexturecol)
 		{
-			R_RenderMaskedSegRange( dest, bspcontext, spritecontext, ds, ds->x1, ds->x2 );
+			R_RenderMaskedSegRange( viewpoint, dest, bspcontext, spritecontext, ds, ds->x1, ds->x2 );
 		}
 	}
 
@@ -1068,7 +1068,7 @@ void R_DrawMasked( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 	//  but does not draw on side views
 	if (!viewangleoffset)
 	{
-		R_DrawPlayerSprites ( dest, spritecontext );
+		R_DrawPlayerSprites( viewpoint, dest, spritecontext );
 	}
 }
 

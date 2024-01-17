@@ -103,7 +103,7 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 //
 // R_RenderMaskedSegRange
 //
-DOOM_C_API void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
+DOOM_C_API void R_RenderMaskedSegRange( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, spritecontext_t* spritecontext, drawseg_t* ds, int x1, int x2 )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -167,12 +167,12 @@ DOOM_C_API void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontex
 	if (bspcontext->curline->linedef->flags & ML_DONTPEGBOTTOM)
 	{
 		spritecolcontext.texturemid = M_MAX( bspcontext->frontsectorinst->floorheight, bspcontext->backsectorinst->floorheight );
-		spritecolcontext.texturemid += texturelookup[ texnum ]->renderheight - FixedToRendFixed( viewz );
+		spritecolcontext.texturemid += texturelookup[ texnum ]->renderheight - viewpoint->z;
 	}
 	else
 	{
 		spritecolcontext.texturemid = M_MIN( bspcontext->frontsectorinst->ceilheight, bspcontext->backsectorinst->ceilheight );
-		spritecolcontext.texturemid -= FixedToRendFixed( viewz );
+		spritecolcontext.texturemid -= viewpoint->z;
 	}
 	spritecolcontext.texturemid += rendsides[ bspcontext->curline->sidedef->index ].rowoffset;
 
@@ -488,7 +488,7 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 // A wall segment will be drawn
 //  between start and stop pixels (inclusive).
 //
-DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
+DOOM_C_API void R_StoreWallRange( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t start, int32_t stop )
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -548,7 +548,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		offsetangle = M_MIN( offsetangle, ANG90 );
 
 		distangle = ANG90 - offsetangle;
-		hyp = R_PointToDist( bspcontext->curline->v1->rend.x, bspcontext->curline->v1->rend.y );
+		hyp = R_PointToDist( viewpoint, bspcontext->curline->v1->rend.x, bspcontext->curline->v1->rend.y );
 		sineval = renderfinesine[ distangle >> RENDERANGLETOFINESHIFT ];
 		// If this value blows out, renderer go boom. Need to increase resolution of this thing
 		wallcontext->distance = RendFixedMul( hyp, sineval );
@@ -559,14 +559,14 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		loopcontext.stopx = stop+1;
 
 		// calculate scale at both ends and step
-		bspcontext->thisdrawseg->scale1 = wallcontext->scale = R_ScaleFromGlobalAngle( viewangle + drs_current->xtoviewangle[start], wallcontext->distance, viewangle, wallcontext->normalangle );
+		bspcontext->thisdrawseg->scale1 = wallcontext->scale = R_ScaleFromGlobalAngle( viewpoint->angle + drs_current->xtoviewangle[start], wallcontext->distance, viewpoint->angle, wallcontext->normalangle );
 
 		if( stop > start )
 		{
 			// TODO: calculate second distance? Maybe?
 			//wallcontext->distance = FixedMul( R_PointToDist( curline->v2->rend.x, curline->v2->rend.y ), sineval );
 
-			bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle( viewangle + drs_current->xtoviewangle[stop], wallcontext->distance, viewangle, wallcontext->normalangle );
+			bspcontext->thisdrawseg->scale2 = R_ScaleFromGlobalAngle( viewpoint->angle + drs_current->xtoviewangle[stop], wallcontext->distance, viewpoint->angle, wallcontext->normalangle );
 			bspcontext->thisdrawseg->scalestep = wallcontext->scalestep = 
 				( bspcontext->thisdrawseg->scale2 - wallcontext->scale ) / ( stop - start );
 		}
@@ -578,8 +578,8 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 
 		// calculate texture boundaries
 		//  and decide if floor / ceiling marks are needed
-		worldtop = bspcontext->frontsectorinst->ceilheight - FixedToRendFixed( viewz );
-		worldbottom = bspcontext->frontsectorinst->floorheight - FixedToRendFixed( viewz );
+		worldtop = bspcontext->frontsectorinst->ceilheight - viewpoint->z;
+		worldbottom = bspcontext->frontsectorinst->floorheight - viewpoint->z;
 	
 		loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
 		bspcontext->thisdrawseg->maskedtexturecol = NULL;
@@ -594,7 +594,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 			{
 				vtop = bspcontext->frontsectorinst->floorheight + bspcontext->sideinst->midtex->renderheight;
 				// bottom of texture at bottom
-				wallcontext->midtexturemid = vtop - FixedToRendFixed( viewz );
+				wallcontext->midtexturemid = vtop - viewpoint->z;
 			}
 			else
 			{
@@ -620,7 +620,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 				bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
 				bspcontext->thisdrawseg->bsilheight = bspcontext->frontsectorinst->floorheight;
 			}
-			else if (bspcontext->backsectorinst->floorheight > FixedToRendFixed( viewz ) )
+			else if (bspcontext->backsectorinst->floorheight > viewpoint->z )
 			{
 				bspcontext->thisdrawseg->silhouette = SIL_BOTTOM;
 				bspcontext->thisdrawseg->bsilheight = LLONG_MAX;
@@ -632,7 +632,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 				bspcontext->thisdrawseg->tsilheight = bspcontext->frontsectorinst->ceilheight;
 			}
-			else if (bspcontext->backsectorinst->ceilheight < FixedToRendFixed( viewz ) )
+			else if (bspcontext->backsectorinst->ceilheight < viewpoint->z )
 			{
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 				bspcontext->thisdrawseg->tsilheight = LLONG_MIN;
@@ -653,8 +653,8 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 				bspcontext->thisdrawseg->silhouette |= SIL_TOP;
 			}
 	
-			worldhigh = bspcontext->backsectorinst->ceilheight - FixedToRendFixed( viewz );
-			worldlow = bspcontext->backsectorinst->floorheight - FixedToRendFixed( viewz );
+			worldhigh = bspcontext->backsectorinst->ceilheight - viewpoint->z;
+			worldlow = bspcontext->backsectorinst->floorheight - viewpoint->z;
 		
 			// hack to allow height changes in outdoor areas
 			if (bspcontext->frontsectorinst->ceiltex == flatlookup[ skyflatnum ]
@@ -711,7 +711,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 					vtop = bspcontext->backsectorinst->ceilheight + texturelookup[ loopcontext.toptexture ]->renderheight;
 		
 					// bottom of texture
-					wallcontext->toptexturemid = vtop - FixedToRendFixed( viewz );
+					wallcontext->toptexturemid = vtop - viewpoint->z;
 				}
 			}
 			if (worldlow > worldbottom)
@@ -767,8 +767,8 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 			if (wallcontext->normalangle-wallcontext->angle1 < ANG180)
 				wallcontext->offset = -wallcontext->offset;
 
-			wallcontext->offset += bspcontext->sideinst->coloffset + FixedToRendFixed( bspcontext->curline->offset );
-			wallcontext->centerangle = ANG90 + viewangle - wallcontext->normalangle;
+			wallcontext->offset += bspcontext->sideinst->coloffset + bspcontext->curline->rend.offset;
+			wallcontext->centerangle = ANG90 + viewpoint->angle - wallcontext->normalangle;
 	
 			// calculate light table
 			//  use different light tables
@@ -803,13 +803,13 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		// if a floor / ceiling plane is on the wrong side
 		//  of the view plane, it is definitely invisible
 		//  and doesn't need to be marked.
-		if (bspcontext->frontsectorinst->floorheight >= FixedToRendFixed( viewz ) )
+		if (bspcontext->frontsectorinst->floorheight >= viewpoint->z )
 		{
 			// above view plane
 			loopcontext.markfloor = false;
 		}
 
-		if (bspcontext->frontsectorinst->ceilheight <= FixedToRendFixed( viewz ) && bspcontext->frontsectorinst->ceiltex != flatlookup[ skyflatnum ] )
+		if (bspcontext->frontsectorinst->ceilheight <= viewpoint->z && bspcontext->frontsectorinst->ceiltex != flatlookup[ skyflatnum ] )
 		{
 			// below view plane
 			loopcontext.markceiling = false;
@@ -851,13 +851,13 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		// render it
 		if (loopcontext.markceiling)
 		{
-			ceil = planecontext->ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->ceilingpic, RendFixedToFixed( bspcontext->frontsectorinst->ceilheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			ceil = planecontext->ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->ceilingpic, bspcontext->frontsectorinst->ceilheight, bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 			ceilpic = bspcontext->frontsector->ceilingpic;
 		}
 
 		if (loopcontext.markfloor)
 		{
-			floor = planecontext->floorregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->floorpic, RendFixedToFixed( bspcontext->frontsectorinst->floorheight ), bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			floor = planecontext->floorregion = R_AddNewRasterRegion( planecontext, bspcontext->frontsector->floorpic, bspcontext->frontsectorinst->floorheight, bspcontext->frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 			floorpic = bspcontext->frontsector->floorpic;
 		}
 
@@ -876,12 +876,12 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 
 	if( ceil && ceilpic != skyflatnum )
 	{
-		R_RasteriseRegion( planecontext, ceil, flatlookup[ flattranslation[ ceilpic ] ] );
+		R_RasteriseRegion( viewpoint, planecontext, ceil, flatlookup[ flattranslation[ ceilpic ] ] );
 	}
 
 	if( floor && floorpic != skyflatnum )
 	{
-		R_RasteriseRegion( planecontext, floor, flatlookup[ flattranslation[ floorpic ] ] );
+		R_RasteriseRegion( viewpoint, planecontext, floor, flatlookup[ flattranslation[ floorpic ] ] );
 	}
 
 	M_PROFILE_PUSH( "Reserve openings", __FILE__, __LINE__ );

@@ -734,9 +734,24 @@ typedef struct colcontext_s
 	rend_fixed_t		texturemid;
 } colcontext_t;
 
+typedef struct player_s player_t;
+
+typedef struct viewpoint_s
+{
+	player_t*			player;
+	rend_fixed_t		x;
+	rend_fixed_t		y;
+	rend_fixed_t		z;
+	rend_fixed_t		lerp;
+	rend_fixed_t		sin;
+	rend_fixed_t		cos;
+	angle_t				angle;
+} viewpoint_t;
+
 typedef struct rendercontext_s
 {
 	// Setup
+	viewpoint_t			viewpoint;
 	vbuffer_t			buffer;
 	vbuffer_t			viewbuffer;
 	int32_t				bufferindex;

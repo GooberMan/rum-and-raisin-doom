@@ -52,7 +52,7 @@ extern "C"
 // R_ClearPlanes
 // At begining of frame.
 //
-DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t height, angle_t thisangle )
+DOOM_C_API void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
 {
 	M_PROFILE_FUNC();
 
@@ -73,13 +73,13 @@ DOOM_C_API void R_ClearPlanes ( planecontext_t* context, int32_t width, int32_t 
 // R_FindPlane
 //
 
-DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_t picnum, fixed_t height, int32_t lightlevel, int32_t start, int32_t stop )
+DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop )
 {
 	constexpr rasterline_t defaultline = { VPINDEX_INVALID, 0 };
 	int16_t width = stop - start + 1;
 
 	rasterregion_t* region = R_AllocateScratch< rasterregion_t >( 1 );
-	region->height = FixedToRendFixed( height );
+	region->height = height;
 	region->lightlevel = lightlevel;
 	region->minx = start;
 	region->maxx = stop;
@@ -143,7 +143,7 @@ auto Surfaces( planecontext_t* context )
 }
 
 // This now only draws the sky plane, need to make this way nicer
-DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
+DOOM_C_API void R_DrawPlanes( viewpoint_t* viewpoint, vbuffer_t* dest, planecontext_t* planecontext )
 {
 	M_PROFILE_FUNC();
 
@@ -175,7 +175,7 @@ DOOM_C_API void R_DrawPlanes( vbuffer_t* dest, planecontext_t* planecontext )
 				skycontext.yh = line.bottom;
 				skycontext.x = x;
 
-				int32_t angle = ( viewangle + drs_current->xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
+				int32_t angle = ( viewpoint->angle + drs_current->xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
 				// Sky is allways drawn full bright,
 				//  i.e. colormaps[0] is used.
 				// Because of this hack, sky is not affected
