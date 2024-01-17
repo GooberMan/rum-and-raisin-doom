@@ -609,7 +609,7 @@ rend_fixed_t R_PointToDist( rend_fixed_t x, rend_fixed_t y )
 	rend_fixed_t lookup = frac >> ( RENDERDBITS + RENDFRACTOFRACBITS );
 	
 	angle = rendertantoangle[ lookup ] + ANG90;
-	rend_fixed_t sine = FixedToRendFixed( renderfinesine[ angle  >> RENDERANGLETOFINESHIFT ] );
+	rend_fixed_t sine = renderfinesine[ angle >> RENDERANGLETOFINESHIFT ];
 
 	// use as cosine
 	dist = RendFixedDiv( dx, sine );
@@ -678,8 +678,8 @@ rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, an
 	angleb = ANG90 + ( visangle - normal_angle );
 
 	// both sines are allways positive
-	sinea = FixedToRendFixed( renderfinesine[ anglea >> RENDERANGLETOFINESHIFT ] );
-	sineb = FixedToRendFixed( renderfinesine[ angleb >> RENDERANGLETOFINESHIFT ] );
+	sinea = renderfinesine[ anglea >> RENDERANGLETOFINESHIFT ];
+	sineb = renderfinesine[ angleb >> RENDERANGLETOFINESHIFT ];
 	num = RendFixedMul( drs_current->yprojection, sineb );
 	den = RendFixedMul( distance, sinea );
 
@@ -706,17 +706,17 @@ void R_InitTables (void)
     for (i=0 ; i< RENDERFINETANGENTCOUNT ; i++)
     {
 		double_t a = (double_t)( ( i - RENDERFINEANGLES / 4 + 0.5 ) * constants::pi * 2 / RENDERFINEANGLES );
-		double_t fv = tan(a);
-		renderfinetangent[i] = DoubleToRendFixed(fv);
+		double_t fv = tan( a );
+		renderfinetangent[i] = DoubleToRendFixed( fv );
     }
     
     // finesine table
     for (i=0 ; i < RENDERFINESINECOUNT ; i++)
     {
 		// OPTIMIZE: mirror...
-		float_t a = (float_t)( (i+0.5)*PI*2/RENDERFINEANGLES );
-		int32_t t = (int32_t)( FRACUNIT*sin (a) );
-		renderfinesine[i] = t;
+		double_t a = (double_t)( ( i + 0.5 ) * constants::pi * 2 / RENDERFINEANGLES );
+		double_t fv = sin( a );
+		renderfinesine[i] = DoubleToRendFixed( fv );
     }
 #endif // RENDERQUALITYSHIFT > 0
 }
@@ -1374,7 +1374,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	
 	for ( i=0 ; i<current->viewwidth ; i++ )
 	{
-		rend_fixed_t cosadj = FixedToRendFixed( abs( renderfinecosine[ current->xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] ) );
+		rend_fixed_t cosadj = abs( renderfinecosine[ current->xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] );
 		current->distscale[ i ] = RendFixedDiv( RENDFRACUNIT, cosadj );
 	}
 
@@ -1982,8 +1982,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	}
 
 
-	viewsin = renderfinesine[ viewangle >> RENDERANGLETOFINESHIFT ];
-	viewcos = renderfinecosine[ viewangle >> RENDERANGLETOFINESHIFT ];
+	viewsin = RendFixedToFixed( renderfinesine[ viewangle >> RENDERANGLETOFINESHIFT ] );
+	viewcos = RendFixedToFixed( renderfinecosine[ viewangle >> RENDERANGLETOFINESHIFT ] );
 	
 	fixedcolormapindex = player->fixedcolormap;
 	if (player->fixedcolormap)

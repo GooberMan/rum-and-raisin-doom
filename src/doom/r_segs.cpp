@@ -549,7 +549,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 
 		distangle = ANG90 - offsetangle;
 		hyp = R_PointToDist( bspcontext->curline->v1->rend.x, bspcontext->curline->v1->rend.y );
-		sineval = FixedToRendFixed( renderfinesine[ distangle >> RENDERANGLETOFINESHIFT ] );
+		sineval = renderfinesine[ distangle >> RENDERANGLETOFINESHIFT ];
 		// If this value blows out, renderer go boom. Need to increase resolution of this thing
 		wallcontext->distance = RendFixedMul( hyp, sineval );
 	
@@ -761,7 +761,7 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 				offsetangle = ANG90;
 			}
 
-			sineval = FixedToRendFixed( renderfinesine[ offsetangle >> RENDERANGLETOFINESHIFT ] );
+			sineval = renderfinesine[ offsetangle >> RENDERANGLETOFINESHIFT ];
 			wallcontext->offset = RendFixedMul(hyp, sineval);
 
 			if (wallcontext->normalangle-wallcontext->angle1 < ANG180)

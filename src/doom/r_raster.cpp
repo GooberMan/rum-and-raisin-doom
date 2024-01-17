@@ -63,8 +63,8 @@ INLINE void R_RasteriseColumnImpl( rend_fixed_t view_x, rend_fixed_t view_y, pla
 	int32_t				nexty			= top;
 
 	angle_t				angle			= (viewangle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
-	rend_fixed_t		anglecos		= FixedToRendFixed( renderfinecosine[ angle ] );
-	rend_fixed_t		anglesin		= FixedToRendFixed( renderfinesine[ angle ] );
+	rend_fixed_t		anglecos		= renderfinecosine[ angle ];
+	rend_fixed_t		anglesin		= renderfinesine[ angle ];
 
 	rend_fixed_t		currdistance	= planecontext->raster[ top ].distance;
 	rend_fixed_t		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );

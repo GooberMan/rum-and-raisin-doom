@@ -1495,12 +1495,12 @@ AM_rotate
     rend_fixed_t tmpx;
 
     tmpx =
-	RendFixedMul(*x, FixedToRendFixed( renderfinecosine[a>>RENDERANGLETOFINESHIFT] ))
-	- RendFixedMul(*y, FixedToRendFixed( renderfinesine[a>>RENDERANGLETOFINESHIFT] ));
+	RendFixedMul( *x, renderfinecosine[ a >> RENDERANGLETOFINESHIFT ] )
+	- RendFixedMul( *y, renderfinesine[ a >> RENDERANGLETOFINESHIFT ] );
     
     *y   =
-	RendFixedMul(*x, FixedToRendFixed( renderfinesine[a>>RENDERANGLETOFINESHIFT] ))
-	+ RendFixedMul(*y, FixedToRendFixed( renderfinecosine[a>>RENDERANGLETOFINESHIFT] ));
+	RendFixedMul( *x, renderfinesine[ a >> RENDERANGLETOFINESHIFT ] )
+	+ RendFixedMul( *y, renderfinecosine[ a >> RENDERANGLETOFINESHIFT ] );
 
     *x = tmpx;
 }

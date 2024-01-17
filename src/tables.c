@@ -41,8 +41,8 @@
 // the case when x==y without additional checking.
 
 #if RENDERQUALITYSHIFT > 0
-	fixed_t renderfinesine[ RENDERFINESINECOUNT ];
-	fixed_t *renderfinecosine = &renderfinesine[ RENDERFINEANGLES / 4 ];
+	rend_fixed_t renderfinesine[ RENDERFINESINECOUNT ];
+	rend_fixed_t *renderfinecosine = &renderfinesine[ RENDERFINEANGLES / 4 ];
 	rend_fixed_t renderfinetangent[ RENDERFINETANGENTCOUNT ];
 #endif // RENDERQUALITYSHIFT > 0
 
