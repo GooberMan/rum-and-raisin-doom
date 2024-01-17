@@ -34,8 +34,8 @@ extern "C" {
 //
 // POV related.
 //
-extern fixed_t		viewcos;
-extern fixed_t		viewsin;
+extern rend_fixed_t		viewcos;
+extern rend_fixed_t		viewsin;
 
 
 extern int32_t		validcount;

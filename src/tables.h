@@ -84,7 +84,7 @@ extern const byte gammatable[5][256];
 #define DBITS			(FRACBITS-SLOPEBITS)
 #define TANTOANGLECOUNT ( SLOPERANGE + 1 )
 
-typedef unsigned int angle_t;
+typedef uint32_t angle_t;
 
 // Effective size is 2049;
 // The +1 size is to handle the case when x==y

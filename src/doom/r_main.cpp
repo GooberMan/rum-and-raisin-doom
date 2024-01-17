@@ -114,8 +114,8 @@ extern "C"
 
 	angle_t					viewangle;
 
-	fixed_t					viewcos;
-	fixed_t					viewsin;
+	rend_fixed_t			viewcos;
+	rend_fixed_t			viewsin;
 
 	rend_fixed_t			viewlerp;
 
@@ -1982,8 +1982,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	}
 
 
-	viewsin = RendFixedToFixed( renderfinesine[ viewangle >> RENDERANGLETOFINESHIFT ] );
-	viewcos = RendFixedToFixed( renderfinecosine[ viewangle >> RENDERANGLETOFINESHIFT ] );
+	viewsin = renderfinesine[ viewangle >> RENDERANGLETOFINESHIFT ];
+	viewcos = renderfinecosine[ viewangle >> RENDERANGLETOFINESHIFT ];
 	
 	fixedcolormapindex = player->fixedcolormap;
 	if (player->fixedcolormap)

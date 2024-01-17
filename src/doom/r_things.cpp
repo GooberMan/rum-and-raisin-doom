@@ -47,7 +47,7 @@ extern "C"
 	#include "i_swap.h"
 
 
-	#define MINZ				( IntToFixed( 4 ) )
+	#define MINZ				( IntToRendFixed( 4 ) )
 	#define BASEYCENTER			(V_VIRTUALHEIGHT/2)
 
 	extern int32_t interpolate_this_frame;
@@ -421,17 +421,9 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 // Generates a vissprite for a thing
 //  if it might be visible.
 //
+
 void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 {
-	fixed_t			tr_x;
-	fixed_t			tr_y;
-
-	fixed_t			gxt;
-	fixed_t			gyt;
-
-	fixed_t			tx;
-	fixed_t			tz;
-
 	int32_t			x1;
 	int32_t			x2;
 
@@ -440,36 +432,34 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	int32_t			lump;
 
 	uint32_t		rot;
-	doombool			flip;
+	doombool		flip;
 
 	int32_t			index;
 
 	vissprite_t*	vis;
 
-	angle_t			ang;
+	rend_fixed_t	thingx			= thing->curr.x;
+	rend_fixed_t	thingy			= thing->curr.y;
+	rend_fixed_t	thingz			= thing->curr.z;
 
-	fixed_t			thingx;
-	fixed_t			thingy;
-	fixed_t			thingz;
-
-	int32_t			thingframe;
-	spritenum_t		thingsprite;
-	angle_t			thingangle;
+	int32_t			thingframe		= thing->curr.frame;
+	spritenum_t		thingsprite		= thing->curr.sprite;
+	angle_t			thingangle		= thing->curr.angle;
 
 	if( interpolate_this_frame )
 	{
 		doombool selectcurr = ( viewlerp >= ( RENDFRACUNIT >> 1 ) );
 		if( thing->curr.teleported )
 		{
-			thingx = RendFixedToFixed( selectcurr ? thing->curr.x : thing->prev.x );
-			thingy = RendFixedToFixed( selectcurr ? thing->curr.y : thing->prev.y );
-			thingz = RendFixedToFixed( selectcurr ? thing->curr.z : thing->prev.z );
+			thingx = selectcurr ? thing->curr.x : thing->prev.x;
+			thingy = selectcurr ? thing->curr.y : thing->prev.y;
+			thingz = selectcurr ? thing->curr.z : thing->prev.z;
 		}
 		else
 		{
-			thingx = RendFixedToFixed( RendFixedLerp( thing->prev.x, thing->curr.x, viewlerp ) );
-			thingy = RendFixedToFixed( RendFixedLerp( thing->prev.y, thing->curr.y, viewlerp ) );
-			thingz = RendFixedToFixed( RendFixedLerp( thing->prev.z, thing->curr.z, viewlerp ) );
+			thingx = RendFixedLerp( thing->prev.x, thing->curr.x, viewlerp );
+			thingy = RendFixedLerp( thing->prev.y, thing->curr.y, viewlerp );
+			thingz = RendFixedLerp( thing->prev.z, thing->curr.z, viewlerp );
 		}
 
 		thingframe = selectcurr ? thing->curr.frame : thing->prev.frame;
@@ -481,42 +471,32 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 			return;
 		}
 	}
-	else
-	{
-		thingx = thing->x;
-		thingy = thing->y;
-		thingz = thing->z;
-
-		thingframe = thing->curr.frame;
-		thingsprite = thing->curr.sprite;
-		thingangle = thing->curr.angle;
-	}
 
 	// transform the origin point
-	tr_x = thingx - viewx;
-	tr_y = thingy - viewy;
+	rend_fixed_t tr_x = thingx - FixedToRendFixed( viewx );
+	rend_fixed_t tr_y = thingy - FixedToRendFixed( viewy );
 	
-	gxt = FixedMul(tr_x,viewcos); 
-	gyt = -FixedMul(tr_y,viewsin);
+	rend_fixed_t gxt = RendFixedMul( tr_x, viewcos ); 
+	rend_fixed_t gyt = -RendFixedMul( tr_y, viewsin );
 
-	tz = gxt-gyt; 
+	rend_fixed_t tz = gxt - gyt;
 
 	// thing is behind view plane?
-	if (tz < MINZ)
+	if( tz < MINZ )
 	{
 		return;
 	}
 
-	fixed_t xscale = FixedDiv( RendFixedToFixed( drs_current->xprojection ), tz);
-	fixed_t xiscale = FixedDiv( FRACUNIT, xscale );
-	rend_fixed_t yscale = RendFixedDiv( drs_current->yprojection, FixedToRendFixed( tz ) );
+	rend_fixed_t xscale = RendFixedDiv( drs_current->xprojection, tz );
+	rend_fixed_t xiscale = RendFixedDiv( RENDFRACUNIT, xscale );
+	rend_fixed_t yscale = RendFixedDiv( drs_current->yprojection, tz );
 	
-	gxt = -FixedMul(tr_x,viewsin); 
-	gyt = FixedMul(tr_y,viewcos); 
-	tx = -(gyt+gxt); 
+	gxt = -RendFixedMul( tr_x, viewsin );
+	gyt = RendFixedMul( tr_y, viewcos );
+	rend_fixed_t tx = -( gyt + gxt );
 
 	// too far off the side?
-	if (abs(tx)>(tz<<2))
+	if( abs( tx ) > ( tz << 2 ) )
 	{
 		return;
 	}
@@ -547,8 +527,8 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	if (sprframe->rotate)
 	{
 		// choose a different rotation based on player view
-		ang = R_PointToAngle( FixedToRendFixed( thingx ), FixedToRendFixed( thingy ) );
-		rot = (ang-thingangle+(unsigned)(ANG45/2)*9)>>29;
+		angle_t ang = R_PointToAngle( thingx, thingy );
+		rot = ( ang - thingangle + (uint32_t)( ANG45 / 2 ) * 9 ) >> 29;
 		lump = sprframe->lump[rot];
 		flip = (doombool)sprframe->flip[rot];
 	}
@@ -560,8 +540,8 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	}
 
 	// calculate edges of the shape
-	tx -= spriteoffset[lump];
-	x1 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, xscale ) );
+	tx -= FixedToRendFixed( spriteoffset[lump] );
+	x1 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, xscale ) );
 
 	// off the right side?
 	if (x1 > spritecontext->rightclip)
@@ -569,8 +549,8 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		return;
 	}
 
-	tx += spritewidth[lump];
-	x2 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, xscale ) ) - 1;
+	tx += FixedToRendFixed( spritewidth[lump] );
+	x2 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, xscale ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -583,10 +563,10 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	vis->mobjflags = thing->flags;
 	vis->scale = yscale;
 	vis->iscale = RendFixedDiv( RENDFRACUNIT, yscale );
-	vis->gx = thingx;
-	vis->gy = thingy;
-	vis->gz = thingz;
-	vis->gzt = thingz + spritetopoffset[lump];
+	vis->gx = RendFixedToFixed( thingx );
+	vis->gy = RendFixedToFixed( thingy );
+	vis->gz = RendFixedToFixed( thingz );
+	vis->gzt = RendFixedToFixed( thingz ) + spritetopoffset[lump];
 	vis->texturemid = vis->gzt - viewz;
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
@@ -594,19 +574,19 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	if (flip)
 	{
 		vis->startfrac = spritewidth[lump]-1;
-		vis->xscale = -xscale;
-		vis->xiscale = -xiscale;
+		vis->xscale = RendFixedToFixed( -xscale );
+		vis->xiscale = RendFixedToFixed( -xiscale );
 	}
 	else
 	{
 		vis->startfrac = 0;
-		vis->xscale = xscale;
-		vis->xiscale = xiscale;
+		vis->xscale = RendFixedToFixed( xscale );
+		vis->xiscale = RendFixedToFixed( xiscale );
 	}
 
 	if (vis->x1 > x1)
 	{
-		vis->startfrac += vis->xiscale*(vis->x1-x1);
+		vis->startfrac += vis->xiscale * ( vis->x1 - x1 );
 	}
 	vis->patch = lump;
 
@@ -629,15 +609,14 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	else
 	{
 		// diminished light
-		index = (int32_t)RendFixedMul( FixedToRendFixed( xscale ), drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT;
+		index = (int32_t)RendFixedMul( xscale, drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT;
 
-		if (index >= MAXLIGHTSCALE) 
+		if (index >= MAXLIGHTSCALE)
 			index = MAXLIGHTSCALE-1;
 
-		vis->colormap = spritecontext->spritelights[index];
-	}	
+		vis->colormap = spritecontext->spritelights[ index ];
+	}
 }
-
 
 //
 // R_AddSprites
@@ -688,7 +667,6 @@ void R_AddSprites ( spritecontext_t* spritecontext, sector_t* sec)
 //
 void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* psp )
 {
-	fixed_t			tx;
 	int32_t			x1;
 	int32_t			x2;
 	spritedef_t*	sprdef;
@@ -720,10 +698,10 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	flip = (doombool)sprframe->flip[0];
 
 	// calculate edges of the shape
-	tx = psp->sx - IntToFixed( V_VIRTUALWIDTH / 2 );
+	rend_fixed_t tx = FixedToRendFixed( psp->sx ) - IntToRendFixed( V_VIRTUALWIDTH / 2 );
 	
-	tx -= spriteoffset[lump];	
-	x1 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, drs_current->pspritescalex ) );
+	tx -= FixedToRendFixed( spriteoffset[lump] );	
+	x1 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, FixedToRendFixed( drs_current->pspritescalex ) ) );
 
 	// off the right side
 	if (x1 > spritecontext->rightclip)
@@ -731,8 +709,8 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 		return;
 	}
 
-	tx +=  spritewidth[lump];
-	x2 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, drs_current->pspritescalex ) ) - 1;
+	tx += FixedToRendFixed( spritewidth[lump] );
+	x2 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, FixedToRendFixed( drs_current->pspritescalex ) ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
