@@ -696,7 +696,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	rend_fixed_t tx = FixedToRendFixed( psp->sx ) - IntToRendFixed( V_VIRTUALWIDTH / 2 );
 	
 	tx -= FixedToRendFixed( spriteoffset[lump] );	
-	x1 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, FixedToRendFixed( drs_current->pspritescalex ) ) );
+	x1 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, drs_current->pspritescalex ) );
 
 	// off the right side
 	if (x1 > spritecontext->rightclip)
@@ -705,7 +705,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	}
 
 	tx += FixedToRendFixed( spritewidth[lump] );
-	x2 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, FixedToRendFixed( drs_current->pspritescalex ) ) ) - 1;
+	x2 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, drs_current->pspritescalex ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -724,14 +724,14 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 
 	if (flip)
 	{
-		vis->xscale = FixedToRendFixed( -drs_current->pspritescalex );
-		vis->xiscale = FixedToRendFixed( -drs_current->pspriteiscalex );
+		vis->xscale = -drs_current->pspritescalex;
+		vis->xiscale = -drs_current->pspriteiscalex;
 		vis->startfrac = FixedToRendFixed( spritewidth[lump] - 1 );
 	}
 	else
 	{
-		vis->xscale = FixedToRendFixed( drs_current->pspritescalex );
-		vis->xiscale = FixedToRendFixed( drs_current->pspriteiscalex );
+		vis->xscale = drs_current->pspritescalex;
+		vis->xiscale = drs_current->pspriteiscalex;
 		vis->startfrac = 0;
 	}
 

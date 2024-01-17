@@ -1319,8 +1319,8 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	// psprite scales
 	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( current->frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
 
-	current->pspritescalex	= RendFixedToFixed( RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale ) );
-	current->pspriteiscalex	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale ) );
+	current->pspritescalex	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale );
+	current->pspriteiscalex	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale );
 
 	current->pspritescaley	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, RendFixedMul( adjust, perspectivecorrectscale ) );
 	current->pspriteiscaley	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, RendFixedMul( adjust, perspectivecorrectscale ) );

@@ -538,18 +538,6 @@ typedef struct spritedef_s
 
 } spritedef_t;
 
-typedef struct visplane_s
-{
-	rasterregion_t*		rasterregion;
-	fixed_t				height;
-	int32_t				picnum;
-	int32_t				lightlevel;
-	int16_t				minx;
-	int16_t				maxx;
-	int16_t				miny;
-	int16_t				maxy;
-} visplane_t;
-
 //
 // ClipWallSegment
 // Clips the given range of columns
@@ -633,7 +621,6 @@ typedef struct rastercache_s
 {
 	lighttable_t**		zlight;
 	size_t				sourceoffset;
-	fixed_t				height;
 	rend_fixed_t		distance;
 } rastercache_t;
 
@@ -680,7 +667,7 @@ typedef struct planecontext_s
 	// Common renderer values
 	lighttable_t**		planezlight;
 	int32_t				planezlightindex;
-	fixed_t				planeheight;
+	rend_fixed_t		planeheight;
 
 	rastercache_t*		raster;
 
@@ -806,8 +793,8 @@ typedef struct drsdata_s
 	int32_t				viewheight;
 	int32_t				viewwindowx;
 	int32_t				viewwindowy;
-	fixed_t				pspritescalex;
-	fixed_t				pspriteiscalex;
+	rend_fixed_t		pspritescalex;
+	rend_fixed_t		pspriteiscalex;
 	rend_fixed_t		pspritescaley;
 	rend_fixed_t		pspriteiscaley;
 

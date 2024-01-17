@@ -174,7 +174,7 @@ template< int64_t Width, int64_t Height >
 INLINE void R_Prepare( int32_t y, planecontext_t* planecontext )
 {
 	constexpr int64_t Size = Width * Height;
-	planecontext->raster[ y ].distance		= RendFixedMul( FixedToRendFixed( planecontext->planeheight ), drs_current->yslope[ y ] );
+	planecontext->raster[ y ].distance		= RendFixedMul( planecontext->planeheight, drs_current->yslope[ y ] );
 
 	// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
 	//if( planecontext->planezlight != planecontext->raster[ y ].zlight )
@@ -217,7 +217,6 @@ INLINE void ChooseRasteriser( planecontext_t* planecontext, rasterregion_t* regi
 	rend_fixed_t view_x = FixedToRendFixed( viewx );
 	rend_fixed_t view_y = FixedToRendFixed( viewy );
 
-	int32_t stop = region->maxx + 1;
 	int32_t x = region->minx;
 
 	for( rasterline_t& line : Lines( region ) )
@@ -235,7 +234,7 @@ requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
 INLINE void ChooseRegionWidthHeightRasteriser( planecontext_t* planecontext, rasterregion_t* thisregion )
 {
 	{
-		planecontext->planeheight = abs( RendFixedToFixed( thisregion->height ) - viewz );
+		planecontext->planeheight = abs( thisregion->height - FixedToRendFixed( viewz ) );
 		int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
 	
 		planecontext->planezlightindex = light;
