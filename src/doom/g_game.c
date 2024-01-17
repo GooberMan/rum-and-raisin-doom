@@ -926,10 +926,14 @@ void G_Ticker (void)
 
 	    memcpy(cmd, &netcmds[i], sizeof(ticcmd_t));
 
-	    if (demoplayback) 
-		G_ReadDemoTiccmd (cmd); 
-	    if (demorecording) 
-		G_WriteDemoTiccmd (cmd);
+		if (demoplayback)
+		{
+			G_ReadDemoTiccmd (cmd);
+		}
+		if (demorecording)
+		{
+			G_WriteDemoTiccmd (cmd);
+		}
 	    
 	    // check for turbo cheats
 

@@ -90,4 +90,14 @@ void D_GameflowCheckAndParseMapinfos( void )
 		D_GameflowParseDMAPINFO( lumpnum );
 		I_TerminalPrintf( Log_Startup, "  DMAPINFO gameflow defined\n" );
 	}
+	else if( ( lumpnum = W_CheckNumForName( "ZMAPINFO" ) ) >= 0 )
+	{
+		//D_GameflowParseDMAPINFO( lumpnum );
+		I_TerminalPrintf( Log_Warning, "  ZMAPINFO gameflow defined, unimplemented\n" );
+	}
+	else if( ( lumpnum = W_CheckNumForName( "MAPINFO" ) ) >= 0 )
+	{
+		//D_GameflowParseDMAPINFO( lumpnum );
+		I_TerminalPrintf( Log_Warning, "  MAPINFO gameflow defined, unimplemented\n" );
+	}
 }

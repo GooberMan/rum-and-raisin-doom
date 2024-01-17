@@ -688,6 +688,12 @@ static void BuildNewGameInfo()
 		bool setfirstmap = false;
 		if( map.episode == setboolean::True )
 		{
+			if( map.mapname.size() >= 2
+				&& std::toupper( map.mapname[0] ) == 'E'
+				&& std::isdigit( map.mapname[1] ) )
+			{
+				newepisodenum = map.mapname[1] - '0' - 1;
+			}
 			map.episode_num = ++newepisodenum;
 			newmapnum = 0;
 
