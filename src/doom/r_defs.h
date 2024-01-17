@@ -798,7 +798,7 @@ typedef struct drsdata_s
 	int32_t				centerx;
 	int32_t				centery;
 	fixed_t				centerxfrac;
-	fixed_t				centeryfrac;
+	rend_fixed_t		centeryfrac;
 	rend_fixed_t		xprojection;
 	rend_fixed_t		yprojection;
 	int32_t				viewwidth;
@@ -810,6 +810,9 @@ typedef struct drsdata_s
 	fixed_t				pspriteiscalex;
 	rend_fixed_t		pspritescaley;
 	rend_fixed_t		pspriteiscaley;
+
+	rend_fixed_t		skyscaley;
+	rend_fixed_t		skyiscaley;
 
 	int32_t*			viewangletox;
 	angle_t*			xtoviewangle;

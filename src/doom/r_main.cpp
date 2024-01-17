@@ -1344,7 +1344,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	current->centery = current->viewheight / 2;
 	current->centerx = current->viewwidth / 2;
 	current->centerxfrac = IntToFixed( current->centerx );
-	current->centeryfrac = IntToFixed( current->centery );
+	current->centeryfrac = IntToRendFixed( current->centery );
 	current->xprojection = RendFixedMul( FixedToRendFixed( current->centerxfrac ), perspective_mul );
 	current->yprojection = RendFixedMul( adjust, current->xprojection );
 

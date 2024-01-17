@@ -385,7 +385,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	frac = vis->startfrac;
 	spritecontext->spryscale = vis->scale;
 	spritecontext->spryiscale = vis->iscale;
-	spritecontext->sprtopscreen = FixedToRendFixed( drs_current->centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
+	spritecontext->sprtopscreen = drs_current->centeryfrac - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
 	
 	prevfuzzcolumn = -1;
 	for (spritecolcontext.x=vis->x1 ; spritecolcontext.x<=vis->x2 ; spritecolcontext.x++, frac += vis->xiscale)

@@ -187,7 +187,7 @@ DOOM_C_API void R_RenderMaskedSegRange( vbuffer_t* dest, bspcontext_t* bspcontex
 		// calculate lighting
 		if (maskedtexturecol[spritecolcontext.x] != MASKEDTEXCOL_INVALID)
 		{
-			spritecontext->sprtopscreen = FixedToRendFixed( drs_current->centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
+			spritecontext->sprtopscreen = drs_current->centeryfrac - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
 			spritecolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), spritecontext->spryscale );
 
 			if( !fixedcolormap )
@@ -821,10 +821,10 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 		worldbottom >>= 4;
 	
 		loopcontext.topstep = -RendFixedMul( wallcontext->scalestep, worldtop );
-		loopcontext.topfrac = FixedToRendFixed( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldtop, wallcontext->scale );
+		loopcontext.topfrac = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldtop, wallcontext->scale );
 
 		loopcontext.bottomstep = -RendFixedMul( wallcontext->scalestep, worldbottom );
-		loopcontext.bottomfrac = FixedToRendFixed( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext->scale );
+		loopcontext.bottomfrac = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext->scale );
 	
 		if (bspcontext->backsector)
 		{	
@@ -833,13 +833,13 @@ DOOM_C_API void R_StoreWallRange( vbuffer_t* dest, bspcontext_t* bspcontext, pla
 
 			if (worldhigh < worldtop)
 			{
-				loopcontext.pixhigh = FixedToRendFixed( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldhigh, wallcontext->scale );
+				loopcontext.pixhigh = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldhigh, wallcontext->scale );
 				loopcontext.pixhighstep = -RendFixedMul( wallcontext->scalestep, worldhigh );
 			}
 	
 			if (worldlow > worldbottom)
 			{
-				loopcontext.pixlow = FixedToRendFixed( drs_current->centeryfrac >> 4) - RendFixedMul( worldlow, wallcontext->scale );
+				loopcontext.pixlow = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldlow, wallcontext->scale );
 				loopcontext.pixlowstep = -RendFixedMul( wallcontext->scalestep, worldlow );
 			}
 		}
