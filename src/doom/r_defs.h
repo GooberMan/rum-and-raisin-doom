@@ -797,7 +797,7 @@ typedef struct drsdata_s
 	angle_t				clipangle;
 	int32_t				centerx;
 	int32_t				centery;
-	fixed_t				centerxfrac;
+	rend_fixed_t		centerxfrac;
 	rend_fixed_t		centeryfrac;
 	rend_fixed_t		xprojection;
 	rend_fixed_t		yprojection;
@@ -881,6 +881,13 @@ typedef enum windowclose_e
 
 #if defined( __cplusplus )
 }
+
+struct constants
+{
+	static constexpr double_t pi = 3.1415926535897932384626433832795;
+	static constexpr double_t degtorad = pi / 180.0;
+	static constexpr double_t radtodeg = 180.0 / pi;
+};
 
 struct RegionRange
 {

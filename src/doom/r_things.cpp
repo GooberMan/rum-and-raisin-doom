@@ -561,7 +561,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 
 	// calculate edges of the shape
 	tx -= spriteoffset[lump];
-	x1 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, xscale ) );
+	x1 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, xscale ) );
 
 	// off the right side?
 	if (x1 > spritecontext->rightclip)
@@ -570,7 +570,7 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	}
 
 	tx += spritewidth[lump];
-	x2 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, xscale) ) - 1;
+	x2 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, xscale ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -723,7 +723,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	tx = psp->sx - IntToFixed( V_VIRTUALWIDTH / 2 );
 	
 	tx -= spriteoffset[lump];	
-	x1 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescalex ) );
+	x1 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, drs_current->pspritescalex ) );
 
 	// off the right side
 	if (x1 > spritecontext->rightclip)
@@ -732,7 +732,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	}
 
 	tx +=  spritewidth[lump];
-	x2 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescalex ) ) - 1;
+	x2 = FixedToInt( RendFixedToFixed( drs_current->centerxfrac ) + FixedMul( tx, drs_current->pspritescalex ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)

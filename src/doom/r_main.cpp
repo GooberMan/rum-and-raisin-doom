@@ -701,25 +701,21 @@ void R_InitTables (void)
 {
 #if RENDERQUALITYSHIFT > 0
     int32_t		i;
-    float_t		a;
-    float_t		fv;
-    int32_t		t;
     
     // viewangle tangent table
     for (i=0 ; i< RENDERFINETANGENTCOUNT ; i++)
     {
-		a = (float_t)( (i-RENDERFINEANGLES/4+0.5)*PI*2/RENDERFINEANGLES );
-		fv = (float_t)( FRACUNIT*tan(a) );
-		t = (int32_t)fv;
-		renderfinetangent[i] = t;
+		double_t a = (double_t)( ( i - RENDERFINEANGLES / 4 + 0.5 ) * constants::pi * 2 / RENDERFINEANGLES );
+		double_t fv = tan(a);
+		renderfinetangent[i] = DoubleToRendFixed(fv);
     }
     
     // finesine table
     for (i=0 ; i < RENDERFINESINECOUNT ; i++)
     {
 		// OPTIMIZE: mirror...
-		a = (float_t)( (i+0.5)*PI*2/RENDERFINEANGLES );
-		t = (int32_t)( FRACUNIT*sin (a) );
+		float_t a = (float_t)( (i+0.5)*PI*2/RENDERFINEANGLES );
+		int32_t t = (int32_t)( FRACUNIT*sin (a) );
 		renderfinesine[i] = t;
     }
 #endif // RENDERQUALITYSHIFT > 0
@@ -843,30 +839,28 @@ void R_AllocDynamicTables( void )
 //
 void R_InitTextureMapping( drsdata_t* current )
 {
-	int			i;
-	int			x;
-	int			t;
-	fixed_t		focallength;
-    
+	int				i;
+	int				x;
+	int32_t			t;
 	// Use tangent table to generate viewangletox:
 	//  viewangletox will give the next greatest x
 	//  after the view angle.
 	//
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
-	focallength = FixedDiv( current->centerxfrac,
+	rend_fixed_t focallength = RendFixedDiv( current->centerxfrac,
 				renderfinetangent[ RENDERFINEANGLES / 4 + RENDERFIELDOFVIEW / 2 ] );
 	
 	for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
 	{
-		if ( renderfinetangent[i] > IntToFixed( 8 ) )
+		if ( renderfinetangent[i] > IntToRendFixed( 8 ) )
 			t = -1;
-		else if ( renderfinetangent[i] < IntToFixed( -8 ) )
+		else if ( renderfinetangent[i] < IntToRendFixed( -8 ) )
 			t = current->viewwidth+1;
 		else
 		{
-			t = FixedMul (renderfinetangent[i], focallength);
-			t = FixedToInt( (current->centerxfrac - t+FRACUNIT-1) );
+			rend_fixed_t scaled = RendFixedMul( renderfinetangent[i], focallength );
+			t = RendFixedToInt( ( current->centerxfrac - scaled + RENDFRACUNIT - 1 ) );
 
 			if (t < -1)
 				t = -1;
@@ -1311,12 +1305,9 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 	int32_t actualheight = (int32_t)( current->frame_height * ( render_post_scaling ? 1.2 : 1.0 ) );
 
-	constexpr double_t degtorad = 3.1415926535897932384626433832795 / 180.0;
-	constexpr double_t radtodeg = 180.0 / 3.1415926535897932384626433832795;
-
-	double_t vertical_fov_rad = vertical_fov_degrees * degtorad;
+	double_t vertical_fov_rad = vertical_fov_degrees * constants::degtorad;
 	double_t horizontal_fov_rad = 2.0 * atan( tan( vertical_fov_rad * 0.5 ) * ( (double_t)current->frame_width / (double_t)actualheight) );
-	horizontal_fov_degrees = horizontal_fov_rad * radtodeg;
+	horizontal_fov_degrees = horizontal_fov_rad * constants::radtodeg;
 	double_t perspective_mul_float = 1.0 / tan( horizontal_fov_rad * 0.5 );
 
 	rend_fixed_t perspective_mul = DoubleToRendFixed( perspective_mul_float );
@@ -1343,9 +1334,9 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 	current->centery = current->viewheight / 2;
 	current->centerx = current->viewwidth / 2;
-	current->centerxfrac = IntToFixed( current->centerx );
+	current->centerxfrac = IntToRendFixed( current->centerx );
 	current->centeryfrac = IntToRendFixed( current->centery );
-	current->xprojection = RendFixedMul( FixedToRendFixed( current->centerxfrac ), perspective_mul );
+	current->xprojection = RendFixedMul( current->centerxfrac, perspective_mul );
 	current->yprojection = RendFixedMul( adjust, current->xprojection );
 
 	colfuncbase = COLFUNC_NUM;

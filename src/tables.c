@@ -43,7 +43,7 @@
 #if RENDERQUALITYSHIFT > 0
 	fixed_t renderfinesine[ RENDERFINESINECOUNT ];
 	fixed_t *renderfinecosine = &renderfinesine[ RENDERFINEANGLES / 4 ];
-	fixed_t renderfinetangent[ RENDERFINETANGENTCOUNT ];
+	rend_fixed_t renderfinetangent[ RENDERFINETANGENTCOUNT ];
 #endif // RENDERQUALITYSHIFT > 0
 
 #if RENDERSLOPEQUALITYSHIFT > 0

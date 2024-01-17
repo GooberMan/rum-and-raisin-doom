@@ -114,7 +114,7 @@ int SlopeDiv_Playsim(unsigned int num, unsigned int den);
 
 	extern fixed_t						renderfinesine[ RENDERFINESINECOUNT ];
 	extern fixed_t						*renderfinecosine;
-	extern fixed_t						renderfinetangent[ RENDERFINETANGENTCOUNT ];
+	extern rend_fixed_t					renderfinetangent[ RENDERFINETANGENTCOUNT ];
 #else // RENDERQUALITYSHIFT <= 0
 	#define RENDERFINEANGLES			FINEANGLES
 	#define RENDERFINEMASK				FINEMASK

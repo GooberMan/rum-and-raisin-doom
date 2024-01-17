@@ -331,7 +331,7 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 			// calculate texture offset
 			// Some walls seem to face backwards anyway, so mask out the angle to the range we want
 			angle = ( (wallcontext->centerangle + drs_current->xtoviewangle[currx])>>RENDERANGLETOFINESHIFT) & ( RENDERFINEMASK >> 1 );
-			texturecolumn = RendFixedToInt( wallcontext->offset - RendFixedMul( FixedToRendFixed( renderfinetangent[angle] ), wallcontext->distance ) );
+			texturecolumn = RendFixedToInt( wallcontext->offset - RendFixedMul( renderfinetangent[ angle ], wallcontext->distance ) );
 			// calculate lighting
 			index = RendFixedMul( wallcontext->scale, drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT;
 
