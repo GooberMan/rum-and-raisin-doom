@@ -62,7 +62,7 @@ extern "C"
 
 	// Fineangles in the SCREENWIDTH wide window.
 	// If we define this as FINEANGLES / 4 then we get auto 90 degrees everywhere
-	#define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( field_of_view_degrees * 100 ) / 36000 )
+	#define RENDERFIELDOFVIEW		( RENDERFINEANGLES * ( horizontal_fov_degrees * 100 ) / 36000 )
 
 	#define DEFAULT_RENDERCONTEXTS 4
 	#define DEFAULT_MAXRENDERCONTEXTS 8
@@ -81,7 +81,8 @@ extern "C"
 
 	renderdata_t*			renderdatas;
 
-	int32_t					field_of_view_degrees = 90;
+	int32_t					horizontal_fov_degrees = 90;
+	int32_t					vertical_fov_degrees = 74;
 
 	int32_t					maxrendercontexts = DEFAULT_MAXRENDERCONTEXTS;
 	int32_t					num_render_contexts = -1;
@@ -679,7 +680,7 @@ rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, an
 	// both sines are allways positive
 	sinea = FixedToRendFixed( renderfinesine[ anglea >> RENDERANGLETOFINESHIFT ] );
 	sineb = FixedToRendFixed( renderfinesine[ angleb >> RENDERANGLETOFINESHIFT ] );
-	num = RendFixedMul( drs_current->projection, sineb );
+	num = RendFixedMul( drs_current->yprojection, sineb );
 	den = RendFixedMul( distance, sinea );
 
 	if (den >= 0 && den > RendFixedToInt( num ) )
@@ -1093,8 +1094,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	}
 	else if( voidcleartype == Void_Sky )
 	{
-		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->pspriteiscale  >> 12 ), 15 ) ];
-		skycontext.iscale = FixedToRendFixed( drs_current->pspriteiscale );
+		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->pspriteiscaley >> 16 ), 15 ) ];
+		skycontext.iscale = drs_current->pspriteiscaley;
 		skycontext.texturemid = skytexturemid;
 		skycontext.output = rendercontext->buffer;
 		skycontext.output.data += skycontext.output.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
@@ -1297,7 +1298,7 @@ R_SetViewSize
 //
 // R_ExecuteSetViewSize
 //
-
+#pragma optimize("", off)
 void R_ExecuteSetViewSizeFor( drsdata_t* current )
 {
 	int32_t				i;
@@ -1308,20 +1309,17 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 	R_InitLightTables( current );
 
-	int32_t actualheight = render_post_scaling ? (int32_t)( current->frame_height * 1.2 ) : current->frame_height;
+	int32_t actualheight = (int32_t)( current->frame_height * ( render_post_scaling ? 1.2 : 1.0 ) );
 
-	rend_fixed_t		original_perspective	= RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
-	rend_fixed_t		current_perspective		= RendFixedDiv( IntToRendFixed( current->frame_width ), IntToRendFixed( current->frame_height ) );
-	rend_fixed_t		perspective_mul			= RendFixedDiv( original_perspective, current_perspective );
+	constexpr double_t degtorad = 3.1415926535897932384626433832795 / 180.0;
+	constexpr double_t radtodeg = 180.0 / 3.1415926535897932384626433832795;
 
-	rend_fixed_t		tan_fov = RendFixedDiv( current_perspective >> 1, original_perspective >> 1 );
+	double_t vertical_fov_rad = vertical_fov_degrees * degtorad;
+	double_t horizontal_fov_rad = 2.0 * atan( tan( vertical_fov_rad * 0.5 ) * ( (double_t)current->frame_width / (double_t)actualheight) );
+	horizontal_fov_degrees = horizontal_fov_rad * radtodeg;
+	double_t perspective_mul_float = 1.0 / tan( horizontal_fov_rad * 0.5 );
 
-	// Widescreen support needs this
-	float_t		float_tan_fov = (float)tan_fov / (float)RENDFRACUNIT;
-	float_t		float_fov = ( atanf( float_tan_fov ) * 2.f ) / 3.1415926f * 180.f;
-
-	field_of_view_degrees = (int32_t)float_fov;
-	//int32_t		new_fov = FixedToInt( rendertantoangle[ tan_fov >> RENDERDBITS ] );
+	rend_fixed_t perspective_mul = DoubleToRendFixed( perspective_mul_float );
 
 	setsizeneeded = false;
 
@@ -1341,11 +1339,14 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 	current->viewwidth = current->scaledviewwidth;
 
-	current->centery = current->viewheight /2;
-	current->centerx = current->viewwidth /2;
+	rend_fixed_t adjust = DoubleToRendFixed( render_post_scaling ? 1.0 : 1.2 );
+
+	current->centery = current->viewheight / 2;
+	current->centerx = current->viewwidth / 2;
 	current->centerxfrac = IntToFixed( current->centerx );
 	current->centeryfrac = IntToFixed( current->centery );
-	current->projection = RendFixedMul( FixedToRendFixed( current->centerxfrac ), perspective_mul );
+	current->xprojection = RendFixedMul( FixedToRendFixed( current->centerxfrac ), perspective_mul );
+	current->yprojection = RendFixedMul( adjust, current->xprojection );
 
 	colfuncbase = COLFUNC_NUM;
 	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
@@ -1357,8 +1358,11 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	// psprite scales
 	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( current->frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
 
-	current->pspritescale	= RendFixedToFixed( RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale ) );
-	current->pspriteiscale	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale ) );
+	current->pspritescalex	= RendFixedToFixed( RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale ) );
+	current->pspriteiscalex	= RendFixedToFixed( RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale ) );
+
+	current->pspritescaley	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, RendFixedMul( adjust, perspectivecorrectscale ) );
+	current->pspriteiscaley	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, RendFixedMul( adjust, perspectivecorrectscale ) );
 
 	for (i=0 ; i<current->viewwidth ; i++)
 	{
@@ -1366,11 +1370,15 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 		current->negonearray[i] = -1;
 	}
 
-	for (i=0 ; i<current->viewheight ; i++)
+	rend_fixed_t pixel_height = DoubleToRendFixed( render_post_scaling ? 1.0 : ( 1.0 / 1.2 ) );
+	rend_fixed_t horizon = IntToRendFixed( current->viewheight / 2 );
+	rend_fixed_t half_width = IntToRendFixed( current->viewwidth / 2 );
+
+	for ( int32_t row = 0; row < current->viewheight; ++row )
 	{
-		rend_fixed_t dy = IntToRendFixed( i- current->viewheight / 2 ) + RENDFRACUNIT / 2;
+		rend_fixed_t dy = RendFixedMul( IntToRendFixed( row ) - horizon, pixel_height ) + ( RENDFRACUNIT / 2 );
 		dy = llabs( dy );
-		current->yslope[ i ] = RendFixedMul( RendFixedDiv( IntToRendFixed( current->viewwidth / 2 ), dy ), perspective_mul );
+		current->yslope[ row ] = RendFixedMul( RendFixedDiv( half_width, dy ), perspective_mul );
 	}
 	
 	for ( i=0 ; i<current->viewwidth ; i++ )
@@ -1411,10 +1419,11 @@ void R_ExecuteSetViewSize( void )
 		R_ExecuteSetViewSizeFor( &curr );
 	}
 
-	R_ExecuteSetViewSizeFor( drs_data );
+//	R_ExecuteSetViewSizeFor( drs_data );
 
 	R_DRSApply( drs_data );
 }
+#pragma optimize("", on)
 
 void R_RenderUpdateFrameSize( void )
 {
@@ -1648,7 +1657,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igText( "Debug options" );
 	igSeparator();
 	igCheckbox( "Visualise split", (bool*)&rendersplitvisualise );
-	if( igSliderInt( "Horizontal FOV", &field_of_view_degrees, 60, 160, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+	if( igSliderInt( "Horizontal FOV", &horizontal_fov_degrees, 60, 160, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 	{
 		R_ExecuteSetViewSize( );
 	}

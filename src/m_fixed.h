@@ -114,7 +114,7 @@ INLINE rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixe
 #define FixedToRendFixed( x ) ( (rend_fixed_t)( x ) << RENDFRACTOFRACBITS )
 #define RendFixedToFixed( x ) ( (fixed_t)RENDFRACFILLFIXED( ( x ) >> RENDFRACTOFRACBITS, ( x ) ) )
 
-#define DoubleToRendFixed( x ) ( IntToRendFixed( (rend_fixed_t)( floor( x ) ) ) | (rend_fixed_t)( ( x - floor( x ) ) * RENDFRACUNIT ) )
+#define DoubleToRendFixed( x ) ( (rend_fixed_t)( ( x ) * RENDFRACUNIT ) )
 
 #include "m_fixed.inl"
 

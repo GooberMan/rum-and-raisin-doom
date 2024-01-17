@@ -477,7 +477,8 @@ typedef struct vissprite_s
 	// horizontal position of x1
 	fixed_t				startfrac;
 
-	fixed_t				scale;
+	rend_fixed_t		scale;
+	rend_fixed_t		iscale;
 
 	// negative if flipped
 	fixed_t				xiscale;
@@ -798,14 +799,17 @@ typedef struct drsdata_s
 	int32_t				centery;
 	fixed_t				centerxfrac;
 	fixed_t				centeryfrac;
-	rend_fixed_t		projection;
+	rend_fixed_t		xprojection;
+	rend_fixed_t		yprojection;
 	int32_t				viewwidth;
 	int32_t				scaledviewwidth;
 	int32_t				viewheight;
 	int32_t				viewwindowx;
 	int32_t				viewwindowy;
-	fixed_t				pspritescale;
-	fixed_t				pspriteiscale;
+	fixed_t				pspritescalex;
+	fixed_t				pspriteiscalex;
+	rend_fixed_t		pspritescaley;
+	rend_fixed_t		pspriteiscaley;
 
 	int32_t*			viewangletox;
 	angle_t*			xtoviewangle;
@@ -865,6 +869,12 @@ typedef enum disciconstyle_e
 
 	Disk_Count,
 } disciconstyle_t;
+
+typedef enum windowclose_e
+{
+	WindowClose_Always,
+	WindowClose_Ask,
+} windowclose_t;
 
 #if defined( __cplusplus )
 }

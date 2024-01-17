@@ -882,7 +882,15 @@ static default_t extra_defaults_list[] =
     // Lighting boost.
     //
 
-	CONFIG_VARIABLE_INT(additional_light_boost),
+    CONFIG_VARIABLE_INT(additional_light_boost),
+
+    //!
+    // @game doom
+    //
+    // Control whether closing the window asks if you want to quit Vanilla style.
+    //
+
+    CONFIG_VARIABLE_INT(window_close_behavior),
 
     //!
     // @game doom

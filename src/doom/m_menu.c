@@ -146,6 +146,7 @@ doombool			inhelpscreens;
 doombool			menuactive;
 extern int32_t	dashboardopensound;
 extern int32_t	dashboardclosesound;
+extern int32_t	window_close_behavior;
 
 
 #define SKULLXOFF		-32
@@ -1482,7 +1483,7 @@ doombool M_Responder (event_t* ev)
         // First click on close button = bring up quit confirm message.
         // Second click on close button = confirm quit
 
-		if( dashboardactive )
+		if( dashboardactive || window_close_behavior == WindowClose_Always )
 		{
 			I_Quit();
 		}
@@ -2244,6 +2245,8 @@ uint8_t defaultpalette[] =
 
 typedef enum resolutioncat_e
 {
+	res_named,
+
 	res_4_3,
 	res_16_9,
 	res_21_9,
@@ -2253,25 +2256,23 @@ typedef enum resolutioncat_e
 	res_post_16_9,
 	res_post_21_9,
 	res_post_32_9,
-
-	res_named,
 	
 	res_unknown,
 } resolutioncat_t;
 
 static const char* resolutioncatstrings[] =
 {
-	"4:3",
-	"16:9",
-	"21:9",
-	"32:9",
+	"Make it look like",
+
+	"4:3 native",
+	"16:9 native",
+	"21:9 native",
+	"32:9 native",
 
 	"4:3 post-scaled",
 	"16:9 post-scaled",
 	"21:9 post-scaled",
 	"32:9 post-scaled",
-
-	"Make it look like"
 };
 
 typedef struct windowsizes_s
@@ -2294,7 +2295,7 @@ static windowsizes_t window_size_match =
 	-1,
 	-1,
 	res_unknown,
-	1,
+	0,
 	"Match window"
 };
 
@@ -2333,81 +2334,81 @@ static const char* window_dimensions_current = NULL;
 
 static windowsizes_t render_sizes[] =
 {
-	WINDOWDIM_SCALED( 320,		200,	res_post_4_3	),
-	WINDOWDIM_SCALED( 426,		200,	res_post_16_9	),
-	WINDOWDIM_SCALED( 560,		200,	res_post_21_9	),
-	WINDOWDIM_SCALED( 854,		200,	res_post_32_9	),
-	WINDOWDIM_SCALED( 640,		400,	res_post_4_3	),
-	WINDOWDIM_SCALED( 854,		400,	res_post_16_9	),
-	WINDOWDIM_SCALED( 1120,		400,	res_post_21_9	),
-	WINDOWDIM_SCALED( 1706,		400,	res_post_32_9	),
-	WINDOWDIM_SCALED( 1280,		800,	res_post_4_3	),
-	WINDOWDIM_SCALED( 1706,		800,	res_post_16_9	),
-	WINDOWDIM_SCALED( 2240,		800,	res_post_21_9	),
-	WINDOWDIM_SCALED( 3414,		800,	res_post_32_9	),
-	WINDOWDIM_SCALED( 1440,		900,	res_post_4_3	),
-	WINDOWDIM_SCALED( 1920,		900,	res_post_16_9	),
-	WINDOWDIM_SCALED( 2520,		900,	res_post_21_9	),
-	WINDOWDIM_SCALED( 3840,		900,	res_post_32_9	),
-	WINDOWDIM_SCALED( 1600,		1000,	res_post_4_3	),
-	WINDOWDIM_SCALED( 2132,		1000,	res_post_16_9	),
-	WINDOWDIM_SCALED( 2800,		1000,	res_post_21_9	),
-	WINDOWDIM_SCALED( 4266,		1000,	res_post_32_9	),
-	WINDOWDIM_SCALED( 1920,		1200,	res_post_4_3	),
-	WINDOWDIM_SCALED( 2560,		1200,	res_post_16_9	),
-	WINDOWDIM_SCALED( 3360,		1200,	res_post_21_9	),
-	WINDOWDIM_SCALED( 5120,		1200,	res_post_32_9	),
-	WINDOWDIM_SCALED( 2560,		1600,	res_post_4_3	),
-	WINDOWDIM_SCALED( 3414,		1600,	res_post_16_9	),
-	WINDOWDIM_SCALED( 4480,		1600,	res_post_21_9	),
-	WINDOWDIM_SCALED( 2880,		1800,	res_post_4_3	),
-	WINDOWDIM_SCALED( 3840,		1800,	res_post_16_9	),
-	WINDOWDIM_SCALED( 5040,		1800,	res_post_21_9	),
-	WINDOWDIM_SCALED( 3200,		2000,	res_post_4_3	),
-	WINDOWDIM_SCALED( 4266,		2000,	res_post_16_9	),
-	WINDOWDIM_SCALED( 5600,		2000,	res_post_21_9	),
+	WINDOWDIM_SCALED(	320,		200,	res_post_4_3	),
+	WINDOWDIM_SCALED(	426,		200,	res_post_16_9	),
+	WINDOWDIM_SCALED(	560,		200,	res_post_21_9	),
+	WINDOWDIM_SCALED(	854,		200,	res_post_32_9	),
+	WINDOWDIM_SCALED(	640,		400,	res_post_4_3	),
+	WINDOWDIM_SCALED(	854,		400,	res_post_16_9	),
+	WINDOWDIM_SCALED(	1120,		400,	res_post_21_9	),
+	WINDOWDIM_SCALED(	1706,		400,	res_post_32_9	),
+	WINDOWDIM_SCALED(	1280,		800,	res_post_4_3	),
+	WINDOWDIM_SCALED(	1706,		800,	res_post_16_9	),
+	WINDOWDIM_SCALED(	2240,		800,	res_post_21_9	),
+	WINDOWDIM_SCALED(	3414,		800,	res_post_32_9	),
+	WINDOWDIM_SCALED(	1440,		900,	res_post_4_3	),
+	WINDOWDIM_SCALED(	1920,		900,	res_post_16_9	),
+	WINDOWDIM_SCALED(	2520,		900,	res_post_21_9	),
+	WINDOWDIM_SCALED(	3840,		900,	res_post_32_9	),
+	WINDOWDIM_SCALED(	1600,		1000,	res_post_4_3	),
+	WINDOWDIM_SCALED(	2132,		1000,	res_post_16_9	),
+	WINDOWDIM_SCALED(	2800,		1000,	res_post_21_9	),
+	WINDOWDIM_SCALED(	4266,		1000,	res_post_32_9	),
+	WINDOWDIM_SCALED(	1920,		1200,	res_post_4_3	),
+	WINDOWDIM_SCALED(	2560,		1200,	res_post_16_9	),
+	WINDOWDIM_SCALED(	3360,		1200,	res_post_21_9	),
+	WINDOWDIM_SCALED(	5120,		1200,	res_post_32_9	),
+	WINDOWDIM_SCALED(	2560,		1600,	res_post_4_3	),
+	WINDOWDIM_SCALED(	3414,		1600,	res_post_16_9	),
+	WINDOWDIM_SCALED(	4480,		1600,	res_post_21_9	),
+	WINDOWDIM_SCALED(	2880,		1800,	res_post_4_3	),
+	WINDOWDIM_SCALED(	3840,		1800,	res_post_16_9	),
+	WINDOWDIM_SCALED(	5040,		1800,	res_post_21_9	),
+	WINDOWDIM_SCALED(	3200,		2000,	res_post_4_3	),
+	WINDOWDIM_SCALED(	4266,		2000,	res_post_16_9	),
+	WINDOWDIM_SCALED(	5600,		2000,	res_post_21_9	),
 
-	// WINDOWDIM(	320,		240,	res_4_3		),
-	// WINDOWDIM(	426,		240,	res_16_9	),
-	// WINDOWDIM(	560,		240,	res_21_9	),
-	// WINDOWDIM(	854,		240,	res_32_9	),
-	// WINDOWDIM(	640,		480,	res_4_3		),
-	// WINDOWDIM(	854,		480,	res_16_9	),
-	// WINDOWDIM(	1120,		480,	res_21_9	),
-	// WINDOWDIM(	1706,		480,	res_32_9	),
-	// WINDOWDIM(	960,		720,	res_4_3		),
-	// WINDOWDIM(	1280,		720,	res_16_9	),
-	// WINDOWDIM(	1680,		720,	res_21_9	),
-	// WINDOWDIM(	2560,		720,	res_32_9	),
-	// WINDOWDIM(	1200,		900,	res_4_3		),
-	// WINDOWDIM(	1600,		900,	res_16_9	),
-	// WINDOWDIM(	2100,		900,	res_21_9	),
-	// WINDOWDIM(	3200,		900,	res_32_9	),
-	// WINDOWDIM(	1280,		960,	res_4_3		),
-	// WINDOWDIM(	1706,		960,	res_16_9	),
-	// WINDOWDIM(	2240,		960,	res_21_9	),
-	// WINDOWDIM(	3414,		960,	res_32_9	),
-	// WINDOWDIM(	1440,		1080,	res_4_3		),
-	// WINDOWDIM(	1920,		1080,	res_16_9	),
-	// WINDOWDIM(	2520,		1080,	res_21_9	),
-	// WINDOWDIM(	3840,		1080,	res_32_9	),
-	// WINDOWDIM(	1600,		1200,	res_4_3		),
-	// WINDOWDIM(	2132,		1200,	res_16_9	),
-	// WINDOWDIM(	2800,		1200,	res_21_9	),
-	// WINDOWDIM(	4266,		1200,	res_32_9	),
-	// WINDOWDIM(	1920,		1440,	res_4_3		),
-	// WINDOWDIM(	2560,		1440,	res_16_9	),
-	// WINDOWDIM(	3360,		1440,	res_21_9	),
-	// WINDOWDIM(	5120,		1440,	res_32_9	),
-	// WINDOWDIM(	2560,		1820,	res_4_3		),
-	// WINDOWDIM(	3414,		1820,	res_16_9	),
-	// WINDOWDIM(	4480,		1820,	res_21_9	),
-	// WINDOWDIM(	2880,		2160,	res_4_3		),
-	// WINDOWDIM(	3840,		2160,	res_16_9	),
-	// WINDOWDIM(	5040,		2160,	res_21_9	),
-	// WINDOWDIM(	3200,		2400,	res_4_3		),
-	// WINDOWDIM(	4266,		2400,	res_16_9	),
-	// WINDOWDIM(	5600,		2400,	res_21_9	),
+	WINDOWDIM(			320,		240,	res_4_3		),
+	WINDOWDIM(			426,		240,	res_16_9	),
+	WINDOWDIM(			560,		240,	res_21_9	),
+	WINDOWDIM(			854,		240,	res_32_9	),
+	WINDOWDIM(			640,		480,	res_4_3		),
+	WINDOWDIM(			854,		480,	res_16_9	),
+	WINDOWDIM(			1120,		480,	res_21_9	),
+	WINDOWDIM(			1706,		480,	res_32_9	),
+	WINDOWDIM(			960,		720,	res_4_3		),
+	WINDOWDIM(			1280,		720,	res_16_9	),
+	WINDOWDIM(			1680,		720,	res_21_9	),
+	WINDOWDIM(			2560,		720,	res_32_9	),
+	WINDOWDIM(			1200,		900,	res_4_3		),
+	WINDOWDIM(			1600,		900,	res_16_9	),
+	WINDOWDIM(			2100,		900,	res_21_9	),
+	WINDOWDIM(			3200,		900,	res_32_9	),
+	WINDOWDIM(			1280,		960,	res_4_3		),
+	WINDOWDIM(			1706,		960,	res_16_9	),
+	WINDOWDIM(			2240,		960,	res_21_9	),
+	WINDOWDIM(			3414,		960,	res_32_9	),
+	WINDOWDIM(			1440,		1080,	res_4_3		),
+	WINDOWDIM(			1920,		1080,	res_16_9	),
+	WINDOWDIM(			2520,		1080,	res_21_9	),
+	WINDOWDIM(			3840,		1080,	res_32_9	),
+	WINDOWDIM(			1600,		1200,	res_4_3		),
+	WINDOWDIM(			2132,		1200,	res_16_9	),
+	WINDOWDIM(			2800,		1200,	res_21_9	),
+	WINDOWDIM(			4266,		1200,	res_32_9	),
+	WINDOWDIM(			1920,		1440,	res_4_3		),
+	WINDOWDIM(			2560,		1440,	res_16_9	),
+	WINDOWDIM(			3360,		1440,	res_21_9	),
+	WINDOWDIM(			5120,		1440,	res_32_9	),
+	WINDOWDIM(			2560,		1820,	res_4_3		),
+	WINDOWDIM(			3414,		1820,	res_16_9	),
+	WINDOWDIM(			4480,		1820,	res_21_9	),
+	WINDOWDIM(			2880,		2160,	res_4_3		),
+	WINDOWDIM(			3840,		2160,	res_16_9	),
+	WINDOWDIM(			5040,		2160,	res_21_9	),
+	WINDOWDIM(			3200,		2400,	res_4_3		),
+	WINDOWDIM(			4266,		2400,	res_16_9	),
+	WINDOWDIM(			5600,		2400,	res_21_9	),
 
 	WINDOWDIM_NAMED_SCALED( 320,	200,	"Vanilla" ),
 	WINDOWDIM_NAMED_SCALED( 426,	200,	"Vanilla Widescreen" ),
@@ -3153,6 +3154,17 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igPopID();
 			igNextColumn();
 
+			igText( "Ask on window close" );
+			igNextColumn();
+			WorkingBool = window_close_behavior == WindowClose_Ask;
+			igPushID_Ptr( &window_close_behavior );
+			if( igCheckbox( "", &WorkingBool ) )
+			{
+				window_close_behavior = WorkingBool ? WindowClose_Ask : WindowClose_Always;
+			}
+			igPopID();
+			igNextColumn();
+
 			igColumns( 1, "", false );
 			igEndTabItem();
 		}
@@ -3494,6 +3506,19 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igPushID_Ptr( &additional_light_boost );
 			igPushItemWidth( 200.f );
 			igSliderInt( "", &additional_light_boost, 0, 8, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput);
+			igPopItemWidth();
+			igPopID();
+
+			extern int32_t vertical_fov_degrees;
+			igNextColumn();
+			igText( "Vertical FOV" );
+			igNextColumn();
+			igPushID_Ptr( &vertical_fov_degrees );
+			igPushItemWidth( 200.f );
+			if( igSliderInt( "", &vertical_fov_degrees, 50, 140, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput) )
+			{
+				R_ExecuteSetViewSize();
+			}
 			igPopItemWidth();
 			igPopID();
 

@@ -502,8 +502,8 @@ void I_SetRenderDimensions( int32_t w, int32_t h, int32_t s )
 void I_SetRenderMatchWindow( void )
 {
 	queued_render_width = ( fullscreen ? display_width : window_width );
-	queued_render_height = ( fullscreen ? display_height : window_height ) / 1.2;
-	queued_render_post_scaling = 1;
+	queued_render_height = ( fullscreen ? display_height : window_height );
+	queued_render_post_scaling = 0;
 	queued_render_match_window = true;
 }
 
@@ -975,7 +975,7 @@ void I_FinishUpdate( vbuffer_t* activebuffer )
 			I_VideoRenderGLBackbuffer();
 		}
 
-		GLuint fonttexture = igGetIO()->Fonts->TexID;
+		GLuint fonttexture = (GLuint)igGetIO()->Fonts->TexID;
 		glBindTexture( GL_TEXTURE_2D, fonttexture );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );

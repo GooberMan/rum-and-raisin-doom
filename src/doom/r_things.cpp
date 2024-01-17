@@ -380,10 +380,11 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
 	
-	spritecolcontext.iscale = FixedToRendFixed( abs(vis->xiscale) );
+	spritecolcontext.iscale = abs( vis->iscale );
 	spritecolcontext.texturemid = FixedToRendFixed( vis->texturemid );
 	frac = vis->startfrac;
-	spritecontext->spryscale = FixedToRendFixed( vis->scale );
+	spritecontext->spryscale = vis->scale;
+	spritecontext->spryiscale = vis->iscale;
 	spritecontext->sprtopscreen = FixedToRendFixed( drs_current->centeryfrac ) - RendFixedMul( spritecolcontext.texturemid, spritecontext->spryscale );
 	
 	prevfuzzcolumn = -1;
@@ -406,6 +407,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 		}
 
 		column = (column_t *)( (byte *)patch + LONG(patch->columnofs[texturecolumn]) );
+
 		R_DrawMaskedColumn( spritecontext, &spritecolcontext, column );
 	}
 
@@ -430,8 +432,6 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	fixed_t			tx;
 	fixed_t			tz;
 
-	fixed_t			xscale;
-
 	int32_t			x1;
 	int32_t			x2;
 
@@ -447,7 +447,6 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	vissprite_t*	vis;
 
 	angle_t			ang;
-	fixed_t			iscale;
 
 	fixed_t			thingx;
 	fixed_t			thingy;
@@ -508,7 +507,9 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 		return;
 	}
 
-	xscale = FixedDiv( RendFixedToFixed( drs_current->projection ), tz);
+	fixed_t xscale = FixedDiv( RendFixedToFixed( drs_current->xprojection ), tz);
+	fixed_t xiscale = FixedDiv( FRACUNIT, xscale );
+	rend_fixed_t yscale = RendFixedDiv( drs_current->yprojection, FixedToRendFixed( tz ) );
 	
 	gxt = -FixedMul(tr_x,viewsin); 
 	gyt = FixedMul(tr_y,viewcos); 
@@ -580,7 +581,8 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	// store information in a vissprite
 	vis = R_NewVisSprite( spritecontext );
 	vis->mobjflags = thing->flags;
-	vis->scale = xscale;
+	vis->scale = yscale;
+	vis->iscale = RendFixedDiv( RENDFRACUNIT, yscale );
 	vis->gx = thingx;
 	vis->gy = thingy;
 	vis->gz = thingz;
@@ -588,19 +590,18 @@ void R_ProjectSprite ( spritecontext_t* spritecontext, mobj_t* thing)
 	vis->texturemid = vis->gzt - viewz;
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
-	iscale = FixedDiv (FRACUNIT, xscale);
 
 	if (flip)
 	{
 		vis->startfrac = spritewidth[lump]-1;
 		vis->xscale = -xscale;
-		vis->xiscale = -iscale;
+		vis->xiscale = -xiscale;
 	}
 	else
 	{
 		vis->startfrac = 0;
 		vis->xscale = xscale;
-		vis->xiscale = iscale;
+		vis->xiscale = xiscale;
 	}
 
 	if (vis->x1 > x1)
@@ -722,7 +723,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	tx = psp->sx - IntToFixed( V_VIRTUALWIDTH / 2 );
 	
 	tx -= spriteoffset[lump];	
-	x1 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescale ) );
+	x1 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescalex ) );
 
 	// off the right side
 	if (x1 > spritecontext->rightclip)
@@ -731,7 +732,7 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	}
 
 	tx +=  spritewidth[lump];
-	x2 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescale ) ) - 1;
+	x2 = FixedToInt( drs_current->centerxfrac + FixedMul( tx, drs_current->pspritescalex ) ) - 1;
 
 	// off the left side
 	if (x2 < spritecontext->leftclip)
@@ -745,18 +746,19 @@ void R_DrawPSprite ( vbuffer_t* dest, spritecontext_t* spritecontext, pspdef_t* 
 	vis->texturemid = IntToFixed( BASEYCENTER ) + FRACUNIT / 2 -( psp->sy - spritetopoffset[ lump ] );
 	vis->x1 = x1 < spritecontext->leftclip ? spritecontext->leftclip : x1;
 	vis->x2 = x2 >= spritecontext->rightclip ? spritecontext->rightclip-1 : x2;	
-	vis->scale = drs_current->pspritescale;
+	vis->scale = drs_current->pspritescaley;
+	vis->iscale = drs_current->pspriteiscaley;
 
 	if (flip)
 	{
-		vis->xscale = -drs_current->pspritescale;
-		vis->xiscale = -drs_current->pspriteiscale;
+		vis->xscale = -drs_current->pspritescalex;
+		vis->xiscale = -drs_current->pspriteiscalex;
 		vis->startfrac = spritewidth[lump]-1;
 	}
 	else
 	{
-		vis->xscale = drs_current->pspritescale;
-		vis->xiscale = drs_current->pspriteiscale;
+		vis->xscale = drs_current->pspritescalex;
+		vis->xiscale = drs_current->pspriteiscalex;
 		vis->startfrac = 0;
 	}
 
@@ -851,7 +853,6 @@ void R_SortVisSprites ( spritecontext_t* spritecontext )
 	vissprite_t*	ds;
 	vissprite_t*	best;
 	vissprite_t		unsorted;
-	fixed_t			bestscale;
 
 	count = spritecontext->nextvissprite - spritecontext->vissprites;
 	
@@ -878,7 +879,7 @@ void R_SortVisSprites ( spritecontext_t* spritecontext )
 	spritecontext->vsprsortedhead.next = spritecontext->vsprsortedhead.prev = &spritecontext->vsprsortedhead;
 	for (i=0 ; i<count ; i++)
 	{
-		bestscale = INT_MAX;
+		rend_fixed_t bestscale = LLONG_MAX;
 		best = unsorted.next;
 		for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next)
 		{
@@ -956,8 +957,8 @@ void R_DrawSprite( vbuffer_t* dest, spritecontext_t* spritecontext, bspcontext_t
 			scale = ds->scale2;
 		}
 		
-		if (scale < FixedToRendFixed( spr->scale )
-			|| ( lowscale < FixedToRendFixed( spr->scale )
+		if (scale < spr->scale
+			|| ( lowscale < spr->scale
 				&& !R_PointOnSegSide (spr->gx, spr->gy, ds->curline) ) )
 		{
 			// masked mid texture?
