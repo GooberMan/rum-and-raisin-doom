@@ -331,66 +331,36 @@ lineside_t R_PointOnSide( rend_fixed_t x, rend_fixed_t y, node_t* node )
 }
 
 
-int
-R_PointOnSegSide
-( fixed_t	x,
-  fixed_t	y,
-  seg_t*	line )
+doombool R_PointOnSegSide( rend_fixed_t x, rend_fixed_t y, seg_t* line )
 {
-    fixed_t	lx;
-    fixed_t	ly;
-    fixed_t	ldx;
-    fixed_t	ldy;
-    fixed_t	dx;
-    fixed_t	dy;
-    fixed_t	left;
-    fixed_t	right;
-	
-    lx = line->v1->x;
-    ly = line->v1->y;
-	
-    ldx = line->v2->x - lx;
-    ldy = line->v2->y - ly;
-	
-    if (!ldx)
-    {
-	if (x <= lx)
-	    return ldy > 0;
-	
-	return ldy < 0;
-    }
-    if (!ldy)
-    {
-	if (y <= ly)
-	    return ldx < 0;
-	
-	return ldx > 0;
-    }
-	
-    dx = (x - lx);
-    dy = (y - ly);
-	
-    // Try to quickly decide by looking at sign bits.
-    if ( (ldy ^ ldx ^ dx ^ dy)&0x80000000 )
-    {
-	if  ( (ldy ^ dx) & 0x80000000 )
-	{
-	    // (left is negative)
-	    return 1;
-	}
-	return 0;
-    }
+	rend_fixed_t lx = line->v1->rend.x;
+	rend_fixed_t ly = line->v1->rend.y;
 
-    left = FixedMul ( ldy>>FRACBITS , dx );
-    right = FixedMul ( dy , ldx>>FRACBITS );
+	rend_fixed_t ldx = line->v2->rend.x - lx;
+	rend_fixed_t ldy = line->v2->rend.y - ly;
+
+	if (!ldx)
+	{
+		return (x <= lx) ? (ldy > 0) : (ldy < 0);
+	}
+	if (!ldy)
+	{
+		return (y <= ly) ? (ldx < 0 ) : (ldx > 0);
+	}
 	
-    if (right < left)
-    {
-	// front side
-	return 0;
-    }
-    // back side
-    return 1;			
+	rend_fixed_t dx = (x - lx);
+	rend_fixed_t dy = (y - ly);
+	
+	// Try to quickly decide by looking at sign bits.
+	if ( (ldy ^ ldx ^ dx ^ dy) & RENDSIGNBIT )
+	{
+		return ( (ldy ^ dx) & RENDSIGNBIT ) == RENDSIGNBIT;
+	}
+
+	rend_fixed_t left = RendFixedMul( ldy >> RENDFRACBITS, dx );
+	rend_fixed_t right = RendFixedMul( dy, ldx >> RENDFRACBITS );
+	
+	return right >= left;
 }
 
 

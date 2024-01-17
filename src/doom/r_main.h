@@ -102,11 +102,7 @@ typedef enum lineside_e
 lineside_t BSP_PointOnSide( fixed_t x, fixed_t y, node_t* node );
 lineside_t R_PointOnSide( rend_fixed_t x, rend_fixed_t y, node_t* node );
 
-int
-R_PointOnSegSide
-( fixed_t	x,
-  fixed_t	y,
-  seg_t*	line );
+doombool R_PointOnSegSide( rend_fixed_t x, rend_fixed_t y, seg_t* line );
 
 angle_t R_PointToAngle( rend_fixed_t fixed_x, rend_fixed_t fixed_y );
 angle_t BSP_PointToAngle( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2 );

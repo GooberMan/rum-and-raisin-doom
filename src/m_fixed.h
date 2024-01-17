@@ -81,12 +81,14 @@ constexpr size_t AlignTo( _val val )
 #define FRACBITS						16
 #define FRACUNIT						(1<<FRACBITS)
 #define FRACMASK						( FRACUNIT - 1 )
+#define FRACSIGNBIT						0x80000000
 #define FRACFILL( x, o )				( ( x ) | ( ( o ) < 0 ? ( FRACMASK << ( 32 - FRACBITS ) ) : 0 ) )
 
 // 64 bit as 44.20
 #define RENDFRACBITS					20ll
 #define RENDFRACUNIT					( 1ll << RENDFRACBITS )
 #define RENDFRACMASK					( RENDFRACUNIT - 1ll )
+#define RENDFRACSIGNBIT					0x8000000000000000ll
 #define RENDFRACFILL( x, o )			( ( x ) | ( ( o ) < 0 ? ( RENDFRACMASK << ( 64 - RENDFRACBITS ) ) : 0 ) )
 #define RENDFRACFILLFIXED( x, o )		( ( x ) | ( ( o ) < 0 ? ( RENDFRACMASK << ( 64 - ( RENDFRACBITS - FRACBITS ) ) ) : 0 ) )
 

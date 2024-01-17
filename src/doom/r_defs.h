@@ -467,24 +467,24 @@ typedef struct vissprite_s
 	int32_t				x2;
 
 	// for line side calculation
-	fixed_t				gx;
-	fixed_t				gy;
+	rend_fixed_t		gx;
+	rend_fixed_t		gy;
 
 	// global bottom / top for silhouette clipping
-	fixed_t				gz;
-	fixed_t				gzt;
+	rend_fixed_t		gz;
+	rend_fixed_t		gzt;
 
 	// horizontal position of x1
-	fixed_t				startfrac;
+	rend_fixed_t		startfrac;
 
 	rend_fixed_t		scale;
 	rend_fixed_t		iscale;
 
 	// negative if flipped
-	fixed_t				xiscale;
-	fixed_t				xscale;
+	rend_fixed_t		xiscale;
+	rend_fixed_t		xscale;
 
-	fixed_t				texturemid;
+	rend_fixed_t		texturemid;
 	int32_t				patch;
 
 	// for color translation and shadow draw,
@@ -515,7 +515,7 @@ typedef struct spriteframe_s
 	// If false use 0 for any position.
 	// Note: as eight entries are available,
 	//  we might as well insert the same name eight times.
-	doombool				rotate;
+	doombool			rotate;
 
 	// Lump to use for view angles 0-7.
 	int16_t				lump[8];
