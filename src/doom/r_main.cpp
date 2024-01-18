@@ -1864,10 +1864,10 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	}
 	else
 	{
-		viewpoint.x = player->mo->x;
-		viewpoint.y = player->mo->y;
-		viewpoint.z = player->viewz;
-		viewpoint.angle = player->mo->angle + viewangleoffset;
+		viewpoint.x = player->mo->curr.x;
+		viewpoint.y = player->mo->curr.y;
+		viewpoint.z = player->currviewz;
+		viewpoint.angle = player->mo->curr.angle + viewangleoffset;
 		viewpoint.lerp = 0;
 
 		memcpy( rendsectors, currsectors, sizeof( sectorinstance_t ) * numsectors );
