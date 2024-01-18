@@ -476,7 +476,7 @@ void R_Subsector( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcont
 	seg_t*			line;
 	subsector_t*	sub;
 	
-#ifdef RANGECHECK
+#if RANGECHECK
 	if (num>=numsubsectors)
 	{
 		I_Error ("R_Subsector: ss %i with numss = %i",

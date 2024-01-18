@@ -490,7 +490,7 @@ P_BlockLinesIterator
     for ( list = blockmapbase+offset ; *list != BLOCKMAP_INVALID ; ++list)
     {
 	blockmap_t val = *list;
-#ifdef RANGECHECK
+#if RANGECHECK
 	if( val != BLOCKMAP_INVALID && val >= numlines )
 	{
 		I_Error( "P_BlockLinesIterator: %d out of range", (int32_t)*list );

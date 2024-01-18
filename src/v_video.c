@@ -113,7 +113,7 @@ void V_CopyRect(int srcx, int srcy, vbuffer_t *source,
 	int adjusteddestx;
 	int adjusteddesty;
  
-#ifdef RANGECHECK 
+#if RANGECHECK 
     if (srcx < 0
      || srcx + width > V_VIRTUALWIDTH
      || srcy < 0
@@ -361,7 +361,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 		}
 	}
 
-#ifdef RANGECHECK
+#if RANGECHECK
 	if( !remove_limits )
 	{
 		if (x < 0
@@ -465,7 +465,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
             return;
     }
 
-#ifdef RANGECHECK 
+#if RANGECHECK 
     if (x < 0
      || x + SHORT(patch->width) > frame_width
      || y < 0
@@ -810,7 +810,7 @@ void V_DrawBlock(int x, int y, int width, int height, pixel_t *src)
 
     pixel_t *dest;
  
-#ifdef RANGECHECK 
+#if RANGECHECK 
     if (x < 0
      || x + width >frame_width
      || y < 0

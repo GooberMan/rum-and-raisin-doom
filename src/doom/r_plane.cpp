@@ -39,8 +39,6 @@ extern "C"
 
 	#include "m_misc.h"
 
-	int32_t				span_override = Span_None;
-
 	extern int			numflats;
 	extern int			numtextures;
 }
@@ -108,7 +106,7 @@ DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_
 	return region;
 }
 
-#ifdef RANGECHECK
+#if RANGECHECK
 DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context )
 {
 	M_PROFILE_FUNC();

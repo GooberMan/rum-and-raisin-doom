@@ -77,7 +77,7 @@ typedef struct segloopcontext_s
 } segloopcontext_t;
 
 
-#ifdef RANGECHECK
+#if RANGECHECK
 void R_RangeCheckNamed( colcontext_t* context, const char* func )
 {
 	if( context->yl != context->yh )
@@ -235,7 +235,6 @@ DOOM_C_API void R_RenderMaskedSegRange( viewpoint_t* viewpoint, vbuffer_t* dest,
 #define HEIGHTUNIT		( 1 << HEIGHTBITS )
 
 // Detail maps show me how may reads are going to happen in any 16-byte block.
-extern byte detailmaps[16][256];
 extern byte lightlevelmaps[32][256];
 
 uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcontext_t* wallcontext, segloopcontext_t* segcontext )
@@ -363,12 +362,16 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 			wallcolcontext.yl = yl;
 			wallcolcontext.yh = yh;
 			wallcolcontext.texturemid = wallcontext->midtexturemid;
-#if R_DRAWCOLUMN_LIGHTLEVELS
-			wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
-#else
-			wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
-			wallcolcontext.sourceheight = texturelookup[ segcontext->midtexture ]->renderheight;
-#endif
+			IF_RENDERLIGHTLEVELS
+			{
+				wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex) : lightlevelmaps[ colormapindex ];
+				wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->midtexture ]->renderheight : IntToRendFixed(16);
+			}
+			else
+			{
+				wallcolcontext.source = R_GetColumn(segcontext->midtexture,texturecolumn,colormapindex);
+				wallcolcontext.sourceheight = texturelookup[ segcontext->midtexture ]->renderheight;
+			}
 			R_RangeCheck();
 			wallcolcontext.colfunc( &wallcolcontext );
 			planecontext->ceilingclip[currx] = drs_current->viewheight;
@@ -393,12 +396,16 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 					wallcolcontext.yl = yl;
 					wallcolcontext.yh = mid;
 					wallcolcontext.texturemid = wallcontext->toptexturemid;
-#if R_DRAWCOLUMN_LIGHTLEVELS
-					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
-#else
-					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
-					wallcolcontext.sourceheight = texturelookup[ segcontext->toptexture ]->renderheight;
-#endif
+					IF_RENDERLIGHTLEVELS
+					{
+						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex) : lightlevelmaps[ colormapindex ];
+						wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->toptexture ]->renderheight : IntToRendFixed(256);
+					}
+					else
+					{
+						wallcolcontext.source = R_GetColumn(segcontext->toptexture,texturecolumn,colormapindex);
+						wallcolcontext.sourceheight = texturelookup[ segcontext->toptexture ]->renderheight;
+					}
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
 					planecontext->ceilingclip[currx] = mid;
@@ -432,12 +439,16 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 					wallcolcontext.yl = mid;
 					wallcolcontext.yh = yh;
 					wallcolcontext.texturemid = wallcontext->bottomtexturemid;
-#if R_DRAWCOLUMN_LIGHTLEVELS
-					wallcolcontext.source = colormapindex >= 32 ? colormapindex : lightlevelmaps[ colormapindex ];
-#else
-					wallcolcontext.source = R_DRAWCOLUMN_DEBUGDISTANCES ? detailmaps[ M_MIN( ( wallcolcontext.iscale >> ( RENDFRACBITS - 4 ) ), 15 ) ] : R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
-					wallcolcontext.sourceheight = texturelookup[ segcontext->bottomtexture ]->renderheight;
-#endif
+					IF_RENDERLIGHTLEVELS
+					{
+						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex) : lightlevelmaps[ colormapindex ];
+						wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->bottomtexture ]->renderheight : IntToRendFixed(256);
+					}
+					else
+					{
+						wallcolcontext.source = R_GetColumn(segcontext->bottomtexture,texturecolumn,colormapindex);
+						wallcolcontext.sourceheight = texturelookup[ segcontext->bottomtexture ]->renderheight;
+					}
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
 					planecontext->floorclip[currx] = mid;
@@ -467,10 +478,6 @@ uint64_t R_RenderSegLoop( vbuffer_t* dest, planecontext_t* planecontext, wallcon
 		wallcontext->scale += wallcontext->scalestep;
 		topfrac += segcontext->topstep;
 		bottomfrac += segcontext->bottomstep;
-
-#if R_DRAWCOLUMN_DEBUGDISTANCES
-		wallcolcontext.colormap = restorelightmap;
-#endif // R_DRAWCOLUMN_DEBUGDISTANCES
 	}
 
 	M_PROFILE_POP( __FUNCTION__ );
@@ -525,7 +532,7 @@ DOOM_C_API void R_StoreWallRange( viewpoint_t* viewpoint, vbuffer_t* dest, bspco
 		return;
 	}
 		
-#ifdef RANGECHECK
+#if RANGECHECK
 	if (start >=drs_current->viewwidth || start > stop)
 	{
 		I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
@@ -889,7 +896,7 @@ DOOM_C_API void R_StoreWallRange( viewpoint_t* viewpoint, vbuffer_t* dest, bspco
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
 		&& !bspcontext->thisdrawseg->sprtopclip)
 	{
-#ifdef RANGECHECK
+#if RANGECHECK
 		if( ( planecontext->lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext->openings > MAXOPENINGS )
 		{
 			I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
@@ -903,7 +910,7 @@ DOOM_C_API void R_StoreWallRange( viewpoint_t* viewpoint, vbuffer_t* dest, bspco
 	if ( ((bspcontext->thisdrawseg->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
 		&& !bspcontext->thisdrawseg->sprbottomclip)
 	{
-#ifdef RANGECHECK
+#if RANGECHECK
 		if( ( planecontext->lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext->openings > MAXOPENINGS )
 		{
 			I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );

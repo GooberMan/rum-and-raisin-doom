@@ -105,6 +105,8 @@ extern sideinstance_t*		rendsides;
 // All the old global tables now live in the current DRS dataset
 extern drsdata_t*	drs_current;
 
+extern doombool		renderlightlevels;
+
 #if defined( __cplusplus )
 }
 #endif // defined( __cplusplus )

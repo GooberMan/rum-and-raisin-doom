@@ -386,7 +386,7 @@ void R_DrawVisSprite( vbuffer_t* dest, spritecontext_t* spritecontext, vissprite
 	for( spritecolcontext.x = vis->x1; spritecolcontext.x <= vis->x2; spritecolcontext.x++, frac += vis->xiscale )
 	{
 		texturecolumn = RendFixedToInt( frac );
-#ifdef RANGECHECK
+#if RANGECHECK
 		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
 			I_Error ("R_DrawSpriteRange: bad texturecolumn");
 #endif
@@ -497,7 +497,7 @@ void R_ProjectSprite( viewpoint_t* viewpoint, spritecontext_t* spritecontext, mo
 	}
 
 	// decide which patch to use for sprite relative to player
-#ifdef RANGECHECK
+#if RANGECHECK
 	if ((uint32_t) thingsprite >= (uint32_t) numsprites)
 	{
 		I_Error ("R_ProjectSprite: invalid sprite number %i ",
@@ -507,7 +507,7 @@ void R_ProjectSprite( viewpoint_t* viewpoint, spritecontext_t* spritecontext, mo
 
 	sprdef = &sprites[thingsprite];
 
-#ifdef RANGECHECK
+#if RANGECHECK
 	if ( (thingframe&FF_FRAMEMASK) >= sprdef->numframes )
 	{
 		if( remove_limits ) return;
@@ -672,7 +672,7 @@ void R_DrawPSprite( viewpoint_t* viewpoint, vbuffer_t* dest, spritecontext_t* sp
 	vissprite_t		avis;
 
     // decide which patch to use
-#ifdef RANGECHECK
+#if RANGECHECK
     if ( (uint32_t)psp->state->sprite >= (uint32_t) numsprites)
 	{
 		I_Error ("R_ProjectSprite: invalid sprite number %i ",
@@ -680,7 +680,7 @@ void R_DrawPSprite( viewpoint_t* viewpoint, vbuffer_t* dest, spritecontext_t* sp
 	}
 #endif
 	sprdef = &sprites[psp->state->sprite];
-#ifdef RANGECHECK
+#if RANGECHECK
 	if ( (psp->state->frame & FF_FRAMEMASK)  >= sprdef->numframes)
 	{
 		I_Error ("R_ProjectSprite: invalid sprite frame %i : %i ",

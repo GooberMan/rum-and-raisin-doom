@@ -88,11 +88,12 @@ extern "C"
 	int32_t					num_render_contexts = -1;
 	int32_t					num_software_backbuffers = 1;
 	int32_t					renderloadbalancing = 1;
-	doombool					rendersplitvisualise = false;
-	doombool					renderrebalancecontexts = false;
+	doombool				rendersplitvisualise = false;
+	doombool				renderrebalancecontexts = false;
+	doombool				renderlightlevels = false;
 	double_t				renderscalecontextsby = 0.0;
 	int32_t					rebalancescale = 25;
-	doombool					renderSIMDcolumns = false;
+	doombool				renderSIMDcolumns = false;
 	atomicval_t				renderthreadCPUmelter = 0;
 	int32_t					performancegraphscale = 20;
 
@@ -149,24 +150,23 @@ extern "C"
 
 	int32_t			additional_light_boost = 0;
 
-	extern int32_t enable_frame_interpolation;
-	int32_t interpolate_this_frame = 0;
+	extern int32_t	 enable_frame_interpolation;
+	int32_t			interpolate_this_frame = 0;
 
 	doombool		setsizeneeded;
-	int		setblocks;
+	int				setblocks;
 
-	extern int32_t remove_limits;
-	extern int detailLevel;
-	extern int screenblocks;
-	extern int numflats;
-	extern int numtextures;
-	extern doombool refreshstatusbar;
-	extern int mouseSensitivity;
-	extern doombool renderpaused;
-	extern int32_t span_override;
+	extern int32_t	remove_limits;
+	extern int		detailLevel;
+	extern int		screenblocks;
+	extern int		numflats;
+	extern int		numtextures;
+	extern doombool	refreshstatusbar;
+	extern int		mouseSensitivity;
+	extern doombool	renderpaused;
 
-	extern uint64_t frametime;
-	extern uint64_t frametime_withoutpresent;
+	extern uint64_t	frametime;
+	extern uint64_t	frametime_withoutpresent;
 
 	extern gamestate_t gamestate;
 }
@@ -851,7 +851,6 @@ void R_InitLightTables( drsdata_t* current )
 	}
 }
 
-byte detailmaps[16][256];
 byte lightlevelmaps[32][256];
 
 #define HAX 0
@@ -908,23 +907,6 @@ void R_InitColFuncs( void )
 		colfuncs[ COLFUNC_NUM + currexpand ] = &R_DrawColumnLow;
 	}
 
-	memset( detailmaps[ 0 ], 247, 256 );
-	memset( detailmaps[ 1 ], 110, 256 );
-	memset( detailmaps[ 2 ], 108, 256 );
-	memset( detailmaps[ 3 ], 106, 256 );
-	memset( detailmaps[ 4 ], 104, 256 );
-	memset( detailmaps[ 5 ], 102, 256 );
-	memset( detailmaps[ 6 ], 100, 256 );
-	memset( detailmaps[ 7 ], 98, 256 );
-	memset( detailmaps[ 8 ], 96, 256 );
-	memset( detailmaps[ 9 ], 94, 256 );
-	memset( detailmaps[ 10 ], 92, 256 );
-	memset( detailmaps[ 11 ], 90, 256 );
-	memset( detailmaps[ 12 ], 88, 256 );
-	memset( detailmaps[ 13 ], 86, 256 );
-	memset( detailmaps[ 14 ], 84, 256 );
-	memset( detailmaps[ 15 ], 82, 256 );
-
 	while( lightlevel < 32 )
 	{
 		memset( lightlevelmaps[ lightlevel ], 80 + lightlevel, 256 );
@@ -955,11 +937,6 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 {
 	M_PROFILE_FUNC();
 
-	colcontext_t	skycontext;
-	int32_t			x;
-	int32_t			angle;
-
-	int32_t			currtime;
 	byte*			output		= rendercontext->buffer.data + rendercontext->buffer.pitch * rendercontext->begincolumn;
 	size_t			outputsize	= rendercontext->buffer.pitch * (rendercontext->endcolumn - rendercontext->begincolumn );
 
@@ -987,6 +964,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	}
 	else if( voidcleartype == Void_Sky )
 	{
+		colcontext_t skycontext = {};
+
 		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->pspriteiscaley >> 16 ), 15 ) ];
 		skycontext.iscale = drs_current->pspriteiscaley;
 		skycontext.texturemid = skytexturemid;
@@ -996,9 +975,9 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		skycontext.yh = drs_current->viewheight;
 		skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
 
-		for ( x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
+		for ( int32_t x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
 		{
-			angle = ( rendercontext->viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
+			int32_t angle = ( rendercontext->viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
 
 			skycontext.x = x;
 			skycontext.source = R_GetColumn( skytexture, angle, 0 );
@@ -1009,15 +988,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( doombool ) * numsectors );
 
 	rendercontext->planecontext.output = rendercontext->viewbuffer;
-	rendercontext->planecontext.spantype = span_override;
-	if( span_override == Span_None )
-	{
-		rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( drs_current->frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
-	}
-	if( rendercontext->planecontext.spantype == Span_Original )
-	{
-		I_Error( "I broke the span renderer, it's on its way out now." );
-	}
+	rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( drs_current->frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 
 	{
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
@@ -1055,17 +1026,13 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	rendercontext->nextframetime = ( rendercontext->nextframetime + 1 ) % MAXPROFILETIMES;
 
 	rendercontext->frameaverage = 0;
-	for( currtime = 0; currtime < MAXPROFILETIMES; ++currtime )
+	for( int32_t currtime = 0; currtime < MAXPROFILETIMES; ++currtime )
 	{
 		rendercontext->frameaverage += rendercontext->frametimes[ currtime ];
 	}
 	rendercontext->frameaverage /= MAXPROFILETIMES;
 #endif
 }
-
-#include "hu_lib.h"
-#include "hu_stuff.h"
-extern patch_t*		hu_font[HU_FONTSIZE];
 
 int32_t R_ContextThreadFunc( void* userdata )
 {
@@ -1551,6 +1518,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	{
 		R_ExecuteSetViewSize( );
 	}
+	igCheckbox( "Visualise light levels", (bool*)&renderlightlevels);
 }
 
 //

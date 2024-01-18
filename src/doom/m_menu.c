@@ -3062,7 +3062,6 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t border_style;
 	extern int32_t border_bezel_style;
 	extern int32_t fuzz_style;
-	extern int32_t span_override;
 	extern int32_t show_endoom;
 	extern int32_t show_text_startup;
 	extern int32_t show_diskicon;

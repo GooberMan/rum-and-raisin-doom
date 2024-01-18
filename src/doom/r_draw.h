@@ -64,8 +64,13 @@ void R_DrawColumnLow ( colcontext_t* context );
 
 #define R_SIMD_TYPE( x ) ( R_DRAWCOLUMN_SIMDOPTIMISED && R_SIMD == ( R_SIMD_ ## x ) )
 
-#define R_DRAWCOLUMN_DEBUGDISTANCES 0
-#define R_DRAWCOLUMN_LIGHTLEVELS 0
+#define R_DEBUG_LIGHTLEVELS 1
+
+#if R_DEBUG_LIGHTLEVELS
+#define IF_RENDERLIGHTLEVELS if( renderlightlevels )
+#else
+#define IF_RENDERLIGHTLEVELS if constexpr( false )
+#endif // R_DEBUG_LIGHTLEVELS
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
 

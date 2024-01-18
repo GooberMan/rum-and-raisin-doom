@@ -26,7 +26,7 @@
 
 DOOM_C_API void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height );
 
-#ifdef RANGECHECK
+#if RANGECHECK
 DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context );
 #else
 #define R_ErrorCheckPlanes( context )
