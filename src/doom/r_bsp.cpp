@@ -41,7 +41,7 @@
 //
 // R_ClearClipSegs
 //
-void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
+DOOM_C_API void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
 {
 	context->solidsegs[0].first		= INT_MIN;
 	context->solidsegs[0].last		= mincol - 1;
@@ -53,7 +53,7 @@ void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
 //
 // R_ClearDrawSegs
 //
-void R_ClearDrawSegs ( bspcontext_t* context )
+DOOM_C_API void R_ClearDrawSegs ( bspcontext_t* context )
 {
 	context->thisdrawseg = context->drawsegs;
 }
@@ -534,7 +534,7 @@ void R_Subsector( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcont
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-void R_RenderBSPNode( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum )
+DOOM_C_API void R_RenderBSPNode( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum )
 {
 	node_t*		bsp;
 	int32_t		side;

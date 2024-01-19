@@ -52,7 +52,7 @@ rend_fixed_t			skytexturemid;
 // So let's leave the ratio here to support arbitrary sky heights later
 #define SKYHEIGHT 128
 #define SKYMID ( SKYHEIGHT * 781250 / 1000000 )
-void R_InitSkyMap (void)
+DOOM_C_API void R_InitSkyMap (void)
 {
   // skyflatnum = R_FlatNumForName ( SKYFLATNAME );
     skytexturemid = IntToRendFixed( 100 );

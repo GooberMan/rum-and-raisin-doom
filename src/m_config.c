@@ -2886,7 +2886,7 @@ char *M_GetAutoloadDir(const char *iwadname)
 
     if (autoload_path == NULL || strlen(autoload_path) == 0)
     {
-		autoload_path = configdir;
+		autoload_path = M_StringJoin( configdir, "autoload" );
 
         //char *prefdir;
         //prefdir = SDL_GetPrefPath("", PACKAGE_TARNAME);

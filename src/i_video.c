@@ -151,11 +151,11 @@ int32_t vsync_mode = VSync_Native;
 
 #define DEFAULT_WINDOW_WIDTH		1280
 #define DEFAULT_WINDOW_HEIGHT		720
-#define DEFAULT_RENDER_WIDTH		1706
-#define DEFAULT_RENDER_HEIGHT		800
-#define DEFAULT_RENDER_POSTSCALING	1
+#define DEFAULT_RENDER_WIDTH		1280
+#define DEFAULT_RENDER_HEIGHT		720
+#define DEFAULT_RENDER_POSTSCALING	0
 #define DEFAULT_FULLSCREEN			0
-#define DEFAULT_RENDER_MATCH_WINDOW	0
+#define DEFAULT_RENDER_MATCH_WINDOW	1
 
 int32_t window_width = DEFAULT_WINDOW_WIDTH;
 int32_t window_height = DEFAULT_WINDOW_HEIGHT;
@@ -486,8 +486,8 @@ void I_SetWindowDimensions( int32_t w, int32_t h )
 	if( render_match_window )
 	{
 		queued_render_width = w;
-		queued_render_height = h / 1.2;
-		queued_render_post_scaling = 1;
+		queued_render_height = h;
+		queued_render_post_scaling = 0;
 	}
 }
 

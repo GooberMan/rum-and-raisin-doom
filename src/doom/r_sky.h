@@ -22,24 +22,16 @@
 
 #include "m_fixed.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
 // SKY, store the number for name.
 #define			SKYFLATNAME  "F_SKY1"
 
 // The sky map is 256*128*4 maps.
 #define ANGLETOSKYSHIFT		22
-
-extern  int				skytexture;
-extern rend_fixed_t		skytexturemid;
+DOOM_C_API extern int				skyflatnum;
+DOOM_C_API extern int				skytexture;
+DOOM_C_API extern rend_fixed_t		skytexturemid;
 
 // Called whenever the view size changes.
-void R_InitSkyMap (void);
-
-#if defined( __cplusplus )
-}
-#endif // defined( __cplusplus )
+DOOM_C_API void R_InitSkyMap (void);
 
 #endif

@@ -32,21 +32,16 @@
 	#define M_PROFILE_POP( marker )
 #endif //PROFILING_ENABLED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "doomtype.h"
 
-void M_ProfileInit( void );
-void M_ProfileThreadInit( const char* threadname );
-void M_ProfileNewFrame( void );
+DOOM_C_API void M_ProfileInit( void );
+DOOM_C_API void M_ProfileThreadInit( const char* threadname );
+DOOM_C_API void M_ProfileNewFrame( void );
 
-void M_ProfilePushMarker( const char* markername, const char* file, size_t line );
-void M_ProfilePopMarker( const char* markername );
+DOOM_C_API void M_ProfilePushMarker( const char* markername, const char* file, size_t line );
+DOOM_C_API void M_ProfilePopMarker( const char* markername );
 
 #ifdef __cplusplus
-}
 
 #include "m_container.h"
 
@@ -78,7 +73,7 @@ struct ProfileFunctionRAII
 	#define M_PROFILE_NAMED( n )
 #endif //PROFILING_ENABLED
 
-#endif
+#endif // __cplusplus
 
 
 #endif // __M_PROFILE_H__
