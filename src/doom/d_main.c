@@ -148,6 +148,7 @@ extern int32_t		maxrendercontexts;
 extern int32_t		num_render_contexts;
 extern int32_t		num_software_backbuffers;
 extern int32_t		additional_light_boost;
+extern int32_t		vertical_fov_degrees;
 extern int32_t		stats_style;
 extern doombool		rendersplitvisualise;
 
@@ -505,6 +506,7 @@ void D_BindVariables(void)
 	M_BindIntVariable("num_render_contexts",    &num_render_contexts);
 	M_BindIntVariable("num_software_backbuffers", &num_software_backbuffers);
 	M_BindIntVariable("additional_light_boost",	&additional_light_boost );
+	M_BindIntVariable("vertical_fov_degrees",	&vertical_fov_degrees );
 	M_BindIntVariable("window_close_behavior",	&window_close_behavior );
 
 	M_BindIntVariable("stats_style",			&stats_style );

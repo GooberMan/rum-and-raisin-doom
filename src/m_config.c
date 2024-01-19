@@ -887,6 +887,14 @@ static default_t extra_defaults_list[] =
     //!
     // @game doom
     //
+    // It's an FOV slider.
+    //
+
+    CONFIG_VARIABLE_INT(vertical_fov_degrees),
+
+    //!
+    // @game doom
+    //
     // Control whether closing the window asks if you want to quit Vanilla style.
     //
 

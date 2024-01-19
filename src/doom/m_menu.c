@@ -3514,7 +3514,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igPushID_Ptr( &vertical_fov_degrees );
 			igPushItemWidth( 200.f );
-			if( igSliderInt( "", &vertical_fov_degrees, 50, 140, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput) )
+			if( igSliderInt( "", &vertical_fov_degrees, 50, 120, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput) )
 			{
 				R_ExecuteSetViewSize();
 			}
