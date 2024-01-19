@@ -793,7 +793,6 @@ void R_InitTextureMapping( drsdata_t* current )
 	current->clipangle = current->xtoviewangle[0];
 }
 
-
 void R_InitAspectAdjustedValues( drsdata_t* current )
 {
 	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
@@ -807,10 +806,16 @@ void R_InitAspectAdjustedValues( drsdata_t* current )
 	rend_fixed_t		aspect_adjusted_scaled_divide = RendFixedDiv( IntToRendFixed( current->frame_height ), IntToRendFixed( VANILLA_SCREENHEIGHT ) );
 	rend_fixed_t		aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
 
-	current->frame_adjusted_width		= aspect_adjusted_render_width;
-	current->frame_adjusted_light_mul	= aspect_adjusted_scaled_mul;
-}
+	constexpr double_t	original_fov_half = 74 * 0.5 * constants::degtorad;
+	double_t curr_fov_half = vertical_fov_degrees * 0.5 * constants::degtorad;
 
+	double_t original_fov_tan = tan( original_fov_half );
+	double_t curr_fov_tan = tan( curr_fov_half );
+	double_t distadjust = curr_fov_tan / original_fov_tan;
+
+	current->frame_adjusted_width		= aspect_adjusted_render_width;
+	current->frame_adjusted_light_mul	= RendFixedMul( aspect_adjusted_scaled_mul, DoubleToRendFixed( distadjust ) );
+}
 
 //
 // R_InitLightTables
@@ -1171,7 +1176,6 @@ rend_fixed_t R_PerspectiveMulFor( drsdata_t* current, int32_t fov )
 	return DoubleToRendFixed( perspective_mul_float );
 }
 
-#pragma optimize("", off)
 void R_ExecuteSetViewSizeFor( drsdata_t* current )
 {
 	int32_t				i;
@@ -1289,7 +1293,6 @@ void R_ExecuteSetViewSize( void )
 
 	R_DRSApply( drs_data );
 }
-#pragma optimize("", on)
 
 void R_RenderUpdateFrameSize( void )
 {
