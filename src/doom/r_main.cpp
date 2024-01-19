@@ -966,8 +966,8 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	{
 		colcontext_t skycontext = {};
 
-		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->pspriteiscaley >> 16 ), 15 ) ];
-		skycontext.iscale = drs_current->pspriteiscaley;
+		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->skyiscaley >> 16 ), 15 ) ];
+		skycontext.iscale = drs_current->skyiscaley;
 		skycontext.texturemid = skytexturemid;
 		skycontext.output = rendercontext->buffer;
 		skycontext.output.data += skycontext.output.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
@@ -1158,6 +1158,19 @@ R_SetViewSize
 //
 // R_ExecuteSetViewSize
 //
+
+rend_fixed_t R_PerspectiveMulFor( drsdata_t* current, int32_t fov )
+{
+	int32_t actualheight = (int32_t)( current->frame_height * ( render_post_scaling ? 1.2 : 1.0 ) );
+
+	double_t vertical_fov_rad = fov * constants::degtorad;
+	double_t horizontal_fov_rad = 2.0 * atan( tan( vertical_fov_rad * 0.5 ) * ( (double_t)current->frame_width / (double_t)actualheight) );
+	horizontal_fov_degrees = horizontal_fov_rad * constants::radtodeg;
+	double_t perspective_mul_float = 1.0 / tan( horizontal_fov_rad * 0.5 );
+
+	return DoubleToRendFixed( perspective_mul_float );
+}
+
 #pragma optimize("", off)
 void R_ExecuteSetViewSizeFor( drsdata_t* current )
 {
@@ -1167,16 +1180,11 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	int32_t				startmap;
 	int32_t				colfuncbase;
 
+	rend_fixed_t adjust = DoubleToRendFixed( render_post_scaling ? 1.0 : 1.2 );
+
 	R_InitLightTables( current );
 
-	int32_t actualheight = (int32_t)( current->frame_height * ( render_post_scaling ? 1.2 : 1.0 ) );
-
-	double_t vertical_fov_rad = vertical_fov_degrees * constants::degtorad;
-	double_t horizontal_fov_rad = 2.0 * atan( tan( vertical_fov_rad * 0.5 ) * ( (double_t)current->frame_width / (double_t)actualheight) );
-	horizontal_fov_degrees = horizontal_fov_rad * constants::radtodeg;
-	double_t perspective_mul_float = 1.0 / tan( horizontal_fov_rad * 0.5 );
-
-	rend_fixed_t perspective_mul = DoubleToRendFixed( perspective_mul_float );
+	rend_fixed_t perspective_mul = R_PerspectiveMulFor( current, vertical_fov_degrees );
 
 	setsizeneeded = false;
 
@@ -1196,8 +1204,6 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 	current->viewwidth = current->scaledviewwidth;
 
-	rend_fixed_t adjust = DoubleToRendFixed( render_post_scaling ? 1.0 : 1.2 );
-
 	current->centery = current->viewheight / 2;
 	current->centerx = current->viewwidth / 2;
 	current->centerxfrac = IntToRendFixed( current->centerx );
@@ -1213,13 +1219,16 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	R_InitTextureMapping( current );
 
 	// psprite scales
-	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( current->frame_width ), perspective_mul ) / V_VIRTUALWIDTH );
+	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( current->frame_width ), R_PerspectiveMulFor( current, 74 ) ) / V_VIRTUALWIDTH );
 
 	current->pspritescalex	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale );
 	current->pspriteiscalex	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale );
 
 	current->pspritescaley	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, RendFixedMul( adjust, perspectivecorrectscale ) );
 	current->pspriteiscaley	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, RendFixedMul( adjust, perspectivecorrectscale ) );
+
+	current->skyscaley = current->pspritescaley;
+	current->skyiscaley = current->pspriteiscaley;
 
 	for (i=0 ; i<current->viewwidth ; i++)
 	{
