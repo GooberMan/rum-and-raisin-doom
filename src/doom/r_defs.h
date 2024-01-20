@@ -152,7 +152,7 @@ typedef struct rend_vertex_s
 	rend_fixed_t		y;
 } rend_vertex_t;
 
-typedef struct
+typedef struct vertex_s
 {
 	rend_vertex_t		rend;
 
@@ -163,7 +163,8 @@ typedef struct
 
 
 // Forward of LineDefs, for Sectors.
-struct line_s;
+typedef struct side_s side_t;
+typedef struct line_s line_t;
 
 // Each sector has a degenmobj_t in its center
 //  for sound origin purposes.
@@ -190,7 +191,9 @@ typedef enum secretstate_e
 // The SECTORS record, at runtime.
 // Stores things/mobjs.
 //
-typedef	struct
+typedef struct sector_s sector_t;
+
+struct sector_s
 {
 	int32_t				index;
 
@@ -228,22 +231,26 @@ typedef	struct
 	void*				specialdata;
 
 	int32_t				linecount;
-	struct line_s**		lines;	// [linecount] size
+	line_t**			lines;	// [linecount] size
 	
 	fixed_t				friction;
 
 	int32_t				snapfloor;
 	int32_t				snapceiling;
-} sector_t;
 
+	sector_t*			floorlightsec;
+	sector_t*			ceilinglightsec;
 
+	side_t*				skyline;
+	fixed_t				skyxscale;
+};
 
 
 //
 // The SideDef.
 //
 
-typedef struct side_s
+struct side_s
 {
 	int32_t				index;
 
@@ -264,7 +271,7 @@ typedef struct side_s
 	// Sector the SideDef is facing.
 	sector_t*			sector;
 
-} side_t;
+};
 
 
 
@@ -279,7 +286,7 @@ typedef enum
 	ST_NEGATIVE
 } slopetype_t;
 
-typedef struct line_s
+struct line_s
 {
 	int32_t				index;
 
@@ -319,7 +326,7 @@ typedef struct line_s
 	void*				specialdata;
 
 	byte*				transparencymap;
-} line_t;
+};
 
 
 
@@ -892,12 +899,12 @@ typedef enum windowclose_e
 #if defined( __cplusplus )
 }
 
-struct constants
+namespace constants
 {
 	static constexpr double_t pi = 3.1415926535897932384626433832795;
 	static constexpr double_t degtorad = pi / 180.0;
 	static constexpr double_t radtodeg = 180.0 / pi;
-};
+}
 
 struct RegionRange
 {

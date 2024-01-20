@@ -436,9 +436,11 @@ struct DoomMapLoader
 				out.special		&= Sector_VanillaSpecialMask;
 			}
 			out.tag				= Read::AsIs( in.tag );
-			out.thinglist		= NULL;
+			out.thinglist		= nullptr;
 			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
 			out.friction		= FRICTION;
+			out.skyline			= nullptr;
+			out.skyxscale		= IntToFixed( 1 );
 		} );
 
 		_numsectors				= data.count;

@@ -1567,7 +1567,7 @@ void P_SpawnSpecials (void)
 		{
 			switch( lines[ i ].special )
 			{
-			case 223: // Friction
+			case Transfer_Friction_Always: // Friction
 				{
 					fixed_t linelength = M_CLAMP( P_AproxDistance( lines[ i ].dx, lines[ i ].dy ), 0, IntToFixed( 200 ) );
 					fixed_t frictionmul = FixedDiv( linelength, IntToFixed( 100 ) ) - IntToFixed( 1 );
@@ -1583,7 +1583,7 @@ void P_SpawnSpecials (void)
 				}
 				break;
 
-			case 260: // Transparency
+			case Textue_Translucent_Always: // Transparency
 				if( lines[i].tag == 0 )
 				{
 					lines[i].transparencymap = tranmap;
@@ -1610,6 +1610,28 @@ void P_SpawnSpecials (void)
 						if( lines[ target ].tag == lines[ i ].tag )
 						{
 							lines[ target ].transparencymap = customtranmap;
+						}
+					}
+				}
+				break;
+			}
+		}
+
+		if( remove_limits ) // allow_mbf_sky_specials || allow_mbf_specials
+		{
+			switch( lines[ i ].special )
+			{
+			case Transfer_Sky_Always:
+			case Transfer_SkyReversed_Always:
+				if( lines[ i ].sidenum[ 0 ] >= 0 )
+				{
+					fixed_t scale = IntToFixed( lines[ i ].special == Transfer_Sky_Always ? -1 : 1 );
+					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					{
+						if( sectors[ thissector ].tag == lines[ i ].tag )
+						{
+							sectors[ thissector ].skyline = &sides[ lines[ i ].sidenum[ 0 ] ];
+							sectors[ thissector ].skyxscale = scale;
 						}
 					}
 				}

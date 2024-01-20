@@ -32,6 +32,7 @@ DOOM_C_API texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat );
 
 // Retrieve column data for span blitting.
 DOOM_C_API byte* R_GetColumn ( int32_t tex, int32_t col, int32_t colormapindex );
+DOOM_C_API byte* R_GetColumnComposite( texturecomposite_t* composite, int32_t col, int32_t colormapindex );
 
 // A raw column is a non-composited column as you'd find in your WAD
 DOOM_C_API byte* R_GetRawColumn ( int32_t tex, int32_t col );

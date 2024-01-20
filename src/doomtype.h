@@ -91,6 +91,12 @@
 #define INLINE inline
 #endif
 
+#if defined(__cplusplus)
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR INLINE
+#endif
+
 #if defined( __clang__ )
 #pragma clang diagnostic ignored "-Wduplicate-decl-specifier"
 

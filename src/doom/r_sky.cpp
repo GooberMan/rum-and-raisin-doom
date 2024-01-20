@@ -22,29 +22,19 @@
 //
 
 
+#include "doomdef.h"
+#include "r_sky.h"
 
 // Needed for FRACUNIT.
 #include "m_fixed.h"
+#include "m_misc.h"
 
 // Needed for Flat retrieval.
 #include "r_data.h"
+#include "r_main.h"
 
-
-#include "r_sky.h"
-
-//
-// sky mapping
-//
-int						skyflatnum;
-int						skytexture;
-rend_fixed_t			skytexturemid;
-
-
-
-//
-// R_InitSkyMap
-// Called whenever the view size changes.
-//
+#include "m_container.h"
+#include "m_profile.h"
 
 // Used to do SCREENHEIGHT/2 to get the mid point for sky rendering
 // Turns out 100 is the magic number for any screen resolution
@@ -52,9 +42,72 @@ rend_fixed_t			skytexturemid;
 // So let's leave the ratio here to support arbitrary sky heights later
 #define SKYHEIGHT 128
 #define SKYMID ( SKYHEIGHT * 781250 / 1000000 )
-DOOM_C_API void R_InitSkyMap (void)
+
+//
+// sky mapping
+//
+int						skyflatnum;
+int						skytexture;
+sideinstance_t			skyfakeline = {};
+
+constexpr auto Lines( rasterregion_t* region )
 {
-  // skyflatnum = R_FlatNumForName ( SKYFLATNAME );
-    skytexturemid = IntToRendFixed( 100 );
+	return std::span( region->lines, region->maxx - region->minx + 1 );
 }
 
+DOOM_C_API void R_SetSkyTexture( int32_t texnum )
+{
+	skytexture = texnum;
+	skyfakeline.toptex = texturelookup[ skytexture ];
+}
+
+DOOM_C_API void R_DrawSky( viewpoint_t* viewpoint, vbuffer_t* dest, rasterregion_t* thisregion, sideinstance_t* skytextureline )
+{
+	M_PROFILE_FUNC();
+
+	if( !skytextureline )
+	{
+		skytextureline = &skyfakeline;
+	}
+	texturecomposite_t* sky = skytextureline->toptex;
+
+	constexpr rend_fixed_t skyoneunit = RendFixedDiv( IntToRendFixed( 1 ), IntToRendFixed( 256 ) );
+	constexpr rend_fixed_t ninetydegree = IntToRendFixed( ANG90 );
+	rend_fixed_t skyoffsetfixed = RendFixedMul( RendFixedMul( skytextureline->coloffset, skyoneunit ), ninetydegree );
+	angle_t skyoffsetangle = RendFixedToInt( skyoffsetfixed );
+
+	colcontext_t	skycontext;
+
+	skycontext.colfunc = colfuncs[ 15 ];
+
+	// Originally this would setup the column renderer for every instance of a sky found.
+	// But we have our own context for it now. These are constants too, so you could cook
+	// this once and forget all about it.
+	skycontext.iscale = drs_current->skyiscaley;
+	skycontext.texturemid = constants::skytexturemid + skytextureline->rowoffset;
+
+	// This isn't a constant though...
+	skycontext.output = *dest;
+	skycontext.sourceheight = sky->renderheight;
+
+	int32_t x = thisregion->minx;
+
+	for( rasterline_t& line : Lines( thisregion ) )
+	{
+		if ( line.top <= line.bottom )
+		{
+			skycontext.yl = line.top;
+			skycontext.yh = line.bottom;
+			skycontext.x = x;
+
+			int32_t angle = ( viewpoint->angle + skyoffsetangle + drs_current->xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
+			// Sky is allways drawn full bright,
+			//  i.e. colormaps[0] is used.
+			// Because of this hack, sky is not affected
+			//  by INVUL inverse mapping.
+			skycontext.source = R_GetColumnComposite( sky, angle, 0 );
+			skycontext.colfunc( &skycontext );
+		}
+		++x;
+	}
+}

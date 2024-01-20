@@ -973,7 +973,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 
 		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->skyiscaley >> 16 ), 15 ) ];
 		skycontext.iscale = drs_current->skyiscaley;
-		skycontext.texturemid = skytexturemid;
+		skycontext.texturemid = constants::skytexturemid;
 		skycontext.output = rendercontext->buffer;
 		skycontext.output.data += skycontext.output.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
 		skycontext.yl = 0;
@@ -999,8 +999,9 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
 		R_RenderBSPNode( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
 	}
+
 	R_ErrorCheckPlanes( rendercontext );
-	R_DrawPlanes( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->planecontext );
+
 	{
 		M_PROFILE_NAMED( "R_DrawMasked" );
 		R_DrawMasked( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
@@ -1554,7 +1555,6 @@ void R_Init (void)
     R_SetViewSize (screenblocks, detailLevel);
 	R_ExecuteSetViewSize( );
     I_TerminalPrintf( Log_None, "." );
-    R_InitSkyMap ();
     R_InitTranslationTables ();
     I_TerminalPrintf( Log_None, "." );
 

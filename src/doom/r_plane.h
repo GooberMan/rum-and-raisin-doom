@@ -32,8 +32,6 @@ DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context );
 #define R_ErrorCheckPlanes( context )
 #endif // RANGECHECK
 
-DOOM_C_API void R_DrawPlanes ( viewpoint_t* viewpoint, vbuffer_t* dest, planecontext_t* planecontext );
-
 DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop );
 
 #endif

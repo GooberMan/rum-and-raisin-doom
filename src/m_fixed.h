@@ -97,15 +97,14 @@ constexpr size_t AlignTo( _val val )
 typedef int32_t fixed_t;
 typedef int64_t rend_fixed_t;
 
-INLINE fixed_t FixedMul( fixed_t a, fixed_t b );
-INLINE fixed_t FixedDiv( fixed_t a, fixed_t b );
+CONSTEXPR fixed_t FixedMul( fixed_t a, fixed_t b );
+CONSTEXPR fixed_t FixedDiv( fixed_t a, fixed_t b );
 
-// Rounds to nearest whole number
-INLINE fixed_t FixedRound( fixed_t a );
+CONSTEXPR fixed_t FixedRound( fixed_t a );
 
-INLINE rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b );
-INLINE rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
-INLINE rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixed_t percent );
+CONSTEXPR rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b );
+CONSTEXPR rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b );
+CONSTEXPR rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixed_t percent );
 
 #define IntToFixed( x ) ( ( x ) << FRACBITS )
 #define FixedToInt( x ) FRACFILL( ( x ) >> FRACBITS, ( x ) )

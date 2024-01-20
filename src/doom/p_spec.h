@@ -24,6 +24,45 @@
 #ifndef __P_SPEC__
 #define __P_SPEC__
 
+enum BoomActions
+{
+	Floor_ChangeTexture_NumericModel_SR_Player = 78,
+	Floor_Raise512_W1_Player = 142,
+	Floor_Raise512_WR_Player = 147,
+	Floor_ChangeTexture_W1_Player = 153,
+	Floor_ChangeTexture_WR_Player = 154,
+	Floor_RaiseByTexture_S1_Player = 158,
+	Floor_LowerLowestChangeTexture_NumericModel_S1_Player = 159,
+	Floor_Raise24ChangeTexture_S1_Player = 160,
+	Floor_Raise24_S1_Player = 161,
+	Door_Close30Open_S1_Player = 175,
+	Floor_RaiseByTexture_SR_Player = 176,
+	Floor_LowerLowestChangeTexture_NumericModel_SR_Player = 177,
+	Floor_Raise512_SR_Player = 178,
+	Floor_Raise24ChangeTexture_SR_Player = 179,
+	Floor_Raise24_SR_Player = 180,
+	Floor_ChangeTexture_S1_Player = 189,
+	Floor_ChangeTexture_SR_Player = 190,
+	Door_Close30Open_SR_Player = 196,
+	Transfer_FloorLighting_Always = 213,
+	Floor_LowerNearest_W1_Player = 219,
+	Floor_LowerNearest_WR_Player = 220,
+	Floor_LowerNearest_S1_Player = 221,
+	Floor_LowerNearest_SR_Player = 222,
+	Transfer_Friction_Always = 223,
+	Transfer_WindByLength_Always = 224,
+	Transfer_CurrentByLength_Always = 225,
+	Transfer_WindOrCurrentByPoint_Always = 226,
+	Floor_ChangeTexture_NumericModel_W1_Player = 239,
+	Floor_ChangeTexture_NumericModel_WR_Player = 240,
+	Floor_ChangeTexture_NumericModel_S1_Player = 241,
+	Transfer_Heights_Always = 242,
+	Textue_Translucent_Always = 260,
+	Transfer_CeilingLighting_Always = 261,
+	Transfer_Sky_Always = 271,
+	Transfer_SkyReversed_Always = 272,
+};
+
 
 //
 // End-level timer (-TIMER option)

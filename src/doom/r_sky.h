@@ -20,18 +20,25 @@
 #ifndef __R_SKY__
 #define __R_SKY__
 
-#include "m_fixed.h"
+#include "r_defs.h"
+
+#if defined(__cplusplus)
+namespace constants
+{
+	static constexpr rend_fixed_t	skytexturemid = IntToRendFixed( 100 );
+}
+#endif //defined(__cplusplus)
 
 // SKY, store the number for name.
 #define			SKYFLATNAME  "F_SKY1"
 
 // The sky map is 256*128*4 maps.
 #define ANGLETOSKYSHIFT		22
+
 DOOM_C_API extern int				skyflatnum;
 DOOM_C_API extern int				skytexture;
-DOOM_C_API extern rend_fixed_t		skytexturemid;
 
-// Called whenever the view size changes.
-DOOM_C_API void R_InitSkyMap (void);
+DOOM_C_API void R_SetSkyTexture( int32_t texnum );
+DOOM_C_API void R_DrawSky( viewpoint_t* viewpoint, vbuffer_t* dest, rasterregion_t* thisregion, sideinstance_t* skytexture );
 
 #endif

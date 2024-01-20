@@ -884,14 +884,28 @@ DOOM_C_API void R_StoreWallRange( viewpoint_t* viewpoint, vbuffer_t* dest, bspco
 	bspcontext->solidtimetaken += walltime;
 #endif // RENDER_PERF_GRAPHING
 
-	if( ceil && ceilpic != skyflatnum )
+	if( ceil )
 	{
-		R_RasteriseRegion( viewpoint, planecontext, ceil, flatlookup[ flattranslation[ ceilpic ] ] );
+		if( ceilpic != skyflatnum )
+		{
+			R_RasteriseRegion( viewpoint, planecontext, ceil, flatlookup[ flattranslation[ ceilpic ] ] );
+		}
+		else
+		{
+			R_DrawSky( viewpoint, dest, ceil, bspcontext->frontsector->skyline ? &rendsides[ bspcontext->frontsector->skyline->index ] : nullptr );
+		}
 	}
 
-	if( floor && floorpic != skyflatnum )
+	if( floor )
 	{
-		R_RasteriseRegion( viewpoint, planecontext, floor, flatlookup[ flattranslation[ floorpic ] ] );
+		if( floorpic != skyflatnum )
+		{
+			R_RasteriseRegion( viewpoint, planecontext, floor, flatlookup[ flattranslation[ floorpic ] ] );
+		}
+		else
+		{
+			R_DrawSky( viewpoint, dest, floor, bspcontext->frontsector->skyline ? &rendsides[ bspcontext->frontsector->skyline->index ] : nullptr );
+		}
 	}
 
 	M_PROFILE_PUSH( "Reserve openings", __FILE__, __LINE__ );

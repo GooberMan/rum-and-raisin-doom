@@ -17,15 +17,20 @@
 //	Fixed point arithemtics, implementation.
 //
 
+CONSTEXPR fixed_t FixedAbs( fixed_t val )
+{
+	fixed_t sign = val >> 31;
+	return ( val ^ sign ) - sign;
+}
 
-INLINE fixed_t FixedMul( fixed_t a, fixed_t b )
+CONSTEXPR fixed_t FixedMul( fixed_t a, fixed_t b )
 {
 	return ((int64_t) a * (int64_t) b) >> FRACBITS;
 }
 
-INLINE fixed_t FixedDiv(fixed_t a, fixed_t b)
+CONSTEXPR fixed_t FixedDiv(fixed_t a, fixed_t b)
 {
-	if ((abs(a) >> 14) >= abs(b))
+	if ((FixedAbs(a) >> 14) >= FixedAbs(b))
 	{
 		return (a^b) < 0 ? INT_MIN : INT_MAX;
 	}
@@ -35,21 +40,28 @@ INLINE fixed_t FixedDiv(fixed_t a, fixed_t b)
 	return (fixed_t) result;
 }
 
-INLINE fixed_t FixedRound( fixed_t a )
+// Rounds to nearest whole number
+CONSTEXPR fixed_t FixedRound( fixed_t a )
 {
 	return ( a & ~FRACMASK ) + ( ( a & ( 1 << ( FRACBITS - 1 ) ) ) << 1 );
 }
 
-INLINE rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b )
+CONSTEXPR rend_fixed_t RendFixedAbs( rend_fixed_t val )
+{
+	rend_fixed_t sign = val >> 63ll;
+	return ( val ^ sign ) - sign;
+}
+
+CONSTEXPR rend_fixed_t RendFixedMul( rend_fixed_t a, rend_fixed_t b )
 {
 	rend_fixed_t result = ( a * b ) >> RENDFRACBITS;
 
 	return RENDFRACFILL( result, result );
 }
 
-INLINE rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b )
+CONSTEXPR rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b )
 {
-	if ( ( llabs( a ) >> ( RENDFRACBITS - 2 ) ) >= llabs( b ) )
+	if ( ( RendFixedAbs( a ) >> ( RENDFRACBITS - 2 ) ) >= RendFixedAbs( b ) )
 	{
 		return ( a ^ b ) < 0 ? LONG_MIN : LONG_MAX;
 	}
@@ -57,7 +69,7 @@ INLINE rend_fixed_t RendFixedDiv( rend_fixed_t a, rend_fixed_t b )
 	return (rend_fixed_t) result;
 }
 
-INLINE rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixed_t percent )
+CONSTEXPR rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_fixed_t percent )
 {
 	return from + RendFixedMul( ( to - from ), percent );
 }

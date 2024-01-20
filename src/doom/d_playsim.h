@@ -57,6 +57,7 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					hud_shows_boom_combined_keys;
 	doombool					allow_sky_change_between_levels;
 	doombool					allow_boom_specials;
+	doombool					allow_mbf_sky_specials; // complevel 9 is boom + extras
 	doombool					allow_mbf_specials;
 	doombool					allow_mbf21_specials;
 } gameoptions_t;

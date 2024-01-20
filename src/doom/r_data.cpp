@@ -488,8 +488,11 @@ texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat )
 //
 byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
 {
-	texturecomposite_t*& composite = texturelookup[ tex ];
-	
+	return R_GetColumnComposite( texturelookup[ tex ], col, colormapindex );
+}
+
+DOOM_C_API byte* R_GetColumnComposite( texturecomposite_t* composite, int32_t col, int32_t colormapindex )
+{
 	col &= composite->widthmask;
 	int32_t ofs = composite->size * colormapindex + composite->pitch * col;
 
