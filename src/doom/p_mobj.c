@@ -21,6 +21,7 @@
 #include "i_system.h"
 #include "z_zone.h"
 #include "m_random.h"
+#include "m_misc.h"
 
 #include "doomdef.h"
 #include "p_local.h"
@@ -114,136 +115,125 @@ void P_ExplodeMissile (mobj_t* mo)
 //
 // P_XYMovement  
 //
-#define STOPSPEED		0x1000
-#define FRICTION		0xe800
 
 void P_XYMovement (mobj_t* mo) 
 { 	
-    fixed_t 	ptryx;
-    fixed_t	ptryy;
-    player_t*	player;
-    fixed_t	xmove;
-    fixed_t	ymove;
-			
-    if (!mo->momx && !mo->momy)
-    {
-	if (mo->flags & MF_SKULLFLY)
+	fixed_t 	ptryx;
+	fixed_t		ptryy;
+	if (!mo->momx && !mo->momy)
 	{
-	    // the skull slammed into something
-	    mo->flags &= ~MF_SKULLFLY;
-	    mo->momx = mo->momy = mo->momz = 0;
+		if (mo->flags & MF_SKULLFLY)
+		{
+			// the skull slammed into something
+			mo->flags &= ~MF_SKULLFLY;
+			mo->momx = mo->momy = mo->momz = 0;
 
-	    P_SetMobjState (mo, mo->info->spawnstate);
+			P_SetMobjState (mo, mo->info->spawnstate);
+		}
+		return;
 	}
-	return;
-    }
 	
-    player = mo->player;
-		
-    if (mo->momx > MAXMOVE)
-	mo->momx = MAXMOVE;
-    else if (mo->momx < -MAXMOVE)
-	mo->momx = -MAXMOVE;
+	player_t* player = mo->player;
 
-    if (mo->momy > MAXMOVE)
-	mo->momy = MAXMOVE;
-    else if (mo->momy < -MAXMOVE)
-	mo->momy = -MAXMOVE;
-		
-    xmove = mo->momx;
-    ymove = mo->momy;
-	
-    do
-    {
-	if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2)
+	mo->momx = M_CLAMP( mo->momx, -MAXMOVE, MAXMOVE );
+	mo->momy = M_CLAMP( mo->momy, -MAXMOVE, MAXMOVE );
+
+	fixed_t xmove = mo->momx;
+	fixed_t ymove = mo->momy;
+
+	do
 	{
-	    ptryx = mo->x + xmove/2;
-	    ptryy = mo->y + ymove/2;
-	    xmove >>= 1;
-	    ymove >>= 1;
+		if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2)
+		{
+			ptryx = mo->x + xmove/2;
+			ptryy = mo->y + ymove/2;
+			xmove >>= 1;
+			ymove >>= 1;
+		}
+		else
+		{
+			ptryx = mo->x + xmove;
+			ptryy = mo->y + ymove;
+			xmove = ymove = 0;
+		}
+		
+		if (!P_TryMove (mo, ptryx, ptryy))
+		{
+			// blocked move
+			if (mo->player)
+			{	// try to slide along it
+				P_SlideMove (mo);
+			}
+			else if (mo->flags & MF_MISSILE)
+			{
+				// explode a missile
+				if (ceilingline &&
+					ceilingline->backsector &&
+					ceilingline->backsector->ceilingpic == skyflatnum)
+				{
+					// Hack to prevent missiles exploding
+					// against the sky.
+					// Does not handle sky floors.
+					P_RemoveMobj (mo);
+					return;
+				}
+				P_ExplodeMissile (mo);
+			}
+			else
+			{
+				mo->momx = mo->momy = 0;
+			}
+		}
+	} while (xmove || ymove);
+
+	// slow down
+	if (player && player->cheats & CF_NOMOMENTUM)
+	{
+		// debug option for no sliding at all
+		mo->momx = mo->momy = 0;
+		return;
+	}
+
+	if (mo->flags & (MF_MISSILE | MF_SKULLFLY) )
+		return; 	// no friction for missiles ever
+
+	if (mo->z > mo->floorz)
+		return;		// no friction when airborne
+
+	if (mo->flags & MF_CORPSE)
+	{
+		// do not stop sliding
+		//  if halfway off a step with some momentum
+		if (mo->momx > FRACUNIT/4
+			|| mo->momx < -FRACUNIT/4
+			|| mo->momy > FRACUNIT/4
+			|| mo->momy < -FRACUNIT/4)
+		{
+			if (mo->floorz != mo->subsector->sector->floorheight)
+				return;
+		}
+	}
+
+	if (mo->momx > -STOPSPEED
+		&& mo->momx < STOPSPEED
+		&& mo->momy > -STOPSPEED
+		&& mo->momy < STOPSPEED
+		&& (!player
+			|| (player->cmd.forwardmove== 0
+			&& player->cmd.sidemove == 0 ) ) )
+	{
+		// if in a walking frame, stop moving
+		if ( player&&(unsigned)((player->mo->state - states)- S_PLAY_RUN1) < 4)
+			P_SetMobjState (player->mo, S_PLAY);
+	
+		mo->momx = 0;
+		mo->momy = 0;
 	}
 	else
 	{
-	    ptryx = mo->x + xmove;
-	    ptryy = mo->y + ymove;
-	    xmove = ymove = 0;
+		mo->momx = FixedMul( mo->momx, FRICTION ); //mo->subsector->sector->friction );
+		mo->momy = FixedMul( mo->momy, FRICTION ); //mo->subsector->sector->friction );
 	}
-		
-	if (!P_TryMove (mo, ptryx, ptryy))
-	{
-	    // blocked move
-	    if (mo->player)
-	    {	// try to slide along it
-		P_SlideMove (mo);
-	    }
-	    else if (mo->flags & MF_MISSILE)
-	    {
-		// explode a missile
-		if (ceilingline &&
-		    ceilingline->backsector &&
-		    ceilingline->backsector->ceilingpic == skyflatnum)
-		{
-		    // Hack to prevent missiles exploding
-		    // against the sky.
-		    // Does not handle sky floors.
-		    P_RemoveMobj (mo);
-		    return;
-		}
-		P_ExplodeMissile (mo);
-	    }
-	    else
-		mo->momx = mo->momy = 0;
-	}
-    } while (xmove || ymove);
-    
-    // slow down
-    if (player && player->cheats & CF_NOMOMENTUM)
-    {
-	// debug option for no sliding at all
-	mo->momx = mo->momy = 0;
-	return;
-    }
-
-    if (mo->flags & (MF_MISSILE | MF_SKULLFLY) )
-	return; 	// no friction for missiles ever
-		
-    if (mo->z > mo->floorz)
-	return;		// no friction when airborne
-
-    if (mo->flags & MF_CORPSE)
-    {
-	// do not stop sliding
-	//  if halfway off a step with some momentum
-	if (mo->momx > FRACUNIT/4
-	    || mo->momx < -FRACUNIT/4
-	    || mo->momy > FRACUNIT/4
-	    || mo->momy < -FRACUNIT/4)
-	{
-	    if (mo->floorz != mo->subsector->sector->floorheight)
-		return;
-	}
-    }
-
-    if (mo->momx > -STOPSPEED
-	&& mo->momx < STOPSPEED
-	&& mo->momy > -STOPSPEED
-	&& mo->momy < STOPSPEED
-	&& (!player
-	    || (player->cmd.forwardmove== 0
-		&& player->cmd.sidemove == 0 ) ) )
-    {
-	// if in a walking frame, stop moving
-	if ( player&&(unsigned)((player->mo->state - states)- S_PLAY_RUN1) < 4)
-	    P_SetMobjState (player->mo, S_PLAY);
-	
-	mo->momx = 0;
-	mo->momy = 0;
-    }
-    else
-    {
-	mo->momx = FixedMul (mo->momx, FRICTION);
-	mo->momy = FixedMul (mo->momy, FRICTION);
-    }
 }
 
 //

@@ -43,6 +43,7 @@
 extern "C"
 {
 	#include "p_local.h"
+	extern int32_t remove_limits;
 }
 
 #define MAX_DEATHMATCH_STARTS	10
@@ -429,9 +430,15 @@ struct DoomMapLoader
 			out.ceilingpic		= R_FlatNumForName( in.ceilingpic );
 			out.lightlevel		= Read::AsIs( in.lightlevel );
 			out.special			= Read::AsIs( in.special );
+			out.extendedspecial	= out.special & ~Sector_VanillaSpecialMask;
+			if( remove_limits )
+			{
+				out.special		&= Sector_VanillaSpecialMask;
+			}
 			out.tag				= Read::AsIs( in.tag );
 			out.thinglist		= NULL;
 			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
+			out.friction		= FRICTION;
 		} );
 
 		_numsectors				= data.count;

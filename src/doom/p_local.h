@@ -58,6 +58,18 @@
 // follow a player exlusively for 3 seconds
 #define	BASETHRESHOLD	 	100
 
+// Movement constants
+#define STOPSPEED		0x1000 // 0.0625
+#define FRICTION		0xe800 // 0.90625
+
+typedef enum sectorspecials_e
+{
+	Sector_VanillaSpecialMask		= 0x0000001F,
+	Sector_BoomDamageMask			= 0x0000006F,
+	Sector_BoomSecret				= 0x00000080,
+	Sector_BoomFriction				= 0x00000100,
+	Sector_BoomWind					= 0x00000200,
+} sectorspecials_t;
 
 
 //
@@ -65,7 +77,7 @@
 //
 
 // both the head and tail of the thinker list
-extern	thinker_t	thinkercap;	
+extern	thinker_t	thinkercap;
 
 
 void P_InitThinkers (void);

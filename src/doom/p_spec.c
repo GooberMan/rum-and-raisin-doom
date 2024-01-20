@@ -1477,7 +1477,7 @@ void P_SpawnSpecials (void)
     {
 		if (!sector->special)
 			continue;
-	
+
 		switch (sector->special)
 		{
 		  case 1:
@@ -1498,7 +1498,11 @@ void P_SpawnSpecials (void)
 		  case 4:
 			// STROBE FAST/DEATH SLIME
 			P_SpawnStrobeFlash(sector,FASTDARK,0);
-			sector->special = 4;
+			// Harmless in vanilla; deleted in Boom
+			//if( !remove_limits )
+			//{
+			//	sector->special = 4;
+			//}
 			break;
 	    
 		  case 8:
@@ -1557,10 +1561,29 @@ void P_SpawnSpecials (void)
 			// EFFECT FIRSTCOL SCROLL+
 			linespeciallist[ numlinespecials++ ] = &lines[ i ];
 			break;
+		};
 
-		case 260:
-			if( remove_limits )
+		if( remove_limits ) // allow_boom_specials
+		{
+			switch( lines[ i ].special )
 			{
+			case 223: // Friction
+				{
+					fixed_t linelength = M_CLAMP( P_AproxDistance( lines[ i ].dx, lines[ i ].dy ), 0, IntToFixed( 200 ) );
+					fixed_t frictionmul = FixedDiv( linelength, IntToFixed( 100 ) ) - IntToFixed( 1 );
+					fixed_t targetfriction = FRICTION + FixedMul( ( IntToFixed( 1 ) - FRICTION ), frictionmul );
+
+					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					{
+						if( sectors[ thissector ].tag == lines[ i ].tag )
+						{
+							sectors[ thissector ].friction = targetfriction;
+						}
+					}
+				}
+				break;
+
+			case 260: // Transparency
 				if( lines[i].tag == 0 )
 				{
 					lines[i].transparencymap = tranmap;
@@ -1590,6 +1613,7 @@ void P_SpawnSpecials (void)
 						}
 					}
 				}
+				break;
 			}
 		}
 	}

@@ -200,6 +200,7 @@ typedef	struct
 	int16_t				ceilingpic;
 	int16_t				lightlevel;
 	int16_t				special;
+	int16_t				extendedspecial;
 	int16_t				tag;
 
 	int32_t				secretstate;
@@ -228,6 +229,8 @@ typedef	struct
 
 	int32_t				linecount;
 	struct line_s**		lines;	// [linecount] size
+	
+	fixed_t				friction;
 
 	int32_t				snapfloor;
 	int32_t				snapceiling;
