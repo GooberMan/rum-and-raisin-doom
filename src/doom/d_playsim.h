@@ -87,6 +87,7 @@ DOOM_C_API typedef struct renderoptions_s
 	doombool					full_rgb_range;
 	doombool					invalid_thing_frames;
 	doombool					always_update_sky_texture;
+	doombool					allow_transmaps;
 } renderoptions_t;
 
 DOOM_C_API typedef struct playsimoptions_s

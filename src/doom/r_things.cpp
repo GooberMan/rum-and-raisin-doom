@@ -297,7 +297,8 @@ void R_DrawMaskedColumn( spritecontext_t* spritecontext, colcontext_t* colcontex
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-	doombool isfuzz = colcontext->colormap == NULL;
+	doombool isfuzz = colcontext->colormap == nullptr;
+
 	rend_fixed_t basetexturemid = colcontext->texturemid;
 	
 	for ( ; column->topdelta != 0xff ; ) 

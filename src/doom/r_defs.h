@@ -256,6 +256,8 @@ typedef struct side_s
 	int16_t				bottomtexture;
 	int16_t				midtexture;
 
+	lumpindex_t			midtextureindex;
+
 	// Sector the SideDef is facing.
 	sector_t*			sector;
 
@@ -312,6 +314,8 @@ typedef struct line_s
 
 	// thinker_t for reversable actions
 	void*				specialdata;
+
+	byte*				transparencymap;
 } line_t;
 
 
@@ -724,6 +728,7 @@ typedef struct colcontext_s
 
 	lighttable_t*		colormap;
 	byte*				translation;
+	byte*				transparency;
 
 	colfunc_t			colfunc;
 

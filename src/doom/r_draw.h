@@ -34,6 +34,7 @@ void R_SpriteDrawColumn ( colcontext_t* context );
 void R_SpriteDrawColumn_Untranslated ( colcontext_t* context );
 void R_LimitRemovingDrawColumn ( colcontext_t* context );
 void R_LimitRemovingDrawColumn_Untranslated ( colcontext_t* context );
+void R_LimitRemovingDrawColumn_Transparent ( colcontext_t* context );
 void R_BackbufferDrawColumn ( colcontext_t* context );
 void R_BackbufferDrawColumn_Untranslated ( colcontext_t* context );
 

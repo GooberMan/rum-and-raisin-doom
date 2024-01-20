@@ -117,15 +117,12 @@ DOOM_C_API void R_RenderMaskedSegRange( viewpoint_t* viewpoint, vbuffer_t* dest,
 	lighttable_t**		walllights;
 	int32_t				walllightsindex;
 
-	colcontext_t		spritecolcontext;
+	colcontext_t		spritecolcontext = {};
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		starttime = I_GetTimeUS();
 	uint64_t		endtime;
 #endif // RENDER_PERF_GRAPHING
-
-	spritecolcontext.output = *dest;
-	spritecolcontext.colfunc = &R_SpriteDrawColumn_Untranslated; 
 
 	// Calculate light table.
 	// Use different light tables
@@ -136,6 +133,11 @@ DOOM_C_API void R_RenderMaskedSegRange( viewpoint_t* viewpoint, vbuffer_t* dest,
 	bspcontext->frontsectorinst = &rendsectors[ bspcontext->curline->frontsector->index ];
 	bspcontext->backsector = bspcontext->curline->backsector;
 	bspcontext->backsectorinst = &rendsectors[ bspcontext->curline->backsector->index ];
+
+	spritecolcontext.output = *dest;
+	spritecolcontext.transparency = bspcontext->curline->linedef->transparencymap;
+	spritecolcontext.colfunc = bspcontext->curline->linedef->transparencymap == nullptr ? &R_SpriteDrawColumn_Untranslated : &R_LimitRemovingDrawColumn_Transparent;
+
 	texnum = texturetranslation[bspcontext->curline->sidedef->midtexture];
 	
 	lightnum = (bspcontext->frontsectorinst->lightlevel >> LIGHTSEGSHIFT)+extralight;
@@ -205,6 +207,7 @@ DOOM_C_API void R_RenderMaskedSegRange( viewpoint_t* viewpoint, vbuffer_t* dest,
 
 			// draw the texture
 			col = (column_t *)( R_GetRawColumn( texnum,maskedtexturecol[spritecolcontext.x] ) -3 );
+			spritecolcontext.sourceheight = IntToRendFixed( col->length );
 			
 			R_DrawMaskedColumn( spritecontext, &spritecolcontext, col );
 			maskedtexturecol[spritecolcontext.x] = MASKEDTEXCOL_INVALID;

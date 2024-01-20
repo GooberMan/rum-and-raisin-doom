@@ -206,6 +206,11 @@ typedef enum class NodeFormat : int32_t
 	ZNodeCompressed,
 } nodeformat_t;
 
+inline constexpr bool NoTexture( const char* pName )
+{
+	return *pName == 0 || *pName == '-';
+}
+
 struct DoomMapLoader
 {
 	using Read = ReadVal;
@@ -464,6 +469,7 @@ struct DoomMapLoader
 			out.toptexture		= R_TextureNumForName( in.toptexture );
 			out.bottomtexture	= R_TextureNumForName( in.bottomtexture );
 			out.midtexture		= R_TextureNumForName( in.midtexture );
+			out.midtextureindex	= !NoTexture( in.midtexture ) ? W_CheckNumForName( in.midtexture ) : -1;
 			out.sector			= in.sector >= 0 ? &Sectors()[ Read::AsIs( in.sector ) ] : nullptr; // Requiem MAP03 has sector numbers -1
 		} );
 

@@ -36,7 +36,6 @@
 //
 
 DOOM_C_API typedef struct lumpinfo_s lumpinfo_t;
-DOOM_C_API typedef int32_t lumpindex_t;
 
 DOOM_C_API struct lumpinfo_s
 {

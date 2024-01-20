@@ -428,7 +428,23 @@ namespace DrawColumn
 			};
 		};
 
-		template< typename Sampler, typename Lookup >
+		struct WriterDirect
+		{
+			static INLINE void Write( colcontext_t* context, pixel_t*& dest, pixel_t sample )
+			{
+				*dest++ = sample;
+			}
+		};
+
+		struct WriterTransparent
+		{
+			static INLINE void Write( colcontext_t* context, pixel_t*& dest, pixel_t sample )
+			{
+				*dest++ = context->transparency[ (int32_t)sample + ((int32_t)*dest << 8 ) ];
+			}
+		};
+
+		template< typename Sampler, typename Lookup, typename Writer >
 		static INLINE void DrawWith( colcontext_t* context )
 		{
 			constexpr bool LimitRemoving = arg_count( &Sampler::Sample ) > 2;
@@ -460,38 +476,37 @@ namespace DrawColumn
 			{
 				if constexpr( !LimitRemoving )
 				{
-					*dest = Sampler::Sample( context, frac );
+					Writer::Write( context, dest, Sampler::Sample( context, frac ) );
 				}
 				else
 				{
-					*dest = Sampler::Sample( context, frac, context->sourceheight );
+					Writer::Write( context, dest, Sampler::Sample( context, frac, context->sourceheight ) );
 				}
-		
-				++dest;
 				frac += fracstep;
 	
 			} while (count--);
 		}
 
-		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal< 128 >::Direct, ViewportLookup >( context ); }
-		static INLINE void PaletteSwapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportLookup >( context ); }
-		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportLookup >( context ); }
-		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportLookup >( context ); }
+		static INLINE void Draw( colcontext_t* context )									{ DrawWith< SamplerOriginal< 128 >::Direct, ViewportLookup, WriterDirect >( context ); }
+		static INLINE void PaletteSwapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportLookup, WriterDirect >( context ); }
+		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportLookup, WriterDirect >( context ); }
+		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportLookup, WriterDirect >( context ); }
 
-		static INLINE void SpriteDraw( colcontext_t* context )								{ DrawWith< SamplerOriginal< 128 >::Direct, ViewportSpriteLookup >( context ); }
-		static INLINE void SpritePaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportSpriteLookup >( context ); }
-		static INLINE void SpriteColormapDraw( colcontext_t* context )						{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup >( context ); }
-		static INLINE void SpriteColormapPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportSpriteLookup >( context ); }
+		static INLINE void SpriteDraw( colcontext_t* context )								{ DrawWith< SamplerOriginal< 128 >::Direct, ViewportSpriteLookup, WriterDirect >( context ); }
+		static INLINE void SpritePaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportSpriteLookup, WriterDirect >( context ); }
+		static INLINE void SpriteColormapDraw( colcontext_t* context )						{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup, WriterDirect >( context ); }
+		static INLINE void SpriteColormapPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportSpriteLookup, WriterDirect >( context ); }
 
-		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct, ViewportLookup >( context ); }
-		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap, ViewportLookup >( context ); }
-		static INLINE void LimitRemovingColormapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::Colormap, ViewportLookup >( context ); }
-		static INLINE void LimitRemovingColormapPaletteSwapDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, ViewportLookup >( context ); }
+		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct, ViewportLookup, WriterDirect >( context ); }
+		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap, ViewportLookup, WriterDirect >( context ); }
+		static INLINE void LimitRemovingColormapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::Colormap, ViewportLookup, WriterDirect >( context ); }
+		static INLINE void LimitRemovingColormapPaletteSwapDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, ViewportLookup, WriterDirect >( context ); }
+		static INLINE void LimitRemovingTransparentDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::Colormap, ViewportLookup, WriterTransparent >( context ); }
 
-		static INLINE void BackbufferDraw( colcontext_t* context )							{ DrawWith< SamplerLimitRemoving::Direct, BackbufferLookup >( context ); }
-		static INLINE void BackbufferPaletteSwapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::PaletteSwap, BackbufferLookup >( context ); }
-		static INLINE void BackbufferColormapDraw( colcontext_t* context )					{ DrawWith< SamplerLimitRemoving::Colormap, BackbufferLookup >( context ); }
-		static INLINE void BackbufferColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, BackbufferLookup >( context ); }
+		static INLINE void BackbufferDraw( colcontext_t* context )							{ DrawWith< SamplerLimitRemoving::Direct, BackbufferLookup, WriterDirect >( context ); }
+		static INLINE void BackbufferPaletteSwapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::PaletteSwap, BackbufferLookup, WriterDirect >( context ); }
+		static INLINE void BackbufferColormapDraw( colcontext_t* context )					{ DrawWith< SamplerLimitRemoving::Colormap, BackbufferLookup, WriterDirect >( context ); }
+		static INLINE void BackbufferColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, BackbufferLookup, WriterDirect >( context ); }
 	};
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
@@ -541,6 +556,12 @@ void R_LimitRemovingDrawColumn_Untranslated( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::LimitRemovingColormapDraw( context );
+}
+
+void R_LimitRemovingDrawColumn_Transparent( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::LimitRemovingTransparentDraw( context );
 }
 
 void R_BackbufferDrawColumn( colcontext_t* context ) 

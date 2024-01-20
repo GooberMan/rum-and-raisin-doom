@@ -209,6 +209,8 @@ DOOM_C_API typedef int32_t doombool;
 
 #endif
 
+DOOM_C_API typedef int32_t lumpindex_t;
+
 DOOM_C_API typedef uint8_t byte;
 DOOM_C_API typedef uint8_t pixel_t;
 DOOM_C_API typedef int16_t dpixel_t;

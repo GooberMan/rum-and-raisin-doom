@@ -1475,66 +1475,66 @@ void P_SpawnSpecials (void)
     sector = sectors;
     for (i=0 ; i<numsectors ; i++, sector++)
     {
-	if (!sector->special)
-	    continue;
+		if (!sector->special)
+			continue;
 	
-	switch (sector->special)
-	{
-	  case 1:
-	    // FLICKERING LIGHTS
-	    P_SpawnLightFlash (sector);
-	    break;
+		switch (sector->special)
+		{
+		  case 1:
+			// FLICKERING LIGHTS
+			P_SpawnLightFlash (sector);
+			break;
 
-	  case 2:
-	    // STROBE FAST
-	    P_SpawnStrobeFlash(sector,FASTDARK,0);
-	    break;
+		  case 2:
+			// STROBE FAST
+			P_SpawnStrobeFlash(sector,FASTDARK,0);
+			break;
 	    
-	  case 3:
-	    // STROBE SLOW
-	    P_SpawnStrobeFlash(sector,SLOWDARK,0);
-	    break;
+		  case 3:
+			// STROBE SLOW
+			P_SpawnStrobeFlash(sector,SLOWDARK,0);
+			break;
 	    
-	  case 4:
-	    // STROBE FAST/DEATH SLIME
-	    P_SpawnStrobeFlash(sector,FASTDARK,0);
-	    sector->special = 4;
-	    break;
+		  case 4:
+			// STROBE FAST/DEATH SLIME
+			P_SpawnStrobeFlash(sector,FASTDARK,0);
+			sector->special = 4;
+			break;
 	    
-	  case 8:
-	    // GLOWING LIGHT
-	    P_SpawnGlowingLight(sector);
-	    break;
-	  case 9:
-	    // SECRET SECTOR
-	    totalsecret++;
-		++session.start_total_secrets;
-	    break;
+		  case 8:
+			// GLOWING LIGHT
+			P_SpawnGlowingLight(sector);
+			break;
+		  case 9:
+			// SECRET SECTOR
+			totalsecret++;
+			++session.start_total_secrets;
+			break;
 	    
-	  case 10:
-	    // DOOR CLOSE IN 30 SECONDS
-	    P_SpawnDoorCloseIn30 (sector);
-	    break;
+		  case 10:
+			// DOOR CLOSE IN 30 SECONDS
+			P_SpawnDoorCloseIn30 (sector);
+			break;
 	    
-	  case 12:
-	    // SYNC STROBE SLOW
-	    P_SpawnStrobeFlash (sector, SLOWDARK, 1);
-	    break;
+		  case 12:
+			// SYNC STROBE SLOW
+			P_SpawnStrobeFlash (sector, SLOWDARK, 1);
+			break;
 
-	  case 13:
-	    // SYNC STROBE FAST
-	    P_SpawnStrobeFlash (sector, FASTDARK, 1);
-	    break;
+		  case 13:
+			// SYNC STROBE FAST
+			P_SpawnStrobeFlash (sector, FASTDARK, 1);
+			break;
 
-	  case 14:
-	    // DOOR RAISE IN 5 MINUTES
-	    P_SpawnDoorRaiseIn5Mins (sector, i);
-	    break;
+		  case 14:
+			// DOOR RAISE IN 5 MINUTES
+			P_SpawnDoorRaiseIn5Mins (sector, i);
+			break;
 	    
-	  case 17:
-	    P_SpawnFireFlicker(sector);
-	    break;
-	}
+		  case 17:
+			P_SpawnFireFlicker(sector);
+			break;
+		}
     }
 
     
@@ -1547,6 +1547,8 @@ void P_SpawnSpecials (void)
 
 	linespeciallist = Z_Malloc( sizeof( line_t* ) * scrollcount, PU_LEVEL, NULL );
 	numlinespecials = 0;
+
+	byte* tranmap = W_CacheLumpName( "TRANMAP", PU_LEVEL );
 	for (i = 0;i < numlines; i++)
 	{
 		switch(lines[i].special)
@@ -1555,16 +1557,54 @@ void P_SpawnSpecials (void)
 			// EFFECT FIRSTCOL SCROLL+
 			linespeciallist[ numlinespecials++ ] = &lines[ i ];
 			break;
+
+		case 260:
+			if( remove_limits )
+			{
+				if( lines[i].tag == 0 )
+				{
+					lines[i].transparencymap = tranmap;
+				}
+				else
+				{
+					byte* customtranmap = tranmap;
+					if( lines[ i ].sidenum[ 0 ] >= 0 && sides[ lines[ i ].sidenum[ 0 ] ].midtextureindex >= 0 )
+					{
+						lumpindex_t customtranmapindex = sides[ lines[ i ].sidenum[ 0 ] ].midtextureindex;
+						size_t customtranmaplen = W_LumpLength( customtranmapindex );
+						if( customtranmaplen == 65536 )
+						{
+							customtranmap = W_CacheLumpNum( customtranmapindex, PU_LEVEL );
+						}
+						else if( sides[ lines[ i ].sidenum[ 0 ] ].midtexture == 0 )
+						{
+							I_Error( "Tagged transparent line requires either a valid transmap entry or a valid texture" );
+						}
+					}
+
+					for( int32_t target = 0 ; target < numlines; ++target )
+					{
+						if( lines[ target ].tag == lines[ i ].tag )
+						{
+							lines[ target ].transparencymap = customtranmap;
+						}
+					}
+				}
+			}
 		}
 	}
 
     
     //	Init other misc stuff
     for (i = 0;i < MAXCEILINGS;i++)
-	activeceilings[i] = NULL;
+	{
+		activeceilings[i] = NULL;
+	}
 
     for (i = 0;i < MAXPLATS;i++)
-	activeplats[i] = NULL;
+	{
+		activeplats[i] = NULL;
+	}
     
     for (i = 0;i < MAXBUTTONS;i++)
 	memset(&buttonlist[i],0,sizeof(button_t));
