@@ -50,7 +50,7 @@ extern "C"
 // R_ClearPlanes
 // At begining of frame.
 //
-DOOM_C_API void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
+void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
 {
 	M_PROFILE_FUNC();
 
@@ -71,7 +71,7 @@ DOOM_C_API void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t h
 // R_FindPlane
 //
 
-DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop )
+rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop )
 {
 	constexpr rasterline_t defaultline = { VPINDEX_INVALID, 0 };
 	int16_t width = stop - start + 1;
@@ -99,28 +99,28 @@ DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_
 	}
 	else
 	{
-		region->nextregion = context->rasterregions[ picnum ];
-		context->rasterregions[ picnum ] = region;
+		region->nextregion = context.rasterregions[ picnum ];
+		context.rasterregions[ picnum ] = region;
 	}
 
 	return region;
 }
 
 #if RANGECHECK
-DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context )
+void R_ErrorCheckPlanes( rendercontext_t& context )
 {
 	M_PROFILE_FUNC();
 
-	if ( context->bspcontext.thisdrawseg - context->bspcontext.drawsegs > MAXDRAWSEGS)
+	if ( context.bspcontext.thisdrawseg - context.bspcontext.drawsegs > MAXDRAWSEGS)
 	{
 		I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
-				context->bspcontext.thisdrawseg - context->bspcontext.drawsegs);
+				context.bspcontext.thisdrawseg - context.bspcontext.drawsegs);
 	}
 
-	if (context->planecontext.lastopening - context->planecontext.openings > MAXOPENINGS)
+	if (context.planecontext.lastopening - context.planecontext.openings > MAXOPENINGS)
 	{
 		I_Error ("R_DrawPlanes: opening overflow (%" PRIiPTR ")",
-				context->planecontext.lastopening - context->planecontext.openings);
+				context.planecontext.lastopening - context.planecontext.openings);
 	}
 }
 #endif

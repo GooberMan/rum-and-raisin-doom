@@ -24,14 +24,18 @@
 
 #include "r_data.h"
 
-DOOM_C_API void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height );
+#if defined(__cplusplus)
+
+void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height );
 
 #if RANGECHECK
-DOOM_C_API void R_ErrorCheckPlanes( rendercontext_t* context );
+void R_ErrorCheckPlanes( rendercontext_t& context );
 #else
 #define R_ErrorCheckPlanes( context )
 #endif // RANGECHECK
 
-DOOM_C_API rasterregion_t* R_AddNewRasterRegion( planecontext_t* context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop );
+rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop );
+
+#endif // defined(__cplusplus)
 
 #endif

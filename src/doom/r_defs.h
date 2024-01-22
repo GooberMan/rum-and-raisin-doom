@@ -634,6 +634,7 @@ typedef enum spantype_e
 typedef struct rastercache_s
 {
 	lighttable_t**		zlight;
+	lighttable_t*		colormap;
 	size_t				sourceoffset;
 	rend_fixed_t		distance;
 } rastercache_t;
@@ -794,6 +795,8 @@ typedef struct rendercontext_s
 	bspcontext_t		bspcontext;
 	planecontext_t		planecontext;
 	spritecontext_t		spritecontext;
+
+	lighttable_t*		colormaps;
 
 	// Functions
 	colfunc_t			colfunc;

@@ -17,16 +17,10 @@
 #ifndef __R_RASTER__
 #define __R_RASTER__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "r_data.h"
 
-#ifdef __cplusplus
-}
-#endif
-
-DOOM_C_API void R_RasteriseRegion( viewpoint_t* viewpoint, planecontext_t* planecontext, rasterregion_t* firstregion, texturecomposite_t* texture );
+#if defined(__cplusplus)
+void R_RasteriseRegion( rendercontext_t& rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture );
+#endif // defined(__cplusplus)
 
 #endif // __I_THREAD__

@@ -41,7 +41,7 @@
 //
 // R_ClearClipSegs
 //
-DOOM_C_API void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
+void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
 {
 	context->solidsegs[0].first		= INT_MIN;
 	context->solidsegs[0].last		= mincol - 1;
@@ -53,7 +53,7 @@ DOOM_C_API void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t
 //
 // R_ClearDrawSegs
 //
-DOOM_C_API void R_ClearDrawSegs ( bspcontext_t* context )
+void R_ClearDrawSegs ( bspcontext_t* context )
 {
 	context->thisdrawseg = context->drawsegs;
 }
@@ -64,14 +64,16 @@ DOOM_C_API void R_ClearDrawSegs ( bspcontext_t* context )
 //  e.g. single sided LineDefs (middle texture)
 //  that entirely block the view.
 // 
-void R_ClipSolidWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
+void R_ClipSolidWallSegment( rendercontext_t& rendercontext, wallcontext_t& wallcontext, int32_t first, int32_t last )
 {
+	bspcontext_t& bspcontext = rendercontext.bspcontext;
+
 	cliprange_t*	next;
 	cliprange_t*	start;
 
 	// Find the first range that touches the range
 	//  (adjacent pixels are touching).
-	start = bspcontext->solidsegs;
+	start = bspcontext.solidsegs;
 	while (start->last < first-1)
 	{
 		++start;
@@ -83,9 +85,9 @@ void R_ClipSolidWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext
 		{
 			// Post is entirely visible (above start),
 			//  so insert a new clippost.
-			R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, first, last );
-			next = bspcontext->solidsegsend;
-			bspcontext->solidsegsend++;
+			R_StoreWallRange( rendercontext, wallcontext, first, last );
+			next = bspcontext.solidsegsend;
+			bspcontext.solidsegsend++;
 
 			while (next != start)
 			{
@@ -98,7 +100,7 @@ void R_ClipSolidWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext
 		}
 
 		// There is a fragment above *start.
-		R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, first, start->first - 1 );
+		R_StoreWallRange( rendercontext, wallcontext, first, start->first - 1 );
 		// Now adjust the clip size.
 		start->first = first;
 	}
@@ -113,7 +115,7 @@ void R_ClipSolidWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext
 	while (last >= (next+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, next->last + 1, (next+1)->first - 1 );
+		R_StoreWallRange( rendercontext, wallcontext, next->last + 1, (next+1)->first - 1 );
 		++next;
 	
 		if (last <= next->last)
@@ -126,7 +128,7 @@ void R_ClipSolidWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, next->last + 1, last );
+	R_StoreWallRange( rendercontext, wallcontext, next->last + 1, last );
 	// Adjust the clip size.
 	start->last = last;
 	
@@ -139,13 +141,13 @@ crunch:
 		return;
 	}
 
-	while (next++ != bspcontext->solidsegsend)
+	while (next++ != bspcontext.solidsegsend)
 	{
 		// Remove a post.
 		*++start = *next;
 	}
 
-	bspcontext->solidsegsend = start+1;
+	bspcontext.solidsegsend = start+1;
 }
 
 
@@ -157,13 +159,14 @@ crunch:
 // Does handle windows,
 //  e.g. LineDefs with upper and lower texture.
 //
-void R_ClipPassWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, wallcontext_t* wallcontext, int32_t first, int32_t last )
+void R_ClipPassWallSegment( rendercontext_t& rendercontext, wallcontext_t& wallcontext, int32_t first, int32_t last )
 {
+	bspcontext_t& bspcontext = rendercontext.bspcontext;
 	cliprange_t*	start;
 
 	// Find the first range that touches the range
 	//  (adjacent pixels are touching).
-	start = bspcontext->solidsegs;
+	start = bspcontext.solidsegs;
 	while (start->last < first-1)
 	{
 		++start;
@@ -174,12 +177,12 @@ void R_ClipPassWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_
 		if (last < start->first-1)
 		{
 			// Post is entirely visible (above start).
-			R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, first, last );
+			R_StoreWallRange( rendercontext, wallcontext, first, last );
 			return;
 		}
 		
 		// There is a fragment above *start.
-		R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, first, start->first - 1 );
+		R_StoreWallRange( rendercontext, wallcontext, first, start->first - 1 );
 	}
 
 	// Bottom contained in start?
@@ -191,7 +194,7 @@ void R_ClipPassWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_
 	while (last >= (start+1)->first-1)
 	{
 		// There is a fragment between two posts.
-		R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, start->last + 1, (start+1)->first - 1 );
+		R_StoreWallRange( rendercontext, wallcontext, start->last + 1, (start+1)->first - 1 );
 		++start;
 	
 		if (last <= start->last)
@@ -201,7 +204,7 @@ void R_ClipPassWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_
 	}
 	
 	// There is a fragment after *next.
-	R_StoreWallRange( viewpoint, dest, bspcontext, planecontext, wallcontext, start->last + 1, last );
+	R_StoreWallRange( rendercontext, wallcontext, start->last + 1, last );
 }
 
 //
@@ -210,15 +213,18 @@ void R_ClipPassWallSegment( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_
 // and adds any visible pieces to the line list.
 //
 
-void R_AddLine( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, seg_t* line )
+void R_AddLine( rendercontext_t& rendercontext, seg_t* line )
 {
 	wallcontext_t	wallcontext;
 
-	bspcontext->curline = line;
+	viewpoint_t& viewpoint		= rendercontext.viewpoint;
+	bspcontext_t& bspcontext	= rendercontext.bspcontext;
+
+	bspcontext.curline = line;
 
 	// OPTIMIZE: quickly reject orthogonal back sides.
-	angle_t angle1 = R_PointToAngle( viewpoint, line->v1->rend.x, line->v1->rend.y );
-	angle_t angle2 = R_PointToAngle( viewpoint, line->v2->rend.x, line->v2->rend.y );
+	angle_t angle1 = R_PointToAngle( &viewpoint, line->v1->rend.x, line->v1->rend.y );
+	angle_t angle2 = R_PointToAngle( &viewpoint, line->v2->rend.x, line->v2->rend.y );
 
 	// Clip to view edges.
 	// OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
@@ -233,8 +239,8 @@ void R_AddLine( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontex
 	// Global angle needed by segcalc.
 	wallcontext.angle1 = angle1;
 	wallcontext.angle2 = angle2;
-	angle1 -= viewpoint->angle;
-	angle2 -= viewpoint->angle;
+	angle1 -= viewpoint.angle;
+	angle2 -= viewpoint.angle;
 	
 	angle_t tspan = angle1 + drs_current->clipangle;
 	if (tspan > 2*drs_current->clipangle)
@@ -271,25 +277,25 @@ void R_AddLine( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontex
 		return;
 	}
 	
-	bspcontext->backsector = line->backsector;
-	bspcontext->backsectorinst = line->backsector ? &rendsectors[ line->backsector->index ] : NULL;
+	bspcontext.backsector = line->backsector;
+	bspcontext.backsectorinst = line->backsector ? &rendsectors[ line->backsector->index ] : NULL;
 
 	// Single sided line?
-	if (!bspcontext->backsector)
+	if (!bspcontext.backsector)
 	{
 		goto clipsolid;
 	}
 
 	// Closed door.
-	if (bspcontext->backsectorinst->ceilheight <= bspcontext->frontsectorinst->floorheight
-		|| bspcontext->backsectorinst->floorheight >= bspcontext->frontsectorinst->ceilheight)
+	if (bspcontext.backsectorinst->ceilheight <= bspcontext.frontsectorinst->floorheight
+		|| bspcontext.backsectorinst->floorheight >= bspcontext.frontsectorinst->ceilheight)
 	{
 		goto clipsolid;
 	}
 
 	// Window.
-	if (bspcontext->backsectorinst->ceilheight != bspcontext->frontsectorinst->ceilheight
-		|| bspcontext->backsectorinst->floorheight != bspcontext->frontsectorinst->floorheight)
+	if (bspcontext.backsectorinst->ceilheight != bspcontext.frontsectorinst->ceilheight
+		|| bspcontext.backsectorinst->floorheight != bspcontext.frontsectorinst->floorheight)
 	{
 		goto clippass;
 	}
@@ -299,20 +305,20 @@ void R_AddLine( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontex
 	// Identical floor and ceiling on both sides,
 	// identical light levels on both sides,
 	// and no middle texture.
-	if (bspcontext->backsectorinst->ceiltex == bspcontext->frontsectorinst->ceiltex
-		&& bspcontext->backsectorinst->floortex == bspcontext->frontsectorinst->floortex
-		&& bspcontext->backsectorinst->lightlevel == bspcontext->frontsectorinst->lightlevel
-		&& bspcontext->curline->sidedef->midtexture == 0)
+	if (bspcontext.backsectorinst->ceiltex == bspcontext.frontsectorinst->ceiltex
+		&& bspcontext.backsectorinst->floortex == bspcontext.frontsectorinst->floortex
+		&& bspcontext.backsectorinst->lightlevel == bspcontext.frontsectorinst->lightlevel
+		&& bspcontext.curline->sidedef->midtexture == 0)
 	{
 		return;
 	}
 
 clippass:
-	R_ClipPassWallSegment( viewpoint, dest, bspcontext, planecontext, &wallcontext, x1, x2-1 );
+	R_ClipPassWallSegment( rendercontext, wallcontext, x1, x2-1 );
 	return;
 
 clipsolid:
-	R_ClipSolidWallSegment( viewpoint, dest, bspcontext, planecontext, &wallcontext, x1, x2-1 );
+	R_ClipSolidWallSegment( rendercontext, wallcontext, x1, x2-1 );
 }
 
 
@@ -338,7 +344,7 @@ int32_t	checkcoord[12][4] =
 };
 
 
-doombool R_CheckBBox( viewpoint_t* viewpoint, bspcontext_t* context, rend_fixed_t* bspcoord )
+doombool R_CheckBBox( const viewpoint_t& viewpoint, const bspcontext_t& context, rend_fixed_t* bspcoord )
 {
 	int32_t			boxx;
 	int32_t			boxy;
@@ -354,18 +360,16 @@ doombool R_CheckBBox( viewpoint_t* viewpoint, bspcontext_t* context, rend_fixed_
 	angle_t			span;
 	angle_t			tspan;
 
-	cliprange_t*	start;
-
 	int32_t			sx1;
 	int32_t			sx2;
 
 	// Find the corners of the box
 	// that define the edges from current viewpoint.
-	if( viewpoint->x <= bspcoord[ BOXLEFT ] )
+	if( viewpoint.x <= bspcoord[ BOXLEFT ] )
 	{
 		boxx = 0;
 	}
-	else if( viewpoint->x < bspcoord[ BOXRIGHT ] )
+	else if( viewpoint.x < bspcoord[ BOXRIGHT ] )
 	{
 		boxx = 1;
 	}
@@ -374,11 +378,11 @@ doombool R_CheckBBox( viewpoint_t* viewpoint, bspcontext_t* context, rend_fixed_
 		boxx = 2;
 	}
 		
-	if( viewpoint->y >= bspcoord[ BOXTOP ] )
+	if( viewpoint.y >= bspcoord[ BOXTOP ] )
 	{
 		boxy = 0;
 	}
-	else if( viewpoint->y > bspcoord[ BOXBOTTOM ] )
+	else if( viewpoint.y > bspcoord[ BOXBOTTOM ] )
 	{
 		boxy = 1;
 	}
@@ -399,8 +403,8 @@ doombool R_CheckBBox( viewpoint_t* viewpoint, bspcontext_t* context, rend_fixed_
 	y2 = bspcoord[ checkcoord[ boxpos ][ 3 ] ];
 
 	// check clip list for an open space
-	angle1 = R_PointToAngle( viewpoint, x1, y1 ) - viewpoint->angle;
-	angle2 = R_PointToAngle( viewpoint, x2, y2 ) - viewpoint->angle;
+	angle1 = R_PointToAngle( &viewpoint, x1, y1 ) - viewpoint.angle;
+	angle2 = R_PointToAngle( &viewpoint, x2, y2 ) - viewpoint.angle;
 	
 	span = angle1 - angle2;
 
@@ -446,7 +450,7 @@ doombool R_CheckBBox( viewpoint_t* viewpoint, bspcontext_t* context, rend_fixed_
 		return false;
 	--sx2;
 	
-	start = context->solidsegs;
+	const cliprange_t* start = context.solidsegs;
 	while( start->last < sx2 )
 	{
 		start++;
@@ -469,8 +473,10 @@ doombool R_CheckBBox( viewpoint_t* viewpoint, bspcontext_t* context, rend_fixed_
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
-void R_Subsector( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t num )
+void R_Subsector( rendercontext_t& rendercontext, int32_t num )
 {
+	bspcontext_t& bspcontext		= rendercontext.bspcontext;
+
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 	int32_t			count;
 	seg_t*			line;
@@ -486,8 +492,8 @@ void R_Subsector( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcont
 #endif
 
 	sub = &subsectors[num];
-	bspcontext->frontsector = sub->sector;
-	bspcontext->frontsectorinst = &rendsectors[ sub->sector->index ];
+	bspcontext.frontsector = sub->sector;
+	bspcontext.frontsectorinst = &rendsectors[ sub->sector->index ];
 	count = sub->numlines;
 	line = &segs[sub->firstline];
 
@@ -497,28 +503,28 @@ void R_Subsector( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcont
 
 	while (count--)
 	{
-		R_AddLine( viewpoint, dest, bspcontext, planecontext, line );
+		R_AddLine( rendercontext, line );
 		line++;
 	}
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		endaddlines = I_GetTimeUS();
-	bspcontext->addlinestimetaken += ( endaddlines - startaddlines );
+	bspcontext.addlinestimetaken += ( endaddlines - startaddlines );
 #endif // RENDER_PERF_GRAPHING
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		startaddsprites = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
 		
-	R_AddSprites( viewpoint, spritecontext, bspcontext->frontsector );
+	R_AddSprites( rendercontext, bspcontext.frontsector );
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		endaddsprites = I_GetTimeUS();
-	bspcontext->addspritestimetaken += ( endaddsprites - startaddsprites );
+	bspcontext.addspritestimetaken += ( endaddsprites - startaddsprites );
 #endif // RENDER_PERF_GRAPHING
 
 	// check for solidsegs overflow - extremely unsatisfactory!
-	if( !remove_limits && bspcontext->solidsegsend > &bspcontext->solidsegs[ VANILLA_MAXSEGS ] )
+	if( !remove_limits && bspcontext.solidsegsend > &bspcontext.solidsegs[ VANILLA_MAXSEGS ] )
 	{
 		I_Error("R_Subsector: solidsegs overflow (vanilla may crash here)\n");
 	}
@@ -534,30 +540,33 @@ void R_Subsector( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcont
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-DOOM_C_API void R_RenderBSPNode( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* bspcontext, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum )
+void R_RenderBSPNode( rendercontext_t& rendercontext, int32_t bspnum )
 {
+	viewpoint_t& viewpoint = rendercontext.viewpoint;
+	bspcontext_t& bspcontext = rendercontext.bspcontext;
+
 	node_t*		bsp;
 	int32_t		side;
 
 	// Found a subsector?
 	if( bspnum & NF_SUBSECTOR )
 	{
-		R_Subsector( viewpoint, dest, bspcontext, planecontext, spritecontext, bspnum == -1 ? 0 : ( bspnum & ( ~NF_SUBSECTOR ) ) );
+		R_Subsector( rendercontext, bspnum == -1 ? 0 : ( bspnum & ( ~NF_SUBSECTOR ) ) );
 		return;
 	}
 		
 	bsp = &nodes[ bspnum ];
 
 	// Decide which side the view point is on.
-	side = R_PointOnSide( viewpoint->x, viewpoint->y, bsp);
+	side = R_PointOnSide( viewpoint.x, viewpoint.y, bsp);
 
 	// Recursively divide front space.
-	R_RenderBSPNode( viewpoint, dest, bspcontext, planecontext, spritecontext, bsp->children[ side ] );
+	R_RenderBSPNode( rendercontext, bsp->children[ side ] );
 
 	// Possibly divide back space.
 	if( R_CheckBBox( viewpoint, bspcontext, bsp->rend.bbox[ side ^ LS_Back ] ) )
 	{
-		R_RenderBSPNode( viewpoint, dest, bspcontext, planecontext, spritecontext, bsp->children[ side ^ 1 ] );
+		R_RenderBSPNode( rendercontext, bsp->children[ side ^ 1 ] );
 	}
 }
 

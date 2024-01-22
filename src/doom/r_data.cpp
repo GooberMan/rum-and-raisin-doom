@@ -36,6 +36,7 @@
 #include "r_main.h"
 #include "r_data.h"
 #include "r_sky.h"
+	#include "r_local.h"
 
 #include "w_wad.h"
 
@@ -47,7 +48,6 @@ extern "C"
 
 	#include "i_swap.h"
 
-	#include "r_local.h"
 	#include "p_local.h"
 
 	// NEEEEEEED ANIMATION DATA

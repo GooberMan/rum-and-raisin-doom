@@ -106,6 +106,7 @@ extern sideinstance_t*		rendsides;
 extern drsdata_t*	drs_current;
 
 extern doombool		renderlightlevels;
+extern doombool		renderwithcolormaps;
 
 #if defined( __cplusplus )
 }

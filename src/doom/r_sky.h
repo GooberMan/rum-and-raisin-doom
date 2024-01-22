@@ -39,6 +39,9 @@ DOOM_C_API extern int				skyflatnum;
 DOOM_C_API extern int				skytexture;
 
 DOOM_C_API void R_SetSkyTexture( int32_t texnum );
-DOOM_C_API void R_DrawSky( viewpoint_t* viewpoint, vbuffer_t* dest, rasterregion_t* thisregion, sideinstance_t* skytexture );
+
+#if defined(__cplusplus)
+void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sideinstance_t* skytexture );
+#endif // defined(__cplusplus)
 
 #endif

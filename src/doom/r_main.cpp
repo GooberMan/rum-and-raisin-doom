@@ -31,6 +31,7 @@
 #include "m_fixed.h"
 
 #include "r_main.h"
+#include "r_local.h"
 
 #include "cimguiglue.h"
 
@@ -45,9 +46,6 @@ extern "C"
 	#include "m_bbox.h"
 	#include "m_config.h"
 	#include "m_menu.h"
-
-	#include "r_local.h"
-	#include "r_sky.h"
 
 	// Need ST_HEIGHT
 	#include "st_stuff.h"
@@ -91,6 +89,7 @@ extern "C"
 	doombool				rendersplitvisualise = false;
 	doombool				renderrebalancecontexts = false;
 	doombool				renderlightlevels = false;
+	doombool				renderwithcolormaps = true;
 	double_t				renderscalecontextsby = 0.0;
 	int32_t					rebalancescale = 25;
 	doombool				renderSIMDcolumns = false;
@@ -172,8 +171,8 @@ extern "C"
 }
 
 // Actually expects C++ linkage
-atomicval_t	renderscratchpos = 0;
-atomicval_t	renderscratchsize = 0;
+std::atomic< atomicval_t >	renderscratchpos = 0;
+std::atomic< atomicval_t >	renderscratchsize = 0;
 byte*		renderscratch = nullptr;
 
 constexpr int32_t viewwidthforblocks[] =
@@ -935,28 +934,28 @@ void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightcl
 	R_ClearClipSegs( &context->bspcontext, leftclip, rightclip );
 	R_ClearDrawSegs( &context->bspcontext );
 	R_ClearPlanes( &context->planecontext, drs_current->viewwidth, drs_current->viewheight );
-	R_ClearSprites( &context->spritecontext );
+	R_ClearSprites( context->spritecontext );
 }
 
-void R_RenderViewContext( rendercontext_t* rendercontext )
+void R_RenderViewContext( rendercontext_t& rendercontext )
 {
 	M_PROFILE_FUNC();
 
-	byte*			output		= rendercontext->buffer.data + rendercontext->buffer.pitch * rendercontext->begincolumn;
-	size_t			outputsize	= rendercontext->buffer.pitch * (rendercontext->endcolumn - rendercontext->begincolumn );
+	byte*			output		= rendercontext.buffer.data + rendercontext.buffer.pitch * rendercontext.begincolumn;
+	size_t			outputsize	= rendercontext.buffer.pitch * (rendercontext.endcolumn - rendercontext.begincolumn );
 
-	rendercontext->starttime = I_GetTimeUS();
+	rendercontext.starttime = I_GetTimeUS();
 #if RENDER_PERF_GRAPHING
-	rendercontext->bspcontext.storetimetaken = 0;
-	rendercontext->bspcontext.solidtimetaken = 0;
-	rendercontext->bspcontext.maskedtimetaken = 0;
-	rendercontext->bspcontext.findvisplanetimetaken = 0;
-	rendercontext->bspcontext.addspritestimetaken = 0;
-	rendercontext->bspcontext.addlinestimetaken = 0;
+	rendercontext.bspcontext.storetimetaken = 0;
+	rendercontext.bspcontext.solidtimetaken = 0;
+	rendercontext.bspcontext.maskedtimetaken = 0;
+	rendercontext.bspcontext.findvisplanetimetaken = 0;
+	rendercontext.bspcontext.addspritestimetaken = 0;
+	rendercontext.bspcontext.addlinestimetaken = 0;
 
-	rendercontext->planecontext.flattimetaken = 0;
+	rendercontext.planecontext.flattimetaken = 0;
 
-	rendercontext->spritecontext.maskedtimetaken = 0;
+	rendercontext.spritecontext.maskedtimetaken = 0;
 #endif
 
 	if( voidcleartype == Void_Black )
@@ -965,7 +964,7 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 	}
 	else if( voidcleartype == Void_Whacky )
 	{
-		memset( output, whacky_void_indices[ ( rendercontext->starttime % whacky_void_microseconds ) / ( whacky_void_microseconds / num_whacky_void_indices ) ], outputsize );
+		memset( output, whacky_void_indices[ ( rendercontext.starttime % whacky_void_microseconds ) / ( whacky_void_microseconds / num_whacky_void_indices ) ], outputsize );
 	}
 	else if( voidcleartype == Void_Sky )
 	{
@@ -974,15 +973,15 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->skyiscaley >> 16 ), 15 ) ];
 		skycontext.iscale = drs_current->skyiscaley;
 		skycontext.texturemid = constants::skytexturemid;
-		skycontext.output = rendercontext->buffer;
+		skycontext.output = rendercontext.buffer;
 		skycontext.output.data += skycontext.output.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
 		skycontext.yl = 0;
 		skycontext.yh = drs_current->viewheight;
 		skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
 
-		for ( int32_t x = rendercontext->begincolumn; x < rendercontext->endcolumn; ++x )
+		for ( int32_t x = rendercontext.begincolumn; x < rendercontext.endcolumn; ++x )
 		{
-			int32_t angle = ( rendercontext->viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
+			int32_t angle = ( rendercontext.viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
 
 			skycontext.x = x;
 			skycontext.source = R_GetColumn( skytexture, angle, 0 );
@@ -990,53 +989,53 @@ void R_RenderViewContext( rendercontext_t* rendercontext )
 		}
 	}
 		
-	memset( rendercontext->spritecontext.sectorvisited, 0, sizeof( doombool ) * numsectors );
+	memset( rendercontext.spritecontext.sectorvisited, 0, sizeof( doombool ) * numsectors );
 
-	rendercontext->planecontext.output = rendercontext->viewbuffer;
-	rendercontext->planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( drs_current->frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
+	rendercontext.planecontext.output = rendercontext.viewbuffer;
+	rendercontext.planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( drs_current->frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 
 	{
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
-		R_RenderBSPNode( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->bspcontext, &rendercontext->planecontext, &rendercontext->spritecontext, numnodes-1 );
+		R_RenderBSPNode( rendercontext, numnodes-1 );
 	}
 
 	R_ErrorCheckPlanes( rendercontext );
 
 	{
 		M_PROFILE_NAMED( "R_DrawMasked" );
-		R_DrawMasked( &rendercontext->viewpoint, &rendercontext->viewbuffer, &rendercontext->spritecontext, &rendercontext->bspcontext );
+		R_DrawMasked( rendercontext );
 	}
 
-	rendercontext->endtime = I_GetTimeUS();
-	rendercontext->timetaken = rendercontext->endtime - rendercontext->starttime;
+	rendercontext.endtime = I_GetTimeUS();
+	rendercontext.timetaken = rendercontext.endtime - rendercontext.starttime;
 
 #if RENDER_PERF_GRAPHING
-	rendercontext->bspcontext.addlinestimetaken -= rendercontext->bspcontext.solidtimetaken;
+	rendercontext.bspcontext.addlinestimetaken -= rendercontext.bspcontext.solidtimetaken;
 
-	rendercontext->frametimes[ rendercontext->nextframetime ] = (float_t)rendercontext->timetaken / 1000.f;
-	rendercontext->walltimes[ rendercontext->nextframetime ] = (float_t)( rendercontext->bspcontext.solidtimetaken + rendercontext->bspcontext.maskedtimetaken ) / 1000.f;
-	rendercontext->flattimes[ rendercontext->nextframetime ] = (float_t)rendercontext->planecontext.flattimetaken / 1000.f;
-	rendercontext->spritetimes[ rendercontext->nextframetime ] = (float_t)rendercontext->spritecontext.maskedtimetaken / 1000.f;
-	rendercontext->findvisplanetimes[ rendercontext->nextframetime ] = (float_t)rendercontext->bspcontext.findvisplanetimetaken / 1000.f;
-	rendercontext->addspritestimes[ rendercontext->nextframetime ] = (float_t)rendercontext->bspcontext.addspritestimetaken / 1000.f;
-	rendercontext->addlinestimes[ rendercontext->nextframetime ] = (float_t)rendercontext->bspcontext.addlinestimetaken / 1000.f;
-	rendercontext->everythingelsetimes[ rendercontext->nextframetime ] = (float_t)( rendercontext->timetaken
-																					- rendercontext->bspcontext.solidtimetaken 
-																					- rendercontext->bspcontext.maskedtimetaken
-																					- rendercontext->bspcontext.findvisplanetimetaken
-																					- rendercontext->bspcontext.addspritestimetaken
-																					- rendercontext->bspcontext.addlinestimetaken
-																					- rendercontext->planecontext.flattimetaken
-																					- rendercontext->spritecontext.maskedtimetaken ) / 1000.f;
+	rendercontext.frametimes[ rendercontext.nextframetime ] = (float_t)rendercontext.timetaken / 1000.f;
+	rendercontext.walltimes[ rendercontext.nextframetime ] = (float_t)( rendercontext.bspcontext.solidtimetaken + rendercontext.bspcontext.maskedtimetaken ) / 1000.f;
+	rendercontext.flattimes[ rendercontext.nextframetime ] = (float_t)rendercontext.planecontext.flattimetaken / 1000.f;
+	rendercontext.spritetimes[ rendercontext.nextframetime ] = (float_t)rendercontext.spritecontext.maskedtimetaken / 1000.f;
+	rendercontext.findvisplanetimes[ rendercontext.nextframetime ] = (float_t)rendercontext.bspcontext.findvisplanetimetaken / 1000.f;
+	rendercontext.addspritestimes[ rendercontext.nextframetime ] = (float_t)rendercontext.bspcontext.addspritestimetaken / 1000.f;
+	rendercontext.addlinestimes[ rendercontext.nextframetime ] = (float_t)rendercontext.bspcontext.addlinestimetaken / 1000.f;
+	rendercontext.everythingelsetimes[ rendercontext.nextframetime ] = (float_t)( rendercontext.timetaken
+																					- rendercontext.bspcontext.solidtimetaken 
+																					- rendercontext.bspcontext.maskedtimetaken
+																					- rendercontext.bspcontext.findvisplanetimetaken
+																					- rendercontext.bspcontext.addspritestimetaken
+																					- rendercontext.bspcontext.addlinestimetaken
+																					- rendercontext.planecontext.flattimetaken
+																					- rendercontext.spritecontext.maskedtimetaken ) / 1000.f;
 
-	rendercontext->nextframetime = ( rendercontext->nextframetime + 1 ) % MAXPROFILETIMES;
+	rendercontext.nextframetime = ( rendercontext.nextframetime + 1 ) % MAXPROFILETIMES;
 
-	rendercontext->frameaverage = 0;
+	rendercontext.frameaverage = 0;
 	for( int32_t currtime = 0; currtime < MAXPROFILETIMES; ++currtime )
 	{
-		rendercontext->frameaverage += rendercontext->frametimes[ currtime ];
+		rendercontext.frameaverage += rendercontext.frametimes[ currtime ];
 	}
-	rendercontext->frameaverage /= MAXPROFILETIMES;
+	rendercontext.frameaverage /= MAXPROFILETIMES;
 #endif
 }
 
@@ -1057,7 +1056,7 @@ int32_t R_ContextThreadFunc( void* userdata )
 
 		M_ProfileNewFrame();
 
-		R_RenderViewContext( &data->context );
+		R_RenderViewContext( data->context );
 
 		I_AtomicExchange( &data->framefinished, 1 );
 	}
@@ -1289,8 +1288,6 @@ void R_ExecuteSetViewSize( void )
 	{
 		R_ExecuteSetViewSizeFor( &curr );
 	}
-
-//	R_ExecuteSetViewSizeFor( drs_data );
 
 	R_DRSApply( drs_data );
 }
@@ -1532,6 +1529,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 		R_ExecuteSetViewSize( );
 	}
 	igCheckbox( "Visualise light levels", (bool*)&renderlightlevels);
+	igCheckbox( "Render with colormaps", (bool*)&renderwithcolormaps);
 }
 
 //
@@ -1857,10 +1855,17 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	viewpoint.sin = renderfinesine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
 	viewpoint.cos = renderfinecosine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
 	
+	lighttable_t* currcolormaps = colormaps;
+	sector_t* playersector = player->mo->subsector ? player->mo->subsector->sector : nullptr;
+	if( playersector )
+	{
+		// TODO: transfer heights colormap lookup
+	}
+
 	fixedcolormapindex = player->fixedcolormap;
 	if (player->fixedcolormap)
 	{
-		fixedcolormap = colormaps + player->fixedcolormap * 256;
+		fixedcolormap = currcolormaps + player->fixedcolormap * 256;
 	
 		//walllights = scalelightfixed;
 		//walllightsindex = fixedcolormapindex;
@@ -1886,6 +1891,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 		renderdatas[ currcontext ].context.viewpoint = viewpoint;
 		renderdatas[ currcontext ].context.viewbuffer = buffer;
+		renderdatas[ currcontext ].context.colormaps = currcolormaps;
 	}
 
 	if( renderloadbalancing && renderscalecontextsby > 0 )
@@ -1955,7 +1961,7 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, doombool iscons
 		}
 		else
 		{
-			R_RenderViewContext( &renderdatas[ currcontext ].context );
+			R_RenderViewContext( renderdatas[ currcontext ].context );
 			++finishedcontexts;
 		}
 	}

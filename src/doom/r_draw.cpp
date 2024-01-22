@@ -382,24 +382,9 @@ namespace DrawColumn
 			{
 				static INLINE pixel_t Sample( colcontext_t* context, rend_fixed_t& frac, const rend_fixed_t& textureheight )
 				{
-//#define DO_MORE_OPERATIONS
-#ifdef DO_MORE_OPERATIONS
-					// This _could_ be useful on AMD Jaguar CPUs...
-					int32_t sample = frac >> RENDFRACBITS;
-					if( frac >= textureheight )
-					{
-						sample -= ( textureheight >> RENDFRACBITS );
-						frac -= textureheight;
-					}
-
-					return context->source[ sample ];
-#else // !DO_MORE_OPERATIONS
-					if( frac >= textureheight )
-					{
-						frac -= textureheight;
-					}
+					rend_fixed_t nextfrac = frac - textureheight;
+					frac = ( frac >= textureheight ) ? nextfrac : frac;
 					return context->source[ frac >> RENDFRACBITS ];
-#endif // DO_MORE_OPERATIONS
 				}
 			};
 
@@ -466,7 +451,8 @@ namespace DrawColumn
 				// the frac calculation is only important when clipping to screenspace. A better way of calculating
 				// it should be possible.
 				frac %= context->sourceheight;
-				if( frac < 0 ) frac += context->sourceheight;
+				rend_fixed_t nextfrac = frac + context->sourceheight;
+				frac = ( frac < 0 ) ? nextfrac : frac;
 			}
 
 			// Inner loop that does the actual texture mapping,

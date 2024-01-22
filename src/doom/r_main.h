@@ -156,16 +156,42 @@ void R_SetViewSize (int blocks, int detail);
 #include "i_thread.h"
 
 template< typename _ty, typename... _args >
+INLINE _ty* R_AllocateScratchSingle( const _args&... args )
+{
+	// TODO: per-thread scratchpad???
+	extern std::atomic< atomicval_t >	renderscratchpos;
+	extern byte*						renderscratch;
+
+	constexpr atomicval_t numbytes = AlignTo< 16 >( sizeof( _ty ) );
+	atomicval_t pos = renderscratchpos.fetch_add( numbytes );
+
+	_ty* output = (_ty*)( renderscratch + pos );
+
+	if constexpr( sizeof...( _args ) == 1 )
+	{
+		*output = std::get< 0 >( std::forward_as_tuple( args... ) );
+	}
+	else if constexpr( sizeof...( _args ) > 1 )
+	{
+		static_assert( "R_AllocateScratch only allows 1 variadic arg for now, will expand later if I want to construct objects with parameter packs." );
+	}
+
+	return output;
+}
+
+template< typename _ty, typename... _args >
 INLINE _ty* R_AllocateScratch( atomicval_t numinstances, const _args&... args )
 {
 	// TODO: per-thread scratchpad???
-	extern atomicval_t	renderscratchpos;
-	extern atomicval_t	renderscratchsize;
-	extern byte*		renderscratch;
+	extern std::atomic< atomicval_t >	renderscratchpos;
+	extern std::atomic< atomicval_t >	renderscratchsize;
+	extern byte*						renderscratch;
 
-	atomicval_t numbytes = AlignTo< 16 >( sizeof( _ty ) * numinstances );
-	atomicval_t pos = I_AtomicIncrement( &renderscratchpos, numbytes );
-	if( pos + numbytes > renderscratchsize )
+	constexpr atomicval_t sizeofsingleobj = AlignTo< 16 >( sizeof( _ty ) );
+
+	atomicval_t numbytes = sizeofsingleobj * numinstances;
+	atomicval_t pos = renderscratchpos.fetch_add( numbytes );
+	if( pos + numbytes > renderscratchsize.load() )
 	{
 		I_Error( "R_AllocateScratch: No more scratchpad memory available" );
 	}

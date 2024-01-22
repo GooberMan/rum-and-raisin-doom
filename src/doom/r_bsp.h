@@ -23,10 +23,12 @@
 
 #include "r_defs.h"
 
+#if defined(__cplusplus)
 // BSP?
-DOOM_C_API void R_ClearClipSegs( bspcontext_t* context, int32_t mincol, int32_t maxcol );
-DOOM_C_API void R_ClearDrawSegs( bspcontext_t* context );
+void R_ClearClipSegs( bspcontext_t* context, int32_t mincol, int32_t maxcol );
+void R_ClearDrawSegs( bspcontext_t* context );
 
-DOOM_C_API void R_RenderBSPNode( viewpoint_t* viewpoint, vbuffer_t* dest, bspcontext_t* context, planecontext_t* planecontext, spritecontext_t* spritecontext, int32_t bspnum );
+void R_RenderBSPNode( rendercontext_t& rendercontext, int32_t bspnum );
+#endif // defined(__cplusplus)
 
 #endif

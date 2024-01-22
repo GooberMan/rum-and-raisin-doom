@@ -61,9 +61,12 @@ DOOM_C_API void R_SetSkyTexture( int32_t texnum )
 	skyfakeline.toptex = texturelookup[ skytexture ];
 }
 
-DOOM_C_API void R_DrawSky( viewpoint_t* viewpoint, vbuffer_t* dest, rasterregion_t* thisregion, sideinstance_t* skytextureline )
+void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sideinstance_t* skytextureline )
 {
 	M_PROFILE_FUNC();
+
+	viewpoint_t& viewpoint = rendercontext.viewpoint;
+	vbuffer_t& dest = rendercontext.viewbuffer;
 
 	if( !skytextureline )
 	{
@@ -87,7 +90,7 @@ DOOM_C_API void R_DrawSky( viewpoint_t* viewpoint, vbuffer_t* dest, rasterregion
 	skycontext.texturemid = constants::skytexturemid + skytextureline->rowoffset;
 
 	// This isn't a constant though...
-	skycontext.output = *dest;
+	skycontext.output = dest;
 	skycontext.sourceheight = sky->renderheight;
 
 	int32_t x = thisregion->minx;
@@ -100,7 +103,7 @@ DOOM_C_API void R_DrawSky( viewpoint_t* viewpoint, vbuffer_t* dest, rasterregion
 			skycontext.yh = line.bottom;
 			skycontext.x = x;
 
-			int32_t angle = ( viewpoint->angle + skyoffsetangle + drs_current->xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
+			int32_t angle = ( viewpoint.angle + skyoffsetangle + drs_current->xtoviewangle[x] ) >> ANGLETOSKYSHIFT;
 			// Sky is allways drawn full bright,
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
