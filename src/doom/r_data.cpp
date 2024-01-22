@@ -142,24 +142,26 @@ extern "C"
 
 
 
-	int		firstflat;
-	int		lastflat;
-	int		numflats;
+	int32_t					firstflat;
+	int32_t					lastflat;
+	int32_t					numflats;
 
-	int		firstpatch;
-	int		lastpatch;
-	int		numpatches;
+	int32_t					firstpatch;
+	int32_t					lastpatch;
+	int32_t					numpatches;
 
-	int32_t		firstspritelump;
-	int32_t		lastspritelump;
-	int32_t		numspritelumps;
-	patch_t**	spritepatches;
+	int32_t					firstspritelump;
+	int32_t					lastspritelump;
+	int32_t					numspritelumps;
+	patch_t**				spritepatches;
 
+	lumpindex_t				firstcolormap = -1;
+	lumpindex_t				lastcolormap = -1;
+	int32_t					numcolormaps = 0;
 
-	int				numtextures;
-	texture_t**		textures;
-	texture_t**		textures_hashtable;
-
+	int						numtextures;
+	texture_t**				textures;
+	texture_t**				textures_hashtable;
 
 	short**					texturecolumnlump;
 	uint32_t**				texturecolumnofs;
@@ -879,6 +881,13 @@ void R_InitColormaps (void)
     //  256 byte align tables.
     lump = W_GetNumForName(DEH_String("COLORMAP"));
     colormaps = (lighttable_t*)W_CacheLumpNum(lump, PU_STATIC);
+
+	if( remove_limits )
+	{
+		firstcolormap = W_CheckNumForName( "C_START" ) + 1;
+		lastcolormap = W_CheckNumForName( "C_END" ) - 1;
+		numcolormaps = M_MAX( 0, lastcolormap - firstcolormap + 1 );
+	}
 }
 
 
@@ -1027,7 +1036,15 @@ int R_TextureNumForName(const char *name)
 	return numtextures + i - firstflat;
 }
 
+DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum )
+{
+	if( colormapnum >= firstcolormap && colormapnum <= lastcolormap )
+	{
+		return (lighttable_t*)W_CacheLumpNum( colormapnum, PU_LEVEL );
+	}
 
+	return nullptr;
+}
 
 
 //

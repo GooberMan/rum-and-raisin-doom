@@ -1568,6 +1568,26 @@ void P_SpawnSpecials (void)
 		{
 			switch( lines[ i ].special )
 			{
+			case Transfer_FloorLighting_Always:
+			case Transfer_CeilingLighting_Always:
+				if( lines[i].frontsector )
+				{
+					doombool setceil = lines[ i ].special == Transfer_CeilingLighting_Always;
+					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					{
+						if( sectors[ thissector ].tag == lines[ i ].tag )
+						{
+							sector_t** toset = setceil ? &sectors[ thissector ].ceilinglightsec : &sectors[ thissector ].floorlightsec;
+							rend_fixed_t* tosetprev = setceil ? &prevsectors[ thissector ].ceillightlevel : &prevsectors[ thissector ].floorlightlevel;
+							rend_fixed_t* tosetcurr = setceil ? &currsectors[ thissector ].ceillightlevel : &currsectors[ thissector ].floorlightlevel;
+
+							*toset = lines[i].frontsector;
+							*tosetprev = *tosetcurr = lines[i].frontsector->lightlevel;
+						}
+					}
+				}
+				break;
+
 			case Transfer_Friction_Always: // Friction
 				{
 					fixed_t linelength = M_CLAMP( P_AproxDistance( lines[ i ].dx, lines[ i ].dy ), 0, IntToFixed( 200 ) );
@@ -1588,9 +1608,9 @@ void P_SpawnSpecials (void)
 				if( lines[i].frontside )
 				{
 					side_t* side = lines[i].frontside;
-					lines[i].topcolormap = !side->toptexture && side->toptextureindex >= 0 ? W_CacheLumpNum( side->toptextureindex, PU_LEVEL ) : colormaps;
-					lines[i].bottomcolormap = !side->bottomtexture && side->bottomtextureindex >= 0 ? W_CacheLumpNum( side->bottomtextureindex, PU_LEVEL ) : colormaps;
-					lines[i].midcolormap = !side->midtexture && side->midtextureindex >= 0 ? W_CacheLumpNum( side->midtextureindex, PU_LEVEL ) : colormaps;
+					lines[i].topcolormap = ( !side->toptexture && side->toptextureindex >= 0 ) ? R_GetColormapForNum( side->toptextureindex ) : colormaps;
+					lines[i].bottomcolormap = ( !side->bottomtexture && side->bottomtextureindex >= 0 ) ? R_GetColormapForNum( side->bottomtextureindex ) : colormaps;
+					lines[i].midcolormap = ( !side->midtexture && side->midtextureindex >= 0 ) ? R_GetColormapForNum( side->midtextureindex ) : colormaps;
 
 					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
 					{

@@ -441,6 +441,8 @@ struct DoomMapLoader
 			out.friction		= FRICTION;
 			out.skyline			= nullptr;
 			out.skyxscale		= IntToFixed( 1 );
+			out.floorlightsec	= &out;
+			out.ceilinglightsec = &out;
 		} );
 
 		_numsectors				= data.count;
@@ -456,11 +458,13 @@ struct DoomMapLoader
 
 		for( int32_t index : iota( 0, _numsectors ) )
 		{
-			thisprev->floortex		= thiscurr->floortex		= flatlookup[ thissec->floorpic ];
-			thisprev->ceiltex		= thiscurr->ceiltex			= flatlookup[ thissec->ceilingpic ];
-			thisprev->floorheight	= thiscurr->floorheight		= FixedToRendFixed( thissec->floorheight );
-			thisprev->ceilheight	= thiscurr->ceilheight		= FixedToRendFixed( thissec->ceilingheight );
-			thisprev->lightlevel	= thiscurr->lightlevel		= thissec->lightlevel;
+			thisprev->floortex			= thiscurr->floortex			= flatlookup[ thissec->floorpic ];
+			thisprev->ceiltex			= thiscurr->ceiltex				= flatlookup[ thissec->ceilingpic ];
+			thisprev->floorheight		= thiscurr->floorheight			= FixedToRendFixed( thissec->floorheight );
+			thisprev->ceilheight		= thiscurr->ceilheight			= FixedToRendFixed( thissec->ceilingheight );
+			thisprev->lightlevel		= thiscurr->lightlevel			= thissec->lightlevel;
+			thisprev->floorlightlevel	= thiscurr->floorlightlevel		= thissec->lightlevel;
+			thisprev->ceillightlevel	= thiscurr->ceillightlevel		= thissec->lightlevel;
 
 			++thisprev;
 			++thiscurr;

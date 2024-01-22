@@ -56,4 +56,6 @@ DOOM_C_API int R_CheckTextureNumForName(const char *name);
 
 DOOM_C_API const char* R_TextureNameForNum( int32_t tex );
 
+DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum );
+
 #endif

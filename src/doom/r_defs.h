@@ -121,6 +121,8 @@ typedef struct sectorinstance_s
 	rend_fixed_t			floorheight;
 	rend_fixed_t			ceilheight;
 	rend_fixed_t			lightlevel;
+	rend_fixed_t			floorlightlevel;
+	rend_fixed_t			ceillightlevel;
 
 	int32_t					snapfloor;
 	int32_t					snapceiling;

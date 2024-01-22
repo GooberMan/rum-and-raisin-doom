@@ -308,6 +308,8 @@ void R_AddLine( rendercontext_t& rendercontext, seg_t* line )
 	if (bspcontext.backsectorinst->ceiltex == bspcontext.frontsectorinst->ceiltex
 		&& bspcontext.backsectorinst->floortex == bspcontext.frontsectorinst->floortex
 		&& bspcontext.backsectorinst->lightlevel == bspcontext.frontsectorinst->lightlevel
+		&& bspcontext.backsectorinst->floorlightlevel == bspcontext.frontsectorinst->floorlightlevel
+		&& bspcontext.backsectorinst->ceillightlevel == bspcontext.frontsectorinst->ceillightlevel
 		&& bspcontext.curline->sidedef->midtexture == 0)
 	{
 		return;

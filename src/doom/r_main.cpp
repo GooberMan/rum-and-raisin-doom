@@ -1816,11 +1816,13 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 		for( int32_t index : iota( 0, numsectors ) )
 		{
-			rendsectors[ index ].floorheight	= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
-			rendsectors[ index ].ceilheight		= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
-			rendsectors[ index ].lightlevel		= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
-			rendsectors[ index ].floortex		= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
-			rendsectors[ index ].ceiltex		= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+			rendsectors[ index ].floorheight		= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
+			rendsectors[ index ].ceilheight			= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
+			rendsectors[ index ].lightlevel			= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
+			rendsectors[ index ].floorlightlevel	= selectcurr ? currsectors[ index ].floorlightlevel : prevsectors[ index ].floorlightlevel;
+			rendsectors[ index ].ceillightlevel		= selectcurr ? currsectors[ index ].ceillightlevel : prevsectors[ index ].ceillightlevel;
+			rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
+			rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
 		}
 
 		for( int32_t index : iota( 0, numsides ) )
