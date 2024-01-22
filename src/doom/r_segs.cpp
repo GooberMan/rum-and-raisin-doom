@@ -143,7 +143,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 		lightnum++;
 
 	int32_t walllightsindex = fixedcolormapindex ? fixedcolormapindex : M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
-	lighttable_t** walllights = &drs_current->scalelight[ walllightsindex * MAXLIGHTSCALE ];
+	int32_t* walllightoffsets = &drs_current->scalelightoffset[ walllightsindex * MAXLIGHTSCALE ];
 
 	maskedtexturecol = ds->maskedtexturecol;
 
@@ -186,7 +186,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 				if (index >=  MAXLIGHTSCALE )
 					index = MAXLIGHTSCALE-1;
 
-				spritecolcontext.colormap = walllights[index];
+				spritecolcontext.colormap = rendercontext.viewpoint.colormaps + walllightoffsets[index];
 			}
 
 			// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
@@ -349,7 +349,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 			{
 				wallcolcontext.colfunc = renderwithcolormaps ? &R_LimitRemovingDrawColumn_Untranslated : colfuncs[ 15 ];
 			}
-			wallcolcontext.colormap = colormaps + colormapindex * 256;
+			wallcolcontext.colormap = rendercontext.viewpoint.colormaps + colormapindex * 256;
 			columnindex = renderwithcolormaps ? 0 : colormapindex;
 		}
 
@@ -522,10 +522,12 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 	uint64_t			visplaneend;
 #endif // RENDER_PERF_GRAPHING
 
-	rasterregion_t* ceil = NULL;
-	int32_t ceilpic = -1;
-	rasterregion_t* floor = NULL;
-	int32_t floorpic = -1;
+	rasterregion_t* ceil = nullptr;
+	texturecomposite_t* ceilpic = nullptr;
+	bool ceilsky = false;
+	rasterregion_t* floor = nullptr;
+	texturecomposite_t* floorpic = nullptr;
+	bool floorsky = false;
 
 	// don't overflow and crash
 	if ( bspcontext.thisdrawseg == &bspcontext.drawsegs[MAXDRAWSEGS])
@@ -804,7 +806,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 				else
 					wallcontext.lightsindex = lightnum;
 		
-				wallcontext.lights = &drs_current->scalelight[ wallcontext.lightsindex * MAXLIGHTSCALE ];
+				wallcontext.lightsoffset = &drs_current->scalelightoffset[ wallcontext.lightsindex * MAXLIGHTSCALE ];
 			}
 		}
 
@@ -860,13 +862,15 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		if (loopcontext.markceiling)
 		{
 			ceil = planecontext.ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsector->ceilingpic, bspcontext.frontsectorinst->ceilheight, bspcontext.frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
-			ceilpic = bspcontext.frontsector->ceilingpic;
+			ceilpic = bspcontext.frontsectorinst->ceiltex;
+			ceilsky = bspcontext.frontsector->ceilingpic == skyflatnum;
 		}
 
 		if (loopcontext.markfloor)
 		{
 			floor = planecontext.floorregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsector->floorpic, bspcontext.frontsectorinst->floorheight, bspcontext.frontsectorinst->lightlevel, loopcontext.startx, loopcontext.stopx - 1 );
-			floorpic = bspcontext.frontsector->floorpic;
+			floorpic = bspcontext.frontsectorinst->floortex;
+			floorsky = bspcontext.frontsector->floorpic == skyflatnum;
 		}
 
 #if RENDER_PERF_GRAPHING
@@ -884,9 +888,9 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 
 	if( ceil )
 	{
-		if( ceilpic != skyflatnum )
+		if( !ceilsky )
 		{
-			R_RasteriseRegion( rendercontext, ceil, flatlookup[ flattranslation[ ceilpic ] ] );
+			R_RasteriseRegion( rendercontext, ceil, ceilpic );
 		}
 		else
 		{
@@ -896,9 +900,9 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 
 	if( floor )
 	{
-		if( floorpic != skyflatnum )
+		if( !floorsky )
 		{
-			R_RasteriseRegion( rendercontext, floor, flatlookup[ flattranslation[ floorpic ] ] );
+			R_RasteriseRegion( rendercontext, floor, floorpic );
 		}
 		else
 		{

@@ -197,26 +197,23 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, in
 
 }
 
-INLINE void PrepareRow( int32_t y, planecontext_t& planecontext, size_t size )
+INLINE void PrepareRow( int32_t y, rendercontext_t& rendercontext, size_t size )
 {
+	planecontext_t& planecontext = rendercontext.planecontext;
+
 	planecontext.raster[ y ].distance = RendFixedMul( planecontext.planeheight, drs_current->yslope[ y ] );
 
-	// TODO: THIS LOGIC IS BROKEN>>>>>>>>>>>>>>>>>>
-	//if( planecontext.planezlight != planecontext.raster[ y ].zlight )
+	if( fixedcolormapindex )
 	{
-		if( fixedcolormapindex )
-		{
-			planecontext.raster[ y ].sourceoffset = fixedcolormapindex * size;
-			planecontext.raster[ y ].colormap = colormaps + fixedcolormapindex * 256;
-		}
-		else
-		{
-			int32_t lookup = (int32_t)M_CLAMP( ( planecontext.raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
-			int32_t lightindex = drs_current->zlightindex[ planecontext.planezlightindex * MAXLIGHTZ + lookup ];
-			planecontext.raster[ y ].sourceoffset = lightindex * size;
-			planecontext.raster[ y ].colormap = colormaps + lightindex * 256;
-		}
-
+		planecontext.raster[ y ].sourceoffset = fixedcolormapindex * size;
+		planecontext.raster[ y ].colormap = rendercontext.viewpoint.colormaps + fixedcolormapindex * 256;
+	}
+	else
+	{
+		int32_t lookup = (int32_t)M_CLAMP( ( planecontext.raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
+		int32_t lightindex = drs_current->zlightindex[ planecontext.planezlightindex * MAXLIGHTZ + lookup ];
+		planecontext.raster[ y ].sourceoffset = lightindex * size;
+		planecontext.raster[ y ].colormap = rendercontext.viewpoint.colormaps + lightindex * 256;
 	}
 }
 
@@ -249,14 +246,14 @@ INLINE void PrepareRender( rendercontext_t& rendercontext, rasterregion_t* thisr
 	int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
 	
 	rendercontext.planecontext.planezlightindex = light;
-	rendercontext.planecontext.planezlight = &drs_current->zlight[ light * MAXLIGHTZ ];
+	rendercontext.planecontext.planezlightoffset = &drs_current->zlightoffset[ light * MAXLIGHTZ ];
 
 	int32_t y = thisregion->miny;
 	int32_t stop = thisregion->maxy + 1;
 
 	while( y < stop )
 	{
-		PrepareRow( y++, rendercontext.planecontext, texturesize );
+		PrepareRow( y++, rendercontext, texturesize );
 	};
 
 	RenderRasterLines< Leap, LeapLog2, Sampler >( rendercontext, thisregion );

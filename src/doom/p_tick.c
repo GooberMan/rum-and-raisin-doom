@@ -147,8 +147,8 @@ void P_UpdateInstanceData( void )
 	
 	for( index = 0; index < numsectors; ++index )
 	{
-		thissecinst->floortex		= flatlookup[ thissec->floorpic ];
-		thissecinst->ceiltex		= flatlookup[ thissec->ceilingpic ];
+		thissecinst->floortex		= flatlookup[ flattranslation[ thissec->floorpic ] ];
+		thissecinst->ceiltex		= flatlookup[ flattranslation[ thissec->ceilingpic ] ];
 		thissecinst->floorheight	= FixedToRendFixed( thissec->floorheight );
 		thissecinst->ceilheight		= FixedToRendFixed( thissec->ceilingheight );
 		thissecinst->lightlevel		= thissec->lightlevel;

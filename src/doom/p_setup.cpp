@@ -476,7 +476,9 @@ struct DoomMapLoader
 			out.textureoffset	= IntToFixed( Read::AsIs( in.textureoffset ) );
 			out.rowoffset		= IntToFixed( Read::AsIs( in.rowoffset ) );
 			out.toptexture		= R_TextureNumForName( in.toptexture );
+			out.toptextureindex	= !NoTexture( in.toptexture ) ? W_CheckNumForName( in.toptexture ) : -1;
 			out.bottomtexture	= R_TextureNumForName( in.bottomtexture );
+			out.bottomtextureindex	= !NoTexture( in.bottomtexture ) ? W_CheckNumForName( in.bottomtexture ) : -1;
 			out.midtexture		= R_TextureNumForName( in.midtexture );
 			out.midtextureindex	= !NoTexture( in.midtexture ) ? W_CheckNumForName( in.midtexture ) : -1;
 			out.sector			= in.sector >= 0 ? &Sectors()[ Read::AsIs( in.sector ) ] : nullptr; // Requiem MAP03 has sector numbers -1
@@ -571,20 +573,24 @@ struct DoomMapLoader
 
 			if( out.sidenum[ 0 ] != -1 )
 			{
-				out.frontsector = Sides()[ out.sidenum[ 0 ] ].sector;
+				out.frontside = &Sides()[ out.sidenum[ 0 ] ];
+				out.frontsector = out.frontside->sector;
 			}
 			else
 			{
-				out.frontsector = 0;
+				out.frontside = nullptr;
+				out.frontsector = nullptr;
 			}
 
 			if( out.sidenum[ 1 ] != -1 )
 			{
-				out.backsector = Sides()[ out.sidenum[ 1 ] ].sector;
+				out.backside = &Sides()[ out.sidenum[ 1 ] ];
+				out.backsector = out.backside->sector;
 			}
 			else
 			{
-				out.backsector = 0;
+				out.backside = nullptr;
+				out.backsector = nullptr;
 			}
 		} );
 

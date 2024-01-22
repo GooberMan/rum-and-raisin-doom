@@ -243,6 +243,8 @@ struct sector_s
 
 	side_t*				skyline;
 	fixed_t				skyxscale;
+
+	line_t*				transferline;
 };
 
 
@@ -266,6 +268,8 @@ struct side_s
 	int16_t				bottomtexture;
 	int16_t				midtexture;
 
+	lumpindex_t			toptextureindex;
+	lumpindex_t			bottomtextureindex;
 	lumpindex_t			midtextureindex;
 
 	// Sector the SideDef is facing.
@@ -314,9 +318,10 @@ struct line_s
 	// To aid move clipping.
 	slopetype_t			slopetype;
 
-	// Front and back sector.
-	// Note: redundant? Can be retrieved from SideDefs.
+	side_t*				frontside;
 	sector_t*			frontsector;
+
+	side_t*				backside;
 	sector_t*			backsector;
 
 	// if == validcount, already checked
@@ -326,6 +331,9 @@ struct line_s
 	void*				specialdata;
 
 	byte*				transparencymap;
+	lighttable_t*		topcolormap;
+	lighttable_t*		bottomcolormap;
+	lighttable_t*		midcolormap;
 };
 
 
@@ -577,7 +585,7 @@ typedef struct wallcontext_s
 	rend_fixed_t		toptexturemid;
 	rend_fixed_t		bottomtexturemid;
 
-	lighttable_t**		lights;
+	int32_t*			lightsoffset;
 	int32_t				lightsindex;
 
 } wallcontext_t;
@@ -633,7 +641,6 @@ typedef enum spantype_e
 
 typedef struct rastercache_s
 {
-	lighttable_t**		zlight;
 	lighttable_t*		colormap;
 	size_t				sourceoffset;
 	rend_fixed_t		distance;
@@ -680,7 +687,7 @@ typedef struct planecontext_s
 	vertclip_t*			ceilingclip;
 
 	// Common renderer values
-	lighttable_t**		planezlight;
+	int32_t*			planezlightoffset;
 	int32_t				planezlightindex;
 	rend_fixed_t		planeheight;
 
@@ -712,7 +719,7 @@ typedef struct spritecontext_s
 	rend_fixed_t		spryiscale;
 	rend_fixed_t		sprtopscreen;
 
-	lighttable_t**		spritelights;
+	int32_t*			spritelightoffsets;
 	
 	doombool*			sectorvisited;
 
@@ -752,6 +759,13 @@ typedef struct colcontext_s
 
 typedef struct player_s player_t;
 
+typedef enum transferzone_e
+{
+	transfer_normalspace = 0,
+	transfer_ceilingspace,
+	transfer_floorspace,
+} transferzone_t;
+
 typedef struct viewpoint_s
 {
 	player_t*			player;
@@ -761,6 +775,8 @@ typedef struct viewpoint_s
 	rend_fixed_t		lerp;
 	rend_fixed_t		sin;
 	rend_fixed_t		cos;
+	lighttable_t*		colormaps;
+	transferzone_t		transferzone;
 	angle_t				angle;
 } viewpoint_t;
 
@@ -795,8 +811,6 @@ typedef struct rendercontext_s
 	bspcontext_t		bspcontext;
 	planecontext_t		planecontext;
 	spritecontext_t		spritecontext;
-
-	lighttable_t*		colormaps;
 
 	// Functions
 	colfunc_t			colfunc;
@@ -836,10 +850,9 @@ typedef struct drsdata_s
 
 	int32_t*			viewangletox;
 	angle_t*			xtoviewangle;
-	lighttable_t**		scalelight;
 	int32_t*			scalelightindex;
-	lighttable_t**		scalelightfixed;
-	lighttable_t**		zlight;
+	int32_t*			scalelightoffset;
+	int32_t*			zlightoffset;
 	int32_t*			zlightindex;
 	vertclip_t*			negonearray;
 	vertclip_t*			screenheightarray;

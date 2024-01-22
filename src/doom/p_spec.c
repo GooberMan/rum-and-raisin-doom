@@ -1159,36 +1159,37 @@ void P_UpdateSpecials (void)
     int		i;
     line_t*	line;
 
-    
-    //	LEVEL TIMER
-    if (levelTimer == true)
-    {
-	levelTimeCount--;
-	if (!levelTimeCount)
-	    G_ExitLevel();
-    }
-    
-    //	ANIMATE FLATS AND TEXTURES GLOBALLY
-    for (anim = anims ; anim < lastanim ; anim++)
-    {
-	for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
+	//	LEVEL TIMER
+	if (levelTimer == true)
 	{
-		extern int numtextures;
-		extern int numflats;
-
-	    pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
-	    if (anim->istexture)
+		levelTimeCount--;
+		if (!levelTimeCount)
 		{
-			texturetranslation[i] = pic;
-			flattranslation[ i + numflats ] = numflats + pic;
-		}
-	    else
-		{
-			flattranslation[i] = pic;
-			texturetranslation[ i + numtextures ] = numtextures + pic;
+			G_ExitLevel();
 		}
 	}
-    }
+
+	//	ANIMATE FLATS AND TEXTURES GLOBALLY
+	for (anim = anims ; anim < lastanim ; anim++)
+	{
+		for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
+		{
+			extern int numtextures;
+			extern int numflats;
+
+			pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
+			if (anim->istexture)
+			{
+				texturetranslation[i] = pic;
+				flattranslation[ i + numflats ] = numflats + pic;
+			}
+			else
+			{
+				flattranslation[i] = pic;
+				texturetranslation[ i + numtextures ] = numtextures + pic;
+			}
+		}
+	}
 
     
     //	ANIMATE LINE SPECIALS
@@ -1578,6 +1579,24 @@ void P_SpawnSpecials (void)
 						if( sectors[ thissector ].tag == lines[ i ].tag )
 						{
 							sectors[ thissector ].friction = targetfriction;
+						}
+					}
+				}
+				break;
+
+			case Transfer_Properties_Always:
+				if( lines[i].frontside )
+				{
+					side_t* side = lines[i].frontside;
+					lines[i].topcolormap = !side->toptexture && side->toptextureindex >= 0 ? W_CacheLumpNum( side->toptextureindex, PU_LEVEL ) : colormaps;
+					lines[i].bottomcolormap = !side->bottomtexture && side->bottomtextureindex >= 0 ? W_CacheLumpNum( side->bottomtextureindex, PU_LEVEL ) : colormaps;
+					lines[i].midcolormap = !side->midtexture && side->midtextureindex >= 0 ? W_CacheLumpNum( side->midtextureindex, PU_LEVEL ) : colormaps;
+
+					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					{
+						if( sectors[ thissector ].tag == lines[ i ].tag )
+						{
+							sectors[ thissector ].transferline = &lines[ i ];
 						}
 					}
 				}

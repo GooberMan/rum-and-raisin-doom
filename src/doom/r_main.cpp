@@ -111,7 +111,6 @@ extern "C"
 	constexpr size_t DRSNumViewAngles = RENDERFINEANGLES / 2;
 
 	constexpr size_t DRSNumScaleLightEntries = LIGHTLEVELS * MAXLIGHTSCALE;
-	constexpr size_t DRSNumScaleLightFixedEntries = MAXLIGHTSCALE;
 	constexpr size_t DRSNumZLightEntries = LIGHTLEVELS * MAXLIGHTZ;
 
 	constexpr size_t DRSNumEntries = 10;
@@ -644,21 +643,17 @@ void R_AllocDynamicTables( void )
 	{
 		Z_Free( drs_allocation_data.xtoviewangle );
 	}
-	if( drs_allocation_data.scalelight )
-	{
-		Z_Free( drs_allocation_data.scalelight );
-	}
 	if( drs_allocation_data.scalelightindex )
 	{
 		Z_Free( drs_allocation_data.scalelightindex );
 	}
-	if( drs_allocation_data.scalelightfixed )
+	if( drs_allocation_data.scalelightoffset )
 	{
-		Z_Free( drs_allocation_data.scalelightfixed );
+		Z_Free( drs_allocation_data.scalelightoffset );
 	}
-	if( drs_allocation_data.zlight )
+	if( drs_allocation_data.zlightoffset )
 	{
-		Z_Free( drs_allocation_data.zlight );
+		Z_Free( drs_allocation_data.zlightoffset );
 	}
 	if( drs_allocation_data.zlightindex )
 	{
@@ -697,10 +692,9 @@ void R_AllocDynamicTables( void )
 	// One of these is not creating the correct amount of data...
 	drs_allocation_data.viewangletox		= (int32_t*)Z_Malloc( sizeof(int32_t) * DRSNumViewAngles * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.xtoviewangle		= (angle_t*)Z_Malloc( sizeof(angle_t) * totalwidth, PU_STATIC, nullptr );
-	drs_allocation_data.scalelight			= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.scalelightindex		= (int32_t*)Z_Malloc( sizeof( int32_t ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
-	drs_allocation_data.scalelightfixed		= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumScaleLightFixedEntries * DRSArraySize, PU_STATIC, nullptr );
-	drs_allocation_data.zlight				= (lighttable_t**)Z_Malloc( sizeof( lighttable_t* ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.scalelightoffset	= (int32_t*)Z_Malloc( sizeof( int32_t ) * DRSNumScaleLightEntries * DRSArraySize, PU_STATIC, nullptr );
+	drs_allocation_data.zlightoffset		= (int32_t*)Z_Malloc( sizeof( int32_t ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.zlightindex			= (int32_t*)Z_Malloc( sizeof( int32_t ) * DRSNumZLightEntries * DRSArraySize, PU_STATIC, nullptr );
 	drs_allocation_data.negonearray			= (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * render_width, PU_STATIC, nullptr );
 	drs_allocation_data.screenheightarray	= (vertclip_t*)Z_Malloc( sizeof( vertclip_t ) * totalwidth, PU_STATIC, nullptr );
@@ -719,10 +713,9 @@ void R_AllocDynamicTables( void )
 
 		base.viewangletox		+= DRSNumViewAngles;
 		base.xtoviewangle		+= ( base.frame_width + 1 );
-		base.scalelight			+= DRSNumScaleLightEntries;
 		base.scalelightindex	+= DRSNumScaleLightEntries;
-		base.scalelightfixed	+= DRSNumScaleLightFixedEntries;
-		base.zlight				+= DRSNumZLightEntries;
+		base.scalelightoffset	+= DRSNumScaleLightEntries;
+		base.zlightoffset		+= DRSNumZLightEntries;
 		base.zlightindex		+= DRSNumZLightEntries;
 		base.screenheightarray	+= base.frame_width;
 		base.yslope				+= base.frame_height;
@@ -849,8 +842,8 @@ void R_InitLightTables( drsdata_t* current )
 			if (level >= NUMLIGHTCOLORMAPS)
 				level = NUMLIGHTCOLORMAPS-1;
 
+			current->zlightoffset[i * MAXLIGHTZ + j] = level*256;
 			current->zlightindex[i * MAXLIGHTZ + j] = level;
-			current->zlight[i * MAXLIGHTZ + j] = colormaps + level*256;
 		}
 	}
 }
@@ -1276,8 +1269,8 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 				level = NUMLIGHTCOLORMAPS-1;
 			}
 
-			current->scalelight[ i * MAXLIGHTSCALE + j ] = colormaps + level * 256;
 			current->scalelightindex[ i * MAXLIGHTSCALE + j ] = level;
+			current->scalelightoffset[ i * MAXLIGHTSCALE + j ] = level * 256;
 		}
 	}
 }
@@ -1734,7 +1727,6 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 	R_InitColFuncs();
 
-	int32_t		i;
 	int32_t		currcontext;
 	int32_t		currstart;
 	int32_t		desiredwidth;
@@ -1855,25 +1847,65 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	viewpoint.sin = renderfinesine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
 	viewpoint.cos = renderfinecosine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
 	
-	lighttable_t* currcolormaps = colormaps;
+	viewpoint.colormaps = colormaps;
+	viewpoint.transferzone = transfer_normalspace;
 	sector_t* playersector = player->mo->subsector ? player->mo->subsector->sector : nullptr;
 	if( playersector )
 	{
-		// TODO: transfer heights colormap lookup
+		if( playersector->transferline )
+		{
+			sector_t* transfersector = playersector->transferline->frontsector;
+			sectorinstance_t& transfersectorinst = rendsectors[ transfersector->index ];
+			if( viewpoint.z > transfersectorinst.ceilheight )
+			{
+				viewpoint.transferzone = transfer_ceilingspace;
+				viewpoint.colormaps = playersector->transferline->topcolormap;
+			}
+			else if( viewpoint.z < transfersectorinst.floorheight )
+			{
+				viewpoint.transferzone = transfer_floorspace;
+				viewpoint.colormaps = playersector->transferline->bottomcolormap;
+			}
+			else
+			{
+				viewpoint.colormaps = playersector->transferline->midcolormap;
+			}
+		}
+	}
+
+	for( int32_t index : iota( 0, numsectors ) )
+	{
+		if( sectors[ index ].transferline )
+		{
+			sectorinstance_t& transfersectorinst = rendsectors[ sectors[ index ].transferline->frontsector->index ];
+			switch( viewpoint.transferzone )
+			{
+			case transfer_normalspace:
+				rendsectors[ index ].ceilheight = transfersectorinst.ceilheight;
+				rendsectors[ index ].floorheight = transfersectorinst.floorheight;
+				break;
+			case transfer_ceilingspace:
+				rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
+				rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
+				rendsectors[ index ].floortex = transfersectorinst.floortex;
+				rendsectors[ index ].floorheight = transfersectorinst.ceilheight;
+				break;
+			case transfer_floorspace:
+				rendsectors[ index ].ceilheight = transfersectorinst.floorheight;
+				rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
+				rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
+				rendsectors[ index ].floortex = transfersectorinst.floortex;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	fixedcolormapindex = player->fixedcolormap;
 	if (player->fixedcolormap)
 	{
-		fixedcolormap = currcolormaps + player->fixedcolormap * 256;
-	
-		//walllights = scalelightfixed;
-		//walllightsindex = fixedcolormapindex;
-
-		for( i=0; i < MAXLIGHTSCALE; ++i )
-		{
-			drs_current->scalelightfixed[i] = fixedcolormap;
-		}
+		fixedcolormap = viewpoint.colormaps + player->fixedcolormap * 256;
 	}
 	else
 	{
@@ -1891,7 +1923,6 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 		renderdatas[ currcontext ].context.viewpoint = viewpoint;
 		renderdatas[ currcontext ].context.viewbuffer = buffer;
-		renderdatas[ currcontext ].context.colormaps = currcolormaps;
 	}
 
 	if( renderloadbalancing && renderscalecontextsby > 0 )

@@ -606,7 +606,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 	else if (thingframe & FF_FULLBRIGHT)
 	{
 		// full bright
-		vis->colormap = colormaps;
+		vis->colormap = rendercontext.viewpoint.colormaps;
 	}
 	else
 	{
@@ -616,7 +616,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 		if (index >= MAXLIGHTSCALE)
 			index = MAXLIGHTSCALE-1;
 
-		vis->colormap = spritecontext.spritelights[ index ];
+		vis->colormap = rendercontext.viewpoint.colormaps + spritecontext.spritelightoffsets[ index ];
 	}
 }
 
@@ -644,19 +644,8 @@ void R_AddSprites( rendercontext_t& rendercontext, sector_t* sec )
 	spritecontext.sectorvisited[ sec->index ] = true;
 	
 	lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
-
-	if (lightnum < 0)
-	{
-		spritecontext.spritelights = drs_current->scalelight;
-	}
-	else if (lightnum >= LIGHTLEVELS)
-	{
-		spritecontext.spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * ( LIGHTLEVELS-1 ) ];
-	}
-	else
-	{
-		spritecontext.spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * lightnum ];
-	}
+	lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
+	spritecontext.spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
 	// Handle all things in sector.
 	for (thing = sec->thinglist ; thing ; thing = thing->snext)
@@ -768,12 +757,12 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	else if (psp->state->frame & FF_FULLBRIGHT)
 	{
 		// full bright
-		vis->colormap = colormaps;
+		vis->colormap = rendercontext.viewpoint.colormaps;
 	}
 	else
 	{
 		// local light
-		vis->colormap = spritecontext.spritelights[MAXLIGHTSCALE-1];
+		vis->colormap = rendercontext.viewpoint.colormaps + spritecontext.spritelightoffsets[MAXLIGHTSCALE-1];
 	}
 	
 	R_DrawVisSprite( rendercontext, vis, vis->x1, vis->x2 );
@@ -797,19 +786,8 @@ void R_DrawPlayerSprites( rendercontext_t& rendercontext )
 
 	// get light level
 	lightnum = (viewpoint.player->mo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) + extralight;
-
-	if (lightnum < 0)
-	{
-		spritecontext.spritelights = drs_current->scalelight;
-	}
-	else if (lightnum >= LIGHTLEVELS)
-	{
-		spritecontext.spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * ( LIGHTLEVELS-1 ) ];
-	}
-	else
-	{
-		spritecontext.spritelights = &drs_current->scalelight[ MAXLIGHTSCALE * lightnum ];
-	}
+	lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
+	spritecontext.spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
 	// clip to screen bounds
 	spritecontext.mfloorclip = drs_current->screenheightarray;

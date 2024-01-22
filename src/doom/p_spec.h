@@ -56,7 +56,7 @@ enum BoomActions
 	Floor_ChangeTexture_NumericModel_W1_Player = 239,
 	Floor_ChangeTexture_NumericModel_WR_Player = 240,
 	Floor_ChangeTexture_NumericModel_S1_Player = 241,
-	Transfer_Heights_Always = 242,
+	Transfer_Properties_Always = 242,
 	Textue_Translucent_Always = 260,
 	Transfer_CeilingLighting_Always = 261,
 	Transfer_Sky_Always = 271,
