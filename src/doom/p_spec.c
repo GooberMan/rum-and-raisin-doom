@@ -241,7 +241,36 @@ int32_t P_GetPicSwitchOpposite( int32_t tex )
 // UTILITIES
 //
 
+INLINE doombool IsScroller( int32_t special )
+{
+	switch( special )
+	{
+	case Scroll_WallTextureLeft_Always:
+		return true;
+	case Scroll_WallTextureRight_Always:
+	case Scroll_WallTextureByOffset_Always:
+	case Scroll_CeilingTexture_Always:
+	case Scroll_FloorTexture_Always:
+		return remove_limits; // allow_boom_specials
+	default:
+		return false;
+	}
 
+}
+
+INLINE doombool IsWallScroller( int32_t special )
+{
+	switch( special )
+	{
+	case Scroll_WallTextureLeft_Always:
+		return true;
+	case Scroll_WallTextureRight_Always:
+	case Scroll_WallTextureByOffset_Always:
+		return remove_limits; // allow_boom_specials
+	default:
+		return false;
+	}
+}
 
 //
 // getSide()
@@ -1197,8 +1226,24 @@ void P_UpdateSpecials (void)
     {
 		line = linespeciallist[i];
 
-		line->frontside->textureoffset += line->scrollratex;
-		line->frontside->rowoffset += line->scrollratey;
+		if( IsWallScroller( line->special ) )
+		{
+			line->frontside->textureoffset += line->scrollratex;
+			line->frontside->rowoffset += line->scrollratey;
+		}
+		else
+		{
+			for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+			{
+				if( sectors[ thissector ].tag == line->tag )
+				{
+					sectors[ thissector ].ceiloffsetx += sectors[ thissector ].ceilscrollratex;
+					sectors[ thissector ].ceiloffsety += sectors[ thissector ].ceilscrollratey;
+					sectors[ thissector ].flooroffsetx += sectors[ thissector ].floorscrollratex;
+					sectors[ thissector ].flooroffsety += sectors[ thissector ].floorscrollratey;
+				}
+			}
+		}
     }
 
     
@@ -1435,21 +1480,6 @@ int EV_DoDonut(line_t*	line)
 //  that spawn thinkers
 //
 
-INLINE doombool IsScroller( int32_t special )
-{
-	switch( special )
-	{
-	case Texture_ScrollLeft_Always:
-		return true;
-	case Texture_ScrollRight_Always:
-	case Texture_ScrollByOffset_Always:
-		return remove_limits; // allow_boom_specials
-	default:
-		return false;
-	}
-
-}
-
 static unsigned int NumScrollers()
 {
 	int32_t		i;
@@ -1569,7 +1599,7 @@ void P_SpawnSpecials (void)
 	{
 		switch(lines[i].special)
 		{
-		case Texture_ScrollLeft_Always:
+		case Scroll_WallTextureLeft_Always:
 			// EFFECT FIRSTCOL SCROLL+
 			linespeciallist[ numlinespecials++ ] = &lines[ i ];
 			lines[ i ].scrollratex = FRACUNIT;
@@ -1581,15 +1611,39 @@ void P_SpawnSpecials (void)
 		{
 			switch( lines[ i ].special )
 			{
-			case Texture_ScrollRight_Always:
+			case Scroll_WallTextureRight_Always:
 				linespeciallist[ numlinespecials++ ] = &lines[ i ];
 				lines[ i ].scrollratex = -FRACUNIT;
 				break;
 
-			case Texture_ScrollByOffset_Always:
+			case Scroll_WallTextureByOffset_Always:
 				linespeciallist[ numlinespecials++ ] = &lines[ i ];
-				lines[ i ].scrollratex = lines[ i ].frontside->textureoffset;
+				lines[ i ].scrollratex = -lines[ i ].frontside->textureoffset;
 				lines[ i ].scrollratey = lines[ i ].frontside->rowoffset;
+				break;
+
+			case Scroll_CeilingTexture_Always:
+				linespeciallist[ numlinespecials++ ] = &lines[ i ];
+				for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+				{
+					if( sectors[ thissector ].tag == lines[ i ].tag )
+					{
+						sectors[ thissector ].ceilscrollratex = FixedMul( lines[ i ].dx, FLATSCROLL_SCALE );
+						sectors[ thissector ].ceilscrollratey = FixedMul( lines[ i ].dy, FLATSCROLL_SCALE );
+					}
+				}
+				break;
+
+			case Scroll_FloorTexture_Always:
+				linespeciallist[ numlinespecials++ ] = &lines[ i ];
+				for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+				{
+					if( sectors[ thissector ].tag == lines[ i ].tag )
+					{
+						sectors[ thissector ].floorscrollratex = FixedMul( lines[ i ].dx, FLATSCROLL_SCALE );
+						sectors[ thissector ].floorscrollratey = FixedMul( lines[ i ].dy, FLATSCROLL_SCALE );
+					}
+				}
 				break;
 
 			case Transfer_FloorLighting_Always:

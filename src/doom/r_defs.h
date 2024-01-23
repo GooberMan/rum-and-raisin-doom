@@ -123,6 +123,10 @@ typedef struct sectorinstance_s
 	rend_fixed_t			lightlevel;
 	rend_fixed_t			floorlightlevel;
 	rend_fixed_t			ceillightlevel;
+	rend_fixed_t			flooroffsetx;
+	rend_fixed_t			flooroffsety;
+	rend_fixed_t			ceiloffsetx;
+	rend_fixed_t			ceiloffsety;
 
 	int32_t					snapfloor;
 	int32_t					snapceiling;
@@ -249,10 +253,14 @@ struct sector_s
 
 	line_t*				transferline;
 
-	fixed_t				offsetx;
-	fixed_t				offsety;
-	fixed_t				scrollratex;
-	fixed_t				scrollratey;
+	fixed_t				flooroffsetx;
+	fixed_t				flooroffsety;
+	fixed_t				ceiloffsetx;
+	fixed_t				ceiloffsety;
+	fixed_t				floorscrollratex;
+	fixed_t				floorscrollratey;
+	fixed_t				ceilscrollratex;
+	fixed_t				ceilscrollratey;
 };
 
 
@@ -668,6 +676,8 @@ struct rasterregion_s
 	rasterline_t*		lines;
 
 	rend_fixed_t		height;
+	rend_fixed_t		xoffset;
+	rend_fixed_t		yoffset;
 
 	int32_t				lightlevel;
 	int32_t				padding;
@@ -684,6 +694,10 @@ typedef struct planecontext_s
 {
 	vbuffer_t			output;
 	byte*				source;
+
+	rend_fixed_t		viewx;
+	rend_fixed_t		viewy;
+	angle_t				viewangle;
 
 	int32_t				spantype;
 

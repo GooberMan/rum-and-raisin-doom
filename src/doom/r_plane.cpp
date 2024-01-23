@@ -71,13 +71,15 @@ void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
 // R_FindPlane
 //
 
-rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop )
+rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, rend_fixed_t height, rend_fixed_t xoffset, rend_fixed_t yoffset, int32_t lightlevel, int32_t start, int32_t stop )
 {
 	constexpr rasterline_t defaultline = { VPINDEX_INVALID, 0 };
 	int16_t width = stop - start + 1;
 
 	rasterregion_t* region = R_AllocateScratch< rasterregion_t >( 1 );
 	region->height = height;
+	region->xoffset = xoffset;
+	region->yoffset = yoffset;
 	region->lightlevel = lightlevel;
 	region->minx = start;
 	region->maxx = stop;

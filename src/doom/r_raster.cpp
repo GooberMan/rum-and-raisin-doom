@@ -89,15 +89,15 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, in
 
 	int32_t				nexty			= top;
 
-	angle_t				angle			= (rendercontext.viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
+	angle_t				angle			= (rendercontext.planecontext.viewangle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
 	rend_fixed_t		anglecos		= renderfinecosine[ angle ];
 	rend_fixed_t		anglesin		= renderfinesine[ angle ];
 
 	rend_fixed_t		currdistance	= rendercontext.planecontext.raster[ top ].distance;
 	rend_fixed_t		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 
-	rend_fixed_t		xfrac			= rendercontext.viewpoint.x + RendFixedMul( anglecos, currlength );
-	rend_fixed_t		yfrac			= -rendercontext.viewpoint.y - RendFixedMul( anglesin, currlength );
+	rend_fixed_t		xfrac			= rendercontext.planecontext.viewx + RendFixedMul( anglecos, currlength );
+	rend_fixed_t		yfrac			= -rendercontext.planecontext.viewy - RendFixedMul( anglesin, currlength );
 	rend_fixed_t		nextxfrac;
 	rend_fixed_t		nextyfrac;
 
@@ -114,8 +114,8 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, in
 		nexty			+= Leap;
 		currdistance	= rendercontext.planecontext.raster[ nexty ].distance;
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
-		nextxfrac		= rendercontext.viewpoint.x + RendFixedMul( anglecos, currlength );
-		nextyfrac		= -rendercontext.viewpoint.y - RendFixedMul( anglesin, currlength );
+		nextxfrac		= rendercontext.planecontext.viewx + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -rendercontext.planecontext.viewy - RendFixedMul( anglesin, currlength );
 
 		xstep =	( nextxfrac - xfrac ) >> LeapLog2;
 		ystep =	( nextyfrac - yfrac ) >> LeapLog2;
@@ -176,8 +176,8 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, in
 		nexty			+= count;
 		currdistance	= rendercontext.planecontext.raster[ nexty ].distance;
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
-		nextxfrac		= rendercontext.viewpoint.x + RendFixedMul( anglecos, currlength );
-		nextyfrac		= -rendercontext.viewpoint.y - RendFixedMul( anglesin, currlength );
+		nextxfrac		= rendercontext.planecontext.viewx + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -rendercontext.planecontext.viewy - RendFixedMul( anglesin, currlength );
 
 		++count;
 
@@ -242,6 +242,10 @@ template< int32_t Leap, int32_t LeapLog2, typename Sampler >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
 INLINE void PrepareRender( rendercontext_t& rendercontext, rasterregion_t* thisregion, size_t texturesize )
 {
+	rendercontext.planecontext.viewx		= rendercontext.viewpoint.x - thisregion->xoffset;
+	rendercontext.planecontext.viewy		= rendercontext.viewpoint.y - thisregion->yoffset;
+	rendercontext.planecontext.viewangle	= rendercontext.viewpoint.angle;
+
 	rendercontext.planecontext.planeheight = abs( thisregion->height - rendercontext.viewpoint.z );
 	int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
 	

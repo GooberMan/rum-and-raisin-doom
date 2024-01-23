@@ -1821,6 +1821,10 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 			rendsectors[ index ].lightlevel			= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
 			rendsectors[ index ].floorlightlevel	= selectcurr ? currsectors[ index ].floorlightlevel : prevsectors[ index ].floorlightlevel;
 			rendsectors[ index ].ceillightlevel		= selectcurr ? currsectors[ index ].ceillightlevel : prevsectors[ index ].ceillightlevel;
+			rendsectors[ index ].flooroffsetx		= RendFixedLerp( prevsectors[ index ].flooroffsetx, currsectors[ index ].flooroffsetx, viewpoint.lerp );
+			rendsectors[ index ].flooroffsety		= RendFixedLerp( prevsectors[ index ].flooroffsety, currsectors[ index ].flooroffsety, viewpoint.lerp );
+			rendsectors[ index ].ceiloffsetx		= RendFixedLerp( prevsectors[ index ].ceiloffsetx, currsectors[ index ].ceiloffsetx, viewpoint.lerp );
+			rendsectors[ index ].ceiloffsety		= RendFixedLerp( prevsectors[ index ].ceiloffsety, currsectors[ index ].ceiloffsety, viewpoint.lerp );
 			rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
 			rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
 		}

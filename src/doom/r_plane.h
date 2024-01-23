@@ -34,7 +34,7 @@ void R_ErrorCheckPlanes( rendercontext_t& context );
 #define R_ErrorCheckPlanes( context )
 #endif // RANGECHECK
 
-rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, rend_fixed_t height, int32_t lightlevel, int32_t start, int32_t stop );
+rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, rend_fixed_t height, rend_fixed_t xoffset, rend_fixed_t yoffset, int32_t lightlevel, int32_t start, int32_t stop );
 
 #endif // defined(__cplusplus)
 

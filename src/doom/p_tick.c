@@ -154,6 +154,10 @@ void P_UpdateInstanceData( void )
 		thissecinst->lightlevel			= thissec->lightlevel;
 		thissecinst->floorlightlevel	= thissec->floorlightsec->lightlevel;
 		thissecinst->ceillightlevel		= thissec->ceilinglightsec->lightlevel;
+		thissecinst->flooroffsetx		= FixedToRendFixed( thissec->flooroffsetx );
+		thissecinst->flooroffsety		= FixedToRendFixed( thissec->flooroffsety );
+		thissecinst->ceiloffsetx		= FixedToRendFixed( thissec->ceiloffsetx );
+		thissecinst->ceiloffsety		= FixedToRendFixed( thissec->ceiloffsety );
 		thissecinst->snapfloor			= thissec->snapfloor;
 		thissecinst->snapceiling		= thissec->snapceiling;
 

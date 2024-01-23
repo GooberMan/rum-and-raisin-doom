@@ -465,6 +465,10 @@ struct DoomMapLoader
 			thisprev->lightlevel		= thiscurr->lightlevel			= thissec->lightlevel;
 			thisprev->floorlightlevel	= thiscurr->floorlightlevel		= thissec->lightlevel;
 			thisprev->ceillightlevel	= thiscurr->ceillightlevel		= thissec->lightlevel;
+			thisprev->flooroffsetx		= thiscurr->flooroffsetx		= thissec->flooroffsetx;
+			thisprev->flooroffsety		= thiscurr->flooroffsety		= thissec->flooroffsety;
+			thisprev->ceiloffsetx		= thiscurr->ceiloffsetx			= thissec->ceiloffsetx;
+			thisprev->ceiloffsety		= thiscurr->ceiloffsety			= thissec->ceiloffsety;
 
 			++thisprev;
 			++thiscurr;

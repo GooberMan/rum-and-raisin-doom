@@ -305,11 +305,17 @@ void R_AddLine( rendercontext_t& rendercontext, seg_t* line )
 	// Identical floor and ceiling on both sides,
 	// identical light levels on both sides,
 	// and no middle texture.
+	
+	// This needs to be a memcmp or something jeezus
 	if (bspcontext.backsectorinst->ceiltex == bspcontext.frontsectorinst->ceiltex
 		&& bspcontext.backsectorinst->floortex == bspcontext.frontsectorinst->floortex
 		&& bspcontext.backsectorinst->lightlevel == bspcontext.frontsectorinst->lightlevel
 		&& bspcontext.backsectorinst->floorlightlevel == bspcontext.frontsectorinst->floorlightlevel
 		&& bspcontext.backsectorinst->ceillightlevel == bspcontext.frontsectorinst->ceillightlevel
+		&& bspcontext.backsectorinst->flooroffsetx == bspcontext.frontsectorinst->flooroffsetx
+		&& bspcontext.backsectorinst->flooroffsety == bspcontext.frontsectorinst->flooroffsety
+		&& bspcontext.backsectorinst->ceiloffsetx == bspcontext.frontsectorinst->ceiloffsetx
+		&& bspcontext.backsectorinst->ceiloffsety == bspcontext.frontsectorinst->ceiloffsety
 		&& bspcontext.curline->sidedef->midtexture == 0)
 	{
 		return;

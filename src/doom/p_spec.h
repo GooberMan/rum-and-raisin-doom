@@ -41,7 +41,7 @@
 // Player
 // Monster
 //
-// The only action that breaks this scheme is Texture_ScrollRight_Always
+// The only action that breaks this scheme is Scroll_WallTextureRight_Always
 // This action is a special case that is always active
 
 enum DoomActions
@@ -94,7 +94,7 @@ enum DoomActions
 	Floor_LowerHighest_SR_Player,
 	Door_Open_GR_All,
 	Floor_RaiseNearestChangeTexture_GR_Player,
-	Texture_ScrollLeft_Always,
+	Scroll_WallTextureLeft_Always,
 	Ceiling_Crusher_S1_Player,
 	Door_Close_S1_Player,
 	Exit_Secret_S1_Player,
@@ -193,7 +193,7 @@ enum DoomActions
 enum BoomActions
 {
 	Floor_ChangeTexture_NumericModel_SR_Player = 78,
-	Texture_ScrollRight_Always = 85,
+	Scroll_WallTextureRight_Always = 85,
 	Floor_Raise512_W1_Player = 142,
 	Floor_Raise512_WR_Player = 147,
 	Floor_ChangeTexture_W1_Player = 153,
@@ -224,14 +224,19 @@ enum BoomActions
 	Floor_ChangeTexture_NumericModel_WR_Player = 240,
 	Floor_ChangeTexture_NumericModel_S1_Player = 241,
 	Transfer_Properties_Always = 242,
-	Texture_ScrollByOffset_Always = 255,
+	Scroll_CeilingTexture_Always = 250,
+	Scroll_FloorTexture_Always = 251,
+	Scroll_FloorObjects_Always = 252,
+	Scroll_FloorTextureObjects_Always = 253,
+	Scroll_WallTextureBySector_Always = 254,
+	Scroll_WallTextureByOffset_Always = 255,
 	Textue_Translucent_Always = 260,
 	Transfer_CeilingLighting_Always = 261,
 	Transfer_Sky_Always = 271,
 	Transfer_SkyReversed_Always = 272,
 };
 
-
+#define FLATSCROLL_SCALE 0x800 // (1/32)
 //
 // End-level timer (-TIMER option)
 //
