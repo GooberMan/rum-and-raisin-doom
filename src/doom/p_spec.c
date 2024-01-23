@@ -1195,14 +1195,10 @@ void P_UpdateSpecials (void)
     //	ANIMATE LINE SPECIALS
     for (i = 0; i < numlinespecials; i++)
     {
-	line = linespeciallist[i];
-	switch(line->special)
-	{
-	  case 48:
-	    // EFFECT FIRSTCOL SCROLL +
-	    sides[line->sidenum[0]].textureoffset += FRACUNIT;
-	    break;
-	}
+		line = linespeciallist[i];
+
+		line->frontside->textureoffset += line->scrollratex;
+		line->frontside->rowoffset += line->scrollratey;
     }
 
     
@@ -1439,6 +1435,21 @@ int EV_DoDonut(line_t*	line)
 //  that spawn thinkers
 //
 
+INLINE doombool IsScroller( int32_t special )
+{
+	switch( special )
+	{
+	case Texture_ScrollLeft_Always:
+		return true;
+	case Texture_ScrollRight_Always:
+	case Texture_ScrollByOffset_Always:
+		return remove_limits; // allow_boom_specials
+	default:
+		return false;
+	}
+
+}
+
 static unsigned int NumScrollers()
 {
 	int32_t		i;
@@ -1446,7 +1457,7 @@ static unsigned int NumScrollers()
 
 	for (i = 0; i < numlines; i++)
 	{
-		if (48 == lines[i].special)
+		if( IsScroller( lines[i].special ) )
 		{
 			scrollers++;
 		}
@@ -1558,16 +1569,29 @@ void P_SpawnSpecials (void)
 	{
 		switch(lines[i].special)
 		{
-		case 48:
+		case Texture_ScrollLeft_Always:
 			// EFFECT FIRSTCOL SCROLL+
 			linespeciallist[ numlinespecials++ ] = &lines[ i ];
+			lines[ i ].scrollratex = FRACUNIT;
+		default:
 			break;
-		};
+		}
 
 		if( remove_limits ) // allow_boom_specials
 		{
 			switch( lines[ i ].special )
 			{
+			case Texture_ScrollRight_Always:
+				linespeciallist[ numlinespecials++ ] = &lines[ i ];
+				lines[ i ].scrollratex = -FRACUNIT;
+				break;
+
+			case Texture_ScrollByOffset_Always:
+				linespeciallist[ numlinespecials++ ] = &lines[ i ];
+				lines[ i ].scrollratex = lines[ i ].frontside->textureoffset;
+				lines[ i ].scrollratey = lines[ i ].frontside->rowoffset;
+				break;
+
 			case Transfer_FloorLighting_Always:
 			case Transfer_CeilingLighting_Always:
 				if( lines[i].frontsector )

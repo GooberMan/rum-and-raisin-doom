@@ -240,6 +240,7 @@ struct sector_s
 	int32_t				snapfloor;
 	int32_t				snapceiling;
 
+	// Boom additions
 	sector_t*			floorlightsec;
 	sector_t*			ceilinglightsec;
 
@@ -247,6 +248,11 @@ struct sector_s
 	fixed_t				skyxscale;
 
 	line_t*				transferline;
+
+	fixed_t				offsetx;
+	fixed_t				offsety;
+	fixed_t				scrollratex;
+	fixed_t				scrollratey;
 };
 
 
@@ -332,10 +338,13 @@ struct line_s
 	// thinker_t for reversable actions
 	void*				specialdata;
 
+	// Boom additions
 	byte*				transparencymap;
 	lighttable_t*		topcolormap;
 	lighttable_t*		bottomcolormap;
 	lighttable_t*		midcolormap;
+	fixed_t				scrollratex;
+	fixed_t				scrollratey;
 };
 
 
