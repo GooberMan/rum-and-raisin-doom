@@ -52,13 +52,8 @@ extern "C"
 //
 void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
 {
-	M_PROFILE_FUNC();
-
-	{
-		M_PROFILE_NAMED( "Clip clear" );
-		context->floorclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, drs_current->viewheight );
-		context->ceilingclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, -1 );
-	}
+	context->floorclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, drs_current->viewheight );
+	context->ceilingclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, -1 );
 
 	context->lastopening = context->openings;
 

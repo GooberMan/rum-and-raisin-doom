@@ -98,7 +98,7 @@ void R_RangeCheckNamed( colcontext_t* context, const char* func )
 //
 void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int x1, int x2 )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	viewpoint_t&		viewpoint		= rendercontext.viewpoint;
 	vbuffer_t&			dest			= rendercontext.viewbuffer;
@@ -206,8 +206,6 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 	endtime = I_GetTimeUS();
 	bspcontext.maskedtimetaken += ( endtime - starttime );
 #endif // RENDER_PERF_GRAPHING
-
-	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -229,7 +227,7 @@ extern byte lightlevelmaps[32][256];
 
 uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcontext, segloopcontext_t* segcontext )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	vbuffer_t& dest					= rendercontext.viewbuffer;
 	planecontext_t& planecontext	= rendercontext.planecontext;
@@ -478,8 +476,6 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 		bottomfrac += segcontext->bottomstep;
 	}
 
-	M_PROFILE_POP( __FUNCTION__ );
-
 #if RENDER_PERF_GRAPHING
 	endtime = I_GetTimeUS();
 	return endtime - starttime;
@@ -495,7 +491,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 //
 void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontext, int32_t start, int32_t stop )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	viewpoint_t& viewpoint			= rendercontext.viewpoint;
 	bspcontext_t& bspcontext		= rendercontext.bspcontext;
@@ -543,7 +539,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 #endif
 
 	{
-		M_PROFILE_PUSH( "Setup", __FILE__, __LINE__ );
+		M_PROFILE_NAMED( "Setup" );
 		bspcontext.sidedef = bspcontext.curline->sidedef;
 		bspcontext.sideinst = &rendsides[ bspcontext.curline->sidedef->index ];
 		bspcontext.linedef = bspcontext.curline->linedef;
@@ -881,8 +877,6 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		visplaneend = I_GetTimeUS();
 		bspcontext.findvisplanetimetaken += ( visplaneend - visplanestart );
 #endif // RENDER_PERF_GRAPHING
-
-		M_PROFILE_POP( "Setup" );
 	}
 
 	walltime = R_RenderSegLoop( rendercontext, wallcontext, &loopcontext );
@@ -914,36 +908,37 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		}
 	}
 
-	M_PROFILE_PUSH( "Reserve openings", __FILE__, __LINE__ );
-	// save sprite clipping info
-	if ( ((bspcontext.thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
-		&& !bspcontext.thisdrawseg->sprtopclip)
 	{
-#if RANGECHECK
-		if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > MAXOPENINGS )
+		M_PROFILE_NAMED( "Reserve openings" );
+		// save sprite clipping info
+		if ( ((bspcontext.thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
+			&& !bspcontext.thisdrawseg->sprtopclip)
 		{
-			I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+	#if RANGECHECK
+			if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > MAXOPENINGS )
+			{
+				I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+			}
+	#endif // RANGECHECK
+			memcpy (planecontext.lastopening, planecontext.ceilingclip+loopcontext.startx, sizeof(*planecontext.lastopening)*(loopcontext.stopx-loopcontext.startx));
+			bspcontext.thisdrawseg->sprtopclip = planecontext.lastopening - loopcontext.startx;
+			planecontext.lastopening += loopcontext.stopx - loopcontext.startx;
 		}
-#endif // RANGECHECK
-		memcpy (planecontext.lastopening, planecontext.ceilingclip+loopcontext.startx, sizeof(*planecontext.lastopening)*(loopcontext.stopx-loopcontext.startx));
-		bspcontext.thisdrawseg->sprtopclip = planecontext.lastopening - loopcontext.startx;
-		planecontext.lastopening += loopcontext.stopx - loopcontext.startx;
-	}
 
-	if ( ((bspcontext.thisdrawseg->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
-		&& !bspcontext.thisdrawseg->sprbottomclip)
-	{
-#if RANGECHECK
-		if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > MAXOPENINGS )
+		if ( ((bspcontext.thisdrawseg->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
+			&& !bspcontext.thisdrawseg->sprbottomclip)
 		{
-			I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+	#if RANGECHECK
+			if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > MAXOPENINGS )
+			{
+				I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+			}
+	#endif // RANGECHECK
+			memcpy (planecontext.lastopening, planecontext.floorclip+loopcontext.startx, sizeof(*planecontext.lastopening)*(loopcontext.stopx-loopcontext.startx));
+			bspcontext.thisdrawseg->sprbottomclip = planecontext.lastopening - loopcontext.startx;
+			planecontext.lastopening += loopcontext.stopx - loopcontext.startx;	
 		}
-#endif // RANGECHECK
-		memcpy (planecontext.lastopening, planecontext.floorclip+loopcontext.startx, sizeof(*planecontext.lastopening)*(loopcontext.stopx-loopcontext.startx));
-		bspcontext.thisdrawseg->sprbottomclip = planecontext.lastopening - loopcontext.startx;
-		planecontext.lastopening += loopcontext.stopx - loopcontext.startx;	
 	}
-	M_PROFILE_POP( "Reserve openings" );
 
 	if (loopcontext.maskedtexture && !(bspcontext.thisdrawseg->silhouette&SIL_TOP))
 	{
@@ -962,7 +957,5 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 
 	bspcontext.storetimetaken += ( ( endtime - starttime ) - ( visplaneend - visplanestart ) );
 #endif // RENDER_PERF_GRAPHING
-
-	M_PROFILE_POP( __FUNCTION__ );
 }
 
