@@ -621,8 +621,11 @@ int32_t fuzzoffset[] =
 };
 #define FUZZTABLE ( sizeof( fuzzoffset ) / sizeof( *fuzzoffset ) )
 
-// 1,000 fuzz offsets. Overkill. And loving it.
-static const int32_t adjustedfuzzoffset[] =
+// 1,024 fuzz offsets. Overkill. And loving it.
+#define ADJUSTEDFUZZTABLE 1024
+#define ADJUSTEDFUZZTABLEMASK (ADJUSTEDFUZZTABLE-1)
+
+static const int32_t adjustedfuzzoffset[ ADJUSTEDFUZZTABLE ] =
 {
 	FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
 	-FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
@@ -724,9 +727,10 @@ static const int32_t adjustedfuzzoffset[] =
 	FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
 	FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
 	-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
+	-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,
+	-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,
+	FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,
 };
-
-#define ADJUSTEDFUZZTABLE ( sizeof( adjustedfuzzoffset ) / sizeof( *adjustedfuzzoffset ) )
 
 thread_local int32_t	fuzzpos = 0;
 thread_local int32_t	cachedfuzzpos = 0;
@@ -782,34 +786,22 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 
 void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 {
-    int					count; 
-    pixel_t*			dest;
-	int32_t				fuzzposadd;
-	int32_t				fuzzpossample;
-
-	pixel_t*			src;
-	pixel_t*			srcbuffer;
-	pixel_t*			basecolorpmap = colormaps + 6*256;
-	pixel_t*			darkercolormap = colormaps + 12*256;
-	pixel_t*			samplecolormap;
-
 	rend_fixed_t		originalcolfrac = RendFixedDiv( IntToRendFixed( 200 ), IntToRendFixed( drs_current->viewheight ) );
 	rend_fixed_t		oldfrac = 0;
 	rend_fixed_t		newfrac = 0;
 
-	fuzzpos			= fuzzposadd = cachedfuzzpos;
-	fuzzpossample	= adjustedfuzzoffset[ fuzzposadd % ADJUSTEDFUZZTABLE ];
-	samplecolormap	= fuzzpossample < 0 ? darkercolormap : basecolorpmap;
+	int32_t				fuzzposadd			= fuzzpos = cachedfuzzpos;
+	int32_t				fuzzpossample		= adjustedfuzzoffset[ fuzzposadd % ADJUSTEDFUZZTABLE ];
+	pixel_t*			samplecolormap		= fuzzpossample < 0 ? context->fuzzdarkmap : context->fuzzlightmap;
 
-	count = context->yh - context->yl; 
+	int32_t count = context->yh - context->yl; 
 
-	dest = context->output.data + context->x * context->output.pitch + context->yl;
-
-	srcbuffer = R_AllocateScratch< pixel_t >( count + 3 );
+	pixel_t* dest = context->output.data + context->x * context->output.pitch + context->yl;
 
 	// count + 3 is correct. Since a 0 count will always sample one pixel. So make sure we copy one on each side of the sample.
-	memcpy( srcbuffer, dest - 1, sizeof( pixel_t ) * ( count + 3 ) );
-	src = srcbuffer + 1;
+	memcpy( context->fuzzworkingbuffer, dest - 1, sizeof( pixel_t ) * ( count + 3 ) );
+	pixel_t* src = context->fuzzworkingbuffer + 1;
+	int32_t srcadd = 0;
 
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
@@ -819,7 +811,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 		*dest = samplecolormap[ src[ fuzzpossample ] ]; 
 
 		++dest;
-		++src;
+		++srcadd;
 
 		oldfrac = newfrac;
 		newfrac += originalcolfrac;
@@ -828,15 +820,12 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 		{
 			// Clamp table lookup index.
 			++fuzzposadd;
-			fuzzpossample = adjustedfuzzoffset[ fuzzposadd % ADJUSTEDFUZZTABLE ];
-			samplecolormap = fuzzpossample < 0 ? darkercolormap : basecolorpmap;
-
-		//	src = srcbuffer + 1 + (dest - start) + fuzzoffset[ fuzzposadd % FUZZTABLE ] * adjustedscale;
-		//	if( src > srcbuffer + 1 + (dest - start) - adjustedscale )
-		//	{
-		//		src = srcbuffer + 1 + (dest - start) - adjustedscale;
-		//	}
+			src += srcadd;
+			srcadd = 0;
+			fuzzpossample = adjustedfuzzoffset[ fuzzposadd & ADJUSTEDFUZZTABLEMASK ];
+			samplecolormap = fuzzpossample < 0 ? context->fuzzdarkmap : context->fuzzlightmap;
 		}
+
 	} while (count--);
 
 	fuzzpos = fuzzposadd + ( M_Random() % FUZZPRIME );

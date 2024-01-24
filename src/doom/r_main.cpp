@@ -527,16 +527,13 @@ void R_BindRenderVariables( void )
 void R_InitPointToAngle (void)
 {
 #if RENDERSLOPEQUALITYSHIFT > 0
-	int32_t		i;
-	angle_t		t;
-	float_t		f;
 	//
 	// slope (tangent) to angle lookup
 	//
-	for (i=0 ; i<=RENDERSLOPERANGE ; i++)
+	for( int32_t i=0; i <= RENDERSLOPERANGE; ++i )
 	{
-		f = (float_t)( atan( (float_t)i/RENDERSLOPERANGE )/(PI*2) );
-		t = (angle_t)( 0xffffffff * f );
+		double_t f = atan( (double_t)i / RENDERSLOPERANGE ) / ( constants::pi * 2 );
+		angle_t t = (angle_t)( (double_t)0xffffffff * f );
 		rendertantoangle[i] = t;
 	}
 #endif
@@ -917,17 +914,18 @@ void R_InitColFuncs( void )
 }
 
 
-void R_ResetContext( rendercontext_t* context, int32_t leftclip, int32_t rightclip )
+void R_ResetContext( rendercontext_t& context, int32_t leftclip, int32_t rightclip )
 {
 	M_PROFILE_FUNC();
 
-	context->begincolumn = context->spritecontext.leftclip = leftclip;
-	context->endcolumn = context->spritecontext.rightclip = rightclip;
+	context.begincolumn = context.spritecontext.leftclip = leftclip;
+	context.endcolumn = context.spritecontext.rightclip = rightclip;
+	context.fuzzworkingbuffer = R_AllocateScratch< pixel_t >( render_height + 4 );
 
-	R_ClearClipSegs( &context->bspcontext, leftclip, rightclip );
-	R_ClearDrawSegs( &context->bspcontext );
-	R_ClearPlanes( &context->planecontext, drs_current->viewwidth, drs_current->viewheight );
-	R_ClearSprites( context->spritecontext );
+	R_ClearClipSegs( &context.bspcontext, leftclip, rightclip );
+	R_ClearDrawSegs( &context.bspcontext );
+	R_ClearPlanes( &context.planecontext, drs_current->viewwidth, drs_current->viewheight );
+	R_ClearSprites( context.spritecontext );
 }
 
 void R_RenderViewContext( rendercontext_t& rendercontext )
@@ -1093,7 +1091,7 @@ void R_InitContexts( void )
 
 		renderdatas[ currcontext ].context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * ( numflats + numtextures ), PU_STATIC, NULL );
 
-		R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
+		R_ResetContext( renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 
 		if( currcontext < maxrendercontexts - 1 )
 		{
@@ -1549,7 +1547,7 @@ void R_Init (void)
     R_InitTranslationTables ();
     I_TerminalPrintf( Log_None, "." );
 
-	renderscratchsize = 16 * 1024 * 1024;
+	renderscratchsize = 32 * 1024 * 1024;
 	renderscratch = (byte*)Z_Malloc( (int32_t)renderscratchsize, PU_STATIC, nullptr );
 	renderscratchpos = 0;
 
@@ -1713,12 +1711,12 @@ void R_RenderLoadBalance()
 			return;
 		}
 	
-		R_ResetContext( &ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, drs_current->viewwidth ) );
+		R_ResetContext( ThisRenderData( curr ).context, M_MAX( currstart, 0 ), M_MIN( currstart + desiredwidth, drs_current->viewwidth ) );
 		currstart += desiredwidth;
 	}
 	
 	currstart -= desiredwidth;
-	R_ResetContext( &renderdatas[ num_render_contexts - 1 ].context, M_MAX( currstart, 0 ), drs_current->viewwidth );
+	R_ResetContext( renderdatas[ num_render_contexts - 1 ].context, M_MAX( currstart, 0 ), drs_current->viewwidth );
 }
 
 void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsoleplayer ) //__attribute__ ((optnone))
@@ -1737,173 +1735,180 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	viewpoint.player = player;
 	extralight = player->extralight + additional_light_boost;
 
-	interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
-
-	if( interpolate_this_frame )
 	{
-		viewpoint.lerp	= (rend_fixed_t)( framepercent * ( RENDFRACUNIT ) );
-		bool selectcurr = ( viewpoint.lerp >= ( RENDFRACUNIT >> 1 ) );
+		M_PROFILE_NAMED( "Interpolation" );
+		interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
 
-		rend_fixed_t adjustedviewx;
-		rend_fixed_t adjustedviewy;
-		rend_fixed_t adjustedviewz;
+		if( interpolate_this_frame )
+		{
+			viewpoint.lerp	= (rend_fixed_t)( framepercent * ( RENDFRACUNIT ) );
+			bool selectcurr = ( viewpoint.lerp >= ( RENDFRACUNIT >> 1 ) );
 
-		if( player->mo->curr.teleported )
-		{
-			adjustedviewx = selectcurr ? player->mo->curr.x : player->mo->prev.x;
-			adjustedviewy = selectcurr ? player->mo->curr.y : player->mo->prev.y;
-			adjustedviewz = selectcurr ? player->mo->curr.z : player->mo->prev.z;
-		}
-		else
-		{
-			adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewpoint.lerp );
-			adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewpoint.lerp );
-			adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewpoint.lerp );
-		}
+			rend_fixed_t adjustedviewx;
+			rend_fixed_t adjustedviewy;
+			rend_fixed_t adjustedviewz;
 
-		{
-			viewpoint.x = adjustedviewx;
-			viewpoint.y = adjustedviewy;
-			viewpoint.z = adjustedviewz;
-			viewpoint.angle = player->mo->curr.angle + viewangleoffset;
-		}
-
-		if( !demoplayback && isconsoleplayer && player->playerstate != PST_DEAD && !player->mo->reactiontime )
-		{
-			int64_t mouseamount = R_PeekEvents();
-			int64_t newangle = viewpoint.angle;
-			newangle -= ( ( mouseamount * 0x8 ) << FRACBITS );
-
-			viewpoint.angle = (angle_t)( newangle & ANG_MAX );
-		}
-		else
-		{
-			rend_fixed_t result;
 			if( player->mo->curr.teleported )
 			{
-				result = selectcurr ? player->mo->curr.angle : player->mo->prev.angle;
+				adjustedviewx = selectcurr ? player->mo->curr.x : player->mo->prev.x;
+				adjustedviewy = selectcurr ? player->mo->curr.y : player->mo->prev.y;
+				adjustedviewz = selectcurr ? player->mo->curr.z : player->mo->prev.z;
 			}
 			else
 			{
-				int64_t start	= player->mo->prev.angle;
-				int64_t end		= player->mo->curr.angle;
-				int64_t path	= end - start;
-				if( llabs( path ) > ANG180 )
-				{
-					constexpr int64_t ANG360 = (int64_t)ANG_MAX + 1ll;
-					if( end > start )
-					{
-						start += ANG360;
-					}
-					else
-					{
-						end += ANG360;
-					}
-				}
-				result = RendFixedLerp( start, end, viewpoint.lerp );
+				adjustedviewx = RendFixedLerp( player->mo->prev.x, player->mo->curr.x, viewpoint.lerp );
+				adjustedviewy = RendFixedLerp( player->mo->prev.y, player->mo->curr.y, viewpoint.lerp );
+				adjustedviewz = RendFixedLerp( player->prevviewz, player->currviewz, viewpoint.lerp );
 			}
-			viewpoint.angle = (angle_t)( result & ANG_MAX );
-		}
 
-		auto DoSectorHeights = []( const rend_fixed_t& prev, const rend_fixed_t& curr, const rend_fixed_t& percent, const int32_t& snap, const bool& select )
-		{
-			if( snap )
 			{
-				return select ? curr : prev;
+				viewpoint.x = adjustedviewx;
+				viewpoint.y = adjustedviewy;
+				viewpoint.z = adjustedviewz;
+				viewpoint.angle = player->mo->curr.angle + viewangleoffset;
 			}
-			return RendFixedLerp( prev, curr, percent );
-		};
 
-		for( int32_t index : iota( 0, numsectors ) )
-		{
-			rendsectors[ index ].floorheight		= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
-			rendsectors[ index ].ceilheight			= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
-			rendsectors[ index ].lightlevel			= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
-			rendsectors[ index ].floorlightlevel	= selectcurr ? currsectors[ index ].floorlightlevel : prevsectors[ index ].floorlightlevel;
-			rendsectors[ index ].ceillightlevel		= selectcurr ? currsectors[ index ].ceillightlevel : prevsectors[ index ].ceillightlevel;
-			rendsectors[ index ].flooroffsetx		= RendFixedLerp( prevsectors[ index ].flooroffsetx, currsectors[ index ].flooroffsetx, viewpoint.lerp );
-			rendsectors[ index ].flooroffsety		= RendFixedLerp( prevsectors[ index ].flooroffsety, currsectors[ index ].flooroffsety, viewpoint.lerp );
-			rendsectors[ index ].ceiloffsetx		= RendFixedLerp( prevsectors[ index ].ceiloffsetx, currsectors[ index ].ceiloffsetx, viewpoint.lerp );
-			rendsectors[ index ].ceiloffsety		= RendFixedLerp( prevsectors[ index ].ceiloffsety, currsectors[ index ].ceiloffsety, viewpoint.lerp );
-			rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
-			rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+			if( !demoplayback && isconsoleplayer && player->playerstate != PST_DEAD && !player->mo->reactiontime )
+			{
+				int64_t mouseamount = R_PeekEvents();
+				int64_t newangle = viewpoint.angle;
+				newangle -= ( ( mouseamount * 0x8 ) << FRACBITS );
+
+				viewpoint.angle = (angle_t)( newangle & ANG_MAX );
+			}
+			else
+			{
+				rend_fixed_t result;
+				if( player->mo->curr.teleported )
+				{
+					result = selectcurr ? player->mo->curr.angle : player->mo->prev.angle;
+				}
+				else
+				{
+					int64_t start	= player->mo->prev.angle;
+					int64_t end		= player->mo->curr.angle;
+					int64_t path	= end - start;
+					if( llabs( path ) > ANG180 )
+					{
+						constexpr int64_t ANG360 = (int64_t)ANG_MAX + 1ll;
+						if( end > start )
+						{
+							start += ANG360;
+						}
+						else
+						{
+							end += ANG360;
+						}
+					}
+					result = RendFixedLerp( start, end, viewpoint.lerp );
+				}
+				viewpoint.angle = (angle_t)( result & ANG_MAX );
+			}
+
+			auto DoSectorHeights = []( const rend_fixed_t& prev, const rend_fixed_t& curr, const rend_fixed_t& percent, const int32_t& snap, const bool& select )
+			{
+				if( snap )
+				{
+					return select ? curr : prev;
+				}
+				return RendFixedLerp( prev, curr, percent );
+			};
+
+			for( int32_t index : iota( 0, numsectors ) )
+			{
+				rendsectors[ index ].floorheight		= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
+				rendsectors[ index ].ceilheight			= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
+				rendsectors[ index ].lightlevel			= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
+				rendsectors[ index ].floorlightlevel	= selectcurr ? currsectors[ index ].floorlightlevel : prevsectors[ index ].floorlightlevel;
+				rendsectors[ index ].ceillightlevel		= selectcurr ? currsectors[ index ].ceillightlevel : prevsectors[ index ].ceillightlevel;
+				rendsectors[ index ].flooroffsetx		= RendFixedLerp( prevsectors[ index ].flooroffsetx, currsectors[ index ].flooroffsetx, viewpoint.lerp );
+				rendsectors[ index ].flooroffsety		= RendFixedLerp( prevsectors[ index ].flooroffsety, currsectors[ index ].flooroffsety, viewpoint.lerp );
+				rendsectors[ index ].ceiloffsetx		= RendFixedLerp( prevsectors[ index ].ceiloffsetx, currsectors[ index ].ceiloffsetx, viewpoint.lerp );
+				rendsectors[ index ].ceiloffsety		= RendFixedLerp( prevsectors[ index ].ceiloffsety, currsectors[ index ].ceiloffsety, viewpoint.lerp );
+				rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
+				rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+			}
+
+			for( int32_t index : iota( 0, numsides ) )
+			{
+				rendsides[ index ].coloffset		= RendFixedLerp( prevsides[ index ].coloffset, currsides[ index ].coloffset, viewpoint.lerp );
+				rendsides[ index ].rowoffset		= RendFixedLerp( prevsides[ index ].rowoffset, currsides[ index ].rowoffset, viewpoint.lerp );
+				rendsides[ index ].toptex			= selectcurr ? currsides[ index ].toptex : prevsides[ index ].toptex;
+				rendsides[ index ].midtex			= selectcurr ? currsides[ index ].midtex : prevsides[ index ].midtex;
+				rendsides[ index ].bottomtex		= selectcurr ? currsides[ index ].bottomtex : prevsides[ index ].bottomtex;
+			}
 		}
-
-		for( int32_t index : iota( 0, numsides ) )
+		else
 		{
-			rendsides[ index ].coloffset		= RendFixedLerp( prevsides[ index ].coloffset, currsides[ index ].coloffset, viewpoint.lerp );
-			rendsides[ index ].rowoffset		= RendFixedLerp( prevsides[ index ].rowoffset, currsides[ index ].rowoffset, viewpoint.lerp );
-			rendsides[ index ].toptex			= selectcurr ? currsides[ index ].toptex : prevsides[ index ].toptex;
-			rendsides[ index ].midtex			= selectcurr ? currsides[ index ].midtex : prevsides[ index ].midtex;
-			rendsides[ index ].bottomtex		= selectcurr ? currsides[ index ].bottomtex : prevsides[ index ].bottomtex;
-		}
-	}
-	else
-	{
-		viewpoint.x = player->mo->curr.x;
-		viewpoint.y = player->mo->curr.y;
-		viewpoint.z = player->currviewz;
-		viewpoint.angle = player->mo->curr.angle + viewangleoffset;
-		viewpoint.lerp = 0;
+			viewpoint.x = player->mo->curr.x;
+			viewpoint.y = player->mo->curr.y;
+			viewpoint.z = player->currviewz;
+			viewpoint.angle = player->mo->curr.angle + viewangleoffset;
+			viewpoint.lerp = 0;
 
-		memcpy( rendsectors, currsectors, sizeof( sectorinstance_t ) * numsectors );
-		memcpy( rendsides, currsides, sizeof( sideinstance_t ) * numsides );
+			memcpy( rendsectors, currsectors, sizeof( sectorinstance_t ) * numsectors );
+			memcpy( rendsides, currsides, sizeof( sideinstance_t ) * numsides );
+		}
 	}
 
 	viewpoint.sin = renderfinesine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
 	viewpoint.cos = renderfinecosine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
 	
-	viewpoint.colormaps = colormaps;
-	viewpoint.transferzone = transfer_normalspace;
-	sector_t* playersector = player->mo->subsector ? player->mo->subsector->sector : nullptr;
-	if( playersector )
 	{
-		if( playersector->transferline )
+		M_PROFILE_NAMED( "Transfer properties" );
+
+		viewpoint.colormaps = colormaps;
+		viewpoint.transferzone = transfer_normalspace;
+		sector_t* playersector = player->mo->subsector ? player->mo->subsector->sector : nullptr;
+		if( playersector )
 		{
-			sector_t* transfersector = playersector->transferline->frontsector;
-			sectorinstance_t& transfersectorinst = rendsectors[ transfersector->index ];
-			if( viewpoint.z > transfersectorinst.ceilheight )
+			if( playersector->transferline )
 			{
-				viewpoint.transferzone = transfer_ceilingspace;
-				viewpoint.colormaps = playersector->transferline->topcolormap;
-			}
-			else if( viewpoint.z < transfersectorinst.floorheight )
-			{
-				viewpoint.transferzone = transfer_floorspace;
-				viewpoint.colormaps = playersector->transferline->bottomcolormap;
-			}
-			else
-			{
-				viewpoint.colormaps = playersector->transferline->midcolormap;
+				sector_t* transfersector = playersector->transferline->frontsector;
+				sectorinstance_t& transfersectorinst = rendsectors[ transfersector->index ];
+				if( viewpoint.z > transfersectorinst.ceilheight )
+				{
+					viewpoint.transferzone = transfer_ceilingspace;
+					viewpoint.colormaps = playersector->transferline->topcolormap;
+				}
+				else if( viewpoint.z < transfersectorinst.floorheight )
+				{
+					viewpoint.transferzone = transfer_floorspace;
+					viewpoint.colormaps = playersector->transferline->bottomcolormap;
+				}
+				else
+				{
+					viewpoint.colormaps = playersector->transferline->midcolormap;
+				}
 			}
 		}
-	}
 
-	for( int32_t index : iota( 0, numsectors ) )
-	{
-		if( sectors[ index ].transferline )
+		for( int32_t index : iota( 0, numsectors ) )
 		{
-			sectorinstance_t& transfersectorinst = rendsectors[ sectors[ index ].transferline->frontsector->index ];
-			switch( viewpoint.transferzone )
+			if( sectors[ index ].transferline )
 			{
-			case transfer_normalspace:
-				rendsectors[ index ].ceilheight = transfersectorinst.ceilheight;
-				rendsectors[ index ].floorheight = transfersectorinst.floorheight;
-				break;
-			case transfer_ceilingspace:
-				rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
-				rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
-				rendsectors[ index ].floortex = transfersectorinst.floortex;
-				rendsectors[ index ].floorheight = transfersectorinst.ceilheight;
-				break;
-			case transfer_floorspace:
-				rendsectors[ index ].ceilheight = transfersectorinst.floorheight;
-				rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
-				rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
-				rendsectors[ index ].floortex = transfersectorinst.floortex;
-				break;
-			default:
-				break;
+				sectorinstance_t& transfersectorinst = rendsectors[ sectors[ index ].transferline->frontsector->index ];
+				switch( viewpoint.transferzone )
+				{
+				case transfer_normalspace:
+					rendsectors[ index ].ceilheight = transfersectorinst.ceilheight;
+					rendsectors[ index ].floorheight = transfersectorinst.floorheight;
+					break;
+				case transfer_ceilingspace:
+					rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
+					rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
+					rendsectors[ index ].floortex = transfersectorinst.floortex;
+					rendsectors[ index ].floorheight = transfersectorinst.ceilheight;
+					break;
+				case transfer_floorspace:
+					rendsectors[ index ].ceilheight = transfersectorinst.floorheight;
+					rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
+					rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
+					rendsectors[ index ].floortex = transfersectorinst.floortex;
+					break;
+				default:
+					break;
+				}
 			}
 		}
 	}
@@ -1957,7 +1962,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 			currstart += desiredwidth;
 			renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, drs_current->viewwidth );
 
-			R_ResetContext( &renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
+			R_ResetContext( renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 		}
 
 		renderrebalancecontexts = false;

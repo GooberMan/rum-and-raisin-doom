@@ -295,7 +295,7 @@ vissprite_t* R_NewVisSprite ( spritecontext_t& spritecontext )
 
 void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontext, column_t* column )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	doombool isfuzz = colcontext.colormap == nullptr;
 
@@ -336,19 +336,17 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 	}
 	
 	colcontext.texturemid = basetexturemid;
-
-	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
-#define FUZZ_X_RATIO ( ( frame_width * 100 ) / 320 )
+#define FUZZ_X_RATIO ( ( frame_adjusted_width * 100 ) / 320 )
 //
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
 void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t x1, int32_t x2 )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	vbuffer_t&			dest			= rendercontext.viewbuffer;
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
@@ -371,6 +369,9 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 	{
 		// NULL colormap = shadow draw
 		spritecolcontext.colfunc = colfuncs[ COLFUNC_FUZZBASEINDEX + fuzz_style ];
+		spritecolcontext.fuzzworkingbuffer = rendercontext.fuzzworkingbuffer;
+		spritecolcontext.fuzzlightmap = rendercontext.viewpoint.colormaps + 6 * 256;
+		spritecolcontext.fuzzdarkmap = rendercontext.viewpoint.colormaps + 14 * 256;
 	}
 	else if (vis->mobjflags & MF_TRANSLATION)
 	{
@@ -385,6 +386,37 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 	spritecontext.spryiscale = vis->iscale;
 	spritecontext.sprtopscreen = drs_current->centeryfrac - RendFixedMul( spritecolcontext.texturemid, spritecontext.spryscale );
 	
+#ifdef NEWFUZZ
+	constexpr rend_fixed_t screenscale = RendFixedDiv( IntToRendFixed( 1 ), IntToRendFixed( 320 ) );
+
+	rend_fixed_t fuzzincrement = RendFixedMul( IntToRendFixed( frame_adjusted_width ), screenscale );
+	rend_fixed_t fuzzcolumnpos = RendFixedMul( IntToRendFixed( spritecolcontext.x ), screenscale );
+	int32_t prevfuzzcolumn = RendFixedToInt( fuzzcolumnpos );
+
+	for( spritecolcontext.x = vis->x1; spritecolcontext.x <= vis->x2; spritecolcontext.x++, frac += vis->xiscale )
+	{
+		texturecolumn = RendFixedToInt( frac );
+#if RANGECHECK
+		if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
+			I_Error ("R_DrawSpriteRange: bad texturecolumn");
+#endif
+
+		if( !spritecolcontext.colormap && fuzz_style != Fuzz_Original )
+		{
+			fuzzcolumnpos += fuzzincrement;
+			int32_t fuzzcolumn = RendFixedToInt( fuzzcolumnpos );
+			if( prevfuzzcolumn != fuzzcolumn )
+			{
+				R_CacheFuzzColumn();
+				prevfuzzcolumn = fuzzcolumn;
+			}
+		}
+
+		column = (column_t *)( (byte *)patch + LONG(patch->columnofs[texturecolumn]) );
+
+		R_DrawMaskedColumn( spritecontext, spritecolcontext, column );
+	}
+#else
 	prevfuzzcolumn = -1;
 	rend_fixed_t frac = vis->startfrac;
 	for( spritecolcontext.x = vis->x1; spritecolcontext.x <= vis->x2; spritecolcontext.x++, frac += vis->xiscale )
@@ -409,8 +441,7 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 
 		R_DrawMaskedColumn( spritecontext, spritecolcontext, column );
 	}
-
-	M_PROFILE_POP( __FUNCTION__ );
+#endif
 }
 
 
@@ -775,7 +806,7 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 //
 void R_DrawPlayerSprites( rendercontext_t& rendercontext )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	viewpoint_t&		viewpoint		= rendercontext.viewpoint;
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
@@ -801,8 +832,6 @@ void R_DrawPlayerSprites( rendercontext_t& rendercontext )
 			R_DrawPSprite( rendercontext, psp );
 		}
 	}
-
-	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -812,7 +841,7 @@ void R_DrawPlayerSprites( rendercontext_t& rendercontext )
 
 void R_SortVisSprites ( spritecontext_t& spritecontext )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	int32_t			i;
 	int32_t			count;
@@ -862,8 +891,6 @@ void R_SortVisSprites ( spritecontext_t& spritecontext )
 		spritecontext.vsprsortedhead.prev->next = best;
 		spritecontext.vsprsortedhead.prev = best;
 	}
-
-	M_PROFILE_POP( __FUNCTION__ );
 }
 
 
@@ -872,7 +899,7 @@ void R_SortVisSprites ( spritecontext_t& spritecontext )
 //
 void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 {
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 
 	bspcontext_t&		bspcontext		= rendercontext.bspcontext;
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
@@ -1010,7 +1037,6 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 
 	if( clippedcolumns > ( spr->x2 - spr->x1 ) )
 	{
-		M_PROFILE_POP( __FUNCTION__ );
 		return;
 	}
 		
@@ -1024,9 +1050,6 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 	endtime = I_GetTimeUS();
 	spritecontext.maskedtimetaken += ( endtime - starttime );
 #endif // RENDER_PERF_GRAPHING
-
-	M_PROFILE_POP( __FUNCTION__ );
-
 }
 
 
