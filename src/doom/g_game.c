@@ -646,7 +646,7 @@ void G_DoLoadLevel (void)
 
 	// clear cmd building stuff
 
-    memset (gamekeydown, 0, sizeof(gamekeydown));
+    memset(gamekeys, 0, sizeof(gamekeys));
     joyxmove = joyymove = joystrafemove = 0;
     mousex = mousey = 0;
     sendpause = sendsave = paused = false;
@@ -1120,8 +1120,10 @@ void G_PlayerReborn (int player)
 	p->weaponowned[wp_pistol] = true; 
 	p->ammo[am_clip] = deh_initial_bullets; 
 	 
-    for (i=0 ; i<NUMAMMO ; i++) 
-	p->maxammo[i] = maxammo[i]; 
+	for (i=0 ; i<NUMAMMO ; i++)
+	{
+		p->maxammo[i] = maxammo[i];
+	}
 		 
 	if( player == displayplayer )
 	{
@@ -1801,42 +1803,44 @@ void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags )
 		D_GameflowSetCurrentMap( mapinfo );
 	}
 
-    if (paused)
-    {
-	paused = false;
-	S_ResumeSound ();
-    }
+	if (paused)
+	{
+		paused = false;
+		S_ResumeSound ();
+	}
 
-    if (skill > sk_nightmare)
-	skill = sk_nightmare;
+	skill = M_MIN( skill, sk_nightmare );
 
     M_ClearRandom ();
 
-    if (skill == sk_nightmare || respawnparm )
-	respawnmonsters = true;
-    else
-	respawnmonsters = false;
+	respawnmonsters = (skill == sk_nightmare || respawnparm );
 
-    if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare) )
-    {
-	for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
-	    states[i].tics >>= 1;
-	mobjinfo[MT_BRUISERSHOT].speed = 20*FRACUNIT;
-	mobjinfo[MT_HEADSHOT].speed = 20*FRACUNIT;
-	mobjinfo[MT_TROOPSHOT].speed = 20*FRACUNIT;
-    }
-    else if (skill != sk_nightmare && gameskill == sk_nightmare)
-    {
-	for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
-	    states[i].tics <<= 1;
-	mobjinfo[MT_BRUISERSHOT].speed = 15*FRACUNIT;
-	mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT;
-	mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT;
-    }
+	if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare) )
+	{
+		for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
+		{
+			states[i].tics >>= 1;
+		}
+		mobjinfo[MT_BRUISERSHOT].speed = 20*FRACUNIT;
+		mobjinfo[MT_HEADSHOT].speed = 20*FRACUNIT;
+		mobjinfo[MT_TROOPSHOT].speed = 20*FRACUNIT;
+	}
+	else if (skill != sk_nightmare && gameskill == sk_nightmare)
+	{
+		for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
+		{
+			states[i].tics <<= 1;
+		}
+		mobjinfo[MT_BRUISERSHOT].speed = 15*FRACUNIT;
+		mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT;
+		mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT;
+	}
 
-    // force players to be initialized upon first level load
-    for (i=0 ; i<MAXPLAYERS ; i++)
-	players[i].playerstate = PST_REBORN;
+	// force players to be initialized upon first level load
+	for (i=0 ; i<MAXPLAYERS ; i++)
+	{
+		players[i].playerstate = PST_REBORN;
+	}
 
     usergame = true;                // will be set false if a demo
     paused = false;
@@ -1859,9 +1863,9 @@ void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags )
     // source release, but this IS the way Vanilla DOS Doom behaves.
 
 	skytexturename = DEH_String( current_map->sky_texture.val );
-	R_SetSkyTexture( R_TextureNumForName(skytexturename) );
+	R_SetSkyTexture( R_TextureNumForName( skytexturename ) );
 
-    G_DoLoadLevel ();
+	G_DoLoadLevel();
 }
 
 

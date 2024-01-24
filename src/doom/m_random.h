@@ -26,15 +26,15 @@
 
 // Returns a number from 0 to 255,
 // from a lookup table.
-int M_Random (void);
+DOOM_C_API int M_Random (void);
 
 // As M_Random, but used only by the play simulation.
-int P_Random (void);
+DOOM_C_API int P_Random (void);
 
 // Fix randoms for demos.
-void M_ClearRandom (void);
+DOOM_C_API void M_ClearRandom (void);
 
 // Defined version of P_Random() - P_Random()
-int P_SubRandom (void);
+DOOM_C_API int P_SubRandom (void);
 
 #endif

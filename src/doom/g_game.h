@@ -29,53 +29,53 @@
 //
 // GAME
 //
-void G_DeathMatchSpawnPlayer (int playernum);
+DOOM_C_API void G_DeathMatchSpawnPlayer (int playernum);
 
-void G_InitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags);
+DOOM_C_API void G_InitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags);
 
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,
 // but a warp test can start elsewhere
-void G_DeferedInitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags);
+DOOM_C_API void G_DeferedInitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags);
 
-void G_DeferedPlayDemo (const char* demo);
+DOOM_C_API void G_DeferedPlayDemo (const char* demo);
 
 // Can be called by the startup code or M_Responder,
 // calls P_SetupLevel or W_EnterWorld.
-void G_LoadGame (char* name);
+DOOM_C_API void G_LoadGame (char* name);
 
-void G_DoLoadGame (void);
+DOOM_C_API void G_DoLoadGame (void);
 
 // Called by M_Responder.
-void G_SaveGame (int slot, char* description);
+DOOM_C_API void G_SaveGame (int slot, char* description);
 
 // Only called by startup code.
-void G_RecordDemo (const char* name);
+DOOM_C_API void G_RecordDemo (const char* name);
 
-void G_BeginRecording (void);
+DOOM_C_API void G_BeginRecording (void);
 
-void G_PlayDemo (char* name);
-void G_TimeDemo (char* name);
-doombool G_CheckDemoStatus (void);
+DOOM_C_API void G_PlayDemo (char* name);
+DOOM_C_API void G_TimeDemo (char* name);
+DOOM_C_API doombool G_CheckDemoStatus (void);
 
-void G_ExitLevel (void);
-void G_SecretExitLevel (void);
+DOOM_C_API void G_ExitLevel (void);
+DOOM_C_API void G_SecretExitLevel (void);
 
-void G_WorldDone (void);
+DOOM_C_API void G_WorldDone (void);
 
 // Read current data from inputs and build a player movement command.
 
-void G_BuildTiccmd (ticcmd_t *cmd, uint64_t maketic); 
+DOOM_C_API void G_BuildTiccmd (ticcmd_t *cmd, uint64_t maketic); 
 
-void G_Ticker (void);
-doombool G_Responder (event_t*	ev);
+DOOM_C_API void G_Ticker (void);
+DOOM_C_API doombool G_Responder (event_t*	ev);
 
-void G_ScreenShot (void);
+DOOM_C_API void G_ScreenShot (void);
 
-void G_DrawMouseSpeedBox(void);
-int G_VanillaVersionCode(void);
+DOOM_C_API void G_DrawMouseSpeedBox(void);
+DOOM_C_API int G_VanillaVersionCode(void);
 
-extern int vanilla_savegame_limit;
-extern int vanilla_demo_limit;
+DOOM_C_API extern int vanilla_savegame_limit;
+DOOM_C_API extern int vanilla_demo_limit;
 #endif
 

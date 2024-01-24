@@ -49,6 +49,9 @@
 // Data.
 #include "sounds.h"
 
+DOOM_C_API extern int numtextures;
+DOOM_C_API extern int numflats;
+
 
 //
 // Animating textures and planes
@@ -1203,9 +1206,6 @@ void P_UpdateSpecials (void)
 	{
 		for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
 		{
-			extern int numtextures;
-			extern int numflats;
-
 			pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
 			if (anim->istexture)
 			{
@@ -1438,7 +1438,7 @@ int EV_DoDonut(line_t*	line)
             }
 
 	    //	Spawn rising slime
-	    floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+	    floor = (floormove_t*)Z_Malloc(sizeof(*floor), PU_LEVSPEC, 0);
 	    P_AddThinker (&floor->thinker);
 	    s2->specialdata = floor;
 	    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
@@ -1452,7 +1452,7 @@ int EV_DoDonut(line_t*	line)
 	    floor->floordestheight = s3_floorheight;
 	    
 	    //	Spawn lowering donut-hole
-	    floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+	    floor = (floormove_t*)Z_Malloc(sizeof(*floor), PU_LEVSPEC, 0);
 	    P_AddThinker (&floor->thinker);
 	    s1->specialdata = floor;
 	    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
@@ -1591,10 +1591,10 @@ void P_SpawnSpecials (void)
 		I_Error( "Too many scrolling wall linedefs (%d)! (Vanilla limit is %d)", scrollcount, VANILLA_MAXLINEANIMS );
 	}
 
-	linespeciallist = Z_Malloc( sizeof( line_t* ) * scrollcount, PU_LEVEL, NULL );
+	linespeciallist = (line_t**)Z_Malloc( sizeof( line_t* ) * scrollcount, PU_LEVEL, NULL );
 	numlinespecials = 0;
 
-	byte* tranmap = W_CacheLumpName( "TRANMAP", PU_LEVEL );
+	byte* tranmap = (byte*)W_CacheLumpName( "TRANMAP", PU_LEVEL );
 	for (i = 0;i < numlines; i++)
 	{
 		switch(lines[i].special)
@@ -1714,7 +1714,7 @@ void P_SpawnSpecials (void)
 						size_t customtranmaplen = W_LumpLength( customtranmapindex );
 						if( customtranmaplen == 65536 )
 						{
-							customtranmap = W_CacheLumpNum( customtranmapindex, PU_LEVEL );
+							customtranmap = (byte*)W_CacheLumpNum( customtranmapindex, PU_LEVEL );
 						}
 						else if( sides[ lines[ i ].sidenum[ 0 ] ].midtexture == 0 )
 						{

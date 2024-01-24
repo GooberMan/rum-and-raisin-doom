@@ -28,23 +28,19 @@
 #include "r_raster.h"
 #include "r_sky.h"
 
-extern "C"
-{
-	#include <stdio.h>
-	#include <stdlib.h>
+#include "i_system.h"
+#include "z_zone.h"
+#include "w_wad.h"
 
-	#include "i_system.h"
-	#include "z_zone.h"
-	#include "w_wad.h"
-
-	#include "m_misc.h"
-
-	extern int			numflats;
-	extern int			numtextures;
-}
-
+#include "m_misc.h"
 #include "m_container.h"
 #include "m_profile.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+DOOM_C_API extern int			numflats;
+DOOM_C_API extern int			numtextures;
 
 //
 // R_ClearPlanes

@@ -1115,7 +1115,7 @@ static void D_AddWidescreenPacks()
 		{
 			I_TerminalPrintf( Log_Startup, " merging %s\n", widescreenfilename );
 			W_MergeFile( widescreenfilename );
-			free( widescreenfilename );
+			free( (void*)widescreenfilename );
 
 			M_DashboardSetLicenceInUse( Licence_WidePix, true );
 		}
@@ -1130,7 +1130,7 @@ static void D_AddExtendedAssets()
 		if( boomres )
 		{
 			W_MergeFile( boomres );
-			free( boomres );
+			free( (void*)boomres );
 		}
 	}
 }

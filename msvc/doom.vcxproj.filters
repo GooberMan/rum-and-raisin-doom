@@ -115,9 +115,6 @@
     <ClCompile Include="..\src\doom\p_sight.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_spec.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\p_switch.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -206,6 +203,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\r_sky.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_spec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -409,6 +409,7 @@
     <ClCompile Include="..\src\doom\d_playsim.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_chex.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_hacx.cpp" />
+    <ClCompile Include="..\src\doom\p_spec.cpp" />
     <ClCompile Include="..\src\doom\r_bsp.cpp" />
     <ClCompile Include="..\src\doom\r_sky.cpp" />
     <ClCompile Include="..\src\doom\wi_stuff.cpp" />
@@ -481,7 +482,6 @@
     <ClInclude Include="..\src\doom\p_setup.h" />
     <ClCompile Include="..\src\doom\p_setup.cpp" />
     <ClCompile Include="..\src\doom\p_sight.c" />
-    <ClCompile Include="..\src\doom\p_spec.c" />
     <ClInclude Include="..\src\doom\p_spec.h" />
     <ClCompile Include="..\src\doom\p_switch.c" />
     <ClCompile Include="..\src\doom\p_telept.c" />

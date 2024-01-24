@@ -29,6 +29,7 @@
 // We need globally shared data structures,
 //  for defining the global state variables.
 #include "doomdata.h"
+#include "m_fixed.h"
 
 #if defined( __cplusplus )
 extern "C" {

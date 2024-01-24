@@ -240,8 +240,8 @@ enum BoomActions
 //
 // End-level timer (-TIMER option)
 //
-extern	doombool levelTimer;
-extern	int	levelTimeCount;
+DOOM_C_API extern	doombool levelTimer;
+DOOM_C_API extern	int	levelTimeCount;
 
 
 //      Define values for map objects
@@ -249,95 +249,60 @@ extern	int	levelTimeCount;
 
 
 // at game start
-void    P_InitPicAnims (void);
+DOOM_C_API void    P_InitPicAnims (void);
 
 // will return -1 if this is not the start of an animation
-int32_t P_GetPicAnimStart( doombool istexture, int32_t animframe );
-int32_t P_GetPicAnimLength( doombool istexture, int32_t start );
+DOOM_C_API int32_t P_GetPicAnimStart( doombool istexture, int32_t animframe );
+DOOM_C_API int32_t P_GetPicAnimLength( doombool istexture, int32_t start );
 
-int32_t P_GetPicSwitchOpposite( int32_t tex );
+DOOM_C_API int32_t P_GetPicSwitchOpposite( int32_t tex );
 
 // at map load
-void    P_SpawnSpecials (void);
+DOOM_C_API void    P_SpawnSpecials (void);
 
 // every tic
-void    P_UpdateSpecials (void);
+DOOM_C_API void    P_UpdateSpecials (void);
 
 // when needed
-doombool
-P_UseSpecialLine
-( mobj_t*	thing,
-  line_t*	line,
-  int		side );
+DOOM_C_API doombool P_UseSpecialLine( mobj_t* thing, line_t* line, int side );
 
-void
-P_ShootSpecialLine
-( mobj_t*	thing,
-  line_t*	line );
+DOOM_C_API void P_ShootSpecialLine( mobj_t* thing, line_t* line );
 
-void
-P_CrossSpecialLine
-( line_t*	line,
-  int		side,
-  mobj_t*	thing );
+DOOM_C_API void P_CrossSpecialLine( line_t* line, int side, mobj_t* thing );
 
-void    P_PlayerInSpecialSector (player_t* player);
+DOOM_C_API void    P_PlayerInSpecialSector (player_t* player);
 
-int
-twoSided
-( int		sector,
-  int		line );
+// These should be inlined
+DOOM_C_API int twoSided( int sector, int line );
+DOOM_C_API sector_t* getSector( int currentSector, int line, int side );
+DOOM_C_API side_t* getSide( int currentSector, int line, int side );
 
-sector_t*
-getSector
-( int		currentSector,
-  int		line,
-  int		side );
+DOOM_C_API fixed_t P_FindLowestFloorSurrounding(sector_t* sec);
+DOOM_C_API fixed_t P_FindHighestFloorSurrounding(sector_t* sec);
 
-side_t*
-getSide
-( int		currentSector,
-  int		line,
-  int		side );
+DOOM_C_API fixed_t P_FindNextHighestFloor( sector_t* sec, int currentheight );
 
-fixed_t P_FindLowestFloorSurrounding(sector_t* sec);
-fixed_t P_FindHighestFloorSurrounding(sector_t* sec);
+DOOM_C_API fixed_t P_FindLowestCeilingSurrounding(sector_t* sec);
+DOOM_C_API fixed_t P_FindHighestCeilingSurrounding(sector_t* sec);
 
-fixed_t
-P_FindNextHighestFloor
-( sector_t*	sec,
-  int		currentheight );
+DOOM_C_API int P_FindSectorFromLineTag( line_t* line, int start );
 
-fixed_t P_FindLowestCeilingSurrounding(sector_t* sec);
-fixed_t P_FindHighestCeilingSurrounding(sector_t* sec);
+DOOM_C_API int P_FindMinSurroundingLight( sector_t* sector, int max );
 
-int
-P_FindSectorFromLineTag
-( line_t*	line,
-  int		start );
-
-int
-P_FindMinSurroundingLight
-( sector_t*	sector,
-  int		max );
-
-sector_t*
-getNextSector
-( line_t*	line,
-  sector_t*	sec );
+DOOM_C_API sector_t* getNextSector( line_t* line, sector_t* sec );
 
 
 //
 // SPECIAL
 //
-int EV_DoDonut(line_t* line);
+DOOM_C_API int EV_DoDonut(line_t* line);
 
 
 
 //
 // P_LIGHTS
 //
-typedef struct
+DOOM_C_API typedef struct
 {
     thinker_t	thinker;
     sector_t*	sector;
@@ -349,7 +314,7 @@ typedef struct
 
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
     thinker_t	thinker;
     sector_t*	sector;
@@ -363,7 +328,7 @@ typedef struct
 
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
     thinker_t	thinker;
     sector_t*	sector;
@@ -378,7 +343,7 @@ typedef struct
 
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
     thinker_t	thinker;
     sector_t*	sector;
@@ -394,27 +359,20 @@ typedef struct
 #define FASTDARK			15
 #define SLOWDARK			35
 
-void    P_SpawnFireFlicker (sector_t* sector);
-void    T_LightFlash (lightflash_t* flash);
-void    P_SpawnLightFlash (sector_t* sector);
-void    T_StrobeFlash (strobe_t* flash);
+DOOM_C_API void    P_SpawnFireFlicker (sector_t* sector);
+DOOM_C_API void    T_LightFlash (lightflash_t* flash);
+DOOM_C_API void    P_SpawnLightFlash (sector_t* sector);
+DOOM_C_API void    T_StrobeFlash (strobe_t* flash);
 
-void
-P_SpawnStrobeFlash
-( sector_t*	sector,
-  int		fastOrSlow,
-  int		inSync );
+DOOM_C_API void		P_SpawnStrobeFlash( sector_t* sector, int fastOrSlow, int inSync );
 
-void    EV_StartLightStrobing(line_t* line);
-void    EV_TurnTagLightsOff(line_t* line);
+DOOM_C_API void    EV_StartLightStrobing(line_t* line);
+DOOM_C_API void    EV_TurnTagLightsOff(line_t* line);
 
-void
-EV_LightTurnOn
-( line_t*	line,
-  int		bright );
+DOOM_C_API void EV_LightTurnOn( line_t* line, int bright );
 
-void    T_Glow(glow_t* g);
-void    P_SpawnGlowingLight(sector_t* sector);
+DOOM_C_API void    T_Glow(glow_t* g);
+DOOM_C_API void    P_SpawnGlowingLight(sector_t* sector);
 
 
 
@@ -422,7 +380,7 @@ void    P_SpawnGlowingLight(sector_t* sector);
 //
 // P_SWITCH
 //
-typedef struct
+DOOM_C_API typedef struct
 {
     char	name1[9];
     char	name2[9];
@@ -431,7 +389,7 @@ typedef struct
 } switchlist_t;
 
 
-typedef enum
+DOOM_C_API typedef enum
 {
     top,
     middle,
@@ -440,17 +398,14 @@ typedef enum
 } bwhere_e;
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
-    line_t*	line;
-    bwhere_e	where;
-    int		btexture;
-    int		btimer;
-    degenmobj_t *soundorg;
-
+	line_t*			line;
+	bwhere_e		where;
+	int				btexture;
+	int				btimer;
+	degenmobj_t*	soundorg;
 } button_t;
-
-
 
 
  // max # of wall switches in a level
@@ -460,22 +415,19 @@ typedef struct
 #define MAXBUTTONS		16
 
  // 1 second, in ticks. 
-#define BUTTONTIME      35             
+#define BUTTONTIME      35
 
-extern button_t	buttonlist[MAXBUTTONS]; 
+DOOM_C_API extern button_t	buttonlist[MAXBUTTONS]; 
 
-void
-P_ChangeSwitchTexture
-( line_t*	line,
-  int		useAgain );
+DOOM_C_API void P_ChangeSwitchTexture( line_t* line, int useAgain );
 
-void P_InitSwitchList(void);
+DOOM_C_API void P_InitSwitchList(void);
 
 
 //
 // P_PLATS
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     up,
     down,
@@ -486,7 +438,7 @@ typedef enum
 
 
 
-typedef enum
+DOOM_C_API typedef enum
 {
     perpetualRaise,
     downWaitUpStay,
@@ -498,21 +450,20 @@ typedef enum
 
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
-    thinker_t	thinker;
-    sector_t*	sector;
-    fixed_t	speed;
-    fixed_t	low;
-    fixed_t	high;
-    int		wait;
-    int		count;
-    plat_e	status;
-    plat_e	oldstatus;
-    doombool	crush;
-    int		tag;
-    plattype_e	type;
-    
+	thinker_t	thinker;
+	sector_t*	sector;
+	fixed_t		speed;
+	fixed_t		low;
+	fixed_t		high;
+	int			wait;
+	int			count;
+	plat_e		status;
+	plat_e		oldstatus;
+	doombool	crush;
+	int			tag;
+	plattype_e	type;
 } plat_t;
 
 
@@ -522,26 +473,22 @@ typedef struct
 #define MAXPLATS		30
 
 
-extern plat_t*	activeplats[MAXPLATS];
+DOOM_C_API extern plat_t*	activeplats[MAXPLATS];
 
-void    T_PlatRaise(plat_t*	plat);
+DOOM_C_API void    T_PlatRaise(plat_t*	plat);
 
-int
-EV_DoPlat
-( line_t*	line,
-  plattype_e	type,
-  int		amount );
+DOOM_C_API int EV_DoPlat( line_t* line, plattype_e type, int amount );
 
-void    P_AddActivePlat(plat_t* plat);
-void    P_RemoveActivePlat(plat_t* plat);
-void    EV_StopPlat(line_t* line);
-void    P_ActivateInStasis(int tag);
+DOOM_C_API void    P_AddActivePlat(plat_t* plat);
+DOOM_C_API void    P_RemoveActivePlat(plat_t* plat);
+DOOM_C_API void    EV_StopPlat(line_t* line);
+DOOM_C_API void    P_ActivateInStasis(int tag);
 
 
 //
 // P_DOORS
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     vld_normal,
     vld_close30ThenOpen,
@@ -556,23 +503,22 @@ typedef enum
 
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
-    thinker_t	thinker;
-    vldoor_e	type;
-    sector_t*	sector;
-    fixed_t	topheight;
-    fixed_t	speed;
+	thinker_t		thinker;
+	vldoor_e		type;
+	sector_t*		sector;
+	fixed_t			topheight;
+	fixed_t			speed;
 
-    // 1 = up, 0 = waiting at top, -1 = down
-    int             direction;
-    
-    // tics to wait at the top
-    int             topwait;
-    // (keep in case a door going down is reset)
-    // when it reaches 0, start going down
-    int             topcountdown;
-    
+	// 1 = up, 0 = waiting at top, -1 = down
+	int				direction;
+
+	// tics to wait at the top
+	int				topwait;
+	// (keep in case a door going down is reset)
+	// when it reaches 0, start going down
+	int				topcountdown;
 } vldoor_t;
 
 
@@ -580,29 +526,16 @@ typedef struct
 #define VDOORSPEED		FRACUNIT*2
 #define VDOORWAIT		150
 
-void
-EV_VerticalDoor
-( line_t*	line,
-  mobj_t*	thing );
+DOOM_C_API void EV_VerticalDoor( line_t* line, mobj_t* thing );
 
-int
-EV_DoDoor
-( line_t*	line,
-  vldoor_e	type );
+DOOM_C_API int EV_DoDoor( line_t* line, vldoor_e type );
 
-int
-EV_DoLockedDoor
-( line_t*	line,
-  vldoor_e	type,
-  mobj_t*	thing );
+DOOM_C_API int EV_DoLockedDoor( line_t* line, vldoor_e type, mobj_t* thing );
 
-void    T_VerticalDoor (vldoor_t* door);
-void    P_SpawnDoorCloseIn30 (sector_t* sec);
+DOOM_C_API void    T_VerticalDoor (vldoor_t* door);
+DOOM_C_API void    P_SpawnDoorCloseIn30 (sector_t* sec);
 
-void
-P_SpawnDoorRaiseIn5Mins
-( sector_t*	sec,
-  int		secnum );
+DOOM_C_API void P_SpawnDoorRaiseIn5Mins( sector_t* sec, int secnum );
 
 
 
@@ -693,7 +626,7 @@ EV_SlidingDoor
 //
 // P_CEILNG
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     lowerToFloor,
     raiseToHighest,
@@ -706,23 +639,23 @@ typedef enum
 
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
-    thinker_t	thinker;
-    ceiling_e	type;
-    sector_t*	sector;
-    fixed_t	bottomheight;
-    fixed_t	topheight;
-    fixed_t	speed;
-    doombool	crush;
+	thinker_t	thinker;
+	ceiling_e	type;
+	sector_t*	sector;
+	fixed_t		bottomheight;
+	fixed_t		topheight;
+	fixed_t		speed;
+	doombool	crush;
 
-    // 1 = up, 0 = waiting, -1 = down
-    int		direction;
+	// 1 = up, 0 = waiting, -1 = down
+	int			direction;
 
-    // ID
-    int		tag;                   
-    int		olddirection;
-    
+	// ID
+	int			tag;
+	int			olddirection;
+
 } ceiling_t;
 
 
@@ -733,24 +666,21 @@ typedef struct
 #define CEILWAIT		150
 #define MAXCEILINGS		30
 
-extern ceiling_t*	activeceilings[MAXCEILINGS];
+DOOM_C_API extern ceiling_t*	activeceilings[MAXCEILINGS];
 
-int
-EV_DoCeiling
-( line_t*	line,
-  ceiling_e	type );
+DOOM_C_API int EV_DoCeiling( line_t* line, ceiling_e type );
 
-void    T_MoveCeiling (ceiling_t* ceiling);
-void    P_AddActiveCeiling(ceiling_t* c);
-void    P_RemoveActiveCeiling(ceiling_t* c);
-int	EV_CeilingCrushStop(line_t* line);
-void    P_ActivateInStasisCeiling(line_t* line);
+DOOM_C_API void    T_MoveCeiling (ceiling_t* ceiling);
+DOOM_C_API void    P_AddActiveCeiling(ceiling_t* c);
+DOOM_C_API void    P_RemoveActiveCeiling(ceiling_t* c);
+DOOM_C_API int	EV_CeilingCrushStop(line_t* line);
+DOOM_C_API void    P_ActivateInStasisCeiling(line_t* line);
 
 
 //
 // P_FLOOR
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     // lower floor to highest surrounding floor
     lowerFloor,
@@ -788,7 +718,7 @@ typedef enum
 
 
 
-typedef enum
+DOOM_C_API typedef enum
 {
     build8,	// slowly build by 8
     turbo16	// quickly build by 16
@@ -797,7 +727,7 @@ typedef enum
 
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
     thinker_t	thinker;
     floor_e	type;
@@ -815,42 +745,24 @@ typedef struct
 
 #define FLOORSPEED		FRACUNIT
 
-typedef enum
+DOOM_C_API typedef enum
 {
     ok,
     crushed,
     pastdest
-    
 } result_e;
 
-result_e
-T_MovePlane
-( sector_t*	sector,
-  fixed_t	speed,
-  fixed_t	dest,
-  doombool	crush,
-  int		floorOrCeiling,
-  int		direction );
+DOOM_C_API result_e T_MovePlane( sector_t* sector, fixed_t speed,  fixed_t dest, doombool crush, int floorOrCeiling, int direction );
 
-int
-EV_BuildStairs
-( line_t*	line,
-  stair_e	type );
+DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type );
 
-int
-EV_DoFloor
-( line_t*	line,
-  floor_e	floortype );
+DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype );
 
-void T_MoveFloor( floormove_t* floor);
+DOOM_C_API void T_MoveFloor( floormove_t* floor);
 
 //
 // P_TELEPT
 //
-int
-EV_Teleport
-( line_t*	line,
-  int		side,
-  mobj_t*	thing );
+DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
 
 #endif
