@@ -1122,6 +1122,19 @@ static void D_AddWidescreenPacks()
 	}
 }
 
+static void D_AddExtendedAssets()
+{
+	if( remove_limits )
+	{
+		const char* boomres = D_FindWADByName( "boomres.wad" );
+		if( boomres )
+		{
+			W_MergeFile( boomres );
+			free( boomres );
+		}
+	}
+}
+
 // Set the gamedescription string
 
 static void D_SetGameDescription(void)
@@ -1812,6 +1825,7 @@ void D_DoomMain (void)
 	InitGameVersion();
 
 	D_AddWidescreenPacks();
+	D_AddExtendedAssets();
 
 	D_RegisterPlaysim();
 
