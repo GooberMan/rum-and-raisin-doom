@@ -108,7 +108,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
-			skycontext.source = R_GetColumnComposite( sky, angle, 0 );
+			skycontext.source = R_GetColumnComposite( sky, angle );
 			skycontext.colfunc( &skycontext );
 		}
 		++x;

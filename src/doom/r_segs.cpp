@@ -235,7 +235,6 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 	angle_t			angle;
 	uint32_t		index;
 	int32_t			colormapindex;
-	int32_t			columnindex;
 	int32_t 		yl;
 	int32_t 		yh;
 	int32_t 		mid;
@@ -341,14 +340,13 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 
 			IF_RENDERLIGHTLEVELS
 			{
-				wallcolcontext.colfunc = renderwithcolormaps ? &R_LimitRemovingDrawColumn : colfuncs[ 15 ];
+				wallcolcontext.colfunc = &R_LimitRemovingDrawColumn;
 			}
 			else
 			{
-				wallcolcontext.colfunc = renderwithcolormaps ? &R_LimitRemovingDrawColumn_Untranslated : colfuncs[ 15 ];
+				wallcolcontext.colfunc = &R_LimitRemovingDrawColumn_Untranslated;
 			}
 			wallcolcontext.colormap = rendercontext.viewpoint.colormaps + colormapindex * 256;
-			columnindex = renderwithcolormaps ? 0 : colormapindex;
 		}
 
 		// draw the wall tiers
@@ -360,12 +358,12 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 			wallcolcontext.texturemid = wallcontext.midtexturemid;
 			IF_RENDERLIGHTLEVELS
 			{
-				wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->midtexture,texturecolumn,columnindex) : lightlevelmaps[ colormapindex ];
+				wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->midtexture,texturecolumn) : lightlevelmaps[ colormapindex ];
 				wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->midtexture ]->renderheight : IntToRendFixed(16);
 			}
 			else
 			{
-				wallcolcontext.source = R_GetColumn(segcontext->midtexture,texturecolumn,columnindex);
+				wallcolcontext.source = R_GetColumn(segcontext->midtexture,texturecolumn);
 				wallcolcontext.sourceheight = texturelookup[ segcontext->midtexture ]->renderheight;
 			}
 			R_RangeCheck();
@@ -394,12 +392,12 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 					wallcolcontext.texturemid = wallcontext.toptexturemid;
 					IF_RENDERLIGHTLEVELS
 					{
-						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->toptexture,texturecolumn,columnindex) : lightlevelmaps[ colormapindex ];
+						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->toptexture,texturecolumn) : lightlevelmaps[ colormapindex ];
 						wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->toptexture ]->renderheight : IntToRendFixed(256);
 					}
 					else
 					{
-						wallcolcontext.source = R_GetColumn(segcontext->toptexture,texturecolumn,columnindex);
+						wallcolcontext.source = R_GetColumn(segcontext->toptexture,texturecolumn);
 						wallcolcontext.sourceheight = texturelookup[ segcontext->toptexture ]->renderheight;
 					}
 					R_RangeCheck();
@@ -437,12 +435,12 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 					wallcolcontext.texturemid = wallcontext.bottomtexturemid;
 					IF_RENDERLIGHTLEVELS
 					{
-						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->bottomtexture,texturecolumn,columnindex) : lightlevelmaps[ colormapindex ];
+						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->bottomtexture,texturecolumn) : lightlevelmaps[ colormapindex ];
 						wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->bottomtexture ]->renderheight : IntToRendFixed(256);
 					}
 					else
 					{
-						wallcolcontext.source = R_GetColumn(segcontext->bottomtexture,texturecolumn,columnindex);
+						wallcolcontext.source = R_GetColumn(segcontext->bottomtexture,texturecolumn);
 						wallcolcontext.sourceheight = texturelookup[ segcontext->bottomtexture ]->renderheight;
 					}
 					R_RangeCheck();

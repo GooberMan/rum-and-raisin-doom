@@ -267,53 +267,26 @@ template< int32_t Leap, int32_t LeapLog2, int64_t Width >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
 INLINE void ChooseRegionWidthRasteriser( rendercontext_t& rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
-	if( renderwithcolormaps )
+	switch( texture->height )
 	{
-		switch( texture->height )
-		{
-		case 16:
-			PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 16 > >( rendercontext, firstregion, Width * 16 );
-			break;
-		case 32:
-			PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 32 > >( rendercontext, firstregion, Width * 32 );
-			break;
-		case 64:
-			PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 64 > >( rendercontext, firstregion, Width * 64 );
-			break;
-		case 128:
-			PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 128 > >( rendercontext, firstregion, Width * 128 );
-			break;
-		case 256:
-			PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 256 > >( rendercontext, firstregion, Width * 256 );
-			break;
-		default:
-			PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 64 > >( rendercontext, firstregion, Width * 64 );
-			break;
-		}
-	}
-	else
-	{
-		switch( texture->height )
-		{
-		case 16:
-			PrepareRender< Leap, LeapLog2, PreSizedSample< Width, 16 > >( rendercontext, firstregion, Width * 16 );
-			break;
-		case 32:
-			PrepareRender< Leap, LeapLog2, PreSizedSample< Width, 32 > >( rendercontext, firstregion, Width * 32 );
-			break;
-		case 64:
-			PrepareRender< Leap, LeapLog2, PreSizedSample< Width, 64 > >( rendercontext, firstregion, Width * 64 );
-			break;
-		case 128:
-			PrepareRender< Leap, LeapLog2, PreSizedSample< Width, 128 > >( rendercontext, firstregion, Width * 128 );
-			break;
-		case 256:
-			PrepareRender< Leap, LeapLog2, PreSizedSample< Width, 256 > >( rendercontext, firstregion, Width * 256 );
-			break;
-		default:
-			PrepareRender< Leap, LeapLog2, PreSizedSample< Width, 64 > >( rendercontext, firstregion, Width * 64 );
-			break;
-		}
+	case 16:
+		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 16 > >( rendercontext, firstregion, Width * 16 );
+		break;
+	case 32:
+		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 32 > >( rendercontext, firstregion, Width * 32 );
+		break;
+	case 64:
+		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 64 > >( rendercontext, firstregion, Width * 64 );
+		break;
+	case 128:
+		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 128 > >( rendercontext, firstregion, Width * 128 );
+		break;
+	case 256:
+		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 256 > >( rendercontext, firstregion, Width * 256 );
+		break;
+	default:
+		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 64 > >( rendercontext, firstregion, Width * 64 );
+		break;
 	}
 }
 
@@ -323,14 +296,7 @@ INLINE void ChooseRegionRasteriser( rendercontext_t& rendercontext, rasterregion
 {
 	if( !remove_limits )
 	{
-		if( renderwithcolormaps )
-		{
-			PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< 64, 64 > >( rendercontext, firstregion, 64 * 64 );
-		}
-		else
-		{
-			PrepareRender< Leap, LeapLog2, PreSizedSample< 64, 64 > >( rendercontext, firstregion, 64 * 64 );
-		}
+		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< 64, 64 > >( rendercontext, firstregion, 64 * 64 );
 	}
 	else
 	{

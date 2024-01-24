@@ -255,52 +255,31 @@ R_DrawColumnInCache
 //  and each column is cached.
 //
 
-#define COMPOSITE_MULTIPLIER ( NUMCOLORMAPS )
 #define COMPOSITE_ZONE ( PU_LEVEL )
-
-#define COMPOSITE_HEIGHTSTEP ( 128 )
-#define COMPOSITE_HEIGHTMASK ( COMPOSITE_HEIGHTSTEP - 1 )
-#define COMPOSITE_HEIGHTALIGN( x ) ( ( x  + COMPOSITE_HEIGHTMASK ) & ~COMPOSITE_HEIGHTMASK )
 
 void R_GenerateComposite (int texnum)
 {
-	byte*				block;
-	byte*				source;
-	byte*				target;
-	texture_t*			texture;
-	texpatch_t*			patch;	
-	patch_t*			realpatch;
-	lighttable_t*		currmap;
 	int32_t				x;
 	int32_t				x1;
 	int32_t				x2;
-	int32_t				index;
 	column_t*			patchcol;
 	int32_t				patchy = 0;
 	
-	texture = textures[texnum];
+	texture_t* texture = textures[texnum];
 
-	block = (byte*)Z_Malloc(texturecomposite[ texnum ].size * COMPOSITE_MULTIPLIER, COMPOSITE_ZONE,  &texturecomposite[texnum].data );	
-	memset( block, remove_limits ? 0 : 0xFB, texturecomposite[ texnum ].size * COMPOSITE_MULTIPLIER );
+	byte* block = (byte*)Z_Malloc(texturecomposite[ texnum ].size, COMPOSITE_ZONE,  &texturecomposite[texnum].data );	
+	memset( block, remove_limits ? 0 : 0xFB, texturecomposite[ texnum ].size );
 
-    // Composite the columns together.
-    patch = texture->patches;
+	// Composite the columns together.
+	texpatch_t* patch = texture->patches;
 		
-    for (index=0; index<texture->patchcount; index++, patch++)
-    {
-		realpatch = (patch_t*)W_CacheLumpNum (patch->patch, COMPOSITE_ZONE); // TODO: Change back to PU_CACHE when masked textures get composited
-		x1 = patch->originx;
-		x2 = x1 + SHORT(realpatch->width);
+	for( int32_t index = 0; index < texture->patchcount; index++, patch++ )
+	{
+		patch_t* realpatch = (patch_t*)W_CacheLumpNum (patch->patch, COMPOSITE_ZONE); // TODO: Change back to PU_CACHE when masked textures get composited
+		int32_t x1 = patch->originx;
+		int32_t x2 = M_MIN( x1 + SHORT(realpatch->width), texture->width );
 
-		if (x1<0)
-			x = 0;
-		else
-			x = x1;
-	
-		if (x2 > texture->width)
-			x2 = texture->width;
-
-		for ( ; x<x2 ; x++)
+		for ( int32_t x = M_MAX( 0, x1 ); x < x2; x++ )
 		{
 			patchcol = (column_t *)((byte *)realpatch
 						+ LONG(realpatch->columnofs[x-x1]));
@@ -323,20 +302,6 @@ void R_GenerateComposite (int texnum)
 				}
 				patchy += realpatch->height;
 			}
-		}
-						
-    }
-
-	for( index = 1; index < NUMCOLORMAPS; ++index )
-	{
-		currmap = colormaps + index * 256;
-
-		source = block;
-		target = block + texturecomposite[ texnum ].size * index;
-
-		while( source < block + texturecomposite[ texnum ].size )
-		{
-			*target++ = currmap[ *source++ ];
 		}
 	}
 }
@@ -439,7 +404,7 @@ void R_CacheCompositeFlat( int32_t flat )
 {
 	int32_t lump = firstflat + flat;
 
-	byte* transposedflatdata = (byte*)Z_Malloc( 64 * 64, PU_STATIC, NULL );
+	byte* transposedflatdata = (byte*)Z_Malloc( 64 * 64, COMPOSITE_ZONE, &flatcomposite[ flat ].data );
 	byte* originalflatdata = (byte*)W_CacheLumpNum( lump, PU_CACHE );
 
 	byte* currsource = originalflatdata;
@@ -453,20 +418,6 @@ void R_CacheCompositeFlat( int32_t flat )
 			currdest += 64;
 		}
 	}
-
-	byte* outputflatdata = (byte*)Z_Malloc( lumpinfo[ lump ]->size * NUMCOLORMAPS, COMPOSITE_ZONE, &flatcomposite[ flat ].data );
-
-	for( int32_t currmapindex = 0; currmapindex < NUMCOLORMAPS; ++currmapindex )
-	{
-		lighttable_t* currmap = colormaps + currmapindex * 256;
-		for( int32_t currflatbyte = 0; currflatbyte < lumpinfo[ lump ]->size; ++currflatbyte )
-		{
-			*outputflatdata = currmap[ transposedflatdata[ currflatbyte ] ];
-			++outputflatdata;
-		}
-	}
-
-	Z_Free( transposedflatdata );
 }
 
 texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat )
@@ -488,15 +439,15 @@ texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat )
 //
 // R_GetColumn
 //
-byte* R_GetColumn( int32_t tex, int32_t col, int32_t colormapindex )
+byte* R_GetColumn( int32_t tex, int32_t col )
 {
-	return R_GetColumnComposite( texturelookup[ tex ], col, colormapindex );
+	return R_GetColumnComposite( texturelookup[ tex ], col );
 }
 
-DOOM_C_API byte* R_GetColumnComposite( texturecomposite_t* composite, int32_t col, int32_t colormapindex )
+DOOM_C_API byte* R_GetColumnComposite( texturecomposite_t* composite, int32_t col )
 {
 	col &= composite->widthmask;
-	int32_t ofs = composite->size * colormapindex + composite->pitch * col;
+	int32_t ofs = composite->pitch * col;
 
 	if ( !composite->data )
 	{
@@ -528,7 +479,7 @@ byte* R_GetRawColumn( int32_t tex, int32_t col )
 	if( tex > numtextures )
 	{
 		// THIS IS SO NASTY. NEED TO CACHE THIS
-		memcpy( flatcolumnhack + 3, R_GetColumn( tex, col, 0 ), 64 );
+		memcpy( flatcolumnhack + 3, R_GetColumn( tex, col ), 64 );
 		return flatcolumnhack + 3;
 	}
 	
@@ -541,7 +492,7 @@ byte* R_GetRawColumn( int32_t tex, int32_t col )
 		return (byte *)W_CacheLumpNum(lump,COMPOSITE_ZONE)+ofs;
 	}
 
-	return R_GetColumn( tex, col, 0 );
+	return R_GetColumn( tex, col );
 }
 
 

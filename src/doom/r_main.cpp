@@ -89,7 +89,6 @@ extern "C"
 	doombool				rendersplitvisualise = false;
 	doombool				renderrebalancecontexts = false;
 	doombool				renderlightlevels = false;
-	doombool				renderwithcolormaps = true;
 	double_t				renderscalecontextsby = 0.0;
 	int32_t					rebalancescale = 25;
 	doombool				renderSIMDcolumns = false;
@@ -975,7 +974,7 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 			int32_t angle = ( rendercontext.viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
 
 			skycontext.x = x;
-			skycontext.source = R_GetColumn( skytexture, angle, 0 );
+			skycontext.source = R_GetColumn( skytexture, angle );
 			skycontext.colfunc( &skycontext );
 		}
 	}
@@ -1520,7 +1519,6 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 		R_ExecuteSetViewSize( );
 	}
 	igCheckbox( "Visualise light levels", (bool*)&renderlightlevels);
-	igCheckbox( "Render with colormaps", (bool*)&renderwithcolormaps);
 }
 
 //
