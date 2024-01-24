@@ -130,16 +130,10 @@
     <ClCompile Include="..\src\doom\p_user.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\r_bsp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\r_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\r_segs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\doom\r_sky.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\r_things.cpp">
@@ -206,6 +200,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\deh_bexpars.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\r_bsp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\r_sky.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

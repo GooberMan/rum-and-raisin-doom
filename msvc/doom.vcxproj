@@ -409,6 +409,8 @@
     <ClCompile Include="..\src\doom\d_playsim.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_chex.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_hacx.cpp" />
+    <ClCompile Include="..\src\doom\r_bsp.cpp" />
+    <ClCompile Include="..\src\doom\r_sky.cpp" />
     <ClCompile Include="..\src\doom\wi_stuff.cpp" />
     <ClInclude Include="..\src\doom\am_map.h" />
     <ClCompile Include="..\src\doom\deh_ammo.c" />
@@ -486,7 +488,6 @@
     <ClCompile Include="..\src\doom\p_tick.c" />
     <ClInclude Include="..\src\doom\p_tick.h" />
     <ClCompile Include="..\src\doom\p_user.c" />
-    <ClCompile Include="..\src\doom\r_bsp.c" />
     <ClInclude Include="..\src\doom\r_bsp.h" />
     <ClInclude Include="..\src\doom\r_data.h" />
     <ClInclude Include="..\src\doom\r_defs.h" />
@@ -502,7 +503,6 @@
     <ClCompile Include="..\src\doom\r_segs.cpp" />
     <ClInclude Include="..\src\doom\r_raster.h" />
     <ClInclude Include="..\src\doom\r_segs.h" />
-    <ClCompile Include="..\src\doom\r_sky.c" />
     <ClInclude Include="..\src\doom\r_sky.h" />
     <ClInclude Include="..\src\doom\r_state.h" />
     <ClCompile Include="..\src\doom\r_things.cpp" />
