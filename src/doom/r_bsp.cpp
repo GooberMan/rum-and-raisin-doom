@@ -213,6 +213,13 @@ void R_ClipPassWallSegment( rendercontext_t& rendercontext, wallcontext_t& wallc
 // and adds any visible pieces to the line list.
 //
 
+constexpr size_t sectorinstcmpsize = offsetof(sectorinstance_t, floorheight);
+
+INLINE bool SectorInstancesMatch( const sectorinstance_t* lhs, const sectorinstance_t* rhs )
+{
+	return memcmp( lhs, rhs, sectorinstcmpsize ) == 0;
+}
+
 void R_AddLine( rendercontext_t& rendercontext, seg_t* line )
 {
 	wallcontext_t	wallcontext;
@@ -305,18 +312,8 @@ void R_AddLine( rendercontext_t& rendercontext, seg_t* line )
 	// Identical floor and ceiling on both sides,
 	// identical light levels on both sides,
 	// and no middle texture.
-	
-	// This needs to be a memcmp or something jeezus
-	if (bspcontext.backsectorinst->ceiltex == bspcontext.frontsectorinst->ceiltex
-		&& bspcontext.backsectorinst->floortex == bspcontext.frontsectorinst->floortex
-		&& bspcontext.backsectorinst->lightlevel == bspcontext.frontsectorinst->lightlevel
-		&& bspcontext.backsectorinst->floorlightlevel == bspcontext.frontsectorinst->floorlightlevel
-		&& bspcontext.backsectorinst->ceillightlevel == bspcontext.frontsectorinst->ceillightlevel
-		&& bspcontext.backsectorinst->flooroffsetx == bspcontext.frontsectorinst->flooroffsetx
-		&& bspcontext.backsectorinst->flooroffsety == bspcontext.frontsectorinst->flooroffsety
-		&& bspcontext.backsectorinst->ceiloffsetx == bspcontext.frontsectorinst->ceiloffsetx
-		&& bspcontext.backsectorinst->ceiloffsety == bspcontext.frontsectorinst->ceiloffsety
-		&& bspcontext.curline->sidedef->midtexture == 0)
+	if( SectorInstancesMatch( bspcontext.backsectorinst, bspcontext.frontsectorinst )
+		&& bspcontext.curline->sidedef->midtexture == 0 )
 	{
 		return;
 	}
@@ -485,7 +482,7 @@ void R_Subsector( rendercontext_t& rendercontext, int32_t num )
 {
 	bspcontext_t& bspcontext		= rendercontext.bspcontext;
 
-	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+	M_PROFILE_FUNC();
 	int32_t			count;
 	seg_t*			line;
 	subsector_t*	sub;
@@ -536,8 +533,6 @@ void R_Subsector( rendercontext_t& rendercontext, int32_t num )
 	{
 		I_Error("R_Subsector: solidsegs overflow (vanilla may crash here)\n");
 	}
-
-	M_PROFILE_POP( __FUNCTION__ );
 }
 
 

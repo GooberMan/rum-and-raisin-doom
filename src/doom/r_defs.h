@@ -115,11 +115,9 @@ typedef struct texturecomposite_s
 
 typedef struct sectorinstance_s
 {
+	// Need to compare these for BSP rejection
 	texturecomposite_t*		floortex;
 	texturecomposite_t*		ceiltex;
-
-	rend_fixed_t			floorheight;
-	rend_fixed_t			ceilheight;
 	rend_fixed_t			lightlevel;
 	rend_fixed_t			floorlightlevel;
 	rend_fixed_t			ceillightlevel;
@@ -128,6 +126,9 @@ typedef struct sectorinstance_s
 	rend_fixed_t			ceiloffsetx;
 	rend_fixed_t			ceiloffsety;
 
+	// These are ignored for BSP rejection purposes
+	rend_fixed_t			floorheight;
+	rend_fixed_t			ceilheight;
 	int32_t					snapfloor;
 	int32_t					snapceiling;
 } sectorinstance_t;
@@ -766,10 +767,13 @@ typedef void (*planefunction_t)(int top, int bottom);
 typedef struct colcontext_s
 {
 	vbuffer_t			output;
+	pixel_t*			fuzzworkingbuffer;
 	byte*				source;
 	rend_fixed_t		sourceheight;
 
 	lighttable_t*		colormap;
+	lighttable_t*		fuzzlightmap;
+	lighttable_t*		fuzzdarkmap;
 	byte*				translation;
 	byte*				transparency;
 
@@ -815,6 +819,8 @@ typedef struct rendercontext_s
 
 	int32_t				begincolumn;
 	int32_t				endcolumn;
+
+	pixel_t*			fuzzworkingbuffer;
 
 	uint64_t			starttime;
 	uint64_t			endtime;
