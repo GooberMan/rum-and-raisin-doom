@@ -1587,6 +1587,7 @@ void D_DoomMain (void)
 	I_GraphicsCheckCommandLine();
 	I_InitTimer();
 	I_InitGraphics();
+	I_TerminalInit();
 	M_URLInit();
 	M_InitDashboard();
 
@@ -1598,8 +1599,6 @@ void D_DoomMain (void)
 	// Before we go in to terminal mode, we want to allow the user to configure all options
 	M_DashboardFirstLaunch();
 	M_PerformLauncher();
-
-	I_TerminalInit();
 
 	if( show_text_startup )
 	{
