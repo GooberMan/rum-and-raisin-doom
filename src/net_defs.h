@@ -44,12 +44,12 @@
 
 #define BACKUPTICS 128
 
-typedef struct _net_module_s net_module_t;
-typedef struct _net_packet_s net_packet_t;
-typedef struct _net_addr_s net_addr_t;
-typedef struct _net_context_s net_context_t;
+DOOM_C_API typedef struct _net_module_s net_module_t;
+DOOM_C_API typedef struct _net_packet_s net_packet_t;
+DOOM_C_API typedef struct _net_addr_s net_addr_t;
+DOOM_C_API typedef struct _net_context_s net_context_t;
 
-struct _net_packet_s
+DOOM_C_API struct _net_packet_s
 {
     byte *data;
     size_t len;
@@ -57,7 +57,7 @@ struct _net_packet_s
     unsigned int pos;
 };
 
-struct _net_module_s
+DOOM_C_API struct _net_module_s
 {
     // Initialize this module for use as a client
 
@@ -92,7 +92,7 @@ struct _net_module_s
 
 // net_addr_t
 
-struct _net_addr_s
+DOOM_C_API struct _net_addr_s
 {
     net_module_t *module;
     int refcount;
@@ -116,7 +116,7 @@ struct _net_addr_s
 // to use, so the order matters.
 // NOTE: The values in this enum do not have any special value outside of
 // the program they're compiled in. What matters is the string representation.
-typedef enum
+DOOM_C_API typedef enum
 {
     // Protocol introduced with Chocolate Doom v3.0. Each compatibility-
     // breaking change to the network protocol will produce a new protocol
@@ -132,7 +132,7 @@ typedef enum
 
 // packet types
 
-typedef enum
+DOOM_C_API typedef enum
 {
     NET_PACKET_TYPE_SYN,
     NET_PACKET_TYPE_ACK, // deprecated
@@ -153,7 +153,7 @@ typedef enum
     NET_PACKET_TYPE_NAT_HOLE_PUNCH,
 } net_packet_type_t;
 
-typedef enum
+DOOM_C_API typedef enum
 {
     NET_MASTER_PACKET_TYPE_ADD,
     NET_MASTER_PACKET_TYPE_ADD_RESPONSE,
@@ -171,7 +171,7 @@ typedef enum
 
 // Settings specified when the client connects to the server.
 
-typedef struct
+DOOM_C_API typedef struct
 {
     int gamemode;
     int gamemission;
@@ -187,7 +187,7 @@ typedef struct
 // Game settings sent by client to server when initiating game start,
 // and received from the server by clients when the game starts.
 
-typedef struct
+DOOM_C_API typedef struct
 {
     int ticdup;
     int extratics;
@@ -226,7 +226,7 @@ typedef struct
 #define NET_TICDIFF_RAVEN        (1 << 6)
 #define NET_TICDIFF_STRIFE       (1 << 7)
 
-typedef struct
+DOOM_C_API typedef struct
 {
     unsigned int diff;
     ticcmd_t cmd;
@@ -234,7 +234,7 @@ typedef struct
 
 // Complete set of ticcmds from all players
 
-typedef struct 
+DOOM_C_API typedef struct 
 {
     signed int latency;
     unsigned int seq;
@@ -244,7 +244,7 @@ typedef struct
 
 // Data sent in response to server queries
 
-typedef struct
+DOOM_C_API typedef struct
 {
     const char *version;
     int server_state;
@@ -258,7 +258,7 @@ typedef struct
 
 // Data sent by the server while waiting for the game to start.
 
-typedef struct
+DOOM_C_API typedef struct
 {
     int num_players;
     int num_drones;

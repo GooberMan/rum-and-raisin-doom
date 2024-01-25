@@ -183,7 +183,7 @@ void T_VerticalDoor (vldoor_t* door)
 
 INLINE int32_t DoorSoundFor( doordir_t dir, doombool blaze )
 {
-	const sfxenum_t doorsounds[] =
+	constexpr sfxenum_t doorsounds[] =
 	{
 		sfx_dorcls,
 		sfx_None,
