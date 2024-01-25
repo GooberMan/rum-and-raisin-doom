@@ -27,6 +27,7 @@
 #if defined(__cplusplus)
 
 void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height );
+void R_IncreaseOpenings( planecontext_t& context );
 
 #if RANGECHECK
 void R_ErrorCheckPlanes( rendercontext_t& context );

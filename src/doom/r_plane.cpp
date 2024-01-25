@@ -51,11 +51,21 @@ void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
 	context->floorclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, drs_current->viewheight );
 	context->ceilingclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, -1 );
 
+	context->openingscount = context->maxopenings;
+	context->openings = R_AllocateScratch< vertclip_t >( context->openingscount );
 	context->lastopening = context->openings;
 
 	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * ( numflats + numtextures ) );
 
 	context->raster = R_AllocateScratch< rastercache_t >( drs_current->viewheight );
+}
+
+void R_IncreaseOpenings( planecontext_t& context )
+{
+	context.maxopenings += MAXOPENINGS;
+	context.openingscount = MAXOPENINGS;
+	context.openings = R_AllocateScratch< vertclip_t >( context.openingscount );
+	context.lastopening = context.openings;
 }
 
 //
@@ -108,12 +118,6 @@ void R_ErrorCheckPlanes( rendercontext_t& context )
 	{
 		I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
 				context.bspcontext.thisdrawseg - context.bspcontext.drawsegs);
-	}
-
-	if (context.planecontext.lastopening - context.planecontext.openings > MAXOPENINGS)
-	{
-		I_Error ("R_DrawPlanes: opening overflow (%" PRIiPTR ")",
-				context.planecontext.lastopening - context.planecontext.openings);
 	}
 }
 #endif

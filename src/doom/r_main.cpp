@@ -864,13 +864,16 @@ void R_InitColFuncs( void )
 
 void R_ResetContext( rendercontext_t& context, int32_t leftclip, int32_t rightclip )
 {
-	M_PROFILE_FUNC();
-
 	context.begincolumn = context.spritecontext.leftclip = leftclip;
 	context.endcolumn = context.spritecontext.rightclip = rightclip;
-	context.fuzzworkingbuffer = R_AllocateScratch< pixel_t >( render_height + 4 );
+}
 
-	R_ClearClipSegs( &context.bspcontext, leftclip, rightclip );
+void R_AllocateContextData( rendercontext_t& context )
+{
+	M_PROFILE_FUNC();
+
+	context.fuzzworkingbuffer = R_AllocateScratch< pixel_t >( render_height + 4 );
+	R_ClearClipSegs( &context.bspcontext, context.begincolumn, context.endcolumn );
 	R_ClearDrawSegs( &context.bspcontext );
 	R_ClearPlanes( &context.planecontext, drs_current->viewwidth, drs_current->viewheight );
 	R_ClearSprites( context.spritecontext );
@@ -896,6 +899,8 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 
 	rendercontext.spritecontext.maskedtimetaken = 0;
 #endif
+
+	R_AllocateContextData( rendercontext );
 
 	if( voidcleartype == Void_Black )
 	{
@@ -1038,6 +1043,7 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.timetaken = 1;
 
 		renderdatas[ currcontext ].context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * ( numflats + numtextures ), PU_STATIC, NULL );
+		renderdatas[ currcontext ].context.planecontext.maxopenings = MAXOPENINGS;
 
 		R_ResetContext( renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
 

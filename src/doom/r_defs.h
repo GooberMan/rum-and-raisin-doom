@@ -62,7 +62,7 @@ extern "C" {
 #define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			( 10240 * 4 )
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
-#define MAXOPENINGS				( MAXVALUESBASE*128 )
+#define MAXOPENINGS				( MAXVALUESBASE*16 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
 #define MAXDRAWSEGS				( ( MAXVISPLANES / 4 ) << 2 )
 
@@ -726,8 +726,10 @@ typedef struct planecontext_s
 	rasterregion_t*		floorregion;
 	rasterregion_t*		ceilingregion;
 
-	vertclip_t			openings[MAXOPENINGS];
+	vertclip_t*			openings;
 	vertclip_t*			lastopening;
+	size_t				openingscount;
+	size_t				maxopenings;
 
 	vertclip_t*			floorclip;
 	vertclip_t*			ceilingclip;
