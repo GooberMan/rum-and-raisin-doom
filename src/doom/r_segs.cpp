@@ -129,12 +129,12 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 	bspcontext.backsector = bspcontext.curline->backsector;
 	bspcontext.backsectorinst = &rendsectors[ bspcontext.curline->backsector->index ];
 
+	texnum = texturetranslation[ bspcontext.curline->sidedef->midtexture ];
+
 	spritecolcontext.output = dest;
 	spritecolcontext.transparency = bspcontext.curline->linedef->transparencymap;
-	spritecolcontext.colfunc = bspcontext.curline->linedef->transparencymap == nullptr ? &R_SpriteDrawColumn_Untranslated : &R_LimitRemovingDrawColumn_Transparent;
+	spritecolcontext.colfunc = bspcontext.curline->linedef->transparencymap == nullptr ? &R_SpriteDrawColumn_Colormap : texturelookup[ texnum ]->transparentwallrender;
 
-	texnum = texturetranslation[bspcontext.curline->sidedef->midtexture];
-	
 	lightnum = (bspcontext.frontsectorinst->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (bspcontext.curline->v1->y == bspcontext.curline->v2->y)
@@ -337,15 +337,6 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 			}
 			wallcolcontext.x = currx;
 			wallcolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), wallcontext.scale );
-
-			IF_RENDERLIGHTLEVELS
-			{
-				wallcolcontext.colfunc = &R_LimitRemovingDrawColumn;
-			}
-			else
-			{
-				wallcolcontext.colfunc = &R_LimitRemovingDrawColumn_Untranslated;
-			}
 			wallcolcontext.colormap = rendercontext.viewpoint.colormaps + colormapindex * 256;
 		}
 
@@ -360,11 +351,13 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 			{
 				wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->midtexture,texturecolumn) : lightlevelmaps[ colormapindex ];
 				wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->midtexture ]->renderheight : IntToRendFixed(16);
+				wallcolcontext.colfunc = &R_DrawColumn_Colormap_32;
 			}
 			else
 			{
 				wallcolcontext.source = R_GetColumn(segcontext->midtexture,texturecolumn);
 				wallcolcontext.sourceheight = texturelookup[ segcontext->midtexture ]->renderheight;
+				wallcolcontext.colfunc = texturelookup[ segcontext->midtexture ]->wallrender;
 			}
 			R_RangeCheck();
 			wallcolcontext.colfunc( &wallcolcontext );
@@ -399,6 +392,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 					{
 						wallcolcontext.source = R_GetColumn(segcontext->toptexture,texturecolumn);
 						wallcolcontext.sourceheight = texturelookup[ segcontext->toptexture ]->renderheight;
+						wallcolcontext.colfunc = texturelookup[ segcontext->toptexture ]->wallrender;
 					}
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
@@ -442,6 +436,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 					{
 						wallcolcontext.source = R_GetColumn(segcontext->bottomtexture,texturecolumn);
 						wallcolcontext.sourceheight = texturelookup[ segcontext->bottomtexture ]->renderheight;
+						wallcolcontext.colfunc = texturelookup[ segcontext->bottomtexture ]->wallrender;
 					}
 					R_RangeCheck();
 					wallcolcontext.colfunc( &wallcolcontext );
@@ -886,7 +881,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 	{
 		if( !ceilsky )
 		{
-			R_RasteriseRegion( rendercontext, ceil, ceilpic );
+			ceilpic->floorrender( &rendercontext, ceil, ceilpic );
 		}
 		else
 		{
@@ -898,7 +893,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 	{
 		if( !floorsky )
 		{
-			R_RasteriseRegion( rendercontext, floor, floorpic );
+			floorpic->floorrender( &rendercontext, floor, floorpic );
 		}
 		else
 		{

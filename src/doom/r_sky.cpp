@@ -30,8 +30,7 @@
 #include "m_misc.h"
 
 // Needed for Flat retrieval.
-#include "r_data.h"
-#include "r_main.h"
+#include "r_local.h"
 
 #include "m_container.h"
 #include "m_profile.h"
@@ -81,7 +80,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 
 	colcontext_t	skycontext;
 
-	skycontext.colfunc = colfuncs[ 15 ];
+	skycontext.colfunc = &R_DrawColumn;
 
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook

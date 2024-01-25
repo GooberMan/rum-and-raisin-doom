@@ -71,15 +71,8 @@ extern int32_t	fuzz_style;
 // Function pointers to switch refresh/drawing functions.
 // Used to select shadow mode etc.
 //
-#define COLFUNC_PIXELEXPANDERS 16
-#define COLFUNC_FUZZBASEINDEX 16
-#define COLFUNC_TRANSLATEINDEX ( COLFUNC_FUZZBASEINDEX + Fuzz_Count )
-#define COLFUNC_NUM ( COLFUNC_TRANSLATEINDEX + 1 )
-#define COLFUNC_COUNT ( COLFUNC_NUM * 2 )
-
-extern colfunc_t colfuncs[ COLFUNC_COUNT ];
-
 extern colfunc_t transcolfunc;
+extern colfunc_t fuzzfuncs[ Fuzz_Count ];
 
 typedef enum lineside_e
 {

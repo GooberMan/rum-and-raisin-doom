@@ -82,22 +82,22 @@ struct PreSizedSampleUntranslated
 
 template< int32_t Leap, int32_t LeapLog2, typename Sampler >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, int32_t top, int32_t count )
+INLINE void R_RasteriseColumnImpl( rendercontext_t* rendercontext, int32_t x, int32_t top, int32_t count )
 {
-	pixel_t*			dest			= rendercontext.planecontext.output.data + x * rendercontext.planecontext.output.pitch + top;
-	pixel_t*			source			= rendercontext.planecontext.source;
+	pixel_t*			dest			= rendercontext->planecontext.output.data + x * rendercontext->planecontext.output.pitch + top;
+	pixel_t*			source			= rendercontext->planecontext.source;
 
 	int32_t				nexty			= top;
 
-	angle_t				angle			= (rendercontext.planecontext.viewangle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
+	angle_t				angle			= (rendercontext->planecontext.viewangle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
 	rend_fixed_t		anglecos		= renderfinecosine[ angle ];
 	rend_fixed_t		anglesin		= renderfinesine[ angle ];
 
-	rend_fixed_t		currdistance	= rendercontext.planecontext.raster[ top ].distance;
+	rend_fixed_t		currdistance	= rendercontext->planecontext.raster[ top ].distance;
 	rend_fixed_t		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 
-	rend_fixed_t		xfrac			= rendercontext.planecontext.viewx + RendFixedMul( anglecos, currlength );
-	rend_fixed_t		yfrac			= -rendercontext.planecontext.viewy - RendFixedMul( anglesin, currlength );
+	rend_fixed_t		xfrac			= rendercontext->planecontext.viewx + RendFixedMul( anglecos, currlength );
+	rend_fixed_t		yfrac			= -rendercontext->planecontext.viewy - RendFixedMul( anglesin, currlength );
 	rend_fixed_t		nextxfrac;
 	rend_fixed_t		nextyfrac;
 
@@ -112,57 +112,57 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, in
 	while( count >= Leap )
 	{
 		nexty			+= Leap;
-		currdistance	= rendercontext.planecontext.raster[ nexty ].distance;
+		currdistance	= rendercontext->planecontext.raster[ nexty ].distance;
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
-		nextxfrac		= rendercontext.planecontext.viewx + RendFixedMul( anglecos, currlength );
-		nextyfrac		= -rendercontext.planecontext.viewy - RendFixedMul( anglesin, currlength );
+		nextxfrac		= rendercontext->planecontext.viewx + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -rendercontext->planecontext.viewy - RendFixedMul( anglesin, currlength );
 
 		xstep =	( nextxfrac - xfrac ) >> LeapLog2;
 		ystep =	( nextyfrac - yfrac ) >> LeapLog2;
 
 		if constexpr( LeapLog2 >= 5 )
 		{
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
 		}
 		if constexpr( LeapLog2 >= 4 )
 		{
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
 		}
 		if constexpr( LeapLog2 >= 3 )
 		{
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
 		}
 		if constexpr( LeapLog2 >= 2 )
 		{
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
 		}
 
 		xfrac = nextxfrac;
@@ -174,10 +174,10 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, in
 	if( count >= 0 )
 	{
 		nexty			+= count;
-		currdistance	= rendercontext.planecontext.raster[ nexty ].distance;
+		currdistance	= rendercontext->planecontext.raster[ nexty ].distance;
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
-		nextxfrac		= rendercontext.planecontext.viewx + RendFixedMul( anglecos, currlength );
-		nextyfrac		= -rendercontext.planecontext.viewy - RendFixedMul( anglesin, currlength );
+		nextxfrac		= rendercontext->planecontext.viewx + RendFixedMul( anglecos, currlength );
+		nextyfrac		= -rendercontext->planecontext.viewy - RendFixedMul( anglesin, currlength );
 
 		++count;
 
@@ -186,34 +186,34 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t& rendercontext, int32_t x, in
 
 		do
 		{
-			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext.planecontext );
+			Sampler::Sample( top, xfrac, xstep, yfrac, ystep, source, dest, rendercontext->planecontext );
 		} while( top <= nexty );
 	}
 
 #if RENDER_PERF_GRAPHING
 	endtime = I_GetTimeUS();
-	rendercontext.planecontext.flattimetaken += ( endtime - starttime );
+	rendercontext->planecontext.flattimetaken += ( endtime - starttime );
 #endif // RENDER_PERF_GRAPHING
 
 }
 
-INLINE void PrepareRow( int32_t y, rendercontext_t& rendercontext, size_t size )
+INLINE void PrepareRow( int32_t y, rendercontext_t* rendercontext, size_t size )
 {
-	planecontext_t& planecontext = rendercontext.planecontext;
+	planecontext_t& planecontext = rendercontext->planecontext;
 
 	planecontext.raster[ y ].distance = RendFixedMul( planecontext.planeheight, drs_current->yslope[ y ] );
 
 	if( fixedcolormapindex )
 	{
 		planecontext.raster[ y ].sourceoffset = fixedcolormapindex * size;
-		planecontext.raster[ y ].colormap = rendercontext.viewpoint.colormaps + fixedcolormapindex * 256;
+		planecontext.raster[ y ].colormap = rendercontext->viewpoint.colormaps + fixedcolormapindex * 256;
 	}
 	else
 	{
 		int32_t lookup = (int32_t)M_CLAMP( ( planecontext.raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
 		int32_t lightindex = drs_current->zlightindex[ planecontext.planezlightindex * MAXLIGHTZ + lookup ];
 		planecontext.raster[ y ].sourceoffset = lightindex * size;
-		planecontext.raster[ y ].colormap = rendercontext.viewpoint.colormaps + lightindex * 256;
+		planecontext.raster[ y ].colormap = rendercontext->viewpoint.colormaps + lightindex * 256;
 	}
 }
 
@@ -224,7 +224,7 @@ constexpr auto Lines( rasterregion_t* region )
 
 template< int32_t Leap, int32_t LeapLog2, typename Sampler >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void RenderRasterLines( rendercontext_t& rendercontext, rasterregion_t* region )
+INLINE void RenderRasterLines( rendercontext_t* rendercontext, rasterregion_t* region )
 {
 	int32_t x = region->minx;
 
@@ -240,17 +240,17 @@ INLINE void RenderRasterLines( rendercontext_t& rendercontext, rasterregion_t* r
 
 template< int32_t Leap, int32_t LeapLog2, typename Sampler >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void PrepareRender( rendercontext_t& rendercontext, rasterregion_t* thisregion, size_t texturesize )
+INLINE void PrepareRender( rendercontext_t* rendercontext, rasterregion_t* thisregion, size_t texturesize )
 {
-	rendercontext.planecontext.viewx		= rendercontext.viewpoint.x - thisregion->xoffset;
-	rendercontext.planecontext.viewy		= rendercontext.viewpoint.y - thisregion->yoffset;
-	rendercontext.planecontext.viewangle	= rendercontext.viewpoint.angle;
+	rendercontext->planecontext.viewx		= rendercontext->viewpoint.x - thisregion->xoffset;
+	rendercontext->planecontext.viewy		= rendercontext->viewpoint.y - thisregion->yoffset;
+	rendercontext->planecontext.viewangle	= rendercontext->viewpoint.angle;
 
-	rendercontext.planecontext.planeheight = abs( thisregion->height - rendercontext.viewpoint.z );
+	rendercontext->planecontext.planeheight = abs( thisregion->height - rendercontext->viewpoint.z );
 	int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );
 	
-	rendercontext.planecontext.planezlightindex = light;
-	rendercontext.planecontext.planezlightoffset = &drs_current->zlightoffset[ light * MAXLIGHTZ ];
+	rendercontext->planecontext.planezlightindex = light;
+	rendercontext->planecontext.planezlightoffset = &drs_current->zlightoffset[ light * MAXLIGHTZ ];
 
 	int32_t y = thisregion->miny;
 	int32_t stop = thisregion->maxy + 1;
@@ -263,9 +263,10 @@ INLINE void PrepareRender( rendercontext_t& rendercontext, rasterregion_t* thisr
 	RenderRasterLines< Leap, LeapLog2, Sampler >( rendercontext, thisregion );
 }
 
+#if RASTER_ALLOW_SELECTOR
 template< int32_t Leap, int32_t LeapLog2, int64_t Width >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionWidthRasteriser( rendercontext_t& rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+INLINE void ChooseRegionWidthRasteriser( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
 	switch( texture->height )
 	{
@@ -292,7 +293,7 @@ INLINE void ChooseRegionWidthRasteriser( rendercontext_t& rendercontext, rasterr
 
 template< int32_t Leap, int32_t LeapLog2 >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionRasteriser( rendercontext_t& rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+INLINE void ChooseRegionRasteriser( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
 	if( !remove_limits )
 	{
@@ -333,12 +334,12 @@ INLINE void ChooseRegionRasteriser( rendercontext_t& rendercontext, rasterregion
 	}
 }
 
-void R_RasteriseRegion( rendercontext_t& rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+void R_RasteriseRegion( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
 	M_PROFILE_FUNC();
-	rendercontext.planecontext.source = texture->data;
+	rendercontext->planecontext.source = texture->data;
 
-	switch( rendercontext.planecontext.spantype )
+	switch( rendercontext->planecontext.spantype )
 	{
 	case Span_PolyRaster_Log2_4:
 		ChooseRegionRasteriser< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( rendercontext, firstregion, texture );
@@ -356,4 +357,230 @@ void R_RasteriseRegion( rendercontext_t& rendercontext, rasterregion_t* firstreg
 		ChooseRegionRasteriser< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( rendercontext, firstregion, texture );
 		break;
 	}
+}
+#endif
+
+template< typename Sampler, size_t tetxuresize >
+void RasteriseRegion( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	rendercontext->planecontext.source = texture->data;
+
+	switch( rendercontext->planecontext.spantype )
+	{
+	case Span_PolyRaster_Log2_4:
+		PrepareRender< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2, Sampler >( rendercontext, firstregion, tetxuresize );
+		break;
+
+	case Span_PolyRaster_Log2_8:
+		PrepareRender< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2, Sampler >( rendercontext, firstregion, tetxuresize );
+		break;
+
+	case Span_PolyRaster_Log2_16:
+		PrepareRender< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2, Sampler >( rendercontext, firstregion, tetxuresize );
+		break;
+
+	case Span_PolyRaster_Log2_32:
+		PrepareRender< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2, Sampler >( rendercontext, firstregion, tetxuresize );
+		break;
+	}
+}
+
+
+void R_RasteriseRegion16x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 16, 16 >, 16 * 16 >( rendercontext, firstregion, texture );
+}
+
+void R_RasteriseRegion16x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 16, 32 >, 16 * 32 >( rendercontext, firstregion, texture );
+}
+
+void R_RasteriseRegion16x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 16, 64 >, 16 * 64 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion16x128( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 16, 128 >, 16 * 128 >( rendercontext, firstregion, texture );
+}
+
+
+
+void R_RasteriseRegion32x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 32, 16 >, 32 * 16 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion32x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 32, 32 >, 32 * 32 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion32x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 32, 16 >, 32 * 64 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion32x128( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 32, 16 >, 32 * 128 >( rendercontext, firstregion, texture );
+}
+
+
+
+void R_RasteriseRegion64x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 64, 16 >, 64 * 16 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion64x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 64, 32 >, 64 * 64 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion64x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 64, 64 >, 64 * 128 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion64x128( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 64, 128 >, 64 * 16 >( rendercontext, firstregion, texture );
+}
+
+
+
+void R_RasteriseRegion128x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 128, 16 >, 128 * 16 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion128x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 128, 32 >, 128 * 32 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion128x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 128, 64 >, 128 * 64 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion128x128( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 128, 128 >, 128 * 128 >( rendercontext, firstregion, texture );
+}
+
+
+
+void R_RasteriseRegion256x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 256, 16 >, 256 * 16 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion256x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 256, 32 >, 256 * 32 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion256x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 256, 64 >, 256 * 64 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion256x128( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 256, 128 >, 256 * 128 >( rendercontext, firstregion, texture );
+}
+
+
+
+void R_RasteriseRegion512x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 512, 16 >, 512 * 16 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion512x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 512, 32 >, 512 * 32 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion512x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 512, 64 >, 512 * 64 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion512x128( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 512, 128 >, 512 * 128 >( rendercontext, firstregion, texture );
+}
+
+
+
+void R_RasteriseRegion1024x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 1024, 16 >, 1024 * 16 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion1024x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 1024, 32 >, 1024 * 32 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion1024x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 1024, 64 >, 1024 * 64 >( rendercontext, firstregion, texture );
+}
+
+
+void R_RasteriseRegion1024x128( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
+{
+	M_PROFILE_FUNC();
+	RasteriseRegion< PreSizedSampleUntranslated< 1024, 128 >, 1024 * 128 >( rendercontext, firstregion, texture );
 }

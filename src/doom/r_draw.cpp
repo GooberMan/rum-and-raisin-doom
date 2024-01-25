@@ -478,6 +478,17 @@ namespace DrawColumn
 		static INLINE void ColormapDraw( colcontext_t* context )							{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportLookup, WriterDirect >( context ); }
 		static INLINE void ColormapPaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportLookup, WriterDirect >( context ); }
 
+		template< size_t height >
+		static INLINE void SizedDraw( colcontext_t* context )								{ DrawWith< typename SamplerOriginal< height >::Direct, ViewportLookup, WriterDirect >( context ); }
+		template< size_t height >
+		static INLINE void SizedPaletteSwapDraw( colcontext_t* context )					{ DrawWith< typename SamplerOriginal< height >::PaletteSwap, ViewportLookup, WriterDirect >( context ); }
+		template< size_t height >
+		static INLINE void SizedColormapDraw( colcontext_t* context )						{ DrawWith< typename SamplerOriginal< height >::Colormap, ViewportLookup, WriterDirect >( context ); }
+		template< size_t height >
+		static INLINE void SizedColormapPaletteSwapDraw( colcontext_t* context )			{ DrawWith< typename SamplerOriginal< height >::ColormapPaletteSwap, ViewportLookup, WriterDirect >( context ); }
+		template< size_t height >
+		static INLINE void SizedTransparentDraw( colcontext_t* context )					{ DrawWith< typename SamplerOriginal< height >::Colormap, ViewportLookup, WriterTransparent >( context ); }
+
 		static INLINE void SpriteDraw( colcontext_t* context )								{ DrawWith< SamplerOriginal< 128 >::Direct, ViewportSpriteLookup, WriterDirect >( context ); }
 		static INLINE void SpritePaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportSpriteLookup, WriterDirect >( context ); }
 		static INLINE void SpriteColormapDraw( colcontext_t* context )						{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup, WriterDirect >( context ); }
@@ -513,10 +524,70 @@ void R_DrawColumn( colcontext_t* context )
 	DrawColumn::Bytewise::Draw( context );
 } 
 
-void R_DrawColumn_Untranslated( colcontext_t* context )
+void R_DrawColumn_Colormap( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::ColormapDraw( context );
+}
+
+void R_DrawColumn_Colormap_16( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedColormapDraw< 16 >( context );
+}
+
+void R_DrawColumn_Colormap_32( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedColormapDraw< 32 >( context );
+}
+
+void R_DrawColumn_Colormap_64( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedColormapDraw< 64 >( context );
+}
+
+void R_DrawColumn_Colormap_128( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedColormapDraw< 128 >( context );
+}
+
+void R_DrawColumn_Colormap_256( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedColormapDraw< 256 >( context );
+}
+
+void R_DrawColumn_Transparent_16( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedTransparentDraw< 16 >( context );
+}
+
+void R_DrawColumn_Transparent_32( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedTransparentDraw< 32 >( context );
+}
+
+void R_DrawColumn_Transparent_64( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedTransparentDraw< 64 >( context );
+}
+
+void R_DrawColumn_Transparent_128( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedTransparentDraw< 128 >( context );
+}
+
+void R_DrawColumn_Transparent_256( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedTransparentDraw< 256 >( context );
 }
 
 void R_SpriteDrawColumn( colcontext_t* context ) 
@@ -525,7 +596,7 @@ void R_SpriteDrawColumn( colcontext_t* context )
 	DrawColumn::Bytewise::SpriteDraw( context );
 } 
 
-void R_SpriteDrawColumn_Untranslated( colcontext_t* context )
+void R_SpriteDrawColumn_Colormap( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::SpriteColormapDraw( context );
@@ -538,7 +609,7 @@ void R_LimitRemovingDrawColumn( colcontext_t* context )
 	DrawColumn::Bytewise::LimitRemovingDraw( context );
 } 
 
-void R_LimitRemovingDrawColumn_Untranslated( colcontext_t* context )
+void R_LimitRemovingDrawColumn_Colormap( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::LimitRemovingColormapDraw( context );
@@ -556,50 +627,11 @@ void R_BackbufferDrawColumn( colcontext_t* context )
 	DrawColumn::Bytewise::BackbufferDraw( context );
 } 
 
-void R_BackbufferDrawColumn_Untranslated( colcontext_t* context )
+void R_BackbufferDrawColumn_Colormap( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::BackbufferColormapDraw( context );
 }
-
-void R_DrawColumnLow( colcontext_t* context ) 
-{ 
-    int					count; 
-    pixel_t*			dest;
-    pixel_t*			dest2;
-    rend_fixed_t		frac;
-    rend_fixed_t		fracstep;
-	byte				sample;
-
-	count = context->yh - context->yl;
-
-    // Framebuffer destination address.
-    // Use ylookup LUT to avoid multiply with ScreenWidth.
-    // Use columnofs LUT for subwindows? 
-    dest = context->output.data + context->x * 2 * context->output.pitch + context->yl;
-    dest2 = context->output.data + ( context->x * 2 + 1 ) * context->output.pitch + context->yl;
-
-    // Determine scaling,
-    //  which is the only mapping to be done.
-    fracstep = context->iscale; 
-    frac = context->texturemid + (context->yl-drs_current->centery)*fracstep; 
-
-    // Inner loop that does the actual texture mapping,
-    //  e.g. a DDA-lile scaling.
-    // This is as fast as it gets.
-    do 
-    {
-		// Re-map color indices from wall texture column
-		//  using a lighting/special effects LUT.
-		sample = context->colormap[ context->source[ RendFixedToInt( frac ) & 127 ] ];
-		*dest++ = sample; 
-		*dest2++ = sample; 
-		frac += fracstep;
-	
-    } while (count--); 
-}
-
-
 
 //
 // Spectre/Invisibility.

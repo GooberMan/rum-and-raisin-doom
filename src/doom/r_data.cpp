@@ -531,6 +531,37 @@ static void GenerateTextureHashTable(void)
     }
 }
 
+constexpr colfunc_t colfuncsforheight[] =
+{
+	&R_DrawColumn_Colormap_16,
+	&R_DrawColumn_Colormap_32,
+	&R_DrawColumn_Colormap_64,
+	&R_DrawColumn_Colormap_128,
+	&R_DrawColumn_Colormap_256,
+};
+
+constexpr colfunc_t transcolfuncsforheight[] =
+{
+	&R_DrawColumn_Transparent_16,
+	&R_DrawColumn_Transparent_32,
+	&R_DrawColumn_Transparent_64,
+	&R_DrawColumn_Transparent_128,
+	&R_DrawColumn_Transparent_256,
+};
+
+constexpr rasterfunc_t floorfuncs[ 7 ][ 4 ] =
+{
+	{	&R_RasteriseRegion16x16,	&R_RasteriseRegion16x32,	&R_RasteriseRegion16x64,	&R_RasteriseRegion16x128	},
+	{	&R_RasteriseRegion32x16,	&R_RasteriseRegion32x32,	&R_RasteriseRegion32x64,	&R_RasteriseRegion32x128	},
+	{	&R_RasteriseRegion64x16,	&R_RasteriseRegion64x32,	&R_RasteriseRegion64x64,	&R_RasteriseRegion64x128	},
+	{	&R_RasteriseRegion128x16,	&R_RasteriseRegion128x32,	&R_RasteriseRegion128x64,	&R_RasteriseRegion128x128	},
+	{	&R_RasteriseRegion256x16,	&R_RasteriseRegion256x32,	&R_RasteriseRegion256x64,	&R_RasteriseRegion256x128	},
+	{	&R_RasteriseRegion512x16,	&R_RasteriseRegion512x32,	&R_RasteriseRegion512x64,	&R_RasteriseRegion512x128	},
+	{	&R_RasteriseRegion1024x16,	&R_RasteriseRegion1024x32,	&R_RasteriseRegion1024x64,	&R_RasteriseRegion1024x128	},
+};
+
+constexpr int32_t maxcolfuncs = 4;
+
 void R_InitTextureAndFlatComposites( void )
 {
 	int32_t totallookup = numtextures + numflats;
@@ -552,6 +583,42 @@ void R_InitTextureAndFlatComposites( void )
 		// Gotta be an easier way to find current or lower power of 2...
 		int32_t mask = 1;
 		while( mask * 2 <= texture->width ) mask <<= 1;
+
+		if( !remove_limits )
+		{
+			composite.wallrender = &R_DrawColumn_Colormap_128;
+			composite.transparentwallrender = &R_DrawColumn_Transparent_128;
+			composite.floorrender = &R_RasteriseRegion64x64;
+		}
+		else
+		{
+			double_t logheightdouble = log2( texture->height ) - 4.0;
+			int32_t logheight = (int32_t)logheightdouble;
+
+			if( logheight != (double_t)logheight || logheight < 0 || logheight >= maxcolfuncs )
+			{
+				composite.wallrender = &R_LimitRemovingDrawColumn_Colormap;
+				composite.transparentwallrender = &R_LimitRemovingDrawColumn_Transparent;
+			}
+			else
+			{
+				composite.wallrender = colfuncsforheight[ logheight ];
+				composite.transparentwallrender = transcolfuncsforheight[ logheight ];
+			}
+
+			double_t logwidthdouble = log2( texture->width ) - 4.0;
+			int32_t logwidth = (int32_t)logwidthdouble;
+
+			if( logwidth < 0 || logwidth > 6
+				|| logheight < 0 || logheight > 3 )
+			{
+				composite.floorrender = &R_RasteriseRegion64x64;
+			}
+			else
+			{
+				composite.floorrender = floorfuncs[ logwidth ][ logheight ];
+			}
+		}
 
 		composite.data = NULL;
 		memcpy( composite.name, texture->name, sizeof( texture->name ) );
@@ -578,6 +645,9 @@ void R_InitTextureAndFlatComposites( void )
 	{
 		int32_t lump = firstflat + index;
 		composite.data = NULL;
+		composite.wallrender = &R_DrawColumn_Colormap_64;
+		composite.transparentwallrender = &R_DrawColumn_Transparent_64;
+		composite.floorrender = &R_RasteriseRegion64x64;
 		strncpy( composite.name, W_GetNameForNum( lump ), 8 );
 		composite.namepadding = 0;
 		composite.size = 64 * 64;

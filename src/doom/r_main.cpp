@@ -125,7 +125,7 @@ extern "C"
 	// bumped light from gun blasts
 	int32_t				extralight;
 
-	colfunc_t			colfuncs[ COLFUNC_COUNT ];
+	colfunc_t			fuzzfuncs[ Fuzz_Count ];
 	colfunc_t			transcolfunc;
 
 	int32_t				fuzz_style = Fuzz_Adjusted;
@@ -846,71 +846,19 @@ void R_InitLightTables( drsdata_t* current )
 }
 
 byte lightlevelmaps[32][256];
-
-#define HAX 0
 void R_InitColFuncs( void )
 {
 	int32_t lightlevel = 0;
-
-#if R_DRAWCOLUMN_SIMDOPTIMISED
-	colfuncs[ 0 ] = &R_DrawColumn_OneSample;
-
-#if HAX
-	colfuncs[ 1 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 2 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 3 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 4 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 5 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 6 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 7 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 8 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 9 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 10 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 11 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 12 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 13 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 14 ] = &R_DrawColumn_OneSample;
-	colfuncs[ 15 ] = &R_DrawColumn;
-#else //!HAX
-	colfuncs[ 1 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 2 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 3 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 4 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 5 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 6 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 7 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 8 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 9 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 10 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 11 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 12 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 13 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 14 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-	colfuncs[ 15 ]	= remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-#endif
-#endif //R_DRAWCOLUMN_SIMDOPTIMISED
-
-	int32_t currexpand = COLFUNC_PIXELEXPANDERS;
-
-	while( currexpand > 0 )
-	{
-		--currexpand;
-#if !R_DRAWCOLUMN_SIMDOPTIMISED
-		colfuncs[ currexpand ] = remove_limits ? &R_LimitRemovingDrawColumn : &R_DrawColumn;
-#endif // R_DRAWCOLUMN_SIMDOPTIMISED
-		colfuncs[ COLFUNC_NUM + currexpand ] = &R_DrawColumnLow;
-	}
-
 	while( lightlevel < 32 )
 	{
 		memset( lightlevelmaps[ lightlevel ], 80 + lightlevel, 256 );
 		++lightlevel;
 	};
 
-	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Original ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Original ] = &R_DrawFuzzColumn;
-	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Adjusted ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Adjusted ] = &R_DrawAdjustedFuzzColumn;
-	colfuncs[ COLFUNC_FUZZBASEINDEX + Fuzz_Heatwave ] = colfuncs[ COLFUNC_NUM + COLFUNC_FUZZBASEINDEX + Fuzz_Heatwave ] = &R_DrawHeatwaveFuzzColumn;
-	transcolfunc = colfuncs[ COLFUNC_TRANSLATEINDEX ] = colfuncs[ COLFUNC_NUM + COLFUNC_TRANSLATEINDEX ] = &R_DrawTranslatedColumn;
+	fuzzfuncs[ Fuzz_Original ] = &R_DrawFuzzColumn;
+	fuzzfuncs[ Fuzz_Adjusted ] = &R_DrawAdjustedFuzzColumn;
+	fuzzfuncs[ Fuzz_Heatwave ] = &R_DrawHeatwaveFuzzColumn;
+	transcolfunc = &R_DrawTranslatedColumn;
 }
 
 
@@ -961,7 +909,7 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 	{
 		colcontext_t skycontext = {};
 
-		skycontext.colfunc = colfuncs[ M_MIN( ( drs_current->skyiscaley >> 16 ), 15 ) ];
+		skycontext.colfunc = &R_DrawColumn;
 		skycontext.iscale = drs_current->skyiscaley;
 		skycontext.texturemid = constants::skytexturemid;
 		skycontext.output = rendercontext.buffer;
@@ -1173,7 +1121,6 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	int32_t				j;
 	int32_t				level;
 	int32_t				startmap;
-	int32_t				colfuncbase;
 
 	rend_fixed_t adjust = DoubleToRendFixed( render_post_scaling ? 1.0 : 1.2 );
 
@@ -1206,9 +1153,6 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	current->xprojection = RendFixedMul( current->centerxfrac, perspective_mul );
 	current->yprojection = RendFixedMul( adjust, current->xprojection );
 
-	colfuncbase = COLFUNC_NUM;
-	transcolfunc = colfuncs[ colfuncbase + COLFUNC_TRANSLATEINDEX ];
-
 	R_InitBuffer( current, current->scaledviewwidth, current->viewheight );
 	
 	R_InitTextureMapping( current );
@@ -1219,8 +1163,9 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	current->pspritescalex	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale );
 	current->pspriteiscalex	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale );
 
-	current->pspritescaley	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, RendFixedMul( adjust, perspectivecorrectscale ) );
-	current->pspriteiscaley	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, RendFixedMul( adjust, perspectivecorrectscale ) );
+	rend_fixed_t adjustedperspective = RendFixedMul( adjust, perspectivecorrectscale );
+	current->pspritescaley	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, adjustedperspective );
+	current->pspriteiscaley	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, adjustedperspective );
 
 	current->skyscaley = current->pspritescaley;
 	current->skyiscaley = current->pspriteiscaley;

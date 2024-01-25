@@ -62,7 +62,7 @@ extern "C" {
 #define VANILLA_MAXVISPLANES	128
 #define MAXVISPLANES			( 10240 * 4 )
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
-#define MAXOPENINGS				( MAXVALUESBASE*64 )
+#define MAXOPENINGS				( MAXVALUESBASE*128 )
 #define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
 #define MAXDRAWSEGS				( ( MAXVISPLANES / 4 ) << 2 )
 
@@ -97,6 +97,18 @@ typedef enum dynamicresolution_e
 	DRS_Both		= DRS_Horizontal | DRS_Vertical
 } dynamicresolution_t;
 
+//
+// Render context is required for threaded rendering.
+// So everything "global" goes in here. Everything.
+//
+
+typedef struct colcontext_s colcontext_t;
+typedef struct rendercontext_s rendercontext_t;
+typedef struct rasterregion_s rasterregion_t;
+typedef struct texturecomposite_s texturecomposite_t;
+
+typedef void (*colfunc_t)( colcontext_t* );
+typedef void (*rasterfunc_t)( rendercontext_t*, rasterregion_t* firstregion, texturecomposite_t* texture );
 
 typedef struct texturecomposite_s
 {
@@ -109,6 +121,10 @@ typedef struct texturecomposite_s
 	int32_t			pitch;
 	int32_t			widthmask;
 	rend_fixed_t	renderheight;
+
+	colfunc_t		wallrender;
+	colfunc_t		transparentwallrender;
+	rasterfunc_t	floorrender;
 
 	int32_t			index;
 } texturecomposite_t;
@@ -757,16 +773,6 @@ typedef struct spritecontext_s
 	uint64_t			maskedtimetaken;
 #endif // RENDER_PERF_GRAPHING
 } spritecontext_t;
-
-//
-// Render context is required for threaded rendering.
-// So everything "global" goes in here. Everything.
-//
-
-typedef struct colcontext_s colcontext_t;
-
-typedef void (*colfunc_t)( colcontext_t* );
-typedef void (*planefunction_t)(int top, int bottom);
 
 typedef struct colcontext_s
 {

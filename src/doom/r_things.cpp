@@ -363,12 +363,12 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 
 	spritecolcontext.output = dest;
 	spritecolcontext.colormap = vis->colormap;
-	spritecolcontext.colfunc = &R_SpriteDrawColumn_Untranslated;
+	spritecolcontext.colfunc = &R_SpriteDrawColumn_Colormap;
 
 	if (!spritecolcontext.colormap)
 	{
 		// NULL colormap = shadow draw
-		spritecolcontext.colfunc = colfuncs[ COLFUNC_FUZZBASEINDEX + fuzz_style ];
+		spritecolcontext.colfunc = fuzzfuncs[ fuzz_style ];
 		spritecolcontext.fuzzworkingbuffer = rendercontext.fuzzworkingbuffer;
 		spritecolcontext.fuzzlightmap = rendercontext.viewpoint.colormaps + 6 * 256;
 		spritecolcontext.fuzzdarkmap = rendercontext.viewpoint.colormaps + 14 * 256;
