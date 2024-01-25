@@ -51,7 +51,7 @@
 // drawn directly on the view screen,
 // coordinates are given for a 320*200 view screen.
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     ps_weapon,
     ps_flash,
@@ -59,7 +59,7 @@ typedef enum
 
 } psprnum_t;
 
-typedef struct
+DOOM_C_API typedef struct
 {
     state_t*	state;	// a NULL state means not active
     int		tics;

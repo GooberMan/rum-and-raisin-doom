@@ -23,6 +23,8 @@
 
 #include "doomdata.h"
 
+#include "p_lineaction.h"
+
 #include "d_gameflow.h"
 
 #include "i_log.h"
@@ -600,6 +602,8 @@ struct DoomMapLoader
 				out.backside = nullptr;
 				out.backsector = nullptr;
 			}
+
+			out.action			= P_GetLineActionFor( &out );
 		} );
 
 		_numlines = data.count;

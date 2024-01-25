@@ -25,7 +25,7 @@
 
 
 // Weapon info: sprite frames, ammunition use.
-typedef struct
+DOOM_C_API typedef struct
 {
     ammotype_t	ammo;
     int		upstate;
@@ -36,6 +36,6 @@ typedef struct
 
 } weaponinfo_t;
 
-extern  weaponinfo_t    weaponinfo[NUMWEAPONS];
+DOOM_C_API extern  weaponinfo_t    weaponinfo[NUMWEAPONS];
 
 #endif

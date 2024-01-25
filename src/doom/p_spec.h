@@ -24,218 +24,6 @@
 #ifndef __P_SPEC__
 #define __P_SPEC__
 
-// Naming scheme:
-// <affects>_<behavior>_<triggertype><triggercount>_<triggersby>
-//
-// <triggertype> can be the following:
-// G: Shoot with raycasters
-// S: Switch
-// U: Use but no switch texture change
-// W: Walk
-//
-// <triggercount> can be the following:
-// 1: Once
-// R: Unlimited (repeatable)
-//
-// <triggersby> can be:
-// Player
-// Monster
-//
-// The only action that breaks this scheme is Scroll_WallTextureRight_Always
-// This action is a special case that is always active
-
-enum DoomActions
-{
-	Unknown_000,	// Unknown_000
-	Door_Raise_UR_All,
-	Door_Open_W1_Player,
-	Door_Close_W1_Player,
-	Door_Raise_W1_All,
-	Floor_RaiseLowestCeiling_W1_Player,
-	Ceiling_CrusherFast_W1_Player,
-	Stairs_BuildBy8_S1_Player,
-	Stairs_BuildBy8_W1_Player,
-	Sector_Donut_S1_Player,
-	Platform_DownWaitUp_W1_All_Player,
-	Exit_Normal_S1_Player,
-	Light_SetBrightest_W1_Player,
-	Light_SetTo255_W1_Player,
-	Floor_Raise32ChangeTexture_S1_Player,
-	Floor_Raise24ChangeTexture_S1_Player,
-	Door_Close30Open_W1_Player,
-	Light_Strobe_W1_Player,
-	Floor_RaiseNearest_S1_Player,
-	Floor_LowerHighest_W1_Player,
-	Floor_RaiseNearestChangeTexture_S1_Player,
-	Platform_DownWaitUp_S1_Player,
-	Floor_RaiseNearestChangeTexture_W1_Player,
-	Floor_LowerLowest_S1_Player,
-	Floor_RaiseLowestCeiling_GR_Player,
-	Ceiling_Crusher_W1_Player,
-	Door_RaiseBlue_UR_Player,
-	Door_RaiseYellow_UR_Player,
-	Door_RaiseRed_UR_Player,
-	Door_Raise_S1_Player,
-	Floor_RaiseByTexture_W1_Player,
-	Door_Open_U1_All,
-	Door_OpenBlue_U1_Player,
-	Door_OpenRed_U1_Player,
-	Door_OpenYellow_U1_Player,
-	Light_SetTo35_W1_Player,
-	Floor_LowerHighestFast_W1_Player,
-	Floor_LowerLowestChangeTexture_NumericModel_W1_Player,
-	Floor_LowerLowest_W1_Player,
-	Teleport_W1_All,
-	Sector_RaiseCeilingLowerFloor_W1_Player,
-	Ceiling_LowerToFloor_S1_Player,
-	Door_Close_SR_Player,
-	Ceiling_LowerToFloor_SR_Player,
-	Ceiling_LowerCrush_Player,
-	Floor_LowerHighest_SR_Player,
-	Door_Open_GR_All,
-	Floor_RaiseNearestChangeTexture_GR_Player,
-	Scroll_WallTextureLeft_Always,
-	Ceiling_Crusher_S1_Player,
-	Door_Close_S1_Player,
-	Exit_Secret_S1_Player,
-	Exit_Normal_W1_Player,
-	Platform_Perpetual_W1_Player,
-	Platform_Stop_W1_Player,
-	Floor_RaiseCrush_S1_Player,
-	Floor_RaiseCrush_W1_Player,
-	Ceiling_CrusherStop_W1_Player,
-	Floor_Raise24_W1_Player,
-	Floor_Raise24ChangeTexture_W1_Player,
-	Floor_LowerLowest_SR_Player,
-	Door_Open_SR_Player,
-	Platform_DownWaitUp_SR_Player,
-	Door_Raise_SR_Player,
-	Floor_RaiseLowestCeiling_SR_player,
-	Floor_RaiseCrush_SR_Player,
-	Floor_Raise24ChangeTexture_SR_Player,
-	Floor_Raise32ChangeTexture_SR_Player,
-	Floor_RaiseNearestChangeTexture_SR_Player,
-	Floor_RaiseNearest_SR_Player,
-	Floor_LowerHighestFast_SR_Player,
-	Floor_LowerHighestFast_S1_Player,
-	Ceiling_LowerCrush_WR_Player,
-	Ceiling_Crusher_WR_Player,
-	Ceiling_CrusherStop_WR_Player,
-	Door_Close_WR_Player,
-	Door_Close30Open_WR_Player,
-	Ceiling_CrusherFast_WR_Player,
-	Unknown_078,	// Unknown_078
-	Light_SetTo35_WR_Player,
-	Light_SetBrightest_WR_Player,
-	Light_SetTo255_WR_Player,
-	Floor_LowerLowest_WR_Player,
-	Floor_LowerHighest_WR_Player,
-	Floor_LowerLowestChangeTexture_NumericModel_WR_Player,
-	Unknown_085,	// Unknown_085
-	Door_Open_WR_Player,
-	Platform_Perpetual_WR_Player,
-	Platform_DownWaitUp_WR_All,
-	Platform_Stop_WR_Player,
-	Door_Raise_WR_Player,
-	Floor_RaiseLowestCeiling_WR_Player,
-	Floor_Raise24_WR_Player,
-	Floor_Raise24ChangeTexture_WR_Player,
-	Floor_RaiseCrush_WR_Player,
-	Floor_RaiseNearestChangeTexture_WR_Player,
-	Floor_RaiseByTexture_WR_Player,
-	Teleport_WR_All_Player,
-	Floor_LowerHighestFast_WR_Player,
-	Door_OpenFastBlue_SR_Player,
-	Stairs_BuildBy16Fast_W1_Player,
-	Floor_RaiseLowestCeiling_S1_Player,
-	Floor_LowerHighest_S1_Player,
-	Door_Open_S1_Player,
-	Light_SetLowest_W1_Player,
-	Door_RaiseFast_WR_Player,
-	Door_OpenFast_WR_Player,
-	Door_CloseFast_WR_Player,
-	Door_RaiseFast_W1_Player,
-	Door_OpenFast_W1_Player,
-	Door_CloseFast_W1_Player,
-	Door_RaiseFast_S1_Player,
-	Door_OpenFast_S1_Player,
-	Door_CloseFast_S1_Player,
-	Door_RaiseFast_SR_Player,
-	Door_OpenFast_SR_Player,
-	Door_CloseFast_SR_Player,
-	Door_RaiseFast_UR_All,
-	Door_RaiseFast_U1_Player,
-	Floor_RaiseNearest_W1_Player,
-	Platform_DownWaitUpFast_WR_Player,
-	Platform_DownWaitUpFast_W1_Player,
-	Platform_DownWaitUpFast_S1_Player,
-	Platform_DownWaitUpFast_SR_Player,
-	Exit_Secret_W1_Player,
-	Teleport_W1_Monsters,
-	Teleport_WR_Monsters,
-	Stairs_BuildBy16Fast_S1_Player,
-	Floor_RaiseNearest_WR_Player,
-	Floor_RaiseNearestFast_WR_Player,
-	Floor_RaiseNearestFast_W1_Player,
-	Floor_RaiseNearestFast_S1_Player,
-	Floor_RaiseNearestFast_SR_Player,
-	Door_OpenFastBlue_S1_Player,
-	Door_OpenFastRed_SR_Player,
-	Door_OpenFastRed_S1_Player,
-	Door_OpenFastYellow_SR_Player,
-	Door_OpenFasYellow_S1_Player,
-	Light_SetTo255_SR_Player,
-	Light_SetTo35_SR_Player,
-	Floor_Raise512_S1_Player,
-	Ceiling_CrusherSilent_W1_Player,
-};
-
-enum BoomActions
-{
-	Floor_ChangeTexture_NumericModel_SR_Player = 78,
-	Scroll_WallTextureRight_Always = 85,
-	Floor_Raise512_W1_Player = 142,
-	Floor_Raise512_WR_Player = 147,
-	Floor_ChangeTexture_W1_Player = 153,
-	Floor_ChangeTexture_WR_Player = 154,
-	Floor_RaiseByTexture_S1_Player = 158,
-	Floor_LowerLowestChangeTexture_NumericModel_S1_Player = 159,
-	Floor_Raise24ChangeTextureSlow_S1_Player = 160,
-	Floor_Raise24_S1_Player = 161,
-	Door_Close30Open_S1_Player = 175,
-	Floor_RaiseByTexture_SR_Player = 176,
-	Floor_LowerLowestChangeTexture_NumericModel_SR_Player = 177,
-	Floor_Raise512_SR_Player = 178,
-	Floor_Raise24ChangeTextureSlow_SR_Player = 179,
-	Floor_Raise24_SR_Player = 180,
-	Floor_ChangeTexture_S1_Player = 189,
-	Floor_ChangeTexture_SR_Player = 190,
-	Door_Close30Open_SR_Player = 196,
-	Transfer_FloorLighting_Always = 213,
-	Floor_LowerNearest_W1_Player = 219,
-	Floor_LowerNearest_WR_Player = 220,
-	Floor_LowerNearest_S1_Player = 221,
-	Floor_LowerNearest_SR_Player = 222,
-	Transfer_Friction_Always = 223,
-	Transfer_WindByLength_Always = 224,
-	Transfer_CurrentByLength_Always = 225,
-	Transfer_WindOrCurrentByPoint_Always = 226,
-	Floor_ChangeTexture_NumericModel_W1_Player = 239,
-	Floor_ChangeTexture_NumericModel_WR_Player = 240,
-	Floor_ChangeTexture_NumericModel_S1_Player = 241,
-	Transfer_Properties_Always = 242,
-	Scroll_CeilingTexture_Always = 250,
-	Scroll_FloorTexture_Always = 251,
-	Scroll_FloorObjects_Always = 252,
-	Scroll_FloorTextureObjects_Always = 253,
-	Scroll_WallTextureBySector_Always = 254,
-	Scroll_WallTextureByOffset_Always = 255,
-	Textue_Translucent_Always = 260,
-	Transfer_CeilingLighting_Always = 261,
-	Transfer_Sky_Always = 271,
-	Transfer_SkyReversed_Always = 272,
-};
-
 #define FLATSCROLL_SCALE 0x800 // (1/32)
 //
 // End-level timer (-TIMER option)
@@ -501,6 +289,13 @@ DOOM_C_API typedef enum
 
 } vldoor_e;
 
+DOOM_C_API typedef enum doordir_e
+{
+	doordir_close = -1,
+	doordir_none = 0,
+	doordir_open = 1,
+	doordir_raisein5nonsense = 2,
+} doordir_t;
 
 
 DOOM_C_API typedef struct
@@ -512,13 +307,17 @@ DOOM_C_API typedef struct
 	fixed_t			speed;
 
 	// 1 = up, 0 = waiting at top, -1 = down
-	int				direction;
+	doordir_t		direction;
+	doordir_t		nextdirection;
+	doombool		blazing;
+	doombool		keepclosingoncrush;
+	doombool		dontrecloseoncrush;
 
 	// tics to wait at the top
-	int				topwait;
+	int32_t			topwait;
 	// (keep in case a door going down is reset)
 	// when it reaches 0, start going down
-	int				topcountdown;
+	int32_t			topcountdown;
 } vldoor_t;
 
 
@@ -526,11 +325,12 @@ DOOM_C_API typedef struct
 #define VDOORSPEED		FRACUNIT*2
 #define VDOORWAIT		150
 
-DOOM_C_API void EV_VerticalDoor( line_t* line, mobj_t* thing );
+DOOM_C_API doombool EV_VerticalDoor( line_t* line, mobj_t* thing );
 
 DOOM_C_API int EV_DoDoor( line_t* line, vldoor_e type );
-
 DOOM_C_API int EV_DoLockedDoor( line_t* line, vldoor_e type, mobj_t* thing );
+
+DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line );
 
 DOOM_C_API void    T_VerticalDoor (vldoor_t* door);
 DOOM_C_API void    P_SpawnDoorCloseIn30 (sector_t* sec);

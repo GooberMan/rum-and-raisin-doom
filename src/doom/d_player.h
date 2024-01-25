@@ -45,7 +45,7 @@
 //
 // Player states.
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     // Playing or camping.
     PST_LIVE,
@@ -60,7 +60,7 @@ typedef enum
 //
 // Player internal flags, for cheats and debug.
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     // No clipping, walk through barriers.
     CF_NOCLIP		= 1,
@@ -75,7 +75,7 @@ typedef enum
 //
 // Extended player object info: player_t
 //
-typedef struct player_s
+DOOM_C_API typedef struct player_s
 {
     mobj_t*		mo;
     playerstate_t	playerstate;
@@ -169,7 +169,7 @@ typedef struct player_s
 // INTERMISSION
 // Structure passed e.g. to WI_Start(wb)
 //
-typedef struct
+DOOM_C_API typedef struct
 {
     doombool	in;	// whether the player is in game
     
@@ -183,7 +183,7 @@ typedef struct
     doombool* visited;
 } wbplayerstruct_t;
 
-typedef struct
+DOOM_C_API typedef struct
 {
 	void*	currmap;
 	void*	nextmap;

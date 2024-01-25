@@ -307,6 +307,8 @@ typedef enum
 	ST_NEGATIVE
 } slopetype_t;
 
+typedef struct lineaction_s lineaction_t;
+
 struct line_s
 {
 	int32_t				index;
@@ -323,6 +325,8 @@ struct line_s
 	int16_t				flags;
 	int16_t				special;
 	int16_t				tag;
+
+	lineaction_t*		action;
 
 	// Visual appearance: SideDefs.
 	//  sidenum[1] will be -1 if one sided

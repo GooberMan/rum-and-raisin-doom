@@ -23,6 +23,7 @@
 #include "deh_main.h"
 #include "doomdef.h"
 #include "p_local.h"
+#include "p_lineaction.h"
 
 #include "g_game.h"
 
@@ -259,12 +260,12 @@ P_ChangeSwitchTexture
 // Called when a thing uses a special line.
 // Only the front sides of lines are usable.
 //
-doombool
-P_UseSpecialLine
-( mobj_t*	thing,
-  line_t*	line,
-  int		side )
-{               
+doombool P_UseSpecialLine( mobj_t* thing, line_t* line, int side )
+{
+	if( line->action )
+	{
+		return line->action->Handle( line, thing, LT_Use, side );
+	}
 
     // Err...
     // Use the back sides of VERY SPECIAL lines...

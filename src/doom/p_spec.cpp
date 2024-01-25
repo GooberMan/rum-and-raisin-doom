@@ -38,6 +38,7 @@
 
 #include "r_local.h"
 #include "p_local.h"
+#include "p_lineaction.h"
 
 #include "g_game.h"
 
@@ -60,10 +61,10 @@ DOOM_C_API extern int numflats;
 typedef struct
 {
     doombool	istexture;
-    int		picnum;
-    int		basepic;
-    int		numpics;
-    int		speed;
+    int			picnum;
+    int			basepic;
+    int			numpics;
+    int			speed;
     
 } anim_t;
 
@@ -600,21 +601,32 @@ P_CrossSpecialLine
         //	Triggers that other things can activate
         if (!thing->player)
         {
-            // Things that should NOT trigger specials...
-            switch(thing->type)
-            {
-                case MT_ROCKET:
-                case MT_PLASMA:
-                case MT_BFG:
-                case MT_TROOPSHOT:
-                case MT_HEADSHOT:
-                case MT_BRUISERSHOT:
-                    return;
+			// Things that should NOT trigger specials...
+			switch(thing->type)
+			{
+			case MT_ROCKET:
+			case MT_PLASMA:
+			case MT_BFG:
+			case MT_TROOPSHOT:
+			case MT_HEADSHOT:
+			case MT_BRUISERSHOT:
+				if( line->action )
+				{
+					line->action->Handle( line, thing, LT_Missile, side );
+				}
+				return;
 
-                default: break;
-            }
-        }
-    }
+			default:
+				break;
+			}
+		}
+	}
+
+	if( line->action )
+	{
+		line->action->Handle( line, thing, LT_Walk, side );
+		return;
+	}
 
     if (!thing->player)
     {
@@ -1700,7 +1712,7 @@ void P_SpawnSpecials (void)
 				}
 				break;
 
-			case Textue_Translucent_Always: // Transparency
+			case Texture_Translucent_Always: // Transparency
 				if( lines[i].tag == 0 )
 				{
 					lines[i].transparencymap = tranmap;
