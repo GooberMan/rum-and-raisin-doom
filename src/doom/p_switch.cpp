@@ -262,7 +262,7 @@ P_ChangeSwitchTexture
 //
 doombool P_UseSpecialLine( mobj_t* thing, line_t* line, int side )
 {
-	if( remove_limits && line->action )
+	if( line->action )
 	{
 		return line->action->Handle( line, thing, LT_Use, side );
 	}

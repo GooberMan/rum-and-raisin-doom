@@ -320,6 +320,10 @@ DOOM_C_API typedef struct
 	doombool		blazing;
 	doombool		keepclosingoncrush;
 	doombool		dontrecloseoncrush;
+	
+	int32_t			lighttag;
+	int32_t			lightmin;
+	int32_t			lightmax;
 
 	// tics to wait at the top
 	int32_t			topwait;

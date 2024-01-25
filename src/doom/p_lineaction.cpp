@@ -22,6 +22,7 @@
 #include "z_zone.h"
 
 #include <type_traits>
+
 using underlyinglinetrigger_t = std::underlying_type_t< linetrigger_t >;
 
 constexpr linetrigger_t operator|( const linetrigger_t lhs, const linetrigger_t rhs )
@@ -146,7 +147,7 @@ namespace precon
 
 	constexpr bool ActivationMatches( const linetrigger_t lhs, const linetrigger_t rhs )
 	{
-		return (lhs & LT_ActivationTypeMask) == (rhs & LT_ActivationTypeMask);
+		return ( lhs & LT_ActivationTypeMask ) == ( rhs & LT_ActivationTypeMask );
 	}
 
 	constexpr bool ValidPlayer( mobj_t* activator, int32_t activationside )
@@ -170,42 +171,42 @@ namespace precon
 											: activationside == 0;
 	}
 
-	bool IsAnyThing( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool IsAnyThing( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return ValidAnyActivator( activator, activationside )
 			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
-	bool CanDoorRaise( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool CanDoorRaise( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return ValidDoorActivator( line, activator, activationside )
 			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
-	bool IsPlayer( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool IsPlayer( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return ValidPlayer( activator, activationside ) && ActivationMatches( line->action->trigger, activationtype );
 	}
 
-	bool IsMonster( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool IsMonster( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return ValidMonster( activator );
 	}
 
-	bool HasExactKey( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasExactKey( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
 			&& activator->player->cards[ GetExactKeyFor( line->action->lock ) ];
 	}
 
-	bool HasAnyKeyOfColour( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasAnyKeyOfColour( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
 			&& ( activator->player->cards[ GetCardFor( line->action->lock ) ]
 				|| activator->player->cards[ GetSkullFor( line->action->lock ) ] );
 	}
 
-	bool HasAnyKeys( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasAnyKeys( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
 			&& ( activator->player->cards[ it_bluecard ]
@@ -217,7 +218,7 @@ namespace precon
 				);
 	}
 
-	bool HasAllColours( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasAllColours( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		if( IsPlayer( line, activator, activationtype, activationside ) )
 		{
@@ -233,7 +234,7 @@ namespace precon
 		return false;
 	}
 
-	bool HasAllCards( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasAllCards( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
 				&& activator->player->cards[ it_bluecard ]
@@ -241,7 +242,7 @@ namespace precon
 				&& activator->player->cards[ it_redcard ];
 	}
 
-	bool HasAllSkulls( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasAllSkulls( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
 				&& activator->player->cards[ it_blueskull ]
@@ -249,7 +250,7 @@ namespace precon
 				&& activator->player->cards[ it_redskull ];
 	}
 
-	bool HasAllKeys( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasAllKeys( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
 				&& activator->player->cards[ it_bluecard ]

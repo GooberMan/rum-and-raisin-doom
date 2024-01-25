@@ -218,6 +218,17 @@ void T_VerticalDoorGeneric(vldoor_t* door)
 		if (res == pastdest)
 		{
 			door->direction = doordir_none;
+			if( door->lighttag > 0 )
+			{
+				for( int32_t secnum = 0; secnum < numsectors; ++secnum )
+				{
+					if( sectors[ secnum ].tag == door->lighttag )
+					{
+						sectors[ secnum ].lightlevel =  door->lightmin;
+					}
+				}
+			}
+
 			if( door->topcountdown > 0 )
 			{
 				door->nextdirection = doordir_open;
@@ -250,6 +261,17 @@ void T_VerticalDoorGeneric(vldoor_t* door)
 		if (res == pastdest)
 		{
 			door->direction = doordir_none;
+			if( door->lighttag > 0 )
+			{
+				for( int32_t secnum = 0; secnum < numsectors; ++secnum )
+				{
+					if( sectors[ secnum ].tag == door->lighttag )
+					{
+						sectors[ secnum ].lightlevel =  door->lightmax;
+					}
+				}
+			}
+
 			if( door->topcountdown > 0 )
 			{
 				door->nextdirection = doordir_close;
@@ -416,6 +438,20 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 	door->blazing = door->speed >= (VDOORSPEED * 4);
 	door->keepclosingoncrush = ( door->direction == doordir_close && door->topwait == 0 );
 	door->dontrecloseoncrush = ( door->direction == doordir_close && door->topwait != 0 );
+	door->lighttag = 0;
+
+	if( remove_limits ) // allow_boom_specials
+	{
+		if( line->action->trigger == LT_Use
+			&& line->tag != 0
+			&& line->frontsector != nullptr
+			&& line->backsector != nullptr )
+		{
+			door->lighttag = line->tag;
+			door->lightmax = M_MAX( line->frontsector->lightlevel, line->backsector->lightlevel );
+			door->lightmin = M_MIN( line->frontsector->lightlevel, line->backsector->lightlevel );
+		}
+	}
 
 	// Is this a Boom behavior? GOTTA CHECK
 	if( door->direction == doordir_close && door->topwait > 0 )

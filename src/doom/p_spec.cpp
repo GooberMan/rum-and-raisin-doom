@@ -655,7 +655,7 @@ P_CrossSpecialLine
 			case MT_TROOPSHOT:
 			case MT_HEADSHOT:
 			case MT_BRUISERSHOT:
-				if( remove_limits && line->action )
+				if( line->action )
 				{
 					line->action->Handle( line, thing, LT_Missile, side );
 				}
@@ -667,7 +667,7 @@ P_CrossSpecialLine
 		}
 	}
 
-	if( remove_limits && line->action )
+	if( line->action )
 	{
 		line->action->Handle( line, thing, LT_Walk, side );
 		return;
