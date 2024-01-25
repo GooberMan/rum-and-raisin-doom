@@ -24,6 +24,7 @@
 
 #include "doomdef.h"
 #include "p_local.h"
+#include "p_lineaction.h"
 
 #include "s_sound.h"
 
@@ -160,7 +161,7 @@ EV_DoPlat
 	
 	// Find lowest & highest floors around sector
 	rtn = 1;
-	plat = Z_Malloc( sizeof(*plat), PU_LEVSPEC, 0);
+	plat = (plat_t*)Z_Malloc( sizeof(*plat), PU_LEVSPEC, 0);
 	P_AddThinker(&plat->thinker);
 		
 	plat->type = type;
@@ -233,7 +234,7 @@ EV_DoPlat
 		plat->high = sec->floorheight;
 
 	    plat->wait = TICRATE*PLATWAIT;
-	    plat->status = P_Random()&1;
+	    plat->status = (plat_e)( P_Random() & 1 );
 
 	    S_StartSound(&sec->soundorg,sfx_pstart);
 	    break;
@@ -243,6 +244,60 @@ EV_DoPlat
     return rtn;
 }
 
+int32_t EV_DoLiftGeneric( line_t* line )
+{
+	int32_t		secnum = -1;
+	int32_t		platformscreated = 0;
+
+	while ( ( secnum = P_FindSectorFromLineTag( line, secnum ) ) >= 0 )
+	{
+		sector_t* sec = &sectors[ secnum ];
+
+		if ( sec->specialdata )
+			continue;
+	
+		// Find lowest & highest floors around sector
+		++platformscreated;
+		plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &plat->thinker );
+		
+		plat->type = downWaitUpStay;
+		plat->sector = sec;
+		plat->sector->specialdata = plat;
+		plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+		plat->crush = false;
+		plat->tag = line->tag;
+		plat->speed = line->action->speed;
+
+		switch( line->action->param1 )
+		{
+		case pt_lowestneighborfloor:
+			plat->low = P_FindLowestFloorSurrounding( sec );
+			break;
+
+		case pt_nearnestneighborfloor:
+			plat->low = P_FindNearestFloorSurrounding( sec );
+			break;
+
+		case pt_lowestneighborceiling:
+			plat->low = P_FindLowestCeilingSurrounding( sec );
+			break;
+
+		default:
+			break;
+		}
+
+		plat->low = M_MIN( plat->low, sec->floorheight );
+		plat->high = sec->floorheight;
+		plat->wait = line->action->delay;;
+		plat->status = down;
+
+		S_StartSound(&sec->soundorg,sfx_pstart);
+		P_AddActivePlat(plat);
+	}
+
+	return platformscreated;
+}
 
 
 void P_ActivateInStasis(int tag)

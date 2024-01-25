@@ -67,6 +67,7 @@ DOOM_C_API side_t* getSide( int currentSector, int line, int side );
 
 DOOM_C_API fixed_t P_FindLowestFloorSurrounding(sector_t* sec);
 DOOM_C_API fixed_t P_FindHighestFloorSurrounding(sector_t* sec);
+DOOM_C_API fixed_t P_FindNearestFloorSurrounding( sector_t* sec );
 
 DOOM_C_API fixed_t P_FindNextHighestFloor( sector_t* sec, int currentheight );
 
@@ -233,10 +234,15 @@ DOOM_C_API typedef enum
     raiseAndChange,
     raiseToNearestAndChange,
     blazeDWUS
-
 } plattype_e;
 
-
+DOOM_C_API typedef enum plattarget_e
+{
+	pt_lowestneighborfloor,
+	pt_nearnestneighborfloor,
+	pt_lowestneighborceiling,
+	pt_perpetual,
+} plattarget_t;
 
 DOOM_C_API typedef struct
 {
@@ -266,6 +272,7 @@ DOOM_C_API extern plat_t*	activeplats[MAXPLATS];
 DOOM_C_API void    T_PlatRaise(plat_t*	plat);
 
 DOOM_C_API int EV_DoPlat( line_t* line, plattype_e type, int amount );
+DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line );
 
 DOOM_C_API void    P_AddActivePlat(plat_t* plat);
 DOOM_C_API void    P_RemoveActivePlat(plat_t* plat);

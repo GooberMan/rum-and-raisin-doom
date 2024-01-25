@@ -417,6 +417,30 @@ enum BoomLockedDoorFlags : uint32_t
 	LockedDoor_TypeAgnostic_Mask			= 0x0200,
 };
 
+enum BoomLiftFlags : uint32_t
+{
+	Lift_AllowMonsters_No					= 0x0000,
+	Lift_AllowMonsters_Yes					= 0x0020,
+
+	Lift_AllowMonsters_Mask					= 0x0020,
+
+	Lift_Delay_1Second						= 0x0000,
+	Lift_Delay_3Seconds						= 0x0040,
+	Lift_Delay_5Seconds						= 0x0060,
+	Lift_Delay_10Seconds					= 0x0070,
+
+	Lift_Delay_Mask							= 0x00C0,
+	Lift_Delay_Shift						= 6,
+
+	Lift_Target_LowestNeighborFloor			= 0x0000,
+	Lift_Target_NearestNeighborFloor		= 0x0100,
+	Lift_Target_LowestNeighborCeiling		= 0x0200,
+	Lift_Target_PerpetualLowHighFloor		= 0x0300,
+
+	Lift_Target_Mask						= 0x0300,
+	Lift_Target_Shift						= 8,
+};
+
 enum BoomSpeeds : uint32_t
 {
 	Speed_Slow,

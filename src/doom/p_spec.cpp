@@ -370,6 +370,29 @@ fixed_t	P_FindLowestFloorSurrounding(sector_t* sec)
     return floor;
 }
 
+fixed_t	P_FindNearestFloorSurrounding( sector_t* sec )
+{
+	fixed_t	nearestdist = INT_MAX;
+	sector_t* closest = sec;
+	
+	for( int32_t linenum = 0; linenum < sec->linecount; ++linenum )
+	{
+		line_t* testline = sec->lines[ linenum ];
+		sector_t* testsector = getNextSector( testline, sec );
+
+		if( testsector )
+		{
+			fixed_t dist = FixedAbs( sec->floorheight - testsector->floorheight );
+			if( dist < nearestdist )
+			{
+				closest = testsector;
+			}
+		}
+	}
+
+	return closest->floorheight;
+}
+
 
 
 //
