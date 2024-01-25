@@ -26,33 +26,34 @@
 #include "i_thread.h"
 #include "i_terminal.h"
 
+#include "m_bbox.h"
+#include "m_config.h"
 #include "m_container.h"
 #include "m_controls.h"
 #include "m_fixed.h"
+#include "m_misc.h"
 
 #include "r_main.h"
 #include "r_local.h"
 
+#include "w_wad.h"
+
+#include "z_zone.h"
+
 #include "cimguiglue.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <stddef.h>
+
+#include "d_loop.h"
 
 extern "C"
 {
-	#include <stdlib.h>
-	#include <math.h>
-	#include <stddef.h>
-
-	#include "d_loop.h"
-
-	#include "m_bbox.h"
-	#include "m_config.h"
 	#include "m_menu.h"
 
 	// Need ST_HEIGHT
 	#include "st_stuff.h"
-	#include "m_misc.h"
-	#include "w_wad.h"
-
-	#include "z_zone.h"
 
 	#include "tables.h"
 

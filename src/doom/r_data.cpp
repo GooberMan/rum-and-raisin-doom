@@ -29,30 +29,28 @@
 #include "m_container.h"
 
 #include "i_system.h"
+#include "i_swap.h"
 #include "i_terminal.h"
 
 #include "m_misc.h"
 
+#include "p_local.h"
+// NEEEEEEED ANIMATION DATA
+#include "p_spec.h"
+
 #include "r_main.h"
 #include "r_data.h"
 #include "r_sky.h"
-	#include "r_local.h"
+#include "r_local.h"
 
 #include "w_wad.h"
 
 #include "z_zone.h"
 
+#include <stdio.h>
+
 extern "C"
 {
-	#include <stdio.h>
-
-	#include "i_swap.h"
-
-	#include "p_local.h"
-
-	// NEEEEEEED ANIMATION DATA
-	#include "p_spec.h"
-
 
 	//
 	// Graphics.
@@ -259,9 +257,6 @@ R_DrawColumnInCache
 
 void R_GenerateComposite (int texnum)
 {
-	int32_t				x;
-	int32_t				x1;
-	int32_t				x2;
 	column_t*			patchcol;
 	int32_t				patchy = 0;
 	

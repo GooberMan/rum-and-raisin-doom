@@ -20,9 +20,7 @@
 #ifndef __P_LOCAL__
 #define __P_LOCAL__
 
-#ifndef __R_LOCAL__
 #include "r_local.h"
-#endif
 
 #define FLOATSPEED		(FRACUNIT*4)
 
@@ -263,6 +261,7 @@ DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source,
 // P_SPEC
 //
 #include "p_spec.h"
+
 
 
 #endif	// __P_LOCAL__

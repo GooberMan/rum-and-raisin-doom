@@ -24,12 +24,7 @@
 // Needed for action function pointer handling.
 #include "d_think.h"
 
-#if defined( __cplusplus )
-extern "C"
-{
-#endif
-
-typedef enum
+DOOM_C_API typedef enum
 {
 	SPR_INVALID = -1,
     SPR_TROO,
@@ -176,7 +171,7 @@ typedef enum
 
 } spritenum_t;
 
-typedef enum
+DOOM_C_API typedef enum
 {
     S_NULL,
     S_LIGHTDONE,
@@ -1151,7 +1146,7 @@ typedef enum
 } statenum_t;
 
 
-typedef struct
+DOOM_C_API typedef struct
 {
     spritenum_t sprite;
     int frame;
@@ -1163,11 +1158,11 @@ typedef struct
     int misc2;
 } state_t;
 
-extern state_t	states[NUMSTATES];
-extern const char *sprnames[];
-extern const char *sprnames_boom[];
+DOOM_C_API extern state_t	states[NUMSTATES];
+DOOM_C_API extern const char *sprnames[];
+DOOM_C_API extern const char *sprnames_boom[];
 
-typedef enum {
+DOOM_C_API typedef enum {
     MT_PLAYER,
     MT_POSSESSED,
     MT_SHOTGUY,
@@ -1309,7 +1304,7 @@ typedef enum {
 
 } mobjtype_t;
 
-typedef struct
+DOOM_C_API typedef struct
 {
     int	doomednum;
     int	spawnstate;
@@ -1337,10 +1332,6 @@ typedef struct
 
 } mobjinfo_t;
 
-extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
-
-#if defined( __cplusplus )
-}
-#endif
+DOOM_C_API extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
 
 #endif

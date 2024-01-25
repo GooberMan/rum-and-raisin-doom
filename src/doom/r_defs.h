@@ -29,10 +29,6 @@
 // we depend on.
 #include "m_fixed.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
 // We rely on the thinker data struct
 // to handle sound origins in sectors.
 #include "d_think.h"
@@ -47,6 +43,10 @@ extern "C" {
 #include "v_video.h"
 // hu_textline_t lives in here, but we can't access it thanks to recursive includes :-(
 //#include "hu_lib.h"
+
+#if defined( __cplusplus )
+extern "C" {
+#endif // defined( __cplusplus )
 
 
 // Silhouette, needed for clipping Segs (mainly)

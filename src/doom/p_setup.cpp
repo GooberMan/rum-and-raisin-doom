@@ -36,17 +36,15 @@
 #include "m_fixed.h"
 #include "m_misc.h"
 
+#include "p_local.h"
+
 #include "r_local.h"
 
 #include "w_wad.h"
 
 #include "z_zone.h"
 
-extern "C"
-{
-	#include "p_local.h"
-	extern int32_t remove_limits;
-}
+DOOM_C_API extern int32_t remove_limits;
 
 #define MAX_DEATHMATCH_STARTS	10
 

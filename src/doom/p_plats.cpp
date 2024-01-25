@@ -244,7 +244,7 @@ EV_DoPlat
     return rtn;
 }
 
-int32_t EV_DoLiftGeneric( line_t* line )
+int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 {
 	int32_t		secnum = -1;
 	int32_t		platformscreated = 0;

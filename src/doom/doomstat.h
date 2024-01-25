@@ -31,10 +31,6 @@
 #include "doomdata.h"
 #include "m_fixed.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
 #include "d_loop.h"
 
 // We need the playr data structure as well.
@@ -45,7 +41,7 @@ extern "C" {
 
 #include "net_defs.h"
 
-typedef struct sessionstats_s
+DOOM_C_API typedef struct sessionstats_s
 {
 	int32_t		start_total_monsters;
 	int32_t		start_total_secrets;
@@ -68,25 +64,25 @@ typedef struct sessionstats_s
 	uint64_t	session_time;
 } sessionstats_t;
 
-extern sessionstats_t session;
+DOOM_C_API extern sessionstats_t session;
 
 // ------------------------
 // Command line parameters.
 //
-extern  doombool	nomonsters;	// checkparm of -nomonsters
-extern  doombool	respawnparm;	// checkparm of -respawn
-extern  doombool	fastparm;	// checkparm of -fast
+DOOM_C_API extern  doombool	nomonsters;	// checkparm of -nomonsters
+DOOM_C_API extern  doombool	respawnparm;	// checkparm of -respawn
+DOOM_C_API extern  doombool	fastparm;	// checkparm of -fast
 
-extern  doombool	devparm;	// DEBUG: launched with -devparm
+DOOM_C_API extern  doombool	devparm;	// DEBUG: launched with -devparm
 
 
 // -----------------------------------------------------
 // Game Mode - identify IWAD as shareware, retail etc.
 //
-extern GameMode_t	gamemode;
-extern GameMission_t	gamemission;
-extern GameVersion_t    gameversion;
-extern GameVariant_t    gamevariant;
+DOOM_C_API extern GameMode_t	gamemode;
+DOOM_C_API extern GameMission_t	gamemission;
+DOOM_C_API extern GameVersion_t    gameversion;
+DOOM_C_API extern GameVariant_t    gamevariant;
 
 // Convenience macro.
 // 'gamemission' can be equal to pack_chex or pack_hacx, but these are
@@ -98,7 +94,7 @@ extern GameVariant_t    gamevariant;
      gamemission == pack_hacx ? doom2 : gamemission)
 
 // Set if homebrew PWAD stuff has been added.
-extern  doombool	modifiedgame;
+DOOM_C_API extern  doombool	modifiedgame;
 
 
 // -------------------------------------------
@@ -106,32 +102,32 @@ extern  doombool	modifiedgame;
 //
 
 // Defaults for menu, methinks.
-extern  skill_t		startskill;
-extern  int             startepisode;
-extern	int		startmap;
+DOOM_C_API extern  skill_t		startskill;
+DOOM_C_API extern  int             startepisode;
+DOOM_C_API extern	int		startmap;
 
 // Savegame slot to load on startup.  This is the value provided to
 // the -loadgame option.  If this has not been provided, this is -1.
 
-extern  int             startloadgame;
+DOOM_C_API extern  int             startloadgame;
 
-extern  doombool		autostart;
+DOOM_C_API extern  doombool		autostart;
 
 // Selected by user. 
-extern  skill_t         gameskill;
+DOOM_C_API extern  skill_t         gameskill;
 
 // If non-zero, exit the level after this number of minutes
-extern  int             timelimit;
+DOOM_C_API extern  int             timelimit;
 
 // Nightmare mode flag, single player.
-extern  doombool         respawnmonsters;
+DOOM_C_API extern  doombool         respawnmonsters;
 
 // Netgame? Only true if >1 player.
-extern  doombool	netgame;
-extern doombool solonetgame;
+DOOM_C_API extern  doombool	netgame;
+DOOM_C_API extern doombool solonetgame;
 
 // 0=Cooperative; 1=Deathmatch; 2=Altdeath
-extern int deathmatch;
+DOOM_C_API extern int deathmatch;
 
 // -------------------------
 // Internal parameters for sound rendering.
@@ -143,18 +139,18 @@ extern int deathmatch;
 //  Sound FX volume has default, 0 - 15
 //  Music volume has default, 0 - 15
 // These are multiplied by 8.
-extern int sfxVolume;
-extern int musicVolume;
+DOOM_C_API extern int sfxVolume;
+DOOM_C_API extern int musicVolume;
 
 // Current music/sfx card - index useless
 //  w/o a reference LUT in a sound module.
 // Ideally, this would use indices found
 //  in: /usr/include/linux/soundcard.h
-extern int snd_MusicDevice;
-extern int snd_SfxDevice;
+DOOM_C_API extern int snd_MusicDevice;
+DOOM_C_API extern int snd_SfxDevice;
 // Config file? Same disclaimer as above.
-extern int snd_DesiredMusicDevice;
-extern int snd_DesiredSfxDevice;
+DOOM_C_API extern int snd_DesiredMusicDevice;
+DOOM_C_API extern int snd_DesiredSfxDevice;
 
 
 // -------------------------
@@ -164,48 +160,48 @@ extern int snd_DesiredSfxDevice;
 // Depending on view size - no status bar?
 // Note that there is no way to disable the
 //  status bar explicitely.
-extern  doombool statusbaractive;
+DOOM_C_API extern  doombool statusbaractive;
 
-extern  doombool automapactive;	// In AutoMap mode?
-extern  doombool	menuactive;	// Menu overlayed?
-extern  int32_t dashboardactive; // R&R Dashboard, powered by Dear ImGui
-extern  int32_t dashboardremappingtype;
-extern  int32_t dashboardpausesplaysim;
-extern  doombool	paused;		// Game Pause?
-extern  doombool	renderpaused;
-
-
-extern  doombool		viewactive;
-
-extern  doombool		nodrawers;
+DOOM_C_API extern  doombool automapactive;	// In AutoMap mode?
+DOOM_C_API extern  doombool	menuactive;	// Menu overlayed?
+DOOM_C_API extern  int32_t dashboardactive; // R&R Dashboard, powered by Dear ImGui
+DOOM_C_API extern  int32_t dashboardremappingtype;
+DOOM_C_API extern  int32_t dashboardpausesplaysim;
+DOOM_C_API extern  doombool	paused;		// Game Pause?
+DOOM_C_API extern  doombool	renderpaused;
 
 
-extern  doombool         testcontrols;
-extern  int             testcontrols_mousespeed;
+DOOM_C_API extern  doombool		viewactive;
+
+DOOM_C_API extern  doombool		nodrawers;
+
+
+DOOM_C_API extern  doombool         testcontrols;
+DOOM_C_API extern  int             testcontrols_mousespeed;
 
 
 
 
 // This one is related to the 3-screen display mode.
 // ANG90 = left side, ANG270 = right
-extern  int	viewangleoffset;
+DOOM_C_API extern  int	viewangleoffset;
 
 // Player taking events, and displaying.
-extern  int	consoleplayer;	
-extern  int	displayplayer;
+DOOM_C_API extern  int	consoleplayer;	
+DOOM_C_API extern  int	displayplayer;
 
 
 // -------------------------------------
 // Scores, rating.
 // Statistics on a given map, for intermission.
 //
-extern  int	totalkills;
-extern	int	totalitems;
-extern	int	totalsecret;
+DOOM_C_API extern  int	totalkills;
+DOOM_C_API extern	int	totalitems;
+DOOM_C_API extern	int	totalsecret;
 
 // Timer, for scores.
-extern  int	levelstarttic;	// gametic at level start
-extern  int	leveltime;	// tics in game play for par
+DOOM_C_API extern  int	levelstarttic;	// gametic at level start
+DOOM_C_API extern  int	leveltime;	// tics in game play for par
 
 
 
@@ -213,25 +209,25 @@ extern  int	leveltime;	// tics in game play for par
 // DEMO playback/recording related stuff.
 // No demo, there is a human player in charge?
 // Disable save/end game?
-extern  doombool	usergame;
+DOOM_C_API extern  doombool	usergame;
 
 //?
-extern  doombool	demoplayback;
-extern  doombool	demorecording;
+DOOM_C_API extern  doombool	demoplayback;
+DOOM_C_API extern  doombool	demorecording;
 
 // Round angleturn in ticcmds to the nearest 256.  This is used when
 // recording Vanilla demos in netgames.
 
-extern doombool lowres_turn;
+DOOM_C_API extern doombool lowres_turn;
 
 // Quit after playing a demo from cmdline.
-extern  doombool		singledemo;	
+DOOM_C_API extern  doombool		singledemo;	
 
 
 
 
 //?
-extern  gamestate_t     gamestate;
+DOOM_C_API extern  gamestate_t     gamestate;
 
 
 
@@ -247,23 +243,23 @@ extern  gamestate_t     gamestate;
 
 
 // Bookkeeping on players - state.
-extern	player_t	players[MAXPLAYERS];
+DOOM_C_API extern	player_t	players[MAXPLAYERS];
 
 // Alive? Disconnected?
-extern  doombool		playeringame[MAXPLAYERS];
+DOOM_C_API extern  doombool		playeringame[MAXPLAYERS];
 
 
 // Player spawn spots for deathmatch.
 #define MAX_DM_STARTS   10
-extern  mapthing_t      deathmatchstarts[MAX_DM_STARTS];
-extern  mapthing_t*	deathmatch_p;
+DOOM_C_API extern  mapthing_t      deathmatchstarts[MAX_DM_STARTS];
+DOOM_C_API extern  mapthing_t*	deathmatch_p;
 
 // Player spawn spots.
-extern  mapthing_t      playerstarts[MAXPLAYERS];
-extern  doombool         playerstartsingame[MAXPLAYERS];
+DOOM_C_API extern  mapthing_t      playerstarts[MAXPLAYERS];
+DOOM_C_API extern  doombool         playerstartsingame[MAXPLAYERS];
 // Intermission stats.
 // Parameters for world map / intermission.
-extern  wbstartstruct_t		wminfo;	
+DOOM_C_API extern  wbstartstruct_t		wminfo;	
 
 
 
@@ -276,40 +272,36 @@ extern  wbstartstruct_t		wminfo;
 //
 
 // File handling stuff.
-extern  char        *savegamedir;
+DOOM_C_API extern  char        *savegamedir;
 
 // if true, load all graphics at level load
-extern  doombool         precache;
+DOOM_C_API extern  doombool         precache;
 
 
 // wipegamestate can be set to -1
 //  to force a wipe on the next draw
-extern  gamestate_t     wipegamestate;
+DOOM_C_API extern  gamestate_t     wipegamestate;
 
-extern  int             mouseSensitivity;
+DOOM_C_API extern  int             mouseSensitivity;
 
-extern  int             bodyqueslot;
+DOOM_C_API extern  int             bodyqueslot;
 
 
 
 // Needed to store the number of the dummy sky flat.
 // Used for rendering,
 //  as well as tracking projectiles etc.
-extern int		skyflatnum;
+DOOM_C_API extern int		skyflatnum;
 
 
 
 // Netgame stuff (buffers and pointers, i.e. indices).
 
 
-extern	int		rndindex;
+DOOM_C_API extern	int		rndindex;
 
-extern  ticcmd_t       *netcmds;
+DOOM_C_API extern  ticcmd_t       *netcmds;
 
-extern int32_t remove_limits;
-
-#if defined( __cplusplus )
-}
-#endif // defined( __cplusplus )
+DOOM_C_API extern int32_t remove_limits;
 
 #endif

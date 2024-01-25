@@ -281,22 +281,22 @@ enum liftdelay_t
 #define MakeGenericFunc( x, func ) \
 struct x \
 { \
-	static inline int32_t Perform( line_t* line ) { return func ( line ); } \
+	static inline int32_t Perform( line_t* line, mobj_t* activator ) { return func ( line, activator ); } \
 }
 
 MakeGenericFunc( Door, EV_DoDoorGeneric );
 MakeGenericFunc( Lift, EV_DoLiftGeneric );
 
 template< typename func >
-static void DoGeneric( line_t* line )
+static void DoGeneric( line_t* line, mobj_t* activator )
 {
-	func::Perform( line );
+	func::Perform( line, activator );
 }
 
 template< typename func >
-static void DoGenericOnce( line_t* line )
+static void DoGenericOnce( line_t* line, mobj_t* activator )
 {
-	if( func::Perform( line ) )
+	if( func::Perform( line, activator ) )
 	{
 		line->action = nullptr;
 		line->special = 0;
@@ -304,18 +304,18 @@ static void DoGenericOnce( line_t* line )
 }
 
 template< typename func >
-static void DoGenericSwitch( line_t* line )
+static void DoGenericSwitch( line_t* line, mobj_t* activator )
 {
-	if( func::Perform( line ) )
+	if( func::Perform( line, activator ) )
 	{
 		P_ChangeSwitchTexture( line, 1 );
 	}
 }
 
 template< typename func >
-static void DoGenericSwitchOnce( line_t* line )
+static void DoGenericSwitchOnce( line_t* line, mobj_t* activator )
 {
-	if( func::Perform( line ) )
+	if( func::Perform( line, activator ) )
 	{
 		P_ChangeSwitchTexture( line, 0 );
 		line->action = nullptr;

@@ -105,10 +105,12 @@
 // Any questions?
 //
 
+#include "d_think.h"
+
 //
 // Misc. mobj flags
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     // Call P_SpecialThing when touched.
     MF_SPECIAL		= 1,
@@ -196,7 +198,7 @@ typedef enum
 
 } mobjflag_t;
 
-typedef struct mobjinstance_s
+DOOM_C_API typedef struct mobjinstance_s
 {
 	rend_fixed_t			x;
 	rend_fixed_t			y;
@@ -209,7 +211,7 @@ typedef struct mobjinstance_s
 
 
 // Map Object definition.
-typedef struct mobj_s
+DOOM_C_API typedef struct mobj_s
 {
     // List: thinker links.
     thinker_t		thinker;
@@ -297,6 +299,13 @@ typedef struct mobj_s
     
 } mobj_t;
 
+#if defined( __cplusplus )
 
+#include "d_think.h"
+
+DOOM_C_API void P_MobjThinker (mobj_t* mobj);
+MakeThinkFuncLookup( mobj_t, P_MobjThinker );
+
+#endif // defined( __cplusplus )
 
 #endif

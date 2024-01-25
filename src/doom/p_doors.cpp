@@ -196,7 +196,7 @@ constexpr int32_t DoorSoundFor( doordir_t dir, doombool blaze )
 	return doorsounds[ (dir + 1) + (blaze ? 3 : 0) ];
 }
 
-void T_VerticalDoorGeneric(vldoor_t* door)
+void T_VerticalDoorGeneric( vldoor_t* door )
 {
 	result_e	res;
 	
@@ -470,14 +470,25 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 	}
 }
 
-int32_t EV_DoDoorGeneric( line_t* line )
+int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 {
 	if( line->action->trigger == LT_Use )
 	{
 		if( !line->backsector )
 		{
-			I_Error("EV_DoDoorGeneric: DR special type on 1-sided linedef");
+			I_Error("EV_DoDoorGeneric: Dx special type on 1-sided linedef");
 		}
+		sector_t* sector = line->backsector;
+		if( sector->specialdata )
+		{
+			vldoor_t* door = thinker_cast< vldoor_t >( sector->specialdata );
+			if( door == nullptr )
+			{
+				I_Error("EV_DoDoorGeneric: Dx activating on a sector with a non-door thinker");
+			}
+			return 0;
+		}
+
 		EV_DoDoorGeneric( line, line->backsector );
 		return 1;
 	}

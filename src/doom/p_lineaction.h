@@ -500,7 +500,7 @@ typedef struct line_s line_t;
 typedef struct mobj_s mobj_t;
 
 using linepreconfunc_t = bool(*)(line_t*, mobj_t*, linetrigger_t, int32_t);
-using linefunc_t = void(*)(line_t*);
+using linefunc_t = void(*)(line_t*, mobj_t*);
 
 struct lineaction_s
 {
@@ -518,7 +518,7 @@ struct lineaction_s
 	{
 		if(precondition(line, activator, activationtype, activationside))
 		{
-			action(line);
+			action(line, activator);
 			return true;
 		}
 
