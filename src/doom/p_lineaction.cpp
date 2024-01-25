@@ -76,10 +76,10 @@ namespace constants
 
 	static constexpr int32_t liftspeeds[] =
 	{
-		IntToFixed( 1 ),
 		IntToFixed( 2 ),
 		IntToFixed( 4 ),
 		IntToFixed( 8 ),
+		IntToFixed( 16 ),
 	};
 
 	static constexpr int32_t liftdelay[] =
@@ -149,25 +149,47 @@ namespace precon
 		return (lhs & LT_ActivationTypeMask) == (rhs & LT_ActivationTypeMask);
 	}
 
+	constexpr bool ValidPlayer( mobj_t* activator, int32_t activationside )
+	{
+		return activator->player != nullptr && activationside == 0;
+	}
+
+	constexpr bool ValidMonster( mobj_t* activator )
+	{
+		return activator->player == nullptr;
+	}
+
+	constexpr bool ValidAnyActivator( mobj_t* activator, int32_t activationside )
+	{
+		return activator->player == nullptr || activationside == 0;
+	}
+
+	constexpr bool ValidDoorActivator( line_t* line, mobj_t* activator, int32_t activationside )
+	{
+		return activator->player == nullptr ? ( line->flags & ML_SECRET ) != ML_SECRET
+											: activationside == 0;
+	}
+
 	bool IsAnyThing( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
-		return ActivationMatches( line->action->trigger, activationtype );
+		return ValidAnyActivator( activator, activationside )
+			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
 	bool CanDoorRaise( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
-		return ( activator->player != nullptr || ( line->flags & ML_SECRET ) != ML_SECRET )
+		return ValidDoorActivator( line, activator, activationside )
 			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
 	bool IsPlayer( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
-		return activator->player != nullptr && ActivationMatches( line->action->trigger, activationtype );
+		return ValidPlayer( activator, activationside ) && ActivationMatches( line->action->trigger, activationtype );
 	}
 
 	bool IsMonster( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
-		return activator->player == nullptr && ActivationMatches( line->action->trigger, activationtype );
+		return ValidMonster( activator );
 	}
 
 	bool HasExactKey( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
@@ -323,7 +345,7 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Sector_Donut_S1_Player
 	{},
 	// Platform_DownWaitUp_W1_All
-	{ &precon::IsAnyThing, &DoGenericOnce< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsAnyThing, &DoGenericOnce< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Exit_Normal_S1_Player
 	{},
 	// Light_SetBrightest_W1_Player
@@ -345,7 +367,7 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Floor_RaiseNearestChangeTexture_S1_Player
 	{},
 	// Platform_DownWaitUp_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Floor_RaiseNearestChangeTexture_W1_Player
 	{},
 	// Floor_LowerLowest_S1_Player
@@ -427,7 +449,7 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Door_Open_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_Switch, LL_None, constants::doorspeeds[ Speed_Slow ], 0, doordir_open },
 	// Platform_DownWaitUp_SR_Player
-	{ &precon::IsAnyThing, &DoGenericSwitch< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsAnyThing, &DoGenericSwitch< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Door_Raise_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_Switch, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], doordir_open },
 	// Floor_RaiseLowestCeiling_SR_player
@@ -479,7 +501,7 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Platform_Perpetual_WR_Player
 	{},
 	// Platform_DownWaitUp_WR_All
-	{ &precon::IsAnyThing, &DoGeneric< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsAnyThing, &DoGeneric< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Platform_Stop_WR_Player
 	{},
 	// Door_Raise_WR_Player
@@ -543,13 +565,13 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Floor_RaiseNearest_W1_Player
 	{},
 	// Platform_DownWaitUpFast_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Turbo ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGeneric< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Platform_DownWaitUpFast_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Turbo ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericOnce< Lift >, LT_Walk, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Platform_DownWaitUpFast_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Turbo ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Platform_DownWaitUpFast_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Turbo ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Exit_Secret_W1_Player
 	{},
 	// Teleport_W1_Monsters

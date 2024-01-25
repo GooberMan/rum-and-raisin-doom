@@ -370,29 +370,49 @@ fixed_t	P_FindLowestFloorSurrounding(sector_t* sec)
     return floor;
 }
 
-fixed_t	P_FindNearestFloorSurrounding( sector_t* sec )
+fixed_t	P_FindNextLowestFloorSurrounding( sector_t* sec )
 {
-	fixed_t	nearestdist = INT_MAX;
 	sector_t* closest = sec;
+	fixed_t closestheight = -INT_MAX;
 	
 	for( int32_t linenum = 0; linenum < sec->linecount; ++linenum )
 	{
 		line_t* testline = sec->lines[ linenum ];
 		sector_t* testsector = getNextSector( testline, sec );
 
-		if( testsector )
+		if( testsector
+			&& testsector->floorheight < sec->floorheight
+			&& testsector->floorheight > closestheight )
 		{
-			fixed_t dist = FixedAbs( sec->floorheight - testsector->floorheight );
-			if( dist < nearestdist )
-			{
-				closest = testsector;
-			}
+			closest = testsector;
+			closestheight = testsector->floorheight;
 		}
 	}
 
 	return closest->floorheight;
 }
 
+fixed_t	P_FindNextHighestFloorSurrounding( sector_t* sec )
+{
+	sector_t* closest = sec;
+	fixed_t closestheight = INT_MAX;
+	
+	for( int32_t linenum = 0; linenum < sec->linecount; ++linenum )
+	{
+		line_t* testline = sec->lines[ linenum ];
+		sector_t* testsector = getNextSector( testline, sec );
+
+		if( testsector
+			&& testsector->floorheight > sec->floorheight
+			&& testsector->floorheight < closestheight )
+		{
+			closest = testsector;
+			closestheight = testsector->floorheight;
+		}
+	}
+
+	return closest->floorheight;
+}
 
 
 //
@@ -432,17 +452,19 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 // 20 adjoining sectors max!
 #define MAX_ADJOINING_SECTORS     20
 
-fixed_t
-P_FindNextHighestFloor
-( sector_t* sec,
-  int       currentheight )
+fixed_t P_FindNextHighestFloor( sector_t* sec )
 {
+	if( remove_limits )
+	{
+		return P_FindNextHighestFloorSurrounding( sec );
+	}
+
     int         i;
     int         h;
     int         min;
     line_t*     check;
     sector_t*   other;
-    fixed_t     height = currentheight;
+    fixed_t     height = sec->floorheight;
     fixed_t     heightlist[MAX_ADJOINING_SECTORS + 2];
 
     for (i=0, h=0; i < sec->linecount; i++)
@@ -474,7 +496,7 @@ P_FindNextHighestFloor
     // Find lowest height in list
     if (!h)
     {
-        return currentheight;
+        return sec->floorheight;
     }
         
     min = heightlist[0];
@@ -633,7 +655,7 @@ P_CrossSpecialLine
 			case MT_TROOPSHOT:
 			case MT_HEADSHOT:
 			case MT_BRUISERSHOT:
-				if( line->action )
+				if( remove_limits && line->action )
 				{
 					line->action->Handle( line, thing, LT_Missile, side );
 				}
@@ -645,7 +667,7 @@ P_CrossSpecialLine
 		}
 	}
 
-	if( line->action )
+	if( remove_limits && line->action )
 	{
 		line->action->Handle( line, thing, LT_Walk, side );
 		return;

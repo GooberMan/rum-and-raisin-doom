@@ -181,7 +181,7 @@ void T_VerticalDoor (vldoor_t* door)
 	}
 }
 
-INLINE int32_t DoorSoundFor( doordir_t dir, doombool blaze )
+constexpr int32_t DoorSoundFor( doordir_t dir, doombool blaze )
 {
 	constexpr sfxenum_t doorsounds[] =
 	{
@@ -193,7 +193,7 @@ INLINE int32_t DoorSoundFor( doordir_t dir, doombool blaze )
 		sfx_bdopn,
 	};
 
-	return doorsounds[ (dir + 1) * (blaze ? 2 : 1) ];
+	return doorsounds[ (dir + 1) + (blaze ? 3 : 0) ];
 }
 
 void T_VerticalDoorGeneric(vldoor_t* door)

@@ -67,9 +67,10 @@ DOOM_C_API side_t* getSide( int currentSector, int line, int side );
 
 DOOM_C_API fixed_t P_FindLowestFloorSurrounding(sector_t* sec);
 DOOM_C_API fixed_t P_FindHighestFloorSurrounding(sector_t* sec);
-DOOM_C_API fixed_t P_FindNearestFloorSurrounding( sector_t* sec );
+DOOM_C_API fixed_t P_FindNextLowestFloorSurrounding( sector_t* sec );
+DOOM_C_API fixed_t P_FindNextHighestFloorSurrounding( sector_t* sec );
 
-DOOM_C_API fixed_t P_FindNextHighestFloor( sector_t* sec, int currentheight );
+DOOM_C_API fixed_t P_FindNextHighestFloor( sector_t* sec );
 
 DOOM_C_API fixed_t P_FindLowestCeilingSurrounding(sector_t* sec);
 DOOM_C_API fixed_t P_FindHighestCeilingSurrounding(sector_t* sec);

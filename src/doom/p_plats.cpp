@@ -176,7 +176,7 @@ EV_DoPlat
 	  case raiseToNearestAndChange:
 	    plat->speed = PLATSPEED/2;
 	    sec->floorpic = sides[line->sidenum[0]].sector->floorpic;
-	    plat->high = P_FindNextHighestFloor(sec,sec->floorheight);
+	    plat->high = P_FindNextHighestFloor(sec);
 	    plat->wait = 0;
 	    plat->status = up;
 	    // NO MORE DAMAGE, IF APPLICABLE
@@ -276,7 +276,7 @@ int32_t EV_DoLiftGeneric( line_t* line )
 			break;
 
 		case pt_nearnestneighborfloor:
-			plat->low = P_FindNearestFloorSurrounding( sec );
+			plat->low = P_FindNextLowestFloorSurrounding( sec );
 			break;
 
 		case pt_lowestneighborceiling:

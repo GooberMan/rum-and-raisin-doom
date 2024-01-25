@@ -348,7 +348,7 @@ EV_DoFloor
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED*4;
 	    floor->floordestheight = 
-		P_FindNextHighestFloor(sec,sec->floorheight);
+		P_FindNextHighestFloor(sec);
 	    break;
 
 	  case raiseFloorToNearest:
@@ -356,7 +356,7 @@ EV_DoFloor
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
 	    floor->floordestheight = 
-		P_FindNextHighestFloor(sec,sec->floorheight);
+		P_FindNextHighestFloor(sec);
 	    break;
 
 	  case raiseFloor24:
