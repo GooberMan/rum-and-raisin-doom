@@ -133,24 +133,25 @@ typedef PACKED_STRUCT (
 // top and bottom textures (use next to windows).
 
 // upper texture unpegged
-#define ML_DONTPEGTOP		8
+#define ML_DONTPEGTOP			8
 
 // lower texture unpegged
-#define ML_DONTPEGBOTTOM	16	
+#define ML_DONTPEGBOTTOM		16
 
 // In AutoMap: don't map as two sided: IT'S A SECRET!
-#define ML_SECRET		32
+#define ML_SECRET				32
 
 // Sound rendering: don't let sound cross two of these.
-#define ML_SOUNDBLOCK		64
+#define ML_SOUNDBLOCK			64
 
 // Don't draw on the automap at all.
-#define ML_DONTDRAW		128
+#define ML_DONTDRAW				128
 
 // Set if already seen, thus drawn in automap.
-#define ML_MAPPED		256
+#define ML_MAPPED				256
 
-
+// Don't stop if a switch/use linedef succeeds
+#define ML_BOOM_PASSTHROUGH		512
 
 
 // Sector definition, from editing.

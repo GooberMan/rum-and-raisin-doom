@@ -581,7 +581,7 @@ lineaction_t* CreateBoomGeneralisedDoorAction( line_t* line )
 	bool isup = kind == Door_Type_OpenWaitClose || kind == Door_Type_Open;
 	bool isdelayable = kind == Door_Type_CloseWaitOpen || kind == Door_Type_OpenWaitClose;
 	bool allowmonster = ( line->special & Door_AllowMonsters_Yes ) == Door_AllowMonsters_Yes;
-	uint32_t delay = isdelayable ? ( line->special & Door_Delay_Mask ) >> Door_Delay_Shift : 0;
+	uint32_t delay = ( line->special & Door_Delay_Mask ) >> Door_Delay_Shift;
 
 	if( manualuse )
 	{
@@ -595,13 +595,14 @@ lineaction_t* CreateBoomGeneralisedDoorAction( line_t* line )
 	{
 		action->action = repeatable ? &DoGenericDoorSwitch : &DoGenericDoorSwitchOnce;
 	}
+	else
 	{
 		action->action = repeatable ? &DoGenericDoor : &DoGenericDoorOnce;
 	}
 	action->trigger = constants::triggers[ trigger ];
 	action->lock = LL_None;
 	action->speed = constants::doorspeeds[ speed ];
-	action->delay = constants::doordelay[ delay ];
+	action->delay = isdelayable ? constants::doordelay[ delay ] : 0;
 	action->param1 = isup ? doordir_open
 						: isdown ? doordir_close
 							: doordir_none;
@@ -620,8 +621,6 @@ lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
-	return nullptr;
-#if 0
 	if( line->special >= DoomActions_Min && line->special < DoomActions_Max
 		&& line->special != Unknown_078 
 		&& line->special != Unknown_085 )
@@ -650,5 +649,4 @@ DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 	}
 
 	return nullptr;
-#endif
 }

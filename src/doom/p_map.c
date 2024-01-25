@@ -1202,6 +1202,10 @@ doombool	PTR_UseTraverse (intercept_t* in)
 	
     P_UseSpecialLine (usething, in->d.line, side);
 
+	if( remove_limits ) // allow_boom_specials
+	{
+		return ( in->d.line->flags & ML_BOOM_PASSTHROUGH ) == ML_BOOM_PASSTHROUGH;
+	}
     // can't use for than one special line in a row
     return false;
 }
