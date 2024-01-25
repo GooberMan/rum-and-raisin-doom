@@ -409,7 +409,10 @@
     <ClCompile Include="..\src\doom\d_playsim.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_chex.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_hacx.cpp" />
+    <ClCompile Include="..\src\doom\p_doors.cpp" />
+    <ClCompile Include="..\src\doom\p_lineaction.cpp" />
     <ClCompile Include="..\src\doom\p_spec.cpp" />
+    <ClCompile Include="..\src\doom\p_switch.cpp" />
     <ClCompile Include="..\src\doom\r_bsp.cpp" />
     <ClCompile Include="..\src\doom\r_sky.cpp" />
     <ClCompile Include="..\src\doom\wi_stuff.cpp" />
@@ -463,12 +466,12 @@
     <ClCompile Include="..\src\doom\m_random.c" />
     <ClInclude Include="..\src\doom\m_random.h" />
     <ClCompile Include="..\src\doom\p_ceilng.c" />
-    <ClCompile Include="..\src\doom\p_doors.c" />
     <ClCompile Include="..\src\doom\p_enemy.c" />
     <ClCompile Include="..\src\doom\p_floor.c" />
     <ClCompile Include="..\src\doom\p_inter.c" />
     <ClInclude Include="..\src\doom\p_inter.h" />
     <ClCompile Include="..\src\doom\p_lights.c" />
+    <ClInclude Include="..\src\doom\p_lineaction.h" />
     <ClInclude Include="..\src\doom\p_local.h" />
     <ClCompile Include="..\src\doom\p_map.c" />
     <ClCompile Include="..\src\doom\p_maputl.c" />
@@ -483,7 +486,6 @@
     <ClCompile Include="..\src\doom\p_setup.cpp" />
     <ClCompile Include="..\src\doom\p_sight.c" />
     <ClInclude Include="..\src\doom\p_spec.h" />
-    <ClCompile Include="..\src\doom\p_switch.c" />
     <ClCompile Include="..\src\doom\p_telept.c" />
     <ClCompile Include="..\src\doom\p_tick.c" />
     <ClInclude Include="..\src\doom\p_tick.h" />
