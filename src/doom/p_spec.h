@@ -24,6 +24,8 @@
 #ifndef __P_SPEC__
 #define __P_SPEC__
 
+#include "r_defs.h"
+
 #define FLATSCROLL_SCALE 0x800 // (1/32)
 //
 // End-level timer (-TIMER option)

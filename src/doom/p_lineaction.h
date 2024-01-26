@@ -407,9 +407,12 @@ enum BoomLockedDoorFlags : uint32_t
 	LockedDoor_Lock_BlueCard				= 0x0080,
 	LockedDoor_Lock_YellowCard				= 0x00C0,
 	LockedDoor_Lock_RedSkull				= 0x0100,
-	LockedDoor_Lock_BlueSkyll				= 0x0140,
+	LockedDoor_Lock_BlueSkull				= 0x0140,
 	LockedDoor_Lock_YellowSkull				= 0x0180,
 	LockedDoor_Lock_All						= 0x01C0,
+
+	LockedDoor_Lock_Mask					= 0x01C0,
+	LockedDoor_Lock_Shift					= 6,
 
 	LockedDoor_TypeAgnostic_No				= 0x0000,
 	LockedDoor_TypeAgnostic_Yes				= 0x0200,
@@ -463,8 +466,6 @@ typedef enum linetrigger_e : uint32_t
 	LT_Switch								= LT_Use | LT_AnimateSwitch,
 	LT_Gun									= LT_Hitscan | LT_AnimateSwitch,
 
-	//LT_MonstersCanTrigger					= 0x40, // Do we need this with precon funcs?
-
 	LT_ActivationTypeMask					= 0x0F,
 } linetrigger_t;
 
@@ -482,10 +483,12 @@ typedef enum linelock_e : uint32_t
 	LL_AnyOf								= 0x020,
 	LL_AllColorsOf							= 0x040,
 	LL_AllOf								= 0x080,
+	LL_AllOfEither							= 0x100,
 
 	LL_ColorMask							= 0x007,
 	LL_CardMask								= 0x01F,
-	LL_ComboMask							= 0x0E0,
+	LL_TypeMask								= LL_ColorMask | LL_CardMask,
+	LL_ComboMask							= 0x1E0,
 
 	LL_BlueCard								= LL_Blue | LL_Card,
 	LL_YellowCard							= LL_Yellow | LL_Card,
@@ -493,6 +496,23 @@ typedef enum linelock_e : uint32_t
 	LL_BlueSkull							= LL_Blue | LL_Skull,
 	LL_YellowSkull							= LL_Yellow | LL_Skull,
 	LL_RedSkull								= LL_Red | LL_Skull,
+
+	LL_AnyCard								= LL_AnyOf | LL_Card,
+	LL_AnySkull								= LL_AnyOf | LL_Skull,
+	LL_AnyKey								= LL_AnyOf | LL_Card | LL_Skull,
+	LL_AnyBlue								= LL_AnyOf | LL_Blue,
+	LL_AnyYellow							= LL_AnyOf | LL_Yellow,
+	LL_AnyRed								= LL_AnyOf | LL_Red,
+
+	LL_AllBlue								= LL_AllColorsOf | LL_Blue,
+	LL_AllYellow							= LL_AllColorsOf | LL_Yellow,
+	LL_AllRed								= LL_AllColorsOf | LL_Red,
+
+	LL_AllCards								= LL_AllOf | LL_Card,
+	LL_AllSkulls							= LL_AllOf | LL_Skull,
+	LL_AllKeys								= LL_AllOf | LL_Card | LL_Skull,
+
+	LL_AllCardsOrSkulls						= LL_AllOfEither | LL_Card | LL_Skull,
 } linelock_t;
 
 typedef struct lineaction_s lineaction_t;
@@ -514,6 +534,8 @@ struct lineaction_s
 	int32_t						param2;		// Generalised parameters interpreted differently by different actions
 
 #if defined(__cplusplus)
+	void DisplayLockReason( player_t* player );
+
 	INLINE bool Handle(line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside)
 	{
 		if(precondition(line, activator, activationtype, activationside))
@@ -522,6 +544,12 @@ struct lineaction_s
 			return true;
 		}
 
+		if( activator->player
+			&& lock != LL_None
+			&& ( activationtype & LT_ActivationTypeMask ) == ( trigger & LT_ActivationTypeMask ) )
+		{
+			DisplayLockReason( activator->player );
+		}
 		return false;
 	}
 #endif // defined(__cplusplus)

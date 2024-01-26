@@ -699,4 +699,20 @@
 #define CC_HERO	"OUR HERO"
 
 
+#define PD_BOOM_BLUECARD_DOOR "You need a blue card to open this door"
+#define PD_BOOM_YELLOWCARD_DOOR "You need a yellow card to open this door"
+#define PD_BOOM_REDCARD_DOOR "You need a red card to open this door"
+
+#define PD_BOOM_BLUESKULL_DOOR "You need a blue skull to open this door"
+#define PD_BOOM_YELLOWSKULL_DOOR "You need a yellow skull to open this door"
+#define PD_BOOM_REDSKULL_DOOR "You need a red skull to open this door"
+
+#define PD_BOOM_BLUECARD_SWITCH "You need a blue card to activate this object"
+#define PD_BOOM_YELLOWCARD_SWITCH "You need a yellow card to activate this object"
+#define PD_BOOM_REDCARD_SWITCH "You need a red card to activate this object"
+
+#define PD_BOOM_BLUESKULL_SWITCH "You need a blue skull to activate this object"
+#define PD_BOOM_YELLOWSKULL_SWITCH "You need a yellow skull to activate this object"
+#define PD_BOOM_REDSKULL_SWITCH "You need a red skull to activate this object"
+
 #endif

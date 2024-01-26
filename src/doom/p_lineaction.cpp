@@ -16,9 +16,18 @@
 #include "doomstat.h"
 #include "p_lineaction.h"
 
-#include "r_defs.h"
-#include "p_spec.h"
+#include "dstrings.h"
+
 #include "d_player.h"
+
+#include "deh_str.h"
+
+#include "p_spec.h"
+
+#include "r_defs.h"
+
+#include "s_sound.h"
+
 #include "z_zone.h"
 
 #include <type_traits>
@@ -101,6 +110,30 @@ namespace constants
 		LT_Gun,
 		LT_Use,
 		LT_Use,
+	};
+
+	static constexpr linelock_t locks_equivalent[] =
+	{
+		LL_AnyKey,
+		LL_AnyRed,
+		LL_AnyBlue,
+		LL_AnyYellow,
+		LL_AnyRed,
+		LL_AnyBlue,
+		LL_AnyYellow,
+		LL_AllCardsOrSkulls,
+	};
+
+	static constexpr linelock_t locks_separate[] =
+	{
+		LL_AnyKey,
+		LL_RedCard,
+		LL_BlueCard,
+		LL_YellowCard,
+		LL_RedSkull,
+		LL_BlueSkull,
+		LL_YellowSkull,
+		LL_AllKeys,
 	};
 }
 
@@ -225,7 +258,25 @@ namespace precon
 				|| activator->player->cards[ GetSkullFor( line->action->lock ) ] );
 	}
 
-	constexpr bool HasAnyKeys( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	constexpr bool HasAnyCard( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	{
+		return IsPlayer( line, activator, activationtype, activationside )
+			&& ( activator->player->cards[ it_bluecard ]
+				|| activator->player->cards[ it_yellowcard ]
+				|| activator->player->cards[ it_redcard ]
+				);
+	}
+
+	constexpr bool HasAnySkull( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	{
+		return IsPlayer( line, activator, activationtype, activationside )
+			&& ( activator->player->cards[ it_blueskull ]
+				|| activator->player->cards[ it_yellowskull ]
+				|| activator->player->cards[ it_redskull ]
+				);
+	}
+
+	constexpr bool HasAnyKey( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
 			&& ( activator->player->cards[ it_bluecard ]
@@ -269,6 +320,17 @@ namespace precon
 				&& activator->player->cards[ it_redskull ];
 	}
 
+	constexpr bool HasAllCardsOrSkulls( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	{
+		return  IsPlayer( line, activator, activationtype, activationside )
+				&& ( ( activator->player->cards[ it_bluecard ]
+						&& activator->player->cards[ it_yellowcard ]
+						&& activator->player->cards[ it_redcard ] )
+					|| ( activator->player->cards[ it_blueskull ]
+						&& activator->player->cards[ it_yellowskull ]
+						&& activator->player->cards[ it_redskull ] ) );
+	}
+
 	constexpr bool HasAllKeys( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return IsPlayer( line, activator, activationtype, activationside )
@@ -279,7 +341,30 @@ namespace precon
 				&& activator->player->cards[ it_yellowskull ]
 				&& activator->player->cards[ it_redskull ];
 	}
-}
+
+	static constexpr linepreconfunc_t LockLookup_Equivalent[] =
+	{
+		&HasAnyKey,
+		&HasAnyKeyOfColour,
+		&HasAnyKeyOfColour,
+		&HasAnyKeyOfColour,
+		&HasAnyKeyOfColour,
+		&HasAnyKeyOfColour,
+		&HasAnyKeyOfColour,
+		&HasAllCards,
+	};
+
+	static constexpr linepreconfunc_t LockLookup_Separate[] =
+	{
+		&HasAnyKey,
+		&HasExactKey,
+		&HasExactKey,
+		&HasExactKey,
+		&HasExactKey,
+		&HasExactKey,
+		&HasExactKey,
+		HasAllCardsOrSkulls,
+	};}
 
 enum doordelay_t
 {
@@ -343,7 +428,7 @@ static void DoGenericSwitchOnce( line_t* line, mobj_t* activator )
 	}
 }
 
-constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
+constexpr lineaction_t builtinlineactions[ DoomActions_Max ] =
 {
 	// Unknown_000
 	{},
@@ -631,9 +716,35 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	{},
 };
 
+// Another ugly table
+constexpr const char* doorlockreason[] =
+{
+	nullptr, PD_BLUEK, PD_YELLOWK, nullptr, PD_REDK, nullptr, nullptr, nullptr, nullptr, // Any colour
+	nullptr, PD_BOOM_BLUECARD_DOOR, PD_BOOM_YELLOWCARD_DOOR, nullptr, PD_BOOM_REDCARD_DOOR, nullptr, nullptr, nullptr, nullptr, // Cards
+	nullptr, PD_BOOM_BLUESKULL_DOOR, PD_BOOM_YELLOWSKULL_DOOR, nullptr, PD_BOOM_REDSKULL_DOOR, nullptr, nullptr, nullptr, nullptr, // Skulls
+};
+
+constexpr const char* switchlockreason[] =
+{
+	nullptr, PD_BLUEO, PD_YELLOWO, nullptr, PD_REDO, nullptr, nullptr, nullptr, // Any colour
+	nullptr, PD_BOOM_BLUECARD_SWITCH, PD_BOOM_YELLOWCARD_SWITCH, nullptr, PD_BOOM_REDCARD_SWITCH, nullptr, nullptr, nullptr, // Cards
+	nullptr, PD_BOOM_BLUESKULL_SWITCH, PD_BOOM_YELLOWSKULL_SWITCH, nullptr, PD_BOOM_REDSKULL_SWITCH, nullptr, nullptr, nullptr, // Skulls
+};
+
+void lineaction_s::DisplayLockReason( player_t* player )
+{
+	if( player == &players[ consoleplayer ] )
+	{
+		bool door = trigger == LT_Use;
+		int32_t reason = lock & LL_TypeMask;
+		player->message = DEH_String( door ? doorlockreason[ reason ] : switchlockreason[ reason ] );
+		S_StartSound( nullptr, sfx_oof );
+	}
+}
+
 lineaction_t* GetDoomLineAction( line_t* line )
 {
-	return (lineaction_t*)&DoomLineActions[ line->special ];
+	return (lineaction_t*)&builtinlineactions[ line->special ];
 }
 
 lineaction_t* GetBoomLineAction( line_t* line )
@@ -724,13 +835,52 @@ lineaction_t* CreateBoomGeneralisedDoorAction( line_t* line )
 	return action;
 }
 
+lineaction_t* CreateBoomGeneralisedLockedDoorAction( line_t* line )
+{
+	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
+
+	uint32_t trigger = line->special & Generic_Trigger_Mask;
+	bool isswitch = trigger == Generic_Trigger_S1 || trigger == Generic_Trigger_SR
+					|| trigger == Generic_Trigger_G1 || trigger == Generic_Trigger_GR;
+	bool repeatable = ( line->special & Generic_Trigger_Repeatable ) == Generic_Trigger_Repeatable;
+	uint32_t speed = ( line->special & Generic_Speed_Mask ) >> Generic_Speed_Shift;
+
+	uint32_t kind = ( line->special & LockedDoor_Type_Mask );
+	bool isdelayable = kind == LockedDoor_Type_OpenWaitClose;
+
+	uint32_t lockkind = ( line->special & LockedDoor_Lock_Mask ) >> LockedDoor_Lock_Shift;
+
+	doombool typeagnostic = ( line->special & LockedDoor_TypeAgnostic_Yes ) == LockedDoor_TypeAgnostic_Yes;
+
+	action->precondition = typeagnostic? precon::LockLookup_Equivalent[ lockkind ] : precon::LockLookup_Separate[ lockkind ];
+	if( isswitch )
+	{
+		action->action = repeatable ? &DoGenericSwitch< Door > : &DoGenericSwitchOnce< Door >;
+	}
+	else
+	{
+		action->action = repeatable ? &DoGeneric< Door > : &DoGenericOnce< Door >;
+	}
+	action->trigger = constants::triggers[ trigger ];
+	action->lock = typeagnostic ? constants::locks_equivalent[ lockkind ] : constants::locks_separate[ lockkind ];
+	action->speed = constants::doorspeeds[ speed ];
+	action->delay = isdelayable ? constants::doordelay[ Door_Delay_4Seconds >> Door_Delay_Shift ] : 0;
+	action->param1 = doordir_open;
+
+	return action;
+}
+
 lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 {
 	if( line->special >= Generic_Lift && line->special < Generic_LockedDoor )
 	{
 		return CreateBoomGeneralisedLiftAction( line );
 	}
-	if( line->special >= Generic_Door && line->special < Generic_Ceiling )
+	else if( line->special >= Generic_LockedDoor && line->special < Generic_Door )
+	{
+		return CreateBoomGeneralisedLockedDoorAction( line );
+	}
+	else if( line->special >= Generic_Door && line->special < Generic_Ceiling )
 	{
 		return CreateBoomGeneralisedDoorAction( line );
 	}
@@ -739,7 +889,6 @@ lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
-	
 	if( line->special >= DoomActions_Min && line->special < DoomActions_Max
 		&& line->special != Unknown_078 
 		&& line->special != Unknown_085 )
