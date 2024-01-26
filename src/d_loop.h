@@ -25,10 +25,10 @@
 // The callback is invoked when new players are ready. The callback
 // should return true, or return false to abort startup.
 
-typedef doombool (*netgame_startup_callback_t)(int ready_players,
+DOOM_C_API typedef doombool (*netgame_startup_callback_t)(int ready_players,
                                               int num_players);
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // Read events from the event queue, and process them.
 
@@ -49,39 +49,40 @@ typedef struct
 } loop_interface_t;
 
 // Register callback functions for the main loop code to use.
-void D_RegisterLoopCallbacks(loop_interface_t *i);
+DOOM_C_API void D_RegisterLoopCallbacks(loop_interface_t *i);
 
 // Create any new ticcmds and broadcast to other players.
-uint64_t NetUpdate (void);
+DOOM_C_API uint64_t NetUpdate (void);
 
 // Broadcasts special packets to other players
 //  to notify of game exit
-void D_QuitNetGame (void);
+DOOM_C_API void D_QuitNetGame (void);
 
 //? how many ticks to run?
-doombool TryRunTics (void);
+DOOM_C_API doombool TryRunTics (void);
 
 // Called at start of game loop to initialize timers
-void D_StartGameLoop(void);
+DOOM_C_API void D_StartGameLoop(void);
 
 // Initialize networking code and connect to server.
 
-doombool D_InitNetGame(net_connect_data_t *connect_data);
+DOOM_C_API doombool D_InitNetGame(net_connect_data_t *connect_data);
 
 // Start game with specified settings. The structure will be updated
 // with the actual settings for the game.
 
-void D_StartNetGame(net_gamesettings_t *settings,
+DOOM_C_API void D_StartNetGame(net_gamesettings_t *settings,
                     netgame_startup_callback_t callback);
 
-extern doombool singletics;
-extern uint64_t gametic, ticdup;
+DOOM_C_API extern doombool singletics;
+DOOM_C_API extern uint64_t gametic;
+DOOM_C_API extern uint64_t ticdup;
 
 // Check if it is permitted to record a demo with a non-vanilla feature.
-doombool D_NonVanillaRecord(doombool conditional, const char *feature);
+DOOM_C_API doombool D_NonVanillaRecord(doombool conditional, const char *feature);
 
 // Check if it is permitted to play back a demo with a non-vanilla feature.
-doombool D_NonVanillaPlayback(doombool conditional, int lumpnum,
+DOOM_C_API doombool D_NonVanillaPlayback(doombool conditional, int lumpnum,
                              const char *feature);
 
 #endif
