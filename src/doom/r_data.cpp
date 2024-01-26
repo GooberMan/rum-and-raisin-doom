@@ -562,6 +562,7 @@ constexpr rasterfunc_t floorfuncs[ 7 ][ 4 ] =
 
 constexpr int32_t maxcolfuncs = 4;
 
+#pragma optimize( "", off )
 void R_InitTextureAndFlatComposites( void )
 {
 	int32_t totallookup = numtextures + numflats;
@@ -595,7 +596,7 @@ void R_InitTextureAndFlatComposites( void )
 			double_t logheightdouble = log2( texture->height ) - 4.0;
 			int32_t logheight = (int32_t)logheightdouble;
 
-			if( logheight != (double_t)logheight || logheight < 0 || logheight >= maxcolfuncs )
+			if( logheightdouble != (double_t)logheight || logheight < 0 || logheight >= maxcolfuncs )
 			{
 				composite.wallrender = &R_LimitRemovingDrawColumn_Colormap;
 				composite.transparentwallrender = &R_LimitRemovingDrawColumn_Transparent;
