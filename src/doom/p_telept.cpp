@@ -135,8 +135,6 @@ EV_Teleport
     return 0;
 }
 
-#pragma optimize( "", off )
-
 DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 {
 	for( sector_t& sector : Sectors() )

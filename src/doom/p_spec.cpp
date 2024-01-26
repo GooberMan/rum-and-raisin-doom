@@ -1817,6 +1817,7 @@ void P_SpawnSpecials (void)
 		activeceilings[i] = NULL;
 	}
 
+	activeplatshead = nullptr;
     for (i = 0;i < MAXPLATS;i++)
 	{
 		activeplats[i] = NULL;

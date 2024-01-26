@@ -247,7 +247,7 @@ DOOM_C_API typedef enum plattarget_e
 	pt_perpetual,
 } plattarget_t;
 
-DOOM_C_API typedef struct
+DOOM_C_API typedef struct platdata_e
 {
 	thinker_t	thinker;
 	sector_t*	sector;
@@ -261,6 +261,10 @@ DOOM_C_API typedef struct
 	doombool	crush;
 	int			tag;
 	plattype_e	type;
+
+	// Limit removing linked list
+	struct platdata_e*	prevactive;
+	struct platdata_e*  nextactive;
 } plat_t;
 
 
@@ -271,6 +275,7 @@ DOOM_C_API typedef struct
 
 
 DOOM_C_API extern plat_t*	activeplats[MAXPLATS];
+DOOM_C_API extern plat_t*	activeplatshead;
 
 DOOM_C_API void    T_PlatRaise(plat_t*	plat);
 
@@ -580,6 +585,9 @@ DOOM_C_API void T_MoveFloor( floormove_t* floor);
 DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
 
 // Generic functionality
+DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator );
+
 DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator );

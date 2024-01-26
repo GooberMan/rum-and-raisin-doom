@@ -36,8 +36,8 @@
 #include "sounds.h"
 
 
-plat_t*		activeplats[MAXPLATS];
-
+DOOM_C_API plat_t*		activeplats[MAXPLATS] =  {};
+DOOM_C_API plat_t*		activeplatshead = nullptr;
 
 
 //
@@ -244,7 +244,45 @@ EV_DoPlat
     return rtn;
 }
 
-int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
+DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
+{
+	P_ActivateInStasis( line->tag );
+
+	int32_t		secnum = -1;
+	int32_t		platformscreated = 0;
+
+	while ( ( secnum = P_FindSectorFromLineTag( line, secnum ) ) >= 0 )
+	{
+		sector_t* sec = &sectors[ secnum ];
+
+		if ( sec->specialdata )
+			continue;
+	
+		// Find lowest & highest floors around sector
+		++platformscreated;
+		plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &plat->thinker );
+	
+		plat->type = perpetualRaise;
+		plat->sector = sec;
+		plat->sector->specialdata = plat;
+		plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+		plat->crush = false;
+		plat->tag = line->tag;
+		plat->speed = line->action->speed;
+		plat->wait = line->action->delay;
+		plat->status = (plat_e)( P_Random() & 1 );
+
+		plat->low = M_MIN( P_FindLowestFloorSurrounding( sec ), sec->floorheight );
+		plat->high = M_MAX( P_FindHighestFloorSurrounding( sec ), sec->floorheight );
+
+		S_StartSound( &sec->soundorg, sfx_pstart );
+	}
+
+	return platformscreated;
+}
+
+DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 {
 	int32_t		secnum = -1;
 	int32_t		platformscreated = 0;
@@ -268,6 +306,8 @@ int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 		plat->crush = false;
 		plat->tag = line->tag;
 		plat->speed = line->action->speed;
+		plat->wait = line->action->delay;
+		plat->status = down;
 
 		switch( line->action->param1 )
 		{
@@ -289,20 +329,48 @@ int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 		plat->low = M_MIN( plat->low, sec->floorheight );
 		plat->high = sec->floorheight;
-		plat->wait = line->action->delay;;
-		plat->status = down;
 
 		S_StartSound(&sec->soundorg,sfx_pstart);
+
 		P_AddActivePlat(plat);
 	}
 
 	return platformscreated;
 }
 
+DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator )
+{
+	for( plat_t* currplat = activeplatshead; currplat != nullptr; currplat = currplat->nextactive )
+	{
+		if( currplat->tag == line->tag && currplat->status != in_stasis )
+		{
+			currplat->oldstatus = currplat->status;
+			currplat->status = in_stasis;
+			currplat->thinker.function.acv = nullptr;
+		}
+	}
+
+	return 0;
+}
+
 
 void P_ActivateInStasis(int tag)
 {
-    int		i;
+	if( remove_limits ) // unlimited_platforms
+	{
+		for( plat_t* currplat = activeplatshead; currplat != nullptr; currplat = currplat->nextactive )
+		{
+			if( currplat->tag == tag && currplat->status == in_stasis )
+			{
+				currplat->status = currplat->oldstatus;
+				currplat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			}
+		}
+
+		return;
+	}
+
+	int		i;
 	
     for (i = 0;i < MAXPLATS;i++)
 	if (activeplats[i]
@@ -317,6 +385,12 @@ void P_ActivateInStasis(int tag)
 
 void EV_StopPlat(line_t* line)
 {
+	if( remove_limits )
+	{
+		EV_StopAnyLiftGeneric( line, nullptr );
+		return;
+	}
+
     int		j;
 	
     for (j = 0;j < MAXPLATS;j++)
@@ -330,8 +404,20 @@ void EV_StopPlat(line_t* line)
 	}
 }
 
-void P_AddActivePlat(plat_t* plat)
+void P_AddActivePlat( plat_t* plat )
 {
+	if( remove_limits ) // unlimited_platforms
+	{
+		plat->nextactive = activeplatshead;
+		plat->prevactive = nullptr;
+		if( activeplatshead )
+		{
+			activeplatshead->prevactive = plat;
+		}
+		activeplatshead = plat;
+		return;
+	}
+
     int		i;
     
     for (i = 0;i < MAXPLATS;i++)
@@ -343,8 +429,36 @@ void P_AddActivePlat(plat_t* plat)
     I_Error ("P_AddActivePlat: no more plats!");
 }
 
-void P_RemoveActivePlat(plat_t* plat)
+void P_RemoveActivePlat( plat_t* plat )
 {
+	if( remove_limits ) // unlimited_platforms
+	{
+		for( plat_t* currplat = activeplatshead; currplat != nullptr; currplat = currplat->nextactive )
+		{
+			if( plat == currplat )
+			{
+				if( plat == activeplatshead )
+				{
+					activeplatshead = activeplatshead->nextactive;
+				}
+				if( plat->prevactive )
+				{
+					plat->prevactive->nextactive = plat->nextactive;
+				}
+				if( plat->nextactive )
+				{
+					plat->nextactive->prevactive = plat->prevactive;
+				}
+
+				P_RemoveThinker( &plat->thinker );
+				plat->sector->specialdata = nullptr;
+				return;
+			}
+		}
+		I_Error ( "P_RemoveActivePlat: can't find plat!" );
+		return;
+	}
+
     int		i;
     for (i = 0;i < MAXPLATS;i++)
 	if (plat == activeplats[i])

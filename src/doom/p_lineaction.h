@@ -45,7 +45,7 @@ enum DoomActions : uint32_t
 	Door_Close_W1_Player,
 	Door_Raise_W1_Player,
 	Floor_RaiseLowestCeiling_W1_Player,
-	Ceiling_CrusherFast_W1_Player,
+	Crusher_Fast_W1_Player,
 	Stairs_BuildBy8_S1_Player,
 	Stairs_BuildBy8_W1_Player,
 	Sector_Donut_S1_Player,
@@ -53,18 +53,18 @@ enum DoomActions : uint32_t
 	Exit_Normal_S1_Player,
 	Light_SetBrightest_W1_Player,
 	Light_SetTo255_W1_Player,
-	Floor_Raise32ChangeTexture_S1_Player,
-	Floor_Raise24ChangeTexture_S1_Player,
+	Platform_Raise32ChangeTexture_S1_Player,
+	Platform_Raise24ChangeTexture_S1_Player,
 	Door_Close30Open_W1_Player,
 	Light_Strobe_W1_Player,
 	Floor_RaiseNearest_S1_Player,
 	Floor_LowerHighest_W1_Player,
-	Floor_RaiseNearestChangeTexture_S1_Player,
+	Platform_RaiseNearestChangeTexture_S1_Player,
 	Platform_DownWaitUp_S1_Player,
-	Floor_RaiseNearestChangeTexture_W1_Player,
+	Platform_RaiseNearestChangeTexture_W1_Player,
 	Floor_LowerLowest_S1_Player,
 	Floor_RaiseLowestCeiling_GR_Player,
-	Ceiling_Crusher_W1_Player,
+	Crusher_W1_Player,
 	Door_RaiseBlue_UR_Player,
 	Door_RaiseYellow_UR_Player,
 	Door_RaiseRed_UR_Player,
@@ -78,17 +78,17 @@ enum DoomActions : uint32_t
 	Floor_LowerHighestFast_W1_Player,
 	Floor_LowerLowestChangeTexture_NumericModel_W1_Player,
 	Floor_LowerLowest_W1_Player,
-	Teleport_W1_All,
-	Sector_RaiseCeilingLowerFloor_W1_Player,
+	Teleport_Thing_W1_All,
+	Ceiling_RaiseHighestCeiling_W1_Player,
 	Ceiling_LowerToFloor_S1_Player,
 	Door_Close_SR_Player,
 	Ceiling_LowerToFloor_SR_Player,
-	Ceiling_LowerCrush_Player,
+	Ceiling_LowerTo8AboveFloor_W1_Player,
 	Floor_LowerHighest_SR_Player,
 	Door_Open_GR_Player,
-	Floor_RaiseNearestChangeTexture_GR_Player,
+	Platform_RaiseNearestChangeTexture_G1_Player,
 	Scroll_WallTextureLeft_Always,
-	Ceiling_Crusher_S1_Player,
+	Crusher_S1_Player,
 	Door_Close_S1_Player,
 	Exit_Secret_S1_Player,
 	Exit_Normal_W1_Player,
@@ -96,7 +96,7 @@ enum DoomActions : uint32_t
 	Platform_Stop_W1_Player,
 	Floor_RaiseCrush_S1_Player,
 	Floor_RaiseCrush_W1_Player,
-	Ceiling_CrusherStop_W1_Player,
+	Crusher_Stop_W1_Player,
 	Floor_Raise24_W1_Player,
 	Floor_Raise24ChangeTexture_W1_Player,
 	Floor_LowerLowest_SR_Player,
@@ -105,18 +105,18 @@ enum DoomActions : uint32_t
 	Door_Raise_SR_Player,
 	Floor_RaiseLowestCeiling_SR_player,
 	Floor_RaiseCrush_SR_Player,
-	Floor_Raise24ChangeTexture_SR_Player,
-	Floor_Raise32ChangeTexture_SR_Player,
+	Platform_Raise24ChangeTexture_SR_Player,
+	Platform_Raise32ChangeTexture_SR_Player,
 	Floor_RaiseNearestChangeTexture_SR_Player,
 	Floor_RaiseNearest_SR_Player,
 	Floor_LowerHighestFast_SR_Player,
 	Floor_LowerHighestFast_S1_Player,
-	Ceiling_LowerCrush_WR_Player,
-	Ceiling_Crusher_WR_Player,
-	Ceiling_CrusherStop_WR_Player,
+	Ceiling_LowerTo8AboveFloor_WR_Player,
+	Crusher_WR_Player,
+	Crusher_Stop_WR_Player,
 	Door_Close_WR_Player,
 	Door_Close30Open_WR_Player,
-	Ceiling_CrusherFast_WR_Player,
+	Crusher_Fast_WR_Player,
 	Unknown_078,	// Unknown_078
 	Light_SetTo35_WR_Player,
 	Light_SetBrightest_WR_Player,
@@ -134,9 +134,9 @@ enum DoomActions : uint32_t
 	Floor_Raise24_WR_Player,
 	Floor_Raise24ChangeTexture_WR_Player,
 	Floor_RaiseCrush_WR_Player,
-	Floor_RaiseNearestChangeTexture_WR_Player,
+	Platform_RaiseNearestChangeTexture_WR_Player,
 	Floor_RaiseByTexture_WR_Player,
-	Teleport_WR_All,
+	Teleport_Thing_WR_All,
 	Floor_LowerHighestFast_WR_Player,
 	Door_OpenFastBlue_SR_Player,
 	Stairs_BuildBy16Fast_W1_Player,
@@ -164,8 +164,8 @@ enum DoomActions : uint32_t
 	Platform_DownWaitUpFast_S1_Player,
 	Platform_DownWaitUpFast_SR_Player,
 	Exit_Secret_W1_Player,
-	Teleport_W1_Monsters,
-	Teleport_WR_Monsters,
+	Teleport_Thing_W1_Monsters,
+	Teleport_Thing_WR_Monsters,
 	Stairs_BuildBy16Fast_S1_Player,
 	Floor_RaiseNearest_WR_Player,
 	Floor_RaiseNearestFast_WR_Player,
@@ -180,7 +180,7 @@ enum DoomActions : uint32_t
 	Light_SetTo255_SR_Player,
 	Light_SetTo35_SR_Player,
 	Floor_Raise512_S1_Player,
-	Ceiling_CrusherSilent_W1_Player,
+	Crusher_Silent_W1_Player,
 
 	DoomActions_Max,
 	DoomActions_Min = Door_Raise_UR_All,
@@ -190,60 +190,169 @@ enum BoomActions : uint32_t
 {
 	Floor_ChangeTexture_NumericModel_SR_Player = 78,
 	Scroll_WallTextureRight_Always = 85,
+
 	Floor_Raise512_W1_Player = 142,
-	Floor_Raise512_WR_Player = 147,
-	Floor_ChangeTexture_W1_Player = 153,
-	Floor_ChangeTexture_WR_Player = 154,
-	Floor_RaiseByTexture_S1_Player = 158,
-	Floor_LowerLowestChangeTexture_NumericModel_S1_Player = 159,
-	Floor_Raise24ChangeTextureSlow_S1_Player = 160,
-	Floor_Raise24_S1_Player = 161,
-	Door_Close30Open_S1_Player = 175,
-	Floor_RaiseByTexture_SR_Player = 176,
-	Floor_LowerLowestChangeTexture_NumericModel_SR_Player = 177,
-	Floor_Raise512_SR_Player = 178,
-	Floor_Raise24ChangeTextureSlow_SR_Player = 179,
-	Floor_Raise24_SR_Player = 180,
-	Floor_ChangeTexture_S1_Player = 189,
-	Floor_ChangeTexture_SR_Player = 190,
-	Door_Close30Open_SR_Player = 196,
-	Transfer_FloorLighting_Always = 213,
-	Floor_LowerNearest_W1_Player = 219,
-	Floor_LowerNearest_WR_Player = 220,
-	Floor_LowerNearest_S1_Player = 221,
-	Floor_LowerNearest_SR_Player = 222,
-	Transfer_Friction_Always = 223,
-	Transfer_WindByLength_Always = 224,
-	Transfer_CurrentByLength_Always = 225,
-	Transfer_WindOrCurrentByPoint_Always = 226,
-	Floor_ChangeTexture_NumericModel_W1_Player = 239,
-	Floor_ChangeTexture_NumericModel_WR_Player = 240,
-	Floor_ChangeTexture_NumericModel_S1_Player = 241,
-	Transfer_Properties_Always = 242,
-	Scroll_CeilingTexture_Always = 250,
-	Scroll_FloorTexture_Always = 251,
-	Scroll_FloorObjects_Always = 252,
-	Scroll_FloorTextureObjects_Always = 253,
-	Scroll_WallTextureBySector_Always = 254,
-	Scroll_WallTextureByOffset_Always = 255,
-	Texture_Translucent_Always = 260,
-	Transfer_CeilingLighting_Always = 261,
+	Platform_Raise24ChangeTexture_W1_Player,
+	Platform_Raise32ChangeTexture_W1_Player,
+	Ceiling_LowerToFloor_W1_Player,
+	Sector_Donut_W1_Player,
+	Floor_Raise512_WR_Player,
+	Platform_Raise24ChangeTexture_WR_Player,
+	Platform_Raise32ChangeTexture_WR_Player,
+	Crusher_Silent_WR_Player,
+	Ceiling_RaiseHighestCeiling_WR_Player,
+	Ceiling_LowerToFloor_WR_Player,
+	Floor_ChangeTexture_W1_Player,
+	Floor_ChangeTexture_WR_Player,
+	Sector_Donut_WR_Player,
+	Light_Strobe_WR_Player,
+	Light_SetLowest_WR_Player,
+	Floor_RaiseByTexture_S1_Player,
+	Floor_LowerLowestChangeTexture_NumericModel_S1_Player,
+	Floor_Raise24ChangeTexture_S1_Player,
+	Floor_Raise24_S1_Player,
+	Platform_Perpetual_S1_Player,
+	Platform_Stop_S1_Player,
+	Crusher_Fast_S1_Player,
+	Crusher_Silent_S1_Player,
+	Ceiling_RaiseHighestCeiling_S1_Player,
+	Ceiling_LowerTo8AboveFloor_S1_Player,
+	Crusher_Stop_S1_Player,
+	Light_SetBrightest_S1_Player,
+	Light_SetTo35_S1_Player,
+	Light_SetTo255_S1_Player,
+	Light_Strobe_S1_Player,
+	Light_SetLowest_S1_Player,
+	Teleport_Thing_S1_All,
+	Door_Close30Open_S1_Player,
+	Floor_RaiseByTexture_SR_Player,
+	Floor_LowerLowestChangeTexture_NumericModel_SR_Player,
+	Floor_Raise512_SR_Player,
+	Floor_Raise24ChangeTexture_SR_Player,
+	Floor_Raise24_SR_Player,
+	Platform_Perpetual_SR_Player,
+	Platform_Stop_SR_Player,
+	Crusher_Fast_SR_Player,
+	Crusher_SR_Player,
+	Crusher_Silent_SR_Player,
+	Ceiling_RaiseHighestCeiling_SR_Player,
+	Ceiling_LowerTo8AboveFloor_SR_Player,
+	Crusher_Stop_SR_Playe,
+	Floor_ChangeTexture_S1_Player,
+	Floor_ChangeTexture_SR_Player,
+	Sector_Donut_SR_Player,
+	Light_SetBrightest_SR_Player,
+	Light_Strobe_SR_Player,
+	Light_SetLowest_SR_Player,
+	Teleport_Thing_SR_All,
+	Door_Close30Open_SR_Player,
+	Exit_Normal_G1_Player,
+	Exit_Secret_G1_Player,
+	Ceiling_LowerLowerstCeiling_W1_Player,
+	Ceiling_LowerHighestFloor_W1_Player,
+	Ceiling_LowerLowerstCeiling_WR_Player,
+	Ceiling_LowerHighestFloor_WR_Player,
+	Ceiling_LowerLowerstCeiling_S1_Player,
+	Ceiling_LowerHighestFloor_S1_Player,
+	Ceiling_LowerLowerstCeiling_SR_Player,
+	Ceiling_LowerHighestFloor_SR_Player,
+	Teleport_ThingSilentPreserve_W1_All,
+	Teleport_ThingSilentPreserve_WR_All,
+	Teleport_ThingSilentPreserve_S1_All,
+	Teleport_ThingSilentPreserve_SR_All,
+	Platform_RaiseInstantCeiling_SR_Player,
+	Platform_RaiseInstantCeiling_WR_Player,
+	Transfer_FloorLighting_Always,
+	Scroll_CeilingTexture_Accelerative_Always,
+	Scroll_FloorTexture_Accelerative_Always,
+	Scroll_FloorObjects_Accelerative_Always,
+	Scroll_FloorTextureObjects_Accelerative_Always,
+	Scroll_WallTextureBySector_Accelerative_Always,
+	Floor_LowerNearest_W1_Player,
+	Floor_LowerNearest_WR_Player,
+	Floor_LowerNearest_S1_Player,
+	Floor_LowerNearest_SR_Player,
+	Transfer_Friction_Always,
+	Transfer_WindByLength_Always,
+	Transfer_CurrentByLength_Always,
+	Transfer_WindOrCurrentByPoint_Always,
+	Elevator_Up_W1_Player,
+	Elevator_Up_WR_Player,
+	Elevator_Up_S1_Player,
+	Elevator_Up_SR_Player,
+	Elevator_Down_W1_Player,
+	Elevator_Down_WR_Player,
+	Elevator_Down_S1_Player,
+	Elevator_Down_SR_Player,
+	Elevator_Call_W1_Player,
+	Elevator_Call_WR_Player,
+	Elevator_Call_S1_Player,
+	Elevator_Call_SR_Player,
+	Floor_ChangeTexture_NumericModel_W1_Player,
+	Floor_ChangeTexture_NumericModel_WR_Player,
+	Floor_ChangeTexture_NumericModel_S1_Player,
+	Transfer_Properties_Always,
+	Teleport_LineSilentPreserve_W1_All,
+	Teleport_LineSilentPreserve_WR_All,
+	Scroll_CeilingTexture_Displace_Always,
+	Scroll_FloorTexture_Displace_Always,
+	Scroll_FloorObjects_Displace_Always,
+	Scroll_FloorTextureObjects_Displace_Always,
+	Scroll_WallTextureBySector_Displace_Always,
+	Scroll_CeilingTexture_Always,
+	Scroll_FloorTexture_Always,
+	Scroll_FloorObjects_Always,
+	Scroll_FloorTextureObjects_Always,
+	Scroll_WallTextureBySector_Always,
+	Scroll_WallTextureByOffset_Always,
+	Stairs_BuildBy8_WR_Player,
+	Stairs_BuildBy16Fast_WR_Player,
+	Stairs_BuildBy8_SR_Player,
+	Stairs_BuildBy16Fast_SR_Player,
+	Texture_Translucent_Always,
+	Transfer_CeilingLighting_Always,
+	Teleport_LineSilentReversed_W1_All,
+	Teleport_LineSilentReversed_WR_All,
+	Teleport_LineSilentReversed_W1_Monsters,
+	Teleport_LineSilentReversed_WR_Monsters,
+	Teleport_LineSilentPreserve_W1_Monsters,
+	Teleport_LineSilentPreserve_WR_Monsters,
+	Teleport_ThingSilent_W1_Monsters,
+	Teleport_ThingSilent_WR_Monsters,
 
 	BoomActions_Max,
-	BoomActions_Min = Floor_ChangeTexture_NumericModel_SR_Player
+	BoomActions_Min = Floor_Raise512_W1_Player,
+
 };
 
 enum MBFActions : uint32_t
 {
-	Transfer_Sky_Always = 271,
-	Transfer_SkyReversed_Always = 272,
+	Unknown_270 = 270,
+
+	Transfer_Sky_Always,
+	Transfer_SkyReversed_Always,
+
+	MBFActions_Max,
+	MBFActions_Min = Transfer_Sky_Always
 };
 
 enum MBF21Actions : uint32_t
 {
 	Texture_ScrollSpeedDiv8Standard_Always = 1024,
-	Texture_ScrollSpeedDiv8Displacement_Always = 1025,
-	Texture_ScrollSpeedDiv8Accelerative_Always = 1026,
+	Texture_ScrollSpeedDiv8Displacement_Always,
+	Texture_ScrollSpeedDiv8Accelerative_Always,
+
+	MBF21Actions_Max,
+	MBF21Actions_Min = Texture_ScrollSpeedDiv8Standard_Always,
+};
+
+enum ActionArrayValues : uint32_t
+{
+	Actions_BuiltIn_Count	= (uint32_t)MBFActions_Max - (uint32_t)DoomActions_Min,
+	Actions_BuiltIn_Min		= (uint32_t)DoomActions_Min,
+
+	Actions_MBF21_Count		= (uint32_t)MBF21Actions_Max,
+	Actions_MBF21_Min		= (uint32_t)MBF21Actions_Max - (uint32_t)MBF21Actions_Min,
 };
 
 enum BoomFloorActions : uint32_t
@@ -467,6 +576,12 @@ typedef enum linetrigger_e : uint32_t
 	LT_Gun									= LT_Hitscan | LT_AnimateSwitch,
 
 	LT_ActivationTypeMask					= 0x0F,
+	LT_AnimatedActivationTypeMask			= 0x1F,
+
+	LT_FrontSide							= 0x40,
+	LT_BackSide								= 0x80,
+	LT_BothSides							= LT_FrontSide | LT_BackSide,
+	LT_SidesMask							= 0xC0,
 } linetrigger_t;
 
 typedef enum linelock_e : uint32_t
@@ -515,6 +630,44 @@ typedef enum linelock_e : uint32_t
 	LL_AllCardsOrSkulls						= LL_AllOfEither | LL_Card | LL_Skull,
 } linelock_t;
 
+#if defined( __cplusplus )
+#include <type_traits>
+
+using underlyinglinetrigger_t = std::underlying_type_t< linetrigger_t >;
+
+constexpr linetrigger_t operator|( const linetrigger_t lhs, const linetrigger_t rhs )
+{
+	return (linetrigger_t)( (underlyinglinetrigger_t)lhs | (underlyinglinetrigger_t)rhs );
+};
+
+constexpr linetrigger_t operator&( const linetrigger_t lhs, const linetrigger_t rhs )
+{
+	return (linetrigger_t)( (underlyinglinetrigger_t)lhs & (underlyinglinetrigger_t)rhs );
+};
+
+constexpr linetrigger_t operator^( const linetrigger_t lhs, const linetrigger_t rhs )
+{
+	return (linetrigger_t)( (underlyinglinetrigger_t)lhs ^ (underlyinglinetrigger_t)rhs );
+};
+
+using underlyinglinelock_t = std::underlying_type_t< linelock_t >;
+
+constexpr linelock_t operator|( const linelock_t lhs, const linelock_t rhs )
+{
+	return (linelock_t)( (underlyinglinelock_t)lhs | (underlyinglinelock_t)rhs );
+};
+
+constexpr linelock_t operator&( const linelock_t lhs, const linelock_t rhs )
+{
+	return (linelock_t)( (underlyinglinelock_t)lhs & (underlyinglinelock_t)rhs );
+};
+
+constexpr linelock_t operator^( const linelock_t lhs, const linelock_t rhs )
+{
+	return (linelock_t)( (underlyinglinelock_t)lhs ^ (underlyinglinelock_t)rhs );
+};
+#endif // defined( __cplusplus )
+
 typedef struct lineaction_s lineaction_t;
 typedef struct line_s line_t;
 typedef struct mobj_s mobj_t;
@@ -534,6 +687,9 @@ struct lineaction_s
 	int32_t						param2;		// Generalised parameters interpreted differently by different actions
 
 #if defined(__cplusplus)
+	constexpr linetrigger_t ActivationType() const			{ return trigger & LT_ActivationTypeMask; }
+	constexpr linetrigger_t AnimatedActivationType()const	{ return trigger & LT_AnimatedActivationTypeMask; }
+
 	void DisplayLockReason( player_t* player );
 
 	INLINE bool Handle(line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside)

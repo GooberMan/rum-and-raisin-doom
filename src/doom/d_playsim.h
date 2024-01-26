@@ -49,6 +49,7 @@ DOOM_C_API typedef struct finaleoptions_s
 DOOM_C_API typedef struct gameoptions_s
 {
 	doombool					unlimited_scrollers;
+	doombool					unlimited_platforms;
 	doombool					reset_player_visited_secret;
 	doombool					doom2_bad_secret_exit_doesnt_loop;
 	doombool					noclip_cheats_work_everywhere;

@@ -562,7 +562,6 @@ constexpr rasterfunc_t floorfuncs[ 7 ][ 4 ] =
 
 constexpr int32_t maxcolfuncs = 4;
 
-#pragma optimize( "", off )
 void R_InitTextureAndFlatComposites( void )
 {
 	int32_t totallookup = numtextures + numflats;

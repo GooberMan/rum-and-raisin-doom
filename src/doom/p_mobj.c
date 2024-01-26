@@ -500,7 +500,6 @@ void P_MobjThinker (mobj_t* mobj)
 
 }
 
-#pragma optimize( "", off )
 //
 // P_SpawnMobj
 //

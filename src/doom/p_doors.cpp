@@ -443,7 +443,7 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 
 	if( remove_limits ) // allow_boom_specials
 	{
-		if( line->action->trigger == LT_Use
+		if( line->action->AnimatedActivationType() == LT_Use
 			&& line->tag != 0
 			&& line->frontsector != nullptr
 			&& line->backsector != nullptr )
@@ -472,13 +472,13 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 
 int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 {
-	if( line->action->trigger == LT_Use && !line->backsector )
+	if( line->action->AnimatedActivationType() == LT_Use && !line->backsector )
 	{
 		I_Error("EV_DoDoorGeneric: Dx special type on 1-sided linedef");
 		return 0;
 	}
 
-	doombool raising = line->action->trigger == LT_Use
+	doombool raising = line->action->AnimatedActivationType() == LT_Use
 					&& (doordir_t)line->action->param1 == doordir_open
 					&& line->action->delay > 0;
 	if( raising )
