@@ -470,7 +470,7 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Door_Open_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_Switch, LL_None, constants::doorspeeds[ Speed_Slow ], 0, doordir_open },
 	// Platform_DownWaitUp_SR_Player
-	{ &precon::IsAnyThing, &DoGenericSwitch< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Door_Raise_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_Switch, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], doordir_open },
 	// Floor_RaiseLowestCeiling_SR_player
@@ -739,6 +739,7 @@ lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
+	
 	if( line->special >= DoomActions_Min && line->special < DoomActions_Max
 		&& line->special != Unknown_078 
 		&& line->special != Unknown_085 )
