@@ -315,6 +315,14 @@ DOOM_C_API typedef struct
 
 	// 1 = up, 0 = waiting at top, -1 = down
 	doordir_t		direction;
+
+	// tics to wait at the top
+	int32_t			topwait;
+	// (keep in case a door going down is reset)
+	// when it reaches 0, start going down
+	int32_t			topcountdown;
+
+	// Generic door extensions
 	doordir_t		nextdirection;
 	doombool		blazing;
 	doombool		keepclosingoncrush;
@@ -323,12 +331,6 @@ DOOM_C_API typedef struct
 	int32_t			lighttag;
 	int32_t			lightmin;
 	int32_t			lightmax;
-
-	// tics to wait at the top
-	int32_t			topwait;
-	// (keep in case a door going down is reset)
-	// when it reaches 0, start going down
-	int32_t			topcountdown;
 } vldoor_t;
 
 

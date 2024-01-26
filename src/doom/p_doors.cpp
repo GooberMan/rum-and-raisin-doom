@@ -23,6 +23,7 @@
 #include "p_local.h"
 #include "p_lineaction.h"
 #include "i_system.h"
+#include "i_log.h"
 
 #include "s_sound.h"
 
@@ -453,7 +454,6 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 		}
 	}
 
-	// Is this a Boom behavior? GOTTA CHECK
 	if( door->direction == doordir_close && door->topwait > 0 )
 	{
 		door->topheight = sec->ceilingheight;
@@ -472,21 +472,39 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 
 int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 {
-	if( line->action->trigger == LT_Use )
+	if( line->action->trigger == LT_Use && !line->backsector )
 	{
-		if( !line->backsector )
+		I_Error("EV_DoDoorGeneric: Dx special type on 1-sided linedef");
+		return 0;
+	}
+
+	doombool raising = line->action->trigger == LT_Use
+					&& (doordir_t)line->action->param1 == doordir_open
+					&& line->action->delay > 0;
+	if( raising )
+	{
+		if( line->backsector->specialdata )
 		{
-			I_Error("EV_DoDoorGeneric: Dx special type on 1-sided linedef");
-		}
-		sector_t* sector = line->backsector;
-		if( sector->specialdata )
-		{
-			vldoor_t* door = thinker_cast< vldoor_t >( sector->specialdata );
+			vldoor_t* door = thinker_cast< vldoor_t >( line->backsector->specialdata );
 			if( door == nullptr )
 			{
+				// Vanilla would stomp over values regardless. We'll just crash here for now.
 				I_Error("EV_DoDoorGeneric: Dx activating on a sector with a non-door thinker");
+				return 0;
 			}
-			return 0;
+
+			if( door->direction == doordir_close )
+			{
+				door->direction = doordir_open;
+				door->topcountdown = door->topwait;
+			}
+			else if( activator->player != nullptr )
+			{
+				door->direction = doordir_close;
+				door->topcountdown = 0;
+			}
+
+			return 1;
 		}
 
 		EV_DoDoorGeneric( line, line->backsector );
