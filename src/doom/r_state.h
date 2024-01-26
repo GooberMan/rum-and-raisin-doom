@@ -109,6 +109,39 @@ extern doombool		renderlightlevels;
 
 #if defined( __cplusplus )
 }
+
+#include <span>
+
+INLINE auto Segs()
+{
+	return std::span( segs, numsegs );
+}
+
+INLINE auto Sectors()
+{
+	return std::span( sectors, numsectors );
+}
+
+INLINE auto SubSectors()
+{
+	return std::span( sectors, numsectors );
+}
+
+INLINE auto Nodes()
+{
+	return std::span( nodes, numnodes );
+}
+
+INLINE auto Lines()
+{
+	return std::span( lines, numlines );
+}
+
+INLINE auto Sides()
+{
+	return std::span( sides, numsides );
+}
+
 #endif // defined( __cplusplus )
 
 #endif

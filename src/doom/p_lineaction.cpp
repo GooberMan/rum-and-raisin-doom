@@ -104,6 +104,7 @@ namespace constants
 	};
 }
 
+#pragma optimize( "", off )
 namespace precon
 {
 	constexpr linelock_t lockfromcard[ NUMCARDS ] =
@@ -165,21 +166,14 @@ namespace precon
 		return activator->player == nullptr || activationside == 0;
 	}
 
-	constexpr bool ValidDoorActivator( line_t* line, mobj_t* activator, int32_t activationside )
+	constexpr bool ValidTeleporter( int32_t activationside )
 	{
-		return activator->player == nullptr ? ( line->flags & ML_SECRET ) != ML_SECRET
-											: activationside == 0;
+		return activationside == 0;
 	}
 
 	constexpr bool IsAnyThing( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return ValidAnyActivator( activator, activationside )
-			&& ActivationMatches( line->action->trigger, activationtype );
-	}
-
-	constexpr bool CanDoorRaise( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
-	{
-		return ValidDoorActivator( line, activator, activationside )
 			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
@@ -191,6 +185,31 @@ namespace precon
 	constexpr bool IsMonster( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return ValidMonster( activator );
+	}
+
+	constexpr bool ValidDoorActivator( line_t* line, mobj_t* activator, int32_t activationside )
+	{
+		return activator->player == nullptr ? ( line->flags & ML_SECRET ) != ML_SECRET
+											: activationside == 0;
+	}
+
+	constexpr bool CanDoorRaise( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	{
+		return ValidDoorActivator( line, activator, activationside )
+			&& ActivationMatches( line->action->trigger, activationtype );
+	}
+
+	constexpr bool CanTeleportAll( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	{
+		return ValidTeleporter( activationside )
+			&& ActivationMatches( line->action->trigger, activationtype );
+	}
+
+	constexpr bool CanTeleportMonster( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	{
+		return ValidMonster( activator )
+			&& ValidTeleporter( activationside )
+			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
 	constexpr bool HasExactKey( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
@@ -286,6 +305,7 @@ struct x \
 
 MakeGenericFunc( Door, EV_DoDoorGeneric );
 MakeGenericFunc( Lift, EV_DoLiftGeneric );
+MakeGenericFunc( Teleport, EV_DoTeleportGeneric );
 
 template< typename func >
 static void DoGeneric( line_t* line, mobj_t* activator )
@@ -404,7 +424,7 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Floor_LowerLowest_W1_Player
 	{},
 	// Teleport_W1_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_Walk, LL_None },
 	// Sector_RaiseCeilingLowerFloor_W1_Player
 	{},
 	// Ceiling_LowerToFloor_S1_Player
@@ -520,7 +540,7 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Floor_RaiseByTexture_WR_Player
 	{},
 	// Teleport_WR_All
-	{},
+	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_Walk, LL_None },
 	// Floor_LowerHighestFast_WR_Player
 	{},
 	// Door_OpenFastBlue_SR_Player
@@ -576,9 +596,9 @@ constexpr lineaction_t DoomLineActions[ DoomActions_Max ] =
 	// Exit_Secret_W1_Player
 	{},
 	// Teleport_W1_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_Walk, LL_None },
 	// Teleport_WR_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_Walk, LL_None },
 	// Stairs_BuildBy16Fast_S1_Player
 	{},
 	// Floor_RaiseNearest_WR_Player

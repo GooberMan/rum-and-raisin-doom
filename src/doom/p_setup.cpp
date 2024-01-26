@@ -22,10 +22,16 @@
 #include <stdlib.h>
 
 #include "doomdata.h"
+#include "doomdef.h"
+#include "doomstat.h"
 
 #include "p_lineaction.h"
 
+#include "deh_main.h"
+
 #include "d_gameflow.h"
+
+#include "g_game.h"
 
 #include "i_log.h"
 #include "i_system.h"
@@ -33,12 +39,15 @@
 
 #include "m_argv.h"
 #include "m_bbox.h"
+#include "m_dashboard.h"
 #include "m_fixed.h"
 #include "m_misc.h"
 
 #include "p_local.h"
 
 #include "r_local.h"
+
+#include "s_sound.h"
 
 #include "w_wad.h"
 
@@ -1082,18 +1091,6 @@ struct DoomMapLoader
 
 extern "C"
 {
-	#include "deh_main.h"
-
-	#include "g_game.h"
-
-	#include "doomdef.h"
-
-	#include "s_sound.h"
-
-	#include "doomstat.h"
-
-	#include "m_dashboard.h"
-
 	void	P_SpawnMapThing (mapthing_t*	mthing);
 
 	//

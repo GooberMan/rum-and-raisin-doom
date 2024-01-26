@@ -128,11 +128,6 @@ EV_Teleport
 
 		thing->teleporttic = gametic;
 
-		// Ah, the old display player hack. Should change display object over to just plain be an mobj I guess. But this'll do
-		if( thing->player && thing->player == &players[ displayplayer ] )
-		{
-			R_RebalanceContexts();
-		}
 		return 1;
 	    }	
 	}
@@ -140,3 +135,65 @@ EV_Teleport
     return 0;
 }
 
+#pragma optimize( "", off )
+
+DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
+{
+	for( sector_t& sector : Sectors() )
+	{
+		if ( sector.tag == line->tag )
+		{
+			for( mobj_t* targetmobj = sector.nosectorthinglist; targetmobj != nullptr; targetmobj = targetmobj->snext )
+			{
+				if( targetmobj->type != MT_TELEPORTMAN 
+					|| sector.index != targetmobj->subsector->sector->index )
+				{
+					continue;
+				}
+
+				fixed_t oldx = activator->x;
+				fixed_t oldy = activator->y;
+				fixed_t oldz = activator->z;
+				
+				if( !P_TeleportMove( activator, targetmobj->x, targetmobj->y ) )
+				{
+					return 0;
+				}
+
+				if( gameversion != exe_final )
+				{
+					activator->z = activator->floorz;
+				}
+
+				if( activator->player )
+				{
+					activator->player->viewz = activator->z + activator->player->viewheight;
+				}
+
+				// spawn teleport fog at source and destination
+				mobj_t* fog = P_SpawnMobj( oldx, oldy, oldz, MT_TFOG );
+				S_StartSound( fog, sfx_telept );
+
+				angle_t angle = targetmobj->angle >> ANGLETOFINESHIFT;
+				fog = P_SpawnMobj( targetmobj->x + 20 * finecosine[angle], targetmobj->y + 20 * finesine[angle], activator->z, MT_TFOG );
+
+				// emit sound, where?
+				S_StartSound( fog, sfx_telept );
+		
+				// don't move for a bit
+				if( activator->player )
+				{
+					activator->reactiontime = 18;
+				}
+
+				activator->angle = targetmobj->angle;
+				activator->momx = activator->momy = activator->momz = 0;
+
+				activator->teleporttic = gametic;
+
+				return 1;
+			}
+		}
+	}
+	return 0;
+}

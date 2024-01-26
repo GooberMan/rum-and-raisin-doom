@@ -403,19 +403,29 @@ P_SetThingPosition (mobj_t* thing)
     ss = BSP_PointInSubsector( thing->x, thing->y );
     thing->subsector = ss;
     
+	sec = ss->sector;
     if ( ! (thing->flags & MF_NOSECTOR) )
     {
-	// invisible things don't go into the sector links
-	sec = ss->sector;
+		// invisible things don't go into the sector links
 	
-	thing->sprev = NULL;
-	thing->snext = sec->thinglist;
+		thing->sprev = NULL;
+		thing->snext = sec->thinglist;
 
-	if (sec->thinglist)
-	    sec->thinglist->sprev = thing;
+		if (sec->thinglist)
+			sec->thinglist->sprev = thing;
 
-	sec->thinglist = thing;
+		sec->thinglist = thing;
     }
+	else
+	{
+		thing->nosectorprev = NULL;
+		thing->nosectornext = sec->nosectorthinglist;
+		if( sec->nosectorthinglist )
+		{
+			sec->nosectorthinglist->nosectorprev = thing;
+		}
+		sec->nosectorthinglist = thing;
+	}
 
     
     // link into blockmap

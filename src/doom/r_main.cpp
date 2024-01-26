@@ -1482,7 +1482,8 @@ void R_Init (void)
 	frame_height = render_height;
 
     R_InitData ();
-    I_TerminalPrintf( Log_None, "." );
+	R_InitColFuncs();
+	I_TerminalPrintf( Log_None, "." );
     R_InitPointToAngle ();
     I_TerminalPrintf( Log_None, "." );
     R_InitTables ();
@@ -1673,11 +1674,14 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 {
 	M_PROFILE_FUNC();
 
-	R_InitColFuncs();
-
 	int32_t		currcontext;
 	int32_t		currstart;
 	int32_t		desiredwidth;
+
+	if( player->mo->curr.teleported )
+	{
+		R_RebalanceContexts();
+	}
 
 	viewpoint_t viewpoint = {};
 

@@ -273,7 +273,6 @@ DOOM_C_API extern plat_t*	activeplats[MAXPLATS];
 DOOM_C_API void    T_PlatRaise(plat_t*	plat);
 
 DOOM_C_API int EV_DoPlat( line_t* line, plattype_e type, int amount );
-DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator );
 
 DOOM_C_API void    P_AddActivePlat(plat_t* plat);
 DOOM_C_API void    P_RemoveActivePlat(plat_t* plat);
@@ -341,8 +340,6 @@ DOOM_C_API doombool EV_VerticalDoor( line_t* line, mobj_t* thing );
 
 DOOM_C_API int EV_DoDoor( line_t* line, vldoor_e type );
 DOOM_C_API int EV_DoLockedDoor( line_t* line, vldoor_e type, mobj_t* thing );
-
-DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator );
 
 DOOM_C_API void    T_VerticalDoor (vldoor_t* door);
 DOOM_C_API void    T_VerticalDoorGeneric( vldoor_t* door );
@@ -577,6 +574,11 @@ DOOM_C_API void T_MoveFloor( floormove_t* floor);
 // P_TELEPT
 //
 DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
+
+// Generic functionality
+DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator );
 
 #if defined( __cplusplus )
 

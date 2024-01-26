@@ -634,6 +634,12 @@ P_CrossSpecialLine
 {
     int		ok;
 
+	if( line->action )
+	{
+		line->action->Handle( line, thing, thing->flags & MF_MISSILE ? LT_Missile : LT_Walk, side );
+		return;
+	}
+
     if (gameversion <= exe_doom_1_2)
     {
         if (line->special > 98 && line->special != 104)
@@ -655,22 +661,12 @@ P_CrossSpecialLine
 			case MT_TROOPSHOT:
 			case MT_HEADSHOT:
 			case MT_BRUISERSHOT:
-				if( line->action )
-				{
-					line->action->Handle( line, thing, LT_Missile, side );
-				}
 				return;
 
 			default:
 				break;
 			}
 		}
-	}
-
-	if( line->action )
-	{
-		line->action->Handle( line, thing, LT_Walk, side );
-		return;
 	}
 
     if (!thing->player)

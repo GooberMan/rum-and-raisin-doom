@@ -249,6 +249,7 @@ struct sector_s
 
 	// list of mobjs in sector
 	mobj_t*				thinglist;
+	mobj_t*				nosectorthinglist;
 
 	// thinker_t for reversable actions
 	void*				specialdata;

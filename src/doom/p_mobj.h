@@ -225,6 +225,9 @@ DOOM_C_API typedef struct mobj_s
     struct mobj_s*	snext;
     struct mobj_s*	sprev;
 
+	struct mobj_s*	nosectornext;
+	struct mobj_s*	nosectorprev;
+
     //More drawing info: to determine current sprite.
     angle_t		angle;	// orientation
     spritenum_t		sprite;	// used to find patch_t and flip value
