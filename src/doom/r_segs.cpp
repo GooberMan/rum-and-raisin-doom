@@ -907,12 +907,10 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		if ( ((bspcontext.thisdrawseg->silhouette & SIL_TOP) || loopcontext.maskedtexture)
 			&& !bspcontext.thisdrawseg->sprtopclip)
 		{
-	#if RANGECHECK
-			if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > MAXOPENINGS )
+			if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > planecontext.openingscount )
 			{
-				I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+				R_IncreaseOpenings( planecontext );
 			}
-	#endif // RANGECHECK
 			memcpy (planecontext.lastopening, planecontext.ceilingclip+loopcontext.startx, sizeof(*planecontext.lastopening)*(loopcontext.stopx-loopcontext.startx));
 			bspcontext.thisdrawseg->sprtopclip = planecontext.lastopening - loopcontext.startx;
 			planecontext.lastopening += loopcontext.stopx - loopcontext.startx;
@@ -921,12 +919,10 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		if ( ((bspcontext.thisdrawseg->silhouette & SIL_BOTTOM) || loopcontext.maskedtexture)
 			&& !bspcontext.thisdrawseg->sprbottomclip)
 		{
-	#if RANGECHECK
-			if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > MAXOPENINGS )
+			if( ( planecontext.lastopening + loopcontext.stopx - loopcontext.startx ) - planecontext.openings > planecontext.openingscount )
 			{
-				I_Error ("R_StoreWallRange: exceeded MAXOPENINGS" );
+				R_IncreaseOpenings( planecontext );
 			}
-	#endif // RANGECHECK
 			memcpy (planecontext.lastopening, planecontext.floorclip+loopcontext.startx, sizeof(*planecontext.lastopening)*(loopcontext.stopx-loopcontext.startx));
 			bspcontext.thisdrawseg->sprbottomclip = planecontext.lastopening - loopcontext.startx;
 			planecontext.lastopening += loopcontext.stopx - loopcontext.startx;	
