@@ -348,8 +348,8 @@ enum MBF21Actions : uint32_t
 
 enum ActionArrayValues : uint32_t
 {
-	Actions_BuiltIn_Count	= (uint32_t)MBFActions_Max - (uint32_t)DoomActions_Min,
-	Actions_BuiltIn_Min		= (uint32_t)DoomActions_Min,
+	Actions_BuiltIn_Count	= (uint32_t)MBFActions_Max - (uint32_t)DoomActions_Min + 1,
+	Actions_BuiltIn_Min		= 0,
 
 	Actions_MBF21_Count		= (uint32_t)MBF21Actions_Max,
 	Actions_MBF21_Min		= (uint32_t)MBF21Actions_Max - (uint32_t)MBF21Actions_Min,

@@ -703,6 +703,268 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{},
 	// Crusher_Silent_W1_Player
 	{},
+	// Floor_Raise512_W1_Player
+	{},
+	// Platform_Raise24ChangeTexture_W1_Player
+	{},
+	// Platform_Raise32ChangeTexture_W1_Player
+	{},
+	// Ceiling_LowerToFloor_W1_Player
+	{},
+	// Sector_Donut_W1_Player
+	{},
+	// Floor_Raise512_WR_Player
+	{},
+	// Platform_Raise24ChangeTexture_WR_Player
+	{},
+	// Platform_Raise32ChangeTexture_WR_Player
+	{},
+	// Crusher_Silent_WR_Player
+	{},
+	// Ceiling_RaiseHighestCeiling_WR_Player
+	{},
+	// Ceiling_LowerToFloor_WR_Player
+	{},
+	// Floor_ChangeTexture_W1_Player
+	{},
+	// Floor_ChangeTexture_WR_Player
+	{},
+	// Sector_Donut_WR_Player
+	{},
+	// Light_Strobe_WR_Player
+	{},
+	// Light_SetLowest_WR_Player
+	{},
+	// Floor_RaiseByTexture_S1_Player
+	{},
+	// Floor_LowerLowestChangeTexture_NumericModel_S1_Player
+	{},
+	// Floor_Raise24ChangeTexture_S1_Player
+	{},
+	// Floor_Raise24_S1_Player
+	{},
+	// Platform_Perpetual_S1_Player
+	{},
+	// Platform_Stop_S1_Player
+	{},
+	// Crusher_Fast_S1_Player
+	{},
+	// Crusher_Silent_S1_Player
+	{},
+	// Ceiling_RaiseHighestCeiling_S1_Player
+	{},
+	// Ceiling_LowerTo8AboveFloor_S1_Player
+	{},
+	// Crusher_Stop_S1_Player
+	{},
+	// Light_SetBrightest_S1_Player
+	{},
+	// Light_SetTo35_S1_Player
+	{},
+	// Light_SetTo255_S1_Player
+	{},
+	// Light_Strobe_S1_Player
+	{},
+	// Light_SetLowest_S1_Player
+	{},
+	// Teleport_Thing_S1_All
+	{},
+	// Door_Close30Open_S1_Player
+	{},
+	// Floor_RaiseByTexture_SR_Player
+	{},
+	// Floor_LowerLowestChangeTexture_NumericModel_SR_Player
+	{},
+	// Floor_Raise512_SR_Player
+	{},
+	// Floor_Raise24ChangeTexture_SR_Player
+	{},
+	// Floor_Raise24_SR_Player
+	{},
+	// Platform_Perpetual_SR_Player
+	{},
+	// Platform_Stop_SR_Player
+	{},
+	// Crusher_Fast_SR_Player
+	{},
+	// Crusher_SR_Player
+	{},
+	// Crusher_Silent_SR_Player
+	{},
+	// Ceiling_RaiseHighestCeiling_SR_Player
+	{},
+	// Ceiling_LowerTo8AboveFloor_SR_Player
+	{},
+	// Crusher_Stop_SR_Playe
+	{},
+	// Floor_ChangeTexture_S1_Player
+	{},
+	// Floor_ChangeTexture_SR_Player
+	{},
+	// Sector_Donut_SR_Player
+	{},
+	// Light_SetBrightest_SR_Player
+	{},
+	// Light_Strobe_SR_Player
+	{},
+	// Light_SetLowest_SR_Player
+	{},
+	// Teleport_Thing_SR_All
+	{},
+	// Door_Close30Open_SR_Player
+	{},
+	// Exit_Normal_G1_Player
+	{},
+	// Exit_Secret_G1_Player
+	{},
+	// Ceiling_LowerLowerstCeiling_W1_Player
+	{},
+	// Ceiling_LowerHighestFloor_W1_Player
+	{},
+	// Ceiling_LowerLowerstCeiling_WR_Player
+	{},
+	// Ceiling_LowerHighestFloor_WR_Player
+	{},
+	// Ceiling_LowerLowerstCeiling_S1_Player
+	{},
+	// Ceiling_LowerHighestFloor_S1_Player
+	{},
+	// Ceiling_LowerLowerstCeiling_SR_Player
+	{},
+	// Ceiling_LowerHighestFloor_SR_Player
+	{},
+	// Teleport_ThingSilentPreserve_W1_All
+	{},
+	// Teleport_ThingSilentPreserve_WR_All
+	{},
+	// Teleport_ThingSilentPreserve_S1_All
+	{},
+	// Teleport_ThingSilentPreserve_SR_All
+	{},
+	// Platform_RaiseInstantCeiling_SR_Player
+	{},
+	// Platform_RaiseInstantCeiling_WR_Player
+	{},
+	// Transfer_FloorLighting_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_CeilingTexture_Accelerative_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorTexture_Accelerative_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorObjects_Accelerative_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorTextureObjects_Accelerative_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureBySector_Accelerative_Always
+	{},
+	// Floor_LowerNearest_W1_Player
+	{},
+	// Floor_LowerNearest_WR_Player
+	{},
+	// Floor_LowerNearest_S1_Player
+	{},
+	// Floor_LowerNearest_SR_Player
+	{},
+	// Transfer_Friction_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Transfer_WindByLength_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Transfer_CurrentByLength_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Transfer_WindOrCurrentByPoint_Always
+	{},
+	// Elevator_Up_W1_Player
+	{},
+	// Elevator_Up_WR_Player
+	{},
+	// Elevator_Up_S1_Player
+	{},
+	// Elevator_Up_SR_Player
+	{},
+	// Elevator_Down_W1_Player
+	{},
+	// Elevator_Down_WR_Player
+	{},
+	// Elevator_Down_S1_Player
+	{},
+	// Elevator_Down_SR_Player
+	{},
+	// Elevator_Call_W1_Player
+	{},
+	// Elevator_Call_WR_Player
+	{},
+	// Elevator_Call_S1_Player
+	{},
+	// Elevator_Call_SR_Player
+	{},
+	// Floor_ChangeTexture_NumericModel_W1_Player
+	{},
+	// Floor_ChangeTexture_NumericModel_WR_Player
+	{},
+	// Floor_ChangeTexture_NumericModel_S1_Player
+	{},
+	// Transfer_Properties_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Teleport_LineSilentPreserve_W1_All
+	{},
+	// Teleport_LineSilentPreserve_WR_All
+	{},
+	// Scroll_CeilingTexture_Displace_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorTexture_Displace_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorObjects_Displace_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorTextureObjects_Displace_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureBySector_Displace_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_CeilingTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorObjects_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_FloorTextureObjects_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureBySector_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureByOffset_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Stairs_BuildBy8_WR_Player
+	{},
+	// Stairs_BuildBy16Fast_WR_Player
+	{},
+	// Stairs_BuildBy8_SR_Player
+	{},
+	// Stairs_BuildBy16Fast_SR_Player
+	{},
+	// Texture_Translucent_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Transfer_CeilingLighting_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Teleport_LineSilentReversed_W1_All
+	{},
+	// Teleport_LineSilentReversed_WR_All
+	{},
+	// Teleport_LineSilentReversed_W1_Monsters
+	{},
+	// Teleport_LineSilentReversed_WR_Monsters
+	{},
+	// Teleport_LineSilentPreserve_W1_Monsters
+	{},
+	// Teleport_LineSilentPreserve_WR_Monsters
+	{},
+	// Teleport_ThingSilent_W1_Monsters
+	{},
+	// Teleport_ThingSilent_WR_Monsters
+	{},
+	// Unknown_270
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Transfer_Sky_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Transfer_SkyReversed_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 };
 
 // Another ugly table
