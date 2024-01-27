@@ -79,9 +79,6 @@
     <ClCompile Include="..\src\doom\p_ceilng.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_enemy.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\p_floor.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -209,6 +206,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\p_lights.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_enemy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_actionsmbf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

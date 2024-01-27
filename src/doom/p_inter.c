@@ -679,10 +679,7 @@ P_TouchSpecialThing
 //
 // KillMobj
 //
-void
-P_KillMobj
-( mobj_t*	source,
-  mobj_t*	target )
+void P_KillMobj( mobj_t* source, mobj_t* target )
 {
 	mobjtype_t	item;
 	mobj_t*	mo;

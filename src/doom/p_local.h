@@ -131,7 +131,7 @@ DOOM_C_API void			P_SpawnPlayerMissile (mobj_t* source, mobjtype_t type);
 // P_ENEMY
 //
 DOOM_C_API void			P_NoiseAlert (mobj_t* target, mobj_t* emmiter);
-
+DOOM_C_API doombool		P_CheckMeleeRange( mobj_t* actor );
 
 //
 // P_MAPUTL
@@ -164,12 +164,12 @@ DOOM_C_API void				P_MakeDivline (line_t* li, divline_t* dl);
 DOOM_C_API fixed_t			P_InterceptVector (divline_t* v2, divline_t* v1);
 DOOM_C_API int				P_BoxOnLineSide (fixed_t* tmbox, line_t* ld);
 
-extern fixed_t		opentop;
-extern fixed_t 		openbottom;
-extern fixed_t		openrange;
-extern fixed_t		lowfloor;
+DOOM_C_API extern fixed_t	opentop;
+DOOM_C_API extern fixed_t 	openbottom;
+DOOM_C_API extern fixed_t	openrange;
+DOOM_C_API extern fixed_t	lowfloor;
 
-void 	P_LineOpening (line_t* linedef);
+DOOM_C_API void				P_LineOpening (line_t* linedef);
 
 DOOM_C_API doombool			P_BlockLinesIterator (int x, int y, doombool(*func)(line_t*) );
 DOOM_C_API doombool			P_BlockThingsIterator (int x, int y, doombool(*func)(mobj_t*) );
@@ -255,6 +255,7 @@ DOOM_C_API extern int		clipammo[NUMAMMO];
 DOOM_C_API void P_TouchSpecialThing( mobj_t* special,  mobj_t* toucher );
 
 DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int damage );
+DOOM_C_API void P_KillMobj( mobj_t* source, mobj_t* target );
 
 
 //

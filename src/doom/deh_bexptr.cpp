@@ -32,6 +32,7 @@
 // This is fairly evil, and won't survive the transition to C++
 extern "C"
 {
+	// Doom actions
 	void A_Light0();
 	void A_WeaponReady();
 	void A_Lower();
@@ -106,6 +107,17 @@ extern "C"
 	void A_SpawnSound();
 	void A_SpawnFly();
 	void A_BrainExplode();
+
+	// MBF actions
+	void A_Detonate();
+	void A_Mushroom();
+	void A_Spawn();
+	void A_Turn();
+	void A_Face();
+	void A_Scratch();
+	void A_RandomJump();
+	void A_LineEffect();
+	void A_Die();
 }
 
 #define FuncType( x ) { #x, { &A_ ## x } }
@@ -113,6 +125,8 @@ extern "C"
 static std::map< DoomString, actionf_t > PointerLookup =
 {
 	{ "NULL", { nullptr } },
+
+	// Doom actions
 	FuncType( Light0 ),
 	FuncType( WeaponReady ),
 	FuncType( Lower ),
@@ -187,6 +201,17 @@ static std::map< DoomString, actionf_t > PointerLookup =
 	FuncType( SpawnSound ),
 	FuncType( SpawnFly ),
 	FuncType( BrainExplode ),
+
+	// MBF actions
+	FuncType( Detonate ),
+	FuncType( Mushroom ),
+	FuncType( Spawn ),
+	FuncType( Turn ),
+	FuncType( Face ),
+	FuncType( Scratch ),
+	FuncType( RandomJump ),
+	FuncType( LineEffect ),
+	FuncType( Die ),
 };
 
 static void *DEH_BEXPtrStart( deh_context_t* context, char* line )

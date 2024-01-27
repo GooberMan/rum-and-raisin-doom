@@ -79,7 +79,7 @@ P_SetMobjState
 	if (st->action.acp1)		
 	    st->action.acp1(mobj);	
 	
-	state = st->nextstate;
+	state = mobj->overridestate ? mobj->overridestate : st->nextstate;
 
 	if (cycle_counter++ > MOBJ_CYCLE_LIMIT)
 	{

@@ -299,7 +299,8 @@ DOOM_C_API typedef struct mobj_s
 	uint64_t teleporttic;
 
 	int32_t resurrection_count;
-    
+	int32_t overridestate;
+	int32_t successfullineeffect;
 } mobj_t;
 
 #if defined( __cplusplus )
