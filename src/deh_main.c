@@ -279,7 +279,6 @@ static void DEH_ParseComment(char *comment)
 }
 
 // Parses a dehacked file by reading from the context
-
 static void DEH_ParseContext(deh_context_t *context)
 {
     deh_section_t *current_section = NULL;
@@ -348,14 +347,20 @@ static void DEH_ParseContext(deh_context_t *context)
             }
             else
             {
-                // possibly the start of a new section
-
-				if( strncmp( line, "Doom version", 12 ) == 0
-					|| strncmp( line, "Patch format", 12 ) == 0 )
+				if( strncmp( line, "Doom version", 12 ) == 0 )
+				{
+					int32_t version_number = deh_allow_bex ? deh_boom : deh_vanilla;
+					sscanf( line, "Doom version = %i", &version_number );
+					DEH_SetDoomVersion( context, version_number );
+					continue;
+				}
+				
+				if( strncmp( line, "Patch format", 12 ) == 0 )
 				{
 					continue;
 				}
 
+                // possibly the start of a new section
                 sscanf(line, "%19s", section_name);
 
                 current_section = GetSectionByName(section_name);

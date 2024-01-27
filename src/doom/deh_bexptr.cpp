@@ -120,9 +120,16 @@ extern "C"
 	void A_Die();
 }
 
-#define FuncType( x ) { #x, { &A_ ## x } }
+struct funcmapping_t
+{
+	actionf_t	action;
+	int32_t		minimumver;
+};
 
-static std::map< DoomString, actionf_t > PointerLookup =
+#define FuncType( x ) { #x, { { &A_ ## x }, deh_vanilla } }
+#define MBF21FuncType( x ) { #x, { { &A_ ## x }, deh_mbf21 } }
+
+static std::map< DoomString, funcmapping_t > PointerLookup =
 {
 	{ "NULL", { nullptr } },
 
@@ -203,15 +210,15 @@ static std::map< DoomString, actionf_t > PointerLookup =
 	FuncType( BrainExplode ),
 
 	// MBF actions
-	FuncType( Detonate ),
-	FuncType( Mushroom ),
-	FuncType( Spawn ),
-	FuncType( Turn ),
-	FuncType( Face ),
-	FuncType( Scratch ),
-	FuncType( RandomJump ),
-	FuncType( LineEffect ),
-	FuncType( Die ),
+	MBF21FuncType( Detonate ),
+	MBF21FuncType( Mushroom ),
+	MBF21FuncType( Spawn ),
+	MBF21FuncType( Turn ),
+	MBF21FuncType( Face ),
+	MBF21FuncType( Scratch ),
+	MBF21FuncType( RandomJump ),
+	MBF21FuncType( LineEffect ),
+	MBF21FuncType( Die ),
 };
 
 static void *DEH_BEXPtrStart( deh_context_t* context, char* line )
@@ -245,13 +252,14 @@ static void DEH_BEXPtrParseLine( deh_context_t *context, char* line, void* tag )
 	}
 
 	auto found = PointerLookup.find( frame_func );
-	if( found == PointerLookup.end() )
+	if( found == PointerLookup.end()
+		|| found->second.minimumver < DEH_DoomVersion( context ) )
 	{
 		DEH_Warning( context, "'%s' is an invalid function", frame_func );
 		return;
 	}
 
-	states[ frame_number ].action = found->second;
+	states[ frame_number ].action = found->second.action;
 }
 
 DOOM_C_API deh_section_t deh_section_bexptr =

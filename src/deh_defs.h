@@ -29,6 +29,14 @@ DOOM_C_API typedef void (*deh_section_end_t)(deh_context_t *context, void *tag);
 DOOM_C_API typedef void (*deh_line_parser_t)(deh_context_t *context, char *line, void *tag);
 DOOM_C_API typedef void (*deh_sha1_hash_t)(sha1_context_t *context);
 
+DOOM_C_API typedef enum deh_doomversion_e
+{
+	deh_vanilla = 21,
+	deh_boom = deh_vanilla,
+	deh_mbf = deh_vanilla,
+	deh_mbf21 = 2021,
+} deh_doomversion_t;
+
 DOOM_C_API struct deh_section_s
 {
     const char *name;

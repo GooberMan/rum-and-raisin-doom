@@ -23,6 +23,7 @@
 
 // Needed for action function pointer handling.
 #include "d_think.h"
+#include "m_fixed.h"
 
 DOOM_C_API typedef enum
 {
@@ -1145,6 +1146,12 @@ DOOM_C_API typedef enum
 	NUMSTATES,
 } statenum_t;
 
+DOOM_C_API typedef union statearg_u
+{
+	int32_t		_int;
+	uint32_t	_uint;
+	fixed_t		_fixed;
+} statearg_t;
 
 DOOM_C_API typedef struct
 {
@@ -1156,6 +1163,16 @@ DOOM_C_API typedef struct
     statenum_t nextstate;
     int misc1;
     int misc2;
+	
+	// MBF extensions
+	statearg_t arg1;
+	statearg_t arg2;
+	statearg_t arg3;
+	statearg_t arg4;
+	statearg_t arg5;
+	statearg_t arg6;
+	statearg_t arg7;
+	statearg_t arg8;
 } state_t;
 
 DOOM_C_API extern state_t	states[NUMSTATES];

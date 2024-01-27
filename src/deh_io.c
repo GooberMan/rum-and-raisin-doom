@@ -29,6 +29,7 @@
 
 #include "deh_defs.h"
 #include "deh_io.h"
+#include "deh_main.h"
 
 typedef enum
 {
@@ -62,6 +63,8 @@ struct deh_context_s
 
     // Error handling.
     doombool had_error;
+
+	int32_t doomversion;
 };
 
 static deh_context_t *DEH_NewContext(void)
@@ -78,6 +81,7 @@ static deh_context_t *DEH_NewContext(void)
     context->last_was_newline = true;
 
     context->had_error = false;
+	context->doomversion = deh_allow_bex ? deh_boom : deh_vanilla;
 
     return context;
 }
@@ -329,5 +333,15 @@ void DEH_Error(deh_context_t *context, const char *msg, ...)
 doombool DEH_HadError(deh_context_t *context)
 {
     return context->had_error;
+}
+
+int32_t DEH_DoomVersion(deh_context_t* context)
+{
+	return context->doomversion;
+}
+
+int32_t DEH_SetDoomVersion(deh_context_t* context, int32_t version)
+{
+	context->doomversion = version;
 }
 

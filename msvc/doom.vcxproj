@@ -410,6 +410,7 @@
     <ClCompile Include="..\src\doom\d_playsim_chex.cpp" />
     <ClCompile Include="..\src\doom\d_playsim_hacx.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf.cpp" />
+    <ClCompile Include="..\src\doom\p_actionsmbf21.cpp" />
     <ClCompile Include="..\src\doom\p_doors.cpp" />
     <ClCompile Include="..\src\doom\p_enemy.cpp" />
     <ClCompile Include="..\src\doom\p_lights.cpp" />
