@@ -479,8 +479,7 @@ int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 	}
 
 	doombool raising = line->action->AnimatedActivationType() == LT_Use
-					&& (doordir_t)line->action->param1 == doordir_open
-					&& line->action->delay > 0;
+					&& (doordir_t)line->action->param1 == doordir_open;
 	if( raising )
 	{
 		if( line->backsector->specialdata )
