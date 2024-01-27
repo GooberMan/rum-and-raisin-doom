@@ -1132,6 +1132,7 @@ lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
+#if 0
 	if( !remove_limits )
 	{
 		return nullptr;
@@ -1163,6 +1164,7 @@ DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 			return CreateBoomGeneralisedLineAction( line );
 		}
 	}
+#endif
 
 	return nullptr;
 }

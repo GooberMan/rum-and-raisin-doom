@@ -13,13 +13,13 @@ FILETYPE 1
  {
   BLOCK "040904E4"
   {
-   VALUE "FileVersion", "0.3.1-pre.6"
-   VALUE "FileDescription", "Rum and Raisin Doom 0.3.1-pre.6"
+   VALUE "FileVersion", "0.3.1-pre.7"
+   VALUE "FileDescription", "Rum and Raisin Doom 0.3.1-pre.7"
    VALUE "InternalName", "run-and-raisin-doom"
    VALUE "CompanyName", "Ethan Watson"
-   VALUE "LegalCopyright", "Copyright (C) 1993-2022. Licensed under GNU General Public License, version 2"
+   VALUE "LegalCopyright", "Copyright (C) 1993-2024. Licensed under GNU General Public License, version 2"
    VALUE "ProductName", "Rum and Raisin Doom"
-   VALUE "ProductVersion", "0.3.1-pre.6"
+   VALUE "ProductVersion", "0.3.1-pre.7"
   }
  }
  BLOCK "VarFileInfo"
