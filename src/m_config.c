@@ -2894,7 +2894,7 @@ char *M_GetAutoloadDir(const char *iwadname)
 
     if (autoload_path == NULL || strlen(autoload_path) == 0)
     {
-		autoload_path = M_StringJoin( configdir, "autoload" );
+		autoload_path = M_StringJoin( configdir ? configdir : "." DIR_SEPARATOR_S, "autoload" );
 
         //char *prefdir;
         //prefdir = SDL_GetPrefPath("", PACKAGE_TARNAME);
@@ -2904,12 +2904,12 @@ char *M_GetAutoloadDir(const char *iwadname)
 
     M_MakeDirectory(autoload_path);
 
-    result = M_StringJoin(autoload_path, DIR_SEPARATOR_S, iwadname, NULL);
-    M_MakeDirectory(result);
+	result = M_StringJoin(autoload_path, DIR_SEPARATOR_S, iwadname ? iwadname : "unknown", NULL);
+	M_MakeDirectory(result);
 
-    // TODO: Add README file
+	// TODO: Add README file
 
-    return result;
+	return result;
 }
 
 const char* M_GetHomeFolder( void )

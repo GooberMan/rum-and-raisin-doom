@@ -1372,47 +1372,65 @@ namespace launcher
 
 						patch_t* patch = (patch_t*)source.data();
 
-						std::vector< pixel_t > composite;
-						composite.resize( patch->width * patch->height * sizeof( pixel_t ) );
+						int32_t patchwidth = TOSHORT( patch->width );
+						int32_t patchheight = TOSHORT( patch->height );
 
-						// Copy/paste and refactored from r_draw's texture composite generator
+						if( patchwidth <= 0 || patchwidth > 640
+							|| patchheight <= 0 || patchheight > 200 )
 						{
-							int32_t x1 = TOSHORT( patch->leftoffset );
-							int32_t x2 = M_MIN( x1 + TOSHORT( patch->width ), TOSHORT( patch->width ) );
+							I_LogAddEntryVar( Log_Warning, "%s '%' has malformed TITLEPIC, replacing with all white"
+								, ( entry.type == DoomFileType::IWAD ? "IWAD" : "PWAD" )
+								, entry.filename.c_str() );
+							// malformed titlepic
+							entry.titlepic.width = 320;
+							entry.titlepic.height = 200;
+							entry.titlepic_raw.resize( entry.titlepic.width * entry.titlepic.height );
+							memset( entry.titlepic_raw.data(), 0xFF, 320 * 200 * sizeof( bgra_t ) );
+						}
+						else
+						{
+							std::vector< pixel_t > composite;
+							composite.resize( patchwidth * patchheight * sizeof( pixel_t ) );
 
-							int32_t x = M_MAX( x1, 0 );
-	
-							for ( ; x < x2 ; ++x )
+							// Copy/paste and refactored from r_draw's texture composite generator
 							{
-								column_t* patchcol = (column_t*)( (byte*)patch
-														+ TOLONG( patch->columnofs[ x - x1 ] ) );
+								int32_t x1 = TOSHORT( patch->leftoffset );
+								int32_t x2 = M_MIN( x1 + patchwidth, patchwidth );
 
-								int32_t patchy = patch->topoffset;
-								while( patchy < patch->height )
+								int32_t x = M_MAX( x1, 0 );
+	
+								for ( ; x < x2 ; ++x )
 								{
-									R_DrawColumnInCache( patchcol, composite.data() + x * TOSHORT( patch->height ), patchy, patch->height );
-									patchy += patch->height;
+									column_t* patchcol = (column_t*)( (byte*)patch
+															+ TOLONG( patch->columnofs[ x - x1 ] ) );
+
+									int32_t patchy = patch->topoffset;
+									while( patchy < patchheight )
+									{
+										R_DrawColumnInCache( patchcol, composite.data() + x * patchheight, patchy, patchheight );
+										patchy += patchheight;
+									}
 								}
 							}
-						}
 
-						entry.titlepic_raw.resize( patch->width * patch->height );
-						entry.titlepic.width = patch->width;
-						entry.titlepic.height = patch->height;
+							entry.titlepic_raw.resize( patchwidth * patchheight );
+							entry.titlepic.width = patchwidth;
+							entry.titlepic.height = patchheight;
 
-						for( int32_t x = 0; x < patch->width; ++x )
-						{
-							pixel_t* source = composite.data() + x * patch->height;
-							bgra_t* dest = entry.titlepic_raw.data() + x;
-							for( int32_t y = 0; y < patch->height; ++y )
+							for( int32_t x = 0; x < patchwidth; ++x )
 							{
-								rgb_t& entry = pallette[ *source ];
-								dest->b = entry.b;
-								dest->g = entry.g;
-								dest->r = entry.r;
-								dest->a = 0xFF;
-								++source;
-								dest += patch->width;
+								pixel_t* source = composite.data() + x * patchheight;
+								bgra_t* dest = entry.titlepic_raw.data() + x;
+								for( int32_t y = 0; y < patchheight; ++y )
+								{
+									rgb_t& entry = pallette[ *source ];
+									dest->b = entry.b;
+									dest->g = entry.g;
+									dest->r = entry.r;
+									dest->a = 0xFF;
+									++source;
+									dest += patchwidth;
+								}
 							}
 						}
 					}
