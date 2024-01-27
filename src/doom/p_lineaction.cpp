@@ -376,6 +376,8 @@ MakeGenericFunc( Lift, EV_DoLiftGeneric );
 MakeGenericFunc( PerpetualLiftStart, EV_DoPerpetualLiftGeneric );
 MakeGenericFunc( PlatformStop, EV_StopAnyLiftGeneric );
 MakeGenericFunc( Teleport, EV_DoTeleportGeneric );
+MakeGenericFunc( Exit, EV_DoExitGeneric );
+MakeGenericFunc( LightSet, EV_DoLightSetGeneric );
 
 template< typename func >
 static void DoGeneric( line_t* line, mobj_t* activator )
@@ -440,11 +442,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Platform_DownWaitUp_W1_All
 	{ &precon::IsAnyThing, &DoGenericOnce< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Exit_Normal_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_Switch | LT_FrontSide, LL_None, 0, 0, exit_normal },
 	// Light_SetBrightest_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_highestsurround_firsttagged },
 	// Light_SetTo255_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_value, 255 },
 	// Platform_Raise32ChangeTexture_S1_Player
 	{},
 	// Platform_Raise24ChangeTexture_S1_Player
@@ -488,7 +490,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_OpenYellow_U1_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericOnce< Door >, LT_Use | LT_FrontSide, LL_Yellow, constants::doorspeeds[ Speed_Slow ], 0, doordir_open },
 	// Light_SetTo35_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_value, 35 },
 	// Floor_LowerHighestFast_W1_Player
 	{},
 	// Floor_LowerLowestChangeTexture_NumericModel_W1_Player
@@ -496,7 +498,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_LowerLowest_W1_Player
 	{},
 	// Teleport_Thing_W1_All
-	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_Walk | LT_FrontSide, LL_None },
+	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_Walk | LT_BothSides, LL_None },
 	// Ceiling_RaiseHighestCeiling_W1_Player
 	{},
 	// Ceiling_LowerToFloor_S1_Player
@@ -520,9 +522,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_Close_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_Switch | LT_FrontSide, LL_None, constants::doorspeeds[ Speed_Slow ], 0, doordir_close },
 	// Exit_Secret_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_Switch | LT_FrontSide, LL_None, 0, 0, exit_secret },
 	// Exit_Normal_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Exit >, LT_Walk | LT_BothSides, LL_None, 0, 0, exit_normal },
 	// Platform_Perpetual_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< PerpetualLiftStart >, LT_Walk | LT_BothSides, LL_None, constants::perpetualplatformspeeds[ Speed_Slow ], constants::liftdelay[ liftdelay_3sec ] },
 	// Platform_Stop_W1_Player
@@ -577,11 +579,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Boom: Floor_ChangeTexture_NumericModel_SR_Player
 	{},
 	// Light_SetTo35_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_value, 35 },
 	// Light_SetBrightest_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_highestsurround_firsttagged },
 	// Light_SetTo255_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_value, 35 },
 	// Floor_LowerLowest_WR_Player
 	{},
 	// Floor_LowerHighest_WR_Player
@@ -614,7 +616,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_RaiseByTexture_WR_Player
 	{},
 	// Teleport_Thing_WR_All
-	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_Walk | LT_FrontSide, LL_None },
+	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_Walk | LT_BothSides, LL_None },
 	// Floor_LowerHighestFast_WR_Player
 	{},
 	// Door_OpenFastBlue_SR_Player
@@ -628,7 +630,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_Open_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_Switch | LT_FrontSide, LL_None, constants::doorspeeds[ Speed_Fast ], 0, doordir_open },
 	// Light_SetLowest_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_lowestsurround },
 	// Door_RaiseFast_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Door >, LT_Walk | LT_BothSides, LL_None, constants::doorspeeds[ Speed_Fast ], constants::doordelay[ doordelay_4sec ], doordir_open },
 	// Door_OpenFast_WR_Player
@@ -668,11 +670,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Platform_DownWaitUpFast_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
 	// Exit_Secret_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Exit >, LT_Walk | LT_BothSides, LL_None, 0, 0, exit_secret },
 	// Teleport_Thing_W1_Monsters
-	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_Walk | LT_FrontSide, LL_None },
+	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_Walk | LT_BothSides, LL_None },
 	// Teleport_Thing_WR_Monsters
-	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_Walk | LT_FrontSide, LL_None },
+	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_Walk | LT_BothSides, LL_None },
 	// Stairs_BuildBy16Fast_S1_Player
 	{},
 	// Floor_RaiseNearest_WR_Player
@@ -694,11 +696,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_OpenFastYellow_SR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericSwitch< Door >, LT_Switch | LT_FrontSide, LL_Yellow, constants::doorspeeds[ Speed_Fast ], 0, doordir_open },
 	// Door_OpenFastYellow_S1_Player
-	{ &precon::HasAnyKeyOfColour, &DoGenericSwitch< Door >, LT_Switch | LT_FrontSide, LL_Yellow, constants::doorspeeds[ Speed_Fast ], 0, doordir_open },
+	{ &precon::HasAnyKeyOfColour, &DoGenericSwitchOnce< Door >, LT_Switch | LT_FrontSide, LL_Yellow, constants::doorspeeds[ Speed_Fast ], 0, doordir_open },
 	// Light_SetTo255_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_value, 255 },
 	// Light_SetTo35_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_value, 35 },
 	// Floor_Raise512_S1_Player
 	{},
 	// Crusher_Silent_W1_Player
@@ -734,7 +736,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_Strobe_WR_Player
 	{},
 	// Light_SetLowest_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_Walk | LT_BothSides, LL_None, 0, 0, lightset_lowestsurround },
 	// Floor_RaiseByTexture_S1_Player
 	{},
 	// Floor_LowerLowestChangeTexture_NumericModel_S1_Player
@@ -758,15 +760,15 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Crusher_Stop_S1_Player
 	{},
 	// Light_SetBrightest_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_highestsurround_firsttagged },
 	// Light_SetTo35_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_value, 35 },
 	// Light_SetTo255_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_value, 255 },
 	// Light_Strobe_S1_Player
 	{},
 	// Light_SetLowest_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_lowestsurround },
 	// Teleport_Thing_S1_All
 	{},
 	// Door_Close30Open_S1_Player
@@ -804,19 +806,19 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Sector_Donut_SR_Player
 	{},
 	// Light_SetBrightest_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_highestsurround_firsttagged },
 	// Light_Strobe_SR_Player
 	{},
 	// Light_SetLowest_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_lowestsurround },
 	// Teleport_Thing_SR_All
 	{},
 	// Door_Close30Open_SR_Player
 	{},
 	// Exit_Normal_G1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_Gun | LT_FrontSide, LL_None, 0, 0, exit_normal },
 	// Exit_Secret_G1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_Gun | LT_FrontSide, LL_None, 0, 0, exit_secret },
 	// Ceiling_LowerLowerstCeiling_W1_Player
 	{},
 	// Ceiling_LowerHighestFloor_W1_Player

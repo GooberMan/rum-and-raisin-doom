@@ -683,8 +683,13 @@ struct lineaction_s
 	linelock_t					lock;
 	int32_t						speed;
 	int32_t						delay;
-	int32_t						param1;		// Generalised parameters interpreted differently by different actions
-	int32_t						param2;		// Generalised parameters interpreted differently by different actions
+
+	// Generalised parameters interpreted differently by different actions
+	int32_t						param1;
+	int32_t						param2;
+	int32_t						param3;
+	int32_t						param4;
+	int32_t						param5;
 
 #if defined(__cplusplus)
 	constexpr linetrigger_t ActivationType() const			{ return trigger & LT_ActivationTypeMask; }

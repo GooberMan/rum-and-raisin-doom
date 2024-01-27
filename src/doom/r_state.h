@@ -137,6 +137,11 @@ INLINE auto Lines()
 	return std::span( lines, numlines );
 }
 
+constexpr auto Lines( sector_t& sector )
+{
+	return std::span( sector.lines, sector.linecount );
+}
+
 INLINE auto Sides()
 {
 	return std::span( sides, numsides );

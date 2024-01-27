@@ -21,10 +21,11 @@
 
 #include "z_zone.h"
 #include "m_random.h"
+#include "m_misc.h"
 
 #include "doomdef.h"
 #include "p_local.h"
-
+#include "p_lineaction.h"
 
 // State.
 #include "r_state.h"
@@ -66,7 +67,7 @@ void P_SpawnFireFlicker (sector_t*	sector)
     // Nothing special about it during gameplay.
     sector->special = 0; 
 	
-    flick = Z_Malloc ( sizeof(*flick), PU_LEVSPEC, 0);
+    flick = (fireflicker_t*)Z_Malloc ( sizeof(*flick), PU_LEVSPEC, 0);
 
     P_AddThinker (&flick->thinker);
 
@@ -121,7 +122,7 @@ void P_SpawnLightFlash (sector_t*	sector)
     // nothing special about it during gameplay
     sector->special = 0;	
 	
-    flash = Z_Malloc ( sizeof(*flash), PU_LEVSPEC, 0);
+    flash = (lightflash_t*)Z_Malloc ( sizeof(*flash), PU_LEVSPEC, 0);
 
     P_AddThinker (&flash->thinker);
 
@@ -178,7 +179,7 @@ P_SpawnStrobeFlash
 {
     strobe_t*	flash;
 	
-    flash = Z_Malloc ( sizeof(*flash), PU_LEVSPEC, 0);
+    flash = (strobe_t*)Z_Malloc ( sizeof(*flash), PU_LEVSPEC, 0);
 
     P_AddThinker (&flash->thinker);
 
@@ -335,7 +336,7 @@ void P_SpawnGlowingLight(sector_t*	sector)
 {
     glow_t*	g;
 	
-    g = Z_Malloc( sizeof(*g), PU_LEVSPEC, 0);
+    g = (glow_t*)Z_Malloc( sizeof(*g), PU_LEVSPEC, 0);
 
     P_AddThinker(&g->thinker);
 
@@ -348,3 +349,77 @@ void P_SpawnGlowingLight(sector_t*	sector)
     sector->special = 0;
 }
 
+static void SetDirect( sector_t& sector, int32_t& lightval )
+{
+	sector.lightlevel = lightval;
+}
+
+static void SetHighestFirstTagged( sector_t& sector, int32_t& lightval )
+{
+	if( !lightval )
+	{
+		for( line_t* line : Lines( sector ) )
+		{
+			sector_t* nextsector = getNextSector( line, &sector );
+			if( nextsector )
+			{
+				lightval = M_MAX( lightval, nextsector->lightlevel );
+			}
+		}
+	}
+
+	sector.lightlevel = lightval;
+}
+
+static void SetLowest( sector_t& sector, int32_t& lightval )
+{
+	lightval = sector.lightlevel;
+	for( line_t* line : Lines( sector ) )
+	{
+		sector_t* nextsector = getNextSector( line, &sector );
+		if( nextsector )
+		{
+			lightval = M_MIN( lightval, nextsector->lightlevel );
+		}
+	}
+
+	sector.lightlevel = lightval;
+}
+
+static void SetHighest( sector_t& sector, int32_t& lightval )
+{
+	lightval = sector.lightlevel;
+	for( line_t* line : Lines( sector ) )
+	{
+		sector_t* nextsector = getNextSector( line, &sector );
+		if( nextsector )
+		{
+			lightval = M_MAX( lightval, nextsector->lightlevel );
+		}
+	}
+
+	sector.lightlevel = lightval;
+}
+
+using lightsetfunc_t = void(*)( sector_t&, int32_t& );
+constexpr lightsetfunc_t lightsetfuncs[] =
+{
+	&SetDirect,
+	&SetHighestFirstTagged,
+	&SetLowest,
+	&SetHighest
+};
+
+DOOM_C_API int32_t EV_DoLightSetGeneric( line_t* line, mobj_t* activator )
+{
+	int32_t lightval = line->action->param1 == lightset_value ? line->action->param2 : 0;
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag )
+		{
+			lightsetfuncs[ line->action->param1 ]( sector, lightval );
+		}
+	}
+	return 1;
+}

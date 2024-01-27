@@ -1521,7 +1521,10 @@ int EV_DoDonut(line_t*	line)
     return rtn;
 }
 
-
+DOOM_C_API int32_t EV_DoExitGeneric( line_t* line, mobj_t* activator )
+{
+	line->action->param1 ? G_SecretExitLevel() : G_ExitLevel();
+}
 
 //
 // SPECIAL SPAWNING
