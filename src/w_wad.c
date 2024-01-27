@@ -81,6 +81,11 @@ unsigned int W_LumpNameHash(const char *s)
 // LUMP BASED ROUTINES.
 //
 
+DOOM_C_API doombool W_HasAnyLumps()
+{
+	return numlumps > 0;
+}
+
 //
 // W_AddFile
 // All files are optional, but at least one file must be

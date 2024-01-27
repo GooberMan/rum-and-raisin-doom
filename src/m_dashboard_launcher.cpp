@@ -96,6 +96,9 @@ constexpr const char* GameMissions[] =
 	"The Plutonia Experiment",
 	"Chex Quest",
 	"HacX",
+	"Heretic (unplayable)",
+	"Hexen (unplayable)",
+	"Strife (unplayable)",
 };
 
 constexpr const char* GameModes[] =
@@ -935,7 +938,7 @@ namespace launcher
 		Dehacked,
 	};
 
-	constexpr int32_t DoomFileEntryVersion = 4;
+	constexpr int32_t DoomFileEntryVersion = 5;
 
 	struct LaunchOptions
 	{
@@ -1209,6 +1212,7 @@ namespace launcher
 					filelump_t* dehacked	= nullptr;
 					filelump_t* titlepic	= nullptr;
 					filelump_t* dmenupic	= nullptr;
+					filelump_t* mapinfo		= nullptr;
 					filelump_t* dmapinfo	= nullptr;
 					filelump_t* umapinfo	= nullptr;
 					filelump_t* playpal		= nullptr;
@@ -1218,6 +1222,8 @@ namespace launcher
 					filelump_t* e3m1		= nullptr;
 					filelump_t* e4m1		= nullptr;
 					filelump_t* map01		= nullptr;
+					filelump_t* map33		= nullptr;
+					filelump_t* map60		= nullptr;
 
 					fseek( file, header.infotableofs, SEEK_SET );
 					fread( lumps.data(), sizeof( filelump_t ), header.numlumps, file );
@@ -1244,6 +1250,7 @@ namespace launcher
 						else if( !strncmp( lump.name, "DEHACKED", 8 ) )		dehacked = &lump;
 						else if( !strncmp( lump.name, "TITLEPIC", 8 ) )		titlepic = &lump;
 						else if( !strncmp( lump.name, "DMENUPIC", 8 ) )		dmenupic = &lump;
+						else if( !strncmp( lump.name, "MAPINFO", 8 ) )		mapinfo = &lump;
 						else if( !strncmp( lump.name, "DMAPINFO", 8 ) )		dmapinfo = &lump;
 						else if( !strncmp( lump.name, "UMAPINFO", 8 ) )		umapinfo = &lump;
 						else if( !strncmp( lump.name, "PLAYPAL", 8 ) )		playpal = &lump;
@@ -1253,6 +1260,8 @@ namespace launcher
 						else if( !strncmp( lump.name, "E3M1", 8 ) )			e3m1 = &lump;
 						else if( !strncmp( lump.name, "E4M1", 8 ) )			e4m1 = &lump;
 						else if( !strncmp( lump.name, "MAP01", 8 ) )		map01 = &lump;
+						else if( !strncmp( lump.name, "MAP33", 8 ) )		map33 = &lump;
+						else if( !strncmp( lump.name, "MAP60", 8 ) )		map60 = &lump;
 					}
 
 					if( map01 != nullptr )
@@ -1298,10 +1307,17 @@ namespace launcher
 						if( lloading && ltitle )
 						{
 							entry.game_mission = heretic;
+							titlepic = ltitle;
 						}
 						else if( lstartup && ltitle )
 						{
 							entry.game_mission = hexen;
+							titlepic = ltitle;
+						}
+						else if( ltitle && mapinfo && map33 && map60 )
+						{
+							entry.game_mission = hexen;
+							titlepic = ltitle;
 						}
 						else if( lendstrf )
 						{
@@ -1370,69 +1386,108 @@ namespace launcher
 							fread( pallette.data(), sizeof( rgb_t ), playpal->size / sizeof( rgb_t ), file );
 						}
 
-						patch_t* patch = (patch_t*)source.data();
-
-						int32_t patchwidth = TOSHORT( patch->width );
-						int32_t patchheight = TOSHORT( patch->height );
-
-						if( patchwidth <= 0 || patchwidth > 640
-							|| patchheight <= 0 || patchheight > 200 )
+						if( entry.game_mission == heretic || entry.game_mission == hexen )
 						{
-							I_LogAddEntryVar( Log_Warning, "%s '%' has malformed TITLEPIC, replacing with all white"
-								, ( entry.type == DoomFileType::IWAD ? "IWAD" : "PWAD" )
-								, entry.filename.c_str() );
-							// malformed titlepic
+							constexpr int32_t planewidth = 320;
+							constexpr int32_t planeheight = 200;
+
 							entry.titlepic.width = 320;
 							entry.titlepic.height = 200;
 							entry.titlepic_raw.resize( entry.titlepic.width * entry.titlepic.height );
-							memset( entry.titlepic_raw.data(), 0xFF, 320 * 200 * sizeof( bgra_t ) );
+
+							byte* input = source.data();
+							bgra_t* output = entry.titlepic_raw.data();
+							for( int32_t row = 0; row < planeheight; ++row )
+							{
+								for( int32_t column = 0; column < planewidth; ++column )
+								{
+									rgb_t& entry = pallette[ *input ];
+									output->b = entry.b;
+									output->g = entry.g;
+									output->r = entry.r;
+									output->a = 0xFF;
+									++input;
+									++output;
+								}
+							}
 						}
 						else
 						{
-							std::vector< pixel_t > composite;
-							composite.resize( patchwidth * patchheight * sizeof( pixel_t ) );
+							patch_t* patch = (patch_t*)source.data();
 
-							// Copy/paste and refactored from r_draw's texture composite generator
+							int32_t patchwidth = TOSHORT( patch->width );
+							int32_t patchheight = TOSHORT( patch->height );
+
+							if( patchwidth <= 0 || patchwidth > 640
+								|| patchheight <= 0 || patchheight > 200 )
 							{
-								int32_t x1 = TOSHORT( patch->leftoffset );
-								int32_t x2 = M_MIN( x1 + patchwidth, patchwidth );
+								I_LogAddEntryVar( Log_Warning, "%s '%' has malformed TITLEPIC, replacing with all white"
+									, ( entry.type == DoomFileType::IWAD ? "IWAD" : "PWAD" )
+									, entry.filename.c_str() );
+								// malformed titlepic
+								entry.titlepic.width = 320;
+								entry.titlepic.height = 200;
+								entry.titlepic_raw.resize( entry.titlepic.width * entry.titlepic.height );
+								memset( entry.titlepic_raw.data(), 0xFF, 320 * 200 * sizeof( bgra_t ) );
+							}
+							else
+							{
+								std::vector< pixel_t > composite;
+								composite.resize( patchwidth * patchheight * sizeof( pixel_t ) );
 
-								int32_t x = M_MAX( x1, 0 );
-	
-								for ( ; x < x2 ; ++x )
+								// Copy/paste and refactored from r_draw's texture composite generator
 								{
-									column_t* patchcol = (column_t*)( (byte*)patch
-															+ TOLONG( patch->columnofs[ x - x1 ] ) );
+									int32_t x1 = TOSHORT( patch->leftoffset );
+									int32_t x2 = M_MIN( x1 + patchwidth, patchwidth );
 
-									int32_t patchy = patch->topoffset;
-									while( patchy < patchheight )
+									int32_t x = M_MAX( x1, 0 );
+	
+									for ( ; x < x2 ; ++x )
 									{
-										R_DrawColumnInCache( patchcol, composite.data() + x * patchheight, patchy, patchheight );
-										patchy += patchheight;
+										column_t* patchcol = (column_t*)( (byte*)patch
+																+ TOLONG( patch->columnofs[ x - x1 ] ) );
+
+										int32_t patchy = patch->topoffset;
+										while( patchy < patchheight )
+										{
+											R_DrawColumnInCache( patchcol, composite.data() + x * patchheight, patchy, patchheight );
+											patchy += patchheight;
+										}
+									}
+								}
+
+								entry.titlepic_raw.resize( patchwidth * patchheight );
+								entry.titlepic.width = patchwidth;
+								entry.titlepic.height = patchheight;
+
+								for( int32_t x = 0; x < patchwidth; ++x )
+								{
+									pixel_t* source = composite.data() + x * patchheight;
+									bgra_t* dest = entry.titlepic_raw.data() + x;
+									for( int32_t y = 0; y < patchheight; ++y )
+									{
+										rgb_t& entry = pallette[ *source ];
+										dest->b = entry.b;
+										dest->g = entry.g;
+										dest->r = entry.r;
+										dest->a = 0xFF;
+										++source;
+										dest += patchwidth;
 									}
 								}
 							}
-
-							entry.titlepic_raw.resize( patchwidth * patchheight );
-							entry.titlepic.width = patchwidth;
-							entry.titlepic.height = patchheight;
-
-							for( int32_t x = 0; x < patchwidth; ++x )
-							{
-								pixel_t* source = composite.data() + x * patchheight;
-								bgra_t* dest = entry.titlepic_raw.data() + x;
-								for( int32_t y = 0; y < patchheight; ++y )
-								{
-									rgb_t& entry = pallette[ *source ];
-									dest->b = entry.b;
-									dest->g = entry.g;
-									dest->r = entry.r;
-									dest->a = 0xFF;
-									++source;
-									dest += patchwidth;
-								}
-							}
 						}
+					}
+					else
+					{
+						I_LogAddEntryVar( Log_Warning, "%s '%' has no TITLEPIC, replacing with all white"
+							, ( entry.type == DoomFileType::IWAD ? "IWAD" : "PWAD" )
+							, entry.filename.c_str() );
+						// malformed titlepic
+						entry.titlepic.width = 320;
+						entry.titlepic.height = 200;
+						entry.titlepic_raw.resize( entry.titlepic.width * entry.titlepic.height );
+						memset( entry.titlepic_raw.data(), 0xFF, 320 * 200 * sizeof( bgra_t ) );
 					}
 
 					fclose( file );
@@ -3738,170 +3793,185 @@ namespace launcher
 			ImVec2 framesize;
 			igGetContentRegionMax( &framesize );
 
-			// Column width doesn't really get committed until after the column end call.
-			// As such, setting off then on fixes first frame visual glitches.
-			igColumns( 2, "mainpanelcolumns", false );
-			igSetColumnWidth( 0, framesize.x - 180 );
-			igColumns( 1, "", false );
-
-			igColumns( 2, "mainpanelcolumns", false );
-
-			igText( "Executable version" );
-			igSameLine( 0, -1 );
-			igSetNextItemWidth( 150 );
-			if( igBeginCombo( "##executableversion", launchoptions->game_version < 0 ? "Limit removing" : GameVersions[ launchoptions->game_version ], ImGuiComboFlags_None ) )
+			bool playable = iwadselector->Selected().game_mission < heretic;
+			if( playable )
 			{
-				if( igSelectable_Bool( "Limit removing", launchoptions->game_version < 0, ImGuiSelectableFlags_None, zero ) ) launchoptions->game_version = -1;
+				// Column width doesn't really get committed until after the column end call.
+				// As such, setting off then on fixes first frame visual glitches.
+				igColumns( 2, "mainpanelcolumns", false );
+				igSetColumnWidth( 0, framesize.x - 180 );
+				igColumns( 1, "", false );
 
-				for( int32_t index : iota( 0, arrlen( GameVersions ) ) )
+				igColumns( 2, "mainpanelcolumns", false );
+
+				igText( "Executable version" );
+				igSameLine( 0, -1 );
+				igSetNextItemWidth( 150 );
+				if( igBeginCombo( "##executableversion", launchoptions->game_version < 0 ? "Limit removing" : GameVersions[ launchoptions->game_version ], ImGuiComboFlags_None ) )
 				{
-					if( igSelectable_Bool( GameVersions[ index ], launchoptions->game_version == index, ImGuiSelectableFlags_None, zero ) )
+					if( igSelectable_Bool( "Limit removing", launchoptions->game_version < 0, ImGuiSelectableFlags_None, zero ) ) launchoptions->game_version = -1;
+
+					for( int32_t index : iota( 0, arrlen( GameVersions ) ) )
 					{
-						launchoptions->game_version = index;
-					}
-				}
-				igEndCombo();
-			}
-
-			igCheckbox( "Don't load widepix", &launchoptions->no_widepix );
-
-			igNewLine();
-			igText( "Get straight in to the action:" );
-
-			ImVec2 frameavail;
-			igGetContentRegionAvail( &frameavail );
-
-			int32_t launchid = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "mainpanelaunch", nullptr );
-			ImVec2 launchframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
-
-			if( igBeginChildFrame( launchid, launchframesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
-			{
-				auto mapchooser = []( const char* id, const char* title, int32_t finalval, int32_t invalidval, int32_t& val )
-				{
-					igText( title );
-					igSameLine( 0, 10 );
-					char textbuffer[ 4 ] = { };
-					if( val )
-					{
-						M_snprintf( textbuffer, 4, "%d", val );
-					}
-					igPushID_Ptr( title );
-					igSetNextItemWidth( 150 );
-					if( igBeginCombo( id, val ? textbuffer : "None", ImGuiComboFlags_None ) )
-					{
-						if( igSelectable_Bool( "None", val == invalidval, ImGuiSelectableFlags_None, zero ) ) val = invalidval;
-						for( int32_t map : iota( invalidval + 1, finalval + 1 ) )
+						if( igSelectable_Bool( GameVersions[ index ], launchoptions->game_version == index, ImGuiSelectableFlags_None, zero ) )
 						{
-							M_snprintf( textbuffer, 4, "%d", map );
-							if( igSelectable_Bool( textbuffer, val == map, ImGuiSelectableFlags_None, zero ) ) val = map;
+							launchoptions->game_version = index;
 						}
-						igEndCombo();
 					}
-					igPopID();
-				};
+					igEndCombo();
+				}
 
-				int32_t mode = iwadselector->Selected().game_mode;
-				if( mode != commercial )
+				igCheckbox( "Don't load widepix", &launchoptions->no_widepix );
+
+				igNewLine();
+				igText( "Get straight in to the action:" );
+
+				ImVec2 frameavail;
+				igGetContentRegionAvail( &frameavail );
+
+				int32_t launchid = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "mainpanelaunch", nullptr );
+				ImVec2 launchframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
+
+				if( igBeginChildFrame( launchid, launchframesize, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground ) )
 				{
-					int32_t episode_count = mode == shareware ? 1 : mode == registered ? 3 : 4;
-
-					if( episode_count > 1 )
+					auto mapchooser = []( const char* id, const char* title, int32_t finalval, int32_t invalidval, int32_t& val )
 					{
-						mapchooser( "##episodenum", "Episode", episode_count, 0, launchoptions->start_episode );
+						igText( title );
 						igSameLine( 0, 10 );
+						char textbuffer[ 4 ] = { };
+						if( val )
+						{
+							M_snprintf( textbuffer, 4, "%d", val );
+						}
+						igPushID_Ptr( title );
+						igSetNextItemWidth( 150 );
+						if( igBeginCombo( id, val ? textbuffer : "None", ImGuiComboFlags_None ) )
+						{
+							if( igSelectable_Bool( "None", val == invalidval, ImGuiSelectableFlags_None, zero ) ) val = invalidval;
+							for( int32_t map : iota( invalidval + 1, finalval + 1 ) )
+							{
+								M_snprintf( textbuffer, 4, "%d", map );
+								if( igSelectable_Bool( textbuffer, val == map, ImGuiSelectableFlags_None, zero ) ) val = map;
+							}
+							igEndCombo();
+						}
+						igPopID();
+					};
+
+					int32_t mode = iwadselector->Selected().game_mode;
+					if( mode != commercial )
+					{
+						int32_t episode_count = mode == shareware ? 1 : mode == registered ? 3 : 4;
+
+						if( episode_count > 1 )
+						{
+							mapchooser( "##episodenum", "Episode", episode_count, 0, launchoptions->start_episode );
+							igSameLine( 0, 10 );
+						}
+					}
+					mapchooser( "##mapnum", "Map", mode != commercial ? 9 : 32, 0, launchoptions->start_map );
+
+					mapchooser( "##skillnum", "Start skill", 5, -1, launchoptions->start_skill );
+
+					igCheckbox( "Solo net", &launchoptions->solo_net );
+
+					igCheckbox( "Fast monsters", &launchoptions->fast_monsters );
+					igCheckbox( "No monsters", &launchoptions->no_monsters );
+					igCheckbox( "Respawn monsters", &launchoptions->respawn_monsters );
+				}
+				igEndChildFrame();
+
+				igNextColumn();
+				igText( "Selected files" );
+
+				for( auto& entry : doomfileselector->SelectedPWADs() )
+				{
+					if( entry.titlepic.tex != nullptr )
+					{
+						ImVec2 imageavail;
+						igGetContentRegionAvail( &imageavail );
+
+						float_t scale = imageavail.x / entry.titlepic.width;
+
+						constexpr ImVec4 tint = { 1, 1, 1, 1 };
+						constexpr ImVec4 border = { 0, 0, 0, 0 };
+						constexpr ImVec2 tl = { 0, 0 };
+						constexpr ImVec2 br = { 1, 1 };
+
+						ImVec2 imagesize = { entry.titlepic.width * scale, entry.titlepic.height * scale };
+
+						igImage( I_TextureGetHandle( entry.titlepic.tex ), imagesize, tl, br, tint, border );
+						igSpacing();
+
+						break;
 					}
 				}
-				mapchooser( "##mapnum", "Map", mode != commercial ? 9 : 32, 0, launchoptions->start_map );
 
-				mapchooser( "##skillnum", "Start skill", 5, -1, launchoptions->start_skill );
+				igSpacing();
 
-				igCheckbox( "Solo net", &launchoptions->solo_net );
+				igGetContentRegionAvail( &frameavail );
 
-				igCheckbox( "Fast monsters", &launchoptions->fast_monsters );
-				igCheckbox( "No monsters", &launchoptions->no_monsters );
-				igCheckbox( "Respawn monsters", &launchoptions->respawn_monsters );
-			}
-			igEndChildFrame();
+				int32_t id = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "mainpanelfiles", nullptr );
+				ImVec2 fileframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
 
-			igNextColumn();
-			igText( "Selected files" );
-
-			for( auto& entry : doomfileselector->SelectedPWADs() )
-			{
-				if( entry.titlepic.tex != nullptr )
+				if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize ) )
 				{
-					ImVec2 imageavail;
-					igGetContentRegionAvail( &imageavail );
+					if( !doomfileselector->SelectedDEHs().empty() )
+					{
+						for( auto& entry : doomfileselector->SelectedDEHs() )
+						{
+							igText( entry.filename.c_str() );
+						}
 
-					float_t scale = imageavail.x / entry.titlepic.width;
-
-					constexpr ImVec4 tint = { 1, 1, 1, 1 };
-					constexpr ImVec4 border = { 0, 0, 0, 0 };
-					constexpr ImVec2 tl = { 0, 0 };
-					constexpr ImVec2 br = { 1, 1 };
-
-					ImVec2 imagesize = { entry.titlepic.width * scale, entry.titlepic.height * scale };
-
-					igImage( I_TextureGetHandle( entry.titlepic.tex ), imagesize, tl, br, tint, border );
-					igSpacing();
-
-					break;
-				}
-			}
-
-			igSpacing();
-
-			igGetContentRegionAvail( &frameavail );
-
-			int32_t id = ImGuiWindow_GetID_Str( igGetCurrentWindow(), "mainpanelfiles", nullptr );
-			ImVec2 fileframesize = { frameavail.x, frameavail.y - buttonheight - 15 };
-
-			if( igBeginChildFrame( id, fileframesize, ImGuiWindowFlags_NoResize ) )
-			{
-				if( !doomfileselector->SelectedDEHs().empty() )
-				{
-					for( auto& entry : doomfileselector->SelectedDEHs() )
+						igSpacing();
+					}
+					for( auto& entry : doomfileselector->SelectedPWADs() )
 					{
 						igText( entry.filename.c_str() );
 					}
-
-					igSpacing();
 				}
-				for( auto& entry : doomfileselector->SelectedPWADs() )
+				igEndChildFrame();
+
+				igNextColumn();
+
+				igColumns( 1, nullptr, false );
+
+				ImVec2 cursor;
+
+				cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x - framepadding - idgamessize.x, framesize.y - buttonheight };
+				igSetCursorPos( cursor );
+				if( igButton( "Download more maps", idgamessize ) )
 				{
-					igText( entry.filename.c_str() );
+					PushPanel( downloadmaps );
+				}
+
+				cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x, framesize.y - buttonheight };
+				igSetCursorPos( cursor );
+				if( igButton( "Change selected files", pwadssize ) )
+				{
+					PushPanel( fileanddehselector );
+				}
+
+				cursor = { framesize.x - framepadding - playbuttonsize.x, framesize.y - buttonheight };
+				igSetCursorPos( cursor );
+
+				if( igButton( "Play!", playbuttonsize ) )
+				{
+					readytolaunch = true;
+					PopPanel();
 				}
 			}
-			igEndChildFrame();
-
-			igNextColumn();
-
-			igColumns( 1, nullptr, false );
-
-			ImVec2 cursor;
-
-			cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x - framepadding - idgamessize.x, framesize.y - buttonheight };
-			igSetCursorPos( cursor );
-			if( igButton( "Download more maps", idgamessize ) )
+			else
 			{
-				PushPanel( downloadmaps );
+				ImVec2 cursor;
+				cursor = { framesize.x - framepadding - idgamessize.x, framesize.y - buttonheight };
+				igSetCursorPos( cursor );
+				if( igButton( "Download more maps", idgamessize ) )
+				{
+					PushPanel( downloadmaps );
+				}
 			}
 
-			cursor = { framesize.x - framepadding - playbuttonsize.x - framepadding - pwadssize.x, framesize.y - buttonheight };
-			igSetCursorPos( cursor );
-			if( igButton( "Change selected files", pwadssize ) )
-			{
-				PushPanel( fileanddehselector );
-			}
-
-			cursor = { framesize.x - framepadding - playbuttonsize.x, framesize.y - buttonheight };
-			igSetCursorPos( cursor );
-
-			if( igButton( "Play!", playbuttonsize ) )
-			{
-				readytolaunch = true;
-				PopPanel();
-			}
 		}
 
 	private:

@@ -3143,7 +3143,8 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				for( index = 0; index < disk_icon_strings_count; ++index )
 				{
 					selected = index == show_diskicon;
-					if( igSelectable_Bool( disk_icon_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize ) )
+					if( igSelectable_Bool( disk_icon_strings[ index ], selected, ImGuiSelectableFlags_None, zerosize )
+						&& W_HasAnyLumps() )
 					{
 						D_SetupLoadingDisk( index );
 					}
