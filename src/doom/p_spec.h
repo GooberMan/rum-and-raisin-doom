@@ -343,7 +343,6 @@ DOOM_C_API int EV_DoDoor( line_t* line, vldoor_e type );
 DOOM_C_API int EV_DoLockedDoor( line_t* line, vldoor_e type, mobj_t* thing );
 
 DOOM_C_API void    T_VerticalDoor (vldoor_t* door);
-DOOM_C_API void    T_VerticalDoorGeneric( vldoor_t* door );
 DOOM_C_API void    P_SpawnDoorCloseIn30 (sector_t* sec);
 
 DOOM_C_API void P_SpawnDoorRaiseIn5Mins( sector_t* sec, int secnum );
@@ -578,13 +577,28 @@ DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
 
 // Generic functionality
 
-DOOM_C_API typedef enum plattarget_e
+DOOM_C_API typedef enum sectormovetype_e
 {
-	pt_lowestneighborfloor,
-	pt_nearnestneighborfloor,
-	pt_lowestneighborceiling,
-	pt_perpetual,
-} plattarget_t;
+	smt_highestneighborfloor,
+	smt_lowestneighborfloor,
+	smt_nearestneighborfloor,
+	smt_highestneighborceiling,
+	smt_lowestneighborceiling,
+	smt_nearestneighborceiling,
+	smt_floor,
+	smt_ceiling,
+	smt_shortestlowertexture,
+	smt_bydistance,
+	smt_perpetual,
+} sectormovetype_t;
+
+DOOM_C_API typedef enum sectorchangetype_e
+{
+	sct_none,
+	sct_zerospecial,
+	sct_texture,
+	sct_both,
+} sectorchangetype_t;
 
 DOOM_C_API typedef enum exittype_e
 {
@@ -600,14 +614,16 @@ DOOM_C_API typedef enum lightset_e
 	lightset_highestsurround,
 } lightset_t;
 
-DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
-DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
 
-DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator );
-DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator );
-DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator );
-DOOM_C_API int32_t EV_DoExitGeneric( line_t* line, mobj_t* activator );
-DOOM_C_API int32_t EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoLiftGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoDoorGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoTeleportGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoExitGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoFloorGeneric( line_t* line, mobj_t* activator );
 
 #if defined( __cplusplus )
 

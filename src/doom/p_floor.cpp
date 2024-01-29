@@ -40,14 +40,7 @@
 //
 // Move a plane (floor or ceiling) and check for crushing
 //
-result_e
-T_MovePlane
-( sector_t*	sector,
-  fixed_t	speed,
-  fixed_t	dest,
-  doombool	crush,
-  int		floorOrCeiling,
-  int		direction )
+DOOM_C_API result_e T_MovePlane( sector_t* sector, fixed_t speed, fixed_t dest, doombool crush, int floorOrCeiling, int direction )
 {
     doombool	flag;
     fixed_t	lastpos;
@@ -222,7 +215,7 @@ T_MovePlane
 //
 // MOVE A FLOOR TO IT'S DESTINATION (UP OR DOWN)
 //
-void T_MoveFloor(floormove_t* floor)
+DOOM_C_API void T_MoveFloor(floormove_t* floor)
 {
     result_e	res;
 	
@@ -270,10 +263,7 @@ void T_MoveFloor(floormove_t* floor)
 //
 // HANDLE FLOOR TYPES
 //
-int
-EV_DoFloor
-( line_t*	line,
-  floor_e	floortype )
+DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 {
     int			secnum;
     int			rtn;
@@ -293,7 +283,7 @@ EV_DoFloor
 	
 	// new floor thinker
 	rtn = 1;
-	floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+	floor = (floormove_t*)Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
 	P_AddThinker (&floor->thinker);
 	sec->specialdata = floor;
 	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
@@ -463,10 +453,7 @@ EV_DoFloor
 //
 // BUILD A STAIRCASE!
 //
-int
-EV_BuildStairs
-( line_t*	line,
-  stair_e	type )
+DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
 {
     int			secnum;
     int			height;
@@ -496,7 +483,7 @@ EV_BuildStairs
 	
 	// new floor thinker
 	rtn = 1;
-	floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+	floor = (floormove_t*)Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
 	P_AddThinker (&floor->thinker);
 	sec->specialdata = floor;
 	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
@@ -555,7 +542,7 @@ EV_BuildStairs
 					
 		sec = tsec;
 		secnum = newsecnum;
-		floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+		floor = (floormove_t*)Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
 
 		P_AddThinker (&floor->thinker);
 
@@ -579,3 +566,17 @@ EV_BuildStairs
     return rtn;
 }
 
+DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
+{
+	int32_t createdcount = 0;
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		{
+			++createdcount;
+		}
+	}
+
+	return createdcount;
+}

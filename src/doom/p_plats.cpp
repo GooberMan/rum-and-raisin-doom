@@ -277,6 +277,8 @@ DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 		plat->high = M_MAX( P_FindHighestFloorSurrounding( sec ), sec->floorheight );
 
 		S_StartSound( &sec->soundorg, sfx_pstart );
+
+		P_AddActivePlat( plat );
 	}
 
 	return platformscreated;
@@ -311,15 +313,15 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 		switch( line->action->param1 )
 		{
-		case pt_lowestneighborfloor:
+		case smt_lowestneighborfloor:
 			plat->low = P_FindLowestFloorSurrounding( sec );
 			break;
 
-		case pt_nearnestneighborfloor:
+		case smt_nearestneighborfloor:
 			plat->low = P_FindNextLowestFloorSurrounding( sec );
 			break;
 
-		case pt_lowestneighborceiling:
+		case smt_lowestneighborceiling:
 			plat->low = P_FindLowestCeilingSurrounding( sec );
 			break;
 

@@ -440,7 +440,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Sector_Donut_S1_Player
 	{},
 	// Platform_DownWaitUp_W1_All
-	{ &precon::IsAnyThing, &DoGenericOnce< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsAnyThing, &DoGenericOnce< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Exit_Normal_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_Switch | LT_FrontSide, LL_None, 0, 0, exit_normal },
 	// Light_SetBrightest_W1_Player
@@ -462,7 +462,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Platform_RaiseNearestChangeTexture_S1_Player
 	{},
 	// Platform_DownWaitUp_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Platform_RaiseNearestChangeTexture_W1_Player
 	{},
 	// Floor_LowerLowest_S1_Player
@@ -544,7 +544,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_Open_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_Switch | LT_FrontSide, LL_None, constants::doorspeeds[ Speed_Slow ], 0, doordir_open },
 	// Platform_DownWaitUp_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Door_Raise_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_Switch | LT_FrontSide, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], doordir_open },
 	// Floor_RaiseLowestCeiling_SR_player
@@ -598,7 +598,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Platform_Perpetual_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< PerpetualLiftStart >, LT_Walk | LT_BothSides, LL_None, constants::perpetualplatformspeeds[ Speed_Slow ], constants::liftdelay[ liftdelay_3sec ] },
 	// Platform_DownWaitUp_WR_All
-	{ &precon::IsAnyThing, &DoGeneric< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsAnyThing, &DoGeneric< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Platform_Stop_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< PlatformStop >, LT_Walk | LT_BothSides, LL_None },
 	// Door_Raise_WR_Player
@@ -662,13 +662,13 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_RaiseNearest_W1_Player
 	{},
 	// Platform_DownWaitUpFast_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGeneric< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Platform_DownWaitUpFast_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericOnce< Lift >, LT_Walk | LT_BothSides, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Platform_DownWaitUpFast_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Platform_DownWaitUpFast_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], pt_lowestneighborfloor },
+	{ &precon::IsPlayer, &DoGenericSwitch< Lift >, LT_Switch | LT_FrontSide, LL_None, constants::liftspeeds[ Speed_Fast ], constants::liftdelay[ liftdelay_3sec ], smt_lowestneighborfloor },
 	// Exit_Secret_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Exit >, LT_Walk | LT_BothSides, LL_None, 0, 0, exit_secret },
 	// Teleport_Thing_W1_Monsters
@@ -965,7 +965,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_ThingSilent_WR_Monsters
 	{},
 
-	/* MBF/complevel 9 specials */
+	/* MBF specials */
 
 	// Unknown_270
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
@@ -1001,36 +1001,54 @@ void lineaction_s::DisplayLockReason( player_t* player )
 	}
 }
 
-lineaction_t* GetBuiltInAction( int32_t special )
+static lineaction_t* GetBuiltInAction( int32_t special )
 {
 	return (lineaction_t*)&builtinlineactions[ special ];
 }
 
-lineaction_t* CreateBoomGeneralisedLiftAction( line_t* line )
+template< typename _ty >
+static void SetActionActivators( lineaction_t* action, uint32_t special, bool allowmonster )
 {
-	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
-
-	uint32_t trigger = line->special & Generic_Trigger_Mask;
+	uint32_t trigger = special & Generic_Trigger_Mask;
 	bool isswitch = trigger == Generic_Trigger_S1 || trigger == Generic_Trigger_SR
 					|| trigger == Generic_Trigger_G1 || trigger == Generic_Trigger_GR;
-	bool repeatable = ( line->special & Generic_Trigger_Repeatable ) == Generic_Trigger_Repeatable;
-	uint32_t speed = ( line->special & Generic_Speed_Mask ) >> Generic_Speed_Shift;
-
-	bool allowmonster = ( line->special & Lift_AllowMonsters_Yes ) == Lift_AllowMonsters_Yes;
-	uint32_t delay = ( line->special & Lift_Delay_Mask ) >> Lift_Delay_Shift;
-	uint32_t target = ( line->special & Lift_Target_Mask ) >> Lift_Target_Shift;
+	bool repeatable = ( special & Generic_Trigger_Repeatable ) == Generic_Trigger_Repeatable;
 
 	action->precondition = allowmonster ? &precon::IsAnyThing : &precon::IsPlayer;
 	if( isswitch )
 	{
-		action->action = repeatable ? &DoGenericSwitch< Lift > : &DoGenericSwitchOnce< Lift >;
+		action->action = repeatable ? &DoGenericSwitch< _ty > : &DoGenericSwitchOnce< _ty >;
 	}
 	else
 	{
-		action->action = repeatable ? &DoGeneric< Lift > : &DoGenericOnce< Lift >;
+		action->action = repeatable ? &DoGeneric< _ty > : &DoGenericOnce< _ty >;
 	}
-
 	action->trigger = constants::triggers[ trigger ];
+}
+
+static lineaction_t* CreateBoomGeneralisedFloorAction( line_t* line )
+{
+}
+
+static lineaction_t* CreateBoomGeneralisedLiftAction( line_t* line )
+{
+	constexpr uint32_t targetmapping[] =
+	{
+		smt_lowestneighborfloor,
+		smt_nearestneighborfloor,
+		smt_lowestneighborceiling,
+		smt_perpetual,
+	};
+
+	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
+
+	bool allowmonster = ( line->special & Lift_AllowMonsters_Yes ) == Lift_AllowMonsters_Yes;
+	uint32_t delay = ( line->special & Lift_Delay_Mask ) >> Lift_Delay_Shift;
+	uint32_t target = targetmapping[ ( line->special & Lift_Target_Mask ) >> Lift_Target_Shift ];
+	uint32_t speed = ( line->special & Generic_Speed_Mask ) >> Generic_Speed_Shift;
+
+	SetActionActivators< Lift >( action, line->special, allowmonster );
+
 	action->lock = LL_None;
 	action->speed = constants::liftspeeds[ speed ];
 	action->delay = constants::liftdelay[ delay ];
@@ -1039,7 +1057,7 @@ lineaction_t* CreateBoomGeneralisedLiftAction( line_t* line )
 	return action;
 }
 
-lineaction_t* CreateBoomGeneralisedDoorAction( line_t* line )
+static lineaction_t* CreateBoomGeneralisedDoorAction( line_t* line )
 {
 	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
 
@@ -1084,7 +1102,7 @@ lineaction_t* CreateBoomGeneralisedDoorAction( line_t* line )
 	return action;
 }
 
-lineaction_t* CreateBoomGeneralisedLockedDoorAction( line_t* line )
+static lineaction_t* CreateBoomGeneralisedLockedDoorAction( line_t* line )
 {
 	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
 
@@ -1119,7 +1137,7 @@ lineaction_t* CreateBoomGeneralisedLockedDoorAction( line_t* line )
 	return action;
 }
 
-lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
+static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 {
 	if( line->special >= Generic_Lift && line->special < Generic_LockedDoor )
 	{
@@ -1138,7 +1156,7 @@ lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
-#if 0
+#if 1
 	if( !remove_limits )
 	{
 		return nullptr;
@@ -1164,6 +1182,9 @@ DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 		{
 			return GetBuiltInAction( line->special );
 		}
+		// else if( false /* allow_mbf21_specials */ )
+		// {
+		// }
 		else if( /*allow_boom_specials && */
 				line->special >= Generic_Min && line->special < Generic_Max )
 		{
