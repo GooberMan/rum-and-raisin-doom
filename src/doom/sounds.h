@@ -23,16 +23,16 @@
 #include "i_sound.h"
 
 // the complete set of sound effects
-extern sfxinfo_t	S_sfx[];
+DOOM_C_API extern sfxinfo_t	S_sfx[];
 
 // the complete set of music
-extern musicinfo_t	S_music[];
+DOOM_C_API extern musicinfo_t	S_music[];
 
 //
 // Identifiers for all music in game.
 //
 
-typedef enum
+DOOM_C_API typedef enum
 {
     mus_None,
     mus_e1m1,
@@ -110,7 +110,7 @@ typedef enum
 // Identifiers for all sfx in game.
 //
 
-typedef enum
+DOOM_C_API typedef enum
 {
     sfx_None,
     sfx_pistol,

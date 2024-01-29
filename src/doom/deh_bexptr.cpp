@@ -118,6 +118,26 @@ extern "C"
 	void A_RandomJump();
 	void A_LineEffect();
 	void A_Die();
+
+	// MBF21 Actions
+	void A_SpawnObject();
+	void A_MonsterProjectile();
+	void A_MonsterBulletAttack();
+	void A_MonsterMeleeAttack();
+	void A_RadiusDamage();
+	void A_NoiseAlert();
+	void A_HealChase();
+	void A_SeekTracer();
+	void A_FindTracer();
+	void A_ClearTracer();
+	void A_JumpIfHealthBelow();
+	void A_JumpIfTargetInSight();
+	void A_JumpIfTargetCloser();
+	void A_JumpIfTracerInSight();
+	void A_JumpIfTracerCloser();
+	void A_JumpIfFlagsSet();
+	void A_AddFlags();
+	void A_RemoveFlags();
 }
 
 struct funcmapping_t
@@ -127,6 +147,7 @@ struct funcmapping_t
 };
 
 #define FuncType( x ) { #x, { { &A_ ## x }, deh_vanilla } }
+#define MBFFuncType( x ) { #x, { { &A_ ## x }, deh_mbf21 } }
 #define MBF21FuncType( x ) { #x, { { &A_ ## x }, deh_mbf21 } }
 
 static std::map< DoomString, funcmapping_t > PointerLookup =
@@ -210,15 +231,35 @@ static std::map< DoomString, funcmapping_t > PointerLookup =
 	FuncType( BrainExplode ),
 
 	// MBF actions
-	MBF21FuncType( Detonate ),
-	MBF21FuncType( Mushroom ),
-	MBF21FuncType( Spawn ),
-	MBF21FuncType( Turn ),
-	MBF21FuncType( Face ),
-	MBF21FuncType( Scratch ),
-	MBF21FuncType( RandomJump ),
-	MBF21FuncType( LineEffect ),
-	MBF21FuncType( Die ),
+	MBFFuncType( Detonate ),
+	MBFFuncType( Mushroom ),
+	MBFFuncType( Spawn ),
+	MBFFuncType( Turn ),
+	MBFFuncType( Face ),
+	MBFFuncType( Scratch ),
+	MBFFuncType( RandomJump ),
+	MBFFuncType( LineEffect ),
+	MBFFuncType( Die ),
+
+	// MBF21 actions
+	MBF21FuncType( SpawnObject ),
+	MBF21FuncType( MonsterProjectile ),
+	MBF21FuncType( MonsterBulletAttack ),
+	MBF21FuncType( MonsterMeleeAttack ),
+	MBF21FuncType( RadiusDamage ),
+	MBF21FuncType( NoiseAlert ),
+	MBF21FuncType( HealChase ),
+	MBF21FuncType( SeekTracer ),
+	MBF21FuncType( FindTracer ),
+	MBF21FuncType( ClearTracer ),
+	MBF21FuncType( JumpIfHealthBelow ),
+	MBF21FuncType( JumpIfTargetInSight ),
+	MBF21FuncType( JumpIfTargetCloser ),
+	MBF21FuncType( JumpIfTracerInSight ),
+	MBF21FuncType( JumpIfTracerCloser ),
+	MBF21FuncType( JumpIfFlagsSet ),
+	MBF21FuncType( AddFlags ),
+	MBF21FuncType( RemoveFlags ),
 };
 
 static void *DEH_BEXPtrStart( deh_context_t* context, char* line )

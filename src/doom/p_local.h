@@ -114,7 +114,11 @@ DOOM_C_API extern int		iquetail;
 
 DOOM_C_API void P_RespawnSpecials (void);
 
-DOOM_C_API mobj_t* P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, mobjtype_t type );
+DOOM_C_API mobj_t*		P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, mobjtype_t type );
+DOOM_C_API mobj_t*		P_SpawnMobjEx( mobjtype_t type, angle_t angle,
+										fixed_t x, fixed_t y, fixed_t z,
+										fixed_t forwardvel, fixed_t rightvel, fixed_t upvel );
+DOOM_C_API void			P_CheckMissileSpawn( mobj_t* th );
 
 DOOM_C_API void			P_RemoveMobj (mobj_t* th);
 DOOM_C_API mobj_t*		P_SubstNullMobj (mobj_t* th);
@@ -174,6 +178,14 @@ DOOM_C_API void				P_LineOpening (line_t* linedef);
 DOOM_C_API doombool			P_BlockLinesIterator (int x, int y, doombool(*func)(line_t*) );
 DOOM_C_API doombool			P_BlockThingsIterator (int x, int y, doombool(*func)(mobj_t*) );
 
+#if defined( __cplusplus )
+#include <functional>
+
+using iteratemobjfunc_t = std::function< doombool(mobj_t*) >;
+
+doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func );
+#endif
+
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
 #define PT_EARLYOUT		4
@@ -228,9 +240,9 @@ DOOM_C_API fixed_t			P_AimLineAttack( mobj_t* t1, angle_t angle, fixed_t distanc
 
 DOOM_C_API void				P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage );
 
-DOOM_C_API void				P_RadiusAttack( mobj_t* spot, mobj_t* source, int damage );
-
-
+DOOM_C_API void				P_RadiusAttack( mobj_t* spot, mobj_t* source, int32_t damage );
+DOOM_C_API void				P_RadiusAttackDistance( mobj_t* spot, mobj_t* source, int32_t damage, fixed_t distance );
+DOOM_C_API mobj_t*			P_FindTracerTarget( mobj_t* source, fixed_t distance, angle_t fov );
 
 //
 // P_SETUP

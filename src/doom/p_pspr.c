@@ -70,11 +70,11 @@ P_SetPsprite
 	psp->state = state;
 	psp->tics = state->tics;	// could be 0
 
-	if (state->misc1)
+	if (state->misc1._int)
 	{
 	    // coordinate set
-	    psp->sx = state->misc1 << FRACBITS;
-	    psp->sy = state->misc2 << FRACBITS;
+	    psp->sx = state->misc1._int << FRACBITS;
+	    psp->sy = state->misc2._int << FRACBITS;
 	}
 	
 	// Call action routine.

@@ -35,22 +35,22 @@
 #define DEH_DEFAULT_BFG_CELLS_PER_SHOT 40
 #define DEH_DEFAULT_SPECIES_INFIGHTING 0
 
-extern int deh_initial_health;
-extern int deh_initial_bullets;
-extern int deh_max_health;
-extern int deh_max_armor;
-extern int deh_green_armor_class;
-extern int deh_blue_armor_class;
-extern int deh_max_soulsphere;
-extern int deh_soulsphere_health;
-extern int deh_megasphere_health;
-extern int deh_god_mode_health;
-extern int deh_idfa_armor;
-extern int deh_idfa_armor_class;
-extern int deh_idkfa_armor;
-extern int deh_idkfa_armor_class;
-extern int deh_bfg_cells_per_shot;
-extern int deh_species_infighting;
+DOOM_C_API extern int deh_initial_health;
+DOOM_C_API extern int deh_initial_bullets;
+DOOM_C_API extern int deh_max_health;
+DOOM_C_API extern int deh_max_armor;
+DOOM_C_API extern int deh_green_armor_class;
+DOOM_C_API extern int deh_blue_armor_class;
+DOOM_C_API extern int deh_max_soulsphere;
+DOOM_C_API extern int deh_soulsphere_health;
+DOOM_C_API extern int deh_megasphere_health;
+DOOM_C_API extern int deh_god_mode_health;
+DOOM_C_API extern int deh_idfa_armor;
+DOOM_C_API extern int deh_idfa_armor_class;
+DOOM_C_API extern int deh_idkfa_armor;
+DOOM_C_API extern int deh_idkfa_armor_class;
+DOOM_C_API extern int deh_bfg_cells_per_shot;
+DOOM_C_API extern int deh_species_infighting;
 
 #if 0
 

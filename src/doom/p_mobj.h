@@ -296,10 +296,11 @@ DOOM_C_API typedef struct mobj_s
     // Thing being chased/attacked for tracers.
     struct mobj_s*	tracer;	
 
+	int32_t flags2;
+
 	uint64_t teleporttic;
 
 	int32_t resurrection_count;
-	int32_t overridestate;
 	int32_t successfullineeffect;
 } mobj_t;
 

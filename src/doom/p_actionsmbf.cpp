@@ -46,17 +46,17 @@ DOOM_C_API void A_Mushroom( mobj_t* mobj )
 DOOM_C_API void A_Spawn( mobj_t* mobj )
 {
 	// [MBF] Unclear from spec what misc2 does exactly???
-	P_SpawnMobj( mobj->x, mobj->y, mobj->z + (fixed_t)mobj->state->misc2, (mobjtype_t)mobj->state->misc1 );
+	P_SpawnMobj( mobj->x, mobj->y, mobj->z + mobj->state->misc2._fixed, mobj->state->misc1._mobjtype );
 }
 
 DOOM_C_API void A_Turn( mobj_t* mobj )
 {
-	mobj->angle += *(angle_t*)&mobj->state->misc1;
+	mobj->angle += mobj->state->misc1._angle;
 }
 
 DOOM_C_API void A_Face( mobj_t* mobj )
 {
-	mobj->angle = *(angle_t*)&mobj->state->misc1;
+	mobj->angle = mobj->state->misc1._angle;
 }
 
 DOOM_C_API void A_Scratch( mobj_t* mobj )
@@ -69,18 +69,18 @@ DOOM_C_API void A_Scratch( mobj_t* mobj )
 	A_FaceTarget( mobj );
 	if( P_CheckMeleeRange( mobj ) )
 	{
-		S_StartSound( mobj, mobj->state->misc2 );
+		S_StartSound( mobj, mobj->state->misc2._int );
 		// [MBF] Is damage randomised???
-		P_DamageMobj( mobj->target, mobj, mobj, mobj->state->misc1 );
+		P_DamageMobj( mobj->target, mobj, mobj, mobj->state->misc1._int );
 		return;
 	}
 }
 
 DOOM_C_API void A_RandomJump( mobj_t* mobj )
 {
-	if( P_Random() < mobj->state->misc2 )
+	if( P_Random() < mobj->state->misc2._int )
 	{
-		P_SetMobjState( mobj, (statenum_t)mobj->state->misc1 );
+		P_SetMobjState( mobj, mobj->state->misc1._statenum );
 	}
 }
 
@@ -89,8 +89,8 @@ DOOM_C_API void A_LineEffect( mobj_t* mobj )
 	if( !mobj->successfullineeffect )
 	{
 		line_t dummyline = {};
-		dummyline.special = mobj->state->misc1;
-		dummyline.tag = mobj->state->misc2;
+		dummyline.special = mobj->state->misc1._int;
+		dummyline.tag = mobj->state->misc2._int;
 		lineaction_t* action = dummyline.action = P_GetLineActionFor( &dummyline );
 
 		player_t dummyplayer = {};

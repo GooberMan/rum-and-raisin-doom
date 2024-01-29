@@ -42,10 +42,7 @@
 // Gives an estimation of distance (not exact)
 //
 
-fixed_t
-P_AproxDistance
-( fixed_t	dx,
-  fixed_t	dy )
+DOOM_C_API fixed_t P_AproxDistance( fixed_t dx, fixed_t dy )
 {
     dx = abs(dx);
     dy = abs(dy);
@@ -59,11 +56,7 @@ P_AproxDistance
 // P_PointOnLineSide
 // Returns 0 or 1
 //
-int
-P_PointOnLineSide
-( fixed_t	x,
-  fixed_t	y,
-  line_t*	line )
+DOOM_C_API int P_PointOnLineSide( fixed_t x, fixed_t y, line_t* line )
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -103,10 +96,7 @@ P_PointOnLineSide
 // Considers the line to be infinite
 // Returns side 0 or 1, -1 if box crosses the line.
 //
-int
-P_BoxOnLineSide
-( fixed_t*	tmbox,
-  line_t*	ld )
+DOOM_C_API int P_BoxOnLineSide( fixed_t* tmbox, line_t* ld )
 {
     int		p1 = 0;
     int		p2 = 0;
@@ -154,11 +144,7 @@ P_BoxOnLineSide
 // P_PointOnDivlineSide
 // Returns 0 or 1.
 //
-int
-P_PointOnDivlineSide
-( fixed_t	x,
-  fixed_t	y,
-  divline_t*	line )
+DOOM_C_API int P_PointOnDivlineSide( fixed_t x, fixed_t y, divline_t* line )
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -204,10 +190,7 @@ P_PointOnDivlineSide
 //
 // P_MakeDivline
 //
-void
-P_MakeDivline
-( line_t*	li,
-  divline_t*	dl )
+DOOM_C_API void P_MakeDivline( line_t* li, divline_t* dl )
 {
     dl->x = li->v1->x;
     dl->y = li->v1->y;
@@ -224,12 +207,8 @@ P_MakeDivline
 // This is only called by the addthings
 // and addlines traversers.
 //
-fixed_t
-P_InterceptVector
-( divline_t*	v2,
-  divline_t*	v1 )
+DOOM_C_API fixed_t P_InterceptVector( divline_t* v2, divline_t* v1 )
 {
-#if 1
     fixed_t	frac;
     fixed_t	num;
     fixed_t	den;
@@ -247,38 +226,6 @@ P_InterceptVector
     frac = FixedDiv (num , den);
 
     return frac;
-#else	// UNUSED, float debug.
-    float	frac;
-    float	num;
-    float	den;
-    float	v1x;
-    float	v1y;
-    float	v1dx;
-    float	v1dy;
-    float	v2x;
-    float	v2y;
-    float	v2dx;
-    float	v2dy;
-
-    v1x = (float)v1->x/FRACUNIT;
-    v1y = (float)v1->y/FRACUNIT;
-    v1dx = (float)v1->dx/FRACUNIT;
-    v1dy = (float)v1->dy/FRACUNIT;
-    v2x = (float)v2->x/FRACUNIT;
-    v2y = (float)v2->y/FRACUNIT;
-    v2dx = (float)v2->dx/FRACUNIT;
-    v2dy = (float)v2->dy/FRACUNIT;
-	
-    den = v1dy*v2dx - v1dx*v2dy;
-
-    if (den == 0)
-	return 0;	// parallel
-    
-    num = (v1x - v2x)*v1dy + (v2y - v1y)*v1dx;
-    frac = num / den;
-
-    return frac*FRACUNIT;
-#endif
 }
 
 
@@ -294,7 +241,7 @@ fixed_t openrange;
 fixed_t	lowfloor;
 
 
-void P_LineOpening (line_t* linedef)
+DOOM_C_API void P_LineOpening( line_t* linedef )
 {
     sector_t*	front;
     sector_t*	back;
@@ -341,7 +288,7 @@ void P_LineOpening (line_t* linedef)
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (mobj_t* thing)
+DOOM_C_API void P_UnsetThingPosition( mobj_t* thing )
 {
     int		blockx;
     int		blocky;
@@ -389,8 +336,7 @@ void P_UnsetThingPosition (mobj_t* thing)
 // based on it's x y.
 // Sets thing->subsector properly
 //
-void
-P_SetThingPosition (mobj_t* thing)
+DOOM_C_API void P_SetThingPosition( mobj_t* thing )
 {
     subsector_t*	ss;
     sector_t*		sec;
@@ -475,11 +421,7 @@ P_SetThingPosition (mobj_t* thing)
 // to P_BlockLinesIterator, then make one or more calls
 // to it.
 //
-doombool
-P_BlockLinesIterator
-( int			x,
-  int			y,
-  doombool(*func)(line_t*) )
+DOOM_C_API doombool P_BlockLinesIterator( int x, int y, doombool(*func)(line_t*) )
 {
     int32_t			offset;
     blockmap_t*		list;
@@ -523,31 +465,9 @@ P_BlockLinesIterator
 //
 // P_BlockThingsIterator
 //
-doombool
-P_BlockThingsIterator
-( int			x,
-  int			y,
-  doombool(*func)(mobj_t*) )
+DOOM_C_API doombool P_BlockThingsIterator( int x, int y, doombool(*func)(mobj_t*) )
 {
-    mobj_t*		mobj;
-	
-    if ( x<0
-	 || y<0
-	 || x>=bmapwidth
-	 || y>=bmapheight)
-    {
-	return true;
-    }
-    
-
-    for (mobj = blocklinks[y*bmapwidth+x] ;
-	 mobj ;
-	 mobj = mobj->bnext)
-    {
-	if (!func( mobj ) )
-	    return false;
-    }
-    return true;
+	return P_BlockThingsIterator( x, y, iteratemobjfunc_t( func ) );
 }
 
 
@@ -574,8 +494,7 @@ static void InterceptsOverrun(int num_intercepts, intercept_t *intercept);
 // are on opposite sides of the trace.
 // Returns true if earlyout and a solid line hit.
 //
-doombool
-PIT_AddLineIntercepts (line_t* ld)
+DOOM_C_API doombool PIT_AddLineIntercepts (line_t* ld)
 {
     int			s1;
     int			s2;
@@ -630,7 +549,7 @@ PIT_AddLineIntercepts (line_t* ld)
 //
 // PIT_AddThingIntercepts
 //
-doombool PIT_AddThingIntercepts (mobj_t* thing)
+DOOM_C_API doombool PIT_AddThingIntercepts( mobj_t* thing )
 {
     fixed_t		x1;
     fixed_t		y1;
@@ -697,10 +616,7 @@ doombool PIT_AddThingIntercepts (mobj_t* thing)
 // Returns true if the traverser function returns true
 // for all lines.
 // 
-doombool
-P_TraverseIntercepts
-( traverser_t	func,
-  fixed_t	maxfrac )
+doombool P_TraverseIntercepts( traverser_t func, fixed_t maxfrac )
 {
     int			count;
     fixed_t		dist;
@@ -747,7 +663,7 @@ P_TraverseIntercepts
     return true;		// everything was traversed
 }
 
-extern fixed_t bulletslope;
+DOOM_C_API extern fixed_t bulletslope;
 
 // Intercepts Overrun emulation, from PrBoom-plus.
 // Thanks to Andrey Budko (entryway) for researching this and his 
@@ -876,14 +792,7 @@ static void InterceptsOverrun(int num_intercepts, intercept_t *intercept)
 // Returns true if the traverser function returns true
 // for all lines.
 //
-doombool
-P_PathTraverse
-( fixed_t		x1,
-  fixed_t		y1,
-  fixed_t		x2,
-  fixed_t		y2,
-  int			flags,
-  doombool (*trav) (intercept_t *))
+DOOM_C_API doombool P_PathTraverse( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2, int flags, doombool(*trav)(intercept_t *) )
 {
     fixed_t	xt1;
     fixed_t	yt1;
@@ -1017,4 +926,28 @@ P_PathTraverse
 }
 
 
+
+//
+// P_BlockThingsIterator
+//
+doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func )
+{
+	if ( x < 0
+		|| y < 0
+		|| x >= bmapwidth
+		|| y >= bmapheight)
+	{
+		return true;
+	}
+
+	for( mobj_t* mobj = blocklinks[ y * bmapwidth + x ]; mobj; mobj = mobj->bnext )
+	{
+		if ( !func( mobj ) )
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
 

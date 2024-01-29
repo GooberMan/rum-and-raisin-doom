@@ -24,6 +24,8 @@
 // Needed for action function pointer handling.
 #include "d_think.h"
 #include "m_fixed.h"
+#include "tables.h"
+#include "sounds.h"
 
 DOOM_C_API typedef enum
 {
@@ -1146,40 +1148,7 @@ DOOM_C_API typedef enum
 	NUMSTATES,
 } statenum_t;
 
-DOOM_C_API typedef union statearg_u
-{
-	int32_t		_int;
-	uint32_t	_uint;
-	fixed_t		_fixed;
-} statearg_t;
-
-DOOM_C_API typedef struct
-{
-    spritenum_t sprite;
-    int frame;
-    int tics;
-    // void (*action) ();
-    actionf_t action;
-    statenum_t nextstate;
-    int misc1;
-    int misc2;
-	
-	// MBF extensions
-	statearg_t arg1;
-	statearg_t arg2;
-	statearg_t arg3;
-	statearg_t arg4;
-	statearg_t arg5;
-	statearg_t arg6;
-	statearg_t arg7;
-	statearg_t arg8;
-} state_t;
-
-DOOM_C_API extern state_t	states[NUMSTATES];
-DOOM_C_API extern const char *sprnames[];
-DOOM_C_API extern const char *sprnames_boom[];
-
-DOOM_C_API typedef enum {
+DOOM_C_API typedef enum mobjtype_e {
     MT_PLAYER,
     MT_POSSESSED,
     MT_SHOTGUY,
@@ -1320,6 +1289,62 @@ DOOM_C_API typedef enum {
     NUMMOBJTYPES
 
 } mobjtype_t;
+
+DOOM_C_API typedef union statearg_u
+{
+	int32_t		_int;
+	uint32_t	_uint;
+	fixed_t		_fixed;
+	angle_t		_angle;
+	mobjtype_t	_mobjtype;
+	statenum_t	_statenum;
+	sfxenum_t	_sound;
+} statearg_t;
+
+DOOM_C_API typedef struct
+{
+    spritenum_t sprite;
+    int frame;
+    int tics;
+    // void (*action) ();
+    actionf_t action;
+    statenum_t nextstate;
+
+	statearg_t misc1;
+	statearg_t misc2;
+	
+	// MBF extensions
+	statearg_t arg1;
+	statearg_t arg2;
+	statearg_t arg3;
+	statearg_t arg4;
+	statearg_t arg5;
+	statearg_t arg6;
+	statearg_t arg7;
+	statearg_t arg8;
+} state_t;
+
+#define STATEMISC( mobj, name, index )				auto & name = mobj->state->misc ## index
+#define MISC_INT( mobj, name, index )				STATEMISC( mobj, name, index )._ ## int
+#define MISC_UINT( mobj, name, index )				STATEMISC( mobj, name, index )._ ## uint
+#define MISC_FIXED( mobj, name, index )				STATEMISC( mobj, name, index )._ ## fixed
+#define MISC_ANGLE( mobj, name, index )				STATEMISC( mobj, name, index )._ ## angle
+#define MISC_MOBJTYPE( mobj, name, index )			STATEMISC( mobj, name, index )._ ## mobjtype
+#define MISC_STATENUM( mobj, name, index )			STATEMISC( mobj, name, index )._ ## statenum
+#define MISC_SOUND( mobj, name, index )				STATEMISC( mobj, name, index )._ ## sound
+
+#define STATEARG( mobj, name, index )				auto & name = mobj->state->arg ## index
+#define ARG_INT( mobj, name, index )				STATEARG( mobj, name, index )._ ## int
+#define ARG_UINT( mobj, name, index )				STATEARG( mobj, name, index )._ ## uint
+#define ARG_FIXED( mobj, name, index )				STATEARG( mobj, name, index )._ ## fixed
+#define ARG_ANGLE( mobj, name, index )				STATEARG( mobj, name, index )._ ## angle
+#define ARG_MOBJTYPE( mobj, name, index )			STATEARG( mobj, name, index )._ ## mobjtype
+#define ARG_STATENUM( mobj, name, index )			STATEARG( mobj, name, index )._ ## statenum
+#define ARG_SOUND( mobj, name, index )				STATEARG( mobj, name, index )._ ## sound
+
+DOOM_C_API extern state_t	states[NUMSTATES];
+DOOM_C_API extern const char *sprnames[];
+DOOM_C_API extern const char *sprnames_boom[];
 
 DOOM_C_API typedef struct
 {

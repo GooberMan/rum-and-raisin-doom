@@ -51,6 +51,8 @@ extern "C" {
 // 0x100000000 to 0x2000
 #define ANGLETOFINESHIFT		( 19 )
 
+#define FINEANGLE( angle )		( ( angle ) >> ANGLETOFINESHIFT )
+
 // Effective size is 10240.
 extern const fixed_t finesine[ FINESINECOUNT ];
 

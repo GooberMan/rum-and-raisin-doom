@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "doomtype.h"
 #include "doomdef.h" 
 #include "doomkeys.h"
 #include "doomstat.h"

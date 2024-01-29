@@ -85,12 +85,6 @@
     <ClCompile Include="..\src\doom\p_inter.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_map.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\doom\p_maputl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\p_mobj.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -215,6 +209,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\p_actionsmbf21.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_maputl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

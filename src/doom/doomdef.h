@@ -25,10 +25,6 @@
 
 #include "doomtype.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // defined( __cplusplus )
-
 #include "i_timer.h"
 #include "d_mode.h"
 
@@ -52,7 +48,7 @@ extern "C" {
 // The current state of the game: whether we are
 // playing, gazing at the intermission screen,
 // the game final animation, or a demo. 
-typedef enum
+DOOM_C_API typedef enum
 {
     GS_LEVEL,
     GS_INTERMISSION,
@@ -60,7 +56,7 @@ typedef enum
     GS_DEMOSCREEN,
 } gamestate_t;
 
-typedef enum
+DOOM_C_API typedef enum
 {
     ga_nothing,
     ga_loadlevel,
@@ -90,7 +86,7 @@ typedef enum
 //
 // Key cards.
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     it_bluecard,
     it_yellowcard,
@@ -108,7 +104,7 @@ typedef enum
 // The defined weapons,
 //  including a marker indicating
 //  user has not changed weapon.
-typedef enum
+DOOM_C_API typedef enum
 {
     wp_fist,
     wp_pistol,
@@ -129,7 +125,7 @@ typedef enum
 
 
 // Ammunition types defined.
-typedef enum
+DOOM_C_API typedef enum
 {
     am_clip,	// Pistol / chaingun ammo.
     am_shell,	// Shotgun / double barreled shotgun.
@@ -142,7 +138,7 @@ typedef enum
 
 
 // Power up artifacts.
-typedef enum
+DOOM_C_API typedef enum
 {
     pw_invulnerability,
     pw_strength,
@@ -161,7 +157,7 @@ typedef enum
 //  how many seconds till expiration,
 //  assuming TICRATE is 35 ticks/second.
 //
-typedef enum
+DOOM_C_API typedef enum
 {
     INVULNTICS	= (30*TICRATE),
     INVISTICS	= (60*TICRATE),
@@ -170,7 +166,7 @@ typedef enum
     
 } powerduration_t;
 
-typedef enum gameflags_e
+DOOM_C_API typedef enum gameflags_e
 {
 	GF_None							= 0,
 
@@ -185,9 +181,5 @@ typedef enum gameflags_e
 	GF_VanillaIncompatibleFlags		= GF_Pacifist | GF_PistolStarts | GF_LoopOneLevel,
 
 } gameflags_t;
-
-#if defined( __cplusplus )
-}
-#endif // defined( __cplusplus )
 
 #endif          // __DOOMDEF__

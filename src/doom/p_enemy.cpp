@@ -1167,7 +1167,7 @@ doombool PIT_VileCheck (mobj_t*	thing)
 // A_VileChase
 // Check for ressurecting a body
 //
-DOOM_C_API void A_VileChase (mobj_t* actor)
+DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_t healsound )
 {
     int			xl;
     int			xh;
@@ -1188,20 +1188,10 @@ DOOM_C_API void A_VileChase (mobj_t* actor)
 	viletryy =
 	    actor->y + actor->info->speed*yspeed[actor->movedir];
 
-	if( false ) // remove_limits )
-	{
-		xl = (int32_t)( (int64_t)viletryx	- (int64_t)bmaporgx - (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
-		xh = (int32_t)( (int64_t)viletryx	- (int64_t)bmaporgx + (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
-		yl = (int32_t)( (int64_t)viletryy	- (int64_t)bmaporgy - (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
-		yh = (int32_t)( (int64_t)viletryy	- (int64_t)bmaporgy + (int64_t)(MAXRADIUS*2) ) >> MAPBLOCKSHIFT;
-	}
-	else
-	{
-		xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	}
+	xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+	xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+	yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+	yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
 
 	vileobj = actor;
 	for (bx=xl ; bx<=xh ; bx++)
@@ -1219,8 +1209,8 @@ DOOM_C_API void A_VileChase (mobj_t* actor)
 		    A_FaceTarget (actor);
 		    actor->target = temp;
 					
-		    P_SetMobjState (actor, S_VILE_HEAL1);
-		    S_StartSound (corpsehit, sfx_slop);
+		    P_SetMobjState (actor, healstate);
+		    S_StartSound (corpsehit, healsound);
 		    info = corpsehit->info;
 		    
 		    P_SetMobjState (corpsehit, (statenum_t)info->raisestate);
@@ -1241,6 +1231,10 @@ DOOM_C_API void A_VileChase (mobj_t* actor)
     A_Chase (actor);
 }
 
+DOOM_C_API void A_VileChase( mobj_t* actor )
+{
+	A_VileChaseParams( actor, S_VILE_HEAL1, sfx_slop );
+}
 
 //
 // A_VileStart

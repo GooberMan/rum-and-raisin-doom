@@ -703,6 +703,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_Switch | LT_FrontSide, LL_None, 0, 0, lightset_value, 35 },
 	// Floor_Raise512_S1_Player
 	{},
+
+	/* Boom specials */
+
 	// Crusher_Silent_W1_Player
 	{},
 	// Floor_Raise512_W1_Player
@@ -961,6 +964,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{},
 	// Teleport_ThingSilent_WR_Monsters
 	{},
+
+	/* MBF/complevel 9 specials */
+
 	// Unknown_270
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Transfer_Sky_Always

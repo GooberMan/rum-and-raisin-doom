@@ -79,7 +79,7 @@ P_SetMobjState
 	if (st->action.acp1)		
 	    st->action.acp1(mobj);	
 	
-	state = mobj->overridestate ? mobj->overridestate : st->nextstate;
+	state = st->nextstate;
 
 	if (cycle_counter++ > MOBJ_CYCLE_LIMIT)
 	{
@@ -500,57 +500,61 @@ void P_MobjThinker (mobj_t* mobj)
 
 }
 
-//
-// P_SpawnMobj
-//
-mobj_t*
-P_SpawnMobj
-( fixed_t	x,
-  fixed_t	y,
-  fixed_t	z,
-  mobjtype_t	type )
+DOOM_C_API mobj_t* P_SpawnMobjEx( mobjtype_t type, angle_t angle,
+									fixed_t x, fixed_t y, fixed_t z,
+									fixed_t forwardvel, fixed_t rightvel, fixed_t upvel )
 {
-    mobj_t*	mobj;
-    state_t*	st;
-    mobjinfo_t*	info;
+	mobj_t*	mobj;
+	state_t*	st;
+	mobjinfo_t*	info;
 	
-    mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
-    memset (mobj, 0, sizeof (*mobj));
-    info = &mobjinfo[type];
+	mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
+	memset (mobj, 0, sizeof (*mobj));
+	info = &mobjinfo[type];
 	
-    mobj->type = type;
-    mobj->info = info;
-    mobj->x = x;
-    mobj->y = y;
-    mobj->radius = info->radius;
-    mobj->height = info->height;
-    mobj->flags = info->flags;
-    mobj->health = info->spawnhealth;
+	mobj->type = type;
+	mobj->info = info;
+	mobj->x = x;
+	mobj->y = y;
+	mobj->angle = angle;
+	mobj->radius = info->radius;
+	mobj->height = info->height;
+	mobj->flags = info->flags;
+	mobj->health = info->spawnhealth;
 
-    if (gameskill != sk_nightmare)
-	mobj->reactiontime = info->reactiontime;
-    
-    mobj->lastlook = P_Random () % MAXPLAYERS;
-    // do not set the state with P_SetMobjState,
-    // because action routines can not be called yet
-    st = &states[info->spawnstate];
+	int32_t forwardlookup = FINEANGLE( angle );
+	int32_t rightlookup = FINEANGLE( angle - ANG90 );
 
-    mobj->state = st;
-    mobj->tics = st->tics;
-    mobj->sprite = st->sprite;
-    mobj->frame = st->frame;
+	mobj->momx = FixedMul( forwardvel, finecosine[ forwardlookup ] ) + FixedMul( forwardvel, finesine[ rightlookup ] );
+	mobj->momy = FixedMul( rightvel, finecosine[ rightlookup ] ) + FixedMul( rightvel, finesine[ forwardlookup ] );
+	mobj->momz = upvel;
 
-    // set subsector and/or block links
-    P_SetThingPosition (mobj);
+	if (gameskill != sk_nightmare)
+	{
+		mobj->reactiontime = info->reactiontime;
+	}
+
+	mobj->lastlook = P_Random () % MAXPLAYERS;
+	// do not set the state with P_SetMobjState,
+	// because action routines can not be called yet
+	st = &states[info->spawnstate];
+
+	mobj->state = st;
+	mobj->tics = st->tics;
+	mobj->sprite = st->sprite;
+	mobj->frame = st->frame;
+
+	// set subsector and/or block links
+	P_SetThingPosition( mobj );
 	
-    mobj->floorz = mobj->subsector->sector->floorheight;
-    mobj->ceilingz = mobj->subsector->sector->ceilingheight;
+	mobj->floorz = mobj->subsector->sector->floorheight;
+	mobj->ceilingz = mobj->subsector->sector->ceilingheight;
 
-    if (z == ONFLOORZ)
+	if (z == ONFLOORZ)
 		mobj->z = mobj->floorz;
-    else if (z == ONCEILINGZ)
+	else if (z == ONCEILINGZ)
 		mobj->z = mobj->ceilingz - mobj->info->height;
-    else 
+	else 
 		mobj->z = z;
 
 	mobj->curr.x = FixedToRendFixed( mobj->x );
@@ -565,11 +569,19 @@ P_SpawnMobj
 	mobj->curr.frame = mobj->frame;
 	mobj->curr.sprite = mobj->sprite;
 
-    mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
+	mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
 	
-    P_AddThinker (&mobj->thinker);
+	P_AddThinker( &mobj->thinker );
 
-    return mobj;
+	return mobj;
+}
+
+//
+// P_SpawnMobj
+//
+mobj_t* P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, mobjtype_t type )
+{
+	return P_SpawnMobjEx( type, 0, x, y, z, 0, 0, 0 );
 }
 
 
@@ -847,7 +859,10 @@ void P_SpawnMapThing (mapthing_t* mthing)
     mobj->spawnpoint = *mthing;
 
     if (mobj->tics > 0)
-	mobj->tics = 1 + (P_Random () % mobj->tics);
+	{
+		mobj->tics = 1 + (P_Random () % mobj->tics);
+	}
+
 	if (mobj->flags & MF_COUNTKILL)
 	{
 		++session.start_total_monsters;

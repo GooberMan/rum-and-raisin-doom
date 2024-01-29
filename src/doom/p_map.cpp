@@ -20,15 +20,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "doomdef.h"
+
 #include "deh_misc.h"
 
 #include "m_bbox.h"
 #include "m_random.h"
 #include "i_system.h"
 
-#include "doomdef.h"
+
 #include "m_argv.h"
+#include "m_container.h"
 #include "m_misc.h"
+
 #include "p_local.h"
 
 #include "s_sound.h"
@@ -60,32 +64,33 @@
 
 //#define DEFAULT_SPECHIT_MAGIC 0x84f968e8
 
-
-fixed_t		tmbbox[4];
-mobj_t*		tmthing;
-int		tmflags;
-fixed_t		tmx;
-fixed_t		tmy;
+extern "C"
+{
+	fixed_t		tmbbox[4];
+	mobj_t*		tmthing;
+	int		tmflags;
+	fixed_t		tmx;
+	fixed_t		tmy;
 
 
 // If "floatok" true, move would be ok
 // if within "tmfloorz - tmceilingz".
-doombool		floatok;
+	doombool		floatok;
 
-fixed_t		tmfloorz;
-fixed_t		tmceilingz;
-fixed_t		tmdropoffz;
+	fixed_t		tmfloorz;
+	fixed_t		tmceilingz;
+	fixed_t		tmdropoffz;
 
 // keep track of the line that lowers the ceiling,
 // so missiles don't explode against sky hack walls
-line_t*		ceilingline;
+	line_t*		ceilingline;
 
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
 
-line_t*		spechit[MAXSPECIALCROSS];
-int		numspechit;
-
+	line_t*		spechit[MAXSPECIALCROSS];
+	int		numspechit;
+}
 
 
 //
@@ -95,7 +100,7 @@ int		numspechit;
 //
 // PIT_StompThing
 //
-doombool PIT_StompThing (mobj_t* thing)
+DOOM_C_API doombool PIT_StompThing( mobj_t* thing )
 {
     fixed_t	blockdist;
 		
@@ -128,11 +133,7 @@ doombool PIT_StompThing (mobj_t* thing)
 //
 // P_TeleportMove
 //
-doombool
-P_TeleportMove
-( mobj_t*	thing,
-  fixed_t	x,
-  fixed_t	y )
+DOOM_C_API doombool P_TeleportMove( mobj_t* thing, fixed_t x, fixed_t y )
 {
     int			xl;
     int			xh;
@@ -214,7 +215,7 @@ static void SpechitOverrun(line_t *ld);
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-doombool PIT_CheckLine (line_t* ld)
+DOOM_C_API doombool PIT_CheckLine( line_t* ld )
 {
     if (tmbbox[BOXRIGHT] <= ld->bbox[BOXLEFT]
 	|| tmbbox[BOXLEFT] >= ld->bbox[BOXRIGHT]
@@ -283,7 +284,7 @@ doombool PIT_CheckLine (line_t* ld)
 //
 // PIT_CheckThing
 //
-doombool PIT_CheckThing (mobj_t* thing)
+DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 {
     fixed_t		blockdist;
     doombool		solid;
@@ -315,7 +316,7 @@ doombool PIT_CheckThing (mobj_t* thing)
 	tmthing->flags &= ~MF_SKULLFLY;
 	tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
-	P_SetMobjState (tmthing, tmthing->info->spawnstate);
+	P_SetMobjState(tmthing, (statenum_t)tmthing->info->spawnstate);
 	
 	return false;		// stop moving
     }
@@ -409,11 +410,7 @@ doombool PIT_CheckThing (mobj_t* thing)
 //  speciallines[]
 //  numspeciallines
 //
-doombool
-P_CheckPosition
-( mobj_t*	thing,
-  fixed_t	x,
-  fixed_t	y )
+DOOM_C_API doombool P_CheckPosition( mobj_t* thing, fixed_t x, fixed_t y )
 {
     int			xl;
     int			xh;
@@ -448,48 +445,36 @@ P_CheckPosition
     numspechit = 0;
 
     if ( tmflags & MF_NOCLIP )
-	return true;
+	{
+		return true;
+	}
     
     // Check things first, possibly picking things up.
     // The bounding box is extended by MAXRADIUS
     // because mobj_ts are grouped into mapblocks
     // based on their origin point, and can overlap
     // into adjacent blocks by up to MAXRADIUS units.
-	if( false ) // remove_limits )
-	{
-		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = (int32_t)( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = (int32_t)( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
-	}
-	else
-	{
-		xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
-		xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
-		yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
-		yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
-	}
+	xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
+	xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
+	yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
+	yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
-    for (bx=xl ; bx<=xh ; bx++)
-	for (by=yl ; by<=yh ; by++)
-	    if (!P_BlockThingsIterator(bx,by,PIT_CheckThing))
-		return false;
+	for (bx=xl ; bx<=xh ; bx++)
+	{
+		for (by=yl ; by<=yh ; by++)
+		{
+			if (!P_BlockThingsIterator(bx,by,PIT_CheckThing))
+			{
+				return false;
+			}
+		}
+	}
     
     // check lines
-	if( false ) // remove_limits )
-	{
-		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = (int32_t)( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = (int32_t)( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
-	}
-	else
-	{
-		xl = (tmbbox[BOXLEFT] - bmaporgx)>>MAPBLOCKSHIFT;
-		xh = (tmbbox[BOXRIGHT] - bmaporgx)>>MAPBLOCKSHIFT;
-		yl = (tmbbox[BOXBOTTOM] - bmaporgy)>>MAPBLOCKSHIFT;
-		yh = (tmbbox[BOXTOP] - bmaporgy)>>MAPBLOCKSHIFT;
-	}
+	xl = (tmbbox[BOXLEFT] - bmaporgx)>>MAPBLOCKSHIFT;
+	xh = (tmbbox[BOXRIGHT] - bmaporgx)>>MAPBLOCKSHIFT;
+	yl = (tmbbox[BOXBOTTOM] - bmaporgy)>>MAPBLOCKSHIFT;
+	yh = (tmbbox[BOXTOP] - bmaporgy)>>MAPBLOCKSHIFT;
 
     for (bx=xl ; bx<=xh ; bx++)
 	for (by=yl ; by<=yh ; by++)
@@ -505,11 +490,7 @@ P_CheckPosition
 // Attempt to move to a new position,
 // crossing special lines unless MF_TELEPORT is set.
 //
-doombool
-P_TryMove
-( mobj_t*	thing,
-  fixed_t	x,
-  fixed_t	y )
+DOOM_C_API doombool P_TryMove( mobj_t* thing, fixed_t x, fixed_t y )
 {
     fixed_t	oldx;
     fixed_t	oldy;
@@ -585,7 +566,7 @@ P_TryMove
 // the z will be set to the lowest value
 // and false will be returned.
 //
-doombool P_ThingHeightClip (mobj_t* thing)
+DOOM_C_API doombool P_ThingHeightClip( mobj_t* thing )
 {
     doombool		onfloor;
 	
@@ -639,7 +620,7 @@ fixed_t		tmymove;
 // Adjusts the xmove / ymove
 // so that the next move will slide along the wall.
 //
-void P_HitSlideLine (line_t* ld)
+DOOM_C_API void P_HitSlideLine( line_t* ld )
 {
     int			side;
 
@@ -691,7 +672,7 @@ void P_HitSlideLine (line_t* ld)
 //
 // PTR_SlideTraverse
 //
-doombool PTR_SlideTraverse (intercept_t* in)
+DOOM_C_API doombool PTR_SlideTraverse( intercept_t* in )
 {
     line_t*	li;
 	
@@ -750,7 +731,7 @@ doombool PTR_SlideTraverse (intercept_t* in)
 //
 // This is a kludgy mess.
 //
-void P_SlideMove (mobj_t* mo)
+DOOM_C_API void P_SlideMove( mobj_t* mo )
 {
     fixed_t		leadx;
     fixed_t		leady;
@@ -834,7 +815,7 @@ void P_SlideMove (mobj_t* mo)
     tmxmove = FixedMul (mo->momx, bestslidefrac);
     tmymove = FixedMul (mo->momy, bestslidefrac);
 
-    P_HitSlideLine (bestslideline);	// clip the moves
+    P_HitSlideLine( bestslideline );	// clip the moves
 
     mo->momx = tmxmove;
     mo->momy = tmymove;
@@ -849,29 +830,30 @@ void P_SlideMove (mobj_t* mo)
 //
 // P_LineAttack
 //
-mobj_t*		linetarget;	// who got hit (or NULL)
-mobj_t*		shootthing;
+extern "C"
+{
+	mobj_t*		linetarget;	// who got hit (or NULL)
+	mobj_t*		shootthing;
 
-// Height if not aiming up or down
-// ???: use slope for monsters?
-fixed_t		shootz;	
+	// Height if not aiming up or down
+	// ???: use slope for monsters?
+	fixed_t		shootz;	
 
-int		la_damage;
-fixed_t		attackrange;
+	int		la_damage;
+	fixed_t		attackrange;
 
-fixed_t		aimslope;
+	fixed_t		aimslope;
 
-// slopes to top and bottom of target
-extern fixed_t	topslope;
-extern fixed_t	bottomslope;	
-
+	// slopes to top and bottom of target
+	extern fixed_t	topslope;
+	extern fixed_t	bottomslope;
+}
 
 //
 // PTR_AimTraverse
 // Sets linetaget and aimslope when a target is aimed at.
 //
-doombool
-PTR_AimTraverse (intercept_t* in)
+DOOM_C_API doombool PTR_AimTraverse( intercept_t* in )
 {
     line_t*		li;
     mobj_t*		th;
@@ -956,7 +938,7 @@ PTR_AimTraverse (intercept_t* in)
 //
 // PTR_ShootTraverse
 //
-doombool PTR_ShootTraverse (intercept_t* in)
+DOOM_C_API doombool PTR_ShootTraverse( intercept_t* in )
 {
     fixed_t		x;
     fixed_t		y;
@@ -1095,11 +1077,7 @@ doombool PTR_ShootTraverse (intercept_t* in)
 //
 // P_AimLineAttack
 //
-fixed_t
-P_AimLineAttack
-( mobj_t*	t1,
-  angle_t	angle,
-  fixed_t	distance )
+DOOM_C_API fixed_t P_AimLineAttack( mobj_t* t1, angle_t angle, fixed_t distance )
 {
     fixed_t	x2;
     fixed_t	y2;
@@ -1143,13 +1121,7 @@ P_AimLineAttack
 // If damage == 0, it is just a test trace
 // that will leave linetarget set.
 //
-void
-P_LineAttack
-( mobj_t*	t1,
-  angle_t	angle,
-  fixed_t	distance,
-  fixed_t	slope,
-  int		damage )
+DOOM_C_API void P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage )
 {
     fixed_t	x2;
     fixed_t	y2;
@@ -1176,7 +1148,7 @@ P_LineAttack
 //
 mobj_t*		usething;
 
-doombool	PTR_UseTraverse (intercept_t* in)
+DOOM_C_API doombool PTR_UseTraverse( intercept_t* in )
 {
     int		side;
 	
@@ -1215,7 +1187,7 @@ doombool	PTR_UseTraverse (intercept_t* in)
 // P_UseLines
 // Looks for special lines in front of the player to activate.
 //
-void P_UseLines (player_t*	player) 
+DOOM_C_API void P_UseLines( player_t* player )
 {
     int		angle;
     fixed_t	x1;
@@ -1249,7 +1221,7 @@ int		bombdamage;
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-doombool PIT_RadiusAttack (mobj_t* thing)
+DOOM_C_API doombool PIT_RadiusAttack( mobj_t* thing )
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -1290,11 +1262,7 @@ doombool PIT_RadiusAttack (mobj_t* thing)
 // P_RadiusAttack
 // Source is the creature that caused the explosion at spot.
 //
-void
-P_RadiusAttack
-( mobj_t*	spot,
-  mobj_t*	source,
-  int		damage )
+DOOM_C_API void P_RadiusAttack( mobj_t* spot, mobj_t* source, int32_t damage )
 {
     int		x;
     int		y;
@@ -1307,20 +1275,11 @@ P_RadiusAttack
     fixed_t	dist;
 	
     dist = (damage+MAXRADIUS)<<FRACBITS;
-	if( false ) // remove_limits )
-	{
-		xl = (int32_t)( (int64_t)spot->x		- (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
-		xh = (int32_t)( (int64_t)spot->x		+ (int64_t)dist	- (int64_t)bmaporgx ) >> MAPBLOCKSHIFT;
-		yl = (int32_t)( (int64_t)spot->y		- (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
-		yh = (int32_t)( (int64_t)spot->y		+ (int64_t)dist	- (int64_t)bmaporgy ) >> MAPBLOCKSHIFT;
-	}
-	else
-	{
-		yh = (spot->y + dist - bmaporgy)>>MAPBLOCKSHIFT;
-		yl = (spot->y - dist - bmaporgy)>>MAPBLOCKSHIFT;
-		xh = (spot->x + dist - bmaporgx)>>MAPBLOCKSHIFT;
-		xl = (spot->x - dist - bmaporgx)>>MAPBLOCKSHIFT;
-	}
+	yh = (spot->y + dist - bmaporgy)>>MAPBLOCKSHIFT;
+	yl = (spot->y - dist - bmaporgy)>>MAPBLOCKSHIFT;
+	xh = (spot->x + dist - bmaporgx)>>MAPBLOCKSHIFT;
+	xl = (spot->x - dist - bmaporgx)>>MAPBLOCKSHIFT;
+
     bombspot = spot;
     bombsource = source;
     bombdamage = damage;
@@ -1330,7 +1289,98 @@ P_RadiusAttack
 	    P_BlockThingsIterator (x, y, PIT_RadiusAttack );
 }
 
+DOOM_C_API void P_RadiusAttackDistance( mobj_t* spot, mobj_t* source, int32_t damage, fixed_t distance )
+{
+	int32_t yh = (spot->y + distance - bmaporgy) >> MAPBLOCKSHIFT;
+	int32_t yl = (spot->y - distance - bmaporgy) >> MAPBLOCKSHIFT;
+	int32_t xh = (spot->x + distance - bmaporgx) >> MAPBLOCKSHIFT;
+	int32_t xl = (spot->x - distance - bmaporgx) >> MAPBLOCKSHIFT;
 
+	for( int32_t y : iota( yl, yh + 1 ) )
+	{
+		for( int32_t x : iota( xl, xh + 1 ) )
+		{
+			P_BlockThingsIterator( x, y, [ &spot, &source, &damage, &distance ]( mobj_t* mobj ) -> bool
+			{
+				if( (mobj->flags & MF_SHOOTABLE)
+					&& mobj->type != MT_CYBORG
+					&& mobj->type != MT_SPIDER )
+				{
+					fixed_t dx = FixedAbs( mobj->x - spot->x );
+					fixed_t dy = FixedAbs( mobj->y - spot->y );
+
+					fixed_t dist = dx > dy ? dx : dy;
+					dist = M_MAX( ( ( dist - mobj->radius ) >> FRACBITS ), 0 );
+
+					if( dist < distance && P_CheckSight( mobj, spot ))
+					{
+						// must be in direct path
+						P_DamageMobj( mobj, spot, source, FixedMul( damage, FixedDiv( dist, distance ) ) );
+					}
+				}
+
+				return true;
+			} );
+		}
+	}
+}
+
+DOOM_C_API mobj_t* P_FindTracerTarget( mobj_t* source, fixed_t distance, angle_t fov )
+{
+	mobj_t* target = nullptr;
+	fixed_t currbestdist = distance + 1;
+
+	auto findtarget = [ &source, &target, &currbestdist, &fov ]( mobj_t* mobj ) -> bool
+	{
+		constexpr int32_t requiredflags = MF_SHOOTABLE | MF_COUNTKILL;
+		if( mobj != source
+			&& (mobj->flags & requiredflags) == requiredflags
+			&& !( netgame && !deathmatch && !mobj->player ) )
+		{
+			fixed_t dx = FixedAbs( mobj->x - source->x );
+			fixed_t dy = FixedAbs( mobj->y - source->y );
+
+			fixed_t dist = P_AproxDistance( dx, dy );
+			angle_t angle = BSP_PointToAngle( source->x, source->y, mobj->x, mobj->y ) - mobj->angle;
+			bool withinfov = angle == 0
+							|| ( angle > fov && angle < M_NEGATE( fov ) );
+
+			if( dist < currbestdist && withinfov && P_CheckSight( mobj, source ) )
+			{
+				target = mobj;
+				currbestdist = dist;
+			}
+		}
+		return true;
+	};
+
+	int32_t thisx = ( source->x - bmaporgx ) >> MAPBLOCKSHIFT;
+	int32_t thisy = ( source->y - bmaporgy ) >> MAPBLOCKSHIFT;
+	P_BlockThingsIterator( thisx, thisy, findtarget );
+	if( target )
+	{
+		return target;
+	}
+
+	int32_t yh = (source->y + distance - bmaporgy) >> MAPBLOCKSHIFT;
+	int32_t yl = (source->y - distance - bmaporgy) >> MAPBLOCKSHIFT;
+	int32_t xh = (source->x + distance - bmaporgx) >> MAPBLOCKSHIFT;
+	int32_t xl = (source->x - distance - bmaporgx) >> MAPBLOCKSHIFT;
+
+	for( int32_t y : iota( yl, yh + 1 ) )
+	{
+		for( int32_t x : iota( xl, xh + 1 ) )
+		{
+			if( x == thisx && y == thisy )
+			{
+				continue;
+			}
+			P_BlockThingsIterator( x, y, findtarget );
+		}
+	}
+
+	return target;
+}
 
 //
 // SECTOR HEIGHT CHANGING
@@ -1352,7 +1402,7 @@ doombool		nofit;
 //
 // PIT_ChangeSector
 //
-doombool PIT_ChangeSector (mobj_t*	thing)
+DOOM_C_API doombool PIT_ChangeSector( mobj_t* thing )
 {
     mobj_t*	mo;
 	
@@ -1416,10 +1466,7 @@ doombool PIT_ChangeSector (mobj_t*	thing)
 //
 // P_ChangeSector
 //
-doombool
-P_ChangeSector
-( sector_t*	sector,
-  doombool	crunch )
+DOOM_C_API doombool P_ChangeSector( sector_t* sector, doombool crunch )
 {
     int		x;
     int		y;
