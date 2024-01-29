@@ -55,6 +55,8 @@ static INLINE bool ObjectInRange( mobj_t* source, mobj_t* target, fixed_t range 
 
 // External definitions
 DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_t healsound );
+DOOM_C_API void P_SetPsprite( player_t* player, int position, statenum_t stnum ) ;
+DOOM_C_API doombool P_CheckAmmo( player_t* player );
 
 // MBF21 actions
 DOOM_C_API void A_SpawnObject( mobj_t* mobj )
@@ -231,7 +233,7 @@ DOOM_C_API void A_JumpIfFlagsSet( mobj_t* mobj )
 {
 	ARG_STATENUM( mobj, state, 1 );
 	ARG_UINT( mobj, flags, 2 );
-	ARG_UINT( mobj, flags2, 2 );
+	ARG_UINT( mobj, flags2, 3 );
 
 	if( ( mobj->flags & flags ) == flags
 		&& ( mobj->flags2 & flags2 ) == flags2 )
@@ -242,8 +244,7 @@ DOOM_C_API void A_JumpIfFlagsSet( mobj_t* mobj )
 
 DOOM_C_API void A_AddFlags( mobj_t* mobj )
 {
-	ARG_STATENUM( mobj, state, 1 );
-	ARG_UINT( mobj, flags, 2 );
+	ARG_UINT( mobj, flags, 1 );
 	ARG_UINT( mobj, flags2, 2 );
 
 	mobj->flags |= flags;
@@ -252,11 +253,120 @@ DOOM_C_API void A_AddFlags( mobj_t* mobj )
 
 DOOM_C_API void A_RemoveFlags( mobj_t* mobj )
 {
-	ARG_STATENUM( mobj, state, 1 );
-	ARG_UINT( mobj, flags, 2 );
+	ARG_UINT( mobj, flags, 1 );
 	ARG_UINT( mobj, flags2, 2 );
 
 	mobj->flags &= ~flags;
 	mobj->flags2 &= ~flags2;
+}
+
+DOOM_C_API void A_WeaponProjectile( player_t* player, pspdef_t* psp )
+{
+	PSPARG_MOBJTYPE( psp, type, 1 );
+	PSPARG_FIXED( psp, angle, 2 );
+	PSPARG_FIXED( psp, pitch, 3 );
+	PSPARG_FIXED( psp, hoffset, 4 );
+	PSPARG_FIXED( psp, voffset, 5 );
+
+	I_LogAddEntry( Log_Error, "A_WeaponProjectile unimplemented" );
+}
+
+DOOM_C_API void A_WeaponBulletAttack( player_t* player, pspdef_t* psp )
+{
+	PSPARG_FIXED( psp, hspread, 1 );
+	PSPARG_FIXED( psp, vspread, 2 );
+	PSPARG_UINT( psp, numbullets, 3 );
+	PSPARG_UINT( psp, damagebase, 4 );
+	PSPARG_UINT( psp, damagedice, 5 );
+
+	I_LogAddEntry( Log_Error, "A_WeaponBulletAttack unimplemented" );
+}
+
+DOOM_C_API void A_WeaponMeleeAttack( player_t* player, pspdef_t* psp )
+{
+	PSPARG_UINT( psp, damagebase, 1 );
+	PSPARG_UINT( psp, damagedice, 2 );
+	PSPARG_FIXED( psp, zerkfactor, 3 );
+	PSPARG_SOUND( psp, sound, 4 );
+	PSPARG_FIXED( psp, range, 5 );
+
+	I_LogAddEntry( Log_Error, "A_WeaponMeleeAttack unimplemented" );
+}
+
+DOOM_C_API void A_WeaponSound( player_t* player, pspdef_t* psp )
+{
+	PSPARG_SOUND( psp, sound, 1 );
+	PSPARG_INT( psp, fullvol, 2 );
+
+	S_StartSound( fullvol ? nullptr : player->mo, sound );
+	P_NoiseAlert( player->mo, player->mo );
+}
+
+DOOM_C_API void A_WeaponJump( player_t* player, pspdef_t* psp )
+{
+	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_INT( psp, chance, 2 );
+
+	if( P_Random() < chance )
+	{
+		P_SetPsprite( player, ps_weapon, state );
+	}
+}
+
+DOOM_C_API void A_ConsumeAmmo( player_t* player, pspdef_t* psp )
+{
+	PSPARG_INT( psp, amount, 1 );
+
+	weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
+
+	if( weapon.ammo != am_noammo )
+	{
+		player->ammo[ weapon.ammo ] = M_CLAMP( player->ammo[ weapon.ammo ] - amount, 0, player->maxammo[ weapon.ammo ] );
+	}
+}
+
+DOOM_C_API void A_CheckAmmo( player_t* player, pspdef_t* psp )
+{
+	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_UINT( psp, amount, 2 );
+
+	weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
+	uint32_t checkamount = amount ? amount : weapon.ammopershot;
+	if( weapon.ammo != am_noammo && player->ammo[ weapon.ammo ] < checkamount )
+	{
+		P_SetPsprite( player, ps_weapon, state );
+	}
+}
+
+DOOM_C_API void A_RefireTo( player_t* player, pspdef_t* psp )
+{
+	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_INT( psp, noammocheck, 2 );
+
+	if ( ( player->cmd.buttons & BT_ATTACK )
+		&& player->pendingweapon == wp_nochange
+		&& player->health )
+	{
+		++player->refire;
+		P_SetPsprite( player, ps_weapon, state );
+	}
+	else if( !noammocheck )
+	{
+		I_LogAddEntry( Log_Error, "A_RefireTo noammocheck unimplemented" );
+	}
+}
+
+DOOM_C_API void A_GunFlashTo( player_t* player, pspdef_t* psp )
+{
+	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_INT( psp, nothirdperson, 2 );
+
+	P_SetPsprite( player, ps_flash, state );
+	I_LogAddEntry( Log_Error, "A_GunFlashTo nothirdperson unimplemented" );
+}
+
+DOOM_C_API void A_WeaponAlert( player_t* player, pspdef_t* psp )
+{
+	P_NoiseAlert( player->mo, player->mo );
 }
 

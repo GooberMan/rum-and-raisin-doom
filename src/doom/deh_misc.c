@@ -25,6 +25,8 @@
 #include "deh_main.h"
 #include "deh_misc.h"
 
+#include "d_items.h"
+
 // Dehacked: "Initial Health" 
 // This is the initial health a player has when starting anew.
 // See G_PlayerReborn in g_game.c
@@ -153,6 +155,8 @@ static struct
     {"BFG Cells/Shot",      &deh_bfg_cells_per_shot},
 };
 
+#define MISC_BFGCELLS 14
+
 static void *DEH_MiscStart(deh_context_t *context, char *line)
 {
     return NULL;
@@ -200,6 +204,10 @@ static void DEH_MiscParseLine(deh_context_t *context, char *line, void *tag)
         if (!strcasecmp(variable_name, misc_settings[i].deh_name))
         {
             *misc_settings[i].value = ivalue;
+			if( i == MISC_BFGCELLS && DEH_DoomVersion( context ) >= deh_mbf21 )
+			{
+				weaponinfo[ wp_bfg ].ammopershot = ivalue;
+			}
             return;
         }
     }

@@ -22,17 +22,18 @@
 
 #include "doomdef.h"
 
-
-
 // Weapon info: sprite frames, ammunition use.
 DOOM_C_API typedef struct
 {
-    ammotype_t	ammo;
-    int		upstate;
-    int		downstate;
-    int		readystate;
-    int		atkstate;
-    int		flashstate;
+	ammotype_t		ammo;
+	int32_t			upstate;
+	int32_t			downstate;
+	int32_t			readystate;
+	int32_t			atkstate;
+	int32_t			flashstate;
+
+	// MBF extensions
+	int32_t			ammopershot;
 
 } weaponinfo_t;
 

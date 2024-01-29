@@ -68,4 +68,12 @@ DOOM_C_API typedef struct
 
 } pspdef_t;
 
+#define PSPARG( psp, name, index )				auto & name = psp->state->arg ## index
+#define PSPARG_INT( psp, name, index )			PSPARG( psp, name, index )._ ## int
+#define PSPARG_UINT( psp, name, index )			PSPARG( psp, name, index )._ ## uint
+#define PSPARG_FIXED( psp, name, index )		PSPARG( psp, name, index )._ ## fixed
+#define PSPARG_MOBJTYPE( psp, name, index )		PSPARG( psp, name, index )._ ## mobjtype
+#define PSPARG_STATENUM( psp, name, index )		PSPARG( psp, name, index )._ ## statenum
+#define PSPARG_SOUND( psp, name, index )		PSPARG( psp, name, index )._ ## sound
+
 #endif

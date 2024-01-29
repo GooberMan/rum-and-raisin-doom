@@ -28,6 +28,8 @@
 #include "deh_main.h"
 #include "deh_mapping.h"
 
+#include "m_misc.h"
+
 DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   DEH_MAPPING("Ammo type",        ammo)
   DEH_MAPPING("Deselect frame",   upstate)
@@ -35,6 +37,7 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   DEH_MAPPING("Bobbing frame",    readystate)
   DEH_MAPPING("Shooting frame",   atkstate)
   DEH_MAPPING("Firing frame",     flashstate)
+  MBF21_MAPPING("Ammo per shot",  ammopershot)
 DEH_END_MAPPING
 
 static void *DEH_WeaponStart(deh_context_t *context, char *line)
