@@ -1335,7 +1335,7 @@ DOOM_C_API mobj_t* P_FindTracerTarget( mobj_t* source, fixed_t distance, angle_t
 		constexpr int32_t requiredflags = MF_SHOOTABLE | MF_COUNTKILL;
 		if( mobj != source
 			&& (mobj->flags & requiredflags) == requiredflags
-			&& !( netgame && !deathmatch && !mobj->player ) )
+			&& !( netgame && !deathmatch && mobj->player ) )
 		{
 			fixed_t dx = FixedAbs( mobj->x - source->x );
 			fixed_t dy = FixedAbs( mobj->y - source->y );

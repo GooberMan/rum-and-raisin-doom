@@ -553,8 +553,10 @@ typedef struct vissprite_s
 	// for color translation and shadow draw,
 	//  maxbright frames as well
 	lighttable_t*		colormap;
+	byte*				tranmap;
 
 	int32_t				mobjflags;
+	int32_t				mobjflags2;
 
 } vissprite_t;
 

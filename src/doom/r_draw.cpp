@@ -493,6 +493,7 @@ namespace DrawColumn
 		static INLINE void SpritePaletteSwapDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::PaletteSwap, ViewportSpriteLookup, WriterDirect >( context ); }
 		static INLINE void SpriteColormapDraw( colcontext_t* context )						{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup, WriterDirect >( context ); }
 		static INLINE void SpriteColormapPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportSpriteLookup, WriterDirect >( context ); }
+		static INLINE void SpriteTransparentDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup, WriterTransparent >( context ); }
 
 		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct, ViewportLookup, WriterDirect >( context ); }
 		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap, ViewportLookup, WriterDirect >( context ); }
@@ -602,6 +603,11 @@ void R_SpriteDrawColumn_Colormap( colcontext_t* context )
 	DrawColumn::Bytewise::SpriteColormapDraw( context );
 }
 
+void R_SpriteDrawColumn_Transparent ( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SpriteTransparentDraw( context );
+}
 
 void R_LimitRemovingDrawColumn( colcontext_t* context ) 
 { 

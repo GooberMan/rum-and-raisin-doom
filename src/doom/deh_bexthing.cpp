@@ -29,7 +29,9 @@
 
 #include "m_container.h"
 
-static std::map< DoomString, int32_t > ThingBitFlags =
+using flagsmap_t = std::map< DoomString, int32_t >;
+
+static  flagsmap_t ThingBitFlags =
 {
 	{ "SPECIAL",		0x00000001	},
 	{ "SOLID",			0x00000002	},
@@ -65,7 +67,30 @@ static std::map< DoomString, int32_t > ThingBitFlags =
 	{ "TRANSLUCENT",	0x80000000	},
 };
 
-DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj )
+static flagsmap_t ThingBitFlags2 =
+{
+	{ "LOGRAV",			0x00000001	},
+	{ "SHORTMRANGE",	0x00000002	},
+	{ "DMGIGNORED",		0x00000004	},
+	{ "NORADIUSDMG",	0x00000008	},
+	{ "FORCERADIUSDMG",	0x00000010	},
+	{ "HIGHERMPROB",	0x00000020	},
+	{ "RANGEHALF",		0x00000040	},
+	{ "NOTHRESHOLD",	0x00000080	},
+	{ "LONGMELEE",		0x00000100	},
+	{ "BOSS",			0x00000200	},
+	{ "MAP07BOSS1",		0x00000400	},
+	{ "MAP07BOSS2",		0x00000800	},
+	{ "E1M8BOSS",		0x00001000	},
+	{ "E2M8BOSS",		0x00002000	},
+	{ "E3M8BOSS",		0x00004000	},
+	{ "E4M6BOSS",		0x00008000	},
+	{ "E4M8BOSS",		0x00010000	},
+	{ "RIP",			0x00020000	},
+	{ "FULLVOLSOUNDS",	0x00040000	},
+};
+
+static int32_t GetFlagsFrom( flagsmap_t& flagsmap, deh_context_t* context, const char* value )
 {
 	DoomString test;
 	test.reserve( 16 );
@@ -105,5 +130,15 @@ DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* valu
 		}
 	}
 
-	mobj->flags = newflags;
+	return newflags;
+}
+
+DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj )
+{
+	mobj->flags = GetFlagsFrom( ThingBitFlags, context, value );
+}
+
+DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj )
+{
+	mobj->flags2 = GetFlagsFrom( ThingBitFlags2, context, value );
 }

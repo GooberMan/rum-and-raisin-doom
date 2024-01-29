@@ -180,6 +180,7 @@ extern "C"
 	rend_fixed_t*	spritetopoffset;
 
 	lighttable_t	*colormaps;
+	byte*			tranmap;
 }
 
 typedef enum compositetype_e
@@ -903,6 +904,9 @@ void R_InitColormaps (void)
 		firstcolormap = W_CheckNumForName( "C_START" ) + 1;
 		lastcolormap = W_CheckNumForName( "C_END" ) - 1;
 		numcolormaps = M_MAX( 0, lastcolormap - firstcolormap + 1 );
+
+		lumpindex_t tranmaplump = W_CheckNumForName( "TRANMAP" );
+		tranmap = tranmaplump >= 0 ? (byte*)W_CacheLumpNum( tranmaplump, PU_LEVEL ) : nullptr;
 	}
 }
 

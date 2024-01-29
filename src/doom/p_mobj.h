@@ -194,9 +194,41 @@ DOOM_C_API typedef enum
     //  use a translation table for player colormaps
     MF_TRANSLATION  	= 0xc000000,
     // Hmm ???.
-    MF_TRANSSHIFT	= 26
+    MF_TRANSSHIFT		= 26,
 
-} mobjflag_t;
+	// MBF_Extensions
+	MF_MBF_TOUCHY		= 0x10000000,
+
+	MF_MBF_BOUNCES		= 0x20000000,
+
+	MF_MBF_FRIEND		= 0x40000000,
+
+	// Boom extensions
+	MF_BOOM_TRANSLUCENT	= 0x80000000,
+ } mobjflag_t;
+
+DOOM_C_API typedef enum mobjflag2_e
+{
+	MF2_MBF21_LOGRAV			= 0x00001,	// Lower gravity (1/8)
+	MF2_MBF21_SHORTMRANGE 		= 0x00002,	// Short missile range (archvile)
+	MF2_MBF21_DMGIGNORED		= 0x00004,	// Other things ignore its attacks (archvile)
+	MF2_MBF21_NORADIUSDMG		= 0x00008,	// Doesn't take splash damage (cyberdemon, mastermind)
+	MF2_MBF21_FORCERADIUSDMG	= 0x00010,	// Thing causes splash damage even if the target shouldn't
+	MF2_MBF21_HIGHERMPROB		= 0x00020,	// Higher missile attack probability (cyberdemon)
+	MF2_MBF21_RANGEHALF			= 0x00040,	// Use half distance for missile attack probability (cyberdemon, mastermind, revenant, lost soul)
+	MF2_MBF21_NOTHRESHOLD		= 0x00080,	// Has no targeting threshold (archvile)
+	MF2_MBF21_LONGMELEE			= 0x00100,	// Has long melee range (revenant)
+	MF2_MBF21_BOSS				= 0x00200,	// Full volume see / death sound & splash immunity (from heretic)
+	MF2_MBF21_MAP07BOSS1		= 0x00400,	// Tag 666 "boss" on doom 2 map 7 (mancubus)
+	MF2_MBF21_MAP07BOSS2		= 0x00800,	// Tag 667 "boss" on doom 2 map 7 (arachnotron)
+	MF2_MBF21_E1M8BOSS			= 0x01000,	// E1M8 boss (baron)
+	MF2_MBF21_E2M8BOSS			= 0x02000,	// E2M8 boss (cyberdemon)
+	MF2_MBF21_E3M8BOSS			= 0x04000,	// E3M8 boss (mastermind)
+	MF2_MBF21_E4M6BOSS			= 0x08000,	// E4M6 boss (cyberdemon)
+	MF2_MBF21_E4M8BOSS			= 0x10000,	// E4M8 boss (mastermind)
+	MF2_MBF21_RIP				= 0x20000,	// Ripper projectile (does not disappear on impact)
+	MF2_MBF21_FULLVOLSOUNDS		= 0x40000,	// Full volume see / death sounds (cyberdemon, mastermind)
+} mobjflag2_t;
 
 DOOM_C_API typedef struct mobjinstance_s
 {

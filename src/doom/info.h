@@ -1348,30 +1348,35 @@ DOOM_C_API extern const char *sprnames_boom[];
 
 DOOM_C_API typedef struct
 {
-    int	doomednum;
-    int	spawnstate;
-    int	spawnhealth;
-    int	seestate;
-    int	seesound;
-    int	reactiontime;
-    int	attacksound;
-    int	painstate;
-    int	painchance;
-    int	painsound;
-    int	meleestate;
-    int	missilestate;
-    int	deathstate;
-    int	xdeathstate;
-    int	deathsound;
-    int	speed;
-    int	radius;
-    int	height;
-    int	mass;
-    int	damage;
-    int	activesound;
-    int	flags;
-    int	raisestate;
+	int32_t		doomednum;
+	int32_t		spawnstate;
+	int32_t		spawnhealth;
+	int32_t		seestate;
+	int32_t		seesound;
+	int32_t		reactiontime;
+	int32_t		attacksound;
+	int32_t		painstate;
+	int32_t		painchance;
+	int32_t		painsound;
+	int32_t		meleestate;
+	int32_t		missilestate;
+	int32_t		deathstate;
+	int32_t		xdeathstate;
+	int32_t		deathsound;
+	int32_t		speed;
+	int32_t		radius;
+	int32_t		height;
+	int32_t		mass;
+	int32_t		damage;
+	int32_t		activesound;
+	int32_t		flags;
+	int32_t		raisestate;
 
+	// MBF extensions
+	int32_t		flags2;
+	int32_t		fastspeed;
+	int32_t		meleerange;
+	int32_t		ripsound;
 } mobjinfo_t;
 
 DOOM_C_API extern mobjinfo_t mobjinfo[NUMMOBJTYPES];

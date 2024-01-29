@@ -53,9 +53,14 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   DEH_MAPPING("Action sound",        activesound)
   DEH_MAPPING("Bits",                flags)
   DEH_MAPPING("Respawn frame",       raisestate)
+  MBF21_MAPPING("Bits2",             flags2)
+  MBF21_MAPPING("Fast speed",        fastspeed)
+  MBF21_MAPPING("Melee range",       meleerange)
+  MBF21_MAPPING("Rip sound",         ripsound)
 DEH_END_MAPPING
 
-void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj );
+DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj );
+DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 
 static void *DEH_ThingStart(deh_context_t *context, char *line)
 {
@@ -108,6 +113,10 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 	if( deh_allow_bex && strcmp( variable_name, "Bits" ) == 0 && !isdigit( value[ 0 ] ) )
 	{
 		DEH_BexHandleThingBits( context, value, mobj );
+	}
+	else if( deh_allow_bex && strcmp( variable_name, "Bits2" ) == 0 && !isdigit( value[ 0 ] ) )
+	{
+		DEH_BexHandleThingBits2( context, value, mobj );
 	}
 	else
 	{

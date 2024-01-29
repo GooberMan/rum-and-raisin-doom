@@ -44,6 +44,7 @@ extern rend_fixed_t*	spriteoffset;
 extern rend_fixed_t*	spritetopoffset;
 
 extern lighttable_t*	colormaps;
+extern byte*			tranmap;
 
 extern int32_t		render_width;
 extern int32_t		render_height;
@@ -53,11 +54,11 @@ extern int32_t		frame_width;
 extern int32_t		frame_adjusted_width;
 extern int32_t		frame_height;
 
-extern int		firstflat;
+extern int			firstflat;
 
 // for global animation
-extern int*		flattranslation;	
-extern int*		texturetranslation;	
+extern int*			flattranslation;	
+extern int*			texturetranslation;	
 
 
 // Sprite....

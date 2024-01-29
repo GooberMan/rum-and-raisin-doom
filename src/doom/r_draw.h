@@ -44,6 +44,8 @@ void R_DrawColumn_Transparent_256( colcontext_t* context );
 
 void R_SpriteDrawColumn ( colcontext_t* context );
 void R_SpriteDrawColumn_Colormap ( colcontext_t* context );
+void R_SpriteDrawColumn_Transparent ( colcontext_t* context );
+
 void R_LimitRemovingDrawColumn ( colcontext_t* context );
 void R_LimitRemovingDrawColumn_Colormap ( colcontext_t* context );
 void R_LimitRemovingDrawColumn_Transparent ( colcontext_t* context );

@@ -363,7 +363,8 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 
 	spritecolcontext.output = dest;
 	spritecolcontext.colormap = vis->colormap;
-	spritecolcontext.colfunc = &R_SpriteDrawColumn_Colormap;
+	spritecolcontext.transparency = vis->tranmap;
+	spritecolcontext.colfunc = vis->tranmap ? &R_SpriteDrawColumn_Transparent : &R_SpriteDrawColumn_Colormap;
 
 	if (!spritecolcontext.colormap)
 	{
@@ -375,7 +376,7 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 	}
 	else if (vis->mobjflags & MF_TRANSLATION)
 	{
-		spritecolcontext.colfunc = transcolfunc;
+		spritecolcontext.colfunc = &R_DrawTranslatedColumn;
 		spritecolcontext.translation = translationtables - 256 +
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
@@ -594,6 +595,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 	// store information in a vissprite
 	vis = R_NewVisSprite( spritecontext );
 	vis->mobjflags = thing->flags;
+	vis->mobjflags2 = thing->flags2;
 	vis->scale = yscale;
 	vis->iscale = RendFixedDiv( RENDFRACUNIT, yscale );
 	vis->gx = thingx;
@@ -648,6 +650,11 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 			index = MAXLIGHTSCALE-1;
 
 		vis->colormap = rendercontext.viewpoint.colormaps + spritecontext.spritelightoffsets[ index ];
+	}
+
+	if( remove_limits && thing->flags & MF_BOOM_TRANSLUCENT )
+	{
+		vis->tranmap = tranmap;
 	}
 }
 
@@ -773,6 +780,7 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	}
 
 	vis->patch = lump;
+	vis->tranmap = nullptr;
 
 	if (viewpoint.player->powers[pw_invisibility] > 4*32
 		|| viewpoint.player->powers[pw_invisibility] & 8)

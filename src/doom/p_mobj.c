@@ -520,6 +520,7 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( mobjtype_t type, angle_t angle,
 	mobj->radius = info->radius;
 	mobj->height = info->height;
 	mobj->flags = info->flags;
+	mobj->flags2 = info->flags2;
 	mobj->health = info->spawnhealth;
 
 	int32_t forwardlookup = FINEANGLE( angle );

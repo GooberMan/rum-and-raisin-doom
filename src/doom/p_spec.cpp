@@ -1652,7 +1652,6 @@ void P_SpawnSpecials (void)
 	linespeciallist = (line_t**)Z_Malloc( sizeof( line_t* ) * scrollcount, PU_LEVEL, NULL );
 	numlinespecials = 0;
 
-	byte* tranmap = remove_limits ? (byte*)W_CacheLumpName( "TRANMAP", PU_LEVEL ) : nullptr;
 	for (i = 0;i < numlines; i++)
 	{
 		switch(lines[i].special)
