@@ -187,7 +187,8 @@ constexpr idgamesmirror_t idgames_mirrors[] =
 };
 
 constexpr const char* shareware_idgames_url		= "idstuff/doom/doom19s.zip";
-constexpr const char* freedoom_url				= "https://www.github.com/freedoom/freedoom/releases/download/v0.12.1/freedoom-0.12.1.zip";
+constexpr const char* freedoom0121_url			= "https://www.github.com/freedoom/freedoom/releases/download/v0.12.1/freedoom-0.12.1.zip";
+constexpr const char* freedoom013_url			= "https://www.github.com/freedoom/freedoom/releases/download/v0.13.0/freedoom-v0.13.0.zip";
 constexpr const char* hacx_idgames_url			= "themes/hacx/hacx12.zip";
 
 constexpr auto Mirrors() { return std::span( idgames_mirrors, arrlen( idgames_mirrors ) ); }
@@ -3438,7 +3439,8 @@ namespace launcher
 			, initpanel( init )
 			, noiwadmode( false )
 			, downloadingshareware( false )
-			, downloadingfreedoom( false )
+			, downloadingfreedoom0121( false )
+			, downloadingfreedoom013( false )
 			, downloadinghacx( false )
 			, sharewareextracted( false )
 			, freedoomextracted( false )
@@ -3496,7 +3498,8 @@ namespace launcher
 			igPushFont( font_inconsolata_medium );
 
 			HandleGame( "Doom shareware", "iwads/doomshareware/", shareware_idgames_url, true, true, downloadingshareware, sharewareextracted );
-			HandleGame( "Freedoom", "iwads/freedoom/", freedoom_url, false, false, downloadingfreedoom, freedoomextracted );
+			HandleGame( "Freedoom 0.12.1", "iwads/freedoom-0.12.1/", freedoom0121_url, false, false, downloadingfreedoom0121, freedoomextracted );
+			HandleGame( "Freedoom 0.13", "iwads/freedoom-0.13/", freedoom013_url, false, false, downloadingfreedoom013, freedoomextracted );
 			HandleGame( "HacX", "iwads/hacx/", hacx_idgames_url, true, false, downloadinghacx, hacxextracted );
 
 			if( sharewareextracted || freedoomextracted || hacxextracted )
@@ -3667,7 +3670,8 @@ namespace launcher
 		LauncherPanel*						initpanel;
 		bool								noiwadmode;
 		std::atomic< bool >					downloadingshareware;
-		std::atomic< bool >					downloadingfreedoom;
+		std::atomic< bool >					downloadingfreedoom0121;
+		std::atomic< bool >					downloadingfreedoom013;
 		std::atomic< bool >					downloadinghacx;
 		std::atomic< bool >					sharewareextracted;
 		std::atomic< bool >					freedoomextracted;
