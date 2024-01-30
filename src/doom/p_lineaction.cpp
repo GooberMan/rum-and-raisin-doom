@@ -506,7 +506,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_LowerLowest_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Teleport_Thing_W1_All
-	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_WalkBoth, LL_None },
+	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Ceiling_RaiseHighestCeiling_W1_Player
 	{},
 	// Ceiling_LowerToFloor_S1_Player
@@ -624,7 +624,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_RaiseByTexture_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Teleport_Thing_WR_All
-	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_WalkBoth, LL_None },
+	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Floor_LowerHighestFast_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_highestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Door_OpenFastBlue_SR_Player
@@ -680,9 +680,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Exit_Secret_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Exit >, LT_WalkBoth, LL_None, 0, 0, exit_secret },
 	// Teleport_Thing_W1_Monsters
-	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_WalkBoth, LL_None },
+	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Teleport_Thing_WR_Monsters
-	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkBoth, LL_None },
+	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Stairs_BuildBy16Fast_S1_Player
 	{},
 	// Floor_RaiseNearest_WR_Player
@@ -781,7 +781,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_SetLowest_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightSet >, LT_SwitchFront, LL_None, 0, 0, lightset_lowestsurround },
 	// Teleport_Thing_S1_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericSwitchOnce< Teleport >, LT_SwitchFront, LL_None, 0, 0, tt_tothing },
 	// Door_Close30Open_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_30sec ], sd_close },
 	// Floor_RaiseByTexture_SR_Player
@@ -823,7 +823,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_SetLowest_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_SwitchFront, LL_None, 0, 0, lightset_lowestsurround },
 	// Teleport_Thing_SR_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericSwitch< Teleport >, LT_SwitchFront, LL_None, 0, 0, tt_tothing },
 	// Door_Close30Open_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_30sec ], sd_close },
 	// Exit_Normal_G1_Player
@@ -847,7 +847,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Ceiling_LowerHighestFloor_SR_Player
 	{},
 	// Teleport_ThingSilentPreserve_W1_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_SwitchFront, LL_None, 0, 0, tt_tothing },
 	// Teleport_ThingSilentPreserve_WR_All
 	{},
 	// Teleport_ThingSilentPreserve_S1_All

@@ -631,6 +631,22 @@ DOOM_C_API typedef enum lightset_e
 	lightset_highestsurround,
 } lightset_t;
 
+DOOM_C_API typedef enum teleporttype_e
+{
+	tt_tothing			= 0x00,
+	tt_toline			= 0x01,
+
+	tt_targetmask		= 0x01,
+
+	tt_setangle			= 0x00,
+	tt_preserveangle	= 0x02,
+	tt_reverseangle		= 0x04,
+
+	tt_anglemask		= 0x06,
+
+	tt_silent			= 0x08,
+};
+
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
 
 DOOM_C_API int32_t	EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );

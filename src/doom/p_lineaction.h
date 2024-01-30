@@ -588,6 +588,7 @@ typedef enum linetrigger_e : uint32_t
 	LT_UseFront								= LT_Use | LT_FrontSide,
 	LT_SwitchFront							= LT_Switch | LT_FrontSide,
 	LT_GunFront								= LT_Gun | LT_FrontSide,
+	LT_WalkFront							= LT_Walk | LT_FrontSide,
 	LT_WalkBoth								= LT_Walk | LT_BothSides,
 
 } linetrigger_t;
