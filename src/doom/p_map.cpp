@@ -170,25 +170,21 @@ DOOM_C_API doombool P_TeleportMove( mobj_t* thing, fixed_t x, fixed_t y )
     numspechit = 0;
     
     // stomp on any things contacted
-	if( false ) // remove_limits )
-	{
-		xl = (int32_t)( (int64_t)tmbbox[BOXLEFT]	- (int64_t)bmaporgx - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		xh = (int32_t)( (int64_t)tmbbox[BOXRIGHT]	- (int64_t)bmaporgx + MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yl = (int32_t)( (int64_t)tmbbox[BOXBOTTOM]	- (int64_t)bmaporgy - MAXRADIUS ) >> MAPBLOCKSHIFT;
-		yh = (int32_t)( (int64_t)tmbbox[BOXTOP]		- (int64_t)bmaporgy + MAXRADIUS ) >> MAPBLOCKSHIFT;
-	}
-	else
-	{
-		xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
-		xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
-		yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
-		yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
-	}
+	xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
+	xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
+	yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
+	yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
     for (bx=xl ; bx<=xh ; bx++)
-	for (by=yl ; by<=yh ; by++)
-	    if (!P_BlockThingsIterator(bx,by,PIT_StompThing))
-		return false;
+	{
+		for (by=yl ; by<=yh ; by++)
+		{
+			if (!P_BlockThingsIterator(bx,by,PIT_StompThing))
+			{
+				return false;
+			}
+		}
+	}
     
     // the move is ok,
     // so link the thing into its new position

@@ -26,6 +26,7 @@
 #include "s_sound.h"
 
 #include "p_local.h"
+#include "p_lineaction.h"
 
 
 // Data.
@@ -135,63 +136,99 @@ EV_Teleport
     return 0;
 }
 
-DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
+DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
 {
 	for( sector_t& sector : Sectors() )
 	{
 		if ( sector.tag == line->tag )
 		{
-			for( mobj_t* targetmobj = sector.nosectorthinglist; targetmobj != nullptr; targetmobj = targetmobj->snext )
+			for( mobj_t* targetmobj = sector.nosectorthinglist; targetmobj != nullptr; targetmobj = targetmobj->nosectornext )
 			{
-				if( targetmobj->type != MT_TELEPORTMAN 
-					|| sector.index != targetmobj->subsector->sector->index )
+				if( targetmobj->type != MT_TELEPORTMAN )
 				{
 					continue;
 				}
 
-				fixed_t oldx = activator->x;
-				fixed_t oldy = activator->y;
-				fixed_t oldz = activator->z;
-				
-				if( !P_TeleportMove( activator, targetmobj->x, targetmobj->y ) )
+				if( P_TeleportMove( activator, targetmobj->x, targetmobj->y ) )
 				{
-					return 0;
+					outtargetx		= targetmobj->x;
+					outtargety		= targetmobj->y;
+					outtargetangle	= targetmobj->angle;
+
+					return true;
 				}
 
-				if( gameversion != exe_final )
-				{
-					activator->z = activator->floorz;
-				}
-
-				if( activator->player )
-				{
-					activator->player->viewz = activator->z + activator->player->viewheight;
-				}
-
-				// spawn teleport fog at source and destination
-				mobj_t* fog = P_SpawnMobj( oldx, oldy, oldz, MT_TFOG );
-				S_StartSound( fog, sfx_telept );
-
-				angle_t angle = targetmobj->angle >> ANGLETOFINESHIFT;
-				fog = P_SpawnMobj( targetmobj->x + 20 * finecosine[angle], targetmobj->y + 20 * finesine[angle], activator->z, MT_TFOG );
-
-				// emit sound, where?
-				S_StartSound( fog, sfx_telept );
-		
-				// don't move for a bit
-				if( activator->player )
-				{
-					activator->reactiontime = 18;
-				}
-
-				activator->angle = targetmobj->angle;
-				activator->momx = activator->momy = activator->momz = 0;
-
-				activator->teleporttic = gametic;
-
-				return 1;
+				break;
 			}
 		}
 	}
-	return 0;
+
+	return false;
+}
+
+DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
+{
+	fixed_t oldx = activator->x;
+	fixed_t oldy = activator->y;
+	fixed_t oldz = activator->z;
+	bool teleported = false;
+
+	fixed_t targetx = 0;
+	fixed_t targety = 0;
+	angle_t targetangle = 0;
+
+	switch( line->action->param1 & tt_targetmask )
+	{
+	case tt_tothing:
+		teleported = EV_DoTeleportGenericThing( line, activator, targetx, targety, targetangle );
+		break;
+	}
+
+	if( teleported )
+	{
+		if( gameversion != exe_final )
+		{
+			activator->z = activator->floorz;
+		}
+
+		if( activator->player )
+		{
+			activator->player->viewz = activator->z + activator->player->viewheight;
+		}
+
+		if( ( line->action->param1 & tt_silent ) != tt_silent )
+		{
+			// spawn teleport fog at source and destination
+			mobj_t* fog = P_SpawnMobj( oldx, oldy, oldz, MT_TFOG );
+			S_StartSound( fog, sfx_telept );
+
+			angle_t angle = targetangle >> ANGLETOFINESHIFT;
+			fog = P_SpawnMobj( targetx + 20 * finecosine[angle], targety + 20 * finesine[angle], activator->z, MT_TFOG );
+
+			// emit sound, where?
+			S_StartSound( fog, sfx_telept );
+		
+			// don't move for a bit
+			if( activator->player )
+			{
+				activator->reactiontime = 18;
+			}
+
+			activator->momx = activator->momy = activator->momz = 0;
+		}
+
+		switch( line->action->param1 & tt_anglemask )
+		{
+		case tt_setangle:
+			activator->angle = targetangle;
+			break;
+		case tt_reverseangle:
+			activator->angle += ANG180;
+			break;
+		}
+
+		activator->teleporttic = gametic;
+	}
+
+	return teleported;
 }
