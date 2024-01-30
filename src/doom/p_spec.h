@@ -581,6 +581,12 @@ DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
 
 // Generic functionality
 
+DOOM_C_API typedef enum dooraise_e
+{
+	door_noraise,
+	door_raiselower,
+} doorraise_t;
+
 DOOM_C_API typedef enum sectortargettype_e
 {
 	stt_nosearch = 0,

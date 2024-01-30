@@ -482,7 +482,8 @@ int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 					&& (sectordir_t)line->action->param1 == sd_open;
 	if( raising )
 	{
-		if( line->backsector->specialdata )
+		if( (doorraise_t)line->action->param2 == door_raiselower
+			&& line->backsector->specialdata )
 		{
 			vldoor_t* door = thinker_cast< vldoor_t >( line->backsector->specialdata );
 			if( door == nullptr )
@@ -506,8 +507,13 @@ int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 			return 1;
 		}
 
-		EV_DoDoorGeneric( line, line->backsector );
-		return 1;
+		if( !line->backsector->specialdata )
+		{
+			EV_DoDoorGeneric( line, line->backsector );
+			return 1;
+		}
+
+		return 0;
 	}
 
 	int32_t secnum = -1;
