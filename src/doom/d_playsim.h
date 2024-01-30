@@ -32,6 +32,9 @@ DOOM_C_API typedef struct dehackedoptions_s
 	doombool					lump_from_iwads;
 	doombool					always_load_lump;
 	doombool					allow_bex;
+	doombool					allow_mbf;
+	doombool					allow_mbf21;
+	doombool					allow_dsdhacked;
 } dehackedoptions_t;
 
 DOOM_C_API typedef struct demoopitions_s
@@ -48,6 +51,7 @@ DOOM_C_API typedef struct finaleoptions_s
 
 DOOM_C_API typedef struct gameoptions_s
 {
+	doombool					fix_divlineside;
 	doombool					unlimited_scrollers;
 	doombool					unlimited_platforms;
 	doombool					reset_player_visited_secret;

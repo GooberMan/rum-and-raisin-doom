@@ -21,6 +21,9 @@
 #include "z_zone.h"
 #include "doomdef.h"
 #include "p_local.h"
+#include "p_lineaction.h"
+
+#include "i_log.h"
 
 #include "s_sound.h"
 
@@ -220,43 +223,31 @@ DOOM_C_API void T_MoveFloor(floormove_t* floor)
     result_e	res;
 	
     res = T_MovePlane(floor->sector,
-		      floor->speed,
-		      floor->floordestheight,
-		      floor->crush,0,floor->direction);
-    
-    if (!(leveltime&7))
-	S_StartSound(&floor->sector->soundorg, sfx_stnmov);
+						floor->speed,
+						floor->floordestheight,
+						floor->crush,0,floor->direction);
+
+	if (!(leveltime&7))
+	{
+		S_StartSound(&floor->sector->soundorg, sfx_stnmov);
+	}
     
     if (res == pastdest)
     {
-	floor->sector->specialdata = NULL;
+		floor->sector->specialdata = NULL;
+		if( floor->newspecial >= 0 )
+		{
+			floor->sector->special = floor->newspecial;
+		}
+		if( floor->texture >= 0 )
+		{
+			floor->sector->floorpic = floor->texture;
+		}
 
-	if (floor->direction == 1)
-	{
-	    switch(floor->type)
-	    {
-	      case donutRaise:
-		floor->sector->special = floor->newspecial;
-		floor->sector->floorpic = floor->texture;
-	      default:
-		break;
-	    }
-	}
-	else if (floor->direction == -1)
-	{
-	    switch(floor->type)
-	    {
-	      case lowerAndChange:
-		floor->sector->special = floor->newspecial;
-		floor->sector->floorpic = floor->texture;
-	      default:
-		break;
-	    }
-	}
-	P_RemoveThinker(&floor->thinker);
+		P_RemoveThinker(&floor->thinker);
 
-	S_StartSound(&floor->sector->soundorg, sfx_pstop);
-    }
+		S_StartSound(&floor->sector->soundorg, sfx_pstop);
+	}
 
 }
 
@@ -289,6 +280,8 @@ DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
 	floor->type = floortype;
 	floor->crush = false;
+	floor->newspecial = -1;
+	floor->texture = -1;
 
 	switch(floortype)
 	{
@@ -296,27 +289,25 @@ DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 	    floor->direction = -1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindHighestFloorSurrounding(sec);
+	    floor->floordestheight = P_FindHighestFloorSurrounding(sec);
 	    break;
 
 	  case lowerFloorToLowest:
 	    floor->direction = -1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindLowestFloorSurrounding(sec);
+	    floor->floordestheight = P_FindLowestFloorSurrounding(sec);
 	    break;
 
 	  case turboLower:
 	    floor->direction = -1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED * 4;
-	    floor->floordestheight = 
-		P_FindHighestFloorSurrounding(sec);
-	    if (gameversion <= exe_doom_1_2 ||
-	        floor->floordestheight != sec->floorheight)
-		floor->floordestheight += 8*FRACUNIT;
+	    floor->floordestheight = P_FindHighestFloorSurrounding(sec);
+	    if (gameversion <= exe_doom_1_2 || floor->floordestheight != sec->floorheight)
+		{
+			floor->floordestheight += 8*FRACUNIT;
+		}
 	    break;
 
 	  case raiseFloorCrush:
@@ -325,51 +316,46 @@ DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 	    floor->direction = 1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindLowestCeilingSurrounding(sec);
+	    floor->floordestheight = P_FindLowestCeilingSurrounding(sec);
 	    if (floor->floordestheight > sec->ceilingheight)
-		floor->floordestheight = sec->ceilingheight;
-	    floor->floordestheight -= (8*FRACUNIT)*
-		(floortype == raiseFloorCrush);
+		{
+			floor->floordestheight = sec->ceilingheight;
+		}
+	    floor->floordestheight -= (8*FRACUNIT) * (floortype == raiseFloorCrush);
 	    break;
 
 	  case raiseFloorTurbo:
 	    floor->direction = 1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED*4;
-	    floor->floordestheight = 
-		P_FindNextHighestFloor(sec);
+	    floor->floordestheight = P_FindNextHighestFloor(sec);
 	    break;
 
 	  case raiseFloorToNearest:
 	    floor->direction = 1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindNextHighestFloor(sec);
+	    floor->floordestheight = P_FindNextHighestFloor(sec);
 	    break;
 
 	  case raiseFloor24:
 	    floor->direction = 1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = floor->sector->floorheight +
-		24 * FRACUNIT;
+	    floor->floordestheight = floor->sector->floorheight + 24 * FRACUNIT;
 	    break;
 	  case raiseFloor512:
 	    floor->direction = 1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = floor->sector->floorheight +
-		512 * FRACUNIT;
+	    floor->floordestheight = floor->sector->floorheight + 512 * FRACUNIT;
 	    break;
 
 	  case raiseFloor24AndChange:
 	    floor->direction = 1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = floor->sector->floorheight +
-		24 * FRACUNIT;
+	    floor->floordestheight = floor->sector->floorheight + 24 * FRACUNIT;
 	    sec->floorpic = line->frontsector->floorpic;
 	    sec->special = line->frontsector->special;
 	    break;
@@ -509,7 +495,9 @@ DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
 	// Uninitialized crush field will not be equal to 0 or 1 (true)
 	// with high probability. So, initialize it with any other value
 	floor->crush = STAIRS_UNINITIALIZED_CRUSH_FIELD_VALUE;
-		
+	floor->newspecial = -1;
+	floor->texture = -1;
+
 	texture = sec->floorpic;
 	
 	// Find next sector to raise
@@ -558,6 +546,8 @@ DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
 		// Uninitialized crush field will not be equal to 0 or 1 (true)
 		// with high probability. So, initialize it with any other value
 		floor->crush = STAIRS_UNINITIALIZED_CRUSH_FIELD_VALUE;
+		floor->newspecial = -1;
+		floor->texture = -1;
 		ok = 1;
 		break;
 	    }
@@ -575,6 +565,139 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 		if( sector.tag == line->tag || sector.specialdata != nullptr )
 		{
 			++createdcount;
+
+			floormove_t* floor = (floormove_t*)Z_Malloc( sizeof(floormove_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &floor->thinker );
+			sector.specialdata = floor;
+			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloor;
+			floor->type = genericFloor;
+			floor->crush = line->action->param6 == sc_crush;
+			floor->sector = &sector;
+			floor->direction = line->action->param2;
+			floor->speed = line->action->speed;
+
+			switch( (sectortargettype_t)line->action->param1 )
+			{
+			case stt_highestneighborfloor:
+				floor->floordestheight = P_FindHighestFloorSurrounding( &sector );
+				break;
+
+			case stt_lowestneighborfloor:
+				floor->floordestheight = P_FindLowestFloorSurrounding( &sector );
+				break;
+
+			case stt_nexthighestneighborfloor:
+				floor->floordestheight = P_FindNextHighestFloor( &sector ); // This will preserve a vanilla bug
+				break;
+
+			case stt_nextlowestneighborfloor:
+				floor->floordestheight = P_FindNextLowestFloorSurrounding( &sector );
+				break;
+
+			case stt_highestneighborceiling:
+				floor->floordestheight = P_FindHighestCeilingSurrounding( &sector );
+				break;
+
+			case stt_lowestneighborceiling:
+				floor->floordestheight = P_FindLowestCeilingSurrounding( &sector );
+				break;
+
+			case stt_nextlowestneighborceiling:
+				floor->floordestheight = P_FindNextLowestCeilingSurrounding( &sector );
+				break;
+
+			case stt_floor:
+				I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying to move a sector's floor to the floor", line->index );
+				break;
+
+			case stt_ceiling:
+				floor->floordestheight = sector.ceilingheight;
+				break;
+
+			case stt_shortestlowertexture:
+				{
+					int32_t lowestheight = INT_MAX;
+					for( line_t* secline : Lines( sector ) )
+					{
+						if( secline->frontside && secline->frontside->bottomtexture >= 0 )
+						{
+							lowestheight = M_MIN( lowestheight, texturelookup[ secline->frontside->bottomtexture ]->height );
+						}
+						if( secline->backside && secline->backside->bottomtexture >= 0 )
+						{
+							lowestheight = M_MIN( lowestheight, texturelookup[ secline->backside->bottomtexture ]->height );
+						}
+					}
+					floor->floordestheight = sector.floorheight + IntToFixed( lowestheight * floor->direction );
+				}
+				break;
+
+			case stt_perpetual:
+				I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying start a perpetual platform, try using EV_DoPerpetualLiftGeneric instead", line->index );
+				break;
+
+			case stt_nosearch:
+			default:
+				floor->floordestheight = sector.floorheight;
+				break;
+			}
+
+			floor->floordestheight += (fixed_t)line->action->param3;
+
+			floor->newspecial = -1;
+			floor->texture = -1;
+
+			auto SetSpecial = []( sector_t& sourcesector
+								, floormove_t* target
+								, sectorchangetype_t type
+								, sector_t& setfrom )
+			{
+				int16_t& targetspecial = target->direction == sd_down ? target->newspecial : sourcesector.special;
+				int16_t& targettexture = target->direction == sd_down ? target->texture : sourcesector.floorpic;
+
+				targetspecial = type == sct_zerospecial
+									? 0
+									: type == sct_copyboth
+										? setfrom.special
+										: -1;
+				targettexture = ( type == sct_copytexture || type == sct_copyboth )
+									? setfrom.floorpic
+									: -1;
+			};
+
+			if( line->action->param4 != sct_none )
+			{
+				if( line->action->param6 == scm_numeric )
+				{
+					// The search functions above already find the correct sector.
+					// We should really cache the result that way...
+					for( line_t* secline : Lines( sector ) )
+					{
+						if( secline->TwoSided() )
+						{
+							sector_t& setfrom = secline->frontsector->index == sector.index
+												? *secline->backsector
+												: *secline->frontsector;
+							if( setfrom.floorheight == floor->floordestheight )
+							{
+								SetSpecial( sector, floor, (sectorchangetype_t)secline->action->param4, setfrom );
+								break;
+							}
+						}
+					}
+				}
+				else // Trigger model
+				{
+					if( line->frontsector == nullptr )
+					{
+						I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is using a trigger model without a front sector", line->index );
+					}
+					else
+					{
+						SetSpecial( sector, floor, (sectorchangetype_t)line->action->param4, *line->frontsector );
+					}
+				}
+			}
 		}
 	}
 

@@ -105,108 +105,108 @@ int32_t	map_fill					= MapFill_None;
 
 mapstyledata_t	map_styledatacustomdefault =
 {
-	BACKGROUND,						0, // background
-	GRIDCOLORS,						0, // grid
-	GRAYS + 3,						0, // areamap
-	WALLCOLORS,						0, // walls
-	WALLCOLORS + WALLRANGE / 2,		0, // teleporters
-	SECRETWALLCOLORS,				0, // linesecrets
-	251,							0, // sectorsecrets
-	251,							0, // sectorsecretsundiscovered
-	FDWALLCOLORS,					0, // floorchange
-	CDWALLCOLORS,					0, // ceilingchange
-	TSWALLCOLORS,					0, // nochange
+	{ BACKGROUND,					0 }, // background
+	{ GRIDCOLORS,					0 }, // grid
+	{ GRAYS + 3,					0 }, // areamap
+	{ WALLCOLORS,					0 }, // walls
+	{ WALLCOLORS + WALLRANGE / 2,	0 }, // teleporters
+	{ SECRETWALLCOLORS,				0 }, // linesecrets
+	{ 251,							0 }, // sectorsecrets
+	{ 251,							0 }, // sectorsecretsundiscovered
+	{ FDWALLCOLORS,					0 }, // floorchange
+	{ CDWALLCOLORS,					0 }, // ceilingchange
+	{ TSWALLCOLORS,					0 }, // nochange
 
-	THINGCOLORS,					0, // things
-	214,							0, // monsters_alive
-	151,							0, // monsters_dead
-	196,							0, // items_counted
-	202,							0, // items_uncounted
-	173,							0, // projectiles
-	110,							0, // puffs
+	{ THINGCOLORS,					0 }, // things
+	{ 214,							0 }, // monsters_alive
+	{ 151,							0 }, // monsters_dead
+	{ 196,							0 }, // items_counted
+	{ 202,							0 }, // items_uncounted
+	{ 173,							0 }, // projectiles
+	{ 110,							0 }, // puffs
 
-	WHITE,							0, // playerarrow
-	XHAIRCOLORS,					0, // crosshair
+	{ WHITE,						0 }, // playerarrow
+	{ XHAIRCOLORS,					0 }, // crosshair
 };
 
 mapstyledata_t	map_styledata[ MapStyle_Max ] =
 {
 	// MapStyle_Custom
 	{
-		BACKGROUND,						0, // background
-		GRIDCOLORS,						0, // grid
-		GRAYS + 3,						0, // areamap
-		WALLCOLORS,						0, // walls
-		WALLCOLORS + WALLRANGE / 2,		0, // teleporters
-		SECRETWALLCOLORS,				0, // linesecrets
-		251,							0, // sectorsecrets
-		251,							0, // sectorsecretsundiscovered
-		FDWALLCOLORS,					0, // floorchange
-		CDWALLCOLORS,					0, // ceilingchange
-		TSWALLCOLORS,					0, // nochange
+		{ BACKGROUND,					0 }, // background
+		{ GRIDCOLORS,					0 }, // grid
+		{ GRAYS + 3,					0 }, // areamap
+		{ WALLCOLORS,					0 }, // walls
+		{ WALLCOLORS + WALLRANGE / 2,	0 }, // teleporters
+		{ SECRETWALLCOLORS,				0 }, // linesecrets
+		{ 251,							0 }, // sectorsecrets
+		{ 251,							0 }, // sectorsecretsundiscovered
+		{ FDWALLCOLORS,					0 }, // floorchange
+		{ CDWALLCOLORS,					0 }, // ceilingchange
+		{ TSWALLCOLORS,					0 }, // nochange
 
-		THINGCOLORS,					0, // things
-		214,							0, // monsters_alive
-		151,							0, // monsters_dead
-		196,							0, // items_counted
-		202,							0, // items_uncounted
-		173,							0, // projectiles
-		110,							0, // puffs
+		{ THINGCOLORS,					0 }, // things
+		{ 214,							0 }, // monsters_alive
+		{ 151,							0 }, // monsters_dead
+		{ 196,							0 }, // items_counted
+		{ 202,							0 }, // items_uncounted
+		{ 173,							0 }, // projectiles
+		{ 110,							0 }, // puffs
 
-		WHITE,							0, // playerarrow
-		XHAIRCOLORS,					0, // crosshair
+		{ WHITE,						0 }, // playerarrow
+		{ XHAIRCOLORS,					0 }, // crosshair
 	},
 
 	// MapStyle_Original
 	{
-		BACKGROUND,						0, // background
-		GRIDCOLORS,						0, // grid
-		GRAYS + 3,						0, // areamap
-		WALLCOLORS,						0, // walls
-		WALLCOLORS + WALLRANGE / 2,		0, // teleporters
-		SECRETWALLCOLORS,				0, // linesecrets
-		-1,								0, // sectorsecrets
-		-1,								0, // sectorsecretsundiscovered
-		FDWALLCOLORS,					0, // floorchange
-		CDWALLCOLORS,					0, // ceilingchange
-		TSWALLCOLORS,					0, // nochange
+		{ BACKGROUND,					0 }, // background
+		{ GRIDCOLORS,					0 }, // grid
+		{ GRAYS + 3,					0 }, // areamap
+		{ WALLCOLORS,					0 }, // walls
+		{ WALLCOLORS + WALLRANGE / 2,	0 }, // teleporters
+		{ SECRETWALLCOLORS,				0 }, // linesecrets
+		{ -1,							0 }, // sectorsecrets
+		{ -1,							0 }, // sectorsecretsundiscovered
+		{ FDWALLCOLORS,					0 }, // floorchange
+		{ CDWALLCOLORS,					0 }, // ceilingchange
+		{ TSWALLCOLORS,					0 }, // nochange
 
-		THINGCOLORS,					0, // things
-		THINGCOLORS,					0, // monsters_alive
-		THINGCOLORS,					0, // monsters_dead
-		THINGCOLORS,					0, // items_counted
-		THINGCOLORS,					0, // items_uncounted
-		THINGCOLORS,					0, // projectiles
-		THINGCOLORS,					0, // puffs
+		{ THINGCOLORS,					0 }, // things
+		{ THINGCOLORS,					0 }, // monsters_alive
+		{ THINGCOLORS,					0 }, // monsters_dead
+		{ THINGCOLORS,					0 }, // items_counted
+		{ THINGCOLORS,					0 }, // items_uncounted
+		{ THINGCOLORS,					0 }, // projectiles
+		{ THINGCOLORS,					0 }, // puffs
 
-		WHITE,							0, // playerarrow
-		XHAIRCOLORS,					0, // crosshair
+		{ WHITE,						0 }, // playerarrow
+		{ XHAIRCOLORS,					0 }, // crosshair
 	},
 
 	// MapStyle_ZDoom
 	{
-		139,							0, // background
-		GRIDCOLORS,						0, // grid
-		GRAYS + 3,						0, // areamap
-		79,								0, // walls
-		200,							0, // teleporters
-		SECRETWALLCOLORS,				0, // linesecrets
-		-1,								0, // sectorsecrets
-		-1,								0, // sectorsecretsundiscovered
-		FDWALLCOLORS,					0, // floorchange
-		CDWALLCOLORS,					0, // ceilingchange
-		TSWALLCOLORS,					0, // nochange
+		{ 139,							0 }, // background
+		{ GRIDCOLORS,					0 }, // grid
+		{ GRAYS + 3,					0 }, // areamap
+		{ 79,							0 }, // walls
+		{ 200,							0 }, // teleporters
+		{ SECRETWALLCOLORS,				0 }, // linesecrets
+		{ -1,							0 }, // sectorsecrets
+		{ -1,							0 }, // sectorsecretsundiscovered
+		{ FDWALLCOLORS,					0 }, // floorchange
+		{ CDWALLCOLORS,					0 }, // ceilingchange
+		{ TSWALLCOLORS,					0 }, // nochange
 
-		THINGCOLORS,					0, // things
-		THINGCOLORS,					0, // monsters_alive
-		THINGCOLORS,					0, // monsters_dead
-		THINGCOLORS,					0, // items_counted
-		THINGCOLORS,					0, // items_uncounted
-		THINGCOLORS,					0, // projectiles
-		THINGCOLORS,					0, // puffs
+		{ THINGCOLORS,					0 }, // things
+		{ THINGCOLORS,					0 }, // monsters_alive
+		{ THINGCOLORS,					0 }, // monsters_dead
+		{ THINGCOLORS,					0 }, // items_counted
+		{ THINGCOLORS,					0 }, // items_uncounted
+		{ THINGCOLORS,					0 }, // projectiles
+		{ THINGCOLORS,					0 }, // puffs
 
-		WHITE,							0, // playerarrow
-		XHAIRCOLORS,					0, // crosshair
+		{ WHITE,						0 }, // playerarrow
+		{ XHAIRCOLORS,					0 }, // crosshair
 	},
 };
 
@@ -1374,12 +1374,12 @@ void AM_DrawLine( line_t* line, mapstyledata_t* style )
 		}
 
 		if( AM_CanDraw( style->sectorsecretsundiscovered ) &&	( line->frontsector->secretstate == Secret_Undiscovered
-																|| line->backsector && line->backsector->secretstate == Secret_Undiscovered ) )
+																|| ( line->backsector && line->backsector->secretstate == Secret_Undiscovered ) ) )
 		{
 			AM_drawMline(&l, AM_lookupColour( style->sectorsecretsundiscovered.val, style->sectorsecretsundiscovered.flags ) );
 		}
 		else if( AM_CanDraw( style->sectorsecrets ) &&	( line->frontsector->secretstate == Secret_Discovered
-														|| line->backsector && line->backsector->secretstate == Secret_Discovered ) )
+														|| ( line->backsector && line->backsector->secretstate == Secret_Discovered ) ) )
 		{
 			AM_drawMline(&l, AM_lookupColour( style->sectorsecrets.val, style->sectorsecrets.flags ) );
 		}
@@ -1424,28 +1424,28 @@ void AM_DrawLine( line_t* line, mapstyledata_t* style )
 
 mapstyledata_t	map_stylenotblockmap =
 {
-	111,						0, // background
-	111,						0, // grid
-	111,						0, // areamap
-	111,						0, // walls
-	111,						0, // teleporters
-	111,						0, // linesecrets
-	111,						0, // sectorsecrets
-	111,						0, // sectorsecretsundiscovered
-	111,						0, // floorchange
-	111,						0, // ceilingchange
-	111,						0, // nochange
+	{ 111,						0, }, // background
+	{ 111,						0, }, // grid
+	{ 111,						0, }, // areamap
+	{ 111,						0, }, // walls
+	{ 111,						0, }, // teleporters
+	{ 111,						0, }, // linesecrets
+	{ 111,						0, }, // sectorsecrets
+	{ 111,						0, }, // sectorsecretsundiscovered
+	{ 111,						0, }, // floorchange
+	{ 111,						0, }, // ceilingchange
+	{ 111,						0, }, // nochange
 
-	THINGCOLORS,					0, // things
-	214,							0, // monsters_alive
-	151,							0, // monsters_dead
-	196,							0, // items_counted
-	202,							0, // items_uncounted
-	173,							0, // projectiles
-	110,							0, // puffs
+	{ THINGCOLORS,				0, }, // things
+	{ 214,						0, }, // monsters_alive
+	{ 151,						0, }, // monsters_dead
+	{ 196,						0, }, // items_counted
+	{ 202,						0, }, // items_uncounted
+	{ 173,						0, }, // projectiles
+	{ 110,						0, }, // puffs
 
-	WHITE,							0, // playerarrow
-	XHAIRCOLORS,					0, // crosshair
+	{ WHITE,					0, }, // playerarrow
+	{ XHAIRCOLORS,				0, }, // crosshair
 };
 
 void AM_drawWalls( mapstyledata_t* style )

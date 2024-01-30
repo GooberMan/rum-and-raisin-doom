@@ -106,7 +106,7 @@ P_DivlineSide
     
     if (!node->dy)
     {
-	if (x==node->y)
+	if (x==node->y) // fix_divlineside
 	    return 2;
 
 	if (y <= node->y)

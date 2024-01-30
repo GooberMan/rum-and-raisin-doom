@@ -313,15 +313,15 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 		switch( line->action->param1 )
 		{
-		case smt_lowestneighborfloor:
+		case stt_lowestneighborfloor:
 			plat->low = P_FindLowestFloorSurrounding( sec );
 			break;
 
-		case smt_nearestneighborfloor:
+		case stt_nextlowestneighborfloor:
 			plat->low = P_FindNextLowestFloorSurrounding( sec );
 			break;
 
-		case smt_lowestneighborceiling:
+		case stt_lowestneighborceiling:
 			plat->low = P_FindLowestCeilingSurrounding( sec );
 			break;
 

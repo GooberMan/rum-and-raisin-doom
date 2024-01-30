@@ -85,7 +85,7 @@ enum DoomActions : uint32_t
 	Ceiling_LowerToFloor_SR_Player,
 	Ceiling_LowerTo8AboveFloor_W1_Player,
 	Floor_LowerHighest_SR_Player,
-	Door_Open_GR_Player,
+	Door_Open_GR_All,
 	Platform_RaiseNearestChangeTexture_G1_Player,
 	Scroll_WallTextureLeft_Always,
 	Crusher_S1_Player,
@@ -425,6 +425,7 @@ enum BoomFloorFlags : uint32_t
 	Floor_Target_32							= 0x0380,
 
 	Floor_Target_Mask						= 0x0380,
+	Floor_Target_Shift						= 7,
 
 	Floor_Change_None						= 0x0000,
 	Floor_Change_ClearSectorType			= 0x0400,
@@ -432,6 +433,7 @@ enum BoomFloorFlags : uint32_t
 	Floor_Change_CopyTextureSectorType		= 0x0C00,
 
 	Floor_Change_Mask						= 0x0C00,
+	Floor_Change_Shift						= 10,
 
 	Floor_Crush_No							= 0x0000,
 	Floor_Crush_Yes							= 0x1000,
@@ -582,6 +584,12 @@ typedef enum linetrigger_e : uint32_t
 	LT_BackSide								= 0x80,
 	LT_BothSides							= LT_FrontSide | LT_BackSide,
 	LT_SidesMask							= 0xC0,
+
+	LT_UseFront								= LT_Use | LT_FrontSide,
+	LT_SwitchFront							= LT_Switch | LT_FrontSide,
+	LT_GunFront								= LT_Gun | LT_FrontSide,
+	LT_WalkBoth								= LT_Walk | LT_BothSides,
+
 } linetrigger_t;
 
 typedef enum linelock_e : uint32_t
@@ -690,6 +698,7 @@ struct lineaction_s
 	int32_t						param3;
 	int32_t						param4;
 	int32_t						param5;
+	int32_t						param6;
 
 #if defined(__cplusplus)
 	constexpr linetrigger_t ActivationType() const			{ return trigger & LT_ActivationTypeMask; }

@@ -76,6 +76,7 @@ DOOM_C_API fixed_t P_FindNextHighestFloor( sector_t* sec );
 
 DOOM_C_API fixed_t P_FindLowestCeilingSurrounding(sector_t* sec);
 DOOM_C_API fixed_t P_FindHighestCeilingSurrounding(sector_t* sec);
+DOOM_C_API fixed_t P_FindNextLowestCeilingSurrounding(sector_t* sec);
 
 DOOM_C_API int P_FindSectorFromLineTag( line_t* line, int start );
 
@@ -295,14 +296,16 @@ DOOM_C_API typedef enum
 
 } vldoor_e;
 
-DOOM_C_API typedef enum doordir_e
+DOOM_C_API typedef enum sectordir_e
 {
-	doordir_close = -1,
-	doordir_none = 0,
-	doordir_open = 1,
-	doordir_raisein5nonsense = 2,
-} doordir_t;
+	sd_down = -1,
+	sd_none = 0,
+	sd_up = 1,
 
+	sd_close = sd_down,
+	sd_open = sd_up,
+	sd_raisein5nonsense = 2,
+} sectordir_t;
 
 DOOM_C_API typedef struct
 {
@@ -313,7 +316,7 @@ DOOM_C_API typedef struct
 	fixed_t			speed;
 
 	// 1 = up, 0 = waiting at top, -1 = down
-	doordir_t		direction;
+	sectordir_t		direction;
 
 	// tics to wait at the top
 	int32_t			topwait;
@@ -322,7 +325,7 @@ DOOM_C_API typedef struct
 	int32_t			topcountdown;
 
 	// Generic door extensions
-	doordir_t		nextdirection;
+	sectordir_t		nextdirection;
 	doombool		blazing;
 	doombool		keepclosingoncrush;
 	doombool		dontrecloseoncrush;
@@ -521,8 +524,9 @@ DOOM_C_API typedef enum
      // raise to next highest floor, turbo-speed
     raiseFloorTurbo,       
     donutRaise,
-    raiseFloor512
+    raiseFloor512,
     
+	genericFloor
 } floor_e;
 
 
@@ -543,11 +547,11 @@ DOOM_C_API typedef struct
     floor_e	type;
     doombool	crush;
     sector_t*	sector;
-    int		direction;
-    int		newspecial;
-    short	texture;
-    fixed_t	floordestheight;
-    fixed_t	speed;
+    int32_t		direction;
+    int16_t		newspecial;
+    int16_t		texture;
+    fixed_t		floordestheight;
+    fixed_t		speed;
 
 } floormove_t;
 
@@ -577,28 +581,41 @@ DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
 
 // Generic functionality
 
-DOOM_C_API typedef enum sectormovetype_e
+DOOM_C_API typedef enum sectortargettype_e
 {
-	smt_highestneighborfloor,
-	smt_lowestneighborfloor,
-	smt_nearestneighborfloor,
-	smt_highestneighborceiling,
-	smt_lowestneighborceiling,
-	smt_nearestneighborceiling,
-	smt_floor,
-	smt_ceiling,
-	smt_shortestlowertexture,
-	smt_bydistance,
-	smt_perpetual,
-} sectormovetype_t;
+	stt_nosearch = 0,
+	stt_highestneighborfloor,
+	stt_lowestneighborfloor,
+	stt_nexthighestneighborfloor,
+	stt_nextlowestneighborfloor,
+	stt_highestneighborceiling,
+	stt_lowestneighborceiling,
+	stt_nextlowestneighborceiling,
+	stt_floor,
+	stt_ceiling,
+	stt_shortestlowertexture,
+	stt_perpetual,
+} sectortargettype_t;
 
 DOOM_C_API typedef enum sectorchangetype_e
 {
 	sct_none,
 	sct_zerospecial,
-	sct_texture,
-	sct_both,
+	sct_copytexture,
+	sct_copyboth,
 } sectorchangetype_t;
+
+DOOM_C_API typedef enum sectorchangemodel_e
+{
+	scm_trigger,
+	scm_numeric,
+} sectorchangemodel_t;
+
+DOOM_C_API typedef enum sectorcrushing_e
+{
+	sc_nocrush,
+	sc_crush
+} sectorcrushing_t;
 
 DOOM_C_API typedef enum exittype_e
 {

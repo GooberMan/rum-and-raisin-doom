@@ -392,6 +392,28 @@ fixed_t	P_FindNextLowestFloorSurrounding( sector_t* sec )
 	return closest->floorheight;
 }
 
+fixed_t	P_FindNextLowestCeilingSurrounding( sector_t* sec )
+{
+	sector_t* closest = sec;
+	fixed_t closestheight = -INT_MAX;
+	
+	for( int32_t linenum = 0; linenum < sec->linecount; ++linenum )
+	{
+		line_t* testline = sec->lines[ linenum ];
+		sector_t* testsector = getNextSector( testline, sec );
+
+		if( testsector
+			&& testsector->ceilingheight < sec->ceilingheight
+			&& testsector->ceilingheight > closestheight )
+		{
+			closest = testsector;
+			closestheight = testsector->ceilingheight;
+		}
+	}
+
+	return closest->ceilingheight;
+}
+
 fixed_t	P_FindNextHighestFloorSurrounding( sector_t* sec )
 {
 	sector_t* closest = sec;

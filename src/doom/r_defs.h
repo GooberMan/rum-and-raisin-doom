@@ -375,6 +375,19 @@ struct line_s
 	lighttable_t*		midcolormap;
 	fixed_t				scrollratex;
 	fixed_t				scrollratey;
+
+#if defined( __cplusplus )
+	constexpr bool Blocking()			const { return flags & ML_BLOCKING; }
+	constexpr bool BlockMonsters()		const { return flags & ML_BLOCKMONSTERS; }
+	constexpr bool TwoSided()			const { return flags & ML_TWOSIDED; }
+	constexpr bool TopUnpegged()		const { return flags & ML_DONTPEGTOP; }
+	constexpr bool BottomUnpegged()		const { return flags & ML_DONTPEGBOTTOM; }
+	constexpr bool AutomapSecret()		const { return flags & ML_SECRET; }
+	constexpr bool BlocksSound()		const { return flags & ML_SOUNDBLOCK; }
+	constexpr bool AutomapInvisible()	const { return flags & ML_DONTDRAW; }
+	constexpr bool AutomapSeen()		const { return flags & ML_MAPPED; } // This probably needs to be atomic bool
+	constexpr bool Passthrough()		const { return flags & ML_BOOM_PASSTHROUGH; }
+#endif
 };
 
 
