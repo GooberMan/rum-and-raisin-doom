@@ -1419,7 +1419,7 @@ namespace launcher
 							int32_t patchwidth = TOSHORT( patch->width );
 							int32_t patchheight = TOSHORT( patch->height );
 
-							if( patchwidth <= 0 || patchwidth > 640
+							if( patchwidth <= 0 || patchwidth > 854
 								|| patchheight <= 0 || patchheight > 200 )
 							{
 								I_LogAddEntryVar( Log_Warning, "%s '%' has malformed TITLEPIC, replacing with all white"
