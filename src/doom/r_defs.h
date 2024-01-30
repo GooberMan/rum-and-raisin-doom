@@ -145,8 +145,10 @@ typedef struct sectorinstance_s
 	// These are ignored for BSP rejection purposes
 	rend_fixed_t			floorheight;
 	rend_fixed_t			ceilheight;
-	int32_t					snapfloor;
-	int32_t					snapceiling;
+	int8_t					clipfloor;
+	int8_t					snapfloor;
+	int8_t					clipceiling;
+	int8_t					snapceiling;
 } sectorinstance_t;
 
 typedef struct sideinstance_s
@@ -549,6 +551,8 @@ typedef struct vissprite_s
 	// global bottom / top for silhouette clipping
 	rend_fixed_t		gz;
 	rend_fixed_t		gzt;
+
+	sectorinstance_t*	sector;
 
 	// horizontal position of x1
 	rend_fixed_t		startfrac;

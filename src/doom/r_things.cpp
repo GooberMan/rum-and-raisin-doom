@@ -602,6 +602,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 	vis->gy = thingy;
 	vis->gz = thingz;
 	vis->gzt = thingz + spritetopoffset[ lump ];
+	vis->sector = &rendsectors[ thing->subsector->sector->index ];
 	vis->texturemid = vis->gzt - viewpoint.z;
 	vis->x1 = x1 < spritecontext.leftclip ? spritecontext.leftclip : x1;
 	vis->x2 = x2 >= spritecontext.rightclip ? spritecontext.rightclip-1 : x2;	
@@ -909,6 +910,7 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 {
 	M_PROFILE_FUNC();
 
+	viewpoint_t&		viewpoint		= rendercontext.viewpoint;
 	bspcontext_t&		bspcontext		= rendercontext.bspcontext;
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
 
@@ -990,7 +992,6 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 			continue;			
 		}
 
-	
 		// clip this piece of the sprite
 		silhouette = ds->silhouette;
 	
@@ -999,7 +1000,7 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 
 		if( spr->gzt <= ds->tsilheight )
 			silhouette &= ~SIL_TOP;
-			
+
 		if (silhouette == 1)
 		{
 			// bottom sil
@@ -1025,11 +1026,29 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 				cliptop[x] = ds->sprtopclip[x];
 			}
 		}
-		
 	}
 
+	if( spr->sector->clipceiling )
+	{
+		int32_t seccliptop = RendFixedToInt( drs_current->centeryfrac - RendFixedMul( spr->sector->ceilheight - viewpoint.z, spr->scale ) + RENDFRACUNIT - 1 );
+		seccliptop = M_MAX( -1, seccliptop );
+		for (x=spr->x1 ; x<=spr->x2 ; x++)
+		{
+			cliptop[x] = cliptop[x] == -2 ? seccliptop : M_MAX( cliptop[x], seccliptop );
+		}
+	}
+		
+	if( spr->sector->clipfloor )
+	{
+		int32_t secclipbot = RendFixedToInt( drs_current->centeryfrac - RendFixedMul( spr->sector->floorheight - viewpoint.z, spr->scale ) + RENDFRACUNIT - 1 );
+		secclipbot = M_MIN( drs_current->viewheight, secclipbot );
+		for (x=spr->x1 ; x<=spr->x2 ; x++)
+		{
+			clipbot[x] = clipbot[x] == -2 ? secclipbot : M_MIN( clipbot[x], secclipbot );
+		}
+	}
+		
 	// all clipping has been performed, so draw the sprite
-
 	// check for unclipped columns
 	int32_t clippedcolumns = 0;
 	for (x = spr->x1 ; x<=spr->x2 ; x++)

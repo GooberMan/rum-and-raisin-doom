@@ -579,7 +579,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		//  and decide if floor / ceiling marks are needed
 		worldtop = bspcontext.frontsectorinst->ceilheight - viewpoint.z;
 		worldbottom = bspcontext.frontsectorinst->floorheight - viewpoint.z;
-	
+
 		loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
 		bspcontext.thisdrawseg->maskedtexturecol = NULL;
 	
@@ -664,6 +664,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 	
 			
 			if (worldlow != worldbottom 
+				|| bspcontext.frontsectorinst->clipfloor
 				|| bspcontext.backsectorinst->floortex != bspcontext.frontsectorinst->floortex
 				|| bspcontext.backsectorinst->floorlightlevel != bspcontext.frontsectorinst->floorlightlevel
 				|| bspcontext.backsectorinst->flooroffsetx != bspcontext.frontsectorinst->flooroffsetx
@@ -679,6 +680,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 	
 			
 			if (worldhigh != worldtop 
+				|| bspcontext.frontsectorinst->clipceiling
 				|| bspcontext.backsectorinst->ceiltex != bspcontext.frontsectorinst->ceiltex
 				|| bspcontext.backsectorinst->ceillightlevel != bspcontext.frontsectorinst->ceillightlevel
 				|| bspcontext.backsectorinst->ceiloffsetx != bspcontext.frontsectorinst->ceiloffsetx
@@ -806,13 +808,15 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		// if a floor / ceiling plane is on the wrong side
 		//  of the view plane, it is definitely invisible
 		//  and doesn't need to be marked.
-		if (bspcontext.frontsectorinst->floorheight >= viewpoint.z )
+		if (bspcontext.frontsectorinst->floorheight >= viewpoint.z && !bspcontext.frontsectorinst->clipfloor )
 		{
 			// above view plane
 			loopcontext.markfloor = false;
 		}
 
-		if (bspcontext.frontsectorinst->ceilheight <= viewpoint.z && bspcontext.frontsectorinst->ceiltex != flatlookup[ skyflatnum ] )
+		if (bspcontext.frontsectorinst->ceilheight <= viewpoint.z
+			&& bspcontext.frontsectorinst->ceiltex != flatlookup[ skyflatnum ]
+			&& !bspcontext.frontsectorinst->clipceiling )
 		{
 			// below view plane
 			loopcontext.markceiling = false;

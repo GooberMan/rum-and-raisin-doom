@@ -645,7 +645,7 @@ DOOM_C_API typedef enum teleporttype_e
 	tt_anglemask		= 0x06,
 
 	tt_silent			= 0x08,
-};
+} teleporttype_t;
 
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
 
