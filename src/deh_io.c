@@ -81,7 +81,7 @@ static deh_context_t *DEH_NewContext(void)
     context->last_was_newline = true;
 
     context->had_error = false;
-	context->doomversion = deh_allow_bex ? deh_boom : deh_vanilla;
+	context->doomversion = deh_allow_bex ? deh_mbf21 : deh_vanilla;
 
     return context;
 }

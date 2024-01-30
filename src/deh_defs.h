@@ -31,10 +31,10 @@ DOOM_C_API typedef void (*deh_sha1_hash_t)(sha1_context_t *context);
 
 DOOM_C_API typedef enum deh_doomversion_e
 {
-	deh_vanilla = 21,
-	deh_boom = deh_vanilla,
-	deh_mbf = deh_vanilla,
-	deh_mbf21 = 2021,
+	deh_vanilla,
+	deh_boom,
+	deh_mbf,
+	deh_mbf21,
 } deh_doomversion_t;
 
 DOOM_C_API struct deh_section_s
