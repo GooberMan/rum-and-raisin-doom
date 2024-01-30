@@ -19,79 +19,84 @@
 
 #include <stdio.h>
 
-#include "i_system.h"
-#include "deh_main.h"
 #include "doomdef.h"
+#include "doomstat.h"
+#include "doomtype.h"
+
+#include "deh_main.h"
+
+
+#include "g_game.h"
+#include "i_system.h"
+
 #include "p_local.h"
 #include "p_lineaction.h"
 
-#include "g_game.h"
 
+#include "r_state.h"
 #include "s_sound.h"
-
-// Data.
 #include "sounds.h"
 
-// State.
-#include "doomstat.h"
-#include "r_state.h"
-
+#include "w_wad.h"
 
 //
 // CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE
 //
 switchlist_t alphSwitchList[] =
 {
-    // Doom shareware episode 1 switches
-    {"SW1BRCOM",	"SW2BRCOM",	1},
-    {"SW1BRN1",	"SW2BRN1",	1},
-    {"SW1BRN2",	"SW2BRN2",	1},
-    {"SW1BRNGN",	"SW2BRNGN",	1},
-    {"SW1BROWN",	"SW2BROWN",	1},
-    {"SW1COMM",	"SW2COMM",	1},
-    {"SW1COMP",	"SW2COMP",	1},
-    {"SW1DIRT",	"SW2DIRT",	1},
-    {"SW1EXIT",	"SW2EXIT",	1},
-    {"SW1GRAY",	"SW2GRAY",	1},
-    {"SW1GRAY1",	"SW2GRAY1",	1},
-    {"SW1METAL",	"SW2METAL",	1},
-    {"SW1PIPE",	"SW2PIPE",	1},
-    {"SW1SLAD",	"SW2SLAD",	1},
-    {"SW1STARG",	"SW2STARG",	1},
-    {"SW1STON1",	"SW2STON1",	1},
-    {"SW1STON2",	"SW2STON2",	1},
-    {"SW1STONE",	"SW2STONE",	1},
-    {"SW1STRTN",	"SW2STRTN",	1},
+	// Doom shareware episode 1 switches
+	{"SW1BRCOM",	"SW2BRCOM",	1},
+	{"SW1BRN1",		"SW2BRN1",	1},
+	{"SW1BRN2",		"SW2BRN2",	1},
+	{"SW1BRNGN",	"SW2BRNGN",	1},
+	{"SW1BROWN",	"SW2BROWN",	1},
+	{"SW1COMM",		"SW2COMM",	1},
+	{"SW1COMP",		"SW2COMP",	1},
+	{"SW1DIRT",		"SW2DIRT",	1},
+	{"SW1EXIT",		"SW2EXIT",	1},
+	{"SW1GRAY",		"SW2GRAY",	1},
+	{"SW1GRAY1",	"SW2GRAY1",	1},
+	{"SW1METAL",	"SW2METAL",	1},
+	{"SW1PIPE",		"SW2PIPE",	1},
+	{"SW1SLAD",		"SW2SLAD",	1},
+	{"SW1STARG",	"SW2STARG",	1},
+	{"SW1STON1",	"SW2STON1",	1},
+	{"SW1STON2",	"SW2STON2",	1},
+	{"SW1STONE",	"SW2STONE",	1},
+	{"SW1STRTN",	"SW2STRTN",	1},
 
-    // Doom registered episodes 2&3 switches
-    {"SW1BLUE",	"SW2BLUE",	2},
-    {"SW1CMT",		"SW2CMT",	2},
-    {"SW1GARG",	"SW2GARG",	2},
-    {"SW1GSTON",	"SW2GSTON",	2},
-    {"SW1HOT",		"SW2HOT",	2},
-    {"SW1LION",	"SW2LION",	2},
-    {"SW1SATYR",	"SW2SATYR",	2},
-    {"SW1SKIN",	"SW2SKIN",	2},
-    {"SW1VINE",	"SW2VINE",	2},
-    {"SW1WOOD",	"SW2WOOD",	2},
+	// Doom registered episodes 2&3 switches
+	{"SW1BLUE",		"SW2BLUE",	2},
+	{"SW1CMT",		"SW2CMT",	2},
+	{"SW1GARG",		"SW2GARG",	2},
+	{"SW1GSTON",	"SW2GSTON",	2},
+	{"SW1HOT",		"SW2HOT",	2},
+	{"SW1LION",		"SW2LION",	2},
+	{"SW1SATYR",	"SW2SATYR",	2},
+	{"SW1SKIN",		"SW2SKIN",	2},
+	{"SW1VINE",		"SW2VINE",	2},
+	{"SW1WOOD",		"SW2WOOD",	2},
 
-    // Doom II switches
-    {"SW1PANEL",	"SW2PANEL",	3},
-    {"SW1ROCK",	"SW2ROCK",	3},
-    {"SW1MET2",	"SW2MET2",	3},
-    {"SW1WDMET",	"SW2WDMET",	3},
-    {"SW1BRIK",	"SW2BRIK",	3},
-    {"SW1MOD1",	"SW2MOD1",	3},
-    {"SW1ZIM",		"SW2ZIM",	3},
-    {"SW1STON6",	"SW2STON6",	3},
-    {"SW1TEK",		"SW2TEK",	3},
-    {"SW1MARB",	"SW2MARB",	3},
-    {"SW1SKULL",	"SW2SKULL",	3},
+	// Doom II switches
+	{"SW1PANEL",	"SW2PANEL",	3},
+	{"SW1ROCK",		"SW2ROCK",	3},
+	{"SW1MET2",		"SW2MET2",	3},
+	{"SW1WDMET",	"SW2WDMET",	3},
+	{"SW1BRIK",		"SW2BRIK",	3},
+	{"SW1MOD1",		"SW2MOD1",	3},
+	{"SW1ZIM",		"SW2ZIM",	3},
+	{"SW1STON6",	"SW2STON6",	3},
+	{"SW1TEK",		"SW2TEK",	3},
+	{"SW1MARB",		"SW2MARB",	3},
+	{"SW1SKULL",	"SW2SKULL",	3},
 };
 
-int		switchlist[MAXSWITCHES * 2];
-int		numswitches;
-button_t        buttonlist[MAXBUTTONS];
+switchlist_t* loadedswitchlist = alphSwitchList;
+int32_t loadedswitchlistcount = arrlen( alphSwitchList );
+
+int32_t*		switchlist;
+int32_t			numswitches;
+button_t		buttonlist[MAXBUTTONS];
 
 //
 // P_InitSwitchList
@@ -99,40 +104,64 @@ button_t        buttonlist[MAXBUTTONS];
 //
 void P_InitSwitchList(void)
 {
-    int i, slindex, episode;
+	// Note that this is called "episode" here but it's actually something
+	// quite different. As we progress from Shareware->Registered->Doom II
+	// we support more switch textures.
 
-    // Note that this is called "episode" here but it's actually something
-    // quite different. As we progress from Shareware->Registered->Doom II
-    // we support more switch textures.
-    switch (gamemode)
-    {
-        case registered:
-        case retail:
-            episode = 2;
-            break;
-        case commercial:
-            episode = 3;
-            break;
-        default:
-            episode = 1;
-            break;
-    }
-
-    slindex = 0;
-
-    for (i = 0; i < arrlen(alphSwitchList); i++)
-    {
-	if (alphSwitchList[i].episode <= episode)
+	int32_t episode = 0;
+	switch (gamemode)
 	{
-	    switchlist[slindex++] =
-                R_TextureNumForName(DEH_String(alphSwitchList[i].name1));
-	    switchlist[slindex++] =
-                R_TextureNumForName(DEH_String(alphSwitchList[i].name2));
+		case registered:
+		case retail:
+			episode = 2;
+			break;
+		case commercial:
+			episode = 3;
+			break;
+		default:
+			episode = 1;
+			break;
 	}
-    }
 
-    numswitches = slindex / 2;
-    switchlist[slindex] = -1;
+	static_assert( sizeof(switchlist_t) == 20, "switchlist_t does not match expected binary size on this platform" );
+
+	lumpindex_t switcheslump = remove_limits ? W_CheckNumForName( "SWITCHES" ) : -1;
+	if( switcheslump > 0 )
+	{
+		loadedswitchlist = (switchlist_t*)W_CacheLumpNum( switcheslump, PU_STATIC );
+		loadedswitchlistcount = W_LumpLength( switcheslump ) / sizeof(switchlist_t);
+	}
+
+	numswitches = 0;
+	for ( int32_t thisswitch = 0; thisswitch < loadedswitchlistcount; ++thisswitch )
+	{
+		if( loadedswitchlist[ thisswitch ].episode == 0 )
+		{
+			break;
+		}
+
+		if( loadedswitchlist[ thisswitch ].episode <= episode )
+		{
+			++numswitches;
+		}
+	}
+	
+	switchlist = (int32_t*)Z_Malloc( sizeof(int32_t) * ( ( numswitches + 1 ) * 2 ), PU_STATIC, nullptr );
+	switchlist[ numswitches * 2 ] = -1;
+	switchlist[ numswitches * 2 + 1 ] = -1;
+
+	int32_t slindex = 0;
+	for ( int32_t thisswitch = 0; thisswitch < loadedswitchlistcount; ++thisswitch )
+	{
+		if( loadedswitchlist[ thisswitch ].episode <= episode )
+		{
+			switchlist[ slindex++ ] =
+					R_TextureNumForName( DEH_String( alphSwitchList[ thisswitch ].name1 ) );
+			switchlist[ slindex++ ] =
+					R_TextureNumForName( DEH_String( alphSwitchList[ thisswitch ].name2 ) );
+		}
+	}
+
 }
 
 

@@ -81,11 +81,6 @@ typedef struct
 
 
 
-#define MAXANIMS                32
-
-extern anim_t	anims[MAXANIMS];
-extern anim_t*	lastanim;
-
 //
 // P_InitPicAnims
 //
@@ -99,7 +94,7 @@ extern anim_t*	lastanim;
 //  and end entry, in the order found in
 //  the WAD file.
 //
-animdef_t		animdefs[] =
+animdef_t		builtinanims[] =
 {
     {false,	"NUKAGE3",	"NUKAGE1",	8},
     {false,	"FWATER4",	"FWATER1",	8},
@@ -132,7 +127,9 @@ animdef_t		animdefs[] =
     {-1,        "",             "",             0},
 };
 
-anim_t		anims[MAXANIMS];
+animdef_t*	animdefs = builtinanims;
+int32_t		numanimdefs = arrlen( builtinanims );
+anim_t*		anims;
 anim_t*		lastanim;
 
 
@@ -149,7 +146,32 @@ void P_InitPicAnims (void)
 {
     int		i;
 
-    
+	lumpindex_t animdeflumpindex = remove_limits ? W_CheckNumForName( "ANIMATED" ) : -1;
+	if( animdeflumpindex > 0 )
+	{
+		constexpr ptrdiff_t lumpentrysize = 23;
+		byte* animdeflump = (byte*)W_CacheLumpNum( animdeflumpindex, PU_STATIC );
+		size_t animdeflumpsize = W_LumpLength( animdeflumpindex );
+		int32_t numanimdeflumpentries = animdeflumpsize / lumpentrysize;
+
+		animdefs = (animdef_t*)Z_Malloc( sizeof(animdef_t) * (numanimdeflumpentries + 1), PU_STATIC, nullptr );
+		numanimdefs = numanimdeflumpentries;
+		animdefs[ numanimdefs ].istexture = -1;
+
+		animdef_t* entry = animdefs;
+		for( byte* currdef = animdeflump; *currdef != 0xFF; currdef += lumpentrysize, ++entry )
+		{
+			entry->istexture = *currdef;
+			memcpy( entry->endname, currdef + 1, 9 );
+			memcpy( entry->startname, currdef + 10, 9 );
+			memcpy( &entry->speed, currdef + 19, 4 );
+		}
+
+		W_ReleaseLumpNum( animdeflumpindex );
+	}
+
+	anims = (anim_t*)Z_Malloc( sizeof(animdef_t) * numanimdefs, PU_STATIC, nullptr );
+
     //	Init animation
     lastanim = anims;
     for (i=0 ; animdefs[i].istexture != -1 ; i++)
@@ -159,33 +181,33 @@ void P_InitPicAnims (void)
         startname = DEH_String(animdefs[i].startname);
         endname = DEH_String(animdefs[i].endname);
 
-	if (animdefs[i].istexture)
-	{
-	    // different episode ?
-	    if (R_CheckTextureNumForName(startname) == -1)
-		continue;	
+		if (animdefs[i].istexture)
+		{
+			// different episode ?
+			if (R_CheckTextureNumForName(startname) == -1)
+			continue;	
 
-	    lastanim->picnum = R_TextureNumForName(endname);
-	    lastanim->basepic = R_TextureNumForName(startname);
-	}
-	else
-	{
-	    if (W_CheckNumForName(startname) == -1)
-		continue;
+			lastanim->picnum = R_TextureNumForName(endname);
+			lastanim->basepic = R_TextureNumForName(startname);
+		}
+		else
+		{
+			if (W_CheckNumForName(startname) == -1)
+			continue;
 
-	    lastanim->picnum = R_FlatNumForName(endname);
-	    lastanim->basepic = R_FlatNumForName(startname);
-	}
+			lastanim->picnum = R_FlatNumForName(endname);
+			lastanim->basepic = R_FlatNumForName(startname);
+		}
 
-	lastanim->istexture = animdefs[i].istexture;
-	lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
+		lastanim->istexture = animdefs[i].istexture;
+		lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
 
-	if (lastanim->numpics < 2)
-	    I_Error ("P_InitPicAnims: bad cycle from %s to %s",
-		     startname, endname);
+		if (lastanim->numpics < 2)
+			I_Error ("P_InitPicAnims: bad cycle from %s to %s",
+				 startname, endname);
 	
-	lastanim->speed = animdefs[i].speed;
-	lastanim++;
+		lastanim->speed = animdefs[i].speed;
+		lastanim++;
     }
 	
 }
