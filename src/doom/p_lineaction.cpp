@@ -727,7 +727,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Sector_Donut_W1_Player
 	{},
 	// Floor_Raise512_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 512 ), sct_none, scm_trigger, sc_nocrush },
 	// Platform_Raise24ChangeTexture_WR_Player
 	{},
 	// Platform_Raise32ChangeTexture_WR_Player
@@ -739,9 +739,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Ceiling_LowerToFloor_WR_Player
 	{},
 	// Floor_ChangeTexture_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_trigger, sc_nocrush },
 	// Floor_ChangeTexture_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_trigger, sc_nocrush },
 	// Sector_Donut_WR_Player
 	{},
 	// Light_Strobe_WR_Player
@@ -783,17 +783,17 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_Thing_S1_All
 	{},
 	// Door_Close30Open_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_30sec ], sd_close },
 	// Floor_RaiseByTexture_SR_Player
 	{},
 	// Floor_LowerLowestChangeTexture_NumericModel_SR_Player
 	{},
 	// Floor_Raise512_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 512 ), sct_none, scm_trigger, sc_nocrush },
 	// Floor_Raise24ChangeTexture_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 24 ), sct_copyboth, scm_trigger, sc_nocrush },
 	// Floor_Raise24_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 24 ), sct_none, scm_trigger, sc_nocrush },
 	// Platform_Perpetual_SR_Player
 	{},
 	// Platform_Stop_SR_Player
@@ -811,9 +811,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Crusher_Stop_SR_Playe
 	{},
 	// Floor_ChangeTexture_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_trigger, sc_nocrush },
 	// Floor_ChangeTexture_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_trigger, sc_nocrush },
 	// Sector_Donut_SR_Player
 	{},
 	// Light_SetBrightest_SR_Player
@@ -825,7 +825,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_Thing_SR_All
 	{},
 	// Door_Close30Open_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_30sec ], sd_close },
 	// Exit_Normal_G1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_GunFront, LL_None, 0, 0, exit_normal },
 	// Exit_Secret_G1_Player
@@ -911,11 +911,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Elevator_Call_SR_Player
 	{},
 	// Floor_ChangeTexture_NumericModel_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Floor_ChangeTexture_NumericModel_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Floor_ChangeTexture_NumericModel_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Transfer_Properties_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Teleport_LineSilentPreserve_W1_All
