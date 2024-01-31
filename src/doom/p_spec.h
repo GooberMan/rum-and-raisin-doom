@@ -655,6 +655,7 @@ DOOM_C_API typedef enum teleporttype_e
 
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
 
+DOOM_C_API int32_t	EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLiftGeneric( line_t* line, mobj_t* activator );

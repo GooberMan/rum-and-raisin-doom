@@ -115,6 +115,7 @@ CONSTEXPR rend_fixed_t RendFixedLerp( rend_fixed_t from, rend_fixed_t to, rend_f
 #define FixedToRendFixed( x ) ( (rend_fixed_t)( x ) << RENDFRACTOFRACBITS )
 #define RendFixedToFixed( x ) ( (fixed_t)RENDFRACFILLFIXED( ( x ) >> RENDFRACTOFRACBITS, ( x ) ) )
 
+#define DoubleToFixed( x ) ( (fixed_t)( ( x ) * FRACUNIT ) )
 #define DoubleToRendFixed( x ) ( (rend_fixed_t)( ( x ) * RENDFRACUNIT ) )
 
 #include "m_fixed.inl"

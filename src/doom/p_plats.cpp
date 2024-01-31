@@ -244,41 +244,90 @@ EV_DoPlat
     return rtn;
 }
 
+DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator )
+{
+	int32_t		platformscreated = 0;
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		{
+			// Find lowest & highest floors around sector
+			++platformscreated;
+			plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &plat->thinker );
+		
+			plat->sector = &sector;
+			plat->sector->specialdata = plat;
+			plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			plat->crush = false;
+			plat->tag = line->tag;
+			plat->speed = line->action->speed;
+			plat->wait = line->action->delay;
+			plat->status = up;
+
+			switch( line->action->param1 )
+			{
+			case stt_nexthighestneighborfloor:
+				sector.floorpic = line->frontside->sector->floorpic;
+				sector.special = 0;
+				plat->type = raiseToNearestAndChange;
+				plat->high = P_FindNextHighestFloorSurrounding( &sector );
+				break;
+			case stt_nosearch:
+				sector.floorpic = line->frontside->sector->floorpic;
+				plat->type = raiseAndChange;
+				plat->high = sector.floorheight;
+				break;
+
+			default:
+				break;
+			}
+
+			plat->high += line->action->param2;
+			plat->low = sector.floorheight;
+
+			S_StartSound( &sector.soundorg, sfx_stnmov );
+
+			P_AddActivePlat(plat);
+		}
+	}
+
+	return platformscreated;
+}
+
 DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 {
 	P_ActivateInStasis( line->tag );
 
-	int32_t		secnum = -1;
 	int32_t		platformscreated = 0;
 
-	while ( ( secnum = P_FindSectorFromLineTag( line, secnum ) ) >= 0 )
+	for( sector_t& sector : Sectors() )
 	{
-		sector_t* sec = &sectors[ secnum ];
-
-		if ( sec->specialdata )
-			continue;
+		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		{
+			// Find lowest & highest floors around sector
+			++platformscreated;
+			plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &plat->thinker );
 	
-		// Find lowest & highest floors around sector
-		++platformscreated;
-		plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
-		P_AddThinker( &plat->thinker );
-	
-		plat->type = perpetualRaise;
-		plat->sector = sec;
-		plat->sector->specialdata = plat;
-		plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
-		plat->crush = false;
-		plat->tag = line->tag;
-		plat->speed = line->action->speed;
-		plat->wait = line->action->delay;
-		plat->status = (plat_e)( P_Random() & 1 );
+			plat->type = perpetualRaise;
+			plat->sector = &sector;
+			plat->sector->specialdata = plat;
+			plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			plat->crush = false;
+			plat->tag = line->tag;
+			plat->speed = line->action->speed;
+			plat->wait = line->action->delay;
+			plat->status = (plat_e)( P_Random() & 1 );
 
-		plat->low = M_MIN( P_FindLowestFloorSurrounding( sec ), sec->floorheight );
-		plat->high = M_MAX( P_FindHighestFloorSurrounding( sec ), sec->floorheight );
+			plat->low = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
+			plat->high = M_MAX( P_FindHighestFloorSurrounding( &sector ), sector.floorheight );
 
-		S_StartSound( &sec->soundorg, sfx_pstart );
+			S_StartSound( &sector.soundorg, sfx_pstart );
 
-		P_AddActivePlat( plat );
+			P_AddActivePlat( plat );
+		}
 	}
 
 	return platformscreated;
@@ -286,55 +335,52 @@ DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 
 DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 {
-	int32_t		secnum = -1;
 	int32_t		platformscreated = 0;
 
-	while ( ( secnum = P_FindSectorFromLineTag( line, secnum ) ) >= 0 )
+	for( sector_t& sector : Sectors() )
 	{
-		sector_t* sec = &sectors[ secnum ];
-
-		if ( sec->specialdata )
-			continue;
-	
-		// Find lowest & highest floors around sector
-		++platformscreated;
-		plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
-		P_AddThinker( &plat->thinker );
-		
-		plat->type = downWaitUpStay;
-		plat->sector = sec;
-		plat->sector->specialdata = plat;
-		plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
-		plat->crush = false;
-		plat->tag = line->tag;
-		plat->speed = line->action->speed;
-		plat->wait = line->action->delay;
-		plat->status = down;
-
-		switch( line->action->param1 )
+		if( sector.tag == line->tag || sector.specialdata != nullptr )
 		{
-		case stt_lowestneighborfloor:
-			plat->low = P_FindLowestFloorSurrounding( sec );
-			break;
+			// Find lowest & highest floors around sector
+			++platformscreated;
+			plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &plat->thinker );
+		
+			plat->type = downWaitUpStay;
+			plat->sector = &sector;
+			plat->sector->specialdata = plat;
+			plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			plat->crush = false;
+			plat->tag = line->tag;
+			plat->speed = line->action->speed;
+			plat->wait = line->action->delay;
+			plat->status = down;
 
-		case stt_nextlowestneighborfloor:
-			plat->low = P_FindNextLowestFloorSurrounding( sec );
-			break;
+			switch( line->action->param1 )
+			{
+			case stt_lowestneighborfloor:
+				plat->low = P_FindLowestFloorSurrounding( &sector );
+				break;
 
-		case stt_lowestneighborceiling:
-			plat->low = P_FindLowestCeilingSurrounding( sec );
-			break;
+			case stt_nextlowestneighborfloor:
+				plat->low = P_FindNextLowestFloorSurrounding( &sector );
+				break;
 
-		default:
-			break;
+			case stt_lowestneighborceiling:
+				plat->low = P_FindLowestCeilingSurrounding( &sector );
+				break;
+
+			default:
+				break;
+			}
+
+			plat->low = M_MIN( plat->low, sector.floorheight );
+			plat->high = sector.floorheight;
+
+			S_StartSound( &sector.soundorg, sfx_pstart );
+
+			P_AddActivePlat(plat);
 		}
-
-		plat->low = M_MIN( plat->low, sec->floorheight );
-		plat->high = sec->floorheight;
-
-		S_StartSound(&sec->soundorg,sfx_pstart);
-
-		P_AddActivePlat(plat);
 	}
 
 	return platformscreated;
