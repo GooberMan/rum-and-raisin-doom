@@ -834,10 +834,18 @@ void D_DoAdvanceDemo (void)
 
     // The Doom 3: BFG Edition version of doom2.wad does not have a
     // TITLETPIC lump. Use INTERPIC instead as a workaround.
-    if (gamevariant == bfgedition && !strcasecmp(pagename, "TITLEPIC")
-        && W_CheckNumForName("titlepic") < 0)
+    if(!strcasecmp(pagename, DEH_String("TITLEPIC"))
+        && W_CheckNumForName( DEH_String("TITLEPIC") ) < 0)
     {
-        pagename = DEH_String("INTERPIC");
+		lumpindex_t dmenupic = W_CheckNumForName( "DMENUPIC" );
+		if( gamevariant == bfgedition )
+		{
+			pagename = DEH_String( "INTERPIC" );
+		}
+		else if( dmenupic >= 0 )
+		{
+			pagename = "DMENUPIC";
+		}
     }
 }
 
