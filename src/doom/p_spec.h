@@ -601,6 +601,8 @@ DOOM_C_API typedef enum sectortargettype_e
 	stt_ceiling,
 	stt_shortestlowertexture,
 	stt_perpetual,
+	stt_highestneighborfloor_noaddifmatch,	// Vanilla behavior, just like stt_highestneighborfloor but
+											// won't add the extra value specified if dest == source
 } sectortargettype_t;
 
 DOOM_C_API typedef enum sectorchangetype_e
@@ -664,6 +666,7 @@ DOOM_C_API int32_t	EV_DoTeleportGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoExitGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoFloorGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
 
 #if defined( __cplusplus )
 

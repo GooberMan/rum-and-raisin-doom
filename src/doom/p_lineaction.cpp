@@ -385,10 +385,11 @@ MakeGenericFunc( Lift, EV_DoLiftGeneric );
 MakeGenericFunc( PerpetualLiftStart, EV_DoPerpetualLiftGeneric );
 MakeGenericFunc( PlatformStop, EV_StopAnyLiftGeneric );
 MakeGenericFunc( VanillaRaise, EV_DoVanillaPlatformRaiseGeneric );
+MakeGenericFunc( Floor, EV_DoFloorGeneric );
 MakeGenericFunc( Teleport, EV_DoTeleportGeneric );
 MakeGenericFunc( Exit, EV_DoExitGeneric );
 MakeGenericFunc( LightSet, EV_DoLightSetGeneric );
-MakeGenericFunc( Floor, EV_DoFloorGeneric );
+MakeGenericFunc( LightStrobe, EV_DoLightStrobeGeneric );
 
 template< typename func >
 static void DoGeneric( line_t* line, mobj_t* activator )
@@ -465,11 +466,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_Close30Open_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Door >, LT_WalkBoth, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_30sec ], sd_close, door_noraise },
 	// Light_Strobe_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< LightStrobe >, LT_WalkBoth, LL_None, 0, 0 },
 	// Floor_RaiseNearest_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_highestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighest_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_highestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_highestneighborfloor_noaddifmatch, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Platform_RaiseNearestChangeTexture_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< VanillaRaise >, LT_SwitchFront, LL_None, constants::vanillaraisespeed, 0, stt_nexthighestneighborfloor, 0 },
 	// Platform_DownWaitUp_S1_Player
@@ -503,7 +504,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_SetTo35_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_value, 35 },
 	// Floor_LowerHighestFast_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_highestneighborfloor, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_highestneighborfloor_noaddifmatch, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerLowestChangeTexture_NumericModel_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Floor_LowerLowest_W1_Player
@@ -571,9 +572,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_RaiseNearest_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nexthighestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighestFast_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_nexthighestneighborfloor, sd_up, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_highestneighborfloor_noaddifmatch, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighestFast_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_nexthighestneighborfloor, sd_up, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_highestneighborfloor_noaddifmatch, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Ceiling_LowerTo8AboveFloor_WR_Player
 	{},
 	// Crusher_WR_Player
@@ -748,7 +749,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Sector_Donut_WR_Player
 	{},
 	// Light_Strobe_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< LightStrobe >, LT_WalkBoth, LL_None, 0, 0 },
 	// Light_SetLowest_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_lowestsurround },
 	// Floor_RaiseByTexture_S1_Player
@@ -780,7 +781,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_SetTo255_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightSet >, LT_SwitchFront, LL_None, 0, 0, lightset_value, 255 },
 	// Light_Strobe_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightStrobe >, LT_SwitchFront, LL_None, 0, 0 },
 	// Light_SetLowest_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< LightSet >, LT_SwitchFront, LL_None, 0, 0, lightset_lowestsurround },
 	// Teleport_Thing_S1_All
@@ -822,7 +823,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_SetBrightest_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_SwitchFront, LL_None, 0, 0, lightset_highestsurround_firsttagged },
 	// Light_Strobe_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< LightStrobe >, LT_SwitchFront, LL_None, 0, 0 },
 	// Light_SetLowest_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_SwitchFront, LL_None, 0, 0, lightset_lowestsurround },
 	// Teleport_Thing_SR_All
@@ -850,13 +851,13 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Ceiling_LowerHighestFloor_SR_Player
 	{},
 	// Teleport_ThingSilentPreserve_W1_All
-	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_SwitchFront, LL_None, 0, 0, tt_tothing },
+	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing | tt_preserveangle | tt_silent },
 	// Teleport_ThingSilentPreserve_WR_All
-	{},
+	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing | tt_preserveangle | tt_silent },
 	// Teleport_ThingSilentPreserve_S1_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericSwitchOnce< Teleport >, LT_SwitchFront, LL_None, 0, 0, tt_tothing | tt_preserveangle | tt_silent },
 	// Teleport_ThingSilentPreserve_SR_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericSwitch< Teleport >, LT_SwitchFront, LL_None, 0, 0, tt_tothing | tt_preserveangle | tt_silent },
 	// Platform_RaiseInstantCeiling_SR_Player
 	{},
 	// Platform_RaiseInstantCeiling_WR_Player
@@ -888,7 +889,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Transfer_CurrentByLength_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Transfer_WindOrCurrentByPoint_Always
-	{},
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Elevator_Up_W1_Player
 	{},
 	// Elevator_Up_WR_Player
@@ -972,9 +973,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_LineSilentPreserve_WR_Monsters
 	{},
 	// Teleport_ThingSilent_W1_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing | tt_silent },
 	// Teleport_ThingSilent_WR_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing | tt_silent },
 
 	/* MBF specials */
 

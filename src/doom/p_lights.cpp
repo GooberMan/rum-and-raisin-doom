@@ -423,3 +423,8 @@ DOOM_C_API int32_t EV_DoLightSetGeneric( line_t* line, mobj_t* activator )
 	}
 	return 1;
 }
+
+DOOM_C_API int32_t EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator )
+{
+	EV_StartLightStrobing( line );
+}

@@ -579,6 +579,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 			switch( (sectortargettype_t)line->action->param1 )
 			{
 			case stt_highestneighborfloor:
+			case stt_highestneighborfloor_noaddifmatch:
 				floor->floordestheight = P_FindHighestFloorSurrounding( &sector );
 				break;
 
@@ -642,7 +643,11 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 				break;
 			}
 
-			floor->floordestheight += (fixed_t)line->action->param3;
+			if( line->action->param1 != stt_highestneighborfloor_noaddifmatch
+				|| floor->floordestheight != sector.floorheight )
+			{
+				floor->floordestheight += (fixed_t)line->action->param3;
+			}
 
 			floor->newspecial = -1;
 			floor->texture = -1;
