@@ -155,12 +155,12 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 	// find positioning
 	if (bspcontext.curline->linedef->flags & ML_DONTPEGBOTTOM)
 	{
-		spritecolcontext.texturemid = M_MAX( bspcontext.frontsectorinst->floorheight, bspcontext.backsectorinst->floorheight );
+		spritecolcontext.texturemid = M_MAX( bspcontext.frontsectorinst->midtexfloor, bspcontext.backsectorinst->midtexfloor );
 		spritecolcontext.texturemid += texturelookup[ texnum ]->renderheight - viewpoint.z;
 	}
 	else
 	{
-		spritecolcontext.texturemid = M_MIN( bspcontext.frontsectorinst->ceilheight, bspcontext.backsectorinst->ceilheight );
+		spritecolcontext.texturemid = M_MIN( bspcontext.frontsectorinst->midtexceil, bspcontext.backsectorinst->midtexceil );
 		spritecolcontext.texturemid -= viewpoint.z;
 	}
 	spritecolcontext.texturemid += rendsides[ bspcontext.curline->sidedef->index ].rowoffset;

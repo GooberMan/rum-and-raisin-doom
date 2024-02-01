@@ -145,6 +145,8 @@ typedef struct sectorinstance_s
 	// These are ignored for BSP rejection purposes
 	rend_fixed_t			floorheight;
 	rend_fixed_t			ceilheight;
+	rend_fixed_t			midtexfloor;
+	rend_fixed_t			midtexceil;
 	int8_t					clipfloor;
 	int8_t					snapfloor;
 	int8_t					clipceiling;

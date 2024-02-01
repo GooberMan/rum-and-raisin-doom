@@ -1770,8 +1770,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 			for( int32_t index : iota( 0, numsectors ) )
 			{
-				rendsectors[ index ].floorheight		= DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
-				rendsectors[ index ].ceilheight			= DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
+				rendsectors[ index ].floorheight		= rendsectors[ index ].midtexfloor = DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
+				rendsectors[ index ].ceilheight			= rendsectors[ index ].midtexceil = DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
 				rendsectors[ index ].lightlevel			= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
 				rendsectors[ index ].floorlightlevel	= selectcurr ? currsectors[ index ].floorlightlevel : prevsectors[ index ].floorlightlevel;
 				rendsectors[ index ].ceillightlevel		= selectcurr ? currsectors[ index ].ceillightlevel : prevsectors[ index ].ceillightlevel;
