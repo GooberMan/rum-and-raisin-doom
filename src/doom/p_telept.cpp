@@ -166,6 +166,45 @@ DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, fixe
 	return false;
 }
 
+DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
+{
+	for( line_t& targetline : Lines() )
+	{
+		if( targetline.index != line->index
+			&& targetline.tag == line->tag
+			&& targetline.special == line->special )
+		{
+			fixed_t sourcemidx = line->v1->x + ( line->dx >> 1 );
+			fixed_t sourcemidy = line->v1->y + ( line->dy >> 1 );
+
+			angle_t mobjrelativeviewangle = activator->angle - line->angle;
+			angle_t mobjrelativeangle = line->angle - BSP_PointToAngle( sourcemidx, sourcemidy, activator->x, activator->y );
+			fixed_t mobjrelativedist = P_AproxDistance( activator->x - sourcemidx, activator->y - sourcemidy );
+
+			fixed_t targetmidx = targetline.v1->x + ( targetline.dx >> 1 );
+			fixed_t targetmidy = targetline.v1->y + ( targetline.dy >> 1 );
+
+			angle_t destangle = targetline.angle + mobjrelativeangle + ANG180;
+			uint32_t finelookup = FINEANGLE( destangle );
+			fixed_t destx = targetmidx + FixedMul( finesine[ finelookup ], mobjrelativedist );
+			fixed_t desty = targetmidy + FixedMul( finecosine[ finelookup ], mobjrelativedist );
+
+			if( P_TeleportMove( activator, destx, desty ) )
+			{
+				outtargetx		= destx;
+				outtargety		= desty;
+				outtargetangle	= targetline.angle + mobjrelativeviewangle;
+
+				return true;
+			}
+
+			break;
+		}
+	}
+
+	return false;
+}
+
 DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 {
 	fixed_t oldx = activator->x;
@@ -181,6 +220,10 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 	{
 	case tt_tothing:
 		teleported = EV_DoTeleportGenericThing( line, activator, targetx, targety, targetangle );
+		break;
+
+	case tt_toline:
+		teleported = EV_DoTeleportGenericLine( line, activator, targetx, targety, targetangle );
 		break;
 	}
 
@@ -220,6 +263,7 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 		switch( line->action->param1 & tt_anglemask )
 		{
 		case tt_setangle:
+		case tt_preserveangle:
 			activator->angle = targetangle;
 			break;
 		case tt_reverseangle:

@@ -539,6 +539,7 @@ struct DoomMapLoader
 			out.v2				= &Vertices()[ Read::AsIs( in.v2 ) ];
 			out.dx				= out.v2->x - out.v1->x;
 			out.dy				= out.v2->y - out.v1->y;
+			out.angle			= BSP_PointToAngle( out.v1->x, out.v1->y, out.v2->x, out.v2->y );
 	
 			if( !out.dx )
 			{

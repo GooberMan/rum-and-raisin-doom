@@ -134,7 +134,8 @@ int             levelstarttic;          // gametic at level start
 int             totalkills, totalitems, totalsecret;    // for intermission 
  
 char           *demoname;
-doombool         demorecording; 
+doombool         demorecording;
+doombool		dumprecording = false;
 doombool         longtics;               // cph's doom 1.91 longtics hack
 doombool         lowres_turn;            // low resolution turning for longtics
 doombool         demoplayback; 
@@ -1615,7 +1616,7 @@ void G_DoLoadGame (void)
 	savedleveltime = leveltime;
 
 	// load a base level 
-	G_InitNew (gameskill, current_map, gameflags); 
+	G_InitNew (gameskill, current_map, gameflags, 0); 
 
 	leveltime = savedleveltime;
 
@@ -1789,12 +1790,12 @@ void G_DoNewGame (void)
     fastparm = false;
     nomonsters = false;
     consoleplayer = 0;
-    G_InitNew (d_skill, d_mapinfo, d_gameflags); 
+    G_InitNew (d_skill, d_mapinfo, d_gameflags, 0); 
     gameaction = ga_nothing; 
 } 
 
 
-void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags )
+void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags, int32_t randomseed )
 {
     const char *skytexturename;
     int             i;
@@ -1812,7 +1813,7 @@ void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags )
 
 	skill = M_MIN( skill, sk_nightmare );
 
-    M_ClearRandom ();
+    M_ClearRandom ( randomseed );
 
 	respawnmonsters = (skill == sk_nightmare || respawnparm );
 
@@ -2015,6 +2016,7 @@ void G_RecordDemo (const char *name)
     demoend = demobuffer + maxsize;
 	
     demorecording = true; 
+	dumprecording = !!M_CheckParmWithArgs( "-recorddump", 1 );
 }
 
 typedef enum demoversion_e
@@ -2144,8 +2146,7 @@ static const char *DemoVersionDescription(int version)
 #define PLAYDEMOCACHE true
 void G_DoPlayDemo (void)
 {
-    skill_t skill;
-    int i, lumpnum, episode, map;
+    int i, lumpnum;
     int demoversion;
     doombool olddemo = false;
 
@@ -2203,9 +2204,10 @@ void G_DoPlayDemo (void)
                          DemoVersionDescription(demoversion));
     }
 
-    skill = *demo_p++; 
-    episode = *demo_p++; 
-    map = *demo_p++; 
+	skill_t skill = *demo_p++;
+	int32_t episode = *demo_p++;
+	int32_t map = *demo_p++;
+	int32_t random_seed = 0;
 	episodeinfo_t* epinfo = D_GameflowGetEpisode( episode );
 	mapinfo_t* mapinfo = D_GameflowGetMap( epinfo, map );
     if (!olddemo)
@@ -2227,7 +2229,7 @@ void G_DoPlayDemo (void)
 			nomonsters = *demo_p++;
 
 			int32_t insurance = *demo_p++;
-			int32_t random_seed = *demo_p++;
+			random_seed = *demo_p++;
 			random_seed |= (*demo_p++ << 8);
 			random_seed |= (*demo_p++ << 16);
 			random_seed |= (*demo_p++ << 24);
@@ -2271,7 +2273,7 @@ void G_DoPlayDemo (void)
 		solonetgame = M_CheckParm("-solo-net") > 0 && !playeringame[1];
 	}
 
-    G_InitNew (skill, mapinfo, GF_None); 
+    G_InitNew (skill, mapinfo, GF_None, random_seed); 
     starttime = I_GetTimeTicks(); 
 
     usergame = false; 

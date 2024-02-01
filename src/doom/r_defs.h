@@ -339,6 +339,7 @@ struct line_s
 	// Precalculated v2 - v1 for side checking.
 	fixed_t				dx;
 	fixed_t				dy;
+	angle_t				angle;
 
 	// Animation related.
 	int16_t				flags;

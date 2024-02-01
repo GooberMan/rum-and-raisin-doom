@@ -32,7 +32,7 @@ DOOM_C_API int M_Random (void);
 DOOM_C_API int P_Random (void);
 
 // Fix randoms for demos.
-DOOM_C_API void M_ClearRandom (void);
+DOOM_C_API void M_ClearRandom ( int32_t newseed );
 
 // Defined version of P_Random() - P_Random()
 DOOM_C_API int P_SubRandom (void);

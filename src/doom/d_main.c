@@ -2293,11 +2293,18 @@ void D_DoomMain (void)
 
     p = M_CheckParmWithArgs("-record", 1);
 
-    if (p)
-    {
-	G_RecordDemo (myargv[p+1]);
-	autostart = true;
-    }
+	if (p)
+	{
+		G_RecordDemo (myargv[p+1]);
+		autostart = true;
+	}
+
+	if( ( p = M_CheckParmWithArgs( "-recorddump", 1 ) ) )
+	{
+		G_RecordDemo( myargv[ p + 1 ] );
+		autostart = true;
+	}
+
 
     p = M_CheckParmWithArgs("-playdemo", 1);
     if (p)
@@ -2326,7 +2333,7 @@ void D_DoomMain (void)
     if (gameaction != ga_loadgame )
     {
 	if (autostart || netgame)
-	    G_InitNew (startskill, mapinfo, GF_None);
+	    G_InitNew (startskill, mapinfo, GF_None, 0);
 	else
 	    D_StartTitle ();                // start up intro loop
     }

@@ -31,7 +31,7 @@
 //
 DOOM_C_API void G_DeathMatchSpawnPlayer (int playernum);
 
-DOOM_C_API void G_InitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags);
+DOOM_C_API void G_InitNew (skill_t skill, mapinfo_t* mapinfo, gameflags_t flags, int32_t randomseed );
 
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,

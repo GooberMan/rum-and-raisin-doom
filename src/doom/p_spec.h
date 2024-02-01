@@ -446,13 +446,13 @@ DOOM_C_API typedef enum
     lowerAndCrush,
     crushAndRaise,
     fastCrushAndRaise,
-    silentCrushAndRaise
-
+    silentCrushAndRaise,
+	genericCeiling
 } ceiling_e;
 
 
 
-DOOM_C_API typedef struct
+DOOM_C_API typedef struct ceilingdata_e
 {
 	thinker_t	thinker;
 	ceiling_e	type;
@@ -469,6 +469,12 @@ DOOM_C_API typedef struct
 	int			tag;
 	int			olddirection;
 
+	// Generic functionality
+	struct ceilingdata_e*	nextactive;
+	struct ceilingdata_e*	prevactive;
+	int16_t					newspecial;
+	int16_t					newtexture;
+
 } ceiling_t;
 
 
@@ -480,6 +486,7 @@ DOOM_C_API typedef struct
 #define MAXCEILINGS		30
 
 DOOM_C_API extern ceiling_t*	activeceilings[MAXCEILINGS];
+DOOM_C_API extern ceiling_t*	activeceilingshead;
 
 DOOM_C_API int EV_DoCeiling( line_t* line, ceiling_e type );
 
@@ -656,6 +663,7 @@ DOOM_C_API typedef enum teleporttype_e
 } teleporttype_t;
 
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
+DOOM_C_API void		T_MoveCeilingGeneric( ceiling_t* ceiling );
 
 DOOM_C_API int32_t	EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
@@ -666,11 +674,13 @@ DOOM_C_API int32_t	EV_DoTeleportGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoExitGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoFloorGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoCeilingGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
 
 #if defined( __cplusplus )
 
 MakeThinkFuncLookup( vldoor_t, T_VerticalDoorGeneric );
+MakeThinkFuncLookup( ceiling_t, T_MoveCeilingGeneric );
 
 #endif // defined( __cplusplus )
 

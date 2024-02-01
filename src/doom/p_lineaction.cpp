@@ -74,6 +74,14 @@ namespace constants
 		IntToFixed( 8 ),
 	};
 
+	static constexpr int32_t ceilingspeeds[] =
+	{
+		IntToFixed( 1 ),
+		IntToFixed( 2 ),
+		IntToFixed( 4 ),
+		IntToFixed( 8 ),
+	};
+
 	static constexpr int32_t liftdelay[] =
 	{
 		35,
@@ -356,7 +364,8 @@ namespace precon
 		&HasExactKey,
 		&HasExactKey,
 		HasAllCardsOrSkulls,
-	};}
+	};
+}
 
 enum doordelay_t
 {
@@ -386,6 +395,7 @@ MakeGenericFunc( PerpetualLiftStart, EV_DoPerpetualLiftGeneric );
 MakeGenericFunc( PlatformStop, EV_StopAnyLiftGeneric );
 MakeGenericFunc( VanillaRaise, EV_DoVanillaPlatformRaiseGeneric );
 MakeGenericFunc( Floor, EV_DoFloorGeneric );
+MakeGenericFunc( Ceiling, EV_DoCeilingGeneric );
 MakeGenericFunc( Teleport, EV_DoTeleportGeneric );
 MakeGenericFunc( Exit, EV_DoExitGeneric );
 MakeGenericFunc( LightSet, EV_DoLightSetGeneric );
@@ -923,9 +933,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Transfer_Properties_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Teleport_LineSilentPreserve_W1_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_preserveangle | tt_silent },
 	// Teleport_LineSilentPreserve_WR_All
-	{},
+	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_preserveangle | tt_silent },
 	// Scroll_CeilingTexture_Displace_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Scroll_FloorTexture_Displace_Always
@@ -961,17 +971,17 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Transfer_CeilingLighting_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Teleport_LineSilentReversed_W1_All
-	{},
+	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_reverseangle | tt_silent },
 	// Teleport_LineSilentReversed_WR_All
-	{},
+	{ &precon::CanTeleportAll, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_reverseangle | tt_silent },
 	// Teleport_LineSilentReversed_W1_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_reverseangle | tt_silent },
 	// Teleport_LineSilentReversed_WR_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_reverseangle | tt_silent },
 	// Teleport_LineSilentPreserve_W1_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_preserveangle | tt_silent },
 	// Teleport_LineSilentPreserve_WR_Monsters
-	{},
+	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_toline | tt_preserveangle | tt_silent },
 	// Teleport_ThingSilent_W1_Monsters
 	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing | tt_silent },
 	// Teleport_ThingSilent_WR_Monsters
@@ -1036,6 +1046,55 @@ static void SetActionActivators( lineaction_t* action, uint32_t special, bool al
 		action->action = repeatable ? &DoGeneric< _ty > : &DoGenericOnce< _ty >;
 	}
 	action->trigger = constants::triggers[ trigger ];
+}
+
+static lineaction_t* CreateBoomGeneralisedCeilingAction( line_t* line )
+{
+	constexpr uint32_t targetmapping[] =
+	{
+		stt_highestneighborfloor,		// Ceiling_Target_HighestNeighborFloor
+		stt_lowestneighborfloor,		// Ceiling_Target_LowestNeighborFloor
+		stt_nexthighestneighborfloor,	// Ceiling_Target_NearestNeighborFloor
+		stt_lowestneighborceiling,		// Ceiling_Target_LowestNeighborCeiling
+		stt_floor,						// Ceiling_Target_Floor
+		stt_shortestlowertexture,		// Ceiling_Target_ShortestLowerTexture
+		stt_nosearch,					// Ceiling_Target_24
+		stt_nosearch,					// Ceiling_Target_32
+	};
+
+	constexpr fixed_t targetdistance[] =
+	{
+		0,								// Ceiling_Target_HighestNeighborFloor
+		0,								// Ceiling_Target_LowestNeighborFloor
+		0,								// Ceiling_Target_NearestNeighborFloor
+		0,								// Ceiling_Target_LowestNeighborCeiling
+		0,								// Ceiling_Target_Ceiling
+		0,								// Ceiling_Target_ShortestLowerTexture
+		IntToFixed( 24 ),				// Ceiling_Target_24
+		IntToFixed( 32 ),				// Ceiling_Target_32
+	};
+
+	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
+
+	bool allowmonster	= ( line->special & Ceiling_AllowMonsters_Yes ) == Ceiling_AllowMonsters_Yes;
+	uint32_t target		= ( line->special & Ceiling_Target_Mask ) >> Ceiling_Target_Shift;
+	uint32_t direction	= ( line->special & Ceiling_Direction_Mask ) == Ceiling_Direction_Down ? sd_down : sd_up;
+	uint32_t speed		= ( line->special & Generic_Speed_Mask ) >> Generic_Speed_Shift;
+	uint32_t change		= ( line->special & Ceiling_Change_Mask ) >> Ceiling_Change_Shift;
+
+	SetActionActivators< Ceiling >( action, line->special, allowmonster );
+
+	action->lock = LL_None;
+	action->speed = constants::ceilingspeeds[ speed ];
+	action->delay = 0;
+	action->param1 = targetmapping[ target ];
+	action->param2 = direction;
+	action->param3 = targetdistance[ target ];
+	action->param4 = change;
+	action->param5 = ( line->special & Ceiling_Crush_Mask ) == Ceiling_Crush_Yes;
+	action->param6 = ( line->special & Ceiling_Model_Mask ) == Ceiling_Model_Numeric;
+
+	return action;
 }
 
 static lineaction_t* CreateBoomGeneralisedFloorAction( line_t* line )
@@ -1215,6 +1274,10 @@ static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 	else if( line->special >= Generic_Door && line->special < Generic_Ceiling )
 	{
 		return CreateBoomGeneralisedDoorAction( line );
+	}
+	else if( line->special >= Generic_Ceiling && line->special < Generic_Floor )
+	{
+		return CreateBoomGeneralisedCeilingAction( line );
 	}
 	else if( line->special >= Generic_Floor && line->special < Generic_Max )
 	{

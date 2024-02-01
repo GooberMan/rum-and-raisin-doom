@@ -468,6 +468,7 @@ enum BoomCeilingFlags : uint32_t
 	Ceiling_Target_32						= 0x0380,
 
 	Ceiling_Target_Mask						= 0x0380,
+	Ceiling_Target_Shift					= 7,
 
 	Ceiling_Change_None						= 0x0000,
 	Ceiling_Change_ClearSectorType			= 0x0400,
@@ -475,6 +476,7 @@ enum BoomCeilingFlags : uint32_t
 	Ceiling_Change_CopyTextureSectorType	= 0x0C00,
 
 	Ceiling_Change_Mask						= 0x0C00,
+	Ceiling_Change_Shift					= 10,
 
 	Ceiling_Crush_No						= 0x0000,
 	Ceiling_Crush_Yes						= 0x1000,
