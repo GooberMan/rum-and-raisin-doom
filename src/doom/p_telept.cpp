@@ -136,7 +136,7 @@ EV_Teleport
     return 0;
 }
 
-DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
+DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, teleporttype_e anglebehavior, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
 {
 	for( sector_t& sector : Sectors() )
 	{
@@ -154,6 +154,20 @@ DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, fixe
 					outtargetx		= targetmobj->x;
 					outtargety		= targetmobj->y;
 					outtargetangle	= targetmobj->angle;
+					switch( anglebehavior )
+					{
+					case tt_setangle:
+						outtargetangle = targetmobj->angle;
+						break;
+					case tt_preserveangle:
+						outtargetangle = activator->angle;
+						break;
+					case tt_reverseangle:
+						outtargetangle = activator->angle + ANG180;
+						break;
+					default:
+						break;
+					}
 
 					return true;
 				}
@@ -166,7 +180,7 @@ DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, fixe
 	return false;
 }
 
-DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
+DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, teleporttype_e anglebehavior, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
 {
 	for( line_t& targetline : Lines() )
 	{
@@ -177,23 +191,33 @@ DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, fixed
 			fixed_t sourcemidx = line->v1->x + ( line->dx >> 1 );
 			fixed_t sourcemidy = line->v1->y + ( line->dy >> 1 );
 
-			angle_t mobjrelativeviewangle = activator->angle - line->angle;
-			angle_t mobjrelativeangle = line->angle - BSP_PointToAngle( sourcemidx, sourcemidy, activator->x, activator->y );
-			fixed_t mobjrelativedist = P_AproxDistance( activator->x - sourcemidx, activator->y - sourcemidy );
+			fixed_t mobjtosourcex = activator->x - sourcemidx;
+			fixed_t mobjtosourcey = activator->y - sourcemidy;
+
+			angle_t extraangle = anglebehavior == tt_reverseangle ? 0 : ANG180;
+
+			angle_t diff = targetline.angle - line->angle + extraangle;
+			uint32_t finediff = FINEANGLE( diff );
+			fixed_t diffsine = finesine[ finediff ];
+			fixed_t diffcosine = finecosine[ finediff ];
 
 			fixed_t targetmidx = targetline.v1->x + ( targetline.dx >> 1 );
 			fixed_t targetmidy = targetline.v1->y + ( targetline.dy >> 1 );
 
-			angle_t destangle = targetline.angle + mobjrelativeangle + ANG180;
-			uint32_t finelookup = FINEANGLE( destangle );
-			fixed_t destx = targetmidx + FixedMul( finesine[ finelookup ], mobjrelativedist );
-			fixed_t desty = targetmidy + FixedMul( finecosine[ finelookup ], mobjrelativedist );
+			fixed_t destx = targetmidx + FixedMul( mobjtosourcex, diffcosine ) - FixedMul( mobjtosourcey, diffsine );
+			fixed_t desty = targetmidy + FixedMul( mobjtosourcex, diffsine ) + FixedMul( mobjtosourcey, diffcosine );
 
 			if( P_TeleportMove( activator, destx, desty ) )
 			{
 				outtargetx		= destx;
 				outtargety		= desty;
-				outtargetangle	= targetline.angle + mobjrelativeviewangle;
+				outtargetangle	= activator->angle + diff;
+
+				fixed_t momx = activator->momx;
+				fixed_t momy = activator->momy;
+
+				activator->momx = FixedMul( momx, diffcosine ) - FixedMul( momy, diffsine );
+				activator->momy = FixedMul( momx, diffsine ) + FixedMul( momy, diffcosine );
 
 				return true;
 			}
@@ -219,11 +243,11 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 	switch( line->action->param1 & tt_targetmask )
 	{
 	case tt_tothing:
-		teleported = EV_DoTeleportGenericThing( line, activator, targetx, targety, targetangle );
+		teleported = EV_DoTeleportGenericThing( line, activator, (teleporttype_t)( line->action->param1 & tt_anglemask ), targetx, targety, targetangle );
 		break;
 
 	case tt_toline:
-		teleported = EV_DoTeleportGenericLine( line, activator, targetx, targety, targetangle );
+		teleported = EV_DoTeleportGenericLine( line, activator, (teleporttype_t)( line->action->param1 & tt_anglemask ), targetx, targety, targetangle );
 		break;
 	}
 
@@ -260,17 +284,7 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 			activator->momx = activator->momy = activator->momz = 0;
 		}
 
-		switch( line->action->param1 & tt_anglemask )
-		{
-		case tt_setangle:
-		case tt_preserveangle:
-			activator->angle = targetangle;
-			break;
-		case tt_reverseangle:
-			activator->angle += ANG180;
-			break;
-		}
-
+		activator->angle = targetangle;
 		activator->teleporttic = gametic;
 	}
 
