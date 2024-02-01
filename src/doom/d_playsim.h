@@ -52,19 +52,27 @@ DOOM_C_API typedef struct finaleoptions_s
 DOOM_C_API typedef struct gameoptions_s
 {
 	doombool					fix_divlineside;
-	doombool					unlimited_scrollers;
-	doombool					unlimited_platforms;
-	doombool					reset_player_visited_secret;
-	doombool					doom2_bad_secret_exit_doesnt_loop;
-	doombool					noclip_cheats_work_everywhere;
-	doombool					pre_ultimate_bossdeath_support;
-	doombool					bfg_map02_secret_exit_to_map33;
-	doombool					hud_shows_boom_combined_keys;
+	doombool					fix_findnexthighestfloor;
+	doombool					fix_unusable_onesided_teleports;
+	doombool					fix_same_sky_texture;
+
+	doombool					allow_weapon_recoil;
+	doombool					allow_line_passthrough;
+	doombool					allow_hud_combined_keys;
+	doombool					allow_unlimited_scrollers;
+	doombool					allow_unlimited_platforms;
+	doombool					allow_unlimited_ceilings;
 	doombool					allow_sky_change_between_levels;
 	doombool					allow_boom_specials;
 	doombool					allow_mbf_sky_specials; // complevel 9 is boom + extras
 	doombool					allow_mbf_specials;
 	doombool					allow_mbf21_specials;
+
+	doombool					reset_player_visited_secret;
+	doombool					doom2_bad_secret_exit_doesnt_loop;
+	doombool					noclip_cheats_work_everywhere;
+	doombool					pre_ultimate_bossdeath_support;
+	doombool					bfg_map02_secret_exit_to_map33;
 } gameoptions_t;
 
 DOOM_C_API typedef struct setupoptions_s
@@ -95,20 +103,19 @@ DOOM_C_API typedef struct renderoptions_s
 	doombool					widescreen_assets;
 	doombool					full_rgb_range;
 	doombool					invalid_thing_frames;
-	doombool					always_update_sky_texture;
 	doombool					allow_transmaps;
 } renderoptions_t;
 
 DOOM_C_API typedef struct playsimoptions_s
 {
-	attractoptions_t		attract;
-	dehackedoptions_t		dehacked;
-	demooptions_t			demo;
-	finaleoptions_t			finale;
-	gameoptions_t			game;
-	setupoptions_t			setup;
-	savegameoptions_t		savegame;
-	wadoptions_t			wad;
+	attractoptions_t			attract;
+	dehackedoptions_t			dehacked;
+	demooptions_t				demo;
+	finaleoptions_t				finale;
+	gameoptions_t				game;
+	setupoptions_t				setup;
+	savegameoptions_t			savegame;
+	wadoptions_t				wad;
 } playsimoptions_t;
 
 DOOM_C_API extern playsimoptions_t		playsim;
