@@ -1330,14 +1330,39 @@ void P_UpdateSpecials (void)
 		}
 		else
 		{
-			for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+			for( sector_t& sector : Sectors() )
 			{
-				if( sectors[ thissector ].tag == line->tag )
+				if( sector.tag == line->tag )
 				{
-					sectors[ thissector ].ceiloffsetx += sectors[ thissector ].ceilscrollratex;
-					sectors[ thissector ].ceiloffsety += sectors[ thissector ].ceilscrollratey;
-					sectors[ thissector ].flooroffsetx += sectors[ thissector ].floorscrollratex;
-					sectors[ thissector ].flooroffsety += sectors[ thissector ].floorscrollratey;
+					sector.ceiloffsetx += sector.ceilscrollratex;
+					sector.ceiloffsety += sector.ceilscrollratey;
+					sector.flooroffsetx += sector.floorscrollratex;
+					sector.flooroffsety += sector.floorscrollratey;
+					if( sector.iscurrent )
+					{
+						//for (x=sector->blockbox[BOXLEFT] ; x<= sector->blockbox[BOXRIGHT] ; x++)
+						//	for (y=sector->blockbox[BOXBOTTOM];y<= sector->blockbox[BOXTOP] ; y++)
+						//		P_BlockThingsIterator (x, y, PIT_ChangeSector);
+
+						for( mobj_t* mobj = sector.thinglist; mobj != nullptr; mobj = mobj->snext )
+						{
+							if( mobj->z != sector.floorheight )
+							{
+								continue;
+							}
+
+							fixed_t oldmomx = mobj->momx;
+							fixed_t oldmomy = mobj->momy;
+							mobj->momx = sector.floorscrollratex;
+							mobj->momy = sector.floorscrollratey;
+							mobj = P_XYMovement( mobj );
+							if( mobj )
+							{
+								mobj->momx = oldmomx;
+								mobj->momy = oldmomy;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1696,71 +1721,80 @@ void P_SpawnSpecials (void)
 	linespeciallist = (line_t**)Z_Malloc( sizeof( line_t* ) * scrollcount, PU_LEVEL, NULL );
 	numlinespecials = 0;
 
-	for (i = 0;i < numlines; i++)
+	for( line_t& line : Lines() )
 	{
-		switch(lines[i].special)
+		switch( line.special )
 		{
 		case Scroll_WallTextureLeft_Always:
 			// EFFECT FIRSTCOL SCROLL+
-			linespeciallist[ numlinespecials++ ] = &lines[ i ];
-			lines[ i ].scrollratex = FRACUNIT;
+			linespeciallist[ numlinespecials++ ] = &line;
+			line.scrollratex = FRACUNIT;
 		default:
 			break;
 		}
 
 		if( remove_limits ) // allow_boom_specials
 		{
-			switch( lines[ i ].special )
+			switch( line.special )
 			{
 			case Scroll_WallTextureRight_Always:
-				linespeciallist[ numlinespecials++ ] = &lines[ i ];
-				lines[ i ].scrollratex = -FRACUNIT;
+				linespeciallist[ numlinespecials++ ] = &line;
+				line.scrollratex = -FRACUNIT;
 				break;
 
 			case Scroll_WallTextureByOffset_Always:
-				linespeciallist[ numlinespecials++ ] = &lines[ i ];
-				lines[ i ].scrollratex = -lines[ i ].frontside->textureoffset;
-				lines[ i ].scrollratey = lines[ i ].frontside->rowoffset;
+				linespeciallist[ numlinespecials++ ] = &line;
+				line.scrollratex = -line.frontside->textureoffset;
+				line.scrollratey = line.frontside->rowoffset;
 				break;
 
 			case Scroll_CeilingTexture_Always:
-				linespeciallist[ numlinespecials++ ] = &lines[ i ];
-				for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+				linespeciallist[ numlinespecials++ ] = &line;
+				for( sector_t& sector : Sectors() )
 				{
-					if( sectors[ thissector ].tag == lines[ i ].tag )
+					if( sector.tag == line.tag )
 					{
-						sectors[ thissector ].ceilscrollratex = FixedMul( lines[ i ].dx, FLATSCROLL_SCALE );
-						sectors[ thissector ].ceilscrollratey = FixedMul( lines[ i ].dy, FLATSCROLL_SCALE );
+						sector.ceilscrollratex = FixedMul( line.dx, FLATSCROLL_SCALE );
+						sector.ceilscrollratey = FixedMul( line.dy, FLATSCROLL_SCALE );
 					}
 				}
 				break;
 
+			case Scroll_FloorObjects_Always:
+			case Scroll_FloorTextureObjects_Always:
 			case Scroll_FloorTexture_Always:
-				linespeciallist[ numlinespecials++ ] = &lines[ i ];
-				for( int32_t thissector = 0; thissector < numsectors; ++thissector )
 				{
-					if( sectors[ thissector ].tag == lines[ i ].tag )
+					bool iscurrent = line.special == Scroll_FloorObjects_Always
+									|| line.special == Scroll_FloorTextureObjects_Always;
+					linespeciallist[ numlinespecials++ ] = &line;
+					for( sector_t& sector : Sectors() )
 					{
-						sectors[ thissector ].floorscrollratex = FixedMul( lines[ i ].dx, FLATSCROLL_SCALE );
-						sectors[ thissector ].floorscrollratey = FixedMul( lines[ i ].dy, FLATSCROLL_SCALE );
+						if( sector.tag == line.tag )
+						{
+							sector.floorscrollratex = FixedMul( line.dx, FLATSCROLL_SCALE );
+							sector.floorscrollratey = FixedMul( line.dy, FLATSCROLL_SCALE );
+							sector.iscurrent = iscurrent;
+						}
 					}
 				}
 				break;
 
 			case Transfer_FloorLighting_Always:
 			case Transfer_CeilingLighting_Always:
-				if( lines[i].frontsector )
+				if( line.frontsector )
 				{
-					doombool setceil = lines[ i ].special == Transfer_CeilingLighting_Always;
-					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					doombool setceil = line.special == Transfer_CeilingLighting_Always;
+					for( sector_t& sector : Sectors() )
 					{
-						if( sectors[ thissector ].tag == lines[ i ].tag )
+						if( sector.tag == line.tag )
 						{
-							sector_t** toset = setceil ? &sectors[ thissector ].ceilinglightsec : &sectors[ thissector ].floorlightsec;
-							rend_fixed_t* tosetprev = setceil ? &prevsectors[ thissector ].ceillightlevel : &prevsectors[ thissector ].floorlightlevel;
-							rend_fixed_t* tosetcurr = setceil ? &currsectors[ thissector ].ceillightlevel : &currsectors[ thissector ].floorlightlevel;
+							sector_t** toset = setceil ? &sector.ceilinglightsec : &sector.floorlightsec;
+							rend_fixed_t* tosetprev = setceil ? &prevsectors[ sector.index ].ceillightlevel
+																: &prevsectors[ sector.index ].floorlightlevel;
+							rend_fixed_t* tosetcurr = setceil ? &currsectors[ sector.index ].ceillightlevel
+																: &currsectors[ sector.index ].floorlightlevel;
 
-							*toset = lines[i].frontsector;
+							*toset = line.frontsector;
 							*tosetprev = *tosetcurr = lines[i].frontsector->lightlevel;
 						}
 					}
@@ -1769,55 +1803,61 @@ void P_SpawnSpecials (void)
 
 			case Transfer_Friction_Always: // Friction
 				{
-					fixed_t linelength = M_CLAMP( P_AproxDistance( lines[ i ].dx, lines[ i ].dy ), 0, IntToFixed( 200 ) );
+					fixed_t linelength = M_CLAMP( P_AproxDistance( line.dx, line.dy ), 0, IntToFixed( 200 ) );
 					fixed_t frictionmul = FixedDiv( linelength, IntToFixed( 100 ) ) - IntToFixed( 1 );
 					fixed_t targetfriction = FRICTION + FixedMul( ( IntToFixed( 1 ) - FRICTION ), frictionmul );
 
-					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					for( sector_t& sector : Sectors() )
 					{
-						if( sectors[ thissector ].tag == lines[ i ].tag )
+						if( sector.tag == line.tag )
 						{
-							sectors[ thissector ].friction = targetfriction;
+							sector.friction = targetfriction;
 						}
 					}
 				}
 				break;
 
 			case Transfer_Properties_Always:
-				if( lines[i].frontside )
+				if( line.frontside )
 				{
-					side_t* side = lines[i].frontside;
-					lines[i].topcolormap = ( !side->toptexture && side->toptextureindex >= 0 ) ? R_GetColormapForNum( side->toptextureindex ) : colormaps;
-					lines[i].bottomcolormap = ( !side->bottomtexture && side->bottomtextureindex >= 0 ) ? R_GetColormapForNum( side->bottomtextureindex ) : colormaps;
-					lines[i].midcolormap = ( !side->midtexture && side->midtextureindex >= 0 ) ? R_GetColormapForNum( side->midtextureindex ) : colormaps;
+					side_t* side = line.frontside;
+					line.topcolormap = ( !side->toptexture && side->toptextureindex >= 0 )
+										? R_GetColormapForNum( side->toptextureindex )
+										: colormaps;
+					line.bottomcolormap = ( !side->bottomtexture && side->bottomtextureindex >= 0 )
+										? R_GetColormapForNum( side->bottomtextureindex )
+										: colormaps;
+					line.midcolormap = ( !side->midtexture && side->midtextureindex >= 0 )
+										? R_GetColormapForNum( side->midtextureindex )
+										: colormaps;
 
-					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					for( sector_t& sector : Sectors() )
 					{
-						if( sectors[ thissector ].tag == lines[ i ].tag )
+						if( sector.tag == line.tag )
 						{
-							sectors[ thissector ].transferline = &lines[ i ];
+							sector.transferline = &line;
 						}
 					}
 				}
 				break;
 
 			case Texture_Translucent_Always: // Transparency
-				if( lines[i].tag == 0 )
+				if( line.tag == 0 )
 				{
-					lines[i].transparencymap = tranmap;
+					line.transparencymap = tranmap;
 				}
 				else
 				{
 					byte* customtranmap = tranmap;
-					if( lines[ i ].sidenum[ 0 ] >= 0 && sides[ lines[ i ].sidenum[ 0 ] ].midtextureindex >= 0 )
+					if( line.sidenum[ 0 ] >= 0 && sides[ line.sidenum[ 0 ] ].midtextureindex >= 0 )
 					{
-						lumpindex_t customtranmapindex = sides[ lines[ i ].sidenum[ 0 ] ].midtextureindex;
+						lumpindex_t customtranmapindex = sides[ line.sidenum[ 0 ] ].midtextureindex;
 						size_t customtranmaplen = W_LumpLength( customtranmapindex );
 						if( customtranmaplen == 65536 )
 						{
 							customtranmap = (byte*)W_CacheLumpNum( customtranmapindex, PU_LEVEL );
 						}
-						else if( sides[ lines[ i ].sidenum[ 0 ] ].midtexture == 0 )
+						else if( sides[ line.sidenum[ 0 ] ].midtexture == 0 )
 						{
 							I_Error( "Tagged transparent line requires either a valid transmap entry or a valid texture" );
 						}
@@ -1825,7 +1865,7 @@ void P_SpawnSpecials (void)
 
 					for( int32_t target = 0 ; target < numlines; ++target )
 					{
-						if( lines[ target ].tag == lines[ i ].tag )
+						if( lines[ target ].tag == line.tag )
 						{
 							lines[ target ].transparencymap = customtranmap;
 						}
@@ -1837,19 +1877,19 @@ void P_SpawnSpecials (void)
 
 		if( remove_limits ) // allow_mbf_sky_specials || allow_mbf_specials
 		{
-			switch( lines[ i ].special )
+			switch( line.special )
 			{
 			case Transfer_Sky_Always:
 			case Transfer_SkyReversed_Always:
-				if( lines[ i ].sidenum[ 0 ] >= 0 )
+				if( line.sidenum[ 0 ] >= 0 )
 				{
-					fixed_t scale = IntToFixed( lines[ i ].special == Transfer_Sky_Always ? -1 : 1 );
-					for( int32_t thissector = 0; thissector < numsectors; ++thissector )
+					fixed_t scale = IntToFixed( line.special == Transfer_Sky_Always ? -1 : 1 );
+					for( sector_t& sector : Sectors() )
 					{
-						if( sectors[ thissector ].tag == lines[ i ].tag )
+						if( sector.tag == line.tag )
 						{
-							sectors[ thissector ].skyline = &sides[ lines[ i ].sidenum[ 0 ] ];
-							sectors[ thissector ].skyxscale = scale;
+							sector.skyline = &sides[ line.sidenum[ 0 ] ];
+							sector.skyxscale = scale;
 						}
 					}
 				}

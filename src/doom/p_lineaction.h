@@ -237,7 +237,7 @@ enum BoomActions : uint32_t
 	Crusher_Silent_SR_Player,
 	Ceiling_RaiseHighestCeiling_SR_Player,
 	Ceiling_LowerTo8AboveFloor_SR_Player,
-	Crusher_Stop_SR_Playe,
+	Crusher_Stop_SR_Player,
 	Floor_ChangeTexture_S1_Player,
 	Floor_ChangeTexture_SR_Player,
 	Sector_Donut_SR_Player,

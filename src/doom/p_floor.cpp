@@ -708,3 +708,4 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 	return createdcount;
 }
+

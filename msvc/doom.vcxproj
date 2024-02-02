@@ -413,6 +413,7 @@
     <ClCompile Include="..\src\doom\p_actionsmbf21.cpp" />
     <ClCompile Include="..\src\doom\p_ceilng.cpp" />
     <ClCompile Include="..\src\doom\p_doors.cpp" />
+    <ClCompile Include="..\src\doom\p_elevator.cpp" />
     <ClCompile Include="..\src\doom\p_enemy.cpp" />
     <ClCompile Include="..\src\doom\p_floor.cpp" />
     <ClCompile Include="..\src\doom\p_lights.cpp" />

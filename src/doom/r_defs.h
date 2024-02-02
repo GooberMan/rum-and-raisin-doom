@@ -283,6 +283,7 @@ struct sector_s
 	fixed_t				floorscrollratey;
 	fixed_t				ceilscrollratex;
 	fixed_t				ceilscrollratey;
+	doombool			iscurrent;
 };
 
 

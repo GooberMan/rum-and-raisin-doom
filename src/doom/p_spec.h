@@ -588,6 +588,16 @@ DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
 
 // Generic functionality
 
+DOOM_C_API typedef struct elevator_e
+{
+	thinker_t	thinker;
+	sector_t*	sector;
+	fixed_t		speed;
+	fixed_t		floordest;
+	fixed_t		ceilingdest;
+	sectordir_t	direction;
+} elevator_t;
+
 DOOM_C_API typedef enum dooraise_e
 {
 	door_noraise,
@@ -610,6 +620,7 @@ DOOM_C_API typedef enum sectortargettype_e
 	stt_perpetual,
 	stt_highestneighborfloor_noaddifmatch,	// Vanilla behavior, just like stt_highestneighborfloor but
 											// won't add the extra value specified if dest == source
+	stt_lineactivator,						// Special case for elevators
 } sectortargettype_t;
 
 DOOM_C_API typedef enum sectorchangetype_e
@@ -664,6 +675,7 @@ DOOM_C_API typedef enum teleporttype_e
 
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
 DOOM_C_API void		T_MoveCeilingGeneric( ceiling_t* ceiling );
+DOOM_C_API void		T_MoveElevatorGeneric( elevator_t* elevator );
 
 DOOM_C_API int32_t	EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
@@ -675,6 +687,7 @@ DOOM_C_API int32_t	EV_DoExitGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoFloorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoCeilingGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoElevatorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
 
 #if defined( __cplusplus )

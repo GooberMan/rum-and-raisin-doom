@@ -61,33 +61,33 @@ P_SetMobjState
 
     do
     {
-	if (state == S_NULL)
-	{
-	    mobj->state = (state_t *) S_NULL;
-	    P_RemoveMobj (mobj);
-	    return false;
-	}
+		if (state == S_NULL)
+		{
+			mobj->state = (state_t *) S_NULL;
+			P_RemoveMobj (mobj);
+			return false;
+		}
 
-	st = &states[state];
-	mobj->state = st;
-	mobj->tics = st->tics;
-	mobj->sprite = st->sprite;
-	mobj->frame = st->frame;
+		st = &states[state];
+		mobj->state = st;
+		mobj->tics = st->tics;
+		mobj->sprite = st->sprite;
+		mobj->frame = st->frame;
 
-	// Modified handling.
-	// Call action functions when the state is set
-	if (st->action.acp1)		
-	    st->action.acp1(mobj);	
+		// Modified handling.
+		// Call action functions when the state is set
+		if (st->action.acp1)
+			st->action.acp1(mobj);
 	
-	state = st->nextstate;
+		state = st->nextstate;
 
-	if (cycle_counter++ > MOBJ_CYCLE_LIMIT)
-	{
-	    I_Error("P_SetMobjState: Infinite state cycle detected!");
-	}
-    } while (!mobj->tics);
-				
-    return true;
+		if (cycle_counter++ > MOBJ_CYCLE_LIMIT)
+		{
+			I_Error("P_SetMobjState: Infinite state cycle detected!");
+		}
+	} while (!mobj->tics);
+
+	return true;
 }
 
 
@@ -116,7 +116,7 @@ void P_ExplodeMissile (mobj_t* mo)
 // P_XYMovement  
 //
 
-void P_XYMovement (mobj_t* mo) 
+mobj_t* P_XYMovement (mobj_t* mo) 
 { 	
 	fixed_t 	ptryx;
 	fixed_t		ptryy;
@@ -130,7 +130,7 @@ void P_XYMovement (mobj_t* mo)
 
 			P_SetMobjState (mo, mo->info->spawnstate);
 		}
-		return;
+		return mo;
 	}
 	
 	player_t* player = mo->player;
@@ -175,7 +175,7 @@ void P_XYMovement (mobj_t* mo)
 					// against the sky.
 					// Does not handle sky floors.
 					P_RemoveMobj (mo);
-					return;
+					return NULL;
 				}
 				P_ExplodeMissile (mo);
 			}
@@ -191,14 +191,14 @@ void P_XYMovement (mobj_t* mo)
 	{
 		// debug option for no sliding at all
 		mo->momx = mo->momy = 0;
-		return;
+		return mo;
 	}
 
 	if (mo->flags & (MF_MISSILE | MF_SKULLFLY) )
-		return; 	// no friction for missiles ever
+		return NULL; 	// no friction for missiles ever
 
 	if (mo->z > mo->floorz)
-		return;		// no friction when airborne
+		return NULL;		// no friction when airborne
 
 	if (mo->flags & MF_CORPSE)
 	{
@@ -210,7 +210,7 @@ void P_XYMovement (mobj_t* mo)
 			|| mo->momy < -FRACUNIT/4)
 		{
 			if (mo->floorz != mo->subsector->sector->floorheight)
-				return;
+				return NULL;
 		}
 	}
 
@@ -224,7 +224,12 @@ void P_XYMovement (mobj_t* mo)
 	{
 		// if in a walking frame, stop moving
 		if ( player&&(unsigned)((player->mo->state - states)- S_PLAY_RUN1) < 4)
-			P_SetMobjState (player->mo, S_PLAY);
+		{
+			if( !P_SetMobjState (player->mo, S_PLAY) )
+			{
+				return NULL;
+			}
+		}
 	
 		mo->momx = 0;
 		mo->momy = 0;
@@ -234,6 +239,8 @@ void P_XYMovement (mobj_t* mo)
 		mo->momx = FixedMul( mo->momx, FRICTION ); //mo->subsector->sector->friction );
 		mo->momy = FixedMul( mo->momy, FRICTION ); //mo->subsector->sector->friction );
 	}
+
+	return mo;
 }
 
 //

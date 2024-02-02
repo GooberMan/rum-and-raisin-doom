@@ -226,6 +226,7 @@ DOOM_C_API extern	line_t*	spechit[MAXSPECIALCROSS];
 DOOM_C_API extern	int	numspechit;
 
 DOOM_C_API doombool			P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y);
+DOOM_C_API mobj_t*			P_XYMovement (mobj_t* mo); // Returns the mobj if it still exists after movement
 DOOM_C_API doombool			P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
 DOOM_C_API doombool			P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);
 DOOM_C_API void				P_SlideMove (mobj_t* mo);

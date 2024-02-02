@@ -217,6 +217,9 @@
     <ClCompile Include="..\src\doom\p_ceilng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\doom\p_elevator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\doom\am_map.h">
