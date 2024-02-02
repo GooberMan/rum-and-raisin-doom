@@ -29,30 +29,32 @@
 #include "doomstat.h"
 
 #include "deh_main.h"
-#include "i_system.h"
-#include "z_zone.h"
-#include "m_argv.h"
-#include "m_misc.h"
-#include "m_random.h"
-#include "w_wad.h"
-
-#include "r_local.h"
-#include "p_local.h"
-#include "p_lineaction.h"
 
 #include "g_game.h"
 
-#include "s_sound.h"
+#include "i_system.h"
 
-// State.
+#include "m_argv.h"
+#include "m_bbox.h"
+#include "m_misc.h"
+#include "m_random.h"
+
+#include "p_local.h"
+#include "p_lineaction.h"
+
+#include "r_local.h"
 #include "r_state.h"
 
-// Data.
+#include "s_sound.h"
 #include "sounds.h"
+
+#include "w_wad.h"
+
+#include "z_zone.h"
+
 
 DOOM_C_API extern int numtextures;
 DOOM_C_API extern int numflats;
-
 
 //
 // Animating textures and planes
@@ -1340,28 +1342,42 @@ void P_UpdateSpecials (void)
 					sector.flooroffsety += sector.floorscrollratey;
 					if( sector.iscurrent )
 					{
-						//for (x=sector->blockbox[BOXLEFT] ; x<= sector->blockbox[BOXRIGHT] ; x++)
-						//	for (y=sector->blockbox[BOXBOTTOM];y<= sector->blockbox[BOXTOP] ; y++)
-						//		P_BlockThingsIterator (x, y, PIT_ChangeSector);
-
-						for( mobj_t* mobj = sector.thinglist; mobj != nullptr; mobj = mobj->snext )
+						P_BlockThingsIterator( iota( sector.blockbox[ BOXLEFT ], sector.blockbox[ BOXRIGHT ] + 1 ),
+												iota( sector.blockbox[ BOXBOTTOM ], sector.blockbox[ BOXRIGHT ] + 1 ),
+												[ &sector ]( mobj_t* mobj ) -> bool
 						{
 							if( mobj->z != sector.floorheight )
 							{
-								continue;
+								return true;
 							}
 
-							fixed_t oldmomx = mobj->momx;
-							fixed_t oldmomy = mobj->momy;
-							mobj->momx = sector.floorscrollratex;
-							mobj->momy = sector.floorscrollratey;
-							mobj = P_XYMovement( mobj );
-							if( mobj )
+							bool insector = mobj->subsector->sector->index == sector.index
+								|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y + mobj->radius )->sector->index == sector.index
+								|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y + mobj->radius )->sector->index == sector.index
+								|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y - mobj->radius )->sector->index == sector.index
+								|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y - mobj->radius )->sector->index == sector.index;
+
+							if( insector )
 							{
-								mobj->momx = oldmomx;
-								mobj->momy = oldmomy;
+								fixed_t oldmomx = mobj->momx;
+								fixed_t oldmomy = mobj->momy;
+								mobj->momx = sector.floorscrollratex;
+								mobj->momy = sector.floorscrollratey;
+								mobj = P_XYMovement( mobj );
+								if( mobj != nullptr )
+								{
+									if( mobj->subsector->sector != &sector )
+									{
+										oldmomx += FixedMul( sector.floorscrollratex, sector.friction );
+										oldmomy += FixedMul( sector.floorscrollratey, sector.friction );
+									}
+									mobj->momx = oldmomx;
+									mobj->momy = oldmomy;
+								}
 							}
-						}
+
+							return true;
+						} );
 					}
 				}
 			}

@@ -51,28 +51,33 @@ DOOM_C_API typedef struct finaleoptions_s
 
 DOOM_C_API typedef struct gameoptions_s
 {
-	doombool					fix_divlineside;
-	doombool					fix_findnexthighestfloor;
-	doombool					fix_unusable_onesided_teleports;
-	doombool					fix_same_sky_texture;
+	doombool					fix_divlineside;						// Checks against X when it should check against Y
+	doombool					fix_findnexthighestfloor;				// Uses the worst algorithm known to humankind to do a minmax
+	doombool					fix_unusable_onesided_teleports;		// Vanilla would wipe W1 specials at all times, even if things like teleports didn't trigger
+	doombool					fix_same_sky_texture;					// Notorious bug where sky doesn't change between Doom II episodes
+	doombool					fix_blockthingsiterator;				// Iterating all items of a linked list famously doesn't work if the list changes
+	doombool					fix_intercepts_overflow;				// Stomps over the end of a statically-sized array
 
-	doombool					allow_weapon_recoil;
-	doombool					allow_line_passthrough;
-	doombool					allow_hud_combined_keys;
-	doombool					allow_unlimited_scrollers;
-	doombool					allow_unlimited_platforms;
-	doombool					allow_unlimited_ceilings;
-	doombool					allow_sky_change_between_levels;
-	doombool					allow_boom_specials;
-	doombool					allow_mbf_sky_specials; // complevel 9 is boom + extras
-	doombool					allow_mbf_specials;
-	doombool					allow_mbf21_specials;
+	doombool					allow_weapon_recoil;					// Boom "feature"
+	doombool					allow_line_passthrough;					// Boom feature, don't stop using lines when one succeeds if linedef flag is set
+	doombool					allow_hud_combined_keys;				// Boom feature, dependent on if resources exist in WAD
+	doombool					allow_unlimited_scrollers;				// Vanilla limit
+	doombool					allow_unlimited_platforms;				// Vanilla limit
+	doombool					allow_unlimited_ceilings;				// Vanilla limit
+	doombool					allow_separate_floor_ceiling_lights;	// Boom sector specials are allowed to work independently of each other
+	doombool					allow_boom_line_specials;				// Comes with Boom fixes for specials by default
+	doombool					allow_boom_sector_specials;				// Comes with Boom fixes for specials by default
+	doombool					allow_mbf_line_sky_specials;			// complevel 9 is boom + extras
+	doombool					allow_mbf_line_specials;				// Sky transfers, that's it
+	doombool					allow_mbf_sector_specials;				// Sky transfers, that's it
+	doombool					allow_mbf21_line_specials;				// New texture scrollers
+	doombool					allow_mbf21_sector_specials;			// New texture scrollers
 
-	doombool					reset_player_visited_secret;
-	doombool					doom2_bad_secret_exit_doesnt_loop;
-	doombool					noclip_cheats_work_everywhere;
+	doombool					reset_player_visited_secret;			// Start a new game, still thinks you've visited secret levels on intermission screen
+	doombool					doom2_bad_secret_exit_doesnt_loop;		// Secret exit on any other map than MAP15 and MAP31 causes the current level to loop
+	doombool					noclip_cheats_work_everywhere;			// idspispopd and idclip everywhere
 	doombool					pre_ultimate_bossdeath_support;
-	doombool					bfg_map02_secret_exit_to_map33;
+	doombool					bfg_map02_secret_exit_to_map33;			// Find that one unmarked line in MAP02 in BFG edition
 } gameoptions_t;
 
 DOOM_C_API typedef struct setupoptions_s

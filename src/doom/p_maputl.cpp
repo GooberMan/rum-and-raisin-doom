@@ -940,11 +940,29 @@ doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func )
 		return true;
 	}
 
-	for( mobj_t* mobj = blocklinks[ y * bmapwidth + x ]; mobj; mobj = mobj->bnext )
+	for( mobj_t* mobj = blocklinks[ y * bmapwidth + x ]; mobj; )
 	{
+		mobj_t* bnext = mobj->bnext;
 		if ( !func( mobj ) )
 		{
 			return false;
+		}
+		mobj = remove_limits ? bnext : mobj->bnext;
+	}
+
+	return true;
+}
+
+doombool P_BlockThingsIterator( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func )
+{
+	for( int32_t x : xrange )
+	{
+		for( int32_t y : yrange )
+		{
+			if( !P_BlockThingsIterator( x, y, std::forward< iteratemobjfunc_t >( func ) ) )
+			{
+				return false;
+			}
 		}
 	}
 

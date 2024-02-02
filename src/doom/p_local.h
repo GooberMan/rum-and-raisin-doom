@@ -180,10 +180,12 @@ DOOM_C_API doombool			P_BlockThingsIterator (int x, int y, doombool(*func)(mobj_
 
 #if defined( __cplusplus )
 #include <functional>
+#include "m_container.h"
 
 using iteratemobjfunc_t = std::function< doombool(mobj_t*) >;
 
 doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func );
+doombool P_BlockThingsIterator( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
 #endif
 
 #define PT_ADDLINES		1
