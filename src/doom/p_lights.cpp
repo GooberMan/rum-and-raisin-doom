@@ -208,18 +208,13 @@ P_SpawnStrobeFlash
 //
 void EV_StartLightStrobing(line_t*	line)
 {
-    int		secnum;
-    sector_t*	sec;
-	
-    secnum = -1;
-    while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
-    {
-	sec = &sectors[secnum];
-	if (sec->specialdata)
-	    continue;
-	
-	P_SpawnStrobeFlash (sec,SLOWDARK, 0);
-    }
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		{
+			P_SpawnStrobeFlash( &sector, SLOWDARK, 0 );
+		}
+	}
 }
 
 

@@ -516,17 +516,15 @@ int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 		return 0;
 	}
 
-	int32_t secnum = -1;
 	int32_t sectorsactivated = 0;
-	while( (secnum = P_FindSectorFromLineTag(line,secnum)) >= 0 )
+	for( sector_t& sector : Sectors() )
 	{
-		sector_t* sec = &sectors[secnum];
-		if (sec->specialdata)
-			continue;
-
-		// new door thinker
-		++sectorsactivated;
-		EV_DoDoorGeneric( line, sec );
+		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		{
+			// new door thinker
+			++sectorsactivated;
+			EV_DoDoorGeneric( line, &sector );
+		}
 	}
 
 	return sectorsactivated;
