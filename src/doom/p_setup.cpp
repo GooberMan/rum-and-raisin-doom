@@ -446,6 +446,8 @@ struct DoomMapLoader
 			}
 			out.tag				= Read::AsIs( in.tag );
 			out.thinglist		= nullptr;
+			out.nosectorthinglist	= nullptr;
+			out.specialdata		= nullptr;
 			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
 			out.friction		= FRICTION;
 			out.skyline			= nullptr;

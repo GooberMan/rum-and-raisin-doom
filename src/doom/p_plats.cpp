@@ -374,7 +374,7 @@ DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activ
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		if( sector.tag == line->tag && sector.specialdata == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
@@ -428,7 +428,7 @@ DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		if( sector.tag == line->tag && sector.specialdata == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
@@ -463,7 +463,7 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		if( sector.tag == line->tag && sector.specialdata == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;

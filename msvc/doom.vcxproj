@@ -411,6 +411,7 @@
     <ClCompile Include="..\src\doom\d_playsim_hacx.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf21.cpp" />
+    <ClCompile Include="..\src\doom\p_ceilng.cpp" />
     <ClCompile Include="..\src\doom\p_doors.cpp" />
     <ClCompile Include="..\src\doom\p_enemy.cpp" />
     <ClCompile Include="..\src\doom\p_floor.cpp" />
@@ -474,7 +475,6 @@
     <ClInclude Include="..\src\doom\m_menu.h" />
     <ClCompile Include="..\src\doom\m_random.c" />
     <ClInclude Include="..\src\doom\m_random.h" />
-    <ClCompile Include="..\src\doom\p_ceilng.c" />
     <ClCompile Include="..\src\doom\p_inter.c" />
     <ClInclude Include="..\src\doom\p_inter.h" />
     <ClInclude Include="..\src\doom\p_lineaction.h" />

@@ -418,18 +418,18 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		if( sector.tag == line->tag && sector.specialdata == nullptr )
 		{
 			++createdcount;
 
 			ceiling_t* ceiling = (ceiling_t*)Z_Malloc( sizeof(ceiling_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &ceiling->thinker );
 			P_AddActiveCeilingGeneric( ceiling );
-			sector.specialdata = ceiling;
+			ceiling->sector = &sector;
+			ceiling->sector->specialdata = ceiling;
 			ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
 			ceiling->type = genericCeiling;
 			ceiling->crush = line->action->param6 == sc_crush;
-			ceiling->sector = &sector;
 			ceiling->direction = line->action->param2;
 			ceiling->speed = line->action->speed;
 

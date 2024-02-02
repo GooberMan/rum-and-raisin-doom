@@ -562,17 +562,17 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag || sector.specialdata != nullptr )
+		if( sector.tag == line->tag && sector.specialdata == nullptr )
 		{
 			++createdcount;
 
 			floormove_t* floor = (floormove_t*)Z_Malloc( sizeof(floormove_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &floor->thinker );
-			sector.specialdata = floor;
+			floor->sector = &sector;
+			floor->sector->specialdata = floor;
 			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloor;
 			floor->type = genericFloor;
 			floor->crush = line->action->param6 == sc_crush;
-			floor->sector = &sector;
 			floor->direction = line->action->param2;
 			floor->speed = line->action->speed;
 

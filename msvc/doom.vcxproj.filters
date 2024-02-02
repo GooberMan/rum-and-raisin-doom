@@ -76,9 +76,6 @@
     <ClCompile Include="..\src\doom\m_random.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_ceilng.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\p_inter.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -215,6 +212,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\p_floor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_ceilng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
