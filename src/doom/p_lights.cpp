@@ -24,6 +24,7 @@
 #include "m_misc.h"
 
 #include "doomdef.h"
+#include "doomstat.h"
 #include "p_local.h"
 #include "p_lineaction.h"
 
@@ -210,7 +211,7 @@ void EV_StartLightStrobing(line_t*	line)
 {
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && ( sector.specialdata == nullptr || remove_limits ) )
 		{
 			P_SpawnStrobeFlash( &sector, SLOWDARK, 0 );
 		}

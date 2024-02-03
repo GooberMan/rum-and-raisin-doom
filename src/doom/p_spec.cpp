@@ -32,6 +32,7 @@
 
 #include "g_game.h"
 
+#include "i_log.h"
 #include "i_system.h"
 
 #include "m_argv.h"
@@ -1604,6 +1605,24 @@ int EV_DoDonut(line_t*	line)
 	}
     }
     return rtn;
+}
+
+DOOM_C_API int32_t EV_DoBoomFloorCeilingGeneric( line_t* line, mobj_t* activator )
+{
+	lineaction_t dummyaction = *line->action;
+	line_t dummyline = *line;
+	dummyline.action = &dummyaction;
+	dummyaction.param1 = stt_lowestneighborfloor;
+	dummyaction.param2 = sd_down;
+
+	int32_t ceilingres = EV_DoCeilingGeneric( line, activator );
+
+	if( !ceilingres )
+	{
+		return EV_DoFloorGeneric( &dummyline, activator );
+	}
+
+	return ceilingres;
 }
 
 DOOM_C_API int32_t EV_DoExitGeneric( line_t* line, mobj_t* activator )

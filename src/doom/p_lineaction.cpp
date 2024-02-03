@@ -65,6 +65,7 @@ namespace constants
 	};
 
 	static constexpr int32_t vanillaraisespeed = DoubleToFixed( 0.5 );
+	static constexpr int32_t slowstairsspeed = DoubleToFixed( 0.25 );
 
 	static constexpr int32_t floorspeeds[] =
 	{
@@ -396,7 +397,9 @@ MakeGenericFunc( PlatformStop, EV_StopAnyLiftGeneric );
 MakeGenericFunc( VanillaRaise, EV_DoVanillaPlatformRaiseGeneric );
 MakeGenericFunc( Floor, EV_DoFloorGeneric );
 MakeGenericFunc( Ceiling, EV_DoCeilingGeneric );
+MakeGenericFunc( BoomFloorAndCeiling, EV_DoBoomFloorCeilingGeneric );
 MakeGenericFunc( Elevator, EV_DoElevatorGeneric );
+MakeGenericFunc( Stairs, EV_DoStairsGeneric );
 MakeGenericFunc( Teleport, EV_DoTeleportGeneric );
 MakeGenericFunc( Exit, EV_DoExitGeneric );
 MakeGenericFunc( LightSet, EV_DoLightSetGeneric );
@@ -457,9 +460,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Crusher_Fast_W1_Player
 	{},
 	// Stairs_BuildBy8_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Stairs_BuildBy8_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Sector_Donut_S1_Player
 	{},
 	// Platform_DownWaitUp_W1_All
@@ -645,13 +648,13 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_OpenFastBlue_SR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericSwitch< Door >, LT_SwitchFront, LL_Blue, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
 	// Stairs_BuildBy16Fast_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 1 },
 	// Floor_RaiseLowestCeiling_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighest_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_highestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Door_Open_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
 	// Light_SetLowest_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_lowestsurround },
 	// Door_RaiseFast_WR_Player
@@ -699,7 +702,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_Thing_WR_Monsters
 	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Stairs_BuildBy16Fast_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 1 },
 	// Floor_RaiseNearest_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nexthighestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_RaiseNearestFast_WR_Player
@@ -779,8 +782,8 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{},
 	// Crusher_Silent_S1_Player
 	{},
-	// Ceiling_RaiseHighestCeiling_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Ceiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
+	// FloorCeiling_RaiseHighestOrLowerLowest_S1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< BoomFloorAndCeiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Ceiling_LowerTo8AboveFloor_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Ceiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_floor, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Crusher_Stop_S1_Player
@@ -819,8 +822,8 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{},
 	// Crusher_Silent_SR_Player
 	{},
-	// Ceiling_RaiseHighestCeiling_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Ceiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
+	// FloorCeiling_RaiseHighestOrLowerLowest_S1_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< BoomFloorAndCeiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Ceiling_LowerTo8AboveFloor_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Ceiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_floor, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Crusher_Stop_SR_Player
@@ -960,13 +963,13 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Scroll_WallTextureByOffset_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Stairs_BuildBy8_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Stairs_BuildBy16Fast_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 0 },
 	// Stairs_BuildBy8_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Stairs_BuildBy16Fast_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 0 },
 	// Texture_Translucent_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Transfer_CeilingLighting_Always
@@ -1047,6 +1050,39 @@ static void SetActionActivators( lineaction_t* action, uint32_t special, bool al
 		action->action = repeatable ? &DoGeneric< _ty > : &DoGenericOnce< _ty >;
 	}
 	action->trigger = constants::triggers[ trigger ];
+}
+
+static lineaction_t* CreateBoomGeneralisedStairsAction( line_t* line )
+{
+	constexpr fixed_t targetdistance[] =
+	{
+		IntToFixed( -4 ),				// Stairs_Target_4
+		IntToFixed( -8 ),				// Stairs_Target_8
+		IntToFixed( -16 ),				// Stairs_Target_16
+		IntToFixed( -24 ),				// Stairs_Target_24
+		IntToFixed( 4 ),				// Stairs_Target_4 with Stairs_Direction_Up
+		IntToFixed( 8 ),				// Stairs_Target_8 with Stairs_Direction_Up
+		IntToFixed( 16 ),				// Stairs_Target_16 with Stairs_Direction_Up
+		IntToFixed( 24 ),				// Stairs_Target_24 with Stairs_Direction_Up
+	};
+
+	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
+
+	bool allowmonster	= ( line->special & Stairs_AllowMonsters_Mask ) == Stairs_AllowMonsters_Mask;
+	bool ignoretexture	= ( line->special & Stairs_IgnoreTexture_Mask ) == Stairs_IgnoreTexture_Yes;
+	uint32_t target		= ( line->special & Stairs_WithMinusTargets_Mask ) >> Stairs_Target_Shift;
+	uint32_t speed		= ( line->special & Generic_Speed_Mask ) >> Generic_Speed_Shift;
+
+	SetActionActivators< Stairs >( action, line->special, allowmonster );
+
+	action->lock = LL_None;
+	action->speed = constants::floorspeeds[ speed ];
+	action->delay = 0;
+	action->param1 = targetdistance[ target ];
+	action->param2 = ignoretexture;
+	action->param3 = false; // Crush
+
+	return action;
 }
 
 static lineaction_t* CreateBoomGeneralisedCeilingAction( line_t* line )
@@ -1264,7 +1300,11 @@ static lineaction_t* CreateBoomGeneralisedLockedDoorAction( line_t* line )
 
 static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 {
-	if( line->special >= Generic_Lift && line->special < Generic_LockedDoor )
+	if( line->special >= Generic_Stairs && line->special < Generic_Lift )
+	{
+		return CreateBoomGeneralisedStairsAction( line );
+	}
+	else if( line->special >= Generic_Lift && line->special < Generic_LockedDoor )
 	{
 		return CreateBoomGeneralisedLiftAction( line );
 	}

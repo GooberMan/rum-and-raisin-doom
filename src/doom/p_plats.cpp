@@ -349,7 +349,7 @@ void P_RemoveActivePlatGeneric( plat_t* plat )
 			}
 
 			P_RemoveThinker( &plat->thinker );
-			plat->sector->specialdata = nullptr;
+			plat->sector->floorspecialdata = nullptr;
 			return;
 		}
 	}
@@ -363,9 +363,15 @@ void P_ActivateInStasisPlatsGeneric( int tag )
 		if( currplat->tag == tag && currplat->status == in_stasis )
 		{
 			currplat->status = currplat->oldstatus;
-			currplat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			currplat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
 		}
 	}
+}
+
+DOOM_C_API void T_RaisePlatGeneric( plat_t* plat )
+{
+	// BIG BIG TODO HERE
+	T_PlatRaise( plat );
 }
 
 DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator )
@@ -374,16 +380,16 @@ DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activ
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
-			plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+			plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &plat->thinker );
 		
 			plat->sector = &sector;
-			plat->sector->specialdata = plat;
-			plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			plat->sector->floorspecialdata = plat;
+			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
 			plat->crush = false;
 			plat->tag = line->tag;
 			plat->speed = line->action->speed;
@@ -428,17 +434,17 @@ DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
-			plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+			plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &plat->thinker );
 	
 			plat->type = perpetualRaise;
 			plat->sector = &sector;
-			plat->sector->specialdata = plat;
-			plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			plat->sector->floorspecialdata = plat;
+			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
 			plat->crush = false;
 			plat->tag = line->tag;
 			plat->speed = line->action->speed;
@@ -463,17 +469,17 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
-			plat_t* plat = (plat_t*)Z_Malloc( sizeof(plat_t), PU_LEVSPEC, 0 );
+			plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &plat->thinker );
 		
 			plat->type = downWaitUpStay;
 			plat->sector = &sector;
-			plat->sector->specialdata = plat;
-			plat->thinker.function.acp1 = (actionf_p1)T_PlatRaise;
+			plat->sector->floorspecialdata = plat;
+			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
 			plat->crush = false;
 			plat->tag = line->tag;
 			plat->speed = line->action->speed;

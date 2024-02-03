@@ -48,7 +48,8 @@ DOOM_C_API void T_MoveElevatorGeneric( elevator_t* elevator )
 	{
 		S_StartSound( &elevator->sector->soundorg, sfx_pstop );
 		P_RemoveThinker( &elevator->thinker );
-		elevator->sector->specialdata = nullptr;
+		elevator->sector->floorspecialdata = nullptr;
+		elevator->sector->ceilingspecialdata = nullptr;
 		return;
 	}
 
@@ -64,14 +65,15 @@ DOOM_C_API int32_t EV_DoElevatorGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && sector.floorspecialdata == nullptr && sector.ceilingspecialdata == nullptr )
 		{
 			++numelevatorscreated;
 
-			elevator_t* elevator = (elevator_t*)Z_Malloc( sizeof(elevator_t), PU_LEVSPEC, 0 );
+			elevator_t* elevator = (elevator_t*)Z_MallocZero( sizeof(elevator_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &elevator->thinker );
 			elevator->sector = &sector;
-			elevator->sector->specialdata = elevator;
+			elevator->sector->floorspecialdata = elevator;
+			elevator->sector->ceilingspecialdata = elevator;
 			elevator->thinker.function.acp1 = (actionf_p1)&T_MoveElevatorGeneric;
 			elevator->speed = line->action->speed;
 			elevator->direction = (sectordir_t)line->action->param2;

@@ -674,6 +674,8 @@ DOOM_C_API typedef enum teleporttype_e
 } teleporttype_t;
 
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
+DOOM_C_API void		T_RaisePlatGeneric( plat_t* plat );
+DOOM_C_API void		T_MoveFloorGeneric( floormove_t* floor );
 DOOM_C_API void		T_MoveCeilingGeneric( ceiling_t* ceiling );
 DOOM_C_API void		T_MoveElevatorGeneric( elevator_t* elevator );
 
@@ -688,6 +690,8 @@ DOOM_C_API int32_t	EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoFloorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoCeilingGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoElevatorGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoBoomFloorCeilingGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoStairsGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
 
 #if defined( __cplusplus )

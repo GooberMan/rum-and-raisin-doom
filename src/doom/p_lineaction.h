@@ -215,7 +215,7 @@ enum BoomActions : uint32_t
 	Platform_Stop_S1_Player,
 	Crusher_Fast_S1_Player,
 	Crusher_Silent_S1_Player,
-	Ceiling_RaiseHighestCeiling_S1_Player,
+	FloorCeiling_RaiseHighestOrLowerLowest_S1_Player,
 	Ceiling_LowerTo8AboveFloor_S1_Player,
 	Crusher_Stop_S1_Player,
 	Light_SetBrightest_S1_Player,
@@ -235,7 +235,7 @@ enum BoomActions : uint32_t
 	Crusher_Fast_SR_Player,
 	Crusher_SR_Player,
 	Crusher_Silent_SR_Player,
-	Ceiling_RaiseHighestCeiling_SR_Player,
+	FloorCeiling_RaiseHighestOrLowerLowest_SR_Player,
 	Ceiling_LowerTo8AboveFloor_SR_Player,
 	Crusher_Stop_SR_Player,
 	Floor_ChangeTexture_S1_Player,
@@ -396,6 +396,34 @@ enum BoomGenericFlags : uint32_t
 
 	Generic_Speed_Mask						= 0x0018,
 	Generic_Speed_Shift						= 3,
+};
+
+enum BoomStairsFlags : uint32_t
+{
+	Stairs_AllowMonsters_No					= 0x0000,
+	Stairs_AllowMonsters_Yes				= 0x0020,
+
+	Stairs_AllowMonsters_Mask				= 0x0020,
+
+	Stairs_Target_4							= 0x0000,
+	Stairs_Target_8							= 0x0040,
+	Stairs_Target_16						= 0x0080,
+	Stairs_Target_24						= 0x00C0,
+
+	Stairs_Target_Mask						= 0x00C0,
+	Stairs_Target_Shift						= 6,
+
+	Stairs_Direction_Down					= 0x0000,
+	Stairs_Direction_Up						= 0x0100,
+
+	Stairs_Direction_Mask					= 0x0100,
+
+	Stairs_WithMinusTargets_Mask			= Stairs_Target_Mask | Stairs_Direction_Mask,
+
+	Stairs_IgnoreTexture_No					= 0x0000,
+	Stairs_IgnoreTexture_Yes				= 0x0200,
+
+	Stairs_IgnoreTexture_Mask				= 0x0200,
 };
 
 enum BoomFloorFlags : uint32_t

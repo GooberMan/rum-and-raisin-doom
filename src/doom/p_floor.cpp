@@ -235,15 +235,29 @@ DOOM_C_API void T_MoveFloor(floormove_t* floor)
     if (res == pastdest)
     {
 		floor->sector->specialdata = NULL;
-		if( floor->newspecial >= 0 )
-		{
-			floor->sector->special = floor->newspecial;
-		}
-		if( floor->texture >= 0 )
-		{
-			floor->sector->floorpic = floor->texture;
-		}
 
+		if (floor->direction == 1)
+		{
+			switch(floor->type)
+			{
+			  case donutRaise:
+			floor->sector->special = floor->newspecial;
+			floor->sector->floorpic = floor->texture;
+			  default:
+			break;
+			}
+		}
+		else if (floor->direction == -1)
+		{
+			switch(floor->type)
+			{
+			  case lowerAndChange:
+			floor->sector->special = floor->newspecial;
+			floor->sector->floorpic = floor->texture;
+			  default:
+			break;
+			}
+		}
 		P_RemoveThinker(&floor->thinker);
 
 		S_StartSound(&floor->sector->soundorg, sfx_pstop);
@@ -280,8 +294,6 @@ DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
 	floor->type = floortype;
 	floor->crush = false;
-	floor->newspecial = -1;
-	floor->texture = -1;
 
 	switch(floortype)
 	{
@@ -495,8 +507,6 @@ DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
 	// Uninitialized crush field will not be equal to 0 or 1 (true)
 	// with high probability. So, initialize it with any other value
 	floor->crush = STAIRS_UNINITIALIZED_CRUSH_FIELD_VALUE;
-	floor->newspecial = -1;
-	floor->texture = -1;
 
 	texture = sec->floorpic;
 	
@@ -546,8 +556,6 @@ DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
 		// Uninitialized crush field will not be equal to 0 or 1 (true)
 		// with high probability. So, initialize it with any other value
 		floor->crush = STAIRS_UNINITIALIZED_CRUSH_FIELD_VALUE;
-		floor->newspecial = -1;
-		floor->texture = -1;
 		ok = 1;
 		break;
 	    }
@@ -556,21 +564,121 @@ DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
     return rtn;
 }
 
+DOOM_C_API void T_MoveFloorGeneric(floormove_t* floor)
+{
+	result_e	res;
+	
+	res = T_MovePlane(floor->sector,
+						floor->speed,
+						floor->floordestheight,
+						floor->crush,0,floor->direction);
+
+	if( !( leveltime & 7 ) )
+	{
+		S_StartSound( &floor->sector->soundorg, sfx_stnmov );
+	}
+
+	if( res == pastdest )
+	{
+		floor->sector->floorspecialdata = nullptr;
+		if( floor->newspecial >= 0 )
+		{
+			floor->sector->special = floor->newspecial;
+		}
+		if( floor->texture >= 0 )
+		{
+			floor->sector->floorpic = floor->texture;
+		}
+
+		P_RemoveThinker( &floor->thinker );
+
+		S_StartSound( &floor->sector->soundorg, sfx_pstop );
+	}
+}
+
+DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
+{
+	int32_t createdcount = 0;
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		{
+			++createdcount;
+
+			floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &floor->thinker );
+			floor->sector = &sector;
+			floor->sector->floorspecialdata = floor;
+			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+			floor->type = genericFloor;
+			floor->speed = line->action->speed;
+			floor->crush = line->action->param3;
+			floor->newspecial = -1;
+			floor->texture = -1;
+
+			fixed_t& stairsize = line->action->param1;
+			fixed_t height = sector.floorheight + stairsize;
+			floor->floordestheight = height;
+			floor->direction = stairsize >= 0 ? sd_up : sd_down;
+
+			sector_t* currsector = &sector;
+			while( currsector != nullptr )
+			{
+				sector_t* searchsector = currsector;
+				currsector = nullptr;
+
+				for( line_t* searchline : Lines( *searchsector ) )
+				{
+					if( ( searchline->flags & ML_TWOSIDED ) != ML_TWOSIDED
+						|| searchline->frontsector->index != searchsector->index
+						|| ( line->action->param2 == false && searchline->backsector->floorpic != searchsector->floorpic )
+						|| searchline->backsector->floorspecialdata != nullptr )
+					{
+						continue;
+					}
+
+					currsector = searchline->backsector;
+					height += stairsize;
+
+					floormove_t* nextfloor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+					P_AddThinker( &nextfloor->thinker );
+					nextfloor->sector = searchline->backsector;
+					nextfloor->sector->floorspecialdata = nextfloor;
+					nextfloor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+					nextfloor->type = genericFloor;
+					nextfloor->direction = sd_up;
+					nextfloor->speed = line->action->speed;
+					nextfloor->crush = false;
+					nextfloor->newspecial = -1;
+					nextfloor->texture = -1;
+					nextfloor->floordestheight = height;
+
+					break;
+				}
+			}
+		}
+	}
+
+	return createdcount;
+
+}
+
 DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 {
 	int32_t createdcount = 0;
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
 		{
 			++createdcount;
 
-			floormove_t* floor = (floormove_t*)Z_Malloc( sizeof(floormove_t), PU_LEVSPEC, 0 );
+			floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &floor->thinker );
 			floor->sector = &sector;
-			floor->sector->specialdata = floor;
-			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloor;
+			floor->sector->floorspecialdata = floor;
+			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 			floor->type = genericFloor;
 			floor->crush = line->action->param6 == sc_crush;
 			floor->direction = line->action->param2;

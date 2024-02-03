@@ -236,7 +236,7 @@ void T_VerticalDoorGeneric( vldoor_t* door )
 			}
 			else
 			{
-				door->sector->specialdata = NULL;
+				door->sector->ceilingspecialdata = nullptr;
 				P_RemoveThinker (&door->thinker);  // unlink and free
 				if( door->blazing )
 				{
@@ -424,13 +424,11 @@ int EV_DoDoor ( line_t* line, vldoor_e type )
 
 void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 {
-	vldoor_t* door = (vldoor_t*)Z_Malloc( sizeof(vldoor_t), PU_LEVSPEC, 0 );
-
+	vldoor_t* door = (vldoor_t*)Z_MallocZero( sizeof(vldoor_t), PU_LEVSPEC, 0 );
 	P_AddThinker (&door->thinker);
-	sec->specialdata = door;
-
-	door->thinker.function.acp1 = (actionf_p1)T_VerticalDoorGeneric;
 	door->sector = sec;
+	door->sector->ceilingspecialdata = door;
+	door->thinker.function.acp1 = (actionf_p1)T_VerticalDoorGeneric;
 	door->topwait = line->action->delay;
 	door->topcountdown = door->topwait;
 	door->speed = line->action->speed;
@@ -470,7 +468,7 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 	}
 }
 
-int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
+DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 {
 	if( line->action->AnimatedActivationType() == LT_Use && !line->backsector )
 	{
@@ -483,9 +481,9 @@ int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 	if( raising )
 	{
 		if( (doorraise_t)line->action->param2 == door_raiselower
-			&& line->backsector->specialdata )
+			&& line->backsector->ceilingspecialdata )
 		{
-			vldoor_t* door = thinker_cast< vldoor_t >( line->backsector->specialdata );
+			vldoor_t* door = thinker_cast< vldoor_t >( line->backsector->ceilingspecialdata );
 			if( door == nullptr )
 			{
 				// Vanilla would stomp over values regardless. We'll just crash here for now.
@@ -507,7 +505,7 @@ int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 			return 1;
 		}
 
-		if( !line->backsector->specialdata )
+		if( !line->backsector->ceilingspecialdata )
 		{
 			EV_DoDoorGeneric( line, line->backsector );
 			return 1;
@@ -519,7 +517,7 @@ int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 	int32_t sectorsactivated = 0;
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && sector.ceilingspecialdata == nullptr )
 		{
 			// new door thinker
 			++sectorsactivated;

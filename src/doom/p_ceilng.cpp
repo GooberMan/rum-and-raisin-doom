@@ -359,7 +359,7 @@ void P_RemoveActiveCeilingGeneric( ceiling_t* ceiling )
 			}
 
 			P_RemoveThinker( &ceiling->thinker );
-			ceiling->sector->specialdata = nullptr;
+			ceiling->sector->ceilingspecialdata = nullptr;
 			return;
 		}
 	}
@@ -418,15 +418,15 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.specialdata == nullptr )
+		if( sector.tag == line->tag && sector.ceilingspecialdata == nullptr )
 		{
 			++createdcount;
 
-			ceiling_t* ceiling = (ceiling_t*)Z_Malloc( sizeof(ceiling_t), PU_LEVSPEC, 0 );
+			ceiling_t* ceiling = (ceiling_t*)Z_MallocZero( sizeof(ceiling_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &ceiling->thinker );
 			P_AddActiveCeilingGeneric( ceiling );
 			ceiling->sector = &sector;
-			ceiling->sector->specialdata = ceiling;
+			ceiling->sector->ceilingspecialdata = ceiling;
 			ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
 			ceiling->type = genericCeiling;
 			ceiling->crush = line->action->param6 == sc_crush;

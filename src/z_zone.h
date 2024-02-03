@@ -79,6 +79,8 @@ DOOM_C_API size_t	Z_ZoneSize(void);
 #include <type_traits>
 #include <new>
 
+#define Z_MallocZero( size, tag, ptr ) Z_MallocTrackedZero( __FILE__, __LINE__, size, tag, ptr )
+
 #define Z_MallocAs( type, tag, ptr ) Z_MallocTracked< type >( __FILE__, __LINE__, tag, ptr )
 #define Z_MallocArrayAs( type, count, tag, ptr ) Z_MallocArrayTracked< type >( __FILE__, __LINE__, count, tag, ptr )
 
@@ -156,6 +158,14 @@ INLINE _ty* Z_MallocArrayTracked( const char* file, size_t line, size_t count, i
 	}
 	return val;
 }
+
+INLINE void* Z_MallocTrackedZero( const char* file, size_t line, size_t size, int32_t tag, void* ptr )
+{
+	void* output = Z_MallocTracked( file, line, size, tag, ptr, nullptr );
+	memset( output, 0, size );
+	return output;
+}
+
 
 #endif // defined( __cplusplus )
 

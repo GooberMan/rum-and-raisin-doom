@@ -257,6 +257,8 @@ struct sector_s
 
 	// thinker_t for reversable actions
 	void*				specialdata;
+	void*				floorspecialdata;
+	void*				ceilingspecialdata;
 
 	int32_t				linecount;
 	line_t**			lines;	// [linecount] size
@@ -372,7 +374,7 @@ struct line_s
 	int32_t				validcount;
 
 	// thinker_t for reversable actions
-	void*				specialdata;
+	//void*				specialdata;
 
 	// Boom additions
 	byte*				transparencymap;

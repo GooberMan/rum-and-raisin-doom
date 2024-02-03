@@ -57,6 +57,7 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					fix_same_sky_texture;					// Notorious bug where sky doesn't change between Doom II episodes
 	doombool					fix_blockthingsiterator;				// Iterating all items of a linked list famously doesn't work if the list changes
 	doombool					fix_intercepts_overflow;				// Stomps over the end of a statically-sized array
+	doombool					fix_sky_wall_projectiles;				// The sky checking code when shooting projectiles would cause them to just disappear in to normal walls
 
 	doombool					allow_weapon_recoil;					// Boom "feature"
 	doombool					allow_line_passthrough;					// Boom feature, don't stop using lines when one succeeds if linedef flag is set
