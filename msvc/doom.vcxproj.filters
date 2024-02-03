@@ -217,7 +217,7 @@
     <ClCompile Include="..\src\doom\p_ceilng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_elevator.cpp">
+    <ClCompile Include="..\src\doom\p_genericactions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

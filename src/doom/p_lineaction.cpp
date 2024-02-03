@@ -415,6 +415,7 @@ static void DoGeneric( line_t* line, mobj_t* activator )
 template< typename func >
 static void DoGenericOnce( line_t* line, mobj_t* activator )
 {
+	// Vanilla performs and clears out regardless...
 	if( func::Perform( line, activator ) )
 	{
 		line->action = nullptr;

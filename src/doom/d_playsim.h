@@ -58,6 +58,7 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					fix_blockthingsiterator;				// Iterating all items of a linked list famously doesn't work if the list changes
 	doombool					fix_intercepts_overflow;				// Stomps over the end of a statically-sized array
 	doombool					fix_sky_wall_projectiles;				// The sky checking code when shooting projectiles would cause them to just disappear in to normal walls
+	doombool					fix_bad_secret_exit_loop;				// Secret exit on any other map than the hardcoded maps causes the current level to loop
 
 	doombool					allow_weapon_recoil;					// Boom "feature"
 	doombool					allow_line_passthrough;					// Boom feature, don't stop using lines when one succeeds if linedef flag is set
@@ -65,17 +66,20 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					allow_unlimited_scrollers;				// Vanilla limit
 	doombool					allow_unlimited_platforms;				// Vanilla limit
 	doombool					allow_unlimited_ceilings;				// Vanilla limit
+	doombool					allow_generic_specials_handling;		// Rewritten specials, based on Boom standards but considered limit removing
 	doombool					allow_separate_floor_ceiling_lights;	// Boom sector specials are allowed to work independently of each other
 	doombool					allow_boom_line_specials;				// Comes with Boom fixes for specials by default
 	doombool					allow_boom_sector_specials;				// Comes with Boom fixes for specials by default
 	doombool					allow_mbf_line_sky_specials;			// complevel 9 is boom + extras
 	doombool					allow_mbf_line_specials;				// Sky transfers, that's it
-	doombool					allow_mbf_sector_specials;				// Sky transfers, that's it
-	doombool					allow_mbf21_line_specials;				// New texture scrollers
-	doombool					allow_mbf21_sector_specials;			// New texture scrollers
+	doombool					allow_mbf_thing_mobj_flags;				// Bouncy! Friendly! TOUCHY!
+	doombool					allow_mbf_code_pointers;				// Dehacked additions
+	doombool					allow_mbf21_line_specials;				// New texture scrollers, new flags
+	doombool					allow_mbf21_sector_specials;			// Insta-deaths
+	doombool					allow_mbf21_thing_flags;				// flags2 field
+	doombool					allow_mbf21_code_pointers;				// Dehacked additions
 
 	doombool					reset_player_visited_secret;			// Start a new game, still thinks you've visited secret levels on intermission screen
-	doombool					doom2_bad_secret_exit_doesnt_loop;		// Secret exit on any other map than MAP15 and MAP31 causes the current level to loop
 	doombool					noclip_cheats_work_everywhere;			// idspispopd and idclip everywhere
 	doombool					pre_ultimate_bossdeath_support;
 	doombool					bfg_map02_secret_exit_to_map33;			// Find that one unmarked line in MAP02 in BFG edition
