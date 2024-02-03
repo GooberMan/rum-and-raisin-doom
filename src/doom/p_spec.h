@@ -699,6 +699,7 @@ DOOM_C_API int32_t	EV_DoTeleportGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoExitGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoFloorGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoDonutGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoCeilingGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoCrusherGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_StopAnyCeilingGeneric( line_t* line, mobj_t* activator );

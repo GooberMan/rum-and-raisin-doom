@@ -259,7 +259,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 				break;
 
 			case stt_ceiling:
-				I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying to move a sector's ceiling to the ceiling", line->index );
+				I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is trying to move a sector's ceiling to the ceiling", line->index );
 				break;
 
 			case stt_shortestlowertexture:
@@ -750,6 +750,66 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 
 	return createdcount;
 
+}
+
+DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
+{
+	int32_t createdcount = 0;
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		{
+			sector_t* donutsector = getNextSector( sector.lines[ 0 ], &sector );
+			if( donutsector == nullptr )
+			{
+				continue;
+			}
+
+			for( line_t* targetline : Lines( *donutsector ) )
+			{
+				if( targetline->backsector == nullptr
+					|| targetline->backsector->index == donutsector->index )
+				{
+					continue;
+				}
+
+				++createdcount;
+
+				sector_t*& target = targetline->backsector;
+
+				floormove_t* donut = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+				P_AddThinker( &donut->thinker );
+				donut->sector = donutsector;
+				donut->sector->floorspecialdata = donut;
+				donut->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+				donut->type = genericFloor;
+				donut->crush = false;
+				donut->direction = sd_up;
+				donut->speed = line->action->speed;
+				donut->floordestheight = target->floorheight;
+				donut->newspecial = 0;
+				donut->texture = target->floorpic;
+
+				floormove_t* hole = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+				P_AddThinker( &hole->thinker );
+				hole->sector = &sector;
+				hole->sector->floorspecialdata = hole;
+				hole->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+				hole->type = genericFloor;
+				hole->crush = false;
+				hole->direction = sd_down;
+				hole->speed = line->action->speed;
+				hole->floordestheight = target->floorheight;
+				hole->newspecial = -1;
+				hole->texture = -1;
+
+				break;
+			}
+		}
+	}
+
+	return createdcount;
 }
 
 DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )

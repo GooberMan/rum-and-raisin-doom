@@ -403,6 +403,7 @@ MakeGenericFunc( PerpetualLiftStart, EV_DoPerpetualLiftGeneric );
 MakeGenericFunc( PlatformStop, EV_StopAnyLiftGeneric );
 MakeGenericFunc( VanillaRaise, EV_DoVanillaPlatformRaiseGeneric );
 MakeGenericFunc( Floor, EV_DoFloorGeneric );
+MakeGenericFunc( Donut, EV_DoDonutGeneric );
 MakeGenericFunc( Ceiling, EV_DoCeilingGeneric );
 MakeGenericFunc( Crusher, EV_DoCrusherGeneric );
 MakeGenericFunc( CeilingStop, EV_StopAnyCeilingGeneric );
@@ -489,7 +490,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Stairs_BuildBy8_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Sector_Donut_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Donut >, LT_SwitchFront, LL_None, constants::vanillaraisespeed, 0 },
 	// Platform_DownWaitUp_W1_All
 	{ &precon::IsAnyThing, &DoGenericOnce< Lift >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Normal ], constants::liftdelay[ liftdelay_3sec ], stt_lowestneighborfloor },
 	// Exit_Normal_S1_Player
@@ -768,7 +769,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Ceiling_LowerToFloor_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Ceiling >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_floor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Sector_Donut_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Donut >, LT_WalkBoth, LL_None, constants::vanillaraisespeed, 0 },
 	// Floor_Raise512_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 512 ), sct_none, scm_trigger, sc_nocrush },
 	// Platform_Raise24ChangeTexture_WR_Player
@@ -786,7 +787,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_ChangeTexture_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_trigger, sc_nocrush },
 	// Sector_Donut_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< Donut >, LT_WalkBoth, LL_None, constants::vanillaraisespeed, 0 },
 	// Light_Strobe_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< LightStrobe >, LT_WalkBoth, LL_None, 0, 0 },
 	// Light_SetLowest_WR_Player
@@ -858,7 +859,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_ChangeTexture_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_trigger, sc_nocrush },
 	// Sector_Donut_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Donut >, LT_SwitchFront, LL_None, constants::vanillaraisespeed, 0 },
 	// Light_SetBrightest_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< LightSet >, LT_SwitchFront, LL_None, 0, 0, lightset_highestsurround_firsttagged },
 	// Light_Strobe_SR_Player
