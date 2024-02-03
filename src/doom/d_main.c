@@ -1966,6 +1966,11 @@ void D_DoomMain (void)
 
     }
 
+	if( !p )
+	{
+		p = M_CheckParmWithArgs( "-playaudit", 1 );
+	}
+
     if (p)
     {
         char *uc_filename = strdup(myargv[p + 1]);
@@ -2299,7 +2304,7 @@ void D_DoomMain (void)
 		autostart = true;
 	}
 
-	if( ( p = M_CheckParmWithArgs( "-recorddump", 1 ) ) )
+	if( ( p = M_CheckParmWithArgs( "-recordaudit", 1 ) ) )
 	{
 		G_RecordDemo( myargv[ p + 1 ] );
 		autostart = true;

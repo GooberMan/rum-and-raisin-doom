@@ -135,7 +135,6 @@ int             totalkills, totalitems, totalsecret;    // for intermission
  
 char           *demoname;
 doombool         demorecording;
-doombool		dumprecording = false;
 doombool         longtics;               // cph's doom 1.91 longtics hack
 doombool         lowres_turn;            // low resolution turning for longtics
 doombool         demoplayback; 
@@ -144,7 +143,103 @@ byte*		demobuffer;
 byte*		demo_p;
 byte*		demoend; 
 doombool         singledemo;            	// quit after playing a demo from cmdline 
- 
+
+typedef struct auditsector_s
+{
+	fixed_t floor;
+	fixed_t ceil;
+	fixed_t light;
+} auditsector_t;
+
+typedef struct auditthing_s
+{
+	fixed_t x;
+	fixed_t y;
+	fixed_t z;
+} auditthing_t;
+
+doombool		auditrecording = false;
+char*			auditname = NULL;
+byte*			auditbuffer = NULL;
+byte*			auditbufferend = NULL;
+byte*			auditbufferpos = NULL;
+
+const uint32_t AUDITIDENTIFIER		= 0xA55E55ED;
+const uint32_t FRAMEIDENTIFIER		= 0xA110CA7E;
+const uint32_t ENDFRAMEIDENTIFIER	= 0x7AC71E55;
+const uint32_t SECTORIDENTIFIER		= 0x0FACADE5;
+const uint32_t THINGIDENTIFIER		= 0xDEADBEA7;
+
+#define WRITEFORAUDIT( x ) G_WriteAuditBuffer( (byte*)&x, sizeof( x ) )
+
+void G_WriteAuditBuffer( byte* data, size_t size )
+{
+	ptrdiff_t buffersize = auditbufferend - auditbuffer;
+	ptrdiff_t currpos = auditbufferpos - auditbuffer;
+	ptrdiff_t endpos = ( auditbufferpos + size ) - auditbuffer;
+
+	if( endpos >= buffersize )
+	{
+		ptrdiff_t newbuffersize = buffersize + ( buffersize >> 2 );
+		byte* newbuffer = Z_Malloc( newbuffersize, PU_STATIC, NULL );
+		memcpy( newbuffer, auditbuffer, buffersize );
+
+		auditbuffer = newbuffer;
+		auditbufferend = newbuffer + newbuffersize;
+		auditbufferpos = newbuffer + currpos;
+	}
+
+	memcpy( auditbufferpos, data, size );
+	auditbufferpos += size;
+}
+
+void G_InitAuditBufferRecording( size_t size )
+{
+	auditrecording = true;
+	auditbuffer = Z_Malloc( size, PU_STATIC, NULL );
+	memset( auditbuffer, 0, size );
+	auditbufferend = auditbuffer + size;
+	auditbufferpos = auditbuffer;
+
+	WRITEFORAUDIT( AUDITIDENTIFIER );
+}
+
+void G_AuditFrame()
+{
+	if( auditrecording )
+	{
+		WRITEFORAUDIT( FRAMEIDENTIFIER );
+		WRITEFORAUDIT( gametic );
+		WRITEFORAUDIT( SECTORIDENTIFIER );
+		WRITEFORAUDIT( numsectors );
+		
+		int32_t numthings = 0;
+		for( sector_t* sector = sectors; sector != ( sectors + numsectors ); ++sector )
+		{
+			auditsector_t sec = { sector->floorheight, sector->ceilingheight, sector->lightlevel };
+			WRITEFORAUDIT( sec );
+
+			for( mobj_t* mobj = sector->thinglist; mobj != NULL; mobj = mobj->snext )
+			{
+				++numthings;
+			}
+		}
+
+		WRITEFORAUDIT( THINGIDENTIFIER );
+		WRITEFORAUDIT( numthings );
+		for( sector_t* sector = sectors; sector != ( sectors + numsectors ); ++sector )
+		{
+			for( mobj_t* mobj = sector->thinglist; mobj != NULL; mobj = mobj->snext )
+			{
+				auditthing_t thing = { mobj->x, mobj->y, mobj->z };
+				WRITEFORAUDIT( thing );
+			}
+		}
+
+		WRITEFORAUDIT( ENDFRAMEIDENTIFIER );
+	}
+}
+
 doombool         testcontrols = false;    // Invoked by setup to test controls
 int             testcontrols_mousespeed;
  
@@ -1023,12 +1118,13 @@ void G_Ticker (void)
     // do main actions
     switch (gamestate) 
     { 
-      case GS_LEVEL: 
-	P_Ticker (); 
-	ST_Ticker (); 
-	AM_Ticker (); 
-	HU_Ticker ();            
-	break; 
+    case GS_LEVEL: 
+		P_Ticker (); 
+		ST_Ticker (); 
+		AM_Ticker (); 
+		HU_Ticker ();
+		G_AuditFrame();
+		break; 
 	 
       case GS_INTERMISSION: 
 	WI_Ticker (); 
@@ -2016,7 +2112,12 @@ void G_RecordDemo (const char *name)
     demoend = demobuffer + maxsize;
 	
     demorecording = true; 
-	dumprecording = !!M_CheckParmWithArgs( "-recorddump", 1 );
+	if( !!M_CheckParmWithArgs( "-recordaudit", 1 ) )
+	{
+		G_InitAuditBufferRecording( 1 << 20 ); // One megabyte default
+		auditname = Z_Malloc( demoname_size, PU_STATIC, NULL );
+		M_snprintf( auditname, demoname_size, "%s.aud", name );
+	}
 }
 
 typedef enum demoversion_e
@@ -2300,8 +2401,7 @@ void G_TimeDemo (char* name)
     defdemoname = name; 
     gameaction = ga_playdemo; 
 } 
- 
- 
+
 /* 
 =================== 
 = 
@@ -2360,7 +2460,16 @@ doombool G_CheckDemoStatus (void)
 		M_WriteFile (demoname, demobuffer, demo_p - demobuffer); 
 		Z_Free (demobuffer); 
 		demorecording = false; 
-		I_Error ("Demo %s recorded",demoname); 
+
+		if( auditrecording )
+		{
+			M_WriteFile( auditname, auditbuffer, auditbufferpos - auditbuffer ); 
+			Z_Free( auditbuffer ); 
+			I_Error( "Audit %s recorded", auditname ); 
+		}
+
+		I_Error ("Demo %s recorded",demoname);
+
 	} 
 
 	return false; 
