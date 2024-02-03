@@ -79,7 +79,7 @@ void P_RemoveActiveCeilingGeneric( ceiling_t* ceiling )
 	I_Error ( "P_RemoveActiveceiling: can't find ceiling!" );
 }
 
-void P_ActivateInStasisCeilingsGeneric( int tag )
+void P_ActivateInStasisCeilingsGeneric( int32_t tag )
 {
 	for( ceiling_t* currceiling = activeceilingshead; currceiling != nullptr; currceiling = currceiling->nextactive )
 	{
@@ -105,24 +105,95 @@ DOOM_C_API void T_MoveCeilingGeneric( ceiling_t* ceiling )
 	case sd_up:
 		// UP
 		res = T_MovePlane( ceiling->sector, ceiling->speed, ceiling->topheight, false, 1, ceiling->direction );
-		sectorsound = !( leveltime & 7 );
+		sectorsound = !ceiling->silent && !( leveltime & 7 );
 		break;
 
 	case sd_down:
 		res = T_MovePlane(ceiling->sector, ceiling->speed, ceiling->bottomheight, ceiling->crush, 1, ceiling->direction );
-		sectorsound = !( leveltime & 7 );
+		sectorsound = !ceiling->silent && !( leveltime & 7 );
 		break;
 	}
 
 	if( res == pastdest )
 	{
-		S_StartSound( &ceiling->sector->soundorg, sfx_pstop );
-		P_RemoveActiveCeilingGeneric( ceiling );
+		if( ceiling->silent && ceiling->crush )
+		{
+			S_StartSound( &ceiling->sector->soundorg, sfx_pstop );
+		}
+
+		if( ceiling->perpetual )
+		{
+			ceiling->direction = ceiling->direction == sd_down ? sd_up : sd_down;
+			ceiling->speed = ceiling->normalspeed;
+		}
+		else
+		{
+			P_RemoveActiveCeilingGeneric( ceiling );
+		}
 	}
-	else if( sectorsound )
+	else
 	{
-		S_StartSound( &ceiling->sector->soundorg, sfx_stnmov );
+		if( sectorsound )
+		{
+			S_StartSound( &ceiling->sector->soundorg, sfx_stnmov );
+		}
+
+		if( res == crushed )
+		{
+			ceiling->speed = ceiling->crushingspeed;
+		}
 	}
+}
+
+DOOM_C_API int32_t EV_StopAnyCeilingGeneric( line_t* line, mobj_t* activator )
+{
+	for( ceiling_t* currceil = activeceilingshead; currceil != nullptr; currceil = currceil->nextactive )
+	{
+		if( currceil->tag == line->tag && currceil->direction != sd_none )
+		{
+			currceil->thinker.function.acv = nullptr;
+			currceil->olddirection = currceil->direction;
+			currceil->direction = sd_none;
+		}
+	}
+
+	return 1;
+}
+
+DOOM_C_API int32_t EV_DoCrusherGeneric( line_t* line, mobj_t* activator )
+{
+	P_ActivateInStasisCeilingsGeneric( line->tag );
+
+	int32_t createdcount = 0;
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag && sector.ceilingspecialdata == nullptr )
+		{
+			++createdcount;
+
+			ceiling_t* ceiling = (ceiling_t*)Z_MallocZero( sizeof(ceiling_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &ceiling->thinker );
+			P_AddActiveCeilingGeneric( ceiling );
+			ceiling->sector = &sector;
+			ceiling->sector->ceilingspecialdata = ceiling;
+			ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
+			ceiling->type = genericCeiling;
+			ceiling->crush = true;
+			ceiling->direction = sd_down;
+			ceiling->speed = line->action->speed;
+			ceiling->normalspeed = line->action->speed;
+			ceiling->crushingspeed = line->action->param1;
+			ceiling->silent = line->action->param2;
+			ceiling->perpetual = true;
+			ceiling->topheight = sector.ceilingheight;
+			ceiling->bottomheight = sector.floorheight + IntToFixed( 8 );
+			ceiling->newspecial = -1;
+			ceiling->newtexture = -1;
+		}
+	}
+
+	return createdcount;
 }
 
 DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
@@ -145,6 +216,10 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 			ceiling->crush = line->action->param6 == sc_crush;
 			ceiling->direction = line->action->param2;
 			ceiling->speed = line->action->speed;
+			ceiling->normalspeed = line->action->speed;
+			ceiling->crushingspeed = line->action->speed >> 3;
+			ceiling->silent = false;
+			ceiling->perpetual = false;
 
 			fixed_t& heighttarget = ceiling->direction == sd_down ? ceiling->bottomheight : ceiling->topheight;
 
@@ -1130,7 +1205,7 @@ DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator )
 		}
 	}
 
-	return 0;
+	return 1;
 }
 
 // =================

@@ -472,9 +472,12 @@ DOOM_C_API typedef struct ceilingdata_e
 	// Generic functionality
 	struct ceilingdata_e*	nextactive;
 	struct ceilingdata_e*	prevactive;
+	fixed_t					normalspeed;
+	fixed_t					crushingspeed;
 	int16_t					newspecial;
 	int16_t					newtexture;
-
+	doombool				silent;
+	doombool				perpetual;
 } ceiling_t;
 
 
@@ -689,6 +692,8 @@ DOOM_C_API int32_t	EV_DoExitGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightSetGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoFloorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoCeilingGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoCrusherGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_StopAnyCeilingGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoElevatorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoBoomFloorCeilingGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoStairsGeneric( line_t* line, mobj_t* activator );
