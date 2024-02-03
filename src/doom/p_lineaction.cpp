@@ -23,6 +23,7 @@
 #include "deh_str.h"
 
 #include "p_spec.h"
+#include "p_local.h"
 
 #include "r_defs.h"
 
@@ -441,6 +442,21 @@ static void DoGenericSwitchOnce( line_t* line, mobj_t* activator )
 	}
 }
 
+static void DoVanillaW1Teleport( line_t* line, mobj_t* activator )
+{
+	int32_t side = P_PointOnLineSide( activator->x, activator->y, line );
+	if( side == 1 ) // Was previously on front side
+	{
+		DoGenericOnce< Teleport >( line, activator );
+	}
+
+#if 0
+	line->action = nullptr;
+	line->special = 0;
+#endif
+}
+
+
 constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 {
 	/* Doom specials */
@@ -524,7 +540,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_LowerLowest_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Teleport_Thing_W1_All
-	{ &precon::CanTeleportAll, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
+	{ &precon::CanTeleportAll, &DoVanillaW1Teleport, LT_WalkBoth, LL_None, 0, 0, tt_tothing },
 	// Ceiling_RaiseHighestCeiling_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Ceiling >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Ceiling_LowerToFloor_S1_Player
@@ -698,7 +714,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Exit_Secret_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Exit >, LT_WalkBoth, LL_None, 0, 0, exit_secret },
 	// Teleport_Thing_W1_Monsters
-	{ &precon::CanTeleportMonster, &DoGenericOnce< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
+	{ &precon::CanTeleportMonster, &DoVanillaW1Teleport, LT_WalkBoth, LL_None, 0, 0, tt_tothing },
 	// Teleport_Thing_WR_Monsters
 	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Stairs_BuildBy16Fast_S1_Player
@@ -905,29 +921,29 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Transfer_WindOrCurrentByPoint_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Elevator_Up_W1_Player
-	{ &precon::IsAnyThing, &DoGenericOnce< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nexthighestneighborfloor, sd_up },
+	{ &precon::IsAnyThing, &DoGenericOnce< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nexthighestneighborfloor, sd_up },
 	// Elevator_Up_WR_Player
-	{ &precon::IsAnyThing, &DoGeneric< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nexthighestneighborfloor, sd_up },
+	{ &precon::IsAnyThing, &DoGeneric< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nexthighestneighborfloor, sd_up },
 	// Elevator_Up_S1_Player
-	{ &precon::IsAnyThing, &DoGenericSwitchOnce< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nexthighestneighborfloor, sd_up },
+	{ &precon::IsAnyThing, &DoGenericSwitchOnce< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nexthighestneighborfloor, sd_up },
 	// Elevator_Up_SR_Player
-	{ &precon::IsAnyThing, &DoGenericSwitch< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nexthighestneighborfloor, sd_up },
+	{ &precon::IsAnyThing, &DoGenericSwitch< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nexthighestneighborfloor, sd_up },
 	// Elevator_Down_W1_Player
-	{ &precon::IsAnyThing, &DoGenericOnce< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nextlowestneighborfloor, sd_down },
+	{ &precon::IsAnyThing, &DoGenericOnce< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nextlowestneighborfloor, sd_down },
 	// Elevator_Down_WR_Player
-	{ &precon::IsAnyThing, &DoGeneric< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nextlowestneighborfloor, sd_down },
+	{ &precon::IsAnyThing, &DoGeneric< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nextlowestneighborfloor, sd_down },
 	// Elevator_Down_S1_Player
-	{ &precon::IsAnyThing, &DoGenericSwitchOnce< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nextlowestneighborfloor, sd_down },
+	{ &precon::IsAnyThing, &DoGenericSwitchOnce< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nextlowestneighborfloor, sd_down },
 	// Elevator_Down_SR_Player
-	{ &precon::IsAnyThing, &DoGenericSwitch< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_nextlowestneighborfloor, sd_down },
+	{ &precon::IsAnyThing, &DoGenericSwitch< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_nextlowestneighborfloor, sd_down },
 	// Elevator_Call_W1_Player
-	{ &precon::IsAnyThing, &DoGenericOnce< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_lineactivator, sd_none },
+	{ &precon::IsAnyThing, &DoGenericOnce< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_lineactivator, sd_none },
 	// Elevator_Call_WR_Player
-	{ &precon::IsAnyThing, &DoGeneric< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_lineactivator, sd_none },
+	{ &precon::IsAnyThing, &DoGeneric< Elevator >, LT_WalkBoth, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_lineactivator, sd_none },
 	// Elevator_Call_S1_Player
-	{ &precon::IsAnyThing, &DoGenericSwitchOnce< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_lineactivator, sd_none },
+	{ &precon::IsAnyThing, &DoGenericSwitchOnce< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_lineactivator, sd_none },
 	// Elevator_Call_SR_Player
-	{ &precon::IsAnyThing, &DoGenericSwitch< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Fast ], 0, stt_lineactivator, sd_none },
+	{ &precon::IsAnyThing, &DoGenericSwitch< Elevator >, LT_SwitchFront, LL_None, constants::liftspeeds[ Speed_Normal ], 0, stt_lineactivator, sd_none },
 	// Floor_ChangeTexture_NumericModel_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Floor_ChangeTexture_NumericModel_WR_Player
