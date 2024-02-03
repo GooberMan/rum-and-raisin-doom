@@ -512,6 +512,19 @@ enum BoomCeilingFlags : uint32_t
 	Ceiling_Crush_Mask						= 0x1000,
 };
 
+enum BoomCrusherFlags : uint32_t
+{
+	Crusher_AllowMonsters_No				= 0x0000,
+	Crusher_AllowMonsters_Yes				= 0x0020,
+
+	Crusher_AllowMonsters_Mask				= 0x0020,
+
+	Crusher_Silent_No						= 0x0000,
+	Crusher_Silent_Yes						= 0x0040,
+
+	Crusher_Silent_Mask						= 0x0040,
+};
+
 enum BoomDoorFlags : uint32_t
 {
 	Door_Type_OpenWaitClose					= 0x0000,

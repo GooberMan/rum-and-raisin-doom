@@ -476,7 +476,7 @@ DOOM_C_API typedef struct ceilingdata_e
 	fixed_t					crushingspeed;
 	int16_t					newspecial;
 	int16_t					newtexture;
-	doombool				silent;
+	int32_t					sound;
 	doombool				perpetual;
 } ceiling_t;
 
@@ -645,6 +645,14 @@ DOOM_C_API typedef enum sectorcrushing_e
 	sc_nocrush,
 	sc_crush
 } sectorcrushing_t;
+
+DOOM_C_API typedef enum ceilingsound_e
+{
+	cs_none			= 0x0,
+	cs_movement		= 0x1,
+	cs_endstop		= 0x2,
+	cs_both			= cs_movement | cs_endstop,
+} ceilingsound_t;
 
 DOOM_C_API typedef enum exittype_e
 {

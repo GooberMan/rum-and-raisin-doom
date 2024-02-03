@@ -76,11 +76,26 @@ namespace constants
 		IntToFixed( 8 ),
 	};
 
-	static constexpr int32_t slowcrushingspeed = DoubleToFixed( 0.125 );
+	static constexpr int32_t stairspeeds[] =
+	{
+		DoubleToFixed( 0.25 ),
+		DoubleToFixed( 0.5 ),
+		IntToFixed( 2 ),
+		IntToFixed( 4 ),
+	};
+
 	static constexpr int32_t ceilingspeeds[] =
 	{
 		IntToFixed( 1 ),
 		IntToFixed( 2 ),
+		IntToFixed( 4 ),
+		IntToFixed( 8 ),
+	};
+
+	static constexpr int32_t crushingspeeds[] =
+	{
+		DoubleToFixed( 0.125 ),
+		DoubleToFixed( 0.25 ),
 		IntToFixed( 4 ),
 		IntToFixed( 8 ),
 	};
@@ -468,7 +483,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_RaiseLowestCeiling_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Crusher_Fast_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], 0 },
+	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], cs_movement },
 	// Stairs_BuildBy8_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Stairs_BuildBy8_W1_Player
@@ -506,7 +521,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_RaiseLowestCeiling_GR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_GunFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Crusher_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 0 },
+	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_movement },
 	// Door_RaiseBlue_UR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGeneric< Door >, LT_UseFront, LL_Blue, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
 	// Door_RaiseYellow_UR_Player
@@ -554,7 +569,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Scroll_WallTextureLeft_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Crusher_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 0 },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_movement },
 	// Door_Close_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], 0, sd_close, door_noraise },
 	// Exit_Secret_S1_Player
@@ -602,7 +617,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Ceiling_LowerTo8AboveFloor_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Ceiling >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_floor, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Crusher_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 0 },
+	{ &precon::IsPlayer, &DoGeneric< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_movement },
 	// Crusher_Stop_WR_Player
 	{ &precon::IsPlayer, &DoGenericOnce< CeilingStop >, LT_WalkBoth, LL_None, 0, 0 },
 	// Door_Close_WR_Player
@@ -610,7 +625,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_Close30Open_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Door >, LT_WalkBoth, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_30sec ], sd_close, door_noraise },
 	// Crusher_Fast_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], 0 },
+	{ &precon::IsPlayer, &DoGeneric< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], cs_movement },
 	// Doom: Unknown_078
 	// Boom: Floor_ChangeTexture_NumericModel_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
@@ -658,7 +673,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_OpenFastBlue_SR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericSwitch< Door >, LT_SwitchFront, LL_Blue, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
 	// Stairs_BuildBy16Fast_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 1 },
+	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 1 },
 	// Floor_RaiseLowestCeiling_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighest_S1_Player
@@ -712,7 +727,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_Thing_WR_Monsters
 	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Stairs_BuildBy16Fast_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 1 },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 1 },
 	// Floor_RaiseNearest_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nexthighestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_RaiseNearestFast_WR_Player
@@ -743,7 +758,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	/* Boom specials */
 
 	// Crusher_Silent_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 1 },
+	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_endstop },
 	// Floor_Raise512_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 512 ), sct_none, scm_trigger, sc_nocrush },
 	// Platform_Raise24ChangeTexture_W1_Player
@@ -761,7 +776,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Platform_Raise32ChangeTexture_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< VanillaRaise >, LT_WalkFront, LL_None, constants::vanillaraisespeed, 0, stt_nosearch, IntToFixed( 32 ) },
 	// Crusher_Silent_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 1 },
+	{ &precon::IsPlayer, &DoGeneric< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_endstop },
 	// Ceiling_RaiseHighestCeiling_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Ceiling >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Ceiling_LowerToFloor_WR_Player
@@ -789,9 +804,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Platform_Stop_S1_Player
 	{},
 	// Crusher_Fast_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], 0 },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], cs_movement },
 	// Crusher_Silent_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 1 },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_endstop },
 	// FloorCeiling_RaiseHighestOrLowerLowest_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< BoomFloorAndCeiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Ceiling_LowerTo8AboveFloor_S1_Player
@@ -827,11 +842,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Platform_Stop_SR_Player
 	{},
 	// Crusher_Fast_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], 0 },
+	{ &precon::IsPlayer, &DoGenericSwitch< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], cs_movement },
 	// Crusher_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 0 },
+	{ &precon::IsPlayer, &DoGenericSwitch< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_movement },
 	// Crusher_Silent_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::slowcrushingspeed, 1 },
+	{ &precon::IsPlayer, &DoGenericSwitch< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_endstop },
 	// FloorCeiling_RaiseHighestOrLowerLowest_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< BoomFloorAndCeiling >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_highestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Ceiling_LowerTo8AboveFloor_SR_Player
@@ -975,11 +990,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Stairs_BuildBy8_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Stairs_BuildBy16Fast_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 0 },
 	// Stairs_BuildBy8_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
 	// Stairs_BuildBy16Fast_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Fast ], 0, IntToFixed( 16 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 0 },
 	// Texture_Translucent_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Transfer_CeilingLighting_Always
@@ -1086,11 +1101,29 @@ static lineaction_t* CreateBoomGeneralisedStairsAction( line_t* line )
 	SetActionActivators< Stairs >( action, line->special, allowmonster );
 
 	action->lock = LL_None;
-	action->speed = constants::floorspeeds[ speed ];
+	action->speed = constants::stairspeeds[ speed ];
 	action->delay = 0;
 	action->param1 = targetdistance[ target ];
 	action->param2 = ignoretexture;
 	action->param3 = false; // Crush
+
+	return action;
+}
+
+static lineaction_t* CreateBoomGeneralisedCrusherAction( line_t* line )
+{
+	lineaction_t* action = (lineaction_t*)Z_MallocAs( lineaction_t, PU_LEVEL, nullptr );
+
+	bool allowmonster	= ( line->special & Crusher_AllowMonsters_Mask ) == Crusher_AllowMonsters_Yes;
+	uint32_t speed		= ( line->special & Generic_Speed_Mask ) >> Generic_Speed_Shift;
+	bool silent			= ( line->special & Crusher_Silent_Mask ) == Crusher_Silent_Yes;
+
+	SetActionActivators< Ceiling >( action, line->special, allowmonster );
+	action->lock = LL_None;
+	action->speed = constants::ceilingspeeds[ speed ];
+	action->delay = 0;
+	action->param1 = constants::crushingspeeds[ speed ];
+	action->param2 = silent ? cs_none : cs_movement;
 
 	return action;
 }

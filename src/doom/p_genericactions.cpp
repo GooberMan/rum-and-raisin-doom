@@ -105,18 +105,23 @@ DOOM_C_API void T_MoveCeilingGeneric( ceiling_t* ceiling )
 	case sd_up:
 		// UP
 		res = T_MovePlane( ceiling->sector, ceiling->speed, ceiling->topheight, false, 1, ceiling->direction );
-		sectorsound = !ceiling->silent && !( leveltime & 7 );
+		sectorsound = !( leveltime & 7 );
 		break;
 
 	case sd_down:
 		res = T_MovePlane(ceiling->sector, ceiling->speed, ceiling->bottomheight, ceiling->crush, 1, ceiling->direction );
-		sectorsound = !ceiling->silent && !( leveltime & 7 );
+		sectorsound = !( leveltime & 7 );
 		break;
+	}
+
+	if( sectorsound && ( ceiling->sound & cs_movement ) )
+	{
+		S_StartSound( &ceiling->sector->soundorg, sfx_stnmov );
 	}
 
 	if( res == pastdest )
 	{
-		if( ceiling->silent && ceiling->crush )
+		if( sectorsound && ( ceiling->sound & cs_endstop ) )
 		{
 			S_StartSound( &ceiling->sector->soundorg, sfx_pstop );
 		}
@@ -133,11 +138,6 @@ DOOM_C_API void T_MoveCeilingGeneric( ceiling_t* ceiling )
 	}
 	else
 	{
-		if( sectorsound )
-		{
-			S_StartSound( &ceiling->sector->soundorg, sfx_stnmov );
-		}
-
 		if( res == crushed )
 		{
 			ceiling->speed = ceiling->crushingspeed;
@@ -184,7 +184,7 @@ DOOM_C_API int32_t EV_DoCrusherGeneric( line_t* line, mobj_t* activator )
 			ceiling->speed = line->action->speed;
 			ceiling->normalspeed = line->action->speed;
 			ceiling->crushingspeed = line->action->param1;
-			ceiling->silent = line->action->param2;
+			ceiling->sound = line->action->param2;
 			ceiling->perpetual = true;
 			ceiling->topheight = sector.ceilingheight;
 			ceiling->bottomheight = sector.floorheight + IntToFixed( 8 );
@@ -218,7 +218,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 			ceiling->speed = line->action->speed;
 			ceiling->normalspeed = line->action->speed;
 			ceiling->crushingspeed = line->action->speed >> 3;
-			ceiling->silent = false;
+			ceiling->sound = cs_movement;
 			ceiling->perpetual = false;
 
 			fixed_t& heighttarget = ceiling->direction == sd_down ? ceiling->bottomheight : ceiling->topheight;
