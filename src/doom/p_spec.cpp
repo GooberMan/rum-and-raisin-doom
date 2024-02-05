@@ -673,6 +673,27 @@ P_FindMinSurroundingLight
 // Called every time a thing origin is about
 //  to cross a line with a non 0 special.
 //
+
+constexpr bool IsMissile( mobj_t& mobj )
+{
+	// No standard handles MF_MISSILE for this >:-|
+	switch( mobj.type )
+	{
+	case MT_ROCKET:
+	case MT_PLASMA:
+	case MT_BFG:
+	case MT_TROOPSHOT:
+	case MT_HEADSHOT:
+	case MT_BRUISERSHOT:
+		return true;
+
+	default:
+		break;
+	}
+
+	return false;
+}
+
 void
 P_CrossSpecialLine
 ( line_t*	line,
@@ -683,7 +704,7 @@ P_CrossSpecialLine
 
 	if( line->action )
 	{
-		line->action->Handle( line, thing, thing->flags & MF_MISSILE ? LT_Missile : LT_Walk, side );
+		line->action->Handle( line, thing, IsMissile( *thing ) ? LT_Missile : LT_Walk, side );
 		return;
 	}
 

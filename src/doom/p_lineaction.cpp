@@ -719,8 +719,8 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
 	// Door_CloseFast_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Fast ], 0, sd_close, door_noraise },
-	// Door_RaiseFast_UR_All
-	{ &precon::CanDoorRaise, &DoGeneric< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Fast ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
+	// Door_RaiseFast_UR_Player
+	{ &precon::IsPlayer, &DoGeneric< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Fast ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
 	// Door_OpenFast_U1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
 	// Floor_RaiseNearest_W1_Player
@@ -1356,7 +1356,11 @@ static lineaction_t* CreateBoomGeneralisedLockedDoorAction( line_t* line )
 
 static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 {
-	if( line->special >= Generic_Stairs && line->special < Generic_Lift )
+	if( line->special >= Generic_Crusher && line->special < Generic_Stairs )
+	{
+		return CreateBoomGeneralisedCrusherAction( line );
+	}
+	else if( line->special >= Generic_Stairs && line->special < Generic_Lift )
 	{
 		return CreateBoomGeneralisedStairsAction( line );
 	}
@@ -1386,6 +1390,11 @@ static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
 #if 1
+	//if( !remove_limits )
+	//{
+	//	return nullptr;
+	//}
+
 	if( line->special >= DoomActions_Min && line->special < DoomActions_Max )
 	{
 		return ( !remove_limits && ( line->special == Unknown_078 || line->special == Unknown_085 ) )
