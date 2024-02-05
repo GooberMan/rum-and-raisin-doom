@@ -430,7 +430,7 @@ static void DoGenericOnce( line_t* line, mobj_t* activator )
 		line->special = 0;
 	}
 
-	if( !remove_limits ) // fix_w1_lines_clearing_on_no_result
+	if( !remove_limits ) // fix_w1s1_lines_clearing_on_no_result
 	{
 		line->action = nullptr;
 		line->special = 0;
@@ -456,7 +456,7 @@ static void DoGenericSwitchOnce( line_t* line, mobj_t* activator )
 		line->special = 0;
 	}
 
-	if( !remove_limits ) // fix_w1_lines_clearing_on_no_result
+	if( !remove_limits ) // fix_w1s1_lines_clearing_on_no_result
 	{
 		line->action = nullptr;
 		line->special = 0;
@@ -471,7 +471,7 @@ static void DoVanillaW1Teleport( line_t* line, mobj_t* activator )
 		DoGenericOnce< Teleport >( line, activator );
 	}
 
-	if( !remove_limits ) // fix_w1_lines_clearing_on_no_result
+	if( !remove_limits ) // fix_w1s1_lines_clearing_on_no_result
 	{
 		line->action = nullptr;
 		line->special = 0;

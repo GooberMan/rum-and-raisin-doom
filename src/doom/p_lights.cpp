@@ -211,7 +211,7 @@ void EV_StartLightStrobing(line_t*	line)
 {
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && ( sector.specialdata == nullptr || remove_limits ) )
+		if( sector.tag == line->tag && sector.Special() == nullptr )
 		{
 			P_SpawnStrobeFlash( &sector, SLOWDARK, 0 );
 		}

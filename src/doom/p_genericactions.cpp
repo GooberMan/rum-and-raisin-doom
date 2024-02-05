@@ -72,7 +72,7 @@ void P_RemoveActiveCeilingGeneric( ceiling_t* ceiling )
 			}
 
 			P_RemoveThinker( &ceiling->thinker );
-			ceiling->sector->ceilingspecialdata = nullptr;
+			ceiling->sector->CeilingSpecial() = nullptr;
 			return;
 		}
 	}
@@ -176,7 +176,7 @@ DOOM_C_API int32_t EV_DoCrusherGeneric( line_t* line, mobj_t* activator )
 			P_AddThinker( &ceiling->thinker );
 			P_AddActiveCeilingGeneric( ceiling );
 			ceiling->sector = &sector;
-			ceiling->sector->ceilingspecialdata = ceiling;
+			ceiling->sector->CeilingSpecial() = ceiling;
 			ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
 			ceiling->type = genericCeiling;
 			ceiling->crush = true;
@@ -211,7 +211,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 			P_AddThinker( &ceiling->thinker );
 			P_AddActiveCeilingGeneric( ceiling );
 			ceiling->sector = &sector;
-			ceiling->sector->ceilingspecialdata = ceiling;
+			ceiling->sector->CeilingSpecial() = ceiling;
 			ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
 			ceiling->type = genericCeiling;
 			ceiling->crush = line->action->param6 == sc_crush;
@@ -412,7 +412,7 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 			}
 			else
 			{
-				door->sector->ceilingspecialdata = nullptr;
+				door->sector->CeilingSpecial() = nullptr;
 				P_RemoveThinker (&door->thinker);  // unlink and free
 				if( door->blazing )
 				{
@@ -455,7 +455,7 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 			}
 			else
 			{
-				door->sector->specialdata = NULL;
+				door->sector->CeilingSpecial() = nullptr;
 				P_RemoveThinker( &door->thinker ); // unlink and free
 			}
 		}
@@ -471,7 +471,7 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 	vldoor_t* door = (vldoor_t*)Z_MallocZero( sizeof(vldoor_t), PU_LEVSPEC, 0 );
 	P_AddThinker (&door->thinker);
 	door->sector = sec;
-	door->sector->ceilingspecialdata = door;
+	door->sector->CeilingSpecial() = door;
 	door->thinker.function.acp1 = (actionf_p1)T_VerticalDoorGeneric;
 	door->topwait = line->action->delay;
 	door->topcountdown = door->topwait;
@@ -525,9 +525,9 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 	if( raising )
 	{
 		if( (doorraise_t)line->action->param2 == door_raiselower
-			&& line->backsector->ceilingspecialdata )
+			&& line->backsector->CeilingSpecial() )
 		{
-			vldoor_t* door = thinker_cast< vldoor_t >( line->backsector->ceilingspecialdata );
+			vldoor_t* door = thinker_cast< vldoor_t >( line->backsector->CeilingSpecial() );
 			if( door == nullptr )
 			{
 				// Vanilla would stomp over values regardless. We'll just crash here for now.
@@ -549,7 +549,7 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 			return 1;
 		}
 
-		if( !line->backsector->ceilingspecialdata )
+		if( !line->backsector->CeilingSpecial() )
 		{
 			EV_DoDoorGeneric( line, line->backsector );
 			return 1;
@@ -595,8 +595,8 @@ DOOM_C_API void T_MoveElevatorGeneric( elevator_t* elevator )
 	{
 		S_StartSound( &elevator->sector->soundorg, sfx_pstop );
 		P_RemoveThinker( &elevator->thinker );
-		elevator->sector->floorspecialdata = nullptr;
-		elevator->sector->ceilingspecialdata = nullptr;
+		elevator->sector->FloorSpecial() = nullptr;
+		elevator->sector->CeilingSpecial() = nullptr;
 		return;
 	}
 
@@ -619,8 +619,8 @@ DOOM_C_API int32_t EV_DoElevatorGeneric( line_t* line, mobj_t* activator )
 			elevator_t* elevator = (elevator_t*)Z_MallocZero( sizeof(elevator_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &elevator->thinker );
 			elevator->sector = &sector;
-			elevator->sector->floorspecialdata = elevator;
-			elevator->sector->ceilingspecialdata = elevator;
+			elevator->sector->FloorSpecial() = elevator;
+			elevator->sector->CeilingSpecial() = elevator;
 			elevator->thinker.function.acp1 = (actionf_p1)&T_MoveElevatorGeneric;
 			elevator->speed = line->action->speed;
 			elevator->direction = (sectordir_t)line->action->param2;
@@ -670,7 +670,7 @@ DOOM_C_API void T_MoveFloorGeneric(floormove_t* floor)
 
 	if( res == pastdest )
 	{
-		floor->sector->floorspecialdata = nullptr;
+		floor->sector->FloorSpecial() = nullptr;
 		if( floor->newspecial >= 0 )
 		{
 			floor->sector->special = floor->newspecial;
@@ -699,7 +699,7 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 			floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &floor->thinker );
 			floor->sector = &sector;
-			floor->sector->floorspecialdata = floor;
+			floor->sector->FloorSpecial() = floor;
 			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 			floor->type = genericFloor;
 			floor->speed = line->action->speed;
@@ -723,7 +723,7 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 					if( ( searchline->flags & ML_TWOSIDED ) != ML_TWOSIDED
 						|| searchline->frontsector->index != searchsector->index
 						|| ( line->action->param2 == false && searchline->backsector->floorpic != searchsector->floorpic )
-						|| searchline->backsector->floorspecialdata != nullptr )
+						|| searchline->backsector->FloorSpecial() != nullptr )
 					{
 						continue;
 					}
@@ -734,7 +734,7 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 					floormove_t* nextfloor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 					P_AddThinker( &nextfloor->thinker );
 					nextfloor->sector = searchline->backsector;
-					nextfloor->sector->floorspecialdata = nextfloor;
+					nextfloor->sector->FloorSpecial() = nextfloor;
 					nextfloor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 					nextfloor->type = genericFloor;
 					nextfloor->direction = sd_up;
@@ -783,7 +783,7 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 				floormove_t* donut = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 				P_AddThinker( &donut->thinker );
 				donut->sector = donutsector;
-				donut->sector->floorspecialdata = donut;
+				donut->sector->FloorSpecial() = donut;
 				donut->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 				donut->type = genericFloor;
 				donut->crush = false;
@@ -796,7 +796,7 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 				floormove_t* hole = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 				P_AddThinker( &hole->thinker );
 				hole->sector = &holesector;
-				hole->sector->floorspecialdata = hole;
+				hole->sector->FloorSpecial() = hole;
 				hole->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 				hole->type = genericFloor;
 				hole->crush = false;
@@ -827,7 +827,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 			floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 			P_AddThinker( &floor->thinker );
 			floor->sector = &sector;
-			floor->sector->floorspecialdata = floor;
+			floor->sector->FloorSpecial() = floor;
 			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 			floor->type = genericFloor;
 			floor->crush = line->action->param6 == sc_crush;
@@ -1088,7 +1088,7 @@ void P_RemoveActivePlatGeneric( plat_t* plat )
 			}
 
 			P_RemoveThinker( &plat->thinker );
-			plat->sector->floorspecialdata = nullptr;
+			plat->sector->FloorSpecial() = nullptr;
 			return;
 		}
 	}
@@ -1127,7 +1127,7 @@ DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activ
 			P_AddThinker( &plat->thinker );
 		
 			plat->sector = &sector;
-			plat->sector->floorspecialdata = plat;
+			plat->sector->FloorSpecial() = plat;
 			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
 			plat->crush = false;
 			plat->tag = line->tag;
@@ -1182,7 +1182,7 @@ DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 	
 			plat->type = perpetualRaise;
 			plat->sector = &sector;
-			plat->sector->floorspecialdata = plat;
+			plat->sector->FloorSpecial() = plat;
 			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
 			plat->crush = false;
 			plat->tag = line->tag;
@@ -1217,7 +1217,7 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 		
 			plat->type = downWaitUpStay;
 			plat->sector = &sector;
-			plat->sector->floorspecialdata = plat;
+			plat->sector->FloorSpecial() = plat;
 			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
 			plat->crush = false;
 			plat->tag = line->tag;

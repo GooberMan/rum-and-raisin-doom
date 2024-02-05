@@ -63,7 +63,7 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					fix_donut_backsector;					// Donut don't give no hoots about invalid back sectors
 	doombool					fix_sky_wall_projectiles;				// The sky checking code when shooting projectiles would cause them to just disappear in to normal walls
 	doombool					fix_bad_secret_exit_loop;				// Secret exit on any other map than the hardcoded maps causes the current level to loop
-	doombool					fix_w1_lines_clearing_on_no_result;		// Vanilla will indiscriminately clear a W1 line even if they do nothing
+	doombool					fix_w1s1_lines_clearing_on_no_result;	// Vanilla will indiscriminately clear a W1/S1 line even if they do nothing
 
 	doombool					allow_weapon_recoil;					// Boom "feature"
 	doombool					allow_line_passthrough;					// Boom feature, don't stop using lines when one succeeds if linedef flag is set

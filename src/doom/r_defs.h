@@ -48,6 +48,8 @@
 extern "C" {
 #endif // defined( __cplusplus )
 
+extern int32_t remove_limits;
+
 
 // Silhouette, needed for clipping Segs (mainly)
 // and sprites representing things.
@@ -286,6 +288,12 @@ struct sector_s
 	fixed_t				ceilscrollratex;
 	fixed_t				ceilscrollratey;
 	doombool			iscurrent;
+
+#if defined( __cplusplus )
+	INLINE void*& Special()				{ return specialdata; }
+	INLINE void*& FloorSpecial()		{ return remove_limits ? floorspecialdata : specialdata; }
+	INLINE void*& CeilingSpecial()		{ return remove_limits ? ceilingspecialdata : specialdata; }
+#endif // defined( __cplusplus )
 };
 
 
