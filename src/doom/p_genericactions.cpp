@@ -149,7 +149,7 @@ DOOM_C_API int32_t EV_StopAnyCeilingGeneric( line_t* line, mobj_t* activator )
 {
 	for( ceiling_t* currceil = activeceilingshead; currceil != nullptr; currceil = currceil->nextactive )
 	{
-		if( currceil->tag == line->tag && currceil->direction != sd_none )
+		if( currceil->sector->tag == line->tag && currceil->direction != sd_none )
 		{
 			currceil->thinker.function.acv = nullptr;
 			currceil->olddirection = currceil->direction;
@@ -186,6 +186,7 @@ DOOM_C_API int32_t EV_DoCrusherGeneric( line_t* line, mobj_t* activator )
 			ceiling->crushingspeed = line->action->param1;
 			ceiling->sound = line->action->param2;
 			ceiling->perpetual = true;
+			ceiling->tag = sector.tag;
 			ceiling->topheight = sector.ceilingheight;
 			ceiling->bottomheight = sector.floorheight + IntToFixed( 8 );
 			ceiling->newspecial = -1;
@@ -220,6 +221,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 			ceiling->crushingspeed = line->action->speed >> 3;
 			ceiling->sound = cs_movement;
 			ceiling->perpetual = false;
+			ceiling->tag = sector.tag;
 
 			fixed_t& heighttarget = ceiling->direction == sd_down ? ceiling->bottomheight : ceiling->topheight;
 
@@ -255,7 +257,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 				break;
 
 			case stt_floor:
-				heighttarget = sector.ceilingheight;
+				heighttarget = sector.floorheight;
 				break;
 
 			case stt_ceiling:
@@ -281,7 +283,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 				break;
 
 			case stt_perpetual:
-				I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying start a perpetual ceilingform, try using EV_DoPerpetualLiftGeneric instead", line->index );
+				I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is trying start a perpetual ceiling, try EV_DoCrusherGeneric", line->index );
 				break;
 
 			case stt_nosearch:

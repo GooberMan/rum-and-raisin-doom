@@ -424,8 +424,13 @@ static void DoGeneric( line_t* line, mobj_t* activator )
 template< typename func >
 static void DoGenericOnce( line_t* line, mobj_t* activator )
 {
-	// Vanilla performs and clears out regardless...
 	if( func::Perform( line, activator ) )
+	{
+		line->action = nullptr;
+		line->special = 0;
+	}
+
+	if( !remove_limits ) // fix_w1_lines_clearing_on_no_result
 	{
 		line->action = nullptr;
 		line->special = 0;
@@ -450,6 +455,12 @@ static void DoGenericSwitchOnce( line_t* line, mobj_t* activator )
 		line->action = nullptr;
 		line->special = 0;
 	}
+
+	if( !remove_limits ) // fix_w1_lines_clearing_on_no_result
+	{
+		line->action = nullptr;
+		line->special = 0;
+	}
 }
 
 static void DoVanillaW1Teleport( line_t* line, mobj_t* activator )
@@ -460,10 +471,11 @@ static void DoVanillaW1Teleport( line_t* line, mobj_t* activator )
 		DoGenericOnce< Teleport >( line, activator );
 	}
 
-#if 0
-	line->action = nullptr;
-	line->special = 0;
-#endif
+	if( !remove_limits ) // fix_w1_lines_clearing_on_no_result
+	{
+		line->action = nullptr;
+		line->special = 0;
+	}
 }
 
 
@@ -620,7 +632,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Crusher_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_movement },
 	// Crusher_Stop_WR_Player
-	{ &precon::IsPlayer, &DoGenericOnce< CeilingStop >, LT_WalkBoth, LL_None, 0, 0 },
+	{ &precon::IsPlayer, &DoGeneric< CeilingStop >, LT_WalkBoth, LL_None, 0, 0 },
 	// Door_Close_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Door >, LT_WalkBoth, LL_None, constants::doorspeeds[ Speed_Slow ], 0, sd_close, door_noraise },
 	// Door_Close30Open_WR_Player
@@ -635,7 +647,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_SetBrightest_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_highestsurround_firsttagged },
 	// Light_SetTo255_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_value, 35 },
+	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_value, 255 },
 	// Floor_LowerLowest_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighest_WR_Player
@@ -662,7 +674,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_Raise24ChangeTexture_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 24 ), sct_copyboth, scm_trigger, sc_nocrush },
 	// Floor_RaiseCrush_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, IntToFixed( -8 ), sct_none, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, IntToFixed( -8 ), sct_none, scm_trigger, sc_crush },
 	// Platform_RaiseNearestChangeTexture_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< VanillaRaise >, LT_WalkBoth, LL_None, constants::vanillaraisespeed, 0, stt_nexthighestneighborfloor, 0 },
 	// Floor_RaiseByTexture_WR_Player
