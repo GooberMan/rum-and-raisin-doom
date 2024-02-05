@@ -168,7 +168,7 @@ DOOM_C_API int32_t EV_DoCrusherGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.ceilingspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.CeilingSpecial() == nullptr )
 		{
 			++createdcount;
 
@@ -203,7 +203,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.ceilingspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.CeilingSpecial() == nullptr )
 		{
 			++createdcount;
 
@@ -230,10 +230,14 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 			case stt_highestneighborfloor:
 			case stt_highestneighborfloor_noaddifmatch:
 				heighttarget = P_FindHighestFloorSurrounding( &sector );
+				if( remove_limits ) // allow_boom_sector_targets
+				{
+					heighttarget = M_MAX( heighttarget, sector.floorheight );
+				}
 				break;
 
 			case stt_lowestneighborfloor:
-				heighttarget = P_FindLowestFloorSurrounding( &sector );
+				heighttarget = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
 				break;
 
 			case stt_nexthighestneighborfloor:
@@ -246,10 +250,18 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 
 			case stt_highestneighborceiling:
 				heighttarget = P_FindHighestCeilingSurrounding( &sector );
+				if( remove_limits ) // allow_boom_sector_targets
+				{
+					heighttarget = M_MAX( heighttarget, sector.ceilingheight );
+				}
 				break;
 
 			case stt_lowestneighborceiling:
 				heighttarget = P_FindLowestCeilingSurrounding( &sector );
+				if( remove_limits ) // allow_boom_sector_targets
+				{
+					heighttarget = M_MIN( heighttarget, sector.ceilingheight );
+				}
 				break;
 
 			case stt_nextlowestneighborceiling:
@@ -502,7 +514,7 @@ void EV_DoDoorGeneric( line_t* line, sector_t* sec )
 	}
 	else
 	{
-		door->topheight = P_FindLowestCeilingSurrounding(sec);
+		door->topheight = P_FindLowestCeilingSurrounding( sec );
 		door->topheight -= IntToFixed( 4 );
 	}
 
@@ -561,7 +573,7 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 	int32_t sectorsactivated = 0;
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.ceilingspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.CeilingSpecial() == nullptr )
 		{
 			// new door thinker
 			++sectorsactivated;
@@ -612,7 +624,7 @@ DOOM_C_API int32_t EV_DoElevatorGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.floorspecialdata == nullptr && sector.ceilingspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr && sector.CeilingSpecial() == nullptr )
 		{
 			++numelevatorscreated;
 
@@ -692,7 +704,7 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
 		{
 			++createdcount;
 
@@ -760,7 +772,7 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& holesector : Sectors() )
 	{
-		if( holesector.tag == line->tag && holesector.floorspecialdata == nullptr )
+		if( holesector.tag == line->tag && holesector.FloorSpecial() == nullptr )
 		{
 			sector_t* donutsector = getNextSector( holesector.lines[ 0 ], &holesector );
 			if( donutsector == nullptr )
@@ -820,7 +832,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
 		{
 			++createdcount;
 
@@ -839,10 +851,14 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 			case stt_highestneighborfloor:
 			case stt_highestneighborfloor_noaddifmatch:
 				floor->floordestheight = P_FindHighestFloorSurrounding( &sector );
+				if( remove_limits ) // allow_boom_sector_targets
+				{
+					floor->floordestheight = M_MAX( floor->floordestheight, sector.floorheight );
+				}
 				break;
 
 			case stt_lowestneighborfloor:
-				floor->floordestheight = P_FindLowestFloorSurrounding( &sector );
+				floor->floordestheight = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
 				break;
 
 			case stt_nexthighestneighborfloor:
@@ -855,10 +871,18 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 			case stt_highestneighborceiling:
 				floor->floordestheight = P_FindHighestCeilingSurrounding( &sector );
+				if( remove_limits ) // allow_boom_sector_targets
+				{
+					floor->floordestheight = M_MAX( floor->floordestheight, sector.ceilingheight );
+				}
 				break;
 
 			case stt_lowestneighborceiling:
 				floor->floordestheight = P_FindLowestCeilingSurrounding( &sector );
+				if( remove_limits ) // allow_boom_sector_targets
+				{
+					floor->floordestheight = M_MIN( floor->floordestheight, sector.ceilingheight );
+				}
 				break;
 
 			case stt_nextlowestneighborceiling:
@@ -1119,7 +1143,7 @@ DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activ
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
@@ -1173,7 +1197,7 @@ DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
@@ -1208,7 +1232,7 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 	for( sector_t& sector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
 		{
 			// Find lowest & highest floors around sector
 			++platformscreated;
@@ -1228,7 +1252,7 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 			switch( line->action->param1 )
 			{
 			case stt_lowestneighborfloor:
-				plat->low = P_FindLowestFloorSurrounding( &sector );
+				plat->low = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
 				break;
 
 			case stt_nextlowestneighborfloor:
@@ -1237,6 +1261,10 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 			case stt_lowestneighborceiling:
 				plat->low = P_FindLowestCeilingSurrounding( &sector );
+				if( remove_limits ) // allow_boom_sector_targets
+				{
+					plat->low = M_MIN( plat->low, sector.ceilingheight );
+				}
 				break;
 
 			default:

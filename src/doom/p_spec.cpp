@@ -379,7 +379,7 @@ fixed_t	P_FindLowestFloorSurrounding(sector_t* sec)
     int			i;
     line_t*		check;
     sector_t*		other;
-    fixed_t		floor = sec->floorheight;
+    fixed_t		floor = INT_MAX;
 	
     for (i=0 ;i < sec->linecount ; i++)
     {
@@ -471,7 +471,7 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
     int			i;
     line_t*		check;
     sector_t*		other;
-    fixed_t		floor = -500*FRACUNIT;
+    fixed_t		floor = remove_limits ? -INT_MAX : -500*FRACUNIT; // fix_findhighestfloorsurrounding
 	
     for (i=0 ;i < sec->linecount ; i++)
     {
@@ -501,7 +501,7 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 
 fixed_t P_FindNextHighestFloor( sector_t* sec )
 {
-	if( remove_limits )
+	if( remove_limits ) // fix_findnexthighestfloor
 	{
 		return P_FindNextHighestFloorSurrounding( sec );
 	}
@@ -594,7 +594,7 @@ fixed_t	P_FindHighestCeilingSurrounding(sector_t* sec)
     int		i;
     line_t*	check;
     sector_t*	other;
-    fixed_t	height = 0;
+    fixed_t	height = remove_limits ? -INT_MAX : 0; // fix_findhighestceilingsurrounding
 	
     for (i=0 ;i < sec->linecount ; i++)
     {

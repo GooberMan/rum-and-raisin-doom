@@ -1386,11 +1386,6 @@ static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
 #if 1
-	if( !remove_limits )
-	{
-		return nullptr;
-	}
-
 	if( line->special >= DoomActions_Min && line->special < DoomActions_Max )
 	{
 		return ( !remove_limits && ( line->special == Unknown_078 || line->special == Unknown_085 ) )

@@ -54,7 +54,6 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					fix_divlineside;						// Checks against X when it should check against Y
 	doombool					fix_findnexthighestfloor;				// Uses the worst algorithm known to humankind to do a minmax
 	doombool					fix_findhighestfloorsurrounding;		// Minimum value of -500 hardcoded. Hope you're not making deep low maps...
-	doombool					fix_findlowestceilingsurrounding;		// Does not take in to account current ceiling
 	doombool					fix_findhighestceilingsurrounding;		// Minimum value of 0 hardcoded. This codebase...
 	doombool					fix_unusable_onesided_teleports;		// Vanilla would wipe W1 specials at all times, even if things like teleports didn't trigger
 	doombool					fix_same_sky_texture;					// Notorious bug where sky doesn't change between Doom II episodes
@@ -73,6 +72,7 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					allow_unlimited_ceilings;				// Vanilla limit
 	doombool					allow_generic_specials_handling;		// Rewritten specials, based on Boom standards but considered limit removing
 	doombool					allow_separate_floor_ceiling_lights;	// Boom sector specials are allowed to work independently of each other
+	doombool					allow_boom_sector_targets;				// All sector targets consider their current sector
 	doombool					allow_boom_line_specials;				// Comes with Boom fixes for specials by default
 	doombool					allow_boom_sector_specials;				// Comes with Boom fixes for specials by default
 	doombool					allow_mbf_line_sky_specials;			// complevel 9 is boom + extras

@@ -308,7 +308,7 @@ DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 	    floor->direction = -1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = P_FindLowestFloorSurrounding(sec);
+	    floor->floordestheight = M_MIN( P_FindLowestFloorSurrounding(sec), sec->floorheight );
 	    break;
 
 	  case turboLower:
@@ -406,8 +406,7 @@ DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 	    floor->direction = -1;
 	    floor->sector = sec;
 	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindLowestFloorSurrounding(sec);
+	    floor->floordestheight = M_MIN( P_FindLowestFloorSurrounding(sec), sec->floorheight );
 	    floor->texture = sec->floorpic;
 
 	    for (i = 0; i < sec->linecount; i++)

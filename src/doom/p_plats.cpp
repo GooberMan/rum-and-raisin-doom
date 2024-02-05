@@ -196,7 +196,7 @@ EV_DoPlat
 	    
 	  case downWaitUpStay:
 	    plat->speed = PLATSPEED * 4;
-	    plat->low = P_FindLowestFloorSurrounding(sec);
+	    plat->low = M_MIN( P_FindLowestFloorSurrounding(sec), sec->floorheight );
 
 	    if (plat->low > sec->floorheight)
 		plat->low = sec->floorheight;
@@ -209,7 +209,7 @@ EV_DoPlat
 	    
 	  case blazeDWUS:
 	    plat->speed = PLATSPEED * 8;
-	    plat->low = P_FindLowestFloorSurrounding(sec);
+	    plat->low = M_MIN( P_FindLowestFloorSurrounding(sec), sec->floorheight );
 
 	    if (plat->low > sec->floorheight)
 		plat->low = sec->floorheight;
@@ -222,7 +222,7 @@ EV_DoPlat
 	    
 	  case perpetualRaise:
 	    plat->speed = PLATSPEED;
-	    plat->low = P_FindLowestFloorSurrounding(sec);
+	    plat->low = M_MIN( P_FindLowestFloorSurrounding(sec), sec->floorheight );
 
 	    if (plat->low > sec->floorheight)
 		plat->low = sec->floorheight;
