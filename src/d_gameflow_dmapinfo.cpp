@@ -35,6 +35,7 @@ namespace dmapinfo
 		DoomString		music_lump;
 		int32_t			episode_number;
 		int32_t			map_number;
+		int32_t			defined_map_number;
 		DoomString		end_sequence;
 		DoomString		sky_lump;
 		int32_t			sky_scroll_speed;
@@ -74,6 +75,7 @@ static void Sanitize( DoomString& currline )
 static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 {
 	dmapinfo::map_t& newmap = *dmapinfo::maps.insert( dmapinfo::maps.end(), dmapinfo::map_t() );
+	newmap.map_number = -1;
 
 	DoomString lhs;
 	DoomString middle;
@@ -97,6 +99,24 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 		{
 			newmap.map_lump_name = middle;
 			newmap.map_title = rhs;
+
+			if( middle.size() == 4
+				&& std::toupper( middle[0] ) == 'E'
+				&& std::isdigit( middle[1] )
+				&& std::toupper( middle[2] ) == 'M'
+				&& std::isdigit( middle[3] ) )
+			{
+				newmap.map_number = middle[3];
+			}
+			else if( middle.size() == 5
+				&& std::toupper( middle[0] ) == 'M'
+				&& std::toupper( middle[1] ) == 'A'
+				&& std::toupper( middle[2] ) == 'P'
+				&& std::isdigit( middle[3] )
+				&& std::isdigit( middle[4] ) )
+			{
+				newmap.map_number = (middle[3] - '0') * 10 + (middle[4] - '0');
+			}
 		}
 		else if( lhs == "next" )
 		{
@@ -120,7 +140,11 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 		}
 		else if( lhs == "mapnumber" )
 		{
-			newmap.map_number = to< int32_t >( rhs );
+			newmap.defined_map_number = to< int32_t >( rhs );
+			if( newmap.map_number == -1 )
+			{
+				newmap.map_number = newmap.defined_map_number;
+			}
 		}
 		else if( lhs == "endsequence" )
 		{
