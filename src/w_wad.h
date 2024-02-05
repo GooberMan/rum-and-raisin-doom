@@ -83,8 +83,11 @@ DOOM_C_API const char* W_GetNameForNum( lumpindex_t num );
 DOOM_C_API int W_LumpLength(lumpindex_t lump);
 DOOM_C_API void W_ReadLump(lumpindex_t lump, void *dest);
 
-DOOM_C_API void *W_CacheLumpNum(lumpindex_t lump, int tag);
-DOOM_C_API void *W_CacheLumpName(const char *name, int tag);
+DOOM_C_API void *W_CacheLumpNumTracked(const char* file, size_t line, lumpindex_t lump, int tag);
+DOOM_C_API void *W_CacheLumpNameTracked(const char* file, size_t line, const char *name, int tag);
+
+#define W_CacheLumpNum(lump, tag) W_CacheLumpNumTracked( __FILE__, __LINE__, lump, tag )
+#define W_CacheLumpName(lump, name) W_CacheLumpNameTracked( __FILE__, __LINE__, lump, name )
 
 DOOM_C_API void W_GenerateHashTable(void);
 

@@ -383,7 +383,7 @@ void W_ReadLump(lumpindex_t lump, void *dest)
 // when no longer needed (do not use Z_ChangeTag).
 //
 
-void *W_CacheLumpNum(lumpindex_t lumpnum, int tag)
+void *W_CacheLumpNumTracked(const char* file, size_t line, lumpindex_t lumpnum, int tag)
 {
     byte *result;
     lumpinfo_t *lump;
@@ -427,7 +427,7 @@ void *W_CacheLumpNum(lumpindex_t lumpnum, int tag)
 			I_Error ( "W_CacheLumpNum: %i requested during render", lumpnum );
 		}
 
-		lump->cache = Z_Malloc(W_LumpLength(lumpnum), tag, &lump->cache);
+		lump->cache = Z_MallocTracked(file, line, W_LumpLength(lumpnum), tag, &lump->cache, NULL);
 		W_ReadLump (lumpnum, lump->cache);
 		result = lump->cache;
 	}
@@ -440,9 +440,9 @@ void *W_CacheLumpNum(lumpindex_t lumpnum, int tag)
 //
 // W_CacheLumpName
 //
-void *W_CacheLumpName(const char *name, int tag)
+void *W_CacheLumpNameTracked(const char* file, size_t line, const char *name, int tag)
 {
-    return W_CacheLumpNum(W_GetNumForName(name), tag);
+    return W_CacheLumpNumTracked( file, line, W_GetNumForName(name), tag );
 }
 
 // 
