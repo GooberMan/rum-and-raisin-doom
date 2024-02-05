@@ -53,6 +53,7 @@ DOOM_C_API typedef struct gameoptions_s
 {
 	doombool					fix_divlineside;						// Checks against X when it should check against Y
 	doombool					fix_findnexthighestfloor;				// Uses the worst algorithm known to humankind to do a minmax
+	doombool					fix_findhighestfloorsurrounding;		// Minimum value of -500 hardcoded. Hope you're not making deep low maps...
 	doombool					fix_unusable_onesided_teleports;		// Vanilla would wipe W1 specials at all times, even if things like teleports didn't trigger
 	doombool					fix_same_sky_texture;					// Notorious bug where sky doesn't change between Doom II episodes
 	doombool					fix_blockthingsiterator;				// Iterating all items of a linked list famously doesn't work if the list changes

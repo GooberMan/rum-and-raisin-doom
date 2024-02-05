@@ -245,6 +245,8 @@ void D_TestControls( const char* itemname, void* data )
 	V_DrawMouseSpeedBox( testcontrols_mousespeed );
 }
 
+extern doombool		auditplaybackerror;
+
 doombool D_Display( double_t framepercent )
 {
     static  doombool		viewactivestate = false;
@@ -259,6 +261,7 @@ doombool D_Display( double_t framepercent )
 	patch_t*		pausepatch;
 
 	doombool ispaused = renderpaused = ( paused
+										|| auditplaybackerror
 										|| 	( gamestate == GS_LEVEL && !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) ) );
 	renderpaused |= ( menuactive && !demoplayback );
 
@@ -2312,6 +2315,10 @@ void D_DoomMain (void)
 
 
     p = M_CheckParmWithArgs("-playdemo", 1);
+	if (!p)
+	{
+		p = M_CheckParmWithArgs("-playaudit", 1);
+	}
     if (p)
     {
 	singledemo = true;              // quit after one demo

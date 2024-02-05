@@ -756,11 +756,11 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 {
 	int32_t createdcount = 0;
 
-	for( sector_t& sector : Sectors() )
+	for( sector_t& holesector : Sectors() )
 	{
-		if( sector.tag == line->tag && sector.floorspecialdata == nullptr )
+		if( holesector.tag == line->tag && holesector.floorspecialdata == nullptr )
 		{
-			sector_t* donutsector = getNextSector( sector.lines[ 0 ], &sector );
+			sector_t* donutsector = getNextSector( holesector.lines[ 0 ], &holesector );
 			if( donutsector == nullptr )
 			{
 				continue;
@@ -769,7 +769,7 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 			for( line_t* targetline : Lines( *donutsector ) )
 			{
 				if( targetline->backsector == nullptr
-					|| targetline->backsector->index == donutsector->index )
+					|| targetline->backsector->index == holesector.index )
 				{
 					continue;
 				}
@@ -793,7 +793,7 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 
 				floormove_t* hole = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 				P_AddThinker( &hole->thinker );
-				hole->sector = &sector;
+				hole->sector = &holesector;
 				hole->sector->floorspecialdata = hole;
 				hole->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 				hole->type = genericFloor;

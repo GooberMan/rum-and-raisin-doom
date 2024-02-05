@@ -1074,7 +1074,7 @@ void M_Options(int choice)
 {
 //	M_SetupNextMenu(&OptionsDef);
 
-	dashboardactive = true;
+	dashboardactive = Dash_Normal;
 	debugwindow_options = true;
 	debugwindow_tofocus = cat_general;
 }
@@ -1257,7 +1257,7 @@ void M_ChangeDetail(int choice)
     choice = 0;
     detailLevel = 0;
 
-	dashboardactive = true;
+	dashboardactive = Dash_Normal;
 	debugwindow_options = true;
 	debugwindow_tofocus = cat_screen;
 
@@ -1804,7 +1804,7 @@ doombool M_Responder (event_t* ev)
 			//M_StartControlPanel ();
 			//currentMenu = &SoundDef;
 			//itemOn = sfx_vol;
-			dashboardactive = true;
+			dashboardactive = Dash_Normal;
 			debugwindow_options = true;
 			debugwindow_tofocus = cat_sound;
 			S_StartSound(NULL,sfx_swtchn);

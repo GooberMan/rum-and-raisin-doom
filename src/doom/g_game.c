@@ -30,18 +30,21 @@
 #include "deh_main.h"
 #include "deh_misc.h"
 
-#include "z_zone.h"
 #include "f_finale.h"
+
+#include "i_input.h"
+#include "i_log.h"
+#include "i_swap.h"
+#include "i_system.h"
+#include "i_timer.h"
+#include "i_video.h"
+
 #include "m_argv.h"
 #include "m_controls.h"
+#include "m_dashboard.h"
 #include "m_misc.h"
 #include "m_menu.h"
 #include "m_random.h"
-#include "i_system.h"
-#include "i_timer.h"
-#include "i_input.h"
-#include "i_swap.h"
-#include "i_video.h"
 
 #include "p_setup.h"
 #include "p_saveg.h"
@@ -60,6 +63,8 @@
 #include "v_video.h"
 
 #include "w_wad.h"
+
+#include "z_zone.h"
 
 #include "p_local.h" 
 
@@ -159,6 +164,8 @@ typedef struct auditthing_s
 } auditthing_t;
 
 doombool		auditrecording = false;
+doombool		auditplaying = false;
+doombool		auditplaybackerror = false;
 char*			auditname = NULL;
 byte*			auditbuffer = NULL;
 byte*			auditbufferend = NULL;
@@ -171,6 +178,19 @@ const uint32_t SECTORIDENTIFIER		= 0x0FACADE5;
 const uint32_t THINGIDENTIFIER		= 0xDEADBEA7;
 
 #define WRITEFORAUDIT( x ) G_WriteAuditBuffer( (byte*)&x, sizeof( x ) )
+#define CHECKFORAUDIT( type, expected, errormessage, ... ) \
+{ \
+	type* check = (type*)auditbufferpos; \
+	if( *check != expected ) \
+	{ \
+		auditplaybackerror = true; \
+		dashboardactive = Dash_Normal; \
+		S_StartSound( NULL, sfx_pdiehi ); \
+		I_LogAddEntryVar( Log_Error, errormessage, __VA_ARGS__ ); \
+		return; \
+	} \
+	auditbufferpos += sizeof( type ); \
+}
 
 void G_WriteAuditBuffer( byte* data, size_t size )
 {
@@ -202,6 +222,25 @@ void G_InitAuditBufferRecording( size_t size )
 	auditbufferpos = auditbuffer;
 
 	WRITEFORAUDIT( AUDITIDENTIFIER );
+}
+
+void G_InitAuditBufferPlaying( const char* filename )
+{
+	size_t auditnamelen = strlen( filename ) + 5;
+	char* auditname = Z_Malloc( auditnamelen, PU_STATIC, NULL );
+	M_snprintf( auditname, auditnamelen, "%s.aud", filename );
+
+	byte* buffer = NULL;
+	int32_t size = M_ReadFile( auditname, &buffer );
+
+	if( size > 0 )
+	{
+		auditplaying = true;
+		auditbuffer = auditbufferpos = buffer;
+		auditbufferend = buffer + size;
+
+		CHECKFORAUDIT( uint32_t, AUDITIDENTIFIER, "Invalid audit file %s", auditname );
+	}
 }
 
 void G_AuditFrame()
@@ -237,6 +276,42 @@ void G_AuditFrame()
 		}
 
 		WRITEFORAUDIT( ENDFRAMEIDENTIFIER );
+	}
+	else if( auditplaying )
+	{
+		CHECKFORAUDIT( uint32_t, FRAMEIDENTIFIER, "Invalid frame identifier, should be %08X", FRAMEIDENTIFIER );
+		CHECKFORAUDIT( uint64_t, gametic, "Invalid gametic, should be %d", gametic );
+		CHECKFORAUDIT( uint32_t, SECTORIDENTIFIER, "Invalid sector identifier, should be %08X", SECTORIDENTIFIER );
+		CHECKFORAUDIT( int32_t, numsectors, "Invalid sector count, should be %d", numsectors );
+
+		int32_t numthings = 0;
+		for( sector_t* sector = sectors; sector != ( sectors + numsectors ); ++sector )
+		{
+			CHECKFORAUDIT( fixed_t, sector->floorheight, "Sector %d floor shouldn't be %f", sector->index, sector->floorheight / 65536.0 );
+			CHECKFORAUDIT( fixed_t, sector->ceilingheight, "Sector %d ceiling shouldn't be %f", sector->index, sector->ceilingheight / 65536.0 );
+			CHECKFORAUDIT( int32_t, sector->lightlevel, "Sector %d light shouldn't be %d", sector->index, sector->lightlevel );
+
+			for( mobj_t* mobj = sector->thinglist; mobj != NULL; mobj = mobj->snext )
+			{
+				++numthings;
+			}
+		}
+
+		CHECKFORAUDIT( uint32_t, THINGIDENTIFIER, "Invalid thing identifier, should be %08X", THINGIDENTIFIER );
+		CHECKFORAUDIT( int32_t, numthings, "Invalid thing count, should be %d", numthings );
+		int32_t currthing = 0;
+		for( sector_t* sector = sectors; sector != ( sectors + numsectors ); ++sector )
+		{
+			for( mobj_t* mobj = sector->thinglist; mobj != NULL; mobj = mobj->snext )
+			{
+				CHECKFORAUDIT( fixed_t, mobj->x, "Thing %d x shouldn't be %f", currthing, mobj->x / 65536.0 );
+				CHECKFORAUDIT( fixed_t, mobj->y, "Thing %d y shouldn't be %f", currthing, mobj->y / 65536.0 );
+				CHECKFORAUDIT( fixed_t, mobj->z, "Thing %d z shouldn't be %d", currthing, mobj->z / 65536.0 );
+				++currthing;
+			}
+		}
+
+		CHECKFORAUDIT( uint32_t, ENDFRAMEIDENTIFIER, "Invalid end frame identifier, should be %08X", ENDFRAMEIDENTIFIER );
 	}
 }
 
@@ -962,6 +1037,11 @@ doombool G_Responder (event_t* ev)
 void G_Ticker (void) 
 { 
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
+
+	if( auditplaybackerror )
+	{
+		return;
+	}
 
     int		i;
     int		buf; 
@@ -2244,7 +2324,6 @@ static const char *DemoVersionDescription(int version)
     }
 }
 
-#define PLAYDEMOCACHE true
 void G_DoPlayDemo (void)
 {
     int i, lumpnum;
@@ -2372,6 +2451,12 @@ void G_DoPlayDemo (void)
 		netgame = true;
 		netdemo = true;
 		solonetgame = M_CheckParm("-solo-net") > 0 && !playeringame[1];
+	}
+
+	int32_t auditparam = M_CheckParmWithArgs( "-playaudit", 1 );
+	if( auditparam )
+	{
+		G_InitAuditBufferPlaying( myargv[ auditparam + 1 ] );
 	}
 
     G_InitNew (skill, mapinfo, GF_None, random_seed); 
