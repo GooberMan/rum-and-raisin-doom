@@ -280,6 +280,8 @@ INLINE doombool IsScroller( int32_t special )
 	case Scroll_WallTextureByOffset_Always:
 	case Scroll_CeilingTexture_Always:
 	case Scroll_FloorTexture_Always:
+	case Scroll_FloorObjects_Always:
+	case Scroll_FloorTextureObjects_Always:
 		return remove_limits; // allow_boom_specials
 	default:
 		return false;
@@ -1365,10 +1367,11 @@ void P_UpdateSpecials (void)
 					if( sector.iscurrent )
 					{
 						P_BlockThingsIterator( iota( sector.blockbox[ BOXLEFT ], sector.blockbox[ BOXRIGHT ] + 1 ),
-												iota( sector.blockbox[ BOXBOTTOM ], sector.blockbox[ BOXRIGHT ] + 1 ),
+												iota( sector.blockbox[ BOXBOTTOM ], sector.blockbox[ BOXTOP ] + 1 ),
 												[ &sector ]( mobj_t* mobj ) -> bool
 						{
-							if( mobj->z != sector.floorheight )
+							if( mobj->z != sector.floorheight
+								|| ( mobj->flags & MF_NOGRAVITY ) )
 							{
 								return true;
 							}
@@ -1381,21 +1384,9 @@ void P_UpdateSpecials (void)
 
 							if( insector )
 							{
-								fixed_t oldmomx = mobj->momx;
-								fixed_t oldmomy = mobj->momy;
-								mobj->momx = sector.floorscrollratex;
-								mobj->momy = sector.floorscrollratey;
-								mobj = P_XYMovement( mobj );
-								if( mobj != nullptr )
-								{
-									if( mobj->subsector->sector != &sector )
-									{
-										oldmomx += FixedMul( sector.floorscrollratex, sector.friction );
-										oldmomy += FixedMul( sector.floorscrollratey, sector.friction );
-									}
-									mobj->momx = oldmomx;
-									mobj->momy = oldmomy;
-								}
+								constexpr fixed_t AccelScale = DoubleToFixed( 0.09375 );
+								mobj->momx += FixedMul( sector.floorscrollratex, AccelScale );
+								mobj->momy += FixedMul( sector.floorscrollratey, AccelScale );
 							}
 
 							return true;
