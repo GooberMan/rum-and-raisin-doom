@@ -250,10 +250,6 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 			case stt_highestneighborfloor:
 			case stt_highestneighborfloor_noaddifmatch:
 				heighttarget = P_FindHighestFloorSurrounding( &sector );
-				if( remove_limits ) // allow_boom_sector_targets
-				{
-					heighttarget = M_MAX( heighttarget, sector.floorheight );
-				}
 				break;
 
 			case stt_lowestneighborfloor:
@@ -270,18 +266,10 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 
 			case stt_highestneighborceiling:
 				heighttarget = P_FindHighestCeilingSurrounding( &sector );
-				if( remove_limits ) // allow_boom_sector_targets
-				{
-					heighttarget = M_MAX( heighttarget, sector.ceilingheight );
-				}
 				break;
 
 			case stt_lowestneighborceiling:
 				heighttarget = P_FindLowestCeilingSurrounding( &sector );
-				if( remove_limits ) // allow_boom_sector_targets
-				{
-					heighttarget = M_MIN( heighttarget, sector.ceilingheight );
-				}
 				break;
 
 			case stt_nextlowestneighborceiling:
@@ -858,10 +846,6 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 			case stt_highestneighborfloor:
 			case stt_highestneighborfloor_noaddifmatch:
 				floor->floordestheight = P_FindHighestFloorSurrounding( &sector );
-				if( remove_limits ) // allow_boom_sector_targets
-				{
-					floor->floordestheight = M_MAX( floor->floordestheight, sector.floorheight );
-				}
 				break;
 
 			case stt_lowestneighborfloor:
