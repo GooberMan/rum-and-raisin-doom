@@ -177,6 +177,8 @@ const uint32_t ENDFRAMEIDENTIFIER	= 0x7AC71E55;
 const uint32_t SECTORIDENTIFIER		= 0x0FACADE5;
 const uint32_t THINGIDENTIFIER		= 0xDEADBEA7;
 
+#define AUDITBUFFERDEFAULTSIZE ( 16 << 20 ) // 16MB default
+
 #define WRITEFORAUDIT( x ) G_WriteAuditBuffer( (byte*)&x, sizeof( x ) )
 #define CHECKFORAUDIT( type, expected, errormessage, ... ) \
 { \
@@ -2194,7 +2196,7 @@ void G_RecordDemo (const char *name)
     demorecording = true; 
 	if( !!M_CheckParmWithArgs( "-recordaudit", 1 ) )
 	{
-		G_InitAuditBufferRecording( 1 << 20 ); // One megabyte default
+		G_InitAuditBufferRecording( AUDITBUFFERDEFAULTSIZE );
 		auditname = Z_Malloc( demoname_size, PU_STATIC, NULL );
 		M_snprintf( auditname, demoname_size, "%s.aud", name );
 	}
@@ -2458,6 +2460,17 @@ void G_DoPlayDemo (void)
 	{
 		G_InitAuditBufferPlaying( myargv[ auditparam + 1 ] );
 	}
+	else
+	{
+		auditparam = M_CheckParmWithArgs( "-auditdemo", 1 );
+		if( auditparam )
+		{
+			G_InitAuditBufferRecording( AUDITBUFFERDEFAULTSIZE );
+			int32_t demoname_size = strlen(defdemoname) + 5;
+			auditname = Z_Malloc( demoname_size, PU_STATIC, NULL );
+			M_snprintf( auditname, demoname_size, "%s.aud", defdemoname );
+		}
+	}
 
     G_InitNew (skill, mapinfo, GF_None, random_seed); 
     starttime = I_GetTimeTicks(); 
@@ -2546,16 +2559,18 @@ doombool G_CheckDemoStatus (void)
 		Z_Free (demobuffer); 
 		demorecording = false; 
 
-		if( auditrecording )
+		if( !auditrecording )
 		{
-			M_WriteFile( auditname, auditbuffer, auditbufferpos - auditbuffer ); 
-			Z_Free( auditbuffer ); 
-			I_Error( "Audit %s recorded", auditname ); 
+			I_Error ("Demo %s recorded",demoname);
 		}
-
-		I_Error ("Demo %s recorded",demoname);
-
 	} 
+
+	if( auditrecording )
+	{
+		M_WriteFile( auditname, auditbuffer, auditbufferpos - auditbuffer ); 
+		Z_Free( auditbuffer ); 
+		I_Error( "Audit %s recorded", auditname ); 
+	}
 
 	return false; 
 } 

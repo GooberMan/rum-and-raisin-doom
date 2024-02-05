@@ -1974,6 +1974,11 @@ void D_DoomMain (void)
 		p = M_CheckParmWithArgs( "-playaudit", 1 );
 	}
 
+	if( !p )
+	{
+		p = M_CheckParmWithArgs( "-auditdemo", 1 );
+	}
+
     if (p)
     {
         char *uc_filename = strdup(myargv[p + 1]);
@@ -2319,6 +2324,11 @@ void D_DoomMain (void)
 	{
 		p = M_CheckParmWithArgs("-playaudit", 1);
 	}
+	if( !p )
+	{
+		p = M_CheckParmWithArgs( "-auditdemo", 1 );
+	}
+
     if (p)
     {
 	singledemo = true;              // quit after one demo
