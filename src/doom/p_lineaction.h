@@ -107,7 +107,7 @@ enum DoomActions : uint32_t
 	Floor_RaiseCrush_SR_Player,
 	Platform_Raise24ChangeTexture_SR_Player,
 	Platform_Raise32ChangeTexture_SR_Player,
-	Floor_RaiseNearestChangeTexture_SR_Player,
+	Platform_RaiseNearestChangeTexture_SR_Player,
 	Floor_RaiseNearest_SR_Player,
 	Floor_LowerHighestFast_SR_Player,
 	Floor_LowerHighestFast_S1_Player,

@@ -562,7 +562,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Ceiling_LowerTo8AboveFloor_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Ceiling >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, stt_floor, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighest_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_highestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_highestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Door_Open_GR_All
 	{ &precon::IsAnyThing, &DoGenericSwitch< Door >, LT_GunFront, LL_None, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
 	// Platform_RaiseNearestChangeTexture_G1_Player
@@ -604,11 +604,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_RaiseCrush_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, IntToFixed( -8 ), sct_none, scm_trigger, sc_crush },
 	// Platform_Raise24ChangeTexture_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 24 ), sct_copyboth, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericSwitch< VanillaRaise >, LT_SwitchFront, LL_None, constants::vanillaraisespeed, 0, stt_nosearch, IntToFixed( 24 ) },
 	// Platform_Raise32ChangeTexture_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 32 ), sct_copyboth, scm_trigger, sc_nocrush },
-	// Floor_RaiseNearestChangeTexture_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nexthighestneighborfloor, sd_up, 0, sct_copyboth, scm_trigger, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericSwitch< VanillaRaise >, LT_SwitchFront, LL_None, constants::vanillaraisespeed, 0, stt_nosearch, IntToFixed( 32 ) },
+	// Platform_RaiseNearestChangeTexture_SR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< VanillaRaise >, LT_SwitchFront, LL_None, constants::vanillaraisespeed, 0, stt_nexthighestneighborfloor, 0 },
 	// Floor_RaiseNearest_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nexthighestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighestFast_SR_Player
