@@ -37,6 +37,26 @@ extern "C"
 	plat_t*		activeplatshead = nullptr;
 }
 
+fixed_t P_FindShortestLowerTexture( sector_t* sector )
+{
+	fixed_t lowestheight = INT_MAX;
+	int32_t mintextureindex = remove_limits ? 1 : 0; // fix_shortest_lower_texture_line
+
+	for( line_t* secline : Lines( *sector ) )
+	{
+		if( secline->frontside && secline->frontside->bottomtexture >= mintextureindex )
+		{
+			lowestheight = M_MIN( lowestheight, texturelookup[ secline->frontside->bottomtexture ]->height );
+		}
+		if( secline->backside && secline->backside->bottomtexture >= mintextureindex )
+		{
+			lowestheight = M_MIN( lowestheight, texturelookup[ secline->backside->bottomtexture ]->height );
+		}
+	}
+
+	return lowestheight;
+}
+
 // =================
 //     CEILINGS
 // =================
@@ -277,21 +297,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 				break;
 
 			case stt_shortestlowertexture:
-				{
-					int32_t lowestheight = INT_MAX;
-					for( line_t* secline : Lines( sector ) )
-					{
-						if( secline->frontside && secline->frontside->bottomtexture >= 0 )
-						{
-							lowestheight = M_MIN( lowestheight, texturelookup[ secline->frontside->bottomtexture ]->height );
-						}
-						if( secline->backside && secline->backside->bottomtexture >= 0 )
-						{
-							lowestheight = M_MIN( lowestheight, texturelookup[ secline->backside->bottomtexture ]->height );
-						}
-					}
-					heighttarget = sector.ceilingheight + IntToFixed( lowestheight * ceiling->direction );
-				}
+				heighttarget = sector.ceilingheight + IntToFixed( P_FindShortestLowerTexture( &sector ) * ceiling->direction );
 				break;
 
 			case stt_perpetual:
@@ -775,7 +781,8 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 		if( holesector.tag == line->tag && holesector.FloorSpecial() == nullptr )
 		{
 			sector_t* donutsector = getNextSector( holesector.lines[ 0 ], &holesector );
-			if( donutsector == nullptr )
+			if( donutsector == nullptr
+				|| ( remove_limits && donutsector->FloorSpecial() != nullptr ) ) // fix_donut_multiple_sector_thinkers
 			{
 				continue;
 			}
@@ -898,21 +905,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 				break;
 
 			case stt_shortestlowertexture:
-				{
-					int32_t lowestheight = INT_MAX;
-					for( line_t* secline : Lines( sector ) )
-					{
-						if( secline->frontside && secline->frontside->bottomtexture >= 0 )
-						{
-							lowestheight = M_MIN( lowestheight, texturelookup[ secline->frontside->bottomtexture ]->height );
-						}
-						if( secline->backside && secline->backside->bottomtexture >= 0 )
-						{
-							lowestheight = M_MIN( lowestheight, texturelookup[ secline->backside->bottomtexture ]->height );
-						}
-					}
-					floor->floordestheight = sector.floorheight + IntToFixed( lowestheight * floor->direction );
-				}
+				floor->floordestheight = sector.floorheight + IntToFixed( P_FindShortestLowerTexture( &sector ) * floor->direction );
 				break;
 
 			case stt_perpetual:

@@ -49,6 +49,18 @@ DOOM_C_API result_e T_MovePlane( sector_t* sector, fixed_t speed, fixed_t dest, 
     fixed_t	lastpos;
 
 	sector->snapfloor = sector->snapceiling = false;
+
+	if( remove_limits ) // fix_moveplane_escapes_reality
+	{
+		if( !floorOrCeiling && direction == sd_up )
+		{
+			dest = M_MIN( dest, sector->ceilingheight );
+		}
+		else if( floorOrCeiling && direction == sd_down )
+		{
+			dest = M_MAX( dest, sector->floorheight );
+		}
+	}
 	
 	switch(floorOrCeiling)
 	{
