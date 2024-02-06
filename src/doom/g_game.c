@@ -2202,16 +2202,6 @@ void G_RecordDemo (const char *name)
 	}
 }
 
-typedef enum demoversion_e
-{
-	demo_doom_1_666		= 106,
-	demo_doom_1_7		= 107,
-	demo_doom_1_8		= 108,
-	demo_doom_1_9		= 109,
-	demo_doom_1_91		= 111,
-	demo_boom_2_02		= 202,
-} demoversion_t;
-
 // Get the demo version code appropriate for the version set in gameversion.
 demoversion_t G_VanillaVersionCode(void)
 {

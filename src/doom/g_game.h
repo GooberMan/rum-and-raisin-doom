@@ -25,6 +25,15 @@
 #include "d_ticcmd.h"
 #include "d_gameflow.h"
 
+typedef enum demoversion_e
+{
+	demo_doom_1_666		= 106,
+	demo_doom_1_7		= 107,
+	demo_doom_1_8		= 108,
+	demo_doom_1_9		= 109,
+	demo_doom_1_91		= 111,
+	demo_boom_2_02		= 202,
+} demoversion_t;
 
 //
 // GAME
@@ -73,7 +82,7 @@ DOOM_C_API doombool G_Responder (event_t*	ev);
 DOOM_C_API void G_ScreenShot (void);
 
 DOOM_C_API void G_DrawMouseSpeedBox(void);
-DOOM_C_API int G_VanillaVersionCode(void);
+DOOM_C_API demoversion_t G_VanillaVersionCode(void);
 
 DOOM_C_API extern int vanilla_savegame_limit;
 DOOM_C_API extern int vanilla_demo_limit;
