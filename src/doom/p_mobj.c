@@ -171,11 +171,20 @@ mobj_t* P_XYMovement (mobj_t* mo)
 					ceilingline->backsector &&
 					ceilingline->backsector->ceilingpic == skyflatnum)
 				{
-					// Hack to prevent missiles exploding
-					// against the sky.
-					// Does not handle sky floors.
-					P_RemoveMobj (mo);
-					return NULL;
+					doombool remove = true;
+					if( remove_limits ) // fix_sky_wall_projectiles
+					{
+						remove = mo->z >= ceilingline->backsector->ceilingheight;
+					}
+
+					if( remove )
+					{
+						// Hack to prevent missiles exploding
+						// against the sky.
+						// Does not handle sky floors.
+						P_RemoveMobj (mo);
+						return NULL;
+					}
 				}
 				P_ExplodeMissile (mo);
 			}
@@ -195,10 +204,10 @@ mobj_t* P_XYMovement (mobj_t* mo)
 	}
 
 	if (mo->flags & (MF_MISSILE | MF_SKULLFLY) )
-		return NULL; 	// no friction for missiles ever
+		return mo; 	// no friction for missiles ever
 
 	if (mo->z > mo->floorz)
-		return NULL;		// no friction when airborne
+		return mo;		// no friction when airborne
 
 	if (mo->flags & MF_CORPSE)
 	{
@@ -210,7 +219,7 @@ mobj_t* P_XYMovement (mobj_t* mo)
 			|| mo->momy < -FRACUNIT/4)
 		{
 			if (mo->floorz != mo->subsector->sector->floorheight)
-				return NULL;
+				return mo;
 		}
 	}
 
@@ -227,7 +236,7 @@ mobj_t* P_XYMovement (mobj_t* mo)
 		{
 			if( !P_SetMobjState (player->mo, S_PLAY) )
 			{
-				return NULL;
+				return mo;
 			}
 		}
 	
@@ -236,8 +245,8 @@ mobj_t* P_XYMovement (mobj_t* mo)
 	}
 	else
 	{
-		mo->momx = FixedMul( mo->momx, FRICTION ); //mo->subsector->sector->friction );
-		mo->momy = FixedMul( mo->momy, FRICTION ); //mo->subsector->sector->friction );
+		mo->momx = FixedMul( mo->momx, mo->subsector->sector->friction );
+		mo->momy = FixedMul( mo->momy, mo->subsector->sector->friction );
 	}
 
 	return mo;
@@ -246,7 +255,7 @@ mobj_t* P_XYMovement (mobj_t* mo)
 //
 // P_ZMovement
 //
-void P_ZMovement (mobj_t* mo)
+mobj_t* P_ZMovement (mobj_t* mo)
 {
     fixed_t	dist;
     fixed_t	delta;
@@ -349,7 +358,7 @@ void P_ZMovement (mobj_t* mo)
 	     && !(mo->flags & MF_NOCLIP) )
 	{
 	    P_ExplodeMissile (mo);
-	    return;
+	    NULL;
 	}
     }
     else if (! (mo->flags & MF_NOGRAVITY) )
@@ -378,9 +387,11 @@ void P_ZMovement (mobj_t* mo)
 	     && !(mo->flags & MF_NOCLIP) )
 	{
 	    P_ExplodeMissile (mo);
-	    return;
+	    return NULL;
 	}
     }
+
+	return mo;
 } 
 
 
@@ -838,9 +849,11 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	    break;
 	
     if (i==NUMMOBJTYPES)
-	I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
-		 mthing->type,
-		 mthing->x, mthing->y);
+	{
+		I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
+			 mthing->type,
+			 mthing->x, mthing->y);
+	}
 		
     // don't spawn keycards and players in deathmatch
     if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH)
