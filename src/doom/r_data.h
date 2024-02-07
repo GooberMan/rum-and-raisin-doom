@@ -47,7 +47,9 @@ DOOM_C_API void R_PrecacheLevel (void);
 // Floor/ceiling opaque texture tiles,
 // lookup by name. For animation?
 DOOM_C_API int R_FlatNumForName(const char *name);
+DOOM_C_API int32_t R_GetNumFlats();
 
+DOOM_C_API int R_SpriteNumForName( const char* name );
 
 // Called by P_Ticker for switches and animations,
 // returns the texture number for the texture name.
@@ -57,5 +59,18 @@ DOOM_C_API int R_CheckTextureNumForName(const char *name);
 DOOM_C_API const char* R_TextureNameForNum( int32_t tex );
 
 DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum );
+
+#if defined( __cplusplus )
+#include "m_container.h"
+
+struct lookup_t
+{
+	lumpindex_t		lumpindex;
+	int32_t			compositeindex;
+};
+
+const std::vector< lookup_t >& R_GetSpriteLumps();
+
+#endif //defined( __cplusplus )
 
 #endif

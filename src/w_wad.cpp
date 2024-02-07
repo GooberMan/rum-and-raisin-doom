@@ -31,6 +31,7 @@
 #include "i_system.h"
 #include "i_terminal.h"
 #include "i_video.h"
+#include "m_container.h"
 #include "m_misc.h"
 #include "v_diskicon.h"
 #include "z_zone.h"
@@ -40,14 +41,22 @@
 //
 // GLOBALS
 //
+extern "C"
+{
+	// Location of each lump on disk.
+	lumpinfo_t **lumpinfo;
+	uint32_t numlumps = 0;
+	doombool wadrenderlock = false;
 
-// Location of each lump on disk.
-lumpinfo_t **lumpinfo;
-uint32_t numlumps = 0;
+	extern int32_t remove_limits;
+}
 
-doombool wadrenderlock = false;
+std::vector< wad_file_t* > wadfiles;
 
-extern int32_t remove_limits;
+const std::vector< wad_file_t* >& W_GetLoadedWADFiles()
+{
+	return wadfiles;
+}
 
 // Hash table for fast lookups
 static lumpindex_t *lumphash;
@@ -146,7 +155,7 @@ wad_file_t *W_AddFile (const char *filename)
         // them back.  Effectively we're constructing a "fake WAD directory"
         // here, as it would appear on disk.
 
-	fileinfo = Z_Malloc(sizeof(filelump_t), PU_STATIC, 0);
+	fileinfo = (filelump_t*)Z_Malloc(sizeof(filelump_t), PU_STATIC, 0);
 	fileinfo->filepos = LONG(0);
 	fileinfo->size = LONG(wad_file->length);
 
@@ -187,14 +196,14 @@ wad_file_t *W_AddFile (const char *filename)
 
 	header.infotableofs = LONG(header.infotableofs);
 	length = header.numlumps*sizeof(filelump_t);
-	fileinfo = Z_Malloc(length, PU_STATIC, 0);
+	fileinfo = (filelump_t*)Z_Malloc(length, PU_STATIC, 0);
 
         W_Read(wad_file, header.infotableofs, fileinfo, length);
 	numfilelumps = header.numlumps;
     }
 
     // Increase size of numlumps array to accomodate the new file.
-    filelumps = calloc(numfilelumps, sizeof(lumpinfo_t));
+    filelumps = (lumpinfo_t*)calloc(numfilelumps, sizeof(lumpinfo_t));
     if (filelumps == NULL)
     {
         W_CloseFile(wad_file);
@@ -203,7 +212,7 @@ wad_file_t *W_AddFile (const char *filename)
 
     startlump = numlumps;
     numlumps += numfilelumps;
-    lumpinfo = I_Realloc(lumpinfo, numlumps * sizeof(lumpinfo_t *));
+    lumpinfo = (lumpinfo_t**)I_Realloc(lumpinfo, numlumps * sizeof(lumpinfo_t *));
     filerover = fileinfo;
 
     for (i = startlump; i < numlumps; ++i)
@@ -236,6 +245,7 @@ wad_file_t *W_AddFile (const char *filename)
         reloadlumps = filelumps;
     }
 
+	wadfiles.push_back( wad_file );
     return wad_file;
 }
 
@@ -411,7 +421,7 @@ void *W_CacheLumpNumTracked(const char* file, size_t line, lumpindex_t lumpnum, 
     {
         // Already cached, so just switch the zone tag.
 
-        result = lump->cache;
+        result = (byte*)lump->cache;
         changed = Z_ChangeTag(lump->cache, tag);
 
 		if( changed && wadrenderlock )
@@ -429,7 +439,7 @@ void *W_CacheLumpNumTracked(const char* file, size_t line, lumpindex_t lumpnum, 
 
 		lump->cache = Z_MallocTracked(file, line, W_LumpLength(lumpnum), tag, &lump->cache, NULL);
 		W_ReadLump (lumpnum, lump->cache);
-		result = lump->cache;
+		result = (byte*)lump->cache;
 	}
 	
     return result;
@@ -562,7 +572,7 @@ void W_GenerateHashTable(void)
     // Generate hash table
     if (numlumps > 0)
     {
-        lumphash = Z_Malloc(sizeof(lumpindex_t) * numlumps, PU_STATIC, NULL);
+        lumphash = (lumpindex_t*)Z_Malloc(sizeof(lumpindex_t) * numlumps, PU_STATIC, NULL);
 
         for (i = 0; i < numlumps; ++i)
         {

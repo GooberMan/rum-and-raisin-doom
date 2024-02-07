@@ -24,6 +24,7 @@
 
 // Screenwidth.
 #include "doomdef.h"
+#include "doomstat.h"
 
 // Some more or less basic data types
 // we depend on.
@@ -47,9 +48,6 @@
 #if defined( __cplusplus )
 extern "C" {
 #endif // defined( __cplusplus )
-
-extern int32_t remove_limits;
-
 
 // Silhouette, needed for clipping Segs (mainly)
 // and sprites representing things.
@@ -614,7 +612,7 @@ typedef struct spriteframe_s
 	doombool			rotate;
 
 	// Lump to use for view angles 0-7.
-	int16_t				lump[8];
+	int32_t				lump[8];
 
 	// Flip bit (1 = flip) to use for view angles 0-7.
 	byte				flip[8];
@@ -756,7 +754,6 @@ typedef struct planecontext_s
 
 	int32_t				spantype;
 
-	rasterregion_t**	rasterregions;
 	rasterregion_t*		floorregion;
 	rasterregion_t*		ceilingregion;
 

@@ -54,16 +54,12 @@ extern int32_t		frame_width;
 extern int32_t		frame_adjusted_width;
 extern int32_t		frame_height;
 
-extern int			firstflat;
-
 // for global animation
 extern int*			flattranslation;	
 extern int*			texturetranslation;	
 
 
 // Sprite....
-extern int32_t		firstspritelump;
-extern int32_t		lastspritelump;
 extern int32_t		numspritelumps;
 
 extern patch_t**	spritepatches;

@@ -105,4 +105,62 @@ DOOM_C_API const char *W_WadPathForLumpName( const char* name );
 
 DOOM_C_API doombool W_IsIWADLump(const lumpinfo_t *lump);
 
+#if defined( __cplusplus )
+
+const std::vector< wad_file_t* >& W_GetLoadedWADFiles();
+
+INLINE auto W_LumpIndicesFor( wad_file_t* file )
+{
+	struct lumpindexrange
+	{
+		struct iterator
+		{
+			wad_file_t*		wad_file;
+			uint32_t		lump_index;
+
+			INLINE int32_t operator*() noexcept				{ return lump_index; }
+			INLINE bool operator!=( const iterator& rhs ) 	{ return lump_index != rhs.lump_index; }
+			INLINE iterator& operator++()
+			{
+				Increment();
+				return *this;
+			}
+
+		private:
+			INLINE void Increment()
+			{
+				while( lump_index < numlumps )
+				{
+					++lump_index;
+					if( lump_index < numlumps && lumpinfo[ lump_index ]->wad_file == wad_file )
+					{
+						break;
+					}
+				}
+			}
+		};
+
+		lumpindexrange( wad_file_t* source_file )
+			: _begin { source_file, 0 }
+			, _end { source_file, numlumps }
+		{
+			if( lumpinfo[ 0 ]->wad_file != source_file )
+			{
+				++_begin;
+			}
+		}
+
+		constexpr iterator begin()	{ return _begin; }
+		constexpr iterator end()	{ return _end; }
+
+	private:
+		iterator _begin;
+		iterator _end;
+	};
+
+	return lumpindexrange( file );
+}
+
+#endif // defined( __cplusplus )
+
 #endif

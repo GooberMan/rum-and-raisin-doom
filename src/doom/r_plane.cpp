@@ -39,9 +39,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DOOM_C_API extern int			numflats;
-DOOM_C_API extern int			numtextures;
-
 //
 // R_ClearPlanes
 // At begining of frame.
@@ -54,8 +51,6 @@ void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
 	context->openingscount = context->maxopenings;
 	context->openings = R_AllocateScratch< vertclip_t >( context->openingscount );
 	context->lastopening = context->openings;
-
-	memset( context->rasterregions, 0, sizeof( rasterregion_t* ) * ( numflats + numtextures ) );
 
 	context->raster = R_AllocateScratch< rastercache_t >( drs_current->viewheight );
 }
@@ -94,16 +89,6 @@ rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, r
 	else
 	{
 		region->lines = nullptr;
-	}
-
-	if( picnum != skyflatnum )
-	{
-		region->nextregion = NULL;
-	}
-	else
-	{
-		region->nextregion = context.rasterregions[ picnum ];
-		context.rasterregions[ picnum ] = region;
 	}
 
 	return region;

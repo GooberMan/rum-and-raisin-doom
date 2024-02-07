@@ -70,6 +70,8 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					allow_weapon_recoil;					// Boom "feature"
 	doombool					allow_line_passthrough;					// Boom feature, don't stop using lines when one succeeds if linedef flag is set
 	doombool					allow_hud_combined_keys;				// Boom feature, dependent on if resources exist in WAD
+	doombool					allow_sliding_off_edge;					// Boom feature, trust me you'll miss it if it's not there
+	doombool					allow_corpse_to_ignore_mobjs;			// Corpses with velocity still collided as if solid with other things
 	doombool					allow_unlimited_scrollers;				// Vanilla limit
 	doombool					allow_unlimited_platforms;				// Vanilla limit
 	doombool					allow_unlimited_ceilings;				// Vanilla limit
@@ -103,6 +105,7 @@ DOOM_C_API typedef struct wadoptions_s
 	doombool					allow_mapinfo_lumps;
 	doombool					extended_map_datatypes;
 	doombool					allow_unlimited_lumps;
+	doombool					allow_additive_data_blocks; // PP_START, SS_START, FF_START, etc
 } wadoptions_t;
 
 DOOM_C_API typedef struct savegameoptions_s

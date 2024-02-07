@@ -148,9 +148,6 @@
     <ClCompile Include="..\src\w_main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\w_wad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\w_file.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -242,6 +239,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\i_sdlsound.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\w_wad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

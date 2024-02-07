@@ -173,5 +173,36 @@ INLINE auto ToLower( const char* str )
 	return ToLower( _output( str ) );
 }
 
+template< typename _str >
+requires is_std_string_v< _str > 
+INLINE _str ToUpper( const _str& str )
+{
+	_str copy = str;
+	std::transform( copy.begin(), copy.end(), copy.begin(), []( auto c ){ return std::toupper( c ); } );
+	return copy;
+}
+
+template< typename _str >
+requires is_std_string_v< _str > 
+INLINE _str& ToUpper( _str& str )
+{
+	std::transform( str.begin(), str.end(), str.begin(), []( auto c ){ return std::toupper( c ); } );
+	return str;
+}
+
+template< typename _str >
+requires is_std_string_v< _str > 
+INLINE _str&& ToUpper( _str&& str )
+{
+	std::transform( str.begin(), str.end(), str.begin(), []( auto c ){ return std::toupper( c ); } );
+	return std::move( str );
+}
+
+template< typename _output = DoomString >
+INLINE auto ToUpper( const char* str )
+{
+	return ToUpper( _output( str ) );
+}
+
 
 #endif // __M_CONV_H__

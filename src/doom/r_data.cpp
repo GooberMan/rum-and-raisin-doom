@@ -32,6 +32,7 @@
 #include "i_swap.h"
 #include "i_terminal.h"
 
+#include "m_conv.h"
 #include "m_misc.h"
 
 #include "p_local.h"
@@ -138,18 +139,6 @@ extern "C"
 		texpatch_t	patches[1];
 	};
 
-
-
-	int32_t					firstflat;
-	int32_t					lastflat;
-	int32_t					numflats;
-
-	int32_t					firstpatch;
-	int32_t					lastpatch;
-	int32_t					numpatches;
-
-	int32_t					firstspritelump;
-	int32_t					lastspritelump;
 	int32_t					numspritelumps;
 	patch_t**				spritepatches;
 
@@ -181,6 +170,56 @@ extern "C"
 
 	lighttable_t	*colormaps;
 	byte*			tranmap;
+}
+
+std::unordered_map< std::string, lookup_t >		flatnamelookup;
+std::vector< lookup_t >							flatindexlookup;
+
+std::unordered_map< std::string, lookup_t >		spritenamelookup;
+std::vector< lookup_t >							spriteindexlookup;
+
+constexpr size_t DoomStrLen( const char* val )
+{
+	int32_t size = 0;
+	while( size < 8 && *val++ != 0 )
+	{
+		++size;
+	}
+	return size;
+}
+constexpr int32_t NumFlats()							{ return (int32_t)flatindexlookup.size(); }
+constexpr std::string ClampString( const char* val )	{ return ToUpper( std::string( val, DoomStrLen( val ) ) ); }
+
+static void FillLookup( const char* L_START, const char* L_END
+						, const char* LL_START, const char* LL_END
+						, std::function< void( int32_t, int32_t ) > addfunc ) 
+{
+	for( wad_file_t* file : W_GetLoadedWADFiles() )
+	{
+		int32_t startindex = -1;
+
+		for( int32_t lumpindex : W_LumpIndicesFor( file ) )
+		{
+			lumpinfo_t* lump = lumpinfo[ lumpindex ];
+			if( startindex >= 0 )
+			{
+				if( strcasecmp( lump->name, L_END ) == 0
+					|| strcasecmp( lump->name, LL_END ) == 0 )
+				{
+					addfunc( startindex, lumpindex );
+					startindex = -1;
+				}
+			}
+			else
+			{
+				if( strcasecmp( lump->name, L_START ) == 0
+					|| strcasecmp( lump->name, LL_START ) == 0 )
+				{
+					startindex = lumpindex + 1;
+				}
+			}
+		}
+	}
 }
 
 typedef enum compositetype_e
@@ -398,7 +437,9 @@ void R_CacheCompositeTexture( int32_t tex )
 
 void R_CacheCompositeFlat( int32_t flat )
 {
-	int32_t lump = firstflat + flat;
+	auto& info = flatindexlookup[ flat ];
+
+	int32_t lump = info.lumpindex;
 
 	byte* transposedflatdata = (byte*)Z_Malloc( 64 * 64, COMPOSITE_ZONE, &flatcomposite[ flat ].data );
 	byte* originalflatdata = (byte*)W_CacheLumpNum( lump, PU_CACHE );
@@ -420,7 +461,7 @@ texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat )
 {
 	int32_t index = R_FlatNumForName( flat );
 
-	if( index >= numflats )
+	if( index >= NumFlats() )
 	{
 		R_CacheCompositeTexture( index );
 	}
@@ -565,17 +606,17 @@ constexpr int32_t maxcolfuncs = 4;
 
 void R_InitTextureAndFlatComposites( void )
 {
-	int32_t totallookup = numtextures + numflats;
+	size_t totallookup = numtextures + NumFlats();
 
 	texturecomposite = (texturecomposite_t*)Z_Malloc( numtextures * sizeof( *texturecomposite ), PU_STATIC, 0 );
 
 	texturelookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *texturelookup ), PU_STATIC, 0 );
 	flatlookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *flatlookup ), PU_STATIC, 0 );
 
-	flatcomposite = (texturecomposite_t*)Z_Malloc( numflats * sizeof(texturecomposite_t), PU_STATIC, NULL );
+	flatcomposite = (texturecomposite_t*)Z_Malloc( NumFlats() * sizeof(texturecomposite_t), PU_STATIC, NULL );
 	int32_t index = 0;
 	texturecomposite_t** texturedest = texturelookup;
-	texturecomposite_t** flatdest = flatlookup + numflats;
+	texturecomposite_t** flatdest = flatlookup + NumFlats();
 
 	for( texture_t* texture : std::span( textures, numtextures ) )
 	{
@@ -642,14 +683,16 @@ void R_InitTextureAndFlatComposites( void )
 	texturedest = texturelookup + numtextures;
 	flatdest = flatlookup;
 
-	for( texturecomposite_t& composite : std::span( flatcomposite, numflats ) )
+	for( texturecomposite_t& composite : std::span( flatcomposite, NumFlats() ) )
 	{
-		int32_t lump = firstflat + index;
+		auto& entrydetails = flatindexlookup[ index ];
+		lumpinfo_t* lumpentry = lumpinfo[ entrydetails.lumpindex ];
+
 		composite.data = NULL;
 		composite.wallrender = &R_DrawColumn_Colormap_64;
 		composite.transparentwallrender = &R_DrawColumn_Transparent_64;
 		composite.floorrender = &R_RasteriseRegion64x64;
-		strncpy( composite.name, W_GetNameForNum( lump ), 8 );
+		strncpy( composite.name, lumpentry->name, 8 );
 		composite.namepadding = 0;
 		composite.size = 64 * 64;
 		composite.width = 64;
@@ -665,13 +708,13 @@ void R_InitTextureAndFlatComposites( void )
 
 	// Create translation table for global animation.
 	texturetranslation = (int*)Z_Malloc ( ( totallookup + 1 ) * sizeof(*texturetranslation), PU_STATIC, 0);
-	for( int32_t i : iota( 0, totallookup ) )
+	for( int32_t i : iota( 0, (int32_t)totallookup ) )
 	{
 		texturetranslation[i] = i;
 	}
 
 	flattranslation = (int*)Z_Malloc ( ( totallookup + 1 ) * sizeof(*flattranslation), PU_STATIC, 0);
-	for( int32_t i : iota( 0, totallookup ) )
+	for( int32_t i : iota( 0, (int32_t)totallookup ) )
 	{
 		flattranslation[i] = i;
 	}
@@ -701,8 +744,6 @@ void R_InitTextures (void)
     char*		names;
     char*		name_p;
     
-    int32_t*	patchlookup;
-    
     int			nummappatches;
     int			offset;
     int			maxoff;
@@ -722,13 +763,52 @@ void R_InitTextures (void)
     names = (char*)W_CacheLumpName(DEH_String("PNAMES"), PU_STATIC);
     nummappatches = LONG ( *((int *)names) );
     name_p = names + 4;
-    patchlookup = (int32_t*)Z_Malloc(nummappatches*sizeof(*patchlookup), PU_STATIC, NULL);
 
-    for (i = 0; i < nummappatches; i++)
-    {
-        M_StringCopy(name, name_p + i * 8, sizeof(name));
-        patchlookup[i] = W_CheckNumForName(name);
-    }
+	std::vector< lookup_t > patchlookup;
+	patchlookup.reserve( nummappatches );
+
+	if( !remove_limits )
+	{
+		for (i = 0; i < nummappatches; i++)
+		{
+			M_StringCopy(name, name_p + i * 8, sizeof(name));
+			patchlookup[i] = { W_CheckNumForName(name), i };
+		}
+	}
+	else
+	{
+		std::unordered_map< std::string, lookup_t > patchnamelookup;
+		int32_t numpatchentries = 0;
+
+		FillLookup( "P_START", "P_END", "PP_START", "PP_END", [&patchnamelookup, &numpatchentries]( int32_t begin, int32_t end )
+		{
+			for( int32_t curr = begin; curr < end; ++curr )
+			{
+				std::string lumpname = ClampString( lumpinfo[ curr ]->name );
+				auto found = patchnamelookup.find( lumpname );
+				if( found == patchnamelookup.end() )
+				{
+					patchnamelookup[ lumpname ] = { curr, numpatchentries++ };
+				}
+				else
+				{
+					found->second.lumpindex = curr;
+				}
+			}
+		} );
+
+		for( int32_t mappatch = 0; mappatch < nummappatches; ++mappatch )
+		{
+			std::string patchname = ClampString( name_p );
+			auto found = patchnamelookup.find( patchname );
+			if( found == patchnamelookup.end() )
+			{
+				I_Error( "PNAMES entry %s not found", patchname.c_str() );
+			}
+			patchlookup.push_back( found->second );
+			name_p += 8;
+		}
+	}
     W_ReleaseLumpName(DEH_String("PNAMES"));
 
     // Load the map texture definitions from textures.lmp.
@@ -816,7 +896,7 @@ void R_InitTextures (void)
 		{
 			patch->originx = SHORT(mpatch->originx);
 			patch->originy = SHORT(mpatch->originy);
-			patch->patch = patchlookup[SHORT(mpatch->patch)];
+			patch->patch = patchlookup[SHORT(mpatch->patch)].lumpindex;
 			if (patch->patch == -1)
 			{
 			I_Error ("R_InitTextures: Missing patch in texture %s",
@@ -826,8 +906,6 @@ void R_InitTextures (void)
 		texturecolumnlump[i] = (short*)Z_Malloc (texture->width*sizeof(**texturecolumnlump), PU_STATIC,0);
 		texturecolumnofs[i] = (uint32_t*)Z_Malloc (texture->width*sizeof(**texturecolumnofs), PU_STATIC,0);
     }
-
-	Z_Free(patchlookup);
 
 	W_ReleaseLumpName(DEH_String("TEXTURE1"));
 	if (maptex2)
@@ -843,11 +921,44 @@ void R_InitTextures (void)
 //
 // R_InitFlats
 //
+void AddLumpRangeToFlats( int32_t begin, int32_t end )
+{
+	for( int32_t currflat = begin; currflat < end; ++currflat )
+	{
+		std::string lumpname = ClampString( lumpinfo[ currflat ]->name );
+		auto found = flatnamelookup.find( lumpname );
+		if( found == flatnamelookup.end() )
+		{
+			int32_t numflats = NumFlats();
+			flatindexlookup.push_back( { currflat, numflats } );
+			flatnamelookup[ lumpname ] = { currflat, numflats };
+		}
+		else
+		{
+			found->second.lumpindex = currflat;
+			flatindexlookup[ found->second.compositeindex ].lumpindex = currflat;
+		}
+	}
+}
+
 void R_InitFlats (void)
 {
-	firstflat = W_GetNumForName (DEH_String("F_START")) + 1;
-	lastflat = W_GetNumForName (DEH_String("F_END")) - 1;
-	numflats = lastflat - firstflat + 1;
+	if( remove_limits ) // allow_additive_data_blocks
+	{
+		const char* F_START = DEH_String("F_START");
+		const char* FF_START = "FF_START";
+
+		const char* F_END = DEH_String("F_END");
+		const char* FF_END = "F_END";
+
+		FillLookup( F_START, F_END, FF_START, FF_END, &AddLumpRangeToFlats );
+	}
+	else
+	{
+		int32_t firstflat = W_GetNumForName (DEH_String("F_START")) + 1;
+		int32_t lastflat = W_GetNumForName (DEH_String("F_END"));
+		AddLumpRangeToFlats( firstflat, lastflat + 1 );
+	}
 }
 
 
@@ -859,29 +970,63 @@ void R_InitFlats (void)
 //
 void R_InitSpriteLumps (void)
 {
-    int		i;
-    patch_t	*patch;
+	numspritelumps = 0;
 	
-    firstspritelump = W_GetNumForName (DEH_String("S_START")) + 1;
-    lastspritelump = W_GetNumForName (DEH_String("S_END")) - 1;
-    
-    numspritelumps = lastspritelump - firstspritelump + 1;
+	if( !remove_limits )
+	{
+		int32_t firstspritelump = W_GetNumForName (DEH_String("S_START")) + 1;
+		int32_t lastspritelump = W_GetNumForName (DEH_String("S_END")) - 1;
+		spriteindexlookup.reserve( lastspritelump - firstspritelump + 1 );
+
+		for( int32_t curr = firstspritelump; curr <= firstspritelump; ++curr )
+		{
+			std::string spritename = ClampString( lumpinfo[ curr ]->name );
+			spritenamelookup[ spritename ] = { curr, numspritelumps };
+			spriteindexlookup.push_back( { curr, numspritelumps } );
+			++numspritelumps;
+		}
+	}
+	else
+	{
+		FillLookup( DEH_String( "S_START" ), DEH_String( "S_END" ), "SS_START", "SS_END", []( int32_t begin, int32_t end )
+		{
+			for( int32_t curr = begin; curr < end; ++curr )
+			{
+				std::string spritename = ClampString( lumpinfo[ curr ]->name );
+				auto found = spritenamelookup.find( spritename );
+				if( found == spritenamelookup.end() )
+				{
+					spritenamelookup[ spritename ] = { curr, numspritelumps };
+					spriteindexlookup.push_back( { curr, numspritelumps } );
+					++numspritelumps;
+				}
+				else
+				{
+					found->second.lumpindex = curr;
+					spriteindexlookup[ found->second.compositeindex ].lumpindex = curr;
+				}
+			}
+		} );
+	}
+
     spritewidth = (rend_fixed_t*)Z_Malloc (numspritelumps*sizeof(*spritewidth), PU_STATIC, 0);
     spriteoffset = (rend_fixed_t*)Z_Malloc (numspritelumps*sizeof(*spriteoffset), PU_STATIC, 0);
     spritetopoffset = (rend_fixed_t*)Z_Malloc (numspritelumps*sizeof(*spritetopoffset), PU_STATIC, 0);
 	spritepatches = (patch_t**)Z_Malloc(numspritelumps * sizeof(*spritepatches), PU_STATIC, 0 );
 	
-    for (i=0 ; i< numspritelumps ; i++)
-    {
-		if (!(i&63))
+	for( lookup_t& lookup : spriteindexlookup )
+	{
+		if( !( lookup.compositeindex & 63 ) )
+		{
 			I_TerminalPrintf( Log_None, "." );
+		}
 
-		patch = (patch_t*)W_CacheLumpNum (firstspritelump+i, PU_STATIC);
-		spritewidth[i] = IntToRendFixed( SHORT(patch->width) );
-		spriteoffset[i] = IntToRendFixed( SHORT(patch->leftoffset) );
-		spritetopoffset[i] = IntToRendFixed( SHORT(patch->topoffset) );
+		patch_t* patch = (patch_t*)W_CacheLumpNum( lookup.lumpindex, PU_STATIC );
+		spritewidth[ lookup.compositeindex ] = IntToRendFixed( SHORT(patch->width) );
+		spriteoffset[ lookup.compositeindex ] = IntToRendFixed( SHORT(patch->leftoffset) );
+		spritetopoffset[ lookup.compositeindex ] = IntToRendFixed( SHORT(patch->topoffset) );
 
-		spritepatches[i] = patch;
+		spritepatches[ lookup.compositeindex ] = patch;
     }
 }
 
@@ -939,45 +1084,52 @@ void R_InitData (void)
 //
 int R_FlatNumForName(const char *name)
 {
-	int32_t index = W_CheckNumForName (name);
+	std::string lookup = ClampString( name );
+	auto found = flatnamelookup.find( lookup );
+
+	if( found != flatnamelookup.end() )
+	{
+		return found->second.compositeindex;
+	}
 
 	if( !remove_limits )
 	{
-		if( index != -1 )
-		{
-			return index - firstflat;
-		}
-
 		I_Error( "R_FlatNumForName: %s not found", name );
 		return -1;
 	}
 
-	if( index != -1 )
-	{
-		if( index >= firstflat && index <= lastflat )
-		{
-			return index - firstflat;
-		}
-		else if( W_LumpLength( index ) == 4096 )
-		{
-			I_LogAddEntryVar( Log_Warning, "Flat %.8s found outside of markers, code does not handle this yet", name );
-			// TODO: Handle bad flat numbers, although this only happens with -merge...
-			return 0;
-		}
-	}
-
-	index = R_CheckTextureNumForName (name);
+	int32_t index = R_CheckTextureNumForName( name );
 
 	if( index == -1 )
 	{
 		I_Error ("R_FlatNumForName: %s not found in textures", name );
 	}
 
-	return index + numflats;
+	return index + NumFlats();
 }
 
+DOOM_C_API int32_t R_GetNumFlats()
+{
+	return NumFlats();
+}
 
+DOOM_C_API int R_SpriteNumForName( const char* name )
+{
+	std::string lookup = ClampString( name );
+	auto found = spritenamelookup.find( lookup );
 
+	if( found != spritenamelookup.end() )
+	{
+		return found->second.compositeindex;
+	}
+
+	return -1;
+}
+
+const std::vector< lookup_t >& R_GetSpriteLumps()
+{
+	return spriteindexlookup;
+}
 
 //
 // R_CheckTextureNumForName
@@ -1045,15 +1197,15 @@ int R_TextureNumForName(const char *name)
 		return -1;
 	}
 
-	i = W_CheckNumForName( name );
+	auto found = flatnamelookup.find( ClampString( name ) );
 
-	if( i == -1 || i < firstflat || i > lastflat )
+	if( found == flatnamelookup.end() )
 	{
 		I_LogAddEntryVar( Log_Warning, "R_TextureNumForName: %s not found in textures or flats, replacing with %s", name, textures[ 0 ]->name );
 		return 0;
 	}
 
-	return numtextures + i - firstflat;
+	return numtextures + found->second.compositeindex;
 }
 
 DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum )
@@ -1084,15 +1236,15 @@ void R_PrecacheLevel (void)
 
     texture_t*		texture;
 
-	flatpresent = (char*)Z_Malloc(numflats, PU_STATIC, NULL);
-	memset (flatpresent,0,numflats);
+	flatpresent = (char*)Z_Malloc(NumFlats(), PU_STATIC, NULL);
+	memset (flatpresent,0,NumFlats());
 	texturepresent = (char*)Z_Malloc(numtextures, PU_STATIC, NULL);
 	memset (texturepresent,0, numtextures);
 
 	// Check flats and textures for presence, jamming in to appropriate array as necessary
 	auto MarkFlatPresence = [ &texturepresent, &flatpresent ]( int16_t flatnum )
 	{
-		if( flatnum < numflats )
+		if( flatnum < NumFlats() )
 		{
 			flatpresent[ flatnum ] = 1;
 			int32_t animstart = P_GetPicAnimStart( false, flatnum );
@@ -1107,7 +1259,7 @@ void R_PrecacheLevel (void)
 		}
 		else
 		{
-			int32_t texnum = flatnum - numflats;
+			int32_t texnum = flatnum - NumFlats();
 			texturepresent[ texnum ] = 1;
 			int32_t animstart = P_GetPicAnimStart( true, texnum );
 			if( animstart >= 0 )
@@ -1174,12 +1326,11 @@ void R_PrecacheLevel (void)
 	texturepresent[skytexture] = 1;
 	
 	// Precache flats.
-	for (i=0 ; i<numflats ; i++)
+	for( i=0 ; i< NumFlats() ; i++ )
 	{
 		flatcomposite[ i ].data = NULL;
-		lump = firstflat + i;
 
-		if (flatpresent[i])
+		if( flatpresent[ i ] )
 		{
 			R_CacheCompositeFlat( i );
 		}
@@ -1204,38 +1355,6 @@ void R_PrecacheLevel (void)
 
 	Z_Free(flatpresent);
 	Z_Free(texturepresent);
-
-/*
-	// Precache sprites.
-	spritepresent = Z_Malloc(numsprites, PU_STATIC, NULL);
-	memset (spritepresent,0, numsprites);
-	
-	for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-	{
-		if (th->function.acp1 == (actionf_p1)P_MobjThinker)
-			spritepresent[((mobj_t *)th)->sprite] = 1;
-	}
-	
-	spritememory = 0;
-	for (i=0 ; i<numsprites ; i++)
-	{
-		if (!spritepresent[i])
-			continue;
-
-		for (j=0 ; j<sprites[i].numframes ; j++)
-		{
-			sf = &sprites[i].spriteframes[j];
-			for (k=0 ; k<8 ; k++)
-			{
-				lump = firstspritelump + sf->lump[k];
-				spritememory += lumpinfo[lump]->size;
-				W_CacheLumpNum(lump , PU_STATIC);
-			}
-		}
-	}
-
-	Z_Free(spritepresent);
-*/
 }
 
 

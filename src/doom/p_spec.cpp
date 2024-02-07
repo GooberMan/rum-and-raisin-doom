@@ -55,7 +55,6 @@
 
 
 DOOM_C_API extern int numtextures;
-DOOM_C_API extern int numflats;
 
 //
 // Animating textures and planes
@@ -1324,6 +1323,7 @@ void P_UpdateSpecials (void)
 		}
 	}
 
+	int32_t numflats = R_GetNumFlats();
 	//	ANIMATE FLATS AND TEXTURES GLOBALLY
 	for (anim = anims ; anim < lastanim ; anim++)
 	{
@@ -1446,8 +1446,6 @@ static void DonutOverrun(fixed_t *s3_floorheight, short *s3_floorpic,
     static int tmp_s3_floorheight;
     static int tmp_s3_floorpic;
 
-    extern int numflats;
-
     if (first)
     {
         int p;
@@ -1490,6 +1488,7 @@ static void DonutOverrun(fixed_t *s3_floorheight, short *s3_floorpic,
             M_StrToInt(myargv[p + 1], &tmp_s3_floorheight);
             M_StrToInt(myargv[p + 2], &tmp_s3_floorpic);
 
+			int32_t numflats = R_GetNumFlats();
             if (tmp_s3_floorpic >= numflats)
             {
                 fprintf(stderr,

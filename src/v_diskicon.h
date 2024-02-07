@@ -24,8 +24,8 @@
 #define LOADING_DISK_W 16
 #define LOADING_DISK_H 16
 
-extern void V_EnableLoadingDisk(const char *lump_name, int xoffs, int yoffs);
-extern void V_BeginRead(size_t nbytes);
-extern void V_DrawDiskIcon(void);
+DOOM_C_API void V_EnableLoadingDisk(const char *lump_name, int xoffs, int yoffs);
+DOOM_C_API void V_BeginRead(size_t nbytes);
+DOOM_C_API void V_DrawDiskIcon(void);
 
 #endif

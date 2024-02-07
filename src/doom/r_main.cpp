@@ -157,8 +157,6 @@ extern "C"
 	extern int32_t	remove_limits;
 	extern int		detailLevel;
 	extern int		screenblocks;
-	extern int		numflats;
-	extern int		numtextures;
 	extern doombool	refreshstatusbar;
 	extern int		mouseSensitivity;
 	extern doombool	renderpaused;
@@ -1042,7 +1040,6 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.endtime = 1;
 		renderdatas[ currcontext ].context.timetaken = 1;
 
-		renderdatas[ currcontext ].context.planecontext.rasterregions = ( rasterregion_t** )Z_Malloc( sizeof( rasterregion_t* ) * ( numflats + numtextures ), PU_STATIC, NULL );
 		renderdatas[ currcontext ].context.planecontext.maxopenings = MAXOPENINGS;
 
 		R_ResetContext( renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
