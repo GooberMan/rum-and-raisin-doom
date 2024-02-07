@@ -67,7 +67,7 @@ void R_IncreaseOpenings( planecontext_t& context )
 // R_FindPlane
 //
 
-rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, int32_t picnum, rend_fixed_t height, rend_fixed_t xoffset, rend_fixed_t yoffset, int32_t lightlevel, int32_t start, int32_t stop )
+rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, rend_fixed_t height, rend_fixed_t xoffset, rend_fixed_t yoffset, int32_t lightlevel, int32_t start, int32_t stop )
 {
 	constexpr rasterline_t defaultline = { VPINDEX_INVALID, 0 };
 	int16_t width = stop - start + 1;

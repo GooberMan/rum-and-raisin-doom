@@ -858,16 +858,16 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		// render it
 		if (loopcontext.markceiling)
 		{
-			ceil = planecontext.ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsector->ceilingpic, bspcontext.frontsectorinst->ceilheight, bspcontext.frontsectorinst->ceiloffsetx, bspcontext.frontsectorinst->ceiloffsety, bspcontext.frontsectorinst->ceillightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			ceil = planecontext.ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsectorinst->ceilheight, bspcontext.frontsectorinst->ceiloffsetx, bspcontext.frontsectorinst->ceiloffsety, bspcontext.frontsectorinst->ceillightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 			ceilpic = bspcontext.frontsectorinst->ceiltex;
-			ceilsky = bspcontext.frontsector->ceilingpic == skyflatnum;
+			ceilsky = ceilpic->index == skyflatnum;
 		}
 
 		if (loopcontext.markfloor)
 		{
-			floor = planecontext.floorregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsector->floorpic, bspcontext.frontsectorinst->floorheight, bspcontext.frontsectorinst->flooroffsetx, bspcontext.frontsectorinst->flooroffsety, bspcontext.frontsectorinst->floorlightlevel, loopcontext.startx, loopcontext.stopx - 1 );
+			floor = planecontext.floorregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsectorinst->floorheight, bspcontext.frontsectorinst->flooroffsetx, bspcontext.frontsectorinst->flooroffsety, bspcontext.frontsectorinst->floorlightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 			floorpic = bspcontext.frontsectorinst->floortex;
-			floorsky = bspcontext.frontsector->floorpic == skyflatnum;
+			floorsky = floorpic->index == skyflatnum;
 		}
 
 #if RENDER_PERF_GRAPHING

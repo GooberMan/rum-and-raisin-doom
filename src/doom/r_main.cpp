@@ -1850,16 +1850,24 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 					break;
 				case transfer_ceilingspace:
 					rendsectors[ index ].floortex = transfersectorinst.floortex;
+					rendsectors[ index ].flooroffsetx = transfersectorinst.flooroffsetx;
+					rendsectors[ index ].flooroffsety = transfersectorinst.flooroffsety;
 					rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
+					rendsectors[ index ].ceiloffsetx = transfersectorinst.ceiloffsetx;
+					rendsectors[ index ].ceiloffsety = transfersectorinst.ceiloffsety;
 					rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
 					rendsectors[ index ].floorheight = transfersectorinst.ceilheight;
 					rendsectors[ index ].clipfloor = true;
 					break;
 				case transfer_floorspace:
 					rendsectors[ index ].floortex = transfersectorinst.floortex;
+					rendsectors[ index ].flooroffsetx = transfersectorinst.flooroffsetx;
+					rendsectors[ index ].flooroffsety = transfersectorinst.flooroffsety;
 					rendsectors[ index ].ceilheight = transfersectorinst.floorheight;
 					rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
 					rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
+					rendsectors[ index ].ceiloffsetx = transfersectorinst.ceiloffsetx;
+					rendsectors[ index ].ceiloffsety = transfersectorinst.ceiloffsety;
 					rendsectors[ index ].clipceiling = true;
 					break;
 				default:
