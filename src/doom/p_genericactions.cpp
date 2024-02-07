@@ -57,6 +57,37 @@ fixed_t P_FindShortestLowerTexture( sector_t* sector )
 	return lowestheight;
 }
 
+int32_t PerformOperationOnSectors( line_t* line, mobj_t* activator
+								, std::function< bool( sector_t& ) >&& precon
+								, std::function< int32_t( line_t*, mobj_t*, sector_t& ) >&& createfunc )
+{
+	int32_t createdcount = 0;
+	if( line->action->AnimatedActivationType() == LT_Use )
+	{
+		if( line->backsector == nullptr )
+		{
+			I_Error("EV_DoDoorGeneric: Dx special type on 1-sided linedef");
+			return 0;
+		}
+		if( precon( *line->backsector ) )
+		{
+			createdcount = createfunc( line, activator, *line->backsector );
+		}
+	}
+	else
+	{
+		for( sector_t& sector : Sectors() )
+		{
+			if( sector.tag == line->tag && precon( sector ) )
+			{
+				createdcount += createfunc( line, activator, sector );
+			}
+		}
+	}
+
+	return createdcount;
+}
+
 // =================
 //     CEILINGS
 // =================
@@ -184,180 +215,170 @@ DOOM_C_API int32_t EV_DoCrusherGeneric( line_t* line, mobj_t* activator )
 {
 	P_ActivateInStasisCeilingsGeneric( line->tag );
 
-	int32_t createdcount = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.CeilingSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.CeilingSpecial() == nullptr )
-		{
-			++createdcount;
+		ceiling_t* ceiling = (ceiling_t*)Z_MallocZero( sizeof(ceiling_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &ceiling->thinker );
+		P_AddActiveCeilingGeneric( ceiling );
+		ceiling->sector = &sector;
+		ceiling->sector->CeilingSpecial() = ceiling;
+		ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
+		ceiling->type = genericCeiling;
+		ceiling->crush = true;
+		ceiling->direction = sd_down;
+		ceiling->speed = line->action->speed;
+		ceiling->normalspeed = line->action->speed;
+		ceiling->crushingspeed = line->action->param1;
+		ceiling->sound = line->action->param2;
+		ceiling->perpetual = true;
+		ceiling->tag = sector.tag;
+		ceiling->topheight = sector.ceilingheight;
+		ceiling->bottomheight = sector.floorheight + IntToFixed( 8 );
+		ceiling->newspecial = -1;
+		ceiling->newtexture = -1;
 
-			ceiling_t* ceiling = (ceiling_t*)Z_MallocZero( sizeof(ceiling_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &ceiling->thinker );
-			P_AddActiveCeilingGeneric( ceiling );
-			ceiling->sector = &sector;
-			ceiling->sector->CeilingSpecial() = ceiling;
-			ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
-			ceiling->type = genericCeiling;
-			ceiling->crush = true;
-			ceiling->direction = sd_down;
-			ceiling->speed = line->action->speed;
-			ceiling->normalspeed = line->action->speed;
-			ceiling->crushingspeed = line->action->param1;
-			ceiling->sound = line->action->param2;
-			ceiling->perpetual = true;
-			ceiling->tag = sector.tag;
-			ceiling->topheight = sector.ceilingheight;
-			ceiling->bottomheight = sector.floorheight + IntToFixed( 8 );
-			ceiling->newspecial = -1;
-			ceiling->newtexture = -1;
-		}
-	}
-
-	return createdcount;
+		return 1;
+	} );
 }
 
 DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 {
-	int32_t createdcount = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.CeilingSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.CeilingSpecial() == nullptr )
+		ceiling_t* ceiling = (ceiling_t*)Z_MallocZero( sizeof(ceiling_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &ceiling->thinker );
+		P_AddActiveCeilingGeneric( ceiling );
+		ceiling->sector = &sector;
+		ceiling->sector->CeilingSpecial() = ceiling;
+		ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
+		ceiling->type = genericCeiling;
+		ceiling->crush = line->action->param6 == sc_crush;
+		ceiling->direction = line->action->param2;
+		ceiling->speed = line->action->speed;
+		ceiling->normalspeed = line->action->speed;
+		ceiling->crushingspeed = line->action->speed >> 3;
+		ceiling->sound = cs_movement;
+		ceiling->perpetual = false;
+		ceiling->tag = sector.tag;
+
+		fixed_t& heighttarget = ceiling->direction == sd_down ? ceiling->bottomheight : ceiling->topheight;
+
+		switch( (sectortargettype_t)line->action->param1 )
 		{
-			++createdcount;
+		case stt_highestneighborfloor:
+		case stt_highestneighborfloor_noaddifmatch:
+			heighttarget = P_FindHighestFloorSurrounding( &sector );
+			break;
 
-			ceiling_t* ceiling = (ceiling_t*)Z_MallocZero( sizeof(ceiling_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &ceiling->thinker );
-			P_AddActiveCeilingGeneric( ceiling );
-			ceiling->sector = &sector;
-			ceiling->sector->CeilingSpecial() = ceiling;
-			ceiling->thinker.function.acp1 = (actionf_p1)&T_MoveCeilingGeneric;
-			ceiling->type = genericCeiling;
-			ceiling->crush = line->action->param6 == sc_crush;
-			ceiling->direction = line->action->param2;
-			ceiling->speed = line->action->speed;
-			ceiling->normalspeed = line->action->speed;
-			ceiling->crushingspeed = line->action->speed >> 3;
-			ceiling->sound = cs_movement;
-			ceiling->perpetual = false;
-			ceiling->tag = sector.tag;
+		case stt_lowestneighborfloor:
+			heighttarget = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
+			break;
 
-			fixed_t& heighttarget = ceiling->direction == sd_down ? ceiling->bottomheight : ceiling->topheight;
+		case stt_nexthighestneighborfloor:
+			heighttarget = P_FindNextHighestFloor( &sector ); // This will preserve a vanilla bug
+			break;
 
-			switch( (sectortargettype_t)line->action->param1 )
-			{
-			case stt_highestneighborfloor:
-			case stt_highestneighborfloor_noaddifmatch:
-				heighttarget = P_FindHighestFloorSurrounding( &sector );
-				break;
+		case stt_nextlowestneighborfloor:
+			heighttarget = P_FindNextLowestFloorSurrounding( &sector );
+			break;
 
-			case stt_lowestneighborfloor:
-				heighttarget = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
-				break;
+		case stt_highestneighborceiling:
+			heighttarget = P_FindHighestCeilingSurrounding( &sector );
+			break;
 
-			case stt_nexthighestneighborfloor:
-				heighttarget = P_FindNextHighestFloor( &sector ); // This will preserve a vanilla bug
-				break;
+		case stt_lowestneighborceiling:
+			heighttarget = P_FindLowestCeilingSurrounding( &sector );
+			break;
 
-			case stt_nextlowestneighborfloor:
-				heighttarget = P_FindNextLowestFloorSurrounding( &sector );
-				break;
+		case stt_nextlowestneighborceiling:
+			heighttarget = P_FindNextLowestCeilingSurrounding( &sector );
+			break;
 
-			case stt_highestneighborceiling:
-				heighttarget = P_FindHighestCeilingSurrounding( &sector );
-				break;
+		case stt_floor:
+			heighttarget = sector.floorheight;
+			break;
 
-			case stt_lowestneighborceiling:
-				heighttarget = P_FindLowestCeilingSurrounding( &sector );
-				break;
+		case stt_ceiling:
+			I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is trying to move a sector's ceiling to the ceiling", line->index );
+			break;
 
-			case stt_nextlowestneighborceiling:
-				heighttarget = P_FindNextLowestCeilingSurrounding( &sector );
-				break;
+		case stt_shortestlowertexture:
+			heighttarget = sector.ceilingheight + IntToFixed( P_FindShortestLowerTexture( &sector ) * ceiling->direction );
+			break;
 
-			case stt_floor:
-				heighttarget = sector.floorheight;
-				break;
+		case stt_perpetual:
+			I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is trying start a perpetual ceiling, try EV_DoCrusherGeneric", line->index );
+			break;
 
-			case stt_ceiling:
-				I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is trying to move a sector's ceiling to the ceiling", line->index );
-				break;
+		case stt_nosearch:
+		default:
+			heighttarget = sector.ceilingheight;
+			break;
+		}
 
-			case stt_shortestlowertexture:
-				heighttarget = sector.ceilingheight + IntToFixed( P_FindShortestLowerTexture( &sector ) * ceiling->direction );
-				break;
+		heighttarget += (fixed_t)line->action->param3;
 
-			case stt_perpetual:
-				I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is trying start a perpetual ceiling, try EV_DoCrusherGeneric", line->index );
-				break;
+		ceiling->newspecial = -1;
+		ceiling->newtexture = -1;
 
-			case stt_nosearch:
-			default:
-				heighttarget = sector.ceilingheight;
-				break;
-			}
+		auto SetSpecial = []( sector_t& sourcesector
+							, ceiling_t* target
+							, sectorchangetype_t type
+							, sector_t& setfrom )
+		{
+			int16_t& targetspecial = target->direction == sd_down ? target->newspecial : sourcesector.special;
+			int16_t& targettexture = target->direction == sd_down ? target->newtexture : sourcesector.ceilingpic;
 
-			heighttarget += (fixed_t)line->action->param3;
-
-			ceiling->newspecial = -1;
-			ceiling->newtexture = -1;
-
-			auto SetSpecial = []( sector_t& sourcesector
-								, ceiling_t* target
-								, sectorchangetype_t type
-								, sector_t& setfrom )
-			{
-				int16_t& targetspecial = target->direction == sd_down ? target->newspecial : sourcesector.special;
-				int16_t& targettexture = target->direction == sd_down ? target->newtexture : sourcesector.ceilingpic;
-
-				targetspecial = type == sct_zerospecial
-									? 0
-									: type == sct_copyboth
-										? setfrom.special
-										: -1;
-				targettexture = ( type == sct_copytexture || type == sct_copyboth )
-									? setfrom.ceilingpic
+			targetspecial = type == sct_zerospecial
+								? 0
+								: type == sct_copyboth
+									? setfrom.special
 									: -1;
-			};
+			targettexture = ( type == sct_copytexture || type == sct_copyboth )
+								? setfrom.ceilingpic
+								: -1;
+		};
 
-			if( line->action->param4 != sct_none )
+		if( line->action->param4 != sct_none )
+		{
+			if( line->action->param6 == scm_numeric )
 			{
-				if( line->action->param6 == scm_numeric )
+				// The search functions above already find the correct sector.
+				// We should really cache the result that way...
+				for( line_t* secline : Lines( sector ) )
 				{
-					// The search functions above already find the correct sector.
-					// We should really cache the result that way...
-					for( line_t* secline : Lines( sector ) )
+					if( secline->TwoSided() )
 					{
-						if( secline->TwoSided() )
+						sector_t& setfrom = secline->frontsector->index == sector.index
+											? *secline->backsector
+											: *secline->frontsector;
+						if( setfrom.ceilingheight == heighttarget )
 						{
-							sector_t& setfrom = secline->frontsector->index == sector.index
-												? *secline->backsector
-												: *secline->frontsector;
-							if( setfrom.ceilingheight == heighttarget )
-							{
-								SetSpecial( sector, ceiling, (sectorchangetype_t)secline->action->param4, setfrom );
-								break;
-							}
+							SetSpecial( sector, ceiling, (sectorchangetype_t)secline->action->param4, setfrom );
+							break;
 						}
 					}
 				}
-				else // Trigger model
+			}
+			else // Trigger model
+			{
+				if( line->frontsector == nullptr )
 				{
-					if( line->frontsector == nullptr )
-					{
-						I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is using a trigger model without a front sector", line->index );
-					}
-					else
-					{
-						SetSpecial( sector, ceiling, (sectorchangetype_t)line->action->param4, *line->frontsector );
-					}
+					I_LogAddEntryVar( Log_Error, "EV_DoCeilingGeneric: Line %d is using a trigger model without a front sector", line->index );
+				}
+				else
+				{
+					SetSpecial( sector, ceiling, (sectorchangetype_t)line->action->param4, *line->frontsector );
 				}
 			}
 		}
-	}
 
-	return createdcount;
+		return 1;
+	} );
 }
 
 // =================
@@ -472,52 +493,6 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 	}
 }
 
-void EV_DoDoorGeneric( line_t* line, sector_t* sec )
-{
-	vldoor_t* door = (vldoor_t*)Z_MallocZero( sizeof(vldoor_t), PU_LEVSPEC, 0 );
-	P_AddThinker (&door->thinker);
-	door->sector = sec;
-	door->sector->CeilingSpecial() = door;
-	door->thinker.function.acp1 = (actionf_p1)T_VerticalDoorGeneric;
-	door->topwait = line->action->delay;
-	door->topcountdown = door->topwait;
-	door->speed = line->action->speed;
-	door->direction = (sectordir_t)line->action->param1;
-	door->nextdirection = sd_none;
-	door->blazing = door->speed >= (VDOORSPEED * 4);
-	door->keepclosingoncrush = ( door->direction == sd_close && door->topwait == 0 );
-	door->dontrecloseoncrush = ( door->direction == sd_close && door->topwait != 0 );
-	door->lighttag = 0;
-
-	if( remove_limits ) // allow_boom_specials
-	{
-		if( line->action->AnimatedActivationType() == LT_Use
-			&& line->tag != 0
-			&& line->frontsector != nullptr
-			&& line->backsector != nullptr )
-		{
-			door->lighttag = line->tag;
-			door->lightmax = M_MAX( line->frontsector->lightlevel, line->backsector->lightlevel );
-			door->lightmin = M_MIN( line->frontsector->lightlevel, line->backsector->lightlevel );
-		}
-	}
-
-	if( door->direction == sd_close && door->topwait > 0 )
-	{
-		door->topheight = sec->ceilingheight;
-	}
-	else
-	{
-		door->topheight = P_FindLowestCeilingSurrounding( sec );
-		door->topheight -= IntToFixed( 4 );
-	}
-
-	if( door->direction == sd_close || door->topheight != sec->ceilingheight )
-	{
-		S_StartSound( &door->sector->soundorg, DoorSoundFor( door->direction, door->blazing ) );
-	}
-}
-
 DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 {
 	if( line->action->AnimatedActivationType() == LT_Use && !line->backsector )
@@ -554,28 +529,57 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 
 			return 1;
 		}
-
-		if( !line->backsector->CeilingSpecial() )
-		{
-			EV_DoDoorGeneric( line, line->backsector );
-			return 1;
-		}
-
-		return 0;
 	}
 
-	int32_t sectorsactivated = 0;
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.CeilingSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.CeilingSpecial() == nullptr )
-		{
-			// new door thinker
-			++sectorsactivated;
-			EV_DoDoorGeneric( line, &sector );
-		}
-	}
+		vldoor_t* door = (vldoor_t*)Z_MallocZero( sizeof(vldoor_t), PU_LEVSPEC, 0 );
+		P_AddThinker (&door->thinker);
+		door->sector = &sector;
+		door->sector->CeilingSpecial() = door;
+		door->thinker.function.acp1 = (actionf_p1)T_VerticalDoorGeneric;
+		door->topwait = line->action->delay;
+		door->topcountdown = door->topwait;
+		door->speed = line->action->speed;
+		door->direction = (sectordir_t)line->action->param1;
+		door->nextdirection = sd_none;
+		door->blazing = door->speed >= (VDOORSPEED * 4);
+		door->keepclosingoncrush = ( door->direction == sd_close && door->topwait == 0 );
+		door->dontrecloseoncrush = ( door->direction == sd_close && door->topwait != 0 );
+		door->lighttag = 0;
 
-	return sectorsactivated;
+		if( remove_limits ) // allow_boom_specials
+		{
+			if( line->action->AnimatedActivationType() == LT_Use
+				&& line->tag != 0
+				&& line->frontsector != nullptr
+				&& line->backsector != nullptr )
+			{
+				door->lighttag = line->tag;
+				door->lightmax = M_MAX( line->frontsector->lightlevel, line->backsector->lightlevel );
+				door->lightmin = M_MIN( line->frontsector->lightlevel, line->backsector->lightlevel );
+			}
+		}
+
+		if( door->direction == sd_close && door->topwait > 0 )
+		{
+			door->topheight = sector.ceilingheight;
+		}
+		else
+		{
+			door->topheight = P_FindLowestCeilingSurrounding( &sector );
+			door->topheight -= IntToFixed( 4 );
+		}
+
+		if( door->direction == sd_close || door->topheight != sector.ceilingheight )
+		{
+			S_StartSound( &door->sector->soundorg, DoorSoundFor( door->direction, door->blazing ) );
+		}
+
+		return 1;
+	} );
 }
 
 // =================
@@ -614,46 +618,41 @@ DOOM_C_API void T_MoveElevatorGeneric( elevator_t* elevator )
 
 DOOM_C_API int32_t EV_DoElevatorGeneric( line_t* line, mobj_t* activator )
 {
-	int32_t numelevatorscreated = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr && sector.CeilingSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr && sector.CeilingSpecial() == nullptr )
+		elevator_t* elevator = (elevator_t*)Z_MallocZero( sizeof(elevator_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &elevator->thinker );
+		elevator->sector = &sector;
+		elevator->sector->FloorSpecial() = elevator;
+		elevator->sector->CeilingSpecial() = elevator;
+		elevator->thinker.function.acp1 = (actionf_p1)&T_MoveElevatorGeneric;
+		elevator->speed = line->action->speed;
+		elevator->direction = (sectordir_t)line->action->param2;
+
+		fixed_t dist = 0;
+		switch( line->action->param1 )
 		{
-			++numelevatorscreated;
-
-			elevator_t* elevator = (elevator_t*)Z_MallocZero( sizeof(elevator_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &elevator->thinker );
-			elevator->sector = &sector;
-			elevator->sector->FloorSpecial() = elevator;
-			elevator->sector->CeilingSpecial() = elevator;
-			elevator->thinker.function.acp1 = (actionf_p1)&T_MoveElevatorGeneric;
-			elevator->speed = line->action->speed;
-			elevator->direction = (sectordir_t)line->action->param2;
-
-			fixed_t dist = 0;
-			switch( line->action->param1 )
-			{
-			case stt_nexthighestneighborfloor:
-				dist = P_FindNextHighestFloorSurrounding( &sector ) - sector.floorheight;
-				break;
-			case stt_nextlowestneighborfloor:
-				dist = P_FindNextLowestFloorSurrounding( &sector ) - sector.floorheight;
-				break;
-			case stt_lineactivator:
-				dist = line->frontsector->floorheight - sector.floorheight;
-				elevator->direction = dist >= 0 ? sd_up : sd_down;
-				break;
-			}
-
-			elevator->floordest = sector.floorheight + dist;
-			elevator->ceilingdest = sector.ceilingheight + dist;
-
-			S_StartSound( &sector.soundorg, sfx_stnmov );
+		case stt_nexthighestneighborfloor:
+			dist = P_FindNextHighestFloorSurrounding( &sector ) - sector.floorheight;
+			break;
+		case stt_nextlowestneighborfloor:
+			dist = P_FindNextLowestFloorSurrounding( &sector ) - sector.floorheight;
+			break;
+		case stt_lineactivator:
+			dist = line->frontsector->floorheight - sector.floorheight;
+			elevator->direction = dist >= 0 ? sd_up : sd_down;
+			break;
 		}
-	}
 
-	return numelevatorscreated;
+		elevator->floordest = sector.floorheight + dist;
+		elevator->ceilingdest = sector.ceilingheight + dist;
+
+		S_StartSound( &sector.soundorg, sfx_stnmov );
+
+		return 1;
+	} );
 }
 
 // =================
@@ -694,278 +693,266 @@ DOOM_C_API void T_MoveFloorGeneric(floormove_t* floor)
 
 DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 {
-	int32_t createdcount = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
+		floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &floor->thinker );
+		floor->sector = &sector;
+		floor->sector->FloorSpecial() = floor;
+		floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+		floor->type = genericFloor;
+		floor->speed = line->action->speed;
+		floor->crush = line->action->param3;
+		floor->newspecial = -1;
+		floor->texture = -1;
+
+		fixed_t& stairsize = line->action->param1;
+		fixed_t height = sector.floorheight + stairsize;
+		floor->floordestheight = height;
+		floor->direction = stairsize >= 0 ? sd_up : sd_down;
+
+		int32_t createdcount = 1;
+
+		sector_t* currsector = &sector;
+		while( currsector != nullptr )
 		{
-			++createdcount;
+			sector_t* searchsector = currsector;
+			currsector = nullptr;
 
-			floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &floor->thinker );
-			floor->sector = &sector;
-			floor->sector->FloorSpecial() = floor;
-			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
-			floor->type = genericFloor;
-			floor->speed = line->action->speed;
-			floor->crush = line->action->param3;
-			floor->newspecial = -1;
-			floor->texture = -1;
-
-			fixed_t& stairsize = line->action->param1;
-			fixed_t height = sector.floorheight + stairsize;
-			floor->floordestheight = height;
-			floor->direction = stairsize >= 0 ? sd_up : sd_down;
-
-			sector_t* currsector = &sector;
-			while( currsector != nullptr )
+			for( line_t* searchline : Lines( *searchsector ) )
 			{
-				sector_t* searchsector = currsector;
-				currsector = nullptr;
-
-				for( line_t* searchline : Lines( *searchsector ) )
-				{
-					if( ( searchline->flags & ML_TWOSIDED ) != ML_TWOSIDED
-						|| searchline->frontsector->index != searchsector->index
-						|| ( line->action->param2 == false && searchline->backsector->floorpic != searchsector->floorpic )
-						|| searchline->backsector->FloorSpecial() != nullptr )
-					{
-						continue;
-					}
-
-					currsector = searchline->backsector;
-					height += stairsize;
-
-					floormove_t* nextfloor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
-					P_AddThinker( &nextfloor->thinker );
-					nextfloor->sector = searchline->backsector;
-					nextfloor->sector->FloorSpecial() = nextfloor;
-					nextfloor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
-					nextfloor->type = genericFloor;
-					nextfloor->direction = floor->direction;
-					nextfloor->speed = line->action->speed;
-					nextfloor->crush = line->action->param3;
-					nextfloor->newspecial = -1;
-					nextfloor->texture = -1;
-					nextfloor->floordestheight = height;
-
-					break;
-				}
-			}
-		}
-	}
-
-	return createdcount;
-
-}
-
-DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
-{
-	int32_t createdcount = 0;
-
-	for( sector_t& holesector : Sectors() )
-	{
-		if( holesector.tag == line->tag && holesector.FloorSpecial() == nullptr )
-		{
-			sector_t* donutsector = getNextSector( holesector.lines[ 0 ], &holesector );
-			if( donutsector == nullptr
-				|| ( remove_limits && donutsector->FloorSpecial() != nullptr ) ) // fix_donut_multiple_sector_thinkers
-			{
-				continue;
-			}
-
-			for( line_t* targetline : Lines( *donutsector ) )
-			{
-				if( targetline->backsector == nullptr
-					|| targetline->backsector->index == holesector.index )
+				if( ( searchline->flags & ML_TWOSIDED ) != ML_TWOSIDED
+					|| searchline->frontsector->index != searchsector->index
+					|| ( line->action->param2 == false && searchline->backsector->floorpic != searchsector->floorpic )
+					|| searchline->backsector->FloorSpecial() != nullptr )
 				{
 					continue;
 				}
 
 				++createdcount;
+				currsector = searchline->backsector;
+				height += stairsize;
 
-				sector_t*& target = targetline->backsector;
-
-				floormove_t* donut = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
-				P_AddThinker( &donut->thinker );
-				donut->sector = donutsector;
-				donut->sector->FloorSpecial() = donut;
-				donut->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
-				donut->type = genericFloor;
-				donut->crush = false;
-				donut->direction = sd_up;
-				donut->speed = line->action->speed;
-				donut->floordestheight = target->floorheight;
-				donut->newspecial = 0;
-				donut->texture = target->floorpic;
-
-				floormove_t* hole = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
-				P_AddThinker( &hole->thinker );
-				hole->sector = &holesector;
-				hole->sector->FloorSpecial() = hole;
-				hole->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
-				hole->type = genericFloor;
-				hole->crush = false;
-				hole->direction = sd_down;
-				hole->speed = line->action->speed;
-				hole->floordestheight = target->floorheight;
-				hole->newspecial = -1;
-				hole->texture = -1;
+				floormove_t* nextfloor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+				P_AddThinker( &nextfloor->thinker );
+				nextfloor->sector = searchline->backsector;
+				nextfloor->sector->FloorSpecial() = nextfloor;
+				nextfloor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+				nextfloor->type = genericFloor;
+				nextfloor->direction = floor->direction;
+				nextfloor->speed = line->action->speed;
+				nextfloor->crush = line->action->param3;
+				nextfloor->newspecial = -1;
+				nextfloor->texture = -1;
+				nextfloor->floordestheight = height;
 
 				break;
 			}
 		}
-	}
 
-	return createdcount;
+		return createdcount;
+	} );
+
+}
+
+DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
+{
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& holesector ) -> int32_t
+	{
+		sector_t* donutsector = getNextSector( holesector.lines[ 0 ], &holesector );
+		if( donutsector == nullptr
+			|| ( remove_limits && donutsector->FloorSpecial() != nullptr ) ) // fix_donut_multiple_sector_thinkers
+		{
+			return 0;
+		}
+
+		for( line_t* targetline : Lines( *donutsector ) )
+		{
+			if( targetline->backsector == nullptr
+				|| targetline->backsector->index == holesector.index )
+			{
+				continue;
+			}
+
+			sector_t*& target = targetline->backsector;
+
+			floormove_t* donut = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &donut->thinker );
+			donut->sector = donutsector;
+			donut->sector->FloorSpecial() = donut;
+			donut->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+			donut->type = genericFloor;
+			donut->crush = false;
+			donut->direction = sd_up;
+			donut->speed = line->action->speed;
+			donut->floordestheight = target->floorheight;
+			donut->newspecial = 0;
+			donut->texture = target->floorpic;
+
+			floormove_t* hole = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+			P_AddThinker( &hole->thinker );
+			hole->sector = &holesector;
+			hole->sector->FloorSpecial() = hole;
+			hole->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+			hole->type = genericFloor;
+			hole->crush = false;
+			hole->direction = sd_down;
+			hole->speed = line->action->speed;
+			hole->floordestheight = target->floorheight;
+			hole->newspecial = -1;
+			hole->texture = -1;
+
+			return 2;
+		}
+
+		return 0;
+	} );
 }
 
 DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 {
-	int32_t createdcount = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
+		floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &floor->thinker );
+		floor->sector = &sector;
+		floor->sector->FloorSpecial() = floor;
+		floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
+		floor->type = genericFloor;
+		floor->crush = line->action->param6 == sc_crush;
+		floor->direction = line->action->param2;
+		floor->speed = line->action->speed;
+
+		switch( (sectortargettype_t)line->action->param1 )
 		{
-			++createdcount;
+		case stt_highestneighborfloor:
+		case stt_highestneighborfloor_noaddifmatch:
+			floor->floordestheight = P_FindHighestFloorSurrounding( &sector );
+			break;
 
-			floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &floor->thinker );
-			floor->sector = &sector;
-			floor->sector->FloorSpecial() = floor;
-			floor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
-			floor->type = genericFloor;
-			floor->crush = line->action->param6 == sc_crush;
-			floor->direction = line->action->param2;
-			floor->speed = line->action->speed;
+		case stt_lowestneighborfloor:
+			floor->floordestheight = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
+			break;
 
-			switch( (sectortargettype_t)line->action->param1 )
+		case stt_nexthighestneighborfloor:
+			floor->floordestheight = P_FindNextHighestFloor( &sector ); // This will preserve a vanilla bug
+			break;
+
+		case stt_nextlowestneighborfloor:
+			floor->floordestheight = P_FindNextLowestFloorSurrounding( &sector );
+			break;
+
+		case stt_highestneighborceiling:
+			floor->floordestheight = P_FindHighestCeilingSurrounding( &sector );
+			if( remove_limits ) // allow_boom_sector_targets
 			{
-			case stt_highestneighborfloor:
-			case stt_highestneighborfloor_noaddifmatch:
-				floor->floordestheight = P_FindHighestFloorSurrounding( &sector );
-				break;
-
-			case stt_lowestneighborfloor:
-				floor->floordestheight = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
-				break;
-
-			case stt_nexthighestneighborfloor:
-				floor->floordestheight = P_FindNextHighestFloor( &sector ); // This will preserve a vanilla bug
-				break;
-
-			case stt_nextlowestneighborfloor:
-				floor->floordestheight = P_FindNextLowestFloorSurrounding( &sector );
-				break;
-
-			case stt_highestneighborceiling:
-				floor->floordestheight = P_FindHighestCeilingSurrounding( &sector );
-				if( remove_limits ) // allow_boom_sector_targets
-				{
-					floor->floordestheight = M_MAX( floor->floordestheight, sector.ceilingheight );
-				}
-				break;
-
-			case stt_lowestneighborceiling:
-				floor->floordestheight = P_FindLowestCeilingSurrounding( &sector );
-				if( remove_limits ) // allow_boom_sector_targets
-				{
-					floor->floordestheight = M_MIN( floor->floordestheight, sector.ceilingheight );
-				}
-				break;
-
-			case stt_nextlowestneighborceiling:
-				floor->floordestheight = P_FindNextLowestCeilingSurrounding( &sector );
-				break;
-
-			case stt_floor:
-				I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying to move a sector's floor to the floor", line->index );
-				break;
-
-			case stt_ceiling:
-				floor->floordestheight = sector.ceilingheight;
-				break;
-
-			case stt_shortestlowertexture:
-				floor->floordestheight = sector.floorheight + IntToFixed( P_FindShortestLowerTexture( &sector ) * floor->direction );
-				break;
-
-			case stt_perpetual:
-				I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying start a perpetual platform, try using EV_DoPerpetualLiftGeneric instead", line->index );
-				break;
-
-			case stt_nosearch:
-			default:
-				floor->floordestheight = sector.floorheight;
-				break;
+				floor->floordestheight = M_MAX( floor->floordestheight, sector.ceilingheight );
 			}
+			break;
 
-			if( line->action->param1 != stt_highestneighborfloor_noaddifmatch
-				|| floor->floordestheight != sector.floorheight )
+		case stt_lowestneighborceiling:
+			floor->floordestheight = P_FindLowestCeilingSurrounding( &sector );
+			if( remove_limits ) // allow_boom_sector_targets
 			{
-				floor->floordestheight += (fixed_t)line->action->param3;
+				floor->floordestheight = M_MIN( floor->floordestheight, sector.ceilingheight );
 			}
+			break;
 
-			floor->newspecial = -1;
-			floor->texture = -1;
+		case stt_nextlowestneighborceiling:
+			floor->floordestheight = P_FindNextLowestCeilingSurrounding( &sector );
+			break;
 
-			auto SetSpecial = []( sector_t& sourcesector
-								, floormove_t* target
-								, sectorchangetype_t type
-								, sector_t& setfrom )
-			{
-				int16_t& targetspecial = target->direction == sd_down ? target->newspecial : sourcesector.special;
-				int16_t& targettexture = target->direction == sd_down ? target->texture : sourcesector.floorpic;
+		case stt_floor:
+			I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying to move a sector's floor to the floor", line->index );
+			break;
 
-				targetspecial = type == sct_zerospecial
-									? 0
-									: type == sct_copyboth
-										? setfrom.special
-										: -1;
-				targettexture = ( type == sct_copytexture || type == sct_copyboth )
-									? setfrom.floorpic
+		case stt_ceiling:
+			floor->floordestheight = sector.ceilingheight;
+			break;
+
+		case stt_shortestlowertexture:
+			floor->floordestheight = sector.floorheight + IntToFixed( P_FindShortestLowerTexture( &sector ) * floor->direction );
+			break;
+
+		case stt_perpetual:
+			I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is trying start a perpetual platform, try using EV_DoPerpetualLiftGeneric instead", line->index );
+			break;
+
+		case stt_nosearch:
+		default:
+			floor->floordestheight = sector.floorheight;
+			break;
+		}
+
+		if( line->action->param1 != stt_highestneighborfloor_noaddifmatch
+			|| floor->floordestheight != sector.floorheight )
+		{
+			floor->floordestheight += (fixed_t)line->action->param3;
+		}
+
+		floor->newspecial = -1;
+		floor->texture = -1;
+
+		auto SetSpecial = []( sector_t& sourcesector
+							, floormove_t* target
+							, sectorchangetype_t type
+							, sector_t& setfrom )
+		{
+			int16_t& targetspecial = target->direction == sd_down ? target->newspecial : sourcesector.special;
+			int16_t& targettexture = target->direction == sd_down ? target->texture : sourcesector.floorpic;
+
+			targetspecial = type == sct_zerospecial
+								? 0
+								: type == sct_copyboth
+									? setfrom.special
 									: -1;
-			};
+			targettexture = ( type == sct_copytexture || type == sct_copyboth )
+								? setfrom.floorpic
+								: -1;
+		};
 
-			if( line->action->param4 != sct_none )
+		if( line->action->param4 != sct_none )
+		{
+			if( line->action->param6 == scm_numeric )
 			{
-				if( line->action->param6 == scm_numeric )
+				// The search functions above already find the correct sector.
+				// We should really cache the result that way...
+				for( line_t* secline : Lines( sector ) )
 				{
-					// The search functions above already find the correct sector.
-					// We should really cache the result that way...
-					for( line_t* secline : Lines( sector ) )
+					if( secline->TwoSided() )
 					{
-						if( secline->TwoSided() )
+						sector_t& setfrom = secline->frontsector->index == sector.index
+											? *secline->backsector
+											: *secline->frontsector;
+						if( setfrom.floorheight == floor->floordestheight )
 						{
-							sector_t& setfrom = secline->frontsector->index == sector.index
-												? *secline->backsector
-												: *secline->frontsector;
-							if( setfrom.floorheight == floor->floordestheight )
-							{
-								SetSpecial( sector, floor, (sectorchangetype_t)secline->action->param4, setfrom );
-								break;
-							}
+							SetSpecial( sector, floor, (sectorchangetype_t)secline->action->param4, setfrom );
+							break;
 						}
 					}
 				}
-				else // Trigger model
+			}
+			else // Trigger model
+			{
+				if( line->frontsector == nullptr )
 				{
-					if( line->frontsector == nullptr )
-					{
-						I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is using a trigger model without a front sector", line->index );
-					}
-					else
-					{
-						SetSpecial( sector, floor, (sectorchangetype_t)line->action->param4, *line->frontsector );
-					}
+					I_LogAddEntryVar( Log_Error, "EV_DoFloorGeneric: Line %d is using a trigger model without a front sector", line->index );
+				}
+				else
+				{
+					SetSpecial( sector, floor, (sectorchangetype_t)line->action->param4, *line->frontsector );
 				}
 			}
 		}
-	}
 
-	return createdcount;
+		return 1;
+	} );
 }
 
 // =================
@@ -1037,14 +1024,16 @@ DOOM_C_API int32_t EV_DoLightSetGeneric( line_t* line, mobj_t* activator )
 {
 	int32_t lightval = line->action->param1 == lightset_value ? line->action->param2 : 0;
 
+	int32_t createdcount = 0;
 	for( sector_t& sector : Sectors() )
 	{
 		if( sector.tag == line->tag )
 		{
+			++createdcount;
 			lightsetfuncs[ line->action->param1 ]( sector, lightval );
 		}
 	}
-	return 1;
+	return createdcount;
 }
 
 DOOM_C_API int32_t EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator )
@@ -1116,148 +1105,133 @@ DOOM_C_API void T_RaisePlatGeneric( plat_t* plat )
 
 DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator )
 {
-	int32_t		platformscreated = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
-		{
-			// Find lowest & highest floors around sector
-			++platformscreated;
-			plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &plat->thinker );
+		plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &plat->thinker );
 		
-			plat->sector = &sector;
-			plat->sector->FloorSpecial() = plat;
-			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
-			plat->crush = false;
-			plat->tag = line->tag;
-			plat->speed = line->action->speed;
-			plat->wait = line->action->delay;
-			plat->status = up;
+		plat->sector = &sector;
+		plat->sector->FloorSpecial() = plat;
+		plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
+		plat->crush = false;
+		plat->tag = line->tag;
+		plat->speed = line->action->speed;
+		plat->wait = line->action->delay;
+		plat->status = up;
 
-			switch( line->action->param1 )
-			{
-			case stt_nexthighestneighborfloor:
-				sector.floorpic = line->frontside->sector->floorpic;
-				sector.special = 0;
-				plat->type = raiseToNearestAndChange;
-				plat->high = P_FindNextHighestFloorSurrounding( &sector );
-				break;
-			case stt_nosearch:
-				sector.floorpic = line->frontside->sector->floorpic;
-				plat->type = raiseAndChange;
-				plat->high = sector.floorheight;
-				break;
+		switch( line->action->param1 )
+		{
+		case stt_nexthighestneighborfloor:
+			sector.floorpic = line->frontside->sector->floorpic;
+			sector.special = 0;
+			plat->type = raiseToNearestAndChange;
+			plat->high = P_FindNextHighestFloorSurrounding( &sector );
+			break;
+		case stt_nosearch:
+			sector.floorpic = line->frontside->sector->floorpic;
+			plat->type = raiseAndChange;
+			plat->high = sector.floorheight;
+			break;
 
-			default:
-				break;
-			}
-
-			plat->high += line->action->param2;
-			plat->low = sector.floorheight;
-
-			S_StartSound( &sector.soundorg, sfx_stnmov );
-
-			P_AddActivePlatGeneric( plat );
+		default:
+			break;
 		}
-	}
 
-	return platformscreated;
+		plat->high += line->action->param2;
+		plat->low = sector.floorheight;
+
+		S_StartSound( &sector.soundorg, sfx_stnmov );
+
+		P_AddActivePlatGeneric( plat );
+
+		return 1;
+	} );
 }
 
 DOOM_C_API int32_t EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator )
 {
 	P_ActivateInStasisPlatsGeneric( line->tag );
 
-	int32_t		platformscreated = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
-		{
-			// Find lowest & highest floors around sector
-			++platformscreated;
-			plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &plat->thinker );
+		plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &plat->thinker );
 	
-			plat->type = perpetualRaise;
-			plat->sector = &sector;
-			plat->sector->FloorSpecial() = plat;
-			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
-			plat->crush = false;
-			plat->tag = line->tag;
-			plat->speed = line->action->speed;
-			plat->wait = line->action->delay;
-			plat->status = (plat_e)( P_Random() & 1 );
+		plat->type = perpetualRaise;
+		plat->sector = &sector;
+		plat->sector->FloorSpecial() = plat;
+		plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
+		plat->crush = false;
+		plat->tag = line->tag;
+		plat->speed = line->action->speed;
+		plat->wait = line->action->delay;
+		plat->status = (plat_e)( P_Random() & 1 );
 
-			plat->low = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
-			plat->high = M_MAX( P_FindHighestFloorSurrounding( &sector ), sector.floorheight );
+		plat->low = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
+		plat->high = M_MAX( P_FindHighestFloorSurrounding( &sector ), sector.floorheight );
 
-			S_StartSound( &sector.soundorg, sfx_pstart );
+		S_StartSound( &sector.soundorg, sfx_pstart );
 
-			P_AddActivePlatGeneric( plat );
-		}
-	}
+		P_AddActivePlatGeneric( plat );
 
-	return platformscreated;
+		return 1;
+	} );
 }
 
 DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 {
-	int32_t		platformscreated = 0;
-
-	for( sector_t& sector : Sectors() )
+	return PerformOperationOnSectors( line, activator
+									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr; }
+									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
-		if( sector.tag == line->tag && sector.FloorSpecial() == nullptr )
-		{
-			// Find lowest & highest floors around sector
-			++platformscreated;
-			plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
-			P_AddThinker( &plat->thinker );
+		plat_t* plat = (plat_t*)Z_MallocZero( sizeof(plat_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &plat->thinker );
 		
-			plat->type = downWaitUpStay;
-			plat->sector = &sector;
-			plat->sector->FloorSpecial() = plat;
-			plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
-			plat->crush = false;
-			plat->tag = line->tag;
-			plat->speed = line->action->speed;
-			plat->wait = line->action->delay;
-			plat->status = down;
+		plat->type = downWaitUpStay;
+		plat->sector = &sector;
+		plat->sector->FloorSpecial() = plat;
+		plat->thinker.function.acp1 = (actionf_p1)T_RaisePlatGeneric;
+		plat->crush = false;
+		plat->tag = line->tag;
+		plat->speed = line->action->speed;
+		plat->wait = line->action->delay;
+		plat->status = down;
 
-			switch( line->action->param1 )
+		switch( line->action->param1 )
+		{
+		case stt_lowestneighborfloor:
+			plat->low = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
+			break;
+
+		case stt_nextlowestneighborfloor:
+			plat->low = P_FindNextLowestFloorSurrounding( &sector );
+			break;
+
+		case stt_lowestneighborceiling:
+			plat->low = P_FindLowestCeilingSurrounding( &sector );
+			if( remove_limits ) // allow_boom_sector_targets
 			{
-			case stt_lowestneighborfloor:
-				plat->low = M_MIN( P_FindLowestFloorSurrounding( &sector ), sector.floorheight );
-				break;
-
-			case stt_nextlowestneighborfloor:
-				plat->low = P_FindNextLowestFloorSurrounding( &sector );
-				break;
-
-			case stt_lowestneighborceiling:
-				plat->low = P_FindLowestCeilingSurrounding( &sector );
-				if( remove_limits ) // allow_boom_sector_targets
-				{
-					plat->low = M_MIN( plat->low, sector.ceilingheight );
-				}
-				break;
-
-			default:
-				break;
+				plat->low = M_MIN( plat->low, sector.ceilingheight );
 			}
+			break;
 
-			plat->low = M_MIN( plat->low, sector.floorheight );
-			plat->high = sector.floorheight;
-
-			S_StartSound( &sector.soundorg, sfx_pstart );
-
-			P_AddActivePlatGeneric( plat );
+		default:
+			break;
 		}
-	}
 
-	return platformscreated;
+		plat->low = M_MIN( plat->low, sector.floorheight );
+		plat->high = sector.floorheight;
+
+		S_StartSound( &sector.soundorg, sfx_pstart );
+
+		P_AddActivePlatGeneric( plat );
+
+		return 1;
+	} );
 }
 
 DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator )
@@ -1431,7 +1405,7 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 		activator->teleporttic = gametic;
 	}
 
-	return teleported;
+	return teleported ? 1 : 0;
 }
 
 // =================
