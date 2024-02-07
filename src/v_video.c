@@ -439,88 +439,91 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 // Used in Doom 2 finale. Nowhere else
 void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 {
-	int col;
-    column_t *column;
-    pixel_t *desttop;
-    pixel_t *destbottom;
-    pixel_t *dest;
-    byte *source;
+	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-	fixed_t virtualx;
-	fixed_t virtualy;
-	fixed_t virtualwidth;
+	extern int32_t remove_limits;
 
-	fixed_t virtualcol;
-	fixed_t virtualrow;
-	fixed_t virtualpatchheight;
+	colcontext_t	column;
 
-	fixed_t delta;
+	int32_t			widthdiff = ( frame_width - frame_adjusted_width ) >> 1;
+	rend_fixed_t	yscale = ( IntToRendFixed( frame_height ) / V_VIRTUALHEIGHT );
 
-	int w = SHORT(patch->width);
+	x -= SHORT( patch->leftoffset );
+	y -= SHORT( patch->topoffset );
 
-    y -= SHORT(patch->topoffset);
-    x -= SHORT(patch->leftoffset);
+	// haleyjd 08/28/10: Strife needs silent error checking here.
+	if(patchclip_callback)
+	{
+		if(!patchclip_callback(patch, x, y))
+		{
+			M_PROFILE_POP( __FUNCTION__ );
+			return;
+		}
+	}
 
-    // haleyjd 08/28/10: Strife needs silent error checking here.
-    if(patchclip_callback)
-    {
-        if(!patchclip_callback(patch, x, y))
-            return;
-    }
-
-#if RANGECHECK 
-    if (x < 0
-     || x + SHORT(patch->width) > frame_width
-     || y < 0
-     || y + SHORT(patch->height) > frame_height)
-    {
-        I_Error("Bad V_DrawPatchFlipped");
-    }
+#if RANGECHECK
+	if( !remove_limits )
+	{
+		if (x < 0
+			|| x + SHORT(patch->width) > V_VIRTUALWIDTH
+			|| y < 0
+			|| y + SHORT(patch->height) > V_VIRTUALHEIGHT)
+		{
+			I_Error("Bad V_DrawPatchFlipped");
+		}
+	}
+	else
+	{
+		if( y < 0 )
+		{
+			I_Error("Bad V_DrawPatch");
+		}
+	}
 #endif
 
-    V_MarkRect(x, y, SHORT(patch->width), SHORT(patch->height));
+	column.output			= *dest_buffer;
+	column.sourceheight		= IntToRendFixed( SHORT(patch->height) );
+	column.colormap			= NULL;
+	column.translation		= NULL;
+	column.transparency		= NULL;
+	column.texturemid		= 0;
+	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale ) + 1;
+	column.yl				= FixedToInt( FixedRound( y * V_HEIGHTMULTIPLIER ) );
+	column.yh				= FixedToInt( FixedRound( M_MIN( y + SHORT(patch->height), V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
 
-	virtualx = FixedMul( x << FRACBITS, V_WIDTHMULTIPLIER );
-	virtualx += ( frame_width - frame_adjusted_width ) << ( FRACBITS - 1 );
-	virtualy = FixedMul( y << FRACBITS, V_HEIGHTMULTIPLIER );
-	virtualwidth = SHORT(patch->width) << FRACBITS;
+	rend_fixed_t xwidth		= IntToRendFixed( patch->width );
+	rend_fixed_t xsource	= IntToRendFixed( patch->width ) - 1;
 
-    virtualcol = 0;
-    desttop = dest_buffer->data + ( virtualx >> FRACBITS ) * dest_buffer->pitch + ( virtualy >> FRACBITS );
-	destbottom = dest_buffer->data + ( ( virtualx >> FRACBITS ) + 1 ) * dest_buffer->pitch;
+	column.x = widthdiff + FixedToInt( FixedRound( x * V_WIDTHMULTIPLIER ) );
+	int32_t xstop = widthdiff + FixedToInt( FixedRound( ( x + SHORT(patch->width) ) * V_WIDTHMULTIPLIER ) );
 
-    for ( ; virtualcol < virtualwidth; )
-    {
+	rend_fixed_t	xscale = RendFixedDiv( IntToRendFixed( SHORT( patch->width ) ), IntToRendFixed( xstop - column.x ) );
 
-		col = virtualcol >> FRACBITS;
-        column = (column_t *)((byte *)patch + LONG(patch->columnofs[w-1-col]));
+	for( ; column.x < xstop; ++column.x, xsource -= xscale )
+	{
+		if( column.x < 0 ) continue;
+		if( column.x >= frame_width ) break;
 
-        // step through the posts in a column
-        while (column->topdelta != 0xff)
-        {
-            source = (byte *)column + 3;
-			delta = FixedMul( column->topdelta << FRACBITS, V_HEIGHTMULTIPLIER );
-            dest = desttop + ( delta >> FRACBITS );
+		if( xsource < 0 )
+		{
+			I_Error( "V_DrawPatchFlipped: Error with dimensions calculation" );
+		}
 
-			virtualrow = 0;
-            virtualpatchheight = column->length << FRACBITS;
+		column_t* patchcol = (column_t *)( (byte *)patch + LONG( patch->columnofs[ RendFixedToInt( xsource ) ] ) );
 
-            while ( virtualpatchheight > 0 && dest < destbottom )
-            {
-                *dest++ = *source;
-				virtualrow += V_HEIGHTSTEP;
-				virtualpatchheight -= V_HEIGHTSTEP;
-				source += ( virtualrow >> FRACBITS );
-				virtualrow &= ( FRACUNIT - 1 );
-            }
-            column = (column_t *)((byte *)column + column->length + 4);
-        }
+		while( patchcol->topdelta != 0xFF )
+		{
+			int32_t thisy		= y + patchcol->topdelta;
+			column.source		= (byte*)patchcol + 3;
+			column.yl			= FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) );
+			column.yh			= FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
+			R_BackbufferDrawColumn( &column );
 
-		desttop += dest_buffer->pitch;
-		virtualcol += V_WIDTHSTEP;
-    }
+			patchcol = (column_t *)( (byte *)patchcol + patchcol->length + 4 );
+		}
+	}
 
-	virtualcol = 0;
+	M_PROFILE_POP( __FUNCTION__ );
 }
 
 

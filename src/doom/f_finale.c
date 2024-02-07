@@ -156,7 +156,10 @@ void F_Ticker (void)
 	doombool didskip = false;
     
     // check for skipping
-    if ( finaleintermission && !!( finaleintermission->type & Intermission_Skippable ) && finalecount > 50 )
+    if( finalestage == F_STAGE_TEXT
+		&& finaleintermission
+		&& !!( finaleintermission->type & Intermission_Skippable )
+		&& finalecount > 50 )
     {
 		// go on to the next level
 		for (i=0 ; i<MAXPLAYERS ; i++)
@@ -427,7 +430,7 @@ doombool F_CastResponder (event_t* ev)
 
 	if( remove_limits )
 	{
-		canrespond |= ev->type == ev_keyup || ( ev->type == ev_mouse && ev->data4 != 0 );
+		canrespond |= ev->type == ev_keyup || ( ev->type == ev_mouse && ev->data5 != 0 );
 	}
 
 	if ( !canrespond )
@@ -529,7 +532,7 @@ void F_CastDrawer (void)
     lump = sprframe->lump[0];
     flip = (doombool)sprframe->flip[0];
 			
-    patch = W_CacheLumpNum (lump+firstspritelump, PU_STATIC);
+    patch = spritepatches[ lump ];
     if (flip)
 	V_DrawPatchFlipped(V_VIRTUALWIDTH/2, 170, patch);
     else
