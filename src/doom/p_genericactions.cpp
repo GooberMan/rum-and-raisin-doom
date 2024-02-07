@@ -345,7 +345,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 
 		if( line->action->param4 != sct_none )
 		{
-			if( line->action->param6 == scm_numeric )
+			if( line->action->param5 == scm_numeric )
 			{
 				// The search functions above already find the correct sector.
 				// We should really cache the result that way...
@@ -919,7 +919,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 		if( line->action->param4 != sct_none )
 		{
-			if( line->action->param6 == scm_numeric )
+			if( line->action->param5 == scm_numeric )
 			{
 				// The search functions above already find the correct sector.
 				// We should really cache the result that way...
