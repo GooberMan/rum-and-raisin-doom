@@ -772,7 +772,7 @@ void R_InitTextures (void)
 		for (i = 0; i < nummappatches; i++)
 		{
 			M_StringCopy(name, name_p + i * 8, sizeof(name));
-			patchlookup[i] = { W_CheckNumForName(name), i };
+			patchlookup.push_back( { W_CheckNumForName(name), i } );
 		}
 	}
 	else
@@ -983,7 +983,7 @@ void R_InitSpriteLumps (void)
 		int32_t lastspritelump = W_GetNumForName (DEH_String("S_END")) - 1;
 		spriteindexlookup.reserve( lastspritelump - firstspritelump + 1 );
 
-		for( int32_t curr = firstspritelump; curr <= firstspritelump; ++curr )
+		for( int32_t curr = firstspritelump; curr <= lastspritelump; ++curr )
 		{
 			std::string spritename = ClampString( lumpinfo[ curr ]->name );
 			spritenamelookup[ spritename ] = { curr, numspritelumps };
