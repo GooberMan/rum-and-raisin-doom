@@ -161,6 +161,8 @@ DOOM_C_API typedef struct player_s
     // True if secret level has been done.
     doombool		didsecret;	
 
+	size_t		anymomentumframes;
+
 	doombool*	visitedlevels;
 } player_t;
 

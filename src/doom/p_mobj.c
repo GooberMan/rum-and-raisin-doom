@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include "i_system.h"
+#include "i_log.h"
 #include "z_zone.h"
 #include "m_random.h"
 #include "m_misc.h"
@@ -245,8 +246,11 @@ mobj_t* P_XYMovement (mobj_t* mo)
 	}
 	else
 	{
-		mo->momx = FixedMul( mo->momx, mo->subsector->sector->friction );
-		mo->momy = FixedMul( mo->momy, mo->subsector->sector->friction );
+		fixed_t friction = mo->z == mo->subsector->sector->floorheight && ( mo->flags & MF_CORPSE ) != MF_CORPSE
+						? mo->subsector->sector->friction
+						: FRICTION;
+		mo->momx = FixedMul( mo->momx, friction );
+		mo->momy = FixedMul( mo->momy, friction );
 	}
 
 	return mo;
@@ -765,6 +769,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
     p->viewheight = VIEWHEIGHT;
 	p->viewz = mobj->z + p->viewheight;
 	p->prevviewz = p->currviewz = FixedToRendFixed( p->viewz );
+	p->anymomentumframes = 0;
 
     // setup gun psprite
     P_SetupPsprites (p);
@@ -850,6 +855,14 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	
     if (i==NUMMOBJTYPES)
 	{
+		if( remove_limits )
+		{
+			I_LogAddEntryVar( Log_Error, "P_SpawnMapThing: Unknown type %i at (%i, %i)",
+				 mthing->type,
+				 mthing->x, mthing->y );
+			return;
+		}
+
 		I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
 			 mthing->type,
 			 mthing->x, mthing->y);

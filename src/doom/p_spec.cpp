@@ -1825,7 +1825,8 @@ void P_SpawnSpecials (void)
 			case Transfer_Friction_Always: // Friction
 				{
 					fixed_t linelength = M_CLAMP( P_AproxDistance( line.dx, line.dy ), 0, IntToFixed( 200 ) );
-					fixed_t frictionmul = FixedDiv( linelength, IntToFixed( 100 ) ) - IntToFixed( 1 );
+					fixed_t frictionpercent = FixedDiv( linelength, IntToFixed( 100 ) );
+					fixed_t frictionmul = frictionpercent - IntToFixed( 1 );
 					fixed_t targetfriction = FRICTION + FixedMul( ( IntToFixed( 1 ) - FRICTION ), frictionmul );
 
 					for( sector_t& sector : Sectors() )
@@ -1833,6 +1834,7 @@ void P_SpawnSpecials (void)
 						if( sector.tag == line.tag )
 						{
 							sector.friction = targetfriction;
+							sector.frictionpercent = frictionpercent;
 						}
 					}
 				}

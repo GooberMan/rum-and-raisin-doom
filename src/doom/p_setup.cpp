@@ -450,6 +450,7 @@ struct DoomMapLoader
 			out.specialdata		= nullptr;
 			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
 			out.friction		= FRICTION;
+			out.frictionpercent = IntToFixed( 1 );
 			out.skyline			= nullptr;
 			out.skyxscale		= IntToFixed( 1 );
 			out.floorlightsec	= &out;

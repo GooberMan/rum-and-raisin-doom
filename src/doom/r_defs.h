@@ -264,6 +264,7 @@ struct sector_s
 	line_t**			lines;	// [linecount] size
 	
 	fixed_t				friction;
+	fixed_t				frictionpercent;
 
 	int32_t				snapfloor;
 	int32_t				snapceiling;

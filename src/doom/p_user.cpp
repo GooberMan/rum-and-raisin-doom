@@ -24,6 +24,8 @@
 #include "doomdef.h"
 #include "d_event.h"
 
+#include "m_misc.h"
+
 #include "p_local.h"
 
 #include "doomstat.h"
@@ -48,16 +50,12 @@ doombool		onground;
 // P_Thrust
 // Moves the given origin along a given angle.
 //
-void
-P_Thrust
-( player_t*	player,
-  angle_t	angle,
-  fixed_t	move ) 
+DOOM_C_API void P_Thrust( player_t* player,  angle_t angle, fixed_t move ) 
 {
-    angle >>= ANGLETOFINESHIFT;
-    
-    player->mo->momx += FixedMul(move,finecosine[angle]); 
-    player->mo->momy += FixedMul(move,finesine[angle]);
+	uint32_t finelookup = FINEANGLE( angle );
+
+	player->mo->momx += FixedMul( move, finecosine[ finelookup ] );
+	player->mo->momy += FixedMul( move, finesine[ finelookup ] );
 }
 
 
@@ -67,7 +65,7 @@ P_Thrust
 // P_CalcHeight
 // Calculate the walking / running height adjustment
 //
-void P_CalcHeight (player_t* player) 
+DOOM_C_API void P_CalcHeight (player_t* player) 
 {
     int		angle;
     fixed_t	bob;
@@ -138,29 +136,74 @@ void P_CalcHeight (player_t* player)
 //
 // P_MovePlayer
 //
-void P_MovePlayer (player_t* player)
+DOOM_C_API void P_MovePlayer (player_t* player)
 {
-    ticcmd_t*		cmd;
+	ticcmd_t*		cmd;
 	
-    cmd = &player->cmd;
+	cmd = &player->cmd;
 	
-    player->mo->angle += (cmd->angleturn<<FRACBITS);
+	player->mo->angle += (cmd->angleturn<<FRACBITS);
 
-    // Do not let the player control movement
-    //  if not onground.
-    onground = (player->mo->z <= player->mo->floorz);
-	
-    if (cmd->forwardmove && onground)
-	P_Thrust (player, player->mo->angle, cmd->forwardmove*2048);
-    
-    if (cmd->sidemove && onground)
-	P_Thrust (player, player->mo->angle-ANG90, cmd->sidemove*2048);
+	// Do not let the player control movement
+	//  if not onground.
+	onground = (player->mo->z <= player->mo->floorz);
+	bool onsectorground = player->mo->z <= player->mo->subsector->sector->floorheight;
+	int32_t frictionmultiplier = 2048;
 
-    if ( (cmd->forwardmove || cmd->sidemove) 
-	 && player->mo->state == &states[S_PLAY] )
-    {
-	P_SetMobjState (player->mo, S_PLAY_RUN1);
-    }
+	if( onsectorground && player->anymomentumframes != 0 )
+	{
+		// Look up table to accommodate:
+		// * Slippery surfaces have a harsher effect on how you're allowed to accelerate
+		// * Sticky surfaces have a less harsh effect
+		constexpr int32_t frictionmultipliers[] =
+		{
+			32,		// 0.0
+			64,
+			96,
+			128,
+			256,		// 0.5
+			512,
+			1024,
+			1536,
+			2048,		// 1.0
+			1792,
+			1536,
+			1024,
+			512,		// 1.5
+			256,
+			128,
+			64,
+			32,			// 2.0
+		};
+
+		int32_t lookup = M_CLAMP( ( player->mo->subsector->sector->frictionpercent >> 13 ), 0, 16 );
+		frictionmultiplier = frictionmultipliers[ lookup ];
+	}
+	
+	if (cmd->forwardmove && onground)
+	{
+		P_Thrust (player, player->mo->angle, cmd->forwardmove * frictionmultiplier);
+	}
+
+	if (cmd->sidemove && onground)
+	{
+		P_Thrust (player, player->mo->angle-ANG90, cmd->sidemove * frictionmultiplier);
+	}
+
+	if( player->mo->momx != 0 || player->mo->momy != 0 )
+	{
+		++player->anymomentumframes;
+	}
+	else
+	{
+		player->anymomentumframes = 0;
+	}
+
+	if ( (cmd->forwardmove || cmd->sidemove) 
+		&& player->mo->state == &states[S_PLAY] )
+	{
+		P_SetMobjState (player->mo, S_PLAY_RUN1);
+	}
 }	
 
 
@@ -172,7 +215,7 @@ void P_MovePlayer (player_t* player)
 //
 #define ANG5   	(ANG90/18)
 
-void P_DeathThink (player_t* player)
+DOOM_C_API void P_DeathThink (player_t* player)
 {
     angle_t		angle;
     angle_t		delta;
@@ -226,7 +269,7 @@ void P_DeathThink (player_t* player)
 //
 // P_PlayerThink
 //
-void P_PlayerThink (player_t* player)
+DOOM_C_API void P_PlayerThink (player_t* player)
 {
     ticcmd_t*		cmd;
     weapontype_t	newweapon;
@@ -278,7 +321,7 @@ void P_PlayerThink (player_t* player)
 	// The actual changing of the weapon is done
 	//  when the weapon psprite can do it
 	//  (read: not in the middle of an attack).
-	newweapon = (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT;
+	newweapon = (weapontype_t)( (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT );
 	
 	if (newweapon == wp_fist
 	    && player->weaponowned[wp_chainsaw]

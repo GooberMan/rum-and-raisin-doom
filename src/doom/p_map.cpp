@@ -444,24 +444,29 @@ DOOM_C_API doombool P_CheckPosition( mobj_t* thing, fixed_t x, fixed_t y )
 	{
 		return true;
 	}
-    
-    // Check things first, possibly picking things up.
-    // The bounding box is extended by MAXRADIUS
-    // because mobj_ts are grouped into mapblocks
-    // based on their origin point, and can overlap
-    // into adjacent blocks by up to MAXRADIUS units.
-	xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
-	xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
-	yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
-	yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
-	for (bx=xl ; bx<=xh ; bx++)
+	bool checkthings = !remove_limits // allow_corpse_to_ignore_mobjs
+					|| ( tmthing->flags & MF_CORPSE ) != MF_CORPSE;
+	if( checkthings )
 	{
-		for (by=yl ; by<=yh ; by++)
+		// Check things first, possibly picking things up.
+		// The bounding box is extended by MAXRADIUS
+		// because mobj_ts are grouped into mapblocks
+		// based on their origin point, and can overlap
+		// into adjacent blocks by up to MAXRADIUS units.
+		xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
+		xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
+		yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
+		yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
+
+		for (bx=xl ; bx<=xh ; bx++)
 		{
-			if (!P_BlockThingsIterator(bx,by,PIT_CheckThing))
+			for (by=yl ; by<=yh ; by++)
 			{
-				return false;
+				if (!P_BlockThingsIterator(bx,by,PIT_CheckThing))
+				{
+					return false;
+				}
 			}
 		}
 	}
@@ -500,22 +505,27 @@ DOOM_C_API doombool P_TryMove( mobj_t* thing, fixed_t x, fixed_t y )
     
     if ( !(thing->flags & MF_NOCLIP) )
     {
-	if (tmceilingz - tmfloorz < thing->height)
-	    return false;	// doesn't fit
+		if (tmceilingz - tmfloorz < thing->height)
+			return false;	// doesn't fit
 
-	floatok = true;
+		floatok = true;
 	
-	if ( !(thing->flags&MF_TELEPORT) 
-	     &&tmceilingz - thing->z < thing->height)
-	    return false;	// mobj must lower itself to fit
+		if ( !(thing->flags&MF_TELEPORT) 
+			 &&tmceilingz - thing->z < thing->height)
+			return false;	// mobj must lower itself to fit
 
-	if ( !(thing->flags&MF_TELEPORT)
-	     && tmfloorz - thing->z > 24*FRACUNIT )
-	    return false;	// too big a step up
+		if ( !(thing->flags&MF_TELEPORT)
+			 && tmfloorz - thing->z > 24*FRACUNIT )
+			return false;	// too big a step up
 
-	if ( !(thing->flags&(MF_DROPOFF|MF_FLOAT))
-	     && tmfloorz - tmdropoffz > 24*FRACUNIT )
-	    return false;	// don't stand over a dropoff
+		doombool hasvelocity = thing->momx != 0 || thing->momy != 0;
+
+		//if( !remove_limits || !hasvelocity ) // allow_sliding_off_edge
+		{
+			if ( !(thing->flags&(MF_DROPOFF|MF_FLOAT))
+				 && tmfloorz - tmdropoffz > 24*FRACUNIT )
+				return false;	// don't stand over a dropoff
+		}
     }
     
     // the move is ok,
