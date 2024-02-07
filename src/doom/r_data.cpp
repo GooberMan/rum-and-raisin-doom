@@ -803,9 +803,14 @@ void R_InitTextures (void)
 			auto found = patchnamelookup.find( patchname );
 			if( found == patchnamelookup.end() )
 			{
-				I_Error( "PNAMES entry %s not found", patchname.c_str() );
+				// This errors further down if it TEXTURE1/2 can't find it
+				// I_LogAddEntryVar( Log_Startup, "PNAMES entry %s not found", patchname.c_str() );
+				patchlookup.push_back( { -1, mappatch } );
 			}
-			patchlookup.push_back( found->second );
+			else
+			{
+				patchlookup.push_back( found->second );
+			}
 			name_p += 8;
 		}
 	}

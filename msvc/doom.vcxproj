@@ -424,6 +424,7 @@
     <ClCompile Include="..\src\doom\p_spec.cpp" />
     <ClCompile Include="..\src\doom\p_switch.cpp" />
     <ClCompile Include="..\src\doom\p_telept.cpp" />
+    <ClCompile Include="..\src\doom\p_user.cpp" />
     <ClCompile Include="..\src\doom\r_bsp.cpp" />
     <ClCompile Include="..\src\doom\r_sky.cpp" />
     <ClCompile Include="..\src\doom\wi_stuff.cpp" />
@@ -492,7 +493,6 @@
     <ClInclude Include="..\src\doom\p_spec.h" />
     <ClCompile Include="..\src\doom\p_tick.c" />
     <ClInclude Include="..\src\doom\p_tick.h" />
-    <ClCompile Include="..\src\doom\p_user.c" />
     <ClInclude Include="..\src\doom\r_bsp.h" />
     <ClInclude Include="..\src\doom\r_data.h" />
     <ClInclude Include="..\src\doom\r_defs.h" />
