@@ -1131,7 +1131,7 @@ static lineaction_t* CreateBoomGeneralisedCrusherAction( line_t* line )
 	uint32_t speed		= ( line->special & Generic_Speed_Mask ) >> Generic_Speed_Shift;
 	bool silent			= ( line->special & Crusher_Silent_Mask ) == Crusher_Silent_Yes;
 
-	SetActionActivators< Ceiling >( action, line->special, allowmonster );
+	SetActionActivators< Crusher >( action, line->special, allowmonster );
 	action->lock = LL_None;
 	action->speed = constants::ceilingspeeds[ speed ];
 	action->delay = 0;

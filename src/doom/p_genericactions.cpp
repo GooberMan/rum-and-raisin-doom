@@ -743,9 +743,9 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 					nextfloor->sector->FloorSpecial() = nextfloor;
 					nextfloor->thinker.function.acp1 = (actionf_p1)&T_MoveFloorGeneric;
 					nextfloor->type = genericFloor;
-					nextfloor->direction = sd_up;
+					nextfloor->direction = floor->direction;
 					nextfloor->speed = line->action->speed;
-					nextfloor->crush = false;
+					nextfloor->crush = line->action->param3;
 					nextfloor->newspecial = -1;
 					nextfloor->texture = -1;
 					nextfloor->floordestheight = height;
