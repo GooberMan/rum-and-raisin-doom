@@ -1810,26 +1810,27 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 		viewpoint.colormaps = colormaps;
 		viewpoint.transferzone = transfer_normalspace;
-		sector_t* playersector = player->mo->subsector ? player->mo->subsector->sector : nullptr;
-		if( playersector )
+		subsector_t* viewsubsector = BSP_PointInSubsector( RendFixedToFixed( viewpoint.x ), RendFixedToFixed( viewpoint.y ) );
+		sector_t* viewsector = viewsubsector ? viewsubsector->sector : nullptr;
+		if( viewsector )
 		{
-			if( playersector->transferline )
+			if( viewsector->transferline )
 			{
-				sector_t* transfersector = playersector->transferline->frontsector;
+				sector_t* transfersector = viewsector->transferline->frontsector;
 				sectorinstance_t& transfersectorinst = rendsectors[ transfersector->index ];
 				if( viewpoint.z > transfersectorinst.ceilheight )
 				{
 					viewpoint.transferzone = transfer_ceilingspace;
-					viewpoint.colormaps = playersector->transferline->topcolormap;
+					viewpoint.colormaps = viewsector->transferline->topcolormap;
 				}
 				else if( viewpoint.z < transfersectorinst.floorheight )
 				{
 					viewpoint.transferzone = transfer_floorspace;
-					viewpoint.colormaps = playersector->transferline->bottomcolormap;
+					viewpoint.colormaps = viewsector->transferline->bottomcolormap;
 				}
 				else
 				{
-					viewpoint.colormaps = playersector->transferline->midcolormap;
+					viewpoint.colormaps = viewsector->transferline->midcolormap;
 				}
 			}
 		}
