@@ -603,21 +603,57 @@ DOOM_C_API typedef struct elevator_s
 
 DOOM_C_API typedef enum scrolltype_e
 {
-	st_none,
-	st_ceiling,
-	st_floor,
-	st_current,
-	st_wind,
+	st_none			= 0x00,
+	st_ceiling		= 0x01,
+	st_floor		= 0x02,
+	st_conveyor		= 0x04,
+	st_current		= 0x08,
+	st_wind			= 0x10,
+	st_displacement	= 0x20,
+	st_accelerative = 0x40,
+	st_point		= 0x80,
+
+	st_scrollmask	= st_ceiling | st_floor,
+	st_carrymask	= st_conveyor | st_current | st_wind,
+	st_speedmask	= st_displacement | st_accelerative | st_point,
 } scrolltype_t;
+
+#if defined( __cplusplus )
+using underlyingscrolltype_t = std::underlying_type_t< scrolltype_t >;
+
+constexpr scrolltype_t operator|( const scrolltype_t lhs, const scrolltype_t rhs )
+{
+	return (scrolltype_t)( (underlyingscrolltype_t)lhs | (underlyingscrolltype_t)rhs );
+};
+
+constexpr scrolltype_t operator&( const scrolltype_t lhs, const scrolltype_t rhs )
+{
+	return (scrolltype_t)( (underlyingscrolltype_t)lhs & (underlyingscrolltype_t)rhs );
+};
+
+constexpr scrolltype_t operator^( const scrolltype_t lhs, const scrolltype_t rhs )
+{
+	return (scrolltype_t)( (underlyingscrolltype_t)lhs ^ (underlyingscrolltype_t)rhs );
+};
+#endif // defined( __cplusplus )
 
 DOOM_C_API typedef struct scroller_s
 {
 	thinker_t		thinker;
 	sector_t*		sector;
+	sector_t*		controlsector;
+	fixed_t			controlheight;
+	fixed_t			magx;
+	fixed_t			magy;
 	fixed_t			scrollx;
 	fixed_t			scrolly;
-	fixed_t			magnitude;
 	scrolltype_t	type;
+
+#if defined( __cplusplus )
+	constexpr scrolltype_t ScrollType()		{ return type & st_scrollmask; }
+	constexpr scrolltype_t CarryType()		{ return type & st_carrymask; }
+	constexpr scrolltype_t SpeedType()		{ return type & st_speedmask; }
+#endif // defined( __cplusplus )
 } scroller_t;
 
 DOOM_C_API typedef enum dooraise_e

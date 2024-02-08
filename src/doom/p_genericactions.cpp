@@ -1455,7 +1455,7 @@ DOOM_C_API int32_t EV_DoExitGeneric( line_t* line, mobj_t* activator )
 constexpr fixed_t FlatScrollScale = FixedDiv( 1, 32 );
 constexpr fixed_t AccelScale = DoubleToFixed( 0.09375 );
 
-DOOM_C_API void T_ScrollCeilingTexture( scroller_t* scroller )
+INLINE void T_ScrollCeilingTexture( scroller_t* scroller )
 {
 	sector_t*& sector = scroller->sector;
 
@@ -1463,7 +1463,7 @@ DOOM_C_API void T_ScrollCeilingTexture( scroller_t* scroller )
 	sector->ceiloffsety += scroller->scrolly;
 }
 
-DOOM_C_API void T_ScrollFloorTexture( scroller_t* scroller )
+INLINE void T_ScrollFloorTexture( scroller_t* scroller )
 {
 	sector_t*& sector = scroller->sector;
 
@@ -1471,7 +1471,7 @@ DOOM_C_API void T_ScrollFloorTexture( scroller_t* scroller )
 	sector->flooroffsety += scroller->scrolly;
 }
 
-DOOM_C_API void T_ScrollFloorObjects( scroller_t* scroller )
+INLINE void T_CarryObjects( scroller_t* scroller )
 {
 	sector_t*& sector = scroller->sector;
 
@@ -1484,7 +1484,23 @@ DOOM_C_API void T_ScrollFloorObjects( scroller_t* scroller )
 		fixed_t scrollheight = sector->transferline ? sector->transferline->frontsector->floorheight
 													: sector->floorheight;
 
-		if( mobj->z != scrollheight
+		bool cancarry = false;
+		int32_t carryshift = 0;
+		switch( scroller->CarryType() )
+		{
+		case st_conveyor:
+			cancarry = mobj->z == scrollheight;
+			break;
+		case st_wind:
+			cancarry = mobj->z >= scrollheight;
+			if( mobj->z > scrollheight ) carryshift = 1;
+			break;
+		case st_current:
+			cancarry = mobj->z <= scrollheight;
+			break;
+		}
+
+		if( !cancarry
 			|| ( mobj->flags & MF_NOGRAVITY ) )
 		{
 			return true;
@@ -1498,63 +1514,68 @@ DOOM_C_API void T_ScrollFloorObjects( scroller_t* scroller )
 
 		if( insector )
 		{
-			mobj->momx += FixedMul( scroller->scrollx, AccelScale );
-			mobj->momy += FixedMul( scroller->scrolly, AccelScale );
+			mobj->momx += FixedMul( ( scroller->scrollx >> carryshift ), AccelScale );
+			mobj->momy += FixedMul( ( scroller->scrolly >> carryshift ), AccelScale );
 		}
 
 		return true;
 	} );
 }
 
-DOOM_C_API void T_ScrollFloorTextureObjects( scroller_t* scroller )
+INLINE void T_UpdateDisplacement( scroller_t* scroller )
 {
-	T_ScrollFloorTexture( scroller );
-	T_ScrollFloorObjects( scroller );
+	sector_t*& control = scroller->controlsector;
+
+	fixed_t height = control->ceilingheight - control->floorheight;
+	fixed_t diff = scroller->controlheight - height;
+
+	scroller->scrollx = FixedMul( scroller->magx, diff );
+	scroller->scrolly = FixedMul( scroller->magy, diff );
+
+	scroller->controlheight = height;
 }
 
-constexpr actionf_p1 SelectScrollThinker( int32_t special )
+INLINE void T_UpdateAccelerative( scroller_t* scroller )
 {
-	switch( special )
+	sector_t*& control = scroller->controlsector;
+
+	fixed_t height = control->ceilingheight - control->floorheight;
+	fixed_t diff = scroller->controlheight - height;
+
+	scroller->scrollx += FixedMul( scroller->magx, diff );
+	scroller->scrolly += FixedMul( scroller->magy, diff );
+
+	scroller->controlheight = height;
+}
+
+DOOM_C_API void T_ScrollSector( scroller_t* scroller )
+{
+	switch( scroller->SpeedType() )
 	{
-	case Scroll_CeilingTexture_Displace_Always:
-	case Scroll_CeilingTexture_Always:
-	case Scroll_CeilingTexture_Accelerative_Always:
-		return (actionf_p1)&T_ScrollCeilingTexture;
+	case st_displacement:
+		T_UpdateDisplacement( scroller );
 		break;
-
-	case Scroll_FloorTexture_Displace_Always:
-	case Scroll_FloorTexture_Always:
-	case Scroll_FloorTexture_Accelerative_Always:
-		return (actionf_p1)&T_ScrollFloorTexture;
+	case st_accelerative:
+		T_UpdateAccelerative( scroller );
 		break;
+	}
 
-	case Scroll_FloorObjects_Displace_Always:
-	case Scroll_FloorObjects_Always:
-	case Scroll_FloorObjects_Accelerative_Always:
-		return (actionf_p1)&T_ScrollFloorObjects;
+	switch( scroller->ScrollType() )
+	{
+	case st_ceiling:
+		T_ScrollCeilingTexture( scroller );
 		break;
-
-	case Scroll_FloorTextureObjects_Displace_Always:
-	case Scroll_FloorTextureObjects_Always:
-	case Scroll_FloorTextureObjects_Accelerative_Always:
-		return (actionf_p1)&T_ScrollFloorTextureObjects;
+	case st_floor:
+		T_ScrollFloorTexture( scroller );
 		break;
-
-	case Scroll_WallTextureBySector_Displace_Always:
-	case Scroll_WallTextureBySector_Always:
-	case Scroll_WallTextureBySector_Accelerative_Always:
-		break;
-
-	case Transfer_WindByLength_Always:
-	case Transfer_CurrentByLength_Always:
-	case Transfer_WindOrCurrentByPoint_Always:
-		break;
-
 	default:
 		break;
 	}
 
-	return nullptr;
+	if( scroller->CarryType() != st_none )
+	{
+		T_CarryObjects( scroller );
+	}
 }
 
 constexpr scrolltype_t SelectScrollType( int32_t special )
@@ -1569,13 +1590,29 @@ constexpr scrolltype_t SelectScrollType( int32_t special )
 	case Scroll_FloorTexture_Displace_Always:
 	case Scroll_FloorTexture_Always:
 	case Scroll_FloorTexture_Accelerative_Always:
+	case Scroll_FloorTextureObjects_Displace_Always:
+	case Scroll_FloorTextureObjects_Always:
+	case Scroll_FloorTextureObjects_Accelerative_Always:
+		return st_floor;
+
+	default:
+		break;
+	}
+
+	return st_none;
+}
+
+constexpr scrolltype_t SelectCarryType( int32_t special )
+{
+	switch( special )
+	{
 	case Scroll_FloorObjects_Displace_Always:
 	case Scroll_FloorObjects_Always:
 	case Scroll_FloorObjects_Accelerative_Always:
 	case Scroll_FloorTextureObjects_Displace_Always:
 	case Scroll_FloorTextureObjects_Always:
 	case Scroll_FloorTextureObjects_Accelerative_Always:
-		return st_floor;
+		return st_conveyor;
 
 	case Transfer_WindByLength_Always:
 		return st_wind;
@@ -1584,6 +1621,7 @@ constexpr scrolltype_t SelectScrollType( int32_t special )
 		return st_current;
 
 	case Transfer_WindOrCurrentByPoint_Always:
+		return st_wind | st_current;
 		break;
 
 	default:
@@ -1593,22 +1631,69 @@ constexpr scrolltype_t SelectScrollType( int32_t special )
 	return st_none;
 }
 
+constexpr scrolltype_t SelectSpeedType( int32_t special )
+{
+	switch( special )
+	{
+	case Scroll_CeilingTexture_Displace_Always:
+	case Scroll_FloorTexture_Displace_Always:
+	case Scroll_FloorObjects_Displace_Always:
+	case Scroll_FloorTextureObjects_Displace_Always:
+		return st_displacement;
+
+	case Scroll_CeilingTexture_Accelerative_Always:
+	case Scroll_FloorTexture_Accelerative_Always:
+	case Scroll_FloorObjects_Accelerative_Always:
+	case Scroll_FloorTextureObjects_Accelerative_Always:
+		return st_accelerative;
+
+	case Transfer_WindOrCurrentByPoint_Always:
+		return st_point;
+	default:
+		break;
+	}
+
+	return st_none;
+}
+
+constexpr scrolltype_t SelectScroller( int32_t special )
+{
+	return SelectScrollType( special )
+		| SelectCarryType( special )
+		| SelectSpeedType( special );
+}
+
 DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 {
-	actionf_p1 thinkfunc = SelectScrollThinker( line->special );
-	if( thinkfunc == nullptr )
+	scrolltype_t type = SelectScroller( line->special );
+	if( type == st_none )
 	{
 		return 0;
 	}
 
 	int32_t createdcount = 0;
 
-	scroller_t scroll;
-	scroll.thinker.function.acp1 = thinkfunc;
-	scroll.type			= SelectScrollType( line->special );
-	scroll.scrollx		= FixedMul( line->dx, FlatScrollScale );
-	scroll.scrolly		= FixedMul( line->dy, FlatScrollScale );
-	scroll.magnitude	= FixedMul( P_AproxDistance( line->dx, line->dy ), FlatScrollScale );
+	scroller_t scroll = {};
+	scroll.thinker.function.acp1 = (actionf_p1)&T_ScrollSector;
+	scroll.type				= type;
+	if( ( scroll.SpeedType() & ( st_accelerative | st_displacement ) ) != st_none )
+	{
+		if( line->frontsector == nullptr )
+		{
+			I_Error( "P_SpawnSectorScroller: non-static scroller line %d has no front sector", line->index );
+		}
+		scroll.controlsector	= line->frontsector;
+		scroll.controlheight	= line->frontsector->ceilingheight - line->frontsector->floorheight;
+		scroll.magx				= FixedMul( line->dx, FlatScrollScale );
+		scroll.magy				= FixedMul( line->dy, FlatScrollScale );
+		scroll.scrollx			= 0;
+		scroll.scrolly			= 0;
+	}
+	else
+	{
+		scroll.scrollx			= FixedMul( line->dx, FlatScrollScale );
+		scroll.scrolly			= FixedMul( line->dy, FlatScrollScale );
+	}
 
 	for( sector_t& sector : Sectors() )
 	{
