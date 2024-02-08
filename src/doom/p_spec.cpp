@@ -277,10 +277,7 @@ INLINE doombool IsScroller( int32_t special )
 		return true;
 	case Scroll_WallTextureRight_Always:
 	case Scroll_WallTextureByOffset_Always:
-	case Scroll_CeilingTexture_Always:
-	case Scroll_FloorTexture_Always:
-	case Scroll_FloorObjects_Always:
-	case Scroll_FloorTextureObjects_Always:
+	case Scroll_WallTextureBySector_Always:
 		return remove_limits; // allow_boom_specials
 	default:
 		return false;
@@ -295,6 +292,7 @@ INLINE doombool IsWallScroller( int32_t special )
 	case Scroll_WallTextureLeft_Always:
 		return true;
 	case Scroll_WallTextureRight_Always:
+	case Scroll_WallTextureBySector_Always:
 	case Scroll_WallTextureByOffset_Always:
 		return remove_limits; // allow_boom_specials
 	default:
@@ -1183,6 +1181,12 @@ P_ShootSpecialLine
 ( mobj_t*	thing,
   line_t*	line )
 {
+	if( line->action )
+	{
+		line->action->Handle( line, thing, LT_Gun, 0 );
+		return;
+	}
+
     int		ok;
     
     //	Impacts that other things can activate.
@@ -1349,53 +1353,10 @@ void P_UpdateSpecials (void)
     {
 		line = linespeciallist[i];
 
-		if( IsWallScroller( line->special ) )
-		{
-			line->frontside->textureoffset += line->scrollratex;
-			line->frontside->rowoffset += line->scrollratey;
-		}
-		else
-		{
-			for( sector_t& sector : Sectors() )
-			{
-				if( sector.tag == line->tag )
-				{
-					sector.ceiloffsetx += sector.ceilscrollratex;
-					sector.ceiloffsety += sector.ceilscrollratey;
-					sector.flooroffsetx += sector.floorscrollratex;
-					sector.flooroffsety += sector.floorscrollratey;
-					if( sector.iscurrent )
-					{
-						P_BlockThingsIterator( iota( sector.blockbox[ BOXLEFT ], sector.blockbox[ BOXRIGHT ] + 1 ),
-												iota( sector.blockbox[ BOXBOTTOM ], sector.blockbox[ BOXTOP ] + 1 ),
-												[ &sector ]( mobj_t* mobj ) -> bool
-						{
-							if( mobj->z != sector.floorheight
-								|| ( mobj->flags & MF_NOGRAVITY ) )
-							{
-								return true;
-							}
+		line->frontside->textureoffset += line->scrollratex;
+		line->frontside->rowoffset += line->scrollratey;
 
-							bool insector = mobj->subsector->sector->index == sector.index
-								|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y + mobj->radius )->sector->index == sector.index
-								|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y + mobj->radius )->sector->index == sector.index
-								|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y - mobj->radius )->sector->index == sector.index
-								|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y - mobj->radius )->sector->index == sector.index;
-
-							if( insector )
-							{
-								constexpr fixed_t AccelScale = DoubleToFixed( 0.09375 );
-								mobj->momx += FixedMul( sector.floorscrollratex, AccelScale );
-								mobj->momy += FixedMul( sector.floorscrollratey, AccelScale );
-							}
-
-							return true;
-						} );
-					}
-				}
-			}
-		}
-    }
+	}
 
     
     //	DO BUTTONS
@@ -1758,6 +1719,27 @@ void P_SpawnSpecials (void)
 		{
 			switch( line.special )
 			{
+			case Scroll_CeilingTexture_Accelerative_Always:
+			case Scroll_FloorTexture_Accelerative_Always:
+			case Scroll_FloorObjects_Accelerative_Always:
+			case Scroll_FloorTextureObjects_Accelerative_Always:
+			case Scroll_WallTextureBySector_Accelerative_Always:
+			case Transfer_WindByLength_Always:
+			case Transfer_CurrentByLength_Always:
+			case Transfer_WindOrCurrentByPoint_Always:
+			case Scroll_CeilingTexture_Displace_Always:
+			case Scroll_FloorTexture_Displace_Always:
+			case Scroll_FloorObjects_Displace_Always:
+			case Scroll_FloorTextureObjects_Displace_Always:
+			case Scroll_WallTextureBySector_Displace_Always:
+			case Scroll_CeilingTexture_Always:
+			case Scroll_FloorTexture_Always:
+			case Scroll_FloorObjects_Always:
+			case Scroll_FloorTextureObjects_Always:
+			//case Scroll_WallTextureBySector_Always:
+				P_SpawnSectorScroller( &line );
+				break;
+
 			case Scroll_WallTextureRight_Always:
 				linespeciallist[ numlinespecials++ ] = &line;
 				line.scrollratex = -FRACUNIT;
@@ -1767,37 +1749,6 @@ void P_SpawnSpecials (void)
 				linespeciallist[ numlinespecials++ ] = &line;
 				line.scrollratex = -line.frontside->textureoffset;
 				line.scrollratey = line.frontside->rowoffset;
-				break;
-
-			case Scroll_CeilingTexture_Always:
-				linespeciallist[ numlinespecials++ ] = &line;
-				for( sector_t& sector : Sectors() )
-				{
-					if( sector.tag == line.tag )
-					{
-						sector.ceilscrollratex = FixedMul( line.dx, FLATSCROLL_SCALE );
-						sector.ceilscrollratey = FixedMul( line.dy, FLATSCROLL_SCALE );
-					}
-				}
-				break;
-
-			case Scroll_FloorObjects_Always:
-			case Scroll_FloorTextureObjects_Always:
-			case Scroll_FloorTexture_Always:
-				{
-					bool iscurrent = line.special == Scroll_FloorObjects_Always
-									|| line.special == Scroll_FloorTextureObjects_Always;
-					linespeciallist[ numlinespecials++ ] = &line;
-					for( sector_t& sector : Sectors() )
-					{
-						if( sector.tag == line.tag )
-						{
-							sector.floorscrollratex = FixedMul( line.dx, FLATSCROLL_SCALE );
-							sector.floorscrollratey = FixedMul( line.dy, FLATSCROLL_SCALE );
-							sector.iscurrent = iscurrent;
-						}
-					}
-				}
 				break;
 
 			case Transfer_FloorLighting_Always:

@@ -22,6 +22,7 @@
 
 #include "i_log.h"
 
+#include "m_bbox.h"
 #include "m_random.h"
 
 #include "p_local.h"
@@ -36,6 +37,8 @@ extern "C"
 	ceiling_t*	activeceilingshead = nullptr;
 	plat_t*		activeplatshead = nullptr;
 }
+
+#pragma optimize( "", off )
 
 fixed_t P_FindShortestLowerTexture( sector_t* sector )
 {
@@ -1129,6 +1132,14 @@ DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activ
 			plat->type = raiseToNearestAndChange;
 			plat->high = P_FindNextHighestFloorSurrounding( &sector );
 			break;
+		case stt_ceiling:
+			plat->type = genericPlatform;
+			plat->high = sector.ceilingheight;
+			if( plat->speed == INT_MAX )
+			{
+				plat->speed = (sector.ceilingheight - sector.floorheight);
+			}
+			break;
 		case stt_nosearch:
 			sector.floorpic = line->frontside->sector->floorpic;
 			plat->type = raiseAndChange;
@@ -1436,3 +1447,181 @@ DOOM_C_API int32_t EV_DoExitGeneric( line_t* line, mobj_t* activator )
 
 	return 1;
 }
+
+// =================
+//  SECTOR ACTIONS
+// =================
+
+constexpr fixed_t FlatScrollScale = FixedDiv( 1, 32 );
+constexpr fixed_t AccelScale = DoubleToFixed( 0.09375 );
+
+DOOM_C_API void T_ScrollCeilingTexture( scroller_t* scroller )
+{
+	sector_t*& sector = scroller->sector;
+
+	sector->ceiloffsetx += scroller->scrollx;
+	sector->ceiloffsety += scroller->scrolly;
+}
+
+DOOM_C_API void T_ScrollFloorTexture( scroller_t* scroller )
+{
+	sector_t*& sector = scroller->sector;
+
+	sector->flooroffsetx += scroller->scrollx;
+	sector->flooroffsety += scroller->scrolly;
+}
+
+DOOM_C_API void T_ScrollFloorObjects( scroller_t* scroller )
+{
+	sector_t*& sector = scroller->sector;
+
+	P_BlockThingsIterator( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
+							iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
+							[ scroller ]( mobj_t* mobj ) -> bool
+	{
+		sector_t*& sector = scroller->sector;
+
+		fixed_t scrollheight = sector->transferline ? sector->transferline->frontsector->floorheight
+													: sector->floorheight;
+
+		if( mobj->z != scrollheight
+			|| ( mobj->flags & MF_NOGRAVITY ) )
+		{
+			return true;
+		}
+
+		bool insector = mobj->subsector->sector->index == sector->index
+			|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
+			|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
+			|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index
+			|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index;
+
+		if( insector )
+		{
+			mobj->momx += FixedMul( scroller->scrollx, AccelScale );
+			mobj->momy += FixedMul( scroller->scrolly, AccelScale );
+		}
+
+		return true;
+	} );
+}
+
+DOOM_C_API void T_ScrollFloorTextureObjects( scroller_t* scroller )
+{
+	T_ScrollFloorTexture( scroller );
+	T_ScrollFloorObjects( scroller );
+}
+
+constexpr actionf_p1 SelectScrollThinker( int32_t special )
+{
+	switch( special )
+	{
+	case Scroll_CeilingTexture_Displace_Always:
+	case Scroll_CeilingTexture_Always:
+	case Scroll_CeilingTexture_Accelerative_Always:
+		return (actionf_p1)&T_ScrollCeilingTexture;
+		break;
+
+	case Scroll_FloorTexture_Displace_Always:
+	case Scroll_FloorTexture_Always:
+	case Scroll_FloorTexture_Accelerative_Always:
+		return (actionf_p1)&T_ScrollFloorTexture;
+		break;
+
+	case Scroll_FloorObjects_Displace_Always:
+	case Scroll_FloorObjects_Always:
+	case Scroll_FloorObjects_Accelerative_Always:
+		return (actionf_p1)&T_ScrollFloorObjects;
+		break;
+
+	case Scroll_FloorTextureObjects_Displace_Always:
+	case Scroll_FloorTextureObjects_Always:
+	case Scroll_FloorTextureObjects_Accelerative_Always:
+		return (actionf_p1)&T_ScrollFloorTextureObjects;
+		break;
+
+	case Scroll_WallTextureBySector_Displace_Always:
+	case Scroll_WallTextureBySector_Always:
+	case Scroll_WallTextureBySector_Accelerative_Always:
+		break;
+
+	case Transfer_WindByLength_Always:
+	case Transfer_CurrentByLength_Always:
+	case Transfer_WindOrCurrentByPoint_Always:
+		break;
+
+	default:
+		break;
+	}
+
+	return nullptr;
+}
+
+constexpr scrolltype_t SelectScrollType( int32_t special )
+{
+	switch( special )
+	{
+	case Scroll_CeilingTexture_Displace_Always:
+	case Scroll_CeilingTexture_Always:
+	case Scroll_CeilingTexture_Accelerative_Always:
+		return st_ceiling;
+
+	case Scroll_FloorTexture_Displace_Always:
+	case Scroll_FloorTexture_Always:
+	case Scroll_FloorTexture_Accelerative_Always:
+	case Scroll_FloorObjects_Displace_Always:
+	case Scroll_FloorObjects_Always:
+	case Scroll_FloorObjects_Accelerative_Always:
+	case Scroll_FloorTextureObjects_Displace_Always:
+	case Scroll_FloorTextureObjects_Always:
+	case Scroll_FloorTextureObjects_Accelerative_Always:
+		return st_floor;
+
+	case Transfer_WindByLength_Always:
+		return st_wind;
+
+	case Transfer_CurrentByLength_Always:
+		return st_current;
+
+	case Transfer_WindOrCurrentByPoint_Always:
+		break;
+
+	default:
+		break;
+	}
+
+	return st_none;
+}
+
+DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
+{
+	actionf_p1 thinkfunc = SelectScrollThinker( line->special );
+	if( thinkfunc == nullptr )
+	{
+		return 0;
+	}
+
+	int32_t createdcount = 0;
+
+	scroller_t scroll;
+	scroll.thinker.function.acp1 = thinkfunc;
+	scroll.type			= SelectScrollType( line->special );
+	scroll.scrollx		= FixedMul( line->dx, FlatScrollScale );
+	scroll.scrolly		= FixedMul( line->dy, FlatScrollScale );
+	scroll.magnitude	= FixedMul( P_AproxDistance( line->dx, line->dy ), FlatScrollScale );
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line->tag )
+		{
+			++createdcount;
+			scroller_t* scroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
+			*scroller = scroll;
+			P_AddThinker( &scroller->thinker );
+			scroller->sector = &sector;
+		}
+	}
+
+	return createdcount;
+}
+

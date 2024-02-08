@@ -282,11 +282,6 @@ struct sector_s
 	fixed_t				flooroffsety;
 	fixed_t				ceiloffsetx;
 	fixed_t				ceiloffsety;
-	fixed_t				floorscrollratex;
-	fixed_t				floorscrollratey;
-	fixed_t				ceilscrollratex;
-	fixed_t				ceilscrollratey;
-	doombool			iscurrent;
 
 #if defined( __cplusplus )
 	INLINE void*& Special()				{ return specialdata; }

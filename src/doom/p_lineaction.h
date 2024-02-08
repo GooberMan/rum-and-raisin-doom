@@ -40,7 +40,7 @@
 enum DoomActions : uint32_t
 {
 	Unknown_000,	// Unknown_000
-	Door_Raise_UR_All,
+	Door_Raise_DR_All,
 	Door_Open_W1_Player,
 	Door_Close_W1_Player,
 	Door_Raise_W1_Player,
@@ -65,15 +65,15 @@ enum DoomActions : uint32_t
 	Floor_LowerLowest_S1_Player,
 	Floor_RaiseLowestCeiling_GR_Player,
 	Crusher_W1_Player,
-	Door_RaiseBlue_UR_Player,
-	Door_RaiseYellow_UR_Player,
-	Door_RaiseRed_UR_Player,
+	Door_RaiseBlue_DR_Player,
+	Door_RaiseYellow_DR_Player,
+	Door_RaiseRed_DR_Player,
 	Door_Raise_S1_Player,
 	Floor_RaiseByTexture_W1_Player,
-	Door_Open_U1_Player,
-	Door_OpenBlue_U1_Player,
-	Door_OpenRed_U1_Player,
-	Door_OpenYellow_U1_Player,
+	Door_Open_D1_Player,
+	Door_OpenBlue_D1_Player,
+	Door_OpenRed_D1_Player,
+	Door_OpenYellow_D1_Player,
 	Light_SetTo35_W1_Player,
 	Floor_LowerHighestFast_W1_Player,
 	Floor_LowerLowestChangeTexture_NumericModel_W1_Player,
@@ -156,8 +156,8 @@ enum DoomActions : uint32_t
 	Door_RaiseFast_SR_Player,
 	Door_OpenFast_SR_Player,
 	Door_CloseFast_SR_Player,
-	Door_RaiseFast_UR_Player,
-	Door_OpenFast_U1_Player,
+	Door_RaiseFast_DR_Player,
+	Door_OpenFast_D1_Player,
 	Floor_RaiseNearest_W1_Player,
 	Platform_DownWaitUpFast_WR_Player,
 	Platform_DownWaitUpFast_W1_Player,
@@ -183,7 +183,7 @@ enum DoomActions : uint32_t
 	Crusher_Silent_W1_Player,
 
 	DoomActions_Max,
-	DoomActions_Min = Door_Raise_UR_All,
+	DoomActions_Min = Door_Raise_DR_All,
 };
 
 enum BoomActions : uint32_t

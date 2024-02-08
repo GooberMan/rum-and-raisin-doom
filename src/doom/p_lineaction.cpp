@@ -485,7 +485,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 
 	// Unknown_000
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
-	// Door_Raise_UR_All
+	// Door_Raise_DR_All
 	{ &precon::CanDoorRaise, &DoGeneric< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
 	// Door_Open_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Door >, LT_WalkBoth, LL_None, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
@@ -535,23 +535,23 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_GunFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Crusher_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Slow ], 0, constants::crushingspeeds[ Speed_Slow ], cs_movement },
-	// Door_RaiseBlue_UR_Player
+	// Door_RaiseBlue_DR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGeneric< Door >, LT_UseFront, LL_Blue, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
-	// Door_RaiseYellow_UR_Player
+	// Door_RaiseYellow_DR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGeneric< Door >, LT_UseFront, LL_Yellow, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
-	// Door_RaiseRed_UR_Player
+	// Door_RaiseRed_DR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGeneric< Door >, LT_UseFront, LL_Red, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
 	// Door_Raise_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_4sec ], sd_open, door_noraise },
 	// Floor_RaiseByTexture_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
-	// Door_Open_U1_Player
+	// Door_Open_D1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
-	// Door_OpenBlue_U1_Player
+	// Door_OpenBlue_D1_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericOnce< Door >, LT_UseFront, LL_Blue, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
-	// Door_OpenRed_U1_Player
+	// Door_OpenRed_D1_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericOnce< Door >, LT_UseFront, LL_Red, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
-	// Door_OpenYellow_U1_Player
+	// Door_OpenYellow_D1_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericOnce< Door >, LT_UseFront, LL_Yellow, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
 	// Light_SetTo35_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_value, 35 },
@@ -719,9 +719,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
 	// Door_CloseFast_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Fast ], 0, sd_close, door_noraise },
-	// Door_RaiseFast_UR_Player
+	// Door_RaiseFast_DR_Player
 	{ &precon::IsPlayer, &DoGeneric< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Fast ], constants::doordelay[ doordelay_4sec ], sd_open, door_raiselower },
-	// Door_OpenFast_U1_Player
+	// Door_OpenFast_D1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
 	// Floor_RaiseNearest_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nexthighestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
@@ -805,17 +805,17 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Light_SetLowest_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_lowestsurround },
 	// Floor_RaiseByTexture_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerLowestChangeTexture_NumericModel_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Floor_Raise24ChangeTexture_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 24 ), sct_copyboth, scm_trigger, sc_nocrush },
 	// Floor_Raise24_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 24 ), sct_none, scm_trigger, sc_nocrush },
 	// Platform_Perpetual_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< PerpetualLiftStart >, LT_SwitchFront, LL_None, constants::perpetualplatformspeeds[ Speed_Slow ], constants::liftdelay[ liftdelay_3sec ] },
 	// Platform_Stop_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< PlatformStop >, LT_SwitchFront, LL_None },
 	// Crusher_Fast_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], cs_movement },
 	// Crusher_Silent_S1_Player
@@ -841,9 +841,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_Close30Open_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Door >, LT_SwitchFront, LL_None, constants::doorspeeds[ Speed_Slow ], constants::doordelay[ doordelay_30sec ], sd_close, door_noraise },
 	// Floor_RaiseByTexture_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerLowestChangeTexture_NumericModel_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Floor_Raise512_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 512 ), sct_none, scm_trigger, sc_nocrush },
 	// Floor_Raise24ChangeTexture_SR_Player
@@ -851,9 +851,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_Raise24_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nosearch, sd_up, IntToFixed( 24 ), sct_none, scm_trigger, sc_nocrush },
 	// Platform_Perpetual_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< PerpetualLiftStart >, LT_SwitchFront, LL_None, constants::perpetualplatformspeeds[ Speed_Slow ], constants::liftdelay[ liftdelay_3sec ] },
 	// Platform_Stop_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< PlatformStop >, LT_SwitchFront, LL_None },
 	// Crusher_Fast_SR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Crusher >, LT_SwitchFront, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], cs_movement },
 	// Crusher_SR_Player
@@ -911,9 +911,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_ThingSilentPreserve_SR_All
 	{ &precon::CanTeleportAll, &DoGenericSwitch< Teleport >, LT_SwitchFront, LL_None, 0, 0, tt_tothing | tt_preserveangle | tt_silent },
 	// Platform_RaiseInstantCeiling_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< VanillaRaise >, LT_WalkBoth, LL_None, INT_MAX, 0, stt_ceiling, 0 },
 	// Platform_RaiseInstantCeiling_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< VanillaRaise >, LT_WalkBoth, LL_None, INT_MAX, 0, stt_ceiling, 0 },
 	// Transfer_FloorLighting_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Scroll_CeilingTexture_Accelerative_Always
@@ -925,15 +925,15 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Scroll_FloorTextureObjects_Accelerative_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Scroll_WallTextureBySector_Accelerative_Always
-	{},
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Floor_LowerNearest_W1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nextlowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerNearest_WR_Player
-	{},
+	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nextlowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerNearest_S1_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nextlowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerNearest_SR_Player
-	{},
+	{ &precon::IsPlayer, &DoGenericSwitch< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nextlowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Transfer_Friction_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Transfer_WindByLength_Always

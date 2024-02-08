@@ -26,7 +26,6 @@
 
 #include "r_defs.h"
 
-#define FLATSCROLL_SCALE 0x800 // (1/32)
 //
 // End-level timer (-TIMER option)
 //
@@ -237,7 +236,8 @@ DOOM_C_API typedef enum
     downWaitUpStay,
     raiseAndChange,
     raiseToNearestAndChange,
-    blazeDWUS
+    blazeDWUS,
+	genericPlatform,
 } plattype_e;
 
 DOOM_C_API typedef struct platdata_e
@@ -591,7 +591,7 @@ DOOM_C_API int EV_Teleport( line_t*	line, int side, mobj_t* thing );
 
 // Generic functionality
 
-DOOM_C_API typedef struct elevator_e
+DOOM_C_API typedef struct elevator_s
 {
 	thinker_t	thinker;
 	sector_t*	sector;
@@ -600,6 +600,25 @@ DOOM_C_API typedef struct elevator_e
 	fixed_t		ceilingdest;
 	sectordir_t	direction;
 } elevator_t;
+
+DOOM_C_API typedef enum scrolltype_e
+{
+	st_none,
+	st_ceiling,
+	st_floor,
+	st_current,
+	st_wind,
+} scrolltype_t;
+
+DOOM_C_API typedef struct scroller_s
+{
+	thinker_t		thinker;
+	sector_t*		sector;
+	fixed_t			scrollx;
+	fixed_t			scrolly;
+	fixed_t			magnitude;
+	scrolltype_t	type;
+} scroller_t;
 
 DOOM_C_API typedef enum dooraise_e
 {
@@ -707,6 +726,8 @@ DOOM_C_API int32_t	EV_DoElevatorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoBoomFloorCeilingGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoStairsGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
+
+DOOM_C_API int32_t	P_SpawnSectorScroller( line_t* line );
 
 #if defined( __cplusplus )
 
