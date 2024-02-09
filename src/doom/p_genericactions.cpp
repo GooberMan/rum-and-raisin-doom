@@ -1,4 +1,5 @@
 //
+// Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2024 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
@@ -12,7 +13,9 @@
 // GNU General Public License for more details.
 //
 // DESCRIPTION:
-//	All the new generic action handlers
+//	All the new generic action handlers. Based off the original code,
+//  does everything it can to retain vanilla compatibility when given
+//  the correct inputs
 //
 
 #include "doomdef.h"
