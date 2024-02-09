@@ -1313,33 +1313,27 @@ DOOM_C_API void P_RadiusAttackDistance( mobj_t* spot, mobj_t* source, int32_t da
 	int32_t xh = (spot->x + distance - bmaporgx) >> MAPBLOCKSHIFT;
 	int32_t xl = (spot->x - distance - bmaporgx) >> MAPBLOCKSHIFT;
 
-	for( int32_t y : iota( yl, yh + 1 ) )
+	P_BlockThingsIteratorHorizontal( iota( xl, xh + 1 ), iota( yl, yh + 1 ), [ &spot, &source, &damage, &distance ]( mobj_t* mobj ) -> bool
 	{
-		for( int32_t x : iota( xl, xh + 1 ) )
+		if( (mobj->flags & MF_SHOOTABLE)
+			&& mobj->type != MT_CYBORG
+			&& mobj->type != MT_SPIDER )
 		{
-			P_BlockThingsIterator( x, y, [ &spot, &source, &damage, &distance ]( mobj_t* mobj ) -> bool
+			fixed_t dx = FixedAbs( mobj->x - spot->x );
+			fixed_t dy = FixedAbs( mobj->y - spot->y );
+
+			fixed_t dist = dx > dy ? dx : dy;
+			dist = M_MAX( ( ( dist - mobj->radius ) >> FRACBITS ), 0 );
+
+			if( dist < distance && P_CheckSight( mobj, spot ))
 			{
-				if( (mobj->flags & MF_SHOOTABLE)
-					&& mobj->type != MT_CYBORG
-					&& mobj->type != MT_SPIDER )
-				{
-					fixed_t dx = FixedAbs( mobj->x - spot->x );
-					fixed_t dy = FixedAbs( mobj->y - spot->y );
-
-					fixed_t dist = dx > dy ? dx : dy;
-					dist = M_MAX( ( ( dist - mobj->radius ) >> FRACBITS ), 0 );
-
-					if( dist < distance && P_CheckSight( mobj, spot ))
-					{
-						// must be in direct path
-						P_DamageMobj( mobj, spot, source, FixedMul( damage, FixedDiv( dist, distance ) ) );
-					}
-				}
-
-				return true;
-			} );
+				// must be in direct path
+				P_DamageMobj( mobj, spot, source, FixedMul( damage, FixedDiv( dist, distance ) ) );
+			}
 		}
-	}
+
+		return true;
+	} );
 }
 
 DOOM_C_API mobj_t* P_FindTracerTarget( mobj_t* source, fixed_t distance, angle_t fov )
@@ -1425,7 +1419,7 @@ DOOM_C_API doombool P_ChangeSectorFixed( sector_t* sector, doombool crunch )
 {
 	doombool doesntfit = false;
 
-	P_BlockThingsIterator( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
+	P_BlockThingsIteratorVertical( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
 							iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
 							[ sector, &doesntfit, crunch ]( mobj_t* mobj ) -> bool
 	{

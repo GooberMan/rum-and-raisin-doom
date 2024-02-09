@@ -185,7 +185,10 @@ DOOM_C_API doombool			P_BlockThingsIterator (int x, int y, doombool(*func)(mobj_
 using iteratemobjfunc_t = std::function< doombool(mobj_t*) >;
 
 doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func );
-doombool P_BlockThingsIterator( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
+
+// Ranged iterators with directional bias, will travel all the way in one direction before moving to the next line
+doombool P_BlockThingsIteratorHorizontal( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
+doombool P_BlockThingsIteratorVertical( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
 #endif
 
 #define PT_ADDLINES		1

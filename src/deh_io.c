@@ -310,7 +310,7 @@ char *DEH_ReadLine(deh_context_t *context, doombool extended)
 
 void DEH_Warning(deh_context_t *context, const char *msg, ...)
 {
-	I_TerminalPrintf( Log_Warning, "%s:%i: warning:", context->filename, context->linenum );
+	I_TerminalPrintf( Log_Warning, "%s:%i: warning: ", context->filename, context->linenum );
 
 	va_list args;
 	va_start(args, msg);
@@ -343,5 +343,7 @@ int32_t DEH_DoomVersion(deh_context_t* context)
 int32_t DEH_SetDoomVersion(deh_context_t* context, int32_t version)
 {
 	context->doomversion = version;
+
+	return version;
 }
 

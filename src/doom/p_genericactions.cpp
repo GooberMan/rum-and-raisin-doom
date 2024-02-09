@@ -1475,7 +1475,7 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 {
 	sector_t*& sector = scroller->sector;
 
-	P_BlockThingsIterator( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
+	P_BlockThingsIteratorVertical( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
 							iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
 							[ scroller ]( mobj_t* mobj ) -> bool
 	{
