@@ -66,6 +66,9 @@ DOOM_C_API typedef struct gameoptions_s
 	doombool					fix_w1s1_lines_clearing_on_no_result;	// Vanilla will indiscriminately clear a W1/S1 line even if they do nothing
 	doombool					fix_shortest_lower_texture_line;		// Would assume 0 was a valid texture, so never any shorter than AASHITTY
 	doombool					fix_moveplane_escapes_reality;			// Independent floor and ceiling thinkers (or the donut bug) causes floors and ceilings to clip through each other
+	doombool					fix_overzealous_changesector;			// Sector blockmap overlaps your mobj? That's clearly going to affect that mobj.
+	doombool					fix_archvile_ghost_resurrections;		// Crushing objects in to gibs still leaves mobjs in a state that can be raised
+	doombool					fix_spechit_overflow;					// Just keep adding things to a static array, it'll be fine
 
 	doombool					allow_weapon_recoil;					// Boom "feature"
 	doombool					allow_line_passthrough;					// Boom feature, don't stop using lines when one succeeds if linedef flag is set

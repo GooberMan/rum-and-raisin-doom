@@ -294,7 +294,7 @@ static void DEH_BEXPtrParseLine( deh_context_t *context, char* line, void* tag )
 
 	auto found = PointerLookup.find( frame_func );
 	if( found == PointerLookup.end()
-		|| found->second.minimumver < DEH_DoomVersion( context ) )
+		|| found->second.minimumver > DEH_DoomVersion( context ) )
 	{
 		DEH_Warning( context, "'%s' is an invalid function", frame_func );
 		return;

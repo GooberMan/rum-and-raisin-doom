@@ -947,7 +947,7 @@ doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func )
 		{
 			return false;
 		}
-		mobj = remove_limits ? bnext : mobj->bnext;
+		mobj = remove_limits ? bnext : mobj->bnext; // fix_blockthingsiterator
 	}
 
 	return true;

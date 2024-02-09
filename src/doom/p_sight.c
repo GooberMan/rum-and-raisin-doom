@@ -106,8 +106,11 @@ P_DivlineSide
     
     if (!node->dy)
     {
-	if (x==node->y) // fix_divlineside
+	if (!remove_limits && x==node->y) // fix_divlineside
 	    return 2;
+
+	if (remove_limits && y==node->y) // fix_divlineside
+		return 2;
 
 	if (y <= node->y)
 	    return node->dx < 0;

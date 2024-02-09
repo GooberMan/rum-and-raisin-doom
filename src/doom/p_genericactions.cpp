@@ -1491,12 +1491,17 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 		case st_conveyor:
 			cancarry = mobj->z == scrollheight;
 			break;
+
 		case st_wind:
 			cancarry = mobj->z >= scrollheight;
 			if( mobj->z > scrollheight ) carryshift = 1;
 			break;
+
 		case st_current:
 			cancarry = mobj->z <= scrollheight;
+			break;
+
+		default:
 			break;
 		}
 
@@ -1555,8 +1560,12 @@ DOOM_C_API void T_ScrollSector( scroller_t* scroller )
 	case st_displacement:
 		T_UpdateDisplacement( scroller );
 		break;
+
 	case st_accelerative:
 		T_UpdateAccelerative( scroller );
+		break;
+
+	default:
 		break;
 	}
 
@@ -1565,9 +1574,11 @@ DOOM_C_API void T_ScrollSector( scroller_t* scroller )
 	case st_ceiling:
 		T_ScrollCeilingTexture( scroller );
 		break;
+
 	case st_floor:
 		T_ScrollFloorTexture( scroller );
 		break;
+
 	default:
 		break;
 	}

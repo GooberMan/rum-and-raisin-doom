@@ -118,8 +118,11 @@ R_InstallSpriteLump
 	// the lump is only used for one rotation
 	if (sprtemp[frame].rotate == 0)
 	{
-		I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
-			 "and a rot=0 lump", spritename, 'A'+frame);
+		if( !remove_limits ) // allow_additive_data_blocks
+		{
+			I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
+				 "and a rot=0 lump", spritename, 'A'+frame);
+		}
 	}
 
     sprtemp[frame].rotate = 1;
@@ -128,9 +131,12 @@ R_InstallSpriteLump
     rotation--;
     if( sprtemp[frame].lump[rotation] != -1 )
 	{
-		I_Error ("R_InitSprites: Sprite %s : %c : %c "
-			 "has two lumps mapped to it",
-			 spritename, 'A'+frame, '1'+rotation);
+		if( !remove_limits ) // allow_additive_data_blocks
+		{
+			I_Error ("R_InitSprites: Sprite %s : %c : %c "
+				 "has two lumps mapped to it",
+				 spritename, 'A'+frame, '1'+rotation);
+		}
 	}
 
 	sprtemp[frame].lump[rotation] = lump;

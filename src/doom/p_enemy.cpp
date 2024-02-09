@@ -1151,9 +1151,20 @@ doombool PIT_VileCheck (mobj_t*	thing)
 		
     corpsehit = thing;
     corpsehit->momx = corpsehit->momy = 0;
-    corpsehit->height <<= 2;
+	fixed_t oldheight = corpsehit->height;
+	fixed_t oldradius = corpsehit->radius;
+	if( remove_limits ) // fix_archvile_ghost_resurrections
+	{
+		corpsehit->height = corpsehit->info->height;
+		corpsehit->radius = corpsehit->info->radius;
+	}
+	else
+	{
+		corpsehit->height <<= 2;
+	}
     check = P_CheckPosition (corpsehit, corpsehit->x, corpsehit->y);
-    corpsehit->height >>= 2;
+    corpsehit->height = oldheight;
+	corpsehit->radius = oldradius;
 
     if (!check)
 	return true;		// doesn't fit here
@@ -1214,7 +1225,15 @@ DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_
 		    info = corpsehit->info;
 		    
 		    P_SetMobjState (corpsehit, (statenum_t)info->raisestate);
-		    corpsehit->height <<= 2;
+			if( remove_limits ) // fix_archvile_ghost_resurrections
+			{
+				corpsehit->height = info->height;
+				corpsehit->radius = info->radius;
+			}
+			else
+			{
+				corpsehit->height <<= 2;
+			}
 		    corpsehit->flags = info->flags;
 		    corpsehit->health = info->spawnhealth;
 		    corpsehit->target = NULL;

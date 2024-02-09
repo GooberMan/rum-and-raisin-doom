@@ -24,14 +24,14 @@
 
 #include "deh_misc.h"
 
-#include "m_bbox.h"
-#include "m_random.h"
 #include "i_system.h"
-
+#include "i_log.h"
 
 #include "m_argv.h"
+#include "m_bbox.h"
 #include "m_container.h"
 #include "m_misc.h"
+#include "m_random.h"
 
 #include "p_local.h"
 
@@ -447,7 +447,7 @@ DOOM_C_API doombool P_CheckPosition( mobj_t* thing, fixed_t x, fixed_t y )
 
 	bool checkthings = !remove_limits // allow_corpse_to_ignore_mobjs
 					|| ( tmthing->flags & MF_CORPSE ) != MF_CORPSE;
-	if( checkthings )
+	if( true ) // checkthings )
 	{
 		// Check things first, possibly picking things up.
 		// The bounding box is extended by MAXRADIUS
@@ -1025,7 +1025,18 @@ DOOM_C_API doombool PTR_ShootTraverse( intercept_t* in )
 	    
 	    // it's a sky hack wall
 	    if	(li->backsector && li->backsector->ceilingpic == skyflatnum)
-		return false;		
+		{
+			doombool impact = false;
+			if( remove_limits ) // fix_sky_wall_projectiles
+			{
+				impact = z <= li->backsector->ceilingheight;
+			}
+
+			if( !impact )
+			{
+				return false;
+			}
+		}
 	}
 
 	// Spawn bullet puffs.
@@ -1388,6 +1399,97 @@ DOOM_C_API mobj_t* P_FindTracerTarget( mobj_t* source, fixed_t distance, angle_t
 	return target;
 }
 
+DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
+{
+	if( mobj->subsector->sector == sector )
+	{
+		return true;
+	}
+
+	constexpr auto CheckPos = []( sector_t* sector, fixed_t x, fixed_t y ) -> bool
+	{
+		subsector_t* sub = BSP_PointInSubsector( x, y );
+		return sub->sector == sector;
+	};
+
+	return CheckPos( sector, mobj->x - mobj->radius, mobj->y - mobj->radius )
+		|| CheckPos( sector, mobj->x + mobj->radius, mobj->y - mobj->radius )
+		|| CheckPos( sector, mobj->x - mobj->radius, mobj->y + mobj->radius )
+		|| CheckPos( sector, mobj->x + mobj->radius, mobj->y + mobj->radius );
+}
+
+//
+// P_ChangeSector
+//
+DOOM_C_API doombool P_ChangeSectorFixed( sector_t* sector, doombool crunch )
+{
+	doombool doesntfit = false;
+
+	P_BlockThingsIterator( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
+							iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
+							[ sector, &doesntfit, crunch ]( mobj_t* mobj ) -> bool
+	{
+		if( remove_limits && !P_MobjOverlapsSector( sector, mobj ) ) // fix_overzealous_changesector
+		{
+			return true;
+		}
+
+		if( P_ThingHeightClip( mobj ) )
+		{
+			return true;
+		}
+
+		// crunch bodies to giblets
+		if( mobj->health <= 0 )
+		{
+			P_SetMobjState( mobj, S_GIBS );
+
+			if( gameversion > exe_doom_1_2 )
+			{
+				mobj->flags &= ~MF_SOLID;
+			}
+
+			mobj->height = 0;
+			mobj->radius = 0;
+
+			// keep checking
+			return true;
+		}
+
+		// crunch dropped items
+		if( mobj->flags & MF_DROPPED )
+		{
+			P_RemoveMobj( mobj );
+	
+			// keep checking
+			return true;
+		}
+
+		if ( !( mobj->flags & MF_SHOOTABLE ) )
+		{
+			// assume it is bloody gibs or something
+			return true;
+		}
+
+		doesntfit = true;
+
+		if( crunch && !( leveltime & 3 ) )
+		{
+			P_DamageMobj( mobj, NULL, NULL, 10 );
+
+			// spray blood in a random direction
+			mobj_t* blood = P_SpawnMobj( mobj->x, mobj->y, mobj->z + (mobj->height >> 1), MT_BLOOD );
+			blood->momx = P_SubRandom() << 12;
+			blood->momy = P_SubRandom() << 12;
+		}
+
+		// keep checking (crush other things)	
+		return true;
+	} );
+
+	return doesntfit;
+}
+
 //
 // SECTOR HEIGHT CHANGING
 // After modifying a sectors floor or ceiling height,
@@ -1467,13 +1569,13 @@ DOOM_C_API doombool PIT_ChangeSector( mobj_t* thing )
     return true;	
 }
 
-
-
-//
-// P_ChangeSector
-//
 DOOM_C_API doombool P_ChangeSector( sector_t* sector, doombool crunch )
 {
+	if( remove_limits ) // fix_overzealous_changesector || fix_spechit_overflow
+	{
+		return P_ChangeSectorFixed( sector, crunch );
+	}
+
     int		x;
     int		y;
 	
@@ -1544,8 +1646,8 @@ static void SpechitOverrun(line_t *ld)
             nofit = addr; 
             break;
         default:
-            fprintf(stderr, "SpechitOverrun: Warning: unable to emulate"
-                            "an overrun where numspechit=%i\n",
+            I_LogAddEntryVar( Log_Error, "SpechitOverrun: Warning: unable to emulate"
+                            "an overrun where numspechit=%i",
                             numspechit);
             break;
     }
