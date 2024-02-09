@@ -138,6 +138,7 @@ DOOM_C_API typedef struct interlevelframe_s
 	flowstring_t			image_lump;
 	frametype_t				type;
 	int32_t					duration;
+	int32_t					maxduration;
 	int32_t					lumpname_animindex;
 	int32_t					lumpname_animframe;
 } interlevelframe_t;

@@ -306,6 +306,7 @@ public:
 
 	constexpr patch_t* Image()			{ return image; }
 	constexpr int32_t Duration()		{ return source->duration; }
+	constexpr int32_t MaxDuration()		{ return source->maxduration; }
 	constexpr frametype_t Type()		{ return source->type; }
 
 	template< frametype_t check >
@@ -559,13 +560,15 @@ public:
 		frames_end = cache.Frames().end();
 
 		duration_left = frames_curr->Duration();
+		if( frames_curr->Is< Frame_RandomDuration >() && frames_curr->MaxDuration() > frames_curr->Duration() )
+		{
+			int32_t maxrandom = frames_curr->MaxDuration() - frames_curr->Duration();
+			duration_left += M_MIN( M_Random() % ( maxrandom + 1 ) , maxrandom );
+		}
+
 		if( frames_curr->Is< Frame_RandomStart >() )
 		{
 			duration_left = 1 + ( M_Random() % ( duration_left - 1 ) );
-		}
-		else if( !frames_curr->Is< Frame_Infinite >() )
-		{
-			++duration_left;
 		}
 
 		if( frames_curr->Is< Frame_AdjustForWidescreen >() )

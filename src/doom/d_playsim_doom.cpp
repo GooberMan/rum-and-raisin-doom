@@ -142,8 +142,8 @@ constexpr auto PlainFlowString( const char* name )
 #define frame( lump, type )								{ FlowString( lump ), type, standardduration }
 #define frame_withtime( lump, type, duration )			{ FlowString( lump ), type, duration }
 #define frame_withtime_null( type, duration )			{ PlainFlowString( nullptr ), type, duration }
-#define frame_runtime( lump, type, index, frame )		{ RuntimeFlowString( lump ), type, standardduration, index, frame }
-#define frame_runtime_infinite( lump, index, frame )	{ RuntimeFlowString( lump ), Frame_Infinite, -1, index, frame }
+#define frame_runtime( lump, type, index, frame )		{ RuntimeFlowString( lump ), type, standardduration, 0, index, frame }
+#define frame_runtime_infinite( lump, index, frame )	{ RuntimeFlowString( lump ), Frame_Infinite, 0, 0, index, frame }
 
 #define generate_name( ep, index ) doom_frames_ ## ep ## _ ## index
 
