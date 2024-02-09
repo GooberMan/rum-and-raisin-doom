@@ -38,8 +38,6 @@ extern "C"
 	plat_t*		activeplatshead = nullptr;
 }
 
-#pragma optimize( "", off )
-
 fixed_t P_FindShortestLowerTexture( sector_t* sector )
 {
 	fixed_t lowestheight = INT_MAX;
