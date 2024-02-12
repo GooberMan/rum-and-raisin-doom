@@ -22,10 +22,11 @@
 //#include "v_video.h"
 
 #include "doomdef.h"
+#include "doomstat.h"
 
 // States for the intermission
 
-typedef enum
+DOOM_C_API typedef enum
 {
     NoState = -1,
     StatCount,
@@ -33,16 +34,16 @@ typedef enum
 } stateenum_t;
 
 // Called by main loop, animate the intermission.
-void WI_Ticker (void);
+DOOM_C_API void WI_Ticker (void);
 
 // Called by main loop,
 // draws the intermission directly into the screen buffer.
-void WI_Drawer (void);
+DOOM_C_API void WI_Drawer (void);
 
 // Setup for an intermission screen.
-void WI_Start(wbstartstruct_t*	 wbstartstruct);
+DOOM_C_API void WI_Start(wbstartstruct_t*	 wbstartstruct);
 
 // Shut down the intermission screen
-void WI_End(void);
+DOOM_C_API void WI_End(void);
 
 #endif

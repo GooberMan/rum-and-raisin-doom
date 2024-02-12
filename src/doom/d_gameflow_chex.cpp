@@ -14,8 +14,10 @@
 // DESCRIPTION: Defines the gameflow types for all iterations of
 //              the original Doom.
 
-#include "d_playsim.h"
+#include "d_gamesim.h"
 #include "dstrings.h"
+
+#include "d_gameflow.h"
 
 #include "i_timer.h"
 

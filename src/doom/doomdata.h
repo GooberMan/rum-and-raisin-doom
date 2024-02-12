@@ -153,6 +153,12 @@ typedef PACKED_STRUCT (
 // Don't stop if a switch/use linedef succeeds
 #define ML_BOOM_PASSTHROUGH		512
 
+// Any monster that isn't a flyer gets blocked
+#define ML_MBF21_BLOCKLANDMONSTER	4096
+
+// Can't have an actual human getting through here thank you very much
+#define ML_MBF21_BLOCKPLAYER	8192
+
 
 // Sector definition, from editing.
 typedef	PACKED_STRUCT (

@@ -35,7 +35,7 @@
 #include "sounds.h"
 
 #include "d_iwad.h"
-#include "d_playsim.h"
+#include "d_gamesim.h"
 
 #include "z_zone.h"
 #include "w_main.h"
@@ -1286,6 +1286,11 @@ static struct
     {"Final Doom",           "final",      exe_final},
     {"Final Doom (alt)",     "final2",     exe_final2},
     {"Chex Quest",           "chex",       exe_chex},
+    {"Limit Removing",       "limitremoving", exe_limit_removing},
+    {"Boom 2.02",            "boom2.02",   exe_boom_2_02},
+    {"-complevel 9",         "complevel9", exe_complevel9},
+    {"MBF",                  "mbf",        exe_mbf},
+    {"MBF21",                "mbf21",      exe_mbf21},
     { NULL,                  NULL,         0},
 };
 
@@ -1837,8 +1842,6 @@ void D_DoomMain (void)
 	D_AddWidescreenPacks();
 	D_AddExtendedAssets();
 
-	D_RegisterPlaysim();
-
     //!
     // @category mod
     //
@@ -1936,11 +1939,7 @@ void D_DoomMain (void)
     // Load PWAD files.
     modifiedgame = W_ParseCommandLine();
 
-	// Now that everything is registered, we can check for the various mapinfo lumps
-	if( remove_limits )
-	{
-		D_GameflowCheckAndParseMapinfos();
-	}
+	D_RegisterGamesim();
 
     // Debug:
 //    W_PrintDirectory();

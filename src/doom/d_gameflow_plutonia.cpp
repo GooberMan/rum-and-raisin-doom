@@ -14,8 +14,10 @@
 // DESCRIPTION: Defines the gameflow types for Doom 2/commercial
 //              game types
 
-#include "d_playsim.h"
+#include "d_gamesim.h"
 #include "dstrings.h"
+
+#include "d_gameflow.h"
 
 // Forward declarations
 extern episodeinfo_t	plutonia_episode;
@@ -95,6 +97,12 @@ constexpr auto FlowString( const char* name, flowstringflags_t additional = Flow
 	return lump;
 }
 
+constexpr auto LevelFlowString( const char* name )
+{
+	flowstring_t lump = { name, FlowString_Dehacked | FlowString_RuntimeGenerated | FlowString_IgnoreEpisodeParam };
+	return lump;
+}
+
 constexpr auto RuntimeFlowString( const char* name )
 {
 	flowstring_t lump = { name, FlowString_Dehacked | FlowString_RuntimeGenerated };
@@ -160,7 +168,7 @@ gameflow_t doom_plutonia =
 
 mapinfo_t plutonia_map_map01 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_1 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -184,7 +192,7 @@ mapinfo_t plutonia_map_map01 =
 
 mapinfo_t plutonia_map_map02 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_2 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -208,7 +216,7 @@ mapinfo_t plutonia_map_map02 =
 
 mapinfo_t plutonia_map_map03 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_3 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -232,7 +240,7 @@ mapinfo_t plutonia_map_map03 =
 
 mapinfo_t plutonia_map_map04 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_4 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -256,7 +264,7 @@ mapinfo_t plutonia_map_map04 =
 
 mapinfo_t plutonia_map_map05 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_5 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -280,7 +288,7 @@ mapinfo_t plutonia_map_map05 =
 
 mapinfo_t plutonia_map_map06 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_6 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -311,7 +319,7 @@ static bossaction_t		plutonia_map07special[] =
 
 mapinfo_t plutonia_map_map07 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_7 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -335,7 +343,7 @@ mapinfo_t plutonia_map_map07 =
 
 mapinfo_t plutonia_map_map08 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_8 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -359,7 +367,7 @@ mapinfo_t plutonia_map_map08 =
 
 mapinfo_t plutonia_map_map09 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( PHUSTR_9 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -383,7 +391,7 @@ mapinfo_t plutonia_map_map09 =
 
 mapinfo_t plutonia_map_map10 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_10 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -407,7 +415,7 @@ mapinfo_t plutonia_map_map10 =
 
 mapinfo_t plutonia_map_map11 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_11 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -435,7 +443,7 @@ mapinfo_t plutonia_map_map11 =
 
 mapinfo_t plutonia_map_map12 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_12 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -459,7 +467,7 @@ mapinfo_t plutonia_map_map12 =
 
 mapinfo_t plutonia_map_map13 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_13 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -483,7 +491,7 @@ mapinfo_t plutonia_map_map13 =
 
 mapinfo_t plutonia_map_map14 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_14 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -507,7 +515,7 @@ mapinfo_t plutonia_map_map14 =
 
 mapinfo_t plutonia_map_map15 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_15 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -531,7 +539,7 @@ mapinfo_t plutonia_map_map15 =
 
 mapinfo_t plutonia_map_map16 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_16 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -555,7 +563,7 @@ mapinfo_t plutonia_map_map16 =
 
 mapinfo_t plutonia_map_map17 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_17 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -579,7 +587,7 @@ mapinfo_t plutonia_map_map17 =
 
 mapinfo_t plutonia_map_map18 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_18 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -603,7 +611,7 @@ mapinfo_t plutonia_map_map18 =
 
 mapinfo_t plutonia_map_map19 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_19 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -627,7 +635,7 @@ mapinfo_t plutonia_map_map19 =
 
 mapinfo_t plutonia_map_map20 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_20 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -655,7 +663,7 @@ mapinfo_t plutonia_map_map20 =
 
 mapinfo_t plutonia_map_map21 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_21 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -679,7 +687,7 @@ mapinfo_t plutonia_map_map21 =
 
 mapinfo_t plutonia_map_map22 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_22 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -703,7 +711,7 @@ mapinfo_t plutonia_map_map22 =
 
 mapinfo_t plutonia_map_map23 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_23 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -727,7 +735,7 @@ mapinfo_t plutonia_map_map23 =
 
 mapinfo_t plutonia_map_map24 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_24 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -751,7 +759,7 @@ mapinfo_t plutonia_map_map24 =
 
 mapinfo_t plutonia_map_map25 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_25 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -775,7 +783,7 @@ mapinfo_t plutonia_map_map25 =
 
 mapinfo_t plutonia_map_map26 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_26 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -799,7 +807,7 @@ mapinfo_t plutonia_map_map26 =
 
 mapinfo_t plutonia_map_map27 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_27 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -823,7 +831,7 @@ mapinfo_t plutonia_map_map27 =
 
 mapinfo_t plutonia_map_map28 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_28 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -847,7 +855,7 @@ mapinfo_t plutonia_map_map28 =
 
 mapinfo_t plutonia_map_map29 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_29 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -871,7 +879,7 @@ mapinfo_t plutonia_map_map29 =
 
 mapinfo_t plutonia_map_map30 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_30 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -899,7 +907,7 @@ mapinfo_t plutonia_map_map30 =
 
 mapinfo_t plutonia_map_map31 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_31 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -923,7 +931,7 @@ mapinfo_t plutonia_map_map31 =
 
 mapinfo_t plutonia_map_map32 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( PHUSTR_32 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors

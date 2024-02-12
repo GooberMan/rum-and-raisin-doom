@@ -22,6 +22,7 @@
 #define __D_GAMEFLOW_H__
 
 #include "doomtype.h"
+#include "deh_str.h"
 
 DOOM_C_API typedef enum intermissiontype_e
 {
@@ -87,9 +88,10 @@ DOOM_C_API typedef enum animcondition_s
 
 DOOM_C_API typedef enum flowstringflags_s
 {
-	FlowString_None				= 0x00,
-	FlowString_Dehacked			= 0x01,
-	FlowString_RuntimeGenerated	= 0x02,
+	FlowString_None					= 0x00,
+	FlowString_Dehacked				= 0x01,
+	FlowString_RuntimeGenerated		= 0x02,
+	FlowString_IgnoreEpisodeParam	= 0x04,
 } flowstringflags_t;
 
 DOOM_C_API typedef enum mapflags_s
@@ -112,6 +114,10 @@ DOOM_C_API typedef struct flowstring_s
 {
 	const char*				val;
 	flowstringflags_t		flags;
+
+#if defined( __cplusplus )
+	INLINE const char*		Resolve() const { return ( flags & FlowString_Dehacked ) ? DEH_String( val ) : val; };
+#endif //defined( __cplusplus )
 } flowstring_t;
 
 DOOM_C_API typedef struct mapinfo_s mapinfo_t;
@@ -269,15 +275,32 @@ DOOM_C_API void D_GameflowCheckAndParseMapinfos( void );
 #include "m_misc.h"
 #include "deh_str.h"
 
-template< typename... _params >
-INLINE DoomString AsDoomString( const flowstring_t& str, _params... params )
+INLINE auto D_GetEpisodes()
 {
-	const char* base = ( str.flags & FlowString_Dehacked ) ? DEH_String( str.val ) : str.val;
+	return std::span( current_game->episodes, current_game->num_episodes );
+}
+
+INLINE auto D_GetMapsFor( episodeinfo_t* episode )
+{
+	return std::span( episode->all_maps, episode->num_maps );
+}
+
+template< typename _param1, typename... _params >
+INLINE DoomString AsDoomString( const flowstring_t& str, _param1 p1, _params... params )
+{
+	const char* base = str.Resolve();
 	if( str.flags & FlowString_RuntimeGenerated )
 	{
-		size_t len = M_snprintf( nullptr, 0, base, params... );
+		if( str.flags & FlowString_IgnoreEpisodeParam )
+		{
+			size_t len = M_snprintf( nullptr, 0, base, params... );
+			DoomString formatted( len, '\0' );
+			M_snprintf( formatted.data(), len + 1, base, params... );
+			return formatted;
+		}
+		size_t len = M_snprintf( nullptr, 0, base, p1, params... );
 		DoomString formatted( len, '\0' );
-		M_snprintf( formatted.data(), len + 1, base, params... );
+		M_snprintf( formatted.data(), len + 1, base, p1, params... );
 		return formatted;
 	}
 	return DoomString( base ? base : "" );

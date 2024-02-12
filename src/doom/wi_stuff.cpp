@@ -18,40 +18,41 @@
 //
 
 
-#include <stdio.h>
+
+#include "wi_stuff.h"
+#include "doomstat.h"
+
+#include "deh_main.h"
+
+#include "d_gamesim.h"
+#include "d_gameflow.h"
+
+#include "g_game.h"
+
+#include "i_swap.h"
+#include "i_system.h"
+#include "i_terminal.h"
+
+#include "m_container.h"
+#include "m_fixed.h"
+#include "m_misc.h"
+#include "m_random.h"
+
+#include "r_local.h"
+
+#include "s_sound.h"
+#include "sounds.h"
+
+#include "v_video.h"
+
+#include "w_wad.h"
 
 #include "z_zone.h"
-#include "m_fixed.h"
-#include "m_container.h"
-#include "r_local.h"
-#include "d_playsim.h"
+
+#include <stdio.h>
 
 extern "C"
 {
-	#include "m_misc.h"
-	#include "m_random.h"
-
-	#include "deh_main.h"
-	#include "i_swap.h"
-	#include "i_system.h"
-	#include "i_terminal.h"
-
-	#include "w_wad.h"
-
-	#include "g_game.h"
-
-	#include "s_sound.h"
-
-	#include "doomstat.h"
-
-	// Data.
-	#include "sounds.h"
-
-	// Needs access to LFB.
-	#include "v_video.h"
-
-	#include "wi_stuff.h"
-
 	extern vbuffer_t blackedges;
 }
 

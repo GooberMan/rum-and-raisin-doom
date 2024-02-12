@@ -406,9 +406,13 @@
     <ClCompile Include="..\src\doom\deh_bexpars.cpp" />
     <ClCompile Include="..\src\doom\deh_bexptr.cpp" />
     <ClCompile Include="..\src\doom\deh_bexthing.cpp" />
-    <ClCompile Include="..\src\doom\d_playsim.cpp" />
-    <ClCompile Include="..\src\doom\d_playsim_chex.cpp" />
-    <ClCompile Include="..\src\doom\d_playsim_hacx.cpp" />
+    <ClCompile Include="..\src\doom\d_gameflow_chex.cpp" />
+    <ClCompile Include="..\src\doom\d_gameflow_doom.cpp" />
+    <ClCompile Include="..\src\doom\d_gameflow_doom2.cpp" />
+    <ClCompile Include="..\src\doom\d_gameflow_hacx.cpp" />
+    <ClCompile Include="..\src\doom\d_gameflow_plutonia.cpp" />
+    <ClCompile Include="..\src\doom\d_gameflow_tnt.cpp" />
+    <ClCompile Include="..\src\doom\d_gamesim.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf21.cpp" />
     <ClCompile Include="..\src\doom\p_ceilng.cpp" />
@@ -442,6 +446,7 @@
     <ClCompile Include="..\src\doom\deh_weapon.c" />
     <ClInclude Include="..\src\doom\d_englsh.h" />
     <ClCompile Include="..\src\doom\d_items.c" />
+    <ClInclude Include="..\src\doom\d_gamesim.h" />
     <ClInclude Include="..\src\doom\d_items.h" />
     <ClCompile Include="..\src\doom\d_main.c" />
     <ClInclude Include="..\src\doom\d_main.h" />
@@ -454,13 +459,8 @@
     <ClInclude Include="..\src\doom\d_player.h" />
     <ClCompile Include="..\src\doom\dstrings.c" />
     <ClInclude Include="..\src\doom\dstrings.h" />
-    <ClInclude Include="..\src\doom\d_playsim.h" />
     <ClInclude Include="..\src\doom\d_textur.h" />
     <ClInclude Include="..\src\doom\d_think.h" />
-    <ClCompile Include="..\src\doom\d_playsim_doom.cpp" />
-    <ClCompile Include="..\src\doom\d_playsim_doom2.cpp" />
-    <ClCompile Include="..\src\doom\d_playsim_plutonia.cpp" />
-    <ClCompile Include="..\src\doom\d_playsim_tnt.cpp" />
     <ClCompile Include="..\src\doom\f_finale.c" />
     <ClInclude Include="..\src\doom\f_finale.h" />
     <ClCompile Include="..\src\doom\f_wipe.c" />
@@ -487,6 +487,7 @@
     <ClInclude Include="..\src\doom\p_pspr.h" />
     <ClCompile Include="..\src\doom\p_saveg.c" />
     <ClInclude Include="..\src\doom\p_saveg.h" />
+    <ClInclude Include="..\src\doom\p_sectoraction.h" />
     <ClInclude Include="..\src\doom\p_setup.h" />
     <ClCompile Include="..\src\doom\p_setup.cpp" />
     <ClCompile Include="..\src\doom\p_sight.c" />

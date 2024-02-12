@@ -620,14 +620,7 @@ static umapinfo_gameinfo_t umapinfogame;
 
 static DoomString GetMapName( mapinfo_t* map )
 {
-	if( gamemode == commercial )
-	{
-		return AsDoomString( map->data_lump, map->map_num );
-	}
-	else
-	{
-		return AsDoomString( map->data_lump, map->episode->episode_num, map->map_num );
-	}
+	return AsDoomString( map->data_lump, map->episode->episode_num, map->map_num );
 }
 
 static void BuildNewGameInfo()

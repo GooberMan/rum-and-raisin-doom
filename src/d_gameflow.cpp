@@ -23,19 +23,9 @@ gameflow_t*		current_game		= nullptr;
 episodeinfo_t*	current_episode		= nullptr;
 mapinfo_t*		current_map			= nullptr;
 
-auto Episodes()
-{
-	return std::span( current_game->episodes, current_game->num_episodes );
-}
-
-auto Maps( episodeinfo_t* episode )
-{
-	return std::span( episode->all_maps, episode->num_maps );
-}
-
 episodeinfo_t* D_GameflowGetEpisode( int32_t episodenum )
 {
-	for( auto& episode : Episodes() )
+	for( auto& episode : D_GetEpisodes() )
 	{
 		if( episode->episode_num == episodenum )
 		{
@@ -50,7 +40,7 @@ mapinfo_t* D_GameflowGetMap( episodeinfo_t* episode, int32_t mapnum )
 {
 	if( episode != nullptr )
 	{
-		for( auto& map : Maps( episode ) )
+		for( auto& map : D_GetMapsFor( episode ) )
 		{
 			if( map->map_num == mapnum )
 			{
@@ -92,12 +82,12 @@ void D_GameflowCheckAndParseMapinfos( void )
 	}
 	else if( ( lumpnum = W_CheckNumForName( "ZMAPINFO" ) ) >= 0 )
 	{
-		//D_GameflowParseDMAPINFO( lumpnum );
+		//D_GameflowParseZMAPINFO( lumpnum );
 		I_TerminalPrintf( Log_Warning, "  ZMAPINFO gameflow defined, unimplemented\n" );
 	}
 	else if( ( lumpnum = W_CheckNumForName( "MAPINFO" ) ) >= 0 )
 	{
-		//D_GameflowParseDMAPINFO( lumpnum );
+		//D_GameflowParseMAPINFO( lumpnum );
 		I_TerminalPrintf( Log_Warning, "  MAPINFO gameflow defined, unimplemented\n" );
 	}
 }

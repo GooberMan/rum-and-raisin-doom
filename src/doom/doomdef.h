@@ -82,6 +82,14 @@ DOOM_C_API typedef enum
 // Deaf monsters/do not react to sound.
 #define	MTF_AMBUSH		8
 
+#define MTF_MULTIPLAYER_ONLY		16
+
+#define MTF_BOOM_NOT_IN_DEATHMATCH	32
+#define MTF_BOOM_NOT_IN_COOP		64
+
+#define MTF_MBF_FRIENDLY			128
+#define MTF_MBF_RUBBISHFLAGCHECK	256
+
 
 //
 // Key cards.
@@ -181,5 +189,18 @@ DOOM_C_API typedef enum gameflags_e
 	GF_VanillaIncompatibleFlags		= GF_Pacifist | GF_PistolStarts | GF_LoopOneLevel,
 
 } gameflags_t;
+
+typedef enum demoversion_e
+{
+	demo_invalid		= -1,
+	demo_doom_1_666		= 106,
+	demo_doom_1_7		= 107,
+	demo_doom_1_8		= 108,
+	demo_doom_1_9		= 109,
+	demo_doom_1_91		= 111,
+	demo_boom_2_02		= 202,
+	demo_mbf			= 203,
+	demo_complevel9		= 214,
+} demoversion_t;
 
 #endif          // __DOOMDEF__

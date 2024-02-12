@@ -835,7 +835,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
     }
 
     // check for apropriate skill level
-    if (!netgame && (mthing->options & 16) )
+    if (!netgame && (mthing->options & MTF_MULTIPLAYER_ONLY) )
 	return;
 		
     if (gameskill == sk_baby)

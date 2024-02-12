@@ -1287,18 +1287,11 @@ P_SetupLevel
     W_Reload ();
 
 	// find map name
-	if ( gamemode == commercial)
-	{
-		lumpname = AsDoomString( map->data_lump, map->map_num );
-	}
-	else
-	{
-		lumpname = AsDoomString( map->data_lump, map->episode->episode_num, map->map_num );
-	}
+	lumpname = AsDoomString( map->data_lump, map->episode->episode_num, map->map_num );
 
-	DoomString maptitle = AsDoomString( map->name );
+	const char* maptitle = map->name.Resolve();
 
-	I_LogAddEntryVar( Log_System, "Loading %s: %s", lumpname.c_str(), maptitle.c_str() );
+	I_LogAddEntryVar( Log_System, "Loading %s: %s", lumpname.c_str(), maptitle );
 
     lumpnum = W_GetNumForName( lumpname.c_str() );
 	

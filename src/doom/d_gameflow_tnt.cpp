@@ -14,8 +14,10 @@
 // DESCRIPTION: Defines the gameflow types for Doom 2/commercial
 //              game types
 
-#include "d_playsim.h"
+#include "d_gamesim.h"
 #include "dstrings.h"
+
+#include "d_gameflow.h"
 
 // Forward declarations
 extern episodeinfo_t	tnt_episode;
@@ -95,6 +97,12 @@ constexpr auto FlowString( const char* name, flowstringflags_t additional = Flow
 	return lump;
 }
 
+constexpr auto LevelFlowString( const char* name )
+{
+	flowstring_t lump = { name, FlowString_Dehacked | FlowString_RuntimeGenerated | FlowString_IgnoreEpisodeParam };
+	return lump;
+}
+
 constexpr auto RuntimeFlowString( const char* name )
 {
 	flowstring_t lump = { name, FlowString_Dehacked | FlowString_RuntimeGenerated };
@@ -160,7 +168,7 @@ gameflow_t doom_tnt =
 
 mapinfo_t tnt_map_map01 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_1 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Tom Mustaine" ),				// authors
@@ -184,7 +192,7 @@ mapinfo_t tnt_map_map01 =
 
 mapinfo_t tnt_map_map02 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_2 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Wakelin" ),				// authors
@@ -208,7 +216,7 @@ mapinfo_t tnt_map_map02 =
 
 mapinfo_t tnt_map_map03 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_3 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Minadeo, Robin Patenall" ),	// authors
@@ -232,7 +240,7 @@ mapinfo_t tnt_map_map03 =
 
 mapinfo_t tnt_map_map04 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_4 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Ty Halderman" ),				// authors
@@ -256,7 +264,7 @@ mapinfo_t tnt_map_map04 =
 
 mapinfo_t tnt_map_map05 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_5 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Jim Dethlefsen" ),			// authors
@@ -280,7 +288,7 @@ mapinfo_t tnt_map_map05 =
 
 mapinfo_t tnt_map_map06 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_6 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Ty Halderman, Jimmy Sieben" ),	// authors
@@ -310,7 +318,7 @@ static bossaction_t		tnt_map07special[] =
 
 mapinfo_t tnt_map_map07 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_7 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Andrew Dowswell" ),			// authors
@@ -334,7 +342,7 @@ mapinfo_t tnt_map_map07 =
 
 mapinfo_t tnt_map_map08 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_8 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "John Minadeo" ),				// authors
@@ -358,7 +366,7 @@ mapinfo_t tnt_map_map08 =
 
 mapinfo_t tnt_map_map09 =
 {
-	RuntimeFlowString( levellump0_format_text ),	// data_lump
+	LevelFlowString( levellump0_format_text ),		// data_lump
 	FlowString( THUSTR_9 ),							// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Jimmy Sieben" ),				// authors
@@ -382,7 +390,7 @@ mapinfo_t tnt_map_map09 =
 
 mapinfo_t tnt_map_map10 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_10 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Tom Mustaine" ),				// authors
@@ -406,7 +414,7 @@ mapinfo_t tnt_map_map10 =
 
 mapinfo_t tnt_map_map11 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_11 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dean Johnson" ),				// authors
@@ -434,7 +442,7 @@ mapinfo_t tnt_map_map11 =
 
 mapinfo_t tnt_map_map12 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_12 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Jim Lowell" ),				// authors
@@ -458,7 +466,7 @@ mapinfo_t tnt_map_map12 =
 
 mapinfo_t tnt_map_map13 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_13 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Brian Kidby" ),				// authors
@@ -482,7 +490,7 @@ mapinfo_t tnt_map_map13 =
 
 mapinfo_t tnt_map_map14 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_14 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Robin Patenall" ),			// authors
@@ -506,7 +514,7 @@ mapinfo_t tnt_map_map14 =
 
 mapinfo_t tnt_map_map15 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_15 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "William D. Whitaker" ),		// authors
@@ -530,7 +538,7 @@ mapinfo_t tnt_map_map15 =
 
 mapinfo_t tnt_map_map16 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_16 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Andre Arsenault" ),			// authors
@@ -554,7 +562,7 @@ mapinfo_t tnt_map_map16 =
 
 mapinfo_t tnt_map_map17 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_17 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Tom Mustaine" ),				// authors
@@ -578,7 +586,7 @@ mapinfo_t tnt_map_map17 =
 
 mapinfo_t tnt_map_map18 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_18 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Ty Halderman" ),				// authors
@@ -602,7 +610,7 @@ mapinfo_t tnt_map_map18 =
 
 mapinfo_t tnt_map_map19 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_19 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Ty Halderman" ),				// authors
@@ -626,7 +634,7 @@ mapinfo_t tnt_map_map19 =
 
 mapinfo_t tnt_map_map20 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_20 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Drake O'Brien" ),				// authors
@@ -654,7 +662,7 @@ mapinfo_t tnt_map_map20 =
 
 mapinfo_t tnt_map_map21 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_21 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Drake O'Brien" ),				// authors
@@ -678,7 +686,7 @@ mapinfo_t tnt_map_map21 =
 
 mapinfo_t tnt_map_map22 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_22 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Christopher Buteau" ),		// authors
@@ -702,7 +710,7 @@ mapinfo_t tnt_map_map22 =
 
 mapinfo_t tnt_map_map23 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_23 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Paul Turnbull" ),				// authors
@@ -726,7 +734,7 @@ mapinfo_t tnt_map_map23 =
 
 mapinfo_t tnt_map_map24 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_24 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dean Johnson" ),				// authors
@@ -750,7 +758,7 @@ mapinfo_t tnt_map_map24 =
 
 mapinfo_t tnt_map_map25 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_25 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "David J. Hill" ),				// authors
@@ -774,7 +782,7 @@ mapinfo_t tnt_map_map25 =
 
 mapinfo_t tnt_map_map26 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_26 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Jim Lowell, Mark Snell" ),	// authors
@@ -798,7 +806,7 @@ mapinfo_t tnt_map_map26 =
 
 mapinfo_t tnt_map_map27 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_27 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Drake O'Brien" ),				// authors
@@ -822,7 +830,7 @@ mapinfo_t tnt_map_map27 =
 
 mapinfo_t tnt_map_map28 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_28 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Milo Casali" ),				// authors
@@ -846,7 +854,7 @@ mapinfo_t tnt_map_map28 =
 
 mapinfo_t tnt_map_map29 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_29 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Jimmy Sieben" ),				// authors
@@ -870,7 +878,7 @@ mapinfo_t tnt_map_map29 =
 
 mapinfo_t tnt_map_map30 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_30 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Jimmy Sieben" ),				// authors
@@ -898,7 +906,7 @@ mapinfo_t tnt_map_map30 =
 
 mapinfo_t tnt_map_map31 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_31 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors
@@ -922,7 +930,7 @@ mapinfo_t tnt_map_map31 =
 
 mapinfo_t tnt_map_map32 =
 {
-	RuntimeFlowString( levellumpn_format_text ),	// data_lump
+	LevelFlowString( levellumpn_format_text ),		// data_lump
 	FlowString( THUSTR_32 ),						// name
 	RuntimeFlowString( levename_format_text ),		// name_patch_lump
 	PlainFlowString( "Dario Casali" ),				// authors

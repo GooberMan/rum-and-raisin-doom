@@ -56,6 +56,7 @@ DOOM_C_API typedef enum
 
 DOOM_C_API typedef enum
 {
+	exe_invalid = -1,
     exe_doom_1_2,    // Doom 1.2: shareware and registered
     exe_doom_1_666,  // Doom 1.666: for shareware, registered and commercial
     exe_doom_1_7,    // Doom 1.7/1.7a: "
@@ -66,6 +67,14 @@ DOOM_C_API typedef enum
     exe_final,       // Final Doom
     exe_final2,      // Final Doom (alternate exe)
     exe_chex,        // Chex Quest executable (based on Final Doom)
+
+	// Rum and Raisin additions
+	exe_limit_removing,
+	exe_limit_removing_fixed,
+	exe_boom_2_02,
+	exe_complevel9,
+	exe_mbf,
+	exe_mbf21,
 
     exe_heretic_1_3, // Heretic 1.3
 
