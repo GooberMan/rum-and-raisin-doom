@@ -955,9 +955,9 @@ doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func )
 
 doombool P_BlockThingsIteratorHorizontal( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func )
 {
-	for( int32_t x : xrange )
+	for( int32_t y : yrange )
 	{
-		for( int32_t y : yrange )
+		for( int32_t x : xrange )
 		{
 			if( !P_BlockThingsIterator( x, y, std::forward< iteratemobjfunc_t >( func ) ) )
 			{
@@ -971,9 +971,9 @@ doombool P_BlockThingsIteratorHorizontal( iota&& xrange, iota&& yrange, iteratem
 
 doombool P_BlockThingsIteratorVertical( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func )
 {
-	for( int32_t y : yrange )
+	for( int32_t x : xrange )
 	{
-		for( int32_t x : xrange )
+		for( int32_t y : yrange )
 		{
 			if( !P_BlockThingsIterator( x, y, std::forward< iteratemobjfunc_t >( func ) ) )
 			{
