@@ -440,7 +440,7 @@ struct DoomMapLoader
 			out.special			= Read::AsIs( in.special );
 			if( !sim.boom_sector_specials && !sim.mbf21_thing_flags )
 			{
-				out.special		= out.special & Sector_VanillaSpecialMask;
+				out.special		= out.special & DSS_Mask;
 			}
 			out.tag				= Read::AsIs( in.tag );
 			out.thinglist		= nullptr;

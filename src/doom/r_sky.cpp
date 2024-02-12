@@ -23,6 +23,9 @@
 
 
 #include "doomdef.h"
+
+#include "p_local.h"
+
 #include "r_sky.h"
 
 // Needed for FRACUNIT.

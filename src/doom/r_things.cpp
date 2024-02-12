@@ -33,6 +33,8 @@
 #include "m_profile.h"
 #include "m_misc.h"
 
+#include "p_local.h"
+
 #include "r_main.h"
 #include "r_local.h"
 

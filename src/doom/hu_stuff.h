@@ -43,17 +43,17 @@
 // HEADS UP TEXT
 //
 
-void HU_Init(void);
-void HU_Start(void);
+DOOM_C_API void HU_Init(void);
+DOOM_C_API void HU_Start(void);
 
-doombool HU_Responder(event_t* ev);
+DOOM_C_API doombool HU_Responder(event_t* ev);
 
-void HU_Ticker(void);
-void HU_Drawer(void);
-char HU_dequeueChatChar(void);
-void HU_Erase(void);
+DOOM_C_API void HU_Ticker(void);
+DOOM_C_API void HU_Drawer(void);
+DOOM_C_API char HU_dequeueChatChar(void);
+DOOM_C_API void HU_Erase(void);
 
-extern char *chat_macros[10];
+DOOM_C_API extern char *chat_macros[10];
 
 #endif
 

@@ -37,7 +37,7 @@
 #define ST_BUFFERHEIGHT ( ( ( (int64_t)( ST_HEIGHT << FRACBITS ) * (int64_t)V_HEIGHTMULTIPLIER ) >> FRACBITS ) >> FRACBITS )
 
 // States for status bar code.
-typedef enum
+DOOM_C_API typedef enum
 {
     AutomapState,
     FirstPersonState
@@ -46,7 +46,7 @@ typedef enum
 
 
 // States for the chat code.
-typedef enum
+DOOM_C_API typedef enum
 {
     StartChatState,
     WaitDestState,
@@ -54,7 +54,7 @@ typedef enum
     
 } st_chatstateenum_t;
 
-typedef enum st_bordertile_e
+DOOM_C_API typedef enum st_bordertile_e
 {
 	STB_WADDefined, // Defaults to view window border
 	STB_Flat5_4,
@@ -66,33 +66,33 @@ typedef enum st_bordertile_e
 //
 
 // Called by main loop.
-doombool ST_Responder (event_t* ev);
+DOOM_C_API doombool ST_Responder (event_t* ev);
 
 // Called by main loop.
-void ST_Ticker (void);
+DOOM_C_API void ST_Ticker (void);
 
 // Called by main loop.
-void ST_Drawer (doombool fullscreen, doombool refresh);
+DOOM_C_API void ST_Drawer (doombool fullscreen, doombool refresh);
 
 // Called when the console player is spawned on each level.
-void ST_Start (void);
+DOOM_C_API void ST_Start (void);
 
 // Called by startup code.
-void ST_Init (void);
+DOOM_C_API void ST_Init (void);
 
-st_bordertile_t ST_GetBorderTileStyle();
-void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname );
+DOOM_C_API st_bordertile_t ST_GetBorderTileStyle();
+DOOM_C_API void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname );
 
-extern cheatseq_t cheat_mus;
-extern cheatseq_t cheat_god;
-extern cheatseq_t cheat_ammo;
-extern cheatseq_t cheat_ammonokey;
-extern cheatseq_t cheat_noclip;
-extern cheatseq_t cheat_commercial_noclip;
-extern cheatseq_t cheat_powerup[7];
-extern cheatseq_t cheat_choppers;
-extern cheatseq_t cheat_clev;
-extern cheatseq_t cheat_mypos;
+DOOM_C_API extern cheatseq_t cheat_mus;
+DOOM_C_API extern cheatseq_t cheat_god;
+DOOM_C_API extern cheatseq_t cheat_ammo;
+DOOM_C_API extern cheatseq_t cheat_ammonokey;
+DOOM_C_API extern cheatseq_t cheat_noclip;
+DOOM_C_API extern cheatseq_t cheat_commercial_noclip;
+DOOM_C_API extern cheatseq_t cheat_powerup[7];
+DOOM_C_API extern cheatseq_t cheat_choppers;
+DOOM_C_API extern cheatseq_t cheat_clev;
+DOOM_C_API extern cheatseq_t cheat_mypos;
 
 
 #endif

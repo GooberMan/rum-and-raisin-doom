@@ -424,6 +424,7 @@
     <ClCompile Include="..\src\doom\p_lineaction.cpp" />
     <ClCompile Include="..\src\doom\p_map.cpp" />
     <ClCompile Include="..\src\doom\p_maputl.cpp" />
+    <ClCompile Include="..\src\doom\p_mobj.cpp" />
     <ClCompile Include="..\src\doom\p_plats.cpp" />
     <ClCompile Include="..\src\doom\p_spec.cpp" />
     <ClCompile Include="..\src\doom\p_switch.cpp" />
@@ -481,7 +482,6 @@
     <ClInclude Include="..\src\doom\p_inter.h" />
     <ClInclude Include="..\src\doom\p_lineaction.h" />
     <ClInclude Include="..\src\doom\p_local.h" />
-    <ClCompile Include="..\src\doom\p_mobj.c" />
     <ClInclude Include="..\src\doom\p_mobj.h" />
     <ClCompile Include="..\src\doom\p_pspr.c" />
     <ClInclude Include="..\src\doom\p_pspr.h" />

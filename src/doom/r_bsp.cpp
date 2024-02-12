@@ -26,6 +26,8 @@
 
 #include "i_system.h"
 
+#include "p_local.h"
+
 #include "r_main.h"
 #include "r_plane.h"
 #include "r_segs.h"

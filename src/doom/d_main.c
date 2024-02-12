@@ -1218,7 +1218,7 @@ static doombool D_AddFile(char *filename)
 		I_Error( "Attempting to add a null filename." );
 	}
 
-    I_TerminalPrintf( Log_Startup, " adding %s\n", filename );
+    I_TerminalPrintf( Log_Startup, " Adding %s\n", filename );
     handle = W_AddFile(filename);
 
     return handle != NULL;

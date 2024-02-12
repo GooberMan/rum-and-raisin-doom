@@ -44,6 +44,7 @@
 
 #include "p_local.h"
 #include "p_lineaction.h"
+#include "p_sectoraction.h"
 
 #include "r_local.h"
 #include "r_state.h"

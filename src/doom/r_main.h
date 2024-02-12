@@ -24,14 +24,10 @@
 #include "r_data.h"
 #include "i_system.h"
 
-#if defined( __cplusplus )
-extern "C" {
-#endif // __cplusplus
-
 #include "d_player.h"
 
 
-extern int32_t		validcount;
+DOOM_C_API extern int32_t		validcount;
 
 
 //
@@ -53,9 +49,9 @@ extern int32_t		validcount;
 #define LIGHTZSHIFT			20
 #define RENDLIGHTZSHIFT		( RENDFRACBITS + 4 )
 
-extern int32_t			extralight;
-extern lighttable_t*	fixedcolormap;
-extern int32_t			fixedcolormapindex;
+DOOM_C_API extern int32_t			extralight;
+DOOM_C_API extern lighttable_t*		fixedcolormap;
+DOOM_C_API extern int32_t			fixedcolormapindex;
 
 // Number of diminishing brightness levels.
 // There a 0-31, i.e. 32 LUT in the COLORMAP lump.
@@ -65,14 +61,14 @@ extern int32_t			fixedcolormapindex;
 #define NUMCOLORMAPS			34
 
 
-extern int32_t	fuzz_style;
+DOOM_C_API extern int32_t	fuzz_style;
 
 //
 // Function pointers to switch refresh/drawing functions.
 // Used to select shadow mode etc.
 //
-extern colfunc_t transcolfunc;
-extern colfunc_t fuzzfuncs[ Fuzz_Count ];
+DOOM_C_API extern colfunc_t transcolfunc;
+DOOM_C_API extern colfunc_t fuzzfuncs[ Fuzz_Count ];
 
 typedef enum lineside_e
 {
@@ -85,63 +81,55 @@ typedef enum lineside_e
 // Any function starting with BSP_ is used by the playsim.
 // R_ functions are used by the renderer and operate in higher precision.
 
-lineside_t BSP_PointOnSide( fixed_t x, fixed_t y, node_t* node );
-lineside_t R_PointOnSide( rend_fixed_t x, rend_fixed_t y, node_t* node );
+DOOM_C_API lineside_t BSP_PointOnSide( fixed_t x, fixed_t y, node_t* node );
+DOOM_C_API lineside_t R_PointOnSide( rend_fixed_t x, rend_fixed_t y, node_t* node );
 
-doombool R_PointOnSegSide( rend_fixed_t x, rend_fixed_t y, seg_t* line );
+DOOM_C_API doombool R_PointOnSegSide( rend_fixed_t x, rend_fixed_t y, seg_t* line );
 
-angle_t R_PointToAngle( const viewpoint_t* viewpoint, rend_fixed_t fixed_x, rend_fixed_t fixed_y );
-angle_t BSP_PointToAngle( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2 );
+DOOM_C_API angle_t R_PointToAngle( const viewpoint_t* viewpoint, rend_fixed_t fixed_x, rend_fixed_t fixed_y );
+DOOM_C_API angle_t BSP_PointToAngle( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2 );
 
-rend_fixed_t R_PointToDist( const viewpoint_t* viewpoint, rend_fixed_t x, rend_fixed_t y );
+DOOM_C_API rend_fixed_t R_PointToDist( const viewpoint_t* viewpoint, rend_fixed_t x, rend_fixed_t y );
 
-rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle );
+DOOM_C_API rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle );
 
-subsector_t* BSP_PointInSubsector( fixed_t x, fixed_t y );
+DOOM_C_API subsector_t* BSP_PointInSubsector( fixed_t x, fixed_t y );
 
-void
-R_AddPointToBox
-( int		x,
-  int		y,
-  fixed_t*	box );
+DOOM_C_API void R_AddPointToBox( int x, int y, fixed_t* box );
 
 
-void R_BindRenderVariables( void );
+DOOM_C_API void R_BindRenderVariables( void );
 
 //
 // REFRESH - the actual rendering functions.
 //
 
 // Called by G_Drawer.
-void R_RenderPlayerView (player_t *player, double_t framepercent, doombool isconsoleplayer);
+DOOM_C_API void R_RenderPlayerView (player_t *player, double_t framepercent, doombool isconsoleplayer);
 
 // Called by startup code.
-void R_Init (void);
+DOOM_C_API void R_Init (void);
 
 // Called when render_width and render_height change
-void R_RenderDimensionsChanged( void );
+DOOM_C_API void R_RenderDimensionsChanged( void );
 
 // Called every frame for dynamic resolution scaling
-void R_RenderUpdateFrameSize( void );
+DOOM_C_API void R_RenderUpdateFrameSize( void );
 
 // Called when +/- viewport size is required. subframe is used by dynamic resolution scaling
-void R_ExecuteSetViewSize( void );
+DOOM_C_API void R_ExecuteSetViewSize( void );
 
 // Called after display system initialised
-void R_InitContexts( void );
+DOOM_C_API void R_InitContexts( void );
 
 // Called after a new map load
-void R_RefreshContexts( void );
+DOOM_C_API void R_RefreshContexts( void );
 
 // Teleport? Spawn? Let's assume render context balances are out of whack
-void R_RebalanceContexts( void );
+DOOM_C_API void R_RebalanceContexts( void );
 
 // Called by M_Responder.
-void R_SetViewSize (int blocks, int detail);
-
-#if defined( __cplusplus )
-}
-#endif // __cplusplus
+DOOM_C_API void R_SetViewSize (int blocks, int detail);
 
 #if defined( __cplusplus )
 

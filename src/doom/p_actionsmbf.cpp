@@ -17,6 +17,7 @@
 
 #include "doomdef.h"
 #include "doomstat.h"
+
 #include "p_local.h"
 #include "p_lineaction.h"
 

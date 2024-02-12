@@ -26,6 +26,8 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
+#include "d_gamesim.h"
+
 // Some more or less basic data types
 // we depend on.
 #include "m_fixed.h"
@@ -33,8 +35,9 @@
 // We rely on the thinker data struct
 // to handle sound origins in sectors.
 #include "d_think.h"
+
 // SECTORS do store MObjs anyway.
-#include "p_mobj.h"
+#include "p_sectoraction.h"
 
 #include "i_video.h"
 
@@ -284,8 +287,11 @@ struct sector_s
 
 #if defined( __cplusplus )
 	INLINE void*& Special()				{ return specialdata; }
-	INLINE void*& FloorSpecial()		{ return remove_limits ? floorspecialdata : specialdata; }
-	INLINE void*& CeilingSpecial()		{ return remove_limits ? ceilingspecialdata : specialdata; }
+	INLINE void*& FloorSpecial()		{ return sim.separate_floor_ceiling_lights ? floorspecialdata : specialdata; }
+	INLINE void*& CeilingSpecial()		{ return sim.separate_floor_ceiling_lights ? ceilingspecialdata : specialdata; }
+
+	constexpr fixed_t Friction()		{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
+	constexpr fixed_t FrictionPercent()	{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
 #endif // defined( __cplusplus )
 };
 

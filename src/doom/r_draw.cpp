@@ -19,6 +19,7 @@
 //	 e.g. inline assembly, different algorithms.
 //
 
+#include "p_local.h"
 #include "r_local.h"
 
 #include "deh_main.h"

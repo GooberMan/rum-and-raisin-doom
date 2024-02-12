@@ -24,6 +24,7 @@
 #include "m_fixed.h"
 #include "doomstat.h"
 
+#include "p_local.h"
 #include "r_local.h"
 #include "r_raster.h"
 #include "r_sky.h"

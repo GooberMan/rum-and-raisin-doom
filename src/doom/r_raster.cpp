@@ -19,6 +19,8 @@
 #include "m_fixed.h"
 #include "doomstat.h"
 #include "m_profile.h"
+
+#include "p_local.h"
 #include "r_main.h"
 
 #include "r_defs.h"

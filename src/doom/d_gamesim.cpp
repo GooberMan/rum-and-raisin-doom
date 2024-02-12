@@ -758,42 +758,42 @@ static void SetDefaultGameflow()
 	case exe_final:
 	case exe_final2:
 	case exe_chex:
-		I_TerminalPrintf( Log_System, " Applying vanilla compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying vanilla compatibility\n" );
 		values = GetVanillaValues( version, gamemode );
 		break;
 
 	case exe_limit_removing:
-		I_TerminalPrintf( Log_System, " Applying limit-removing compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying limit-removing compatibility\n" );
 		values = GetLimitRemovingValues( gamemode );
 		break;
 
 	case exe_limit_removing_fixed:
-		I_TerminalPrintf( Log_System, " Applying limit-removing (plus fixes) compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying limit-removing (plus fixes) compatibility\n" );
 		values = GetLimitRemovingFixedValues( gamemode );
 		break;
 
 	case exe_boom_2_02:
-		I_TerminalPrintf( Log_System, " Applying Boom compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying Boom compatibility\n" );
 		values = GetLimitRemovingValues( gamemode );
 		break;
 
 	case exe_complevel9:
-		I_TerminalPrintf( Log_System, " Applying -complevel 9 compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying -complevel 9 compatibility\n" );
 		values = GetComplevel9Values( gamemode );
 		break;
 
 	case exe_mbf:
-		I_TerminalPrintf( Log_System, " Applying MBF compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying MBF compatibility\n" );
 		values = GetMBFValues( gamemode );
 		break;
 
 	case exe_mbf21:
-		I_TerminalPrintf( Log_System, " Applying MBF21 compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying MBF21 compatibility\n" );
 		values = GetMBF21Values( gamemode );
 		break;
 
 	default:
-		I_TerminalPrintf( Log_System, " Indeterminable version, applying vanilly compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Indeterminable version, applying vanilly compatibility\n" );
 		values = GetVanillaValues( version, gamemode );
 		break;
 	}

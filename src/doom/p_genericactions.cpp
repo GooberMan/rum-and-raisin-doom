@@ -32,6 +32,7 @@
 
 #include "p_local.h"
 #include "p_lineaction.h"
+#include "p_sectoraction.h"
 #include "p_spec.h"
 
 #include "s_sound.h"
@@ -1489,23 +1490,19 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 
 		bool cancarry = false;
 		int32_t carryshift = 0;
-		switch( scroller->CarryType() )
+		if( scroller->CarryType() & st_conveyor )
 		{
-		case st_conveyor:
-			cancarry = mobj->z == scrollheight;
-			break;
-
-		case st_wind:
-			cancarry = mobj->z >= scrollheight;
+			cancarry |= mobj->z == scrollheight;
+		}
+		if( ( scroller->CarryType() & st_wind )
+			&& ( sector->special & SectorWind_Mask ) == SectorWind_Yes )
+		{
+			cancarry |= mobj->z >= scrollheight;
 			if( mobj->z > scrollheight ) carryshift = 1;
-			break;
-
-		case st_current:
-			cancarry = mobj->z <= scrollheight;
-			break;
-
-		default:
-			break;
+		}
+		if( scroller->CarryType() & st_current )
+		{
+			cancarry |= mobj->z <= scrollheight;
 		}
 
 		if( !cancarry

@@ -20,10 +20,7 @@
 #ifndef __P_LOCAL__
 #define __P_LOCAL__
 
-#include "r_local.h"
-
 #define FLOATSPEED		(FRACUNIT*4)
-
 
 #define MAXHEALTH		100
 #define VIEWHEIGHT		(41*FRACUNIT)
@@ -60,15 +57,7 @@
 #define STOPSPEED		0x1000 // 0.0625
 #define FRICTION		0xe800 // 0.90625
 
-typedef enum sectorspecials_e
-{
-	Sector_VanillaSpecialMask		= 0x0000001F,
-	Sector_BoomDamageMask			= 0x0000006F,
-	Sector_BoomSecret				= 0x00000080,
-	Sector_BoomFriction				= 0x00000100,
-	Sector_BoomWind					= 0x00000200,
-} sectorspecials_t;
-
+#include "r_local.h"
 
 //
 // P_TICK

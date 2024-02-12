@@ -40,15 +40,14 @@
 
 #include "z_zone.h"
 
-void G_PlayerReborn (int player);
-void P_SpawnMapThing (mapthing_t*	mthing);
+DOOM_C_API void G_PlayerReborn (int player);
+DOOM_C_API void P_SpawnMapThing (mapthing_t*	mthing);
 
 
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.
 //
-int test;
 
 // Use a heuristic approach to detect infinite state cycles: Count the number
 // of times the loop in P_SetMobjState() executes and exit with an error once
@@ -56,10 +55,7 @@ int test;
 
 #define MOBJ_CYCLE_LIMIT 1000000
 
-doombool
-P_SetMobjState
-( mobj_t*	mobj,
-  statenum_t	state )
+DOOM_C_API doombool P_SetMobjState( mobj_t* mobj, statenum_t state )
 {
     state_t*	st;
     int	cycle_counter = 0;
@@ -99,11 +95,11 @@ P_SetMobjState
 //
 // P_ExplodeMissile  
 //
-void P_ExplodeMissile (mobj_t* mo)
+DOOM_C_API void P_ExplodeMissile (mobj_t* mo)
 {
     mo->momx = mo->momy = mo->momz = 0;
 
-    P_SetMobjState (mo, mobjinfo[mo->type].deathstate);
+    P_SetMobjState(mo, (statenum_t)mobjinfo[mo->type].deathstate);
 
     mo->tics -= P_Random()&3;
 
@@ -121,7 +117,7 @@ void P_ExplodeMissile (mobj_t* mo)
 // P_XYMovement  
 //
 
-mobj_t* P_XYMovement (mobj_t* mo) 
+DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 { 	
 	fixed_t 	ptryx;
 	fixed_t		ptryy;
@@ -133,7 +129,7 @@ mobj_t* P_XYMovement (mobj_t* mo)
 			mo->flags &= ~MF_SKULLFLY;
 			mo->momx = mo->momy = mo->momz = 0;
 
-			P_SetMobjState (mo, mo->info->spawnstate);
+			P_SetMobjState(mo, (statenum_t)mo->info->spawnstate);
 		}
 		return mo;
 	}
@@ -251,7 +247,7 @@ mobj_t* P_XYMovement (mobj_t* mo)
 	else
 	{
 		fixed_t friction = mo->z == mo->subsector->sector->floorheight && ( mo->flags & MF_CORPSE ) != MF_CORPSE
-						? mo->subsector->sector->friction
+						? mo->subsector->sector->Friction()
 						: FRICTION;
 		mo->momx = FixedMul( mo->momx, friction );
 		mo->momy = FixedMul( mo->momy, friction );
@@ -263,7 +259,7 @@ mobj_t* P_XYMovement (mobj_t* mo)
 //
 // P_ZMovement
 //
-mobj_t* P_ZMovement (mobj_t* mo)
+DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
 {
     fixed_t	dist;
     fixed_t	delta;
@@ -407,8 +403,7 @@ mobj_t* P_ZMovement (mobj_t* mo)
 //
 // P_NightmareRespawn
 //
-void
-P_NightmareRespawn (mobj_t* mobj)
+DOOM_C_API void P_NightmareRespawn( mobj_t* mobj )
 {
     fixed_t		x;
     fixed_t		y;
@@ -416,9 +411,17 @@ P_NightmareRespawn (mobj_t* mobj)
     subsector_t*	ss; 
     mobj_t*		mo;
     mapthing_t*		mthing;
-		
-    x = mobj->spawnpoint.x << FRACBITS; 
-    y = mobj->spawnpoint.y << FRACBITS; 
+
+	if( !comp.respawn_non_map_things_at_origin && !mobj->hasspawnpoint )
+	{
+		x = mobj->x;
+		y = mobj->y;
+	}
+	else
+	{
+		x = mobj->spawnpoint.x << FRACBITS; 
+		y = mobj->spawnpoint.y << FRACBITS; 
+	}
 
     // somthing is occupying it's position?
     if (!P_CheckPosition (mobj, x, y) ) 
@@ -451,6 +454,7 @@ P_NightmareRespawn (mobj_t* mobj)
     // inherit attributes from deceased one
     mo = P_SpawnMobj (x,y,z, mobj->type);
     mo->spawnpoint = mobj->spawnpoint;	
+	mo->hasspawnpoint = true;
     mo->prev.angle = mo->curr.angle = mo->angle = ANG45 * (mthing->angle/45);
 
     if (mthing->options & MTF_AMBUSH)
@@ -466,7 +470,7 @@ P_NightmareRespawn (mobj_t* mobj)
 //
 // P_MobjThinker
 //
-void P_MobjThinker (mobj_t* mobj)
+DOOM_C_API void P_MobjThinker( mobj_t* mobj )
 {
     // momentum movement
     if (mobj->momx
@@ -534,7 +538,7 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( mobjtype_t type, angle_t angle,
 	state_t*	st;
 	mobjinfo_t*	info;
 	
-	mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
+	mobj = (mobj_t*)Z_Malloc( sizeof(*mobj), PU_LEVEL, NULL );
 	memset (mobj, 0, sizeof (*mobj));
 	info = &mobjinfo[type];
 	
@@ -606,7 +610,7 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( mobjtype_t type, angle_t angle,
 //
 // P_SpawnMobj
 //
-mobj_t* P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, mobjtype_t type )
+DOOM_C_API mobj_t* P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, mobjtype_t type )
 {
 	return P_SpawnMobjEx( type, 0, x, y, z, 0, 0, 0 );
 }
@@ -615,13 +619,15 @@ mobj_t* P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, mobjtype_t type )
 //
 // P_RemoveMobj
 //
-mapthing_t	itemrespawnque[ITEMQUESIZE];
-int		itemrespawntime[ITEMQUESIZE];
-int		iquehead;
-int		iquetail;
+extern "C"
+{
+	mapthing_t	itemrespawnque[ITEMQUESIZE];
+	int		itemrespawntime[ITEMQUESIZE];
+	int		iquehead;
+	int		iquetail;
+}
 
-
-void P_RemoveMobj (mobj_t* mobj)
+DOOM_C_API void P_RemoveMobj (mobj_t* mobj)
 {
     if ((mobj->flags & MF_SPECIAL)
 	&& !(mobj->flags & MF_DROPPED)
@@ -653,7 +659,7 @@ void P_RemoveMobj (mobj_t* mobj)
 //
 // P_RespawnSpecials
 //
-void P_RespawnSpecials (void)
+DOOM_C_API void P_RespawnSpecials (void)
 {
     fixed_t		x;
     fixed_t		y;
@@ -707,8 +713,9 @@ void P_RespawnSpecials (void)
     else
 	z = ONFLOORZ;
 
-    mo = P_SpawnMobj (x,y,z, i);
-    mo->spawnpoint = *mthing;	
+    mo = P_SpawnMobj (x,y,z, (mobjtype_t)i);
+    mo->spawnpoint = *mthing;
+	mo->hasspawnpoint = true;
     mo->prev.angle = mo->curr.angle = mo->angle = ANG45 * (mthing->angle/45);
 
     // pull it from the que
@@ -724,7 +731,7 @@ void P_RespawnSpecials (void)
 // Most of the player structure stays unchanged
 //  between levels.
 //
-void P_SpawnPlayer (mapthing_t* mthing)
+DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
 {
     player_t*		p;
     fixed_t		x;
@@ -798,7 +805,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void P_SpawnMapThing (mapthing_t* mthing)
+DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
 {
     int			i;
     int			bit;
@@ -893,8 +900,9 @@ void P_SpawnMapThing (mapthing_t* mthing)
     else
 	z = ONFLOORZ;
     
-    mobj = P_SpawnMobj (x,y,z, i);
+    mobj = P_SpawnMobj (x,y,z, (mobjtype_t)i);
     mobj->spawnpoint = *mthing;
+	mobj->hasspawnpoint = true;
 
     if (mobj->tics > 0)
 	{
@@ -928,13 +936,12 @@ void P_SpawnMapThing (mapthing_t* mthing)
 //
 // P_SpawnPuff
 //
-extern fixed_t attackrange;
+extern "C"
+{
+	extern fixed_t attackrange;
+}
 
-void
-P_SpawnPuff
-( fixed_t	x,
-  fixed_t	y,
-  fixed_t	z )
+DOOM_C_API void P_SpawnPuff( fixed_t x, fixed_t y, fixed_t z )
 {
     mobj_t*	th;
 	
@@ -957,12 +964,7 @@ P_SpawnPuff
 //
 // P_SpawnBlood
 // 
-void
-P_SpawnBlood
-( fixed_t	x,
-  fixed_t	y,
-  fixed_t	z,
-  int		damage )
+DOOM_C_API void P_SpawnBlood( fixed_t x, fixed_t y, fixed_t z, int damage )
 {
     mobj_t*	th;
 	
@@ -987,7 +989,7 @@ P_SpawnBlood
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-void P_CheckMissileSpawn (mobj_t* th)
+DOOM_C_API void P_CheckMissileSpawn( mobj_t* th )
 {
     th->tics -= P_Random()&3;
     if (th->tics < 1)
@@ -1009,16 +1011,11 @@ void P_CheckMissileSpawn (mobj_t* th)
 // protection. This function substitutes NULL pointers for
 // pointers to a dummy mobj, to avoid a crash.
 
-mobj_t *P_SubstNullMobj(mobj_t *mobj)
+DOOM_C_API mobj_t *P_SubstNullMobj( mobj_t *mobj )
 {
     if (mobj == NULL)
     {
-        static mobj_t dummy_mobj;
-
-        dummy_mobj.x = 0;
-        dummy_mobj.y = 0;
-        dummy_mobj.z = 0;
-        dummy_mobj.flags = 0;
+        static mobj_t dummy_mobj = {};
 
         mobj = &dummy_mobj;
     }
@@ -1029,11 +1026,7 @@ mobj_t *P_SubstNullMobj(mobj_t *mobj)
 //
 // P_SpawnMissile
 //
-mobj_t*
-P_SpawnMissile
-( mobj_t*	source,
-  mobj_t*	dest,
-  mobjtype_t	type )
+DOOM_C_API mobj_t* P_SpawnMissile( mobj_t* source, mobj_t* dest, mobjtype_t type )
 {
     mobj_t*	th;
     angle_t	an;
@@ -1075,10 +1068,7 @@ P_SpawnMissile
 // P_SpawnPlayerMissile
 // Tries to aim at a nearby monster
 //
-void
-P_SpawnPlayerMissile
-( mobj_t*	source,
-  mobjtype_t	type )
+DOOM_C_API void P_SpawnPlayerMissile( mobj_t* source, mobjtype_t type )
 {
     mobj_t*	th;
     angle_t	an;

@@ -38,6 +38,8 @@
 #include "m_misc.h"
 #include "m_random.h"
 
+#include "p_local.h"
+
 #include "r_local.h"
 
 #include "s_sound.h"
