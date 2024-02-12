@@ -22,6 +22,8 @@
 
 #include "doomdef.h"
 
+#include "d_gamesim.h"
+
 #include "deh_misc.h"
 
 #include "i_system.h"
@@ -445,9 +447,9 @@ DOOM_C_API doombool P_CheckPosition( mobj_t* thing, fixed_t x, fixed_t y )
 		return true;
 	}
 
-	bool checkthings = !remove_limits // allow_corpse_to_ignore_mobjs
+	bool checkthings = !sim.corpse_ignores_mobjs
 					|| ( tmthing->flags & MF_CORPSE ) != MF_CORPSE;
-	if( true ) // checkthings )
+	if( checkthings )
 	{
 		// Check things first, possibly picking things up.
 		// The bounding box is extended by MAXRADIUS
@@ -520,7 +522,7 @@ DOOM_C_API doombool P_TryMove( mobj_t* thing, fixed_t x, fixed_t y )
 
 		doombool hasvelocity = thing->momx != 0 || thing->momy != 0;
 
-		//if( !remove_limits || !hasvelocity ) // allow_sliding_off_edge
+		if( !sim.mobjs_slide_off_edge || !hasvelocity )
 		{
 			if ( !(thing->flags&(MF_DROPOFF|MF_FLOAT))
 				 && tmfloorz - tmdropoffz > 24*FRACUNIT )
@@ -1027,7 +1029,7 @@ DOOM_C_API doombool PTR_ShootTraverse( intercept_t* in )
 	    if	(li->backsector && li->backsector->ceilingpic == skyflatnum)
 		{
 			doombool impact = false;
-			if( remove_limits ) // fix_sky_wall_projectiles
+			if( fix.sky_wall_projectiles )
 			{
 				impact = z <= li->backsector->ceilingheight;
 			}
@@ -1191,7 +1193,7 @@ DOOM_C_API doombool PTR_UseTraverse( intercept_t* in )
 	
     P_UseSpecialLine (usething, in->d.line, side);
 
-	if( remove_limits ) // allow_boom_specials
+	if( sim.boom_line_specials )
 	{
 		return ( in->d.line->flags & ML_BOOM_PASSTHROUGH ) == ML_BOOM_PASSTHROUGH;
 	}
@@ -1423,7 +1425,7 @@ DOOM_C_API doombool P_ChangeSectorFixed( sector_t* sector, doombool crunch )
 							iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
 							[ sector, &doesntfit, crunch ]( mobj_t* mobj ) -> bool
 	{
-		if( remove_limits && !P_MobjOverlapsSector( sector, mobj ) ) // fix_overzealous_changesector
+		if( fix.overzealous_changesector && !P_MobjOverlapsSector( sector, mobj ) )
 		{
 			return true;
 		}
@@ -1565,7 +1567,7 @@ DOOM_C_API doombool PIT_ChangeSector( mobj_t* thing )
 
 DOOM_C_API doombool P_ChangeSector( sector_t* sector, doombool crunch )
 {
-	if( remove_limits ) // fix_overzealous_changesector || fix_spechit_overflow
+	if( fix.overzealous_changesector || fix.spechit_overflow )
 	{
 		return P_ChangeSectorFixed( sector, crunch );
 	}

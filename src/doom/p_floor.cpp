@@ -20,6 +20,9 @@
 
 #include "z_zone.h"
 #include "doomdef.h"
+
+#include "d_gamesim.h"
+
 #include "p_local.h"
 #include "p_lineaction.h"
 
@@ -50,7 +53,7 @@ DOOM_C_API result_e T_MovePlane( sector_t* sector, fixed_t speed, fixed_t dest, 
 
 	sector->snapfloor = sector->snapceiling = false;
 
-	if( remove_limits ) // fix_moveplane_escapes_reality
+	if( fix.moveplane_escapes_reality ) // fix_moveplane_escapes_reality
 	{
 		if( !floorOrCeiling && direction == sd_up )
 		{

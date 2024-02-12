@@ -38,6 +38,7 @@
 
 #include "doomstat.h"
 #include "d_gameflow.h"
+#include "d_gamesim.h"
 #include "r_state.h"
 #include "m_misc.h"
 
@@ -158,7 +159,7 @@ void F_Ticker (void)
     // check for skipping
     if( finalestage == F_STAGE_TEXT
 		&& finaleintermission
-		&& !!( finaleintermission->type & Intermission_Skippable )
+		&& ( comp.finale_always_allow_skip_text || ( finaleintermission->type & Intermission_Skippable ) == Intermission_Skippable )
 		&& finalecount > 50 )
     {
 		// go on to the next level
@@ -428,7 +429,7 @@ doombool F_CastResponder (event_t* ev)
 {
 	doombool canrespond = ev->type == ev_keydown;
 
-	if( remove_limits )
+	if( comp.finale_allow_mouse_to_skip )
 	{
 		canrespond |= ev->type == ev_keyup || ( ev->type == ev_mouse && ev->data5 != 0 );
 	}

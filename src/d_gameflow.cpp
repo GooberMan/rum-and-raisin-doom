@@ -73,21 +73,21 @@ void D_GameflowCheckAndParseMapinfos( void )
 	if( ( lumpnum = W_CheckNumForName( "UMAPINFO" ) ) >= 0 )
 	{
 		D_GameflowParseUMAPINFO( lumpnum );
-		I_TerminalPrintf( Log_Startup, "  UMAPINFO gameflow defined\n" );
+		I_TerminalPrintf( Log_Startup, " UMAPINFO gameflow defined\n" );
 	}
 	else if( ( lumpnum = W_CheckNumForName( "DMAPINFO" ) ) >= 0 )
 	{
 		D_GameflowParseDMAPINFO( lumpnum );
-		I_TerminalPrintf( Log_Startup, "  DMAPINFO gameflow defined\n" );
+		I_TerminalPrintf( Log_Startup, " DMAPINFO gameflow defined\n" );
 	}
 	else if( ( lumpnum = W_CheckNumForName( "ZMAPINFO" ) ) >= 0 )
 	{
 		//D_GameflowParseZMAPINFO( lumpnum );
-		I_TerminalPrintf( Log_Warning, "  ZMAPINFO gameflow defined, unimplemented\n" );
+		I_TerminalPrintf( Log_Error, " ZMAPINFO gameflow unimplemented, retaining vanilla gameflow\n" );
 	}
 	else if( ( lumpnum = W_CheckNumForName( "MAPINFO" ) ) >= 0 )
 	{
 		//D_GameflowParseMAPINFO( lumpnum );
-		I_TerminalPrintf( Log_Warning, "  MAPINFO gameflow defined, unimplemented\n" );
+		I_TerminalPrintf( Log_Error, " MAPINFO gameflow unimplemented, retaining vanilla gameflow\n" );
 	}
 }

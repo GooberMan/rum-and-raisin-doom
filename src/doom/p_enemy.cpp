@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "d_gamesim.h"
+
 #include "m_random.h"
 
 #include "i_system.h"
@@ -1153,7 +1155,7 @@ doombool PIT_VileCheck (mobj_t*	thing)
     corpsehit->momx = corpsehit->momy = 0;
 	fixed_t oldheight = corpsehit->height;
 	fixed_t oldradius = corpsehit->radius;
-	if( remove_limits ) // fix_archvile_ghost_resurrections
+	if( !comp.ghost_monsters )
 	{
 		corpsehit->height = corpsehit->info->height;
 		corpsehit->radius = corpsehit->info->radius;
@@ -1225,7 +1227,7 @@ DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_
 		    info = corpsehit->info;
 		    
 		    P_SetMobjState (corpsehit, (statenum_t)info->raisestate);
-			if( remove_limits ) // fix_archvile_ghost_resurrections
+			if( !comp.ghost_monsters )
 			{
 				corpsehit->height = info->height;
 				corpsehit->radius = info->radius;

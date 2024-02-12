@@ -344,6 +344,8 @@ enum MBF21Actions : uint32_t
 
 	MBF21Actions_Max,
 	MBF21Actions_Min = Texture_ScrollSpeedDiv8Standard_Always,
+
+	MBF21Actions_Count = MBF21Actions_Max - MBF21Actions_Min,
 };
 
 enum ActionArrayValues : uint32_t

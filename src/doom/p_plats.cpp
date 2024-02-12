@@ -18,6 +18,8 @@
 
 #include <stdio.h>
 
+#include "d_gamesim.h"
+
 #include "i_system.h"
 #include "z_zone.h"
 #include "m_random.h"
@@ -260,7 +262,7 @@ void P_ActivateInStasis(int tag)
 
 void EV_StopPlat(line_t* line)
 {
-	if( remove_limits )
+	if( sim.generic_specials_handling )
 	{
 		EV_StopAnyLiftGeneric( line, nullptr );
 		return;

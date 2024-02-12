@@ -785,14 +785,16 @@ void R_InitTextures (void)
 			for( int32_t curr = begin; curr < end; ++curr )
 			{
 				std::string lumpname = ClampString( lumpinfo[ curr ]->name );
+				// Need to account for lump overrides outside of markers
+				lumpindex_t index = W_GetNumForName( lumpname.c_str() );
 				auto found = patchnamelookup.find( lumpname );
 				if( found == patchnamelookup.end() )
 				{
-					patchnamelookup[ lumpname ] = { curr, numpatchentries++ };
+					patchnamelookup[ lumpname ] = { index, numpatchentries++ };
 				}
 				else
 				{
-					found->second.lumpindex = curr;
+					found->second.lumpindex = index;
 				}
 			}
 		} );

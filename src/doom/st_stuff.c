@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "d_gamesim.h"
+
 #include "i_system.h"
 #include "i_video.h"
 #include "z_zone.h"
@@ -557,9 +559,9 @@ ST_Responder (event_t* ev)
 	    S_ChangeMusic(musnum, 1);
 	}
       }
-      else if ( ( ( remove_limits || logical_gamemission == doom )
+      else if ( ( ( comp.noclip_cheats_work_everywhere || logical_gamemission == doom )
                  && cht_CheckCheat(&cheat_noclip, ev->data2))
-             || ( ( remove_limits || logical_gamemission != doom )
+             || ( ( comp.noclip_cheats_work_everywhere || logical_gamemission != doom )
                  && cht_CheckCheat(&cheat_commercial_noclip,ev->data2)))
       {	
         // Noclip cheat.
@@ -1098,7 +1100,7 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
     // key cards
     for (i=0;i<TOTALCARDS;i++)
     {
-		if( !remove_limits && i >= NUMCARDS )
+		if( !sim.hud_combined_keys && i >= NUMCARDS )
 		{
 			break;
 		}

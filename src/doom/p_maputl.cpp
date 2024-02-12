@@ -29,6 +29,9 @@
 
 #include "doomdef.h"
 #include "doomstat.h"
+
+#include "d_gamesim.h"
+
 #include "p_local.h"
 
 
@@ -947,7 +950,7 @@ doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func )
 		{
 			return false;
 		}
-		mobj = remove_limits ? bnext : mobj->bnext; // fix_blockthingsiterator
+		mobj = fix.blockthingsiterator ? bnext : mobj->bnext;
 	}
 
 	return true;

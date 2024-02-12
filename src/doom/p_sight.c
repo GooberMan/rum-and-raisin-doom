@@ -20,6 +20,8 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
+#include "d_gamesim.h"
+
 #include "i_system.h"
 #include "p_local.h"
 
@@ -106,10 +108,10 @@ P_DivlineSide
     
     if (!node->dy)
     {
-	if (!remove_limits && x==node->y) // fix_divlineside
+	if (!fix.divlineside && x==node->y)
 	    return 2;
 
-	if (remove_limits && y==node->y) // fix_divlineside
+	if (fix.divlineside && y==node->y)
 		return 2;
 
 	if (y <= node->y)

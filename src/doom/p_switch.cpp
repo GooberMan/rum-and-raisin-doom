@@ -23,6 +23,8 @@
 #include "doomstat.h"
 #include "doomtype.h"
 
+#include "d_gamesim.h"
+
 #include "deh_main.h"
 
 
@@ -125,7 +127,7 @@ void P_InitSwitchList(void)
 
 	static_assert( sizeof(switchlist_t) == 20, "switchlist_t does not match expected binary size on this platform" );
 
-	lumpindex_t switcheslump = remove_limits ? W_CheckNumForName( "SWITCHES" ) : -1;
+	lumpindex_t switcheslump = sim.switches_lump ? W_CheckNumForName( "SWITCHES" ) : -1;
 	if( switcheslump > 0 )
 	{
 		loadedswitchlist = (switchlist_t*)W_CacheLumpNum( switcheslump, PU_STATIC );

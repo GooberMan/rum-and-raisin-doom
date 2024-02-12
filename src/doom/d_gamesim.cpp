@@ -20,6 +20,7 @@
 
 #include "d_gameflow.h"
 
+#include "i_terminal.h"
 #include "i_system.h"
 
 #include "p_lineaction.h"
@@ -92,6 +93,8 @@ static simvalues_t GetVanillaValues( GameVersion_t version, GameMode_t mode )
 	values.comp.dogs_can_jump_down = false;					// dog_jumping
 
 	values.comp.finale_use_secondary_lump = ( mode == retail );	// CREDIT instead of HELP2
+	values.comp.finale_allow_mouse_to_skip = false;			// Because everyone has their hands on mouse at all times
+	values.comp.finale_always_allow_skip_text = false;		// Doom 1 didn't
 	values.comp.finaldoom_teleport_z = false;				// Final Doom would not set teleported object's Z to the floor
 	values.comp.reset_player_visited_secret = false;		// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = false;		// idspispopd and idclip everywhere
@@ -110,14 +113,20 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 {
 	simvalues_t values = GetVanillaValues( exe_limit_removing, mode );
 
+	values.sim.extended_saves = true;
+	values.sim.extended_map_formats = true;
+	values.sim.allow_unknown_thing_types = true;
 	values.sim.generic_specials_handling = true;
 	values.sim.hud_combined_keys = true;
 	values.sim.unlimited_scrollers = true;
 	values.sim.unlimited_platforms = true;
 	values.sim.unlimited_ceilings = true;
 
+	values.comp.finale_allow_mouse_to_skip = true;
+	values.comp.finale_always_allow_skip_text = true;
 	values.comp.reset_player_visited_secret = true;
 	values.comp.noclip_cheats_work_everywhere = true;
+	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;
 
 	return values;
 }
@@ -199,10 +208,13 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.dogs_can_jump_down = false;					// dog_jumping
 
 	values.comp.finale_use_secondary_lump = ( mode == retail );	// CREDIT instead of HELP2
+	values.comp.finale_allow_mouse_to_skip = true;			// Because everyone has their hands on mouse at all times
+	values.comp.finale_always_allow_skip_text = true;		// Doom 1 didn't
 	values.comp.finaldoom_teleport_z = false;				// Final Doom would not set teleported object's Z to the floor
 	values.comp.reset_player_visited_secret = true;			// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = true;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
+	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -212,11 +224,17 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 
 	values.fix = GetAllFixed();
 
+	values.sim.extended_saves = true;						// Generic save format for the new features
+	values.sim.extended_demos = true;						// Decide on the fly if we support a demo or not
+	values.sim.extended_map_formats = true;					// Different node types etc
+	values.sim.animated_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.switches_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.allow_unknown_thing_types = true;			// Replace unknown things with warning objects
 	values.sim.weapon_recoil = true;						// Boom "feature"
 	values.sim.line_passthrough = true;						// Boom feature, don't stop using lines when one succeeds if linedef flag is set
 	values.sim.hud_combined_keys = true;					// Boom feature, dependent on if resources exist in WAD
-	values.sim.sliding_off_edge = true;						// Boom feature, trust me you'll miss it if it's not there
-	values.sim.corpse_to_ignore_mobjs = true;				// Corpses with velocity still collided as if solid with other things
+	values.sim.mobjs_slide_off_edge = true;					// Boom feature, trust me you'll miss it if it's not there
+	values.sim.corpse_ignores_mobjs = true;					// Corpses with velocity still collided as if solid with other things
 	values.sim.unlimited_scrollers = true;					// Vanilla limit
 	values.sim.unlimited_platforms = true;					// Vanilla limit
 	values.sim.unlimited_ceilings = true;					// Vanilla limit
@@ -292,10 +310,13 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.dogs_can_jump_down = true;					// dog_jumping
 
 	values.comp.finale_use_secondary_lump = ( mode == retail );	// CREDIT instead of HELP2
+	values.comp.finale_allow_mouse_to_skip = true;			// Because everyone has their hands on mouse at all times
+	values.comp.finale_always_allow_skip_text = true;		// Doom 1 didn't
 	values.comp.finaldoom_teleport_z = false;				// Final Doom would not set teleported object's Z to the floor
 	values.comp.reset_player_visited_secret = true;			// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = true;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
+	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -305,11 +326,17 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 
 	values.fix = GetAllFixed();
 
+	values.sim.extended_saves = true;						// Generic save format for the new features
+	values.sim.extended_demos = true;						// Decide on the fly if we support a demo or not
+	values.sim.extended_map_formats = true;					// Different node types etc
+	values.sim.animated_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.switches_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.allow_unknown_thing_types = true;			// Replace unknown things with warning objects
 	values.sim.weapon_recoil = true;						// Boom "feature"
 	values.sim.line_passthrough = true;						// Boom feature, don't stop using lines when one succeeds if linedef flag is set
 	values.sim.hud_combined_keys = true;					// Boom feature, dependent on if resources exist in WAD
-	values.sim.sliding_off_edge = true;						// Boom feature, trust me you'll miss it if it's not there
-	values.sim.corpse_to_ignore_mobjs = true;				// Corpses with velocity still collided as if solid with other things
+	values.sim.mobjs_slide_off_edge = true;					// Boom feature, trust me you'll miss it if it's not there
+	values.sim.corpse_ignores_mobjs = true;					// Corpses with velocity still collided as if solid with other things
 	values.sim.unlimited_scrollers = true;					// Vanilla limit
 	values.sim.unlimited_platforms = true;					// Vanilla limit
 	values.sim.unlimited_ceilings = true;					// Vanilla limit
@@ -376,10 +403,13 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.dogs_can_jump_down = false;					// dog_jumping
 
 	values.comp.finale_use_secondary_lump = ( mode == retail );	// CREDIT instead of HELP2
+	values.comp.finale_allow_mouse_to_skip = true;			// Because everyone has their hands on mouse at all times
+	values.comp.finale_always_allow_skip_text = true;		// Doom 1 didn't
 	values.comp.finaldoom_teleport_z = false;				// Final Doom would not set teleported object's Z to the floor
 	values.comp.reset_player_visited_secret = false;		// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = false;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
+	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = true;			// comp_ledgeblock
@@ -389,11 +419,17 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 
 	values.fix = GetAllFixed();
 
+	values.sim.extended_saves = true;						// Generic save format for the new features
+	values.sim.extended_demos = true;						// Decide on the fly if we support a demo or not
+	values.sim.extended_map_formats = true;					// Different node types etc
+	values.sim.animated_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.switches_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.allow_unknown_thing_types = true;			// Replace unknown things with warning objects
 	values.sim.weapon_recoil = true;						// Boom "feature"
 	values.sim.line_passthrough = true;						// Boom feature, don't stop using lines when one succeeds if linedef flag is set
 	values.sim.hud_combined_keys = true;					// Boom feature, dependent on if resources exist in WAD
-	values.sim.sliding_off_edge = true;						// Boom feature, trust me you'll miss it if it's not there
-	values.sim.corpse_to_ignore_mobjs = true;				// Corpses with velocity still collided as if solid with other things
+	values.sim.mobjs_slide_off_edge = true;					// Boom feature, trust me you'll miss it if it's not there
+	values.sim.corpse_ignores_mobjs = true;					// Corpses with velocity still collided as if solid with other things
 	values.sim.unlimited_scrollers = true;					// Vanilla limit
 	values.sim.unlimited_platforms = true;					// Vanilla limit
 	values.sim.unlimited_ceilings = true;					// Vanilla limit
@@ -722,34 +758,42 @@ static void SetDefaultGameflow()
 	case exe_final:
 	case exe_final2:
 	case exe_chex:
+		I_TerminalPrintf( Log_System, " Applying vanilla compatibility\n" );
 		values = GetVanillaValues( version, gamemode );
 		break;
 
 	case exe_limit_removing:
+		I_TerminalPrintf( Log_System, " Applying limit-removing compatibility\n" );
 		values = GetLimitRemovingValues( gamemode );
 		break;
 
 	case exe_limit_removing_fixed:
+		I_TerminalPrintf( Log_System, " Applying limit-removing (plus fixes) compatibility\n" );
 		values = GetLimitRemovingFixedValues( gamemode );
 		break;
 
 	case exe_boom_2_02:
+		I_TerminalPrintf( Log_System, " Applying Boom compatibility\n" );
 		values = GetLimitRemovingValues( gamemode );
 		break;
 
 	case exe_complevel9:
+		I_TerminalPrintf( Log_System, " Applying -complevel 9 compatibility\n" );
 		values = GetComplevel9Values( gamemode );
 		break;
 
 	case exe_mbf:
+		I_TerminalPrintf( Log_System, " Applying MBF compatibility\n" );
 		values = GetMBFValues( gamemode );
 		break;
 
 	case exe_mbf21:
+		I_TerminalPrintf( Log_System, " Applying MBF21 compatibility\n" );
 		values = GetMBF21Values( gamemode );
 		break;
 
 	default:
+		I_TerminalPrintf( Log_System, " Indeterminable version, applying vanilly compatibility\n" );
 		values = GetVanillaValues( version, gamemode );
 		break;
 	}

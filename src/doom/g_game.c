@@ -791,7 +791,7 @@ void G_DoLoadLevel (void)
 
     // The "Sky never changes in Doom II" bug was fixed in
     // the id Anthology version of doom2.exe for Final Doom.
-    if( remove_limits
+    if( fix.same_sky_texture
 		|| ( gamemode == commercial && ( gameversion == exe_final2 || gameversion == exe_chex ) ) )
     {
 		const char* skytexturename = DEH_String( current_map->sky_texture.val );
@@ -1778,7 +1778,7 @@ void G_DoLoadGame (void)
 		I_Error( "Bad savegame" );
 	}
 
-	if( remove_limits && type == SaveGame_LimitRemoving )
+	if( sim.extended_saves && type == SaveGame_LimitRemoving )
 	{
 		P_UnArchiveLimitRemovingData( true );
 	}
@@ -1809,12 +1809,12 @@ void G_DoLoadGame (void)
 		I_Error ("Bad savegame");
 	}
 
-	if( remove_limits && type == SaveGame_LimitRemoving )
+	if( sim.extended_saves && type == SaveGame_LimitRemoving )
 	{
 		P_UnArchiveLimitRemovingData( false );
 	}
 
-	if( !remove_limits && type == SaveGame_LimitRemoving )
+	if( !sim.extended_saves && type == SaveGame_LimitRemoving )
 	{
 		extern doombool message_dontfuckwithme;
 		players[consoleplayer].message = "Saving will erase limit-removing data.";
@@ -1891,12 +1891,12 @@ void G_DoSaveGame (void)
     // Enforce the same savegame size limit as in Vanilla Doom,
     // except if the vanilla_savegame_limit setting is turned off.
 
-    if ( ( vanilla_savegame_limit && !remove_limits ) && ftell(save_stream) > SAVEGAMESIZE)
+    if ( ( vanilla_savegame_limit && !sim.extended_saves ) && ftell(save_stream) > SAVEGAMESIZE)
     {
         I_Error("Savegame buffer overrun");
     }
 
-	if( remove_limits )
+	if( sim.extended_saves )
 	{
 		P_ArchiveLimitRemovingData();
 		P_WriteSaveGameEOF( SaveGame_LimitRemoving );
@@ -1925,7 +1925,7 @@ void G_DoSaveGame (void)
     gameaction = ga_nothing;
     M_StringCopy(savedescription, "", sizeof(savedescription));
 
-	if( remove_limits ) players[consoleplayer].message = "Limit-removing game saved.";
+	if( sim.extended_saves ) players[consoleplayer].message = "Limit-removing game saved.";
 	else if( gameflags & GF_VanillaIncompatibleFlags ) players[consoleplayer].message = "Game saved without limit-removing data.";
 	else players[consoleplayer].message = DEH_String(GGSAVED);
 
@@ -2144,7 +2144,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
 
     if (demo_p > demoend - 16)
     {
-        if (vanilla_demo_limit && !remove_limits)
+        if (vanilla_demo_limit && !sim.extended_demos)
         {
             // no more space 
             G_CheckDemoStatus (); 
@@ -2336,7 +2336,7 @@ void G_DoPlayDemo (void)
     }
 
 	// Using https://www.doomworld.com/forum/topic/72033-boom-mbf-demo-header-format/ as documentation
-	doombool boomdemo = remove_limits
+	doombool boomdemo = sim.extended_demos
 					&& ( demoversion == demo_boom_2_02 || demoversion == demo_mbf || demoversion == demo_complevel9 );
 	if( boomdemo )
 	{

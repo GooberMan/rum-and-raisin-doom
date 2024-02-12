@@ -28,6 +28,8 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
+#include "d_gamesim.h"
+
 #include "deh_main.h"
 
 #include "g_game.h"
@@ -148,7 +150,7 @@ void P_InitPicAnims (void)
 {
     int		i;
 
-	lumpindex_t animdeflumpindex = remove_limits ? W_CheckNumForName( "ANIMATED" ) : -1;
+	lumpindex_t animdeflumpindex = sim.animated_lump ? W_CheckNumForName( "ANIMATED" ) : -1;
 	if( animdeflumpindex > 0 )
 	{
 		constexpr ptrdiff_t lumpentrysize = 23;
@@ -278,7 +280,7 @@ INLINE doombool IsScroller( int32_t special )
 	case Scroll_WallTextureRight_Always:
 	case Scroll_WallTextureByOffset_Always:
 	case Scroll_WallTextureBySector_Always:
-		return remove_limits; // allow_boom_specials
+		return sim.boom_line_specials;
 	default:
 		return false;
 	}
@@ -294,7 +296,7 @@ INLINE doombool IsWallScroller( int32_t special )
 	case Scroll_WallTextureRight_Always:
 	case Scroll_WallTextureBySector_Always:
 	case Scroll_WallTextureByOffset_Always:
-		return remove_limits; // allow_boom_specials
+		return sim.boom_line_specials;
 	default:
 		return false;
 	}
@@ -470,7 +472,7 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
     int			i;
     line_t*		check;
     sector_t*		other;
-    fixed_t		floor = remove_limits ? -INT_MAX : -500*FRACUNIT; // fix_findhighestfloorsurrounding
+    fixed_t		floor = fix.findhighestfloorsurrounding ? -INT_MAX : -500*FRACUNIT;
 	
     for (i=0 ;i < sec->linecount ; i++)
     {
@@ -500,7 +502,7 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 
 fixed_t P_FindNextHighestFloor( sector_t* sec )
 {
-	if( remove_limits ) // fix_findnexthighestfloor
+	if( fix.findnexthighestfloor )
 	{
 		return P_FindNextHighestFloorSurrounding( sec );
 	}
@@ -593,7 +595,7 @@ fixed_t	P_FindHighestCeilingSurrounding(sector_t* sec)
     int		i;
     line_t*	check;
     sector_t*	other;
-    fixed_t	height = remove_limits ? -INT_MAX : 0; // fix_findhighestceilingsurrounding
+    fixed_t	height = fix.findhighestceilingsurrounding ? -INT_MAX : 0;
 	
     for (i=0 ;i < sec->linecount ; i++)
     {
@@ -1649,11 +1651,6 @@ void P_SpawnSpecials (void)
 		  case 4:
 			// STROBE FAST/DEATH SLIME
 			P_SpawnStrobeFlash(sector,FASTDARK,0);
-			// Harmless in vanilla; deleted in Boom
-			//if( !remove_limits )
-			//{
-			//	sector->special = 4;
-			//}
 			break;
 	    
 		  case 8:
@@ -1695,7 +1692,7 @@ void P_SpawnSpecials (void)
     
 	//	Init line EFFECTs
 	int32_t scrollcount = NumScrollers();
-	if( !remove_limits && scrollcount > VANILLA_MAXLINEANIMS )
+	if( !sim.unlimited_scrollers && scrollcount > VANILLA_MAXLINEANIMS )
 	{
 		I_Error( "Too many scrolling wall linedefs (%d)! (Vanilla limit is %d)", scrollcount, VANILLA_MAXLINEANIMS );
 	}
@@ -1715,7 +1712,7 @@ void P_SpawnSpecials (void)
 			break;
 		}
 
-		if( remove_limits ) // allow_boom_specials
+		if( sim.boom_line_specials )
 		{
 			switch( line.special )
 			{
@@ -1849,7 +1846,7 @@ void P_SpawnSpecials (void)
 			}
 		}
 
-		if( remove_limits ) // allow_mbf_sky_specials || allow_mbf_specials
+		if( sim.mbf_line_specials )
 		{
 			switch( line.special )
 			{

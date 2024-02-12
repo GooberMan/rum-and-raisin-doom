@@ -21,6 +21,8 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
+#include "d_gamesim.h"
+
 #include "g_game.h"
 
 #include "i_log.h"
@@ -44,7 +46,7 @@ extern "C"
 fixed_t P_FindShortestLowerTexture( sector_t* sector )
 {
 	fixed_t lowestheight = INT_MAX;
-	int32_t mintextureindex = remove_limits ? 1 : 0; // fix_shortest_lower_texture_line
+	int32_t mintextureindex = fix.shortest_lower_texture_line ? 1 : 0; // fix_shortest_lower_texture_line
 
 	for( line_t* secline : Lines( *sector ) )
 	{
@@ -554,7 +556,7 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 		door->dontrecloseoncrush = ( door->direction == sd_close && door->topwait != 0 );
 		door->lighttag = 0;
 
-		if( remove_limits ) // allow_boom_specials
+		if( sim.boom_line_specials )
 		{
 			if( line->action->AnimatedActivationType() == LT_Use
 				&& line->tag != 0
@@ -769,7 +771,7 @@ DOOM_C_API int32_t EV_DoDonutGeneric( line_t* line, mobj_t* activator )
 	{
 		sector_t* donutsector = getNextSector( holesector.lines[ 0 ], &holesector );
 		if( donutsector == nullptr
-			|| ( remove_limits && donutsector->FloorSpecial() != nullptr ) ) // fix_donut_multiple_sector_thinkers
+			|| ( fix.donut_multiple_sector_thinkers && donutsector->FloorSpecial() != nullptr ) )
 		{
 			return 0;
 		}
@@ -854,7 +856,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 		case stt_highestneighborceiling:
 			floor->floordestheight = P_FindHighestCeilingSurrounding( &sector );
-			if( remove_limits ) // allow_boom_sector_targets
+			if( sim.boom_sector_targets )
 			{
 				floor->floordestheight = M_MAX( floor->floordestheight, sector.ceilingheight );
 			}
@@ -862,7 +864,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 		case stt_lowestneighborceiling:
 			floor->floordestheight = P_FindLowestCeilingSurrounding( &sector );
-			if( remove_limits ) // allow_boom_sector_targets
+			if( sim.boom_sector_targets )
 			{
 				floor->floordestheight = M_MIN( floor->floordestheight, sector.ceilingheight );
 			}
@@ -1225,7 +1227,7 @@ DOOM_C_API int32_t EV_DoLiftGeneric( line_t* line, mobj_t* activator )
 
 		case stt_lowestneighborceiling:
 			plat->low = P_FindLowestCeilingSurrounding( &sector );
-			if( remove_limits ) // allow_boom_sector_targets
+			if( sim.boom_sector_targets )
 			{
 				plat->low = M_MIN( plat->low, sector.ceilingheight );
 			}

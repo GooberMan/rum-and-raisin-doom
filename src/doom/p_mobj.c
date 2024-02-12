@@ -18,23 +18,27 @@
 
 #include <stdio.h>
 
+#include "doomdef.h"
+#include "doomstat.h"
+
+#include "d_gamesim.h"
+
+#include "hu_stuff.h"
+
 #include "i_system.h"
 #include "i_log.h"
-#include "z_zone.h"
+
 #include "m_random.h"
 #include "m_misc.h"
 
-#include "doomdef.h"
 #include "p_local.h"
+
+#include "s_sound.h"
 #include "sounds.h"
 
 #include "st_stuff.h"
-#include "hu_stuff.h"
 
-#include "s_sound.h"
-
-#include "doomstat.h"
-
+#include "z_zone.h"
 
 void G_PlayerReborn (int player);
 void P_SpawnMapThing (mapthing_t*	mthing);
@@ -173,7 +177,7 @@ mobj_t* P_XYMovement (mobj_t* mo)
 					ceilingline->backsector->ceilingpic == skyflatnum)
 				{
 					doombool remove = true;
-					if( remove_limits ) // fix_sky_wall_projectiles
+					if( fix.sky_wall_projectiles )
 					{
 						remove = mo->z >= ceilingline->backsector->ceilingheight;
 					}
@@ -855,7 +859,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	
     if (i==NUMMOBJTYPES)
 	{
-		if( remove_limits )
+		if( sim.allow_unknown_thing_types )
 		{
 			I_LogAddEntryVar( Log_Error, "P_SpawnMapThing: Unknown type %i at (%i, %i)",
 				 mthing->type,

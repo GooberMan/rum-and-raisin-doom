@@ -18,6 +18,7 @@
 
 #include "dstrings.h"
 
+#include "d_gamesim.h"
 #include "d_player.h"
 
 #include "deh_str.h"
@@ -430,7 +431,7 @@ static void DoGenericOnce( line_t* line, mobj_t* activator )
 		line->special = 0;
 	}
 
-	if( !remove_limits ) // fix_w1s1_lines_clearing_on_no_result
+	if( !fix.w1s1_lines_clearing_on_no_result )
 	{
 		line->action = nullptr;
 		line->special = 0;
@@ -456,7 +457,7 @@ static void DoGenericSwitchOnce( line_t* line, mobj_t* activator )
 		line->special = 0;
 	}
 
-	if( !remove_limits ) // fix_w1s1_lines_clearing_on_no_result
+	if( !fix.w1s1_lines_clearing_on_no_result )
 	{
 		line->action = nullptr;
 		line->special = 0;
@@ -471,7 +472,7 @@ static void DoVanillaW1Teleport( line_t* line, mobj_t* activator )
 		DoGenericOnce< Teleport >( line, activator );
 	}
 
-	if( !remove_limits ) // fix_w1s1_lines_clearing_on_no_result
+	if( !fix.w1s1_lines_clearing_on_no_result )
 	{
 		line->action = nullptr;
 		line->special = 0;
@@ -1039,6 +1040,16 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 };
 
+constexpr lineaction_t builtinmbf21lineactions[ MBF21Actions_Count ] =
+{
+	// Texture_ScrollSpeedDiv8Standard_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Texture_ScrollSpeedDiv8Displacement_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Texture_ScrollSpeedDiv8Accelerative_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+};
+
 // Another ugly table
 constexpr const char* doorlockreason[] =
 {
@@ -1068,6 +1079,11 @@ void lineaction_s::DisplayLockReason( player_t* player )
 static lineaction_t* GetBuiltInAction( int32_t special )
 {
 	return (lineaction_t*)&builtinlineactions[ special ];
+}
+
+static lineaction_t* GetBuiltInMBF21Action( int32_t special )
+{
+	return (lineaction_t*)&builtinmbf21lineactions[ special - MBF21Actions_Min ];
 }
 
 template< typename _ty >
@@ -1397,42 +1413,43 @@ static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 {
-#if 1
-	//if( !remove_limits )
-	//{
-	//	return nullptr;
-	//}
-
-	if( line->special >= DoomActions_Min && line->special < DoomActions_Max )
+	if( !sim.generic_specials_handling )
 	{
-		return ( !remove_limits && ( line->special == Unknown_078 || line->special == Unknown_085 ) )
+		return nullptr;
+	}
+	else if( line->special >= DoomActions_Min
+		&& line->special < DoomActions_Max )
+	{
+		return ( !sim.boom_line_specials && ( line->special == Unknown_078 || line->special == Unknown_085 ) )
 			? GetBuiltInAction( 0 )
 			: GetBuiltInAction( line->special );
 	}
-	else if( remove_limits )
+	else if( sim.boom_line_specials
+		&& line->special >= BoomActions_Min
+		&& line->special < BoomActions_Max )
 	{
-		if( /*allow_boom_specials && */
-			line->special >= BoomActions_Min && line->special < BoomActions_Max )
-		{
-			return GetBuiltInAction( line->special );
-		}
-		else if( /*( allow_mbf_specials || allow_mbf_sky_specials ) && */
-				( line->special == Transfer_Sky_Always
-					|| line->special == Transfer_SkyReversed_Always )
-				)
-		{
-			return GetBuiltInAction( line->special );
-		}
-		// else if( false /* allow_mbf21_specials */ )
-		// {
-		// }
-		else if( /*allow_boom_specials && */
-				line->special >= Generic_Min && line->special < Generic_Max )
-		{
-			return CreateBoomGeneralisedLineAction( line );
-		}
+		return GetBuiltInAction( line->special );
 	}
-#endif
+	else if( sim.mbf_line_specials
+		&& ( line->special == Transfer_Sky_Always
+			|| line->special == Transfer_SkyReversed_Always )
+		)
+	{
+		return GetBuiltInAction( line->special );
+	}
+	else if( sim.mbf21_line_specials
+		&& line->special >= MBF21Actions_Min
+		&& line->special < MBF21Actions_Max )
+	{
+		// Look up the special MBF21 line table
+		return GetBuiltInMBF21Action( line->special );
+	}
+	else if( sim.boom_line_specials
+		&& line->special >= Generic_Min
+		&& line->special < Generic_Max )
+	{
+		return CreateBoomGeneralisedLineAction( line );
+	}
 
-	return nullptr;
+	return GetBuiltInAction( 0 );
 }

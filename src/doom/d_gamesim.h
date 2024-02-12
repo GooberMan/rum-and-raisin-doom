@@ -71,11 +71,17 @@ DOOM_C_API typedef struct fixoptions_s
 
 DOOM_C_API typedef struct simoptions_s
 {
+	doombool		extended_saves;							// Generic save format for the new features
+	doombool		extended_demos;							// Decide on the fly if we support a demo or not
+	doombool		extended_map_formats;					// Different node types etc
+	doombool		animated_lump;							// Boom feature, replaces internal table with data
+	doombool		switches_lump;							// Boom feature, replaces internal table with data
+	doombool		allow_unknown_thing_types;				// Replace unknown things with warning objects
 	doombool		weapon_recoil;							// Boom "feature"
 	doombool		line_passthrough;						// Boom feature, don't stop using lines when one succeeds if linedef flag is set
 	doombool		hud_combined_keys;						// Boom feature, dependent on if resources exist in WAD
-	doombool		sliding_off_edge;						// Boom feature, trust me you'll miss it if it's not there
-	doombool		corpse_to_ignore_mobjs;					// Corpses with velocity still collided as if solid with other things
+	doombool		mobjs_slide_off_edge;					// Boom feature, trust me you'll miss it if it's not there
+	doombool		corpse_ignores_mobjs;					// Corpses with velocity still collided as if solid with other things
 	doombool		unlimited_scrollers;					// Vanilla limit
 	doombool		unlimited_platforms;					// Vanilla limit
 	doombool		unlimited_ceilings;						// Vanilla limit
@@ -86,9 +92,11 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		boom_sector_targets;					// All sector targets consider their current sector
 	doombool		boom_line_specials;						// Comes with Boom fixes for specials by default
 	doombool		boom_sector_specials;					// Comes with Boom fixes for specials by default
+	doombool		boom_things;							// Pushers, pullers, TNT1
 	doombool		mbf_line_specials;						// Sky transfers, that's it
 	doombool		mbf_thing_mobj_flags;					// Bouncy! Friendly! TOUCHY!
 	doombool		mbf_code_pointers;						// Dehacked additions
+	doombool		mbf_things;								// DOGS
 	doombool		mbf21_line_specials;					// New texture scrollers, new flags
 	doombool		mbf21_sector_specials;					// Insta-deaths
 	doombool		mbf21_thing_flags;						// flags2 field
@@ -117,7 +125,7 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		doom_floor_movement_method;				// comp_floors				- Use exactly Doom's floor motion behavior
 	doombool		doom_movement_clipping_method;			// comp_moveblock			- Use exactly Doom's movement clipping code
 	doombool		doom_linedef_trigger_method;			// comp_model				- Use exactly Doom's linedef trigger model
-	doombool		zero_tags;						// comp_zerotags			- Linedef effects work with sector tag = 0
+	doombool		zero_tags;								// comp_zerotags			- Linedef effects work with sector tag = 0
 	doombool		pre_ultimate_boss_behavior;				// comp_666					- Emulate pre-Ultimate BossDeath behaviour
 	doombool		lost_souls_bounce;						// comp_soul				- Lost souls don't bounce off flat surfaces
 	doombool		two_sided_texture_anims;				// comp_maskedanim			- 2S middle textures do not animate
@@ -140,10 +148,13 @@ DOOM_C_API typedef struct compoptions_s
 
 	// R&R additions
 	doombool		finale_use_secondary_lump;				// CREDIT instead of HELP2
+	doombool		finale_allow_mouse_to_skip;				// Because everyone has their hands on mouse at all times
+	doombool		finale_always_allow_skip_text;			// Doom 1 didn't
 	doombool		finaldoom_teleport_z;					// Final Doom would not set teleported object's Z to the floor
 	doombool		reset_player_visited_secret;			// Start a new game, still thinks you've visited secret levels on intermission screen
 	doombool		noclip_cheats_work_everywhere;			// idspispopd and idclip everywhere
 	doombool		bfg_map02_secret_exit_to_map33;			// Find that one unmarked line in MAP02 in BFG edition
+	doombool		demo4;									// Always attempt to play demo4 if it exists
 
 	// MBF21 additions
 	doombool		respawn_non_map_things_at_origin;		// comp_respawn

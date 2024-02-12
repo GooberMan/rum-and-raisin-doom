@@ -230,7 +230,6 @@ struct sector_s
 	int16_t				ceilingpic;
 	int16_t				lightlevel;
 	int16_t				special;
-	int16_t				extendedspecial;
 	int16_t				tag;
 
 	int32_t				secretstate;

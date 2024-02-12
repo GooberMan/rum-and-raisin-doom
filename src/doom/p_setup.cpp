@@ -30,6 +30,7 @@
 #include "deh_main.h"
 
 #include "d_gameflow.h"
+#include "d_gamesim.h"
 
 #include "g_game.h"
 
@@ -52,8 +53,6 @@
 #include "w_wad.h"
 
 #include "z_zone.h"
-
-DOOM_C_API extern int32_t remove_limits;
 
 #define MAX_DEATHMATCH_STARTS	10
 
@@ -439,10 +438,9 @@ struct DoomMapLoader
 			out.ceilingpic		= R_FlatNumForName( in.ceilingpic );
 			out.lightlevel		= Read::AsIs( in.lightlevel );
 			out.special			= Read::AsIs( in.special );
-			out.extendedspecial	= out.special & ~Sector_VanillaSpecialMask;
-			if( remove_limits )
+			if( !sim.boom_sector_specials && !sim.mbf21_thing_flags )
 			{
-				out.special		&= Sector_VanillaSpecialMask;
+				out.special		= out.special & Sector_VanillaSpecialMask;
 			}
 			out.tag				= Read::AsIs( in.tag );
 			out.thinglist		= nullptr;
@@ -1420,9 +1418,11 @@ DOOM_C_API void P_Init (void)
 {
 	P_InitSwitchList();
 	P_InitPicAnims();
-	R_InitSprites( remove_limits ? sprnames_boom : sprnames );
+	R_InitSprites( sim.mbf_things ? sprnames_boom
+					: sim.boom_things ? sprnames_boom
+					: sprnames );
 
-	if( remove_limits )
+	if( sim.extended_map_formats )
 	{
 		loading_code = LoadingCode::RnRLimitRemoving;
 	}
