@@ -634,7 +634,7 @@ static GameVersion_t DetermineFromMap( lumpindex_t mapindex )
 	GameVersion_t version = exe_invalid;
 
 	lumpindex_t sectorsindex = mapindex + ML_SECTORS;
-	size_t sectorssize = W_LumpLength( mapindex );
+	size_t sectorssize = W_LumpLength( sectorsindex );
 	size_t numsectors = sectorssize / sizeof( mapsector_t );
 	mapsector_t* sectors = (mapsector_t*)W_CacheLumpNum( sectorsindex, PU_CACHE );
 
@@ -644,7 +644,7 @@ static GameVersion_t DetermineFromMap( lumpindex_t mapindex )
 	}
 
 	lumpindex_t linesindex = mapindex + ML_LINEDEFS;
-	size_t linessize = W_LumpLength( mapindex );
+	size_t linessize = W_LumpLength( linesindex );
 	size_t numlines = linessize / sizeof( maplinedef_t );
 	maplinedef_t* lines = (maplinedef_t*)W_CacheLumpNum( linesindex, PU_CACHE );
 
@@ -654,7 +654,7 @@ static GameVersion_t DetermineFromMap( lumpindex_t mapindex )
 	}
 
 	lumpindex_t thingsindex = mapindex + ML_THINGS;
-	size_t thingssize = W_LumpLength( mapindex );
+	size_t thingssize = W_LumpLength( thingsindex );
 	size_t numthings = thingssize / sizeof( mapthing_t );
 	mapthing_t* things = (mapthing_t*)W_CacheLumpNum( thingsindex, PU_CACHE );
 
