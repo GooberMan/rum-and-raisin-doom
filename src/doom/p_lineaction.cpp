@@ -559,7 +559,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Floor_LowerHighestFast_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Fast ], 0, stt_highestneighborfloor_noaddifmatch, sd_down, IntToFixed( 8 ), sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerLowestChangeTexture_NumericModel_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_shortestlowertexture, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
+	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborfloor, sd_down, 0, sct_copyboth, scm_numeric, sc_nocrush },
 	// Floor_LowerLowest_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborfloor, sd_down, 0, sct_none, scm_trigger, sc_nocrush },
 	// Teleport_Thing_W1_All

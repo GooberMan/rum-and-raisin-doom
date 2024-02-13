@@ -44,6 +44,8 @@ extern "C"
 	plat_t*		activeplatshead = nullptr;
 }
 
+#pragma optimize( "", off )
+
 fixed_t P_FindShortestLowerTexture( sector_t* sector )
 {
 	fixed_t lowestheight = INT_MAX;
@@ -365,7 +367,7 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 											: *secline->frontsector;
 						if( setfrom.ceilingheight == heighttarget )
 						{
-							SetSpecial( sector, ceiling, (sectorchangetype_t)secline->action->param4, setfrom );
+							SetSpecial( sector, ceiling, (sectorchangetype_t)line->action->param4, setfrom );
 							break;
 						}
 					}
@@ -939,7 +941,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 											: *secline->frontsector;
 						if( setfrom.floorheight == floor->floordestheight )
 						{
-							SetSpecial( sector, floor, (sectorchangetype_t)secline->action->param4, setfrom );
+							SetSpecial( sector, floor, (sectorchangetype_t)line->action->param4, setfrom );
 							break;
 						}
 					}
