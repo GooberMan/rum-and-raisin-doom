@@ -122,6 +122,7 @@ extern "C"
 	drsdata_t*				drs_data = NULL;
 	drsdata_t*				drs_current = NULL;
 	drsdata_t				drs_allocation_data;
+	uint64_t				drs_last_set = 0;
 
 	// bumped light from gun blasts
 	int32_t				extralight;
@@ -1289,13 +1290,18 @@ void R_RenderUpdateFrameSize( void )
 
 	constexpr int32_t Hack_RenderMoreThanVanilla = 200;
 
-	if( oldframewidth != newframewidth || oldframeheight != newframeheight )
+	uint64_t currtime = I_GetTimeMS();
+	bool apply = ( oldframewidth != newframewidth || oldframeheight != newframeheight )
+			&& ( newframewidth < oldframewidth || I_GetTimeMS() - drs_last_set > 200 );
+
+	if( apply )
 	{
 		for( drsdata_t& curr : std::span( drs_data, DRSArraySize ) )
 		{
 			if( curr.frame_height >= Hack_RenderMoreThanVanilla && newframewidth >= curr.frame_width )
 			{
 				R_DRSApply( &curr );
+				drs_last_set = currtime;
 				break;
 			}
 		}
