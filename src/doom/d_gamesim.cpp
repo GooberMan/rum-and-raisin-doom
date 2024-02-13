@@ -126,7 +126,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.finale_always_allow_skip_text = true;
 	values.comp.reset_player_visited_secret = true;
 	values.comp.noclip_cheats_work_everywhere = true;
-	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;
+	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;
 
 	values.comp.additive_data_blocks = true;
 	values.comp.no_medusa = true;
@@ -222,7 +222,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.reset_player_visited_secret = true;			// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = true;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
-	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
+	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
 	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
 	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
@@ -331,7 +331,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.reset_player_visited_secret = true;			// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = true;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
-	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
+	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
 	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
 	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
@@ -431,7 +431,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.reset_player_visited_secret = false;		// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = false;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
-	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
+	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
 	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
 	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
@@ -690,21 +690,17 @@ static GameVersion_t DetermineGameExecutable()
 
 	version = M_MAX( version, demoversion );
 	
-	if( demoversion == exe_invalid )
-	{
-		// Need to go scorched earth here and analyse the entire WAD to work out the maximum expected version
-		version = M_MAX( version, DetermineFromBoomLumps() );
-		version = M_MAX( version, DetermineFromMBFLumps() );
+	version = M_MAX( version, DetermineFromBoomLumps() );
+	version = M_MAX( version, DetermineFromMBFLumps() );
 
-		for( episodeinfo_t* episode : D_GetEpisodes() )
+	for( episodeinfo_t* episode : D_GetEpisodes() )
+	{
+		for( mapinfo_t* map : D_GetMapsFor( episode ) )
 		{
-			for( mapinfo_t* map : D_GetMapsFor( episode ) )
+			lumpindex_t maplump = W_CheckNumForName( AsDoomString( map->data_lump, episode->episode_num, map->map_num ).c_str() );
+			if( maplump >= 0 )
 			{
-				lumpindex_t maplump = W_CheckNumForName( AsDoomString( map->data_lump, episode->episode_num, map->map_num ).c_str() );
-				if( maplump >= 0 )
-				{
-					version = M_MAX( version, DetermineFromMap( maplump ) );
-				}
+				version = M_MAX( version, DetermineFromMap( maplump ) );
 			}
 		}
 	}
@@ -803,7 +799,7 @@ static void SetDefaultGameflow()
 
 	case exe_boom_2_02:
 		I_TerminalPrintf( Log_Startup, " Applying Boom compatibility\n" );
-		values = GetLimitRemovingValues( gamemode );
+		values = GetBoomValues( gamemode );
 		break;
 
 	case exe_complevel9:

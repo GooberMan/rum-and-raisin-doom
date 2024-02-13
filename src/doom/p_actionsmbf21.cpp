@@ -331,7 +331,7 @@ DOOM_C_API void A_CheckAmmo( player_t* player, pspdef_t* psp )
 	PSPARG_UINT( psp, amount, 2 );
 
 	weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
-	uint32_t checkamount = amount ? amount : weapon.ammopershot;
+	int32_t checkamount = amount ? amount : weapon.ammopershot;
 	if( weapon.ammo != am_noammo && player->ammo[ weapon.ammo ] < checkamount )
 	{
 		P_SetPsprite( player, ps_weapon, state );

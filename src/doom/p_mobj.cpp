@@ -493,7 +493,18 @@ DOOM_C_API void P_MobjThinker( mobj_t* mobj )
 	    return;		// mobj was removed
     }
 
-    
+	sector_t*&	sector = mobj->subsector->sector;
+	int16_t&	special = sector->special;
+
+    if( ( sim.boom_sector_specials || sim.mbf21_sector_specials )
+		&& ( special & ~DSS_Mask ) != 0 )
+	{
+		P_MobjInExtendedSector( mobj );
+		// FIXME: decent NOP/NULL/Nil function pointer please.
+		if (mobj->thinker.function.acv == (actionf_v) (-1))
+			return;		// mobj was removed
+	}
+
     // cycle through states,
     // calling action functions at transitions
     if (mobj->tics != -1)

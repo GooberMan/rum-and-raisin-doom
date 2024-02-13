@@ -1236,70 +1236,90 @@ P_ShootSpecialLine
 // Called every tic frame
 //  that the player origin is in a special sector
 //
-void P_PlayerInSpecialSector (player_t* player)
+
+DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 {
-    sector_t*	sector;
-	
-    sector = player->mo->subsector->sector;
+	sector_t*&	sector = player->mo->subsector->sector;
+	int16_t&	special = sector->special;
 
-    // Falling, not all the way down yet?
-    if (player->mo->z != sector->floorheight)
-	return;	
-
-    // Has hitten ground.
-    switch (sector->special)
-    {
-      case 5:
-	// HELLSLIME DAMAGE
-	if (!player->powers[pw_ironfeet])
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 10);
-	break;
-	
-      case 7:
-	// NUKAGE DAMAGE
-	if (!player->powers[pw_ironfeet])
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 5);
-	break;
-	
-      case 16:
-	// SUPER HELLSLIME DAMAGE
-      case 4:
-	// STROBE HURT
-	if (!player->powers[pw_ironfeet]
-	    || (P_Random()<5) )
+	if( ( sim.boom_sector_specials || sim.mbf21_sector_specials )
+		&& ( special & ~DSS_Mask ) != 0 )
 	{
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 20);
+		// P_MobjInExtendedSector is handled with the standard mobj thinker;
+		return;
 	}
-	break;
-			
-      case 9:
-	// SECRET SECTOR
-	player->secretcount++;
-	sector->special = 0;
-	sector->secretstate = Secret_Discovered;
-	++session.total_found_secrets_global;
-	++session.total_found_secrets[ player - players ];
-	break;
-			
-      case 11:
-	// EXIT SUPER DAMAGE! (for E1M8 finale)
-	player->cheats &= ~CF_GODMODE;
 
-	if (!(leveltime&0x1f))
-	    P_DamageMobj (player->mo, NULL, NULL, 20);
+	if( player->mo->z > sector->FloorEffectHeight() )
+	{
+		return;
+	}
 
-	if (player->health <= 10)
-	    G_ExitLevel();
-	break;
+
+	// Has hitten ground.
+	switch (sector->special)
+	{
+	case DSS_10Damage:
+		// HELLSLIME DAMAGE
+		if( !player->powers[pw_ironfeet] && !(leveltime&0x1f) )
+		{
+			P_DamageMobj( player->mo, NULL, NULL, 10 );
+		}
+		break;
+	
+	case DSS_5Damage:
+		// NUKAGE DAMAGE
+		if( !player->powers[pw_ironfeet] && !(leveltime&0x1f) )
+		{
+			P_DamageMobj (player->mo, NULL, NULL, 5);
+		}
+		break;
+	
+	case DSS_20DamageAndLightBlink:
+	case DSS_20Damage:
+		// SUPER HELLSLIME DAMAGE
+		// STROBE HURT
+		if( ( !player->powers[pw_ironfeet] || (P_Random()<5) )
+			&& !(leveltime&0x1f) )
+		{
+			P_DamageMobj (player->mo, NULL, NULL, 20);
+		}
+		break;
+
+	case DSS_Secret:
+		// SECRET SECTOR
+		if( sector->secretstate != Secret_Discovered )
+		{
+			player->secretcount++;
+			sector->special = 0;
+			sector->secretstate = Secret_Discovered;
+			++session.total_found_secrets_global;
+			++session.total_found_secrets[ player - players ];
+		}
+		break;
+
+	case 11:
+		// EXIT SUPER DAMAGE! (for E1M8 finale)
+		if( !comp.god_mode_absolute )
+		{
+			player->cheats &= ~CF_GODMODE;
+		}
+
+		if( !(leveltime&0x1f) )
+		{
+			P_DamageMobj( player->mo, NULL, NULL, 20 );
+		}
+
+		if (player->health <= 10)
+		{
+			G_ExitLevel();
+		}
+		break;
 			
-      default:
-	I_Error ("P_PlayerInSpecialSector: "
-		 "unknown special %i",
-		 sector->special);
-	break;
+	default:
+		I_Error ("P_PlayerInSpecialSector: "
+				"unknown special %i",
+				sector->special);
+		break;
     };
 }
 

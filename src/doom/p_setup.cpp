@@ -438,7 +438,7 @@ struct DoomMapLoader
 			out.ceilingpic		= R_FlatNumForName( in.ceilingpic );
 			out.lightlevel		= Read::AsIs( in.lightlevel );
 			out.special			= Read::AsIs( in.special );
-			if( !sim.boom_sector_specials && !sim.mbf21_thing_flags )
+			if( !sim.boom_sector_specials && !sim.mbf21_sector_specials )
 			{
 				out.special		= out.special & DSS_Mask;
 			}
@@ -446,7 +446,7 @@ struct DoomMapLoader
 			out.thinglist		= nullptr;
 			out.nosectorthinglist	= nullptr;
 			out.specialdata		= nullptr;
-			out.secretstate		= out.special == 9 ? Secret_Undiscovered : Secret_None;
+			out.secretstate		= ( out.special & SectorSecret_Mask ) == SectorSecret_Yes ? Secret_Undiscovered : Secret_None;
 			out.friction		= FRICTION;
 			out.frictionpercent = IntToFixed( 1 );
 			out.skyline			= nullptr;

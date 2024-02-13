@@ -192,140 +192,9 @@ typedef struct vertex_s
 } vertex_t;
 
 
-// Forward of LineDefs, for Sectors.
 typedef struct side_s side_t;
 typedef struct line_s line_t;
-
-// Each sector has a degenmobj_t in its center
-//  for sound origin purposes.
-// I suppose this does not handle sound from
-//  moving objects (doppler), because
-//  position is prolly just buffered, not
-//  updated.
-typedef struct
-{
-	thinker_t			thinker;	// not used for anything
-	fixed_t				x;
-	fixed_t				y;
-	fixed_t				z;
-} degenmobj_t;
-
-typedef enum secretstate_e
-{
-	Secret_None,
-	Secret_Undiscovered,
-	Secret_Discovered
-} secretstate_t;
-
-//
-// The SECTORS record, at runtime.
-// Stores things/mobjs.
-//
 typedef struct sector_s sector_t;
-
-struct sector_s
-{
-	int32_t				index;
-
-	fixed_t				floorheight;
-	fixed_t				ceilingheight;
-	int16_t				floorpic;
-	int16_t				ceilingpic;
-	int16_t				lightlevel;
-	int16_t				special;
-	int16_t				tag;
-
-	int32_t				secretstate;
-
-	// 0 = untraversed, 1,2 = sndlines -1
-	int32_t				soundtraversed;
-
-	// thing that made a sound (or null)
-	mobj_t*				soundtarget;
-
-	// mapblock bounding box for height changes
-	int32_t				blockbox[4];
-
-	// origin for any sounds played by the sector
-	degenmobj_t			soundorg;
-
-	// if == validcount, already checked
-	// Used by algorithms that traverse the BSP. Not thread safe.
-	int32_t				validcount;
-
-	// list of mobjs in sector
-	mobj_t*				thinglist;
-	mobj_t*				nosectorthinglist;
-
-	// thinker_t for reversable actions
-	void*				specialdata;
-	void*				floorspecialdata;
-	void*				ceilingspecialdata;
-
-	int32_t				linecount;
-	line_t**			lines;	// [linecount] size
-	
-	fixed_t				friction;
-	fixed_t				frictionpercent;
-
-	int32_t				snapfloor;
-	int32_t				snapceiling;
-
-	// Boom additions
-	sector_t*			floorlightsec;
-	sector_t*			ceilinglightsec;
-
-	side_t*				skyline;
-	fixed_t				skyxscale;
-
-	line_t*				transferline;
-
-	fixed_t				flooroffsetx;
-	fixed_t				flooroffsety;
-	fixed_t				ceiloffsetx;
-	fixed_t				ceiloffsety;
-
-#if defined( __cplusplus )
-	INLINE void*& Special()				{ return specialdata; }
-	INLINE void*& FloorSpecial()		{ return sim.separate_floor_ceiling_lights ? floorspecialdata : specialdata; }
-	INLINE void*& CeilingSpecial()		{ return sim.separate_floor_ceiling_lights ? ceilingspecialdata : specialdata; }
-
-	constexpr fixed_t Friction()		{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
-	constexpr fixed_t FrictionPercent()	{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
-#endif // defined( __cplusplus )
-};
-
-
-//
-// The SideDef.
-//
-
-struct side_s
-{
-	int32_t				index;
-
-	// add this to the calculated texture column
-	fixed_t				textureoffset;
-
-	// add this to the calculated texture top
-	fixed_t				rowoffset;
-
-	// Texture indices.
-	// We do not maintain names here. 
-	int16_t				toptexture;
-	int16_t				bottomtexture;
-	int16_t				midtexture;
-
-	lumpindex_t			toptextureindex;
-	lumpindex_t			bottomtextureindex;
-	lumpindex_t			midtextureindex;
-
-	// Sector the SideDef is facing.
-	sector_t*			sector;
-
-};
-
-
 
 //
 // Move clipping aid for LineDefs.
@@ -405,6 +274,134 @@ struct line_s
 #endif
 };
 
+// Each sector has a degenmobj_t in its center
+//  for sound origin purposes.
+// I suppose this does not handle sound from
+//  moving objects (doppler), because
+//  position is prolly just buffered, not
+//  updated.
+typedef struct
+{
+	thinker_t			thinker;	// not used for anything
+	fixed_t				x;
+	fixed_t				y;
+	fixed_t				z;
+} degenmobj_t;
+
+typedef enum secretstate_e
+{
+	Secret_None,
+	Secret_Undiscovered,
+	Secret_Discovered
+} secretstate_t;
+
+//
+// The SECTORS record, at runtime.
+// Stores things/mobjs.
+//
+struct sector_s
+{
+	int32_t				index;
+
+	fixed_t				floorheight;
+	fixed_t				ceilingheight;
+	int16_t				floorpic;
+	int16_t				ceilingpic;
+	int16_t				lightlevel;
+	int16_t				special;
+	int16_t				tag;
+
+	int32_t				secretstate;
+
+	// 0 = untraversed, 1,2 = sndlines -1
+	int32_t				soundtraversed;
+
+	// thing that made a sound (or null)
+	mobj_t*				soundtarget;
+
+	// mapblock bounding box for height changes
+	int32_t				blockbox[4];
+
+	// origin for any sounds played by the sector
+	degenmobj_t			soundorg;
+
+	// if == validcount, already checked
+	// Used by algorithms that traverse the BSP. Not thread safe.
+	int32_t				validcount;
+
+	// list of mobjs in sector
+	mobj_t*				thinglist;
+	mobj_t*				nosectorthinglist;
+
+	// thinker_t for reversable actions
+	void*				specialdata;
+	void*				floorspecialdata;
+	void*				ceilingspecialdata;
+
+	int32_t				linecount;
+	line_t**			lines;	// [linecount] size
+	
+	fixed_t				friction;
+	fixed_t				frictionpercent;
+
+	int32_t				snapfloor;
+	int32_t				snapceiling;
+
+	// Boom additions
+	sector_t*			floorlightsec;
+	sector_t*			ceilinglightsec;
+
+	side_t*				skyline;
+	fixed_t				skyxscale;
+
+	line_t*				transferline;
+
+	fixed_t				flooroffsetx;
+	fixed_t				flooroffsety;
+	fixed_t				ceiloffsetx;
+	fixed_t				ceiloffsety;
+
+#if defined( __cplusplus )
+	INLINE void*& Special()				{ return specialdata; }
+	INLINE void*& FloorSpecial()		{ return sim.separate_floor_ceiling_lights ? floorspecialdata : specialdata; }
+	INLINE void*& CeilingSpecial()		{ return sim.separate_floor_ceiling_lights ? ceilingspecialdata : specialdata; }
+
+	constexpr fixed_t Friction()		{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
+	constexpr fixed_t FrictionPercent()	{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
+
+	constexpr fixed_t FloorEffectHeight() { return transferline ? transferline->frontsector->floorheight : floorheight; }
+#endif // defined( __cplusplus )
+};
+
+
+//
+// The SideDef.
+//
+
+struct side_s
+{
+	int32_t				index;
+
+	// add this to the calculated texture column
+	fixed_t				textureoffset;
+
+	// add this to the calculated texture top
+	fixed_t				rowoffset;
+
+	// Texture indices.
+	// We do not maintain names here. 
+	int16_t				toptexture;
+	int16_t				bottomtexture;
+	int16_t				midtexture;
+
+	lumpindex_t			toptextureindex;
+	lumpindex_t			bottomtextureindex;
+	lumpindex_t			midtextureindex;
+
+	// Sector the SideDef is facing.
+	sector_t*			sector;
+
+};
 
 
 

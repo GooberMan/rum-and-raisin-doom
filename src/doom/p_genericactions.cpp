@@ -44,8 +44,6 @@ extern "C"
 	plat_t*		activeplatshead = nullptr;
 }
 
-#pragma optimize( "", off )
-
 fixed_t P_FindShortestLowerTexture( sector_t* sector )
 {
 	fixed_t lowestheight = INT_MAX;
@@ -1487,8 +1485,7 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 	{
 		sector_t*& sector = scroller->sector;
 
-		fixed_t scrollheight = sector->transferline ? sector->transferline->frontsector->floorheight
-													: sector->floorheight;
+		fixed_t scrollheight = sector->FloorEffectHeight();
 
 		bool cancarry = false;
 		int32_t carryshift = 0;
@@ -1723,3 +1720,101 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 	return createdcount;
 }
 
+DOOM_C_API void P_MobjInExtendedSector( mobj_t* mobj )
+{
+	sector_t*&	sector = mobj->subsector->sector;
+	int16_t&	special = sector->special;
+	player_t*&	player = mobj->player;
+
+	if( mobj->z > sector->FloorEffectHeight() )
+	{
+		return;
+	}
+
+	bool candamage = !( leveltime & 0x1f );
+
+	if( player && sim.boom_sector_specials )
+	{
+		bool isboomdamage = !sim.mbf21_sector_specials
+						|| ( special & SectorAltDamage_Mask ) == SectorAltDamage_No;
+		if( candamage
+			&& isboomdamage 
+			&& player != nullptr
+			&& !player->powers[pw_ironfeet] )
+		{
+			switch( special & SectorDamage_Mask )
+			{
+			case SectorDamage_5:
+				P_DamageMobj( mobj, NULL, NULL, 5 );
+				break;
+			case SectorDamage_10:
+				P_DamageMobj( mobj, NULL, NULL, 10 );
+				break;
+			case SectorDamage_20:
+				P_DamageMobj( mobj, NULL, NULL, 20 );
+				break;
+			default:
+				break;
+			}
+		}
+
+		if( sector->secretstate != Secret_Discovered && ( special & SectorSecret_Mask ) == SectorSecret_Yes )
+		{
+			player->secretcount++;
+			sector->special = 0;
+			sector->secretstate = Secret_Discovered;
+			++session.total_found_secrets_global;
+			++session.total_found_secrets[ player - players ];
+		}
+	}
+
+	if( sim.mbf21_sector_specials )
+	{
+		bool isaltdamage = ( special & SectorAltDamage_Mask ) == SectorAltDamage_Yes;
+		if( candamage
+			&& isaltdamage
+			&& player != nullptr )
+		{
+			switch( special & SectorDamage_Mask )
+			{
+			case SectorAltDamage_KillPlayerWithoutRadsuit:
+				if( ( !player->powers[pw_ironfeet] || !player->powers[pw_invulnerability] ) )
+				{
+					P_DamageMobj( mobj, nullptr, nullptr, 10000 );
+				}
+				break;
+
+			case SectorAltDamage_KillPlayer:
+				P_DamageMobj( mobj, nullptr, nullptr, 10000 );
+				break;
+
+			case SectorAltDamage_KillPlayersAndExit:
+				for( player_t& currplayer : std::span( players, 4 ) )
+				{
+					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000 );
+				}
+				G_ExitLevel();
+				break;
+
+			case SectorAltDamage_KillPlayersAndSecretExit:
+				for( player_t& currplayer : std::span( players, 4 ) )
+				{
+					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000 );
+				}
+				G_SecretExitLevel();
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		if( candamage
+			&& player == nullptr
+			&& ( special & SectorKillGroundEnemies_Mask ) == SectorKillGroundEnemies_Yes
+			&& !( mobj->flags & MF_NOGRAVITY ) )
+		{
+			P_DamageMobj( mobj, nullptr, nullptr, 10000 );
+		}
+	}
+}
