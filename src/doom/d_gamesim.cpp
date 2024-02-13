@@ -128,6 +128,14 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.noclip_cheats_work_everywhere = true;
 	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;
 
+	values.comp.additive_data_blocks = true;
+	values.comp.no_medusa = true;
+	values.comp.arbitrary_wall_sizes = true;
+	values.comp.any_texture_any_surface = true;
+	values.comp.zero_length_texture_names = true;
+	values.comp.use_translucency = true;
+	values.comp.use_colormaps = true;
+
 	return values;
 }
 
@@ -216,6 +224,14 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
 	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
+	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
+	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
+	values.comp.arbitrary_wall_sizes = true;				// Removes the 128-high requirement for textures to tile
+	values.comp.any_texture_any_surface = true;				// Textures and flats work on any surface
+	values.comp.zero_length_texture_names = true;			// Allow zero-length names to act like "-"
+	values.comp.use_translucency = true;					// Sprites and 2S lines can use translucency maps
+	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
+
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
 	values.comp.friendly_inherits_source_attribs = true;	// comp_friendlyspawn
@@ -241,7 +257,6 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.generic_specials_handling = true;			// Rewritten specials, based on Boom standards but considered limit removing
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
-	values.sim.translucency = true;							// Sprites and 2S lines can use translucency maps
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
@@ -318,6 +333,14 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
 	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
+	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
+	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
+	values.comp.arbitrary_wall_sizes = true;				// Removes the 128-high requirement for textures to tile
+	values.comp.any_texture_any_surface = true;				// Textures and flats work on any surface
+	values.comp.zero_length_texture_names = true;			// Allow zero-length names to act like "-"
+	values.comp.use_translucency = true;					// Sprites and 2S lines can use translucency maps
+	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
+
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
 	values.comp.friendly_inherits_source_attribs = true;	// comp_friendlyspawn
@@ -343,7 +366,6 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.generic_specials_handling = true;			// Rewritten specials, based on Boom standards but considered limit removing
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
-	values.sim.translucency = true;							// Sprites and 2S lines can use translucency maps
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
@@ -411,6 +433,14 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
 	values.comp.demo4 = W_GetNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
 
+	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
+	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
+	values.comp.arbitrary_wall_sizes = true;				// Removes the 128-high requirement for textures to tile
+	values.comp.any_texture_any_surface = true;				// Textures and flats work on any surface
+	values.comp.zero_length_texture_names = true;			// Allow zero-length names to act like "-"
+	values.comp.use_translucency = true;					// Sprites and 2S lines can use translucency maps
+	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
+
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = true;			// comp_ledgeblock
 	values.comp.friendly_inherits_source_attribs = true;	// comp_friendlyspawn
@@ -436,7 +466,6 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.generic_specials_handling = true;			// Rewritten specials, based on Boom standards but considered limit removing
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
-	values.sim.translucency = true;							// Sprites and 2S lines can use translucency maps
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default

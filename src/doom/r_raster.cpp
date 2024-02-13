@@ -297,7 +297,7 @@ template< int32_t Leap, int32_t LeapLog2 >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
 INLINE void ChooseRegionRasteriser( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
 {
-	if( !remove_limits )
+	if( !comp.any_texture_any_surface )
 	{
 		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< 64, 64 > >( rendercontext, firstregion, 64 * 64 );
 	}

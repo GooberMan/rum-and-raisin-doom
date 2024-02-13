@@ -896,10 +896,11 @@ typedef struct rendercontext_s
 
 typedef struct drsdata_s
 {
-	double_t			percentage;
+	int32_t				generated;
 	int32_t				frame_width;
 	int32_t				frame_height;
 	int32_t				frame_adjusted_width;
+	double_t			percentage;
 	rend_fixed_t		frame_adjusted_light_mul;
 	int32_t				frame_blocks; // 32 pixel wide blocks, just like vanilla
 

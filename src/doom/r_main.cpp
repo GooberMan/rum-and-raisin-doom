@@ -155,7 +155,6 @@ extern "C"
 	doombool		setsizeneeded;
 	int				setblocks;
 
-	extern int32_t	remove_limits;
 	extern int		detailLevel;
 	extern int		screenblocks;
 	extern doombool	refreshstatusbar;
@@ -191,6 +190,8 @@ constexpr int32_t viewwidthforblocks[] =
 
 #include "m_dashboard.h"
 #include "m_profile.h"
+
+void R_ExecuteSetViewSizeFor( drsdata_t* current );
 
 //
 // R_AddPointToBox
@@ -616,6 +617,11 @@ void R_InitTables (void)
 
 void R_DRSApply( drsdata_t* current )
 {
+	if( !current->generated )
+	{
+		R_ExecuteSetViewSizeFor( current );
+	}
+
 	frame_width					= current->frame_width;
 	frame_adjusted_width		= current->frame_adjusted_width;
 	frame_height				= current->frame_height;
@@ -701,9 +707,12 @@ void R_AllocDynamicTables( void )
 	
 	for( int32_t currindex : iota( 0, DRSArraySize ) )
 	{
+		base.generated			= false;
 		base.percentage			= 1.0 - DRSStep * currindex;
 		base.frame_width		= (int32_t)( render_width * base.percentage );
 		base.frame_height		= (int32_t)( render_height * base.percentage );
+
+		R_DRSApply( &base );
 
 		drs_data[ currindex ] = base;
 
@@ -717,8 +726,6 @@ void R_AllocDynamicTables( void )
 		base.yslope				+= base.frame_height;
 		base.distscale			+= base.frame_width;
 	}
-
-	R_DRSApply( drs_data );
 }
 
 //
@@ -1121,13 +1128,12 @@ rend_fixed_t R_PerspectiveMulFor( drsdata_t* current, int32_t fov )
 
 void R_ExecuteSetViewSizeFor( drsdata_t* current )
 {
-	int32_t				i;
-	int32_t				j;
 	int32_t				level;
 	int32_t				startmap;
 
 	rend_fixed_t adjust = DoubleToRendFixed( render_post_scaling ? 1.0 : 1.2 );
 
+	current->generated = true;
 	R_InitLightTables( current );
 
 	rend_fixed_t perspective_mul = R_PerspectiveMulFor( current, vertical_fov_degrees );
@@ -1174,10 +1180,10 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	current->skyscaley = current->pspritescaley;
 	current->skyiscaley = current->pspriteiscaley;
 
-	for (i=0 ; i<current->viewwidth ; i++)
+	for( int32_t xpos = 0; xpos < current->viewwidth; ++xpos )
 	{
-		current->screenheightarray[i] = current->viewheight;
-		current->negonearray[i] = -1;
+		current->screenheightarray[ xpos ] = current->viewheight;
+		current->negonearray[ xpos ] = -1;
 	}
 
 	rend_fixed_t pixel_height = DoubleToRendFixed( render_post_scaling ? 1.0 : ( 1.0 / 1.2 ) );
@@ -1191,20 +1197,20 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 		current->yslope[ row ] = RendFixedMul( RendFixedDiv( half_width, dy ), perspective_mul );
 	}
 	
-	for ( i=0 ; i<current->viewwidth ; i++ )
+	for( int32_t xpos = 0; xpos < current->viewwidth; ++xpos )
 	{
-		rend_fixed_t cosadj = abs( renderfinecosine[ current->xtoviewangle[ i ] >> RENDERANGLETOFINESHIFT ] );
-		current->distscale[ i ] = RendFixedDiv( RENDFRACUNIT, cosadj );
+		rend_fixed_t cosadj = abs( renderfinecosine[ current->xtoviewangle[ xpos ] >> RENDERANGLETOFINESHIFT ] );
+		current->distscale[ xpos ] = RendFixedDiv( RENDFRACUNIT, cosadj );
 	}
 
 	// Calculate the light levels to use
 	//  for each level / scale combination.
-	for ( i=0 ; i < LIGHTLEVELS ; i++ )
+	for( int32_t lightlevel = 0; lightlevel < LIGHTLEVELS; ++lightlevel )
 	{
-		startmap = ( (LIGHTLEVELS - 1 - i ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
-		for ( j=0 ; j < MAXLIGHTSCALE ; j++ )
+		startmap = ( (LIGHTLEVELS - 1 - lightlevel ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
+		for( int32_t lightscale = 0; lightscale < MAXLIGHTSCALE; ++lightscale )
 		{
-			level = startmap - j * VANILLA_SCREENWIDTH / viewwidthforblocks[ current->frame_blocks ] / DISTMAP;
+			level = startmap - lightscale * VANILLA_SCREENWIDTH / viewwidthforblocks[ current->frame_blocks ] / DISTMAP;
 
 			if (level < 0)
 			{
@@ -1216,8 +1222,8 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 				level = NUMLIGHTCOLORMAPS-1;
 			}
 
-			current->scalelightindex[ i * MAXLIGHTSCALE + j ] = level;
-			current->scalelightoffset[ i * MAXLIGHTSCALE + j ] = level * 256;
+			current->scalelightindex[ lightlevel * MAXLIGHTSCALE + lightscale ] = level;
+			current->scalelightoffset[ lightlevel * MAXLIGHTSCALE + lightscale ] = level * 256;
 		}
 	}
 }
@@ -1226,7 +1232,7 @@ void R_ExecuteSetViewSize( void )
 {
 	for( drsdata_t& curr : std::span( drs_data, DRSArraySize ) )
 	{
-		R_ExecuteSetViewSizeFor( &curr );
+		curr.generated = false;
 	}
 
 	R_DRSApply( drs_data );
@@ -1488,8 +1494,9 @@ void R_Init (void)
     // viewwidth / viewheight / detailLevel are set by the defaults
     I_TerminalPrintf( Log_None, "." );
 
-	R_AllocDynamicTables();
 	screenblocks = M_MAX( 10, screenblocks );
+	setblocks = screenblocks;
+	R_AllocDynamicTables();
     R_SetViewSize (screenblocks, detailLevel);
 	R_ExecuteSetViewSize( );
     I_TerminalPrintf( Log_None, "." );
@@ -1822,14 +1829,20 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 				if( viewpoint.z > transfersectorinst.ceilheight )
 				{
 					viewpoint.transferzone = transfer_ceilingspace;
-					viewpoint.colormaps = viewsector->transferline->topcolormap;
+					if( comp.use_colormaps )
+					{
+						viewpoint.colormaps = viewsector->transferline->topcolormap;
+					}
 				}
 				else if( viewpoint.z < transfersectorinst.floorheight )
 				{
 					viewpoint.transferzone = transfer_floorspace;
-					viewpoint.colormaps = viewsector->transferline->bottomcolormap;
+					if( comp.use_colormaps )
+					{
+						viewpoint.colormaps = viewsector->transferline->bottomcolormap;
+					}
 				}
-				else
+				else if( comp.use_colormaps )
 				{
 					viewpoint.colormaps = viewsector->transferline->midcolormap;
 				}

@@ -120,7 +120,7 @@ R_InstallSpriteLump
 	// the lump is only used for one rotation
 	if (sprtemp[frame].rotate == 0)
 	{
-		if( !remove_limits ) // allow_additive_data_blocks
+		if( !comp.additive_data_blocks )
 		{
 			I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
 				 "and a rot=0 lump", spritename, 'A'+frame);
@@ -133,7 +133,7 @@ R_InstallSpriteLump
     rotation--;
     if( sprtemp[frame].lump[rotation] != -1 )
 	{
-		if( !remove_limits ) // allow_additive_data_blocks
+		if( !comp.additive_data_blocks )
 		{
 			I_Error ("R_InitSprites: Sprite %s : %c : %c "
 				 "has two lumps mapped to it",
@@ -666,7 +666,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 		vis->colormap = rendercontext.viewpoint.colormaps + spritecontext.spritelightoffsets[ index ];
 	}
 
-	if( remove_limits && thing->flags & MF_BOOM_TRANSLUCENT )
+	if( comp.use_translucency && thing->flags & MF_BOOM_TRANSLUCENT )
 	{
 		vis->tranmap = tranmap;
 	}

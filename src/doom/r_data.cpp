@@ -302,8 +302,8 @@ void R_GenerateComposite (int texnum)
 	
 	texture_t* texture = textures[texnum];
 
-	byte* block = (byte*)Z_Malloc(texturecomposite[ texnum ].size, COMPOSITE_ZONE,  &texturecomposite[texnum].data );	
-	memset( block, remove_limits ? 0 : 0xFB, texturecomposite[ texnum ].size );
+	byte* block = (byte*)Z_Malloc(texturecomposite[ texnum ].size, COMPOSITE_ZONE,  &texturecomposite[texnum].data );
+	memset( block, comp.no_medusa ? 0 : 0xFB, texturecomposite[ texnum ].size );
 
 	// Composite the columns together.
 	texpatch_t* patch = texture->patches;
@@ -626,7 +626,7 @@ void R_InitTextureAndFlatComposites( void )
 		int32_t mask = 1;
 		while( mask * 2 <= texture->width ) mask <<= 1;
 
-		if( !remove_limits )
+		if( !comp.arbitrary_wall_sizes )
 		{
 			composite.wallrender = &R_DrawColumn_Colormap_128;
 			composite.transparentwallrender = &R_DrawColumn_Transparent_128;
@@ -767,7 +767,7 @@ void R_InitTextures (void)
 	std::vector< lookup_t > patchlookup;
 	patchlookup.reserve( nummappatches );
 
-	if( !remove_limits )
+	if( !comp.additive_data_blocks )
 	{
 		for (i = 0; i < nummappatches; i++)
 		{
@@ -950,7 +950,7 @@ void AddLumpRangeToFlats( int32_t begin, int32_t end )
 
 void R_InitFlats (void)
 {
-	if( remove_limits ) // allow_additive_data_blocks
+	if( comp.additive_data_blocks )
 	{
 		const char* F_START = DEH_String("F_START");
 		const char* FF_START = "FF_START";
@@ -979,7 +979,7 @@ void R_InitSpriteLumps (void)
 {
 	numspritelumps = 0;
 	
-	if( !remove_limits )
+	if( !comp.additive_data_blocks )
 	{
 		int32_t firstspritelump = W_GetNumForName (DEH_String("S_START")) + 1;
 		int32_t lastspritelump = W_GetNumForName (DEH_String("S_END")) - 1;
@@ -1051,7 +1051,7 @@ void R_InitColormaps (void)
     lump = W_GetNumForName(DEH_String("COLORMAP"));
     colormaps = (lighttable_t*)W_CacheLumpNum(lump, PU_STATIC);
 
-	if( remove_limits )
+	if( comp.use_colormaps )
 	{
 		firstcolormap = W_CheckNumForName( "C_START" ) + 1;
 		lastcolormap = W_CheckNumForName( "C_END" ) - 1;
@@ -1099,7 +1099,7 @@ int R_FlatNumForName(const char *name)
 		return found->second.compositeindex;
 	}
 
-	if( !remove_limits )
+	if( !comp.any_texture_any_surface )
 	{
 		I_Error( "R_FlatNumForName: %s not found", name );
 		return -1;
@@ -1154,7 +1154,7 @@ int R_CheckTextureNumForName(const char *name)
 		return 0;
 	}
 
-	if( remove_limits && name[ 0 ] == 0 )
+	if( comp.zero_length_texture_names && name[ 0 ] == 0 )
 	{
 		return 0;
 	}
@@ -1198,7 +1198,7 @@ int R_TextureNumForName(const char *name)
 		return i;
 	}
 
-	if( !remove_limits )
+	if( !comp.any_texture_any_surface )
 	{
 		I_Error ("R_TextureNumForName: %s not found", name );
 		return -1;

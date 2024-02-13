@@ -88,7 +88,6 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		generic_specials_handling;				// Rewritten specials, based on Boom standards but considered limit removing
 	doombool		separate_floor_ceiling_lights;			// Boom sector specials are allowed to work independently of each other
 	doombool		sector_movement_modifiers;				// Boom sectors can have variable friction, wind, currents
-	doombool		translucency;							// Sprites and 2S lines can use translucency maps
 	doombool		boom_sector_targets;					// All sector targets consider their current sector
 	doombool		boom_line_specials;						// Comes with Boom fixes for specials by default
 	doombool		boom_sector_specials;					// Comes with Boom fixes for specials by default
@@ -156,6 +155,15 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		bfg_map02_secret_exit_to_map33;			// Find that one unmarked line in MAP02 in BFG edition
 	doombool		demo4;									// Always attempt to play demo4 if it exists
 
+	// R&R render additions
+	doombool		additive_data_blocks;					// PP_START, SS_START, FF_START, etc
+	doombool		no_medusa;								// Composites are cleared before rendering patches
+	doombool		arbitrary_wall_sizes;					// Removes the 128-high requirement for textures to tile
+	doombool		any_texture_any_surface;				// Textures and flats work on any surface
+	doombool		zero_length_texture_names;				// Allow zero-length names to act like "-"
+	doombool		use_translucency;						// Sprites and 2S lines can use translucency maps
+	doombool		use_colormaps;							// Colormaps can be used to translate sectors
+
 	// MBF21 additions
 	doombool		respawn_non_map_things_at_origin;		// comp_respawn
 	doombool		monsters_blocked_by_ledges;				// comp_ledgeblock
@@ -174,7 +182,6 @@ DOOM_C_API typedef struct wadoptions_s
 	doombool		mapinfo_lumps;
 	doombool		extended_map_datatypes;
 	doombool		unlimited_lumps;
-	doombool		additive_data_blocks; // PP_START, SS_START, FF_START, etc
 } wadoptions_t;
 
 DOOM_C_API typedef struct savesimoptions_s

@@ -941,7 +941,7 @@ void R_InitBuffer( drsdata_t* current, int width, int height )
     if (width == current->frame_width) 
 		current->viewwindowy = 0;
     else 
-		current->viewwindowy = (current->frame_height-SBARHEIGHT( drs_current )-height) >> 1;
+		current->viewwindowy = ( current->frame_height - SBARHEIGHT( current ) - height ) >> 1;
 
 	//background_data.width = background_data.height = 0;
 	//if (background_data.data != NULL)
