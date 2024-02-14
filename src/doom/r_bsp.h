@@ -25,8 +25,11 @@
 
 #if defined(__cplusplus)
 // BSP?
-void R_ClearClipSegs( bspcontext_t* context, int32_t mincol, int32_t maxcol );
-void R_ClearDrawSegs( bspcontext_t* context );
+void R_ClearClipSegs( bspcontext_t& context, int32_t mincol, int32_t maxcol );
+void R_IncreaseClipSegsCapacity( bspcontext_t& context );
+
+void R_ClearDrawSegs( bspcontext_t& context );
+void R_IncreaseDrawSegsCapacity( bspcontext_t& context );
 
 void R_RenderBSPNode( rendercontext_t& rendercontext, int32_t bspnum );
 #endif // defined(__cplusplus)

@@ -62,21 +62,12 @@ extern "C" {
 #define MAXVALUESBASE			3200
 
 
-#define VANILLA_MAXVISPLANES	128
-#define MAXVISPLANES			( 10240 * 4 )
 #define VANILLA_MAXOPENINGS		( 320 * 64 )
-#define MAXOPENINGS				( MAXVALUESBASE*16 )
-#define VANILLA_MAXDRAWSEGS		( VANILLA_MAXVISPLANES << 2 )
-#define MAXDRAWSEGS				( ( MAXVISPLANES / 4 ) << 2 )
-
-// We must expand MAXSEGS to the theoretical limit of the number of solidsegs
-// that can be generated in a scene by the DOOM engine. This was determined by
-// Lee Killough during BOOM development to be a function of the screensize.
-// The simplest thing we can do, other than fix this bug, is to let the game
-// render overage and then bomb out by detecting the overflow after the 
-// fact. -haleyjd
-#define VANILLA_MAXSEGS			32
-#define MAXSEGS					( MAXVALUESBASE / 2 + 1 )
+#define MAXOPENINGS				( 16384 )
+#define VANILLA_MAXDRAWSEGS		( 256 )
+#define MAXDRAWSEGS				( 8192 )
+#define VANILLA_MAXSEGS			( 32 )
+#define MAXSEGS					( 8192 )
 
 typedef uint16_t				vpindex_t;
 #define VPINDEX_INVALID			( (vpindex_t)0xFFFF )
@@ -671,11 +662,13 @@ typedef struct bspcontext_s
 	sector_t*			backsector;
 	sectorinstance_t*	backsectorinst;
 
-	drawseg_t			drawsegs[MAXDRAWSEGS];
+	drawseg_t*			drawsegs;
 	drawseg_t*			thisdrawseg;
+	size_t				maxdrawsegs;
 
-	cliprange_t			solidsegs[MAXSEGS];
+	cliprange_t*		solidsegs;
 	cliprange_t*		solidsegsend;
+	size_t				maxsolidsegs;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t			storetimetaken;

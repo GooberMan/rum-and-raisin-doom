@@ -95,15 +95,3 @@ rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, rend_fixed_t heig
 	return region;
 }
 
-#if RANGECHECK
-void R_ErrorCheckPlanes( rendercontext_t& context )
-{
-	M_PROFILE_FUNC();
-
-	if ( context.bspcontext.thisdrawseg - context.bspcontext.drawsegs > MAXDRAWSEGS)
-	{
-		I_Error ("R_DrawPlanes: drawsegs overflow (%" PRIiPTR ")",
-				context.bspcontext.thisdrawseg - context.bspcontext.drawsegs);
-	}
-}
-#endif

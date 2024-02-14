@@ -38,6 +38,8 @@
 #include "s_sound.h"
 #include "sounds.h"
 
+#include "w_wad.h"
+
 extern "C"
 {
 	ceiling_t*	activeceilingshead = nullptr;
@@ -1461,69 +1463,79 @@ constexpr fixed_t AccelScale = DoubleToFixed( 0.09375 );
 
 INLINE void T_ScrollCeilingTexture( scroller_t* scroller )
 {
-	sector_t*& sector = scroller->sector;
-
-	sector->ceiloffsetx += scroller->scrollx;
-	sector->ceiloffsety += scroller->scrolly;
+	for( sector_t* sector : std::span( scroller->sectors, scroller->sectorcount ) )
+	{
+		sector->ceiloffsetx += scroller->scrollx;
+		sector->ceiloffsety += scroller->scrolly;
+	}
 }
 
 INLINE void T_ScrollFloorTexture( scroller_t* scroller )
 {
-	sector_t*& sector = scroller->sector;
+	for( sector_t* sector : std::span( scroller->sectors, scroller->sectorcount ) )
+	{
+		sector->flooroffsetx += scroller->scrollx;
+		sector->flooroffsety += scroller->scrolly;
+	}
+}
 
-	sector->flooroffsetx += scroller->scrollx;
-	sector->flooroffsety += scroller->scrolly;
+INLINE void T_ScrollWallTexture( scroller_t* scroller )
+{
+	for( line_t* line : std::span( scroller->lines, scroller->linecount ) )
+	{
+		line->frontside->textureoffset += scroller->scrollx;
+		line->frontside->rowoffset += scroller->scrolly;
+	}
 }
 
 INLINE void T_CarryObjects( scroller_t* scroller )
 {
-	sector_t*& sector = scroller->sector;
-
-	P_BlockThingsIteratorVertical( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
-							iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
-							[ scroller ]( mobj_t* mobj ) -> bool
+	for( sector_t* sector : std::span( scroller->sectors, scroller->sectorcount ) )
 	{
-		sector_t*& sector = scroller->sector;
+		P_BlockThingsIteratorVertical( iota( sector->blockbox[ BOXLEFT ], sector->blockbox[ BOXRIGHT ] + 1 ),
+								iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
+								[ scroller, sector ]( mobj_t* mobj ) -> bool
+		{
+			fixed_t scrollheight = sector->FloorEffectHeight();
 
-		fixed_t scrollheight = sector->FloorEffectHeight();
+			bool cancarry = false;
+			int32_t carryshift = 0;
+			if( scroller->CarryType() & st_conveyor )
+			{
+				cancarry |= mobj->z == scrollheight;
+			}
+			if( ( scroller->CarryType() & st_wind )
+				&& ( sector->special & SectorWind_Mask ) == SectorWind_Yes )
+			{
+				cancarry |= mobj->z >= scrollheight;
+				if( mobj->z > scrollheight ) carryshift = 1;
+			}
+			if( scroller->CarryType() & st_current )
+			{
+				cancarry |= mobj->z <= scrollheight;
+			}
 
-		bool cancarry = false;
-		int32_t carryshift = 0;
-		if( scroller->CarryType() & st_conveyor )
-		{
-			cancarry |= mobj->z == scrollheight;
-		}
-		if( ( scroller->CarryType() & st_wind )
-			&& ( sector->special & SectorWind_Mask ) == SectorWind_Yes )
-		{
-			cancarry |= mobj->z >= scrollheight;
-			if( mobj->z > scrollheight ) carryshift = 1;
-		}
-		if( scroller->CarryType() & st_current )
-		{
-			cancarry |= mobj->z <= scrollheight;
-		}
+			if( !cancarry
+				|| ( mobj->flags & MF_NOGRAVITY ) )
+			{
+				return true;
+			}
 
-		if( !cancarry
-			|| ( mobj->flags & MF_NOGRAVITY ) )
-		{
+			bool insector = mobj->subsector->sector->index == sector->index
+				|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
+				|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
+				|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index
+				|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index;
+
+			if( insector )
+			{
+				mobj->momx += FixedMul( ( scroller->scrollx >> carryshift ), AccelScale );
+				mobj->momy += FixedMul( ( scroller->scrolly >> carryshift ), AccelScale );
+			}
+
 			return true;
-		}
-
-		bool insector = mobj->subsector->sector->index == sector->index
-			|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
-			|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
-			|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index
-			|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index;
-
-		if( insector )
-		{
-			mobj->momx += FixedMul( ( scroller->scrollx >> carryshift ), AccelScale );
-			mobj->momy += FixedMul( ( scroller->scrolly >> carryshift ), AccelScale );
-		}
-
-		return true;
-	} );
+		} );
+	}
 }
 
 INLINE void T_UpdateDisplacement( scroller_t* scroller )
@@ -1552,7 +1564,7 @@ INLINE void T_UpdateAccelerative( scroller_t* scroller )
 	scroller->controlheight = height;
 }
 
-DOOM_C_API void T_ScrollSector( scroller_t* scroller )
+DOOM_C_API void T_ScrollerGeneric( scroller_t* scroller )
 {
 	switch( scroller->SpeedType() )
 	{
@@ -1572,10 +1584,16 @@ DOOM_C_API void T_ScrollSector( scroller_t* scroller )
 	{
 	case st_ceiling:
 		T_ScrollCeilingTexture( scroller );
+		T_ScrollWallTexture( scroller );
 		break;
 
 	case st_floor:
 		T_ScrollFloorTexture( scroller );
+		T_ScrollWallTexture( scroller );
+		break;
+
+	case st_wall:
+		T_ScrollWallTexture( scroller );
 		break;
 
 	default:
@@ -1604,6 +1622,14 @@ constexpr scrolltype_t SelectScrollType( int32_t special )
 	case Scroll_FloorTextureObjects_Always:
 	case Scroll_FloorTextureObjects_Accelerative_Always:
 		return st_floor;
+
+	case Scroll_WallTextureLeft_Always:
+	case Scroll_WallTextureRight_Always:
+	case Scroll_WallTextureBySector_Accelerative_Always:
+	case Scroll_WallTextureBySector_Displace_Always:
+	case Scroll_WallTextureBySector_Always:
+	case Scroll_WallTextureByOffset_Always:
+		return st_wall;
 
 	default:
 		break;
@@ -1649,12 +1675,14 @@ constexpr scrolltype_t SelectSpeedType( int32_t special )
 	case Scroll_FloorTexture_Displace_Always:
 	case Scroll_FloorObjects_Displace_Always:
 	case Scroll_FloorTextureObjects_Displace_Always:
+	case Scroll_WallTextureBySector_Displace_Always:
 		return st_displacement;
 
 	case Scroll_CeilingTexture_Accelerative_Always:
 	case Scroll_FloorTexture_Accelerative_Always:
 	case Scroll_FloorObjects_Accelerative_Always:
 	case Scroll_FloorTextureObjects_Accelerative_Always:
+	case Scroll_WallTextureBySector_Accelerative_Always:
 		return st_accelerative;
 
 	case Transfer_WindOrCurrentByPoint_Always:
@@ -1673,6 +1701,24 @@ constexpr scrolltype_t SelectScroller( int32_t special )
 		| SelectSpeedType( special );
 }
 
+constexpr int32_t WallSpecialFor( int32_t special )
+{
+	if( special >= Scroll_CeilingTexture_Accelerative_Always && special <= Scroll_FloorTextureObjects_Accelerative_Always )
+	{
+		return Scroll_WallTextureBySector_Accelerative_Always;
+	}
+	if( special >= Scroll_CeilingTexture_Displace_Always && special <= Scroll_FloorTextureObjects_Displace_Always )
+	{
+		return Scroll_WallTextureBySector_Displace_Always;
+	}
+	if( special >= Scroll_CeilingTexture_Always && special <= Scroll_FloorTextureObjects_Always )
+	{
+		return Scroll_WallTextureBySector_Always;
+	}
+
+	return Unknown_000;
+}
+
 DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 {
 	scrolltype_t type = SelectScroller( line->special );
@@ -1682,42 +1728,329 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 	}
 
 	int32_t createdcount = 0;
-
-	scroller_t scroll = {};
-	scroll.thinker.function.acp1 = (actionf_p1)&T_ScrollSector;
-	scroll.type				= type;
-	if( ( scroll.SpeedType() & ( st_accelerative | st_displacement ) ) != st_none )
-	{
-		if( line->frontsector == nullptr )
-		{
-			I_Error( "P_SpawnSectorScroller: non-static scroller line %d has no front sector", line->index );
-		}
-		scroll.controlsector	= line->frontsector;
-		scroll.controlheight	= line->frontsector->ceilingheight - line->frontsector->floorheight;
-		scroll.magx				= FixedMul( line->dx, FlatScrollScale );
-		scroll.magy				= FixedMul( line->dy, FlatScrollScale );
-		scroll.scrollx			= 0;
-		scroll.scrolly			= 0;
-	}
-	else
-	{
-		scroll.scrollx			= FixedMul( line->dx, FlatScrollScale );
-		scroll.scrolly			= FixedMul( line->dy, FlatScrollScale );
-	}
-
 	for( sector_t& sector : Sectors() )
 	{
 		if( sector.tag == line->tag )
 		{
 			++createdcount;
-			scroller_t* scroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
-			*scroller = scroll;
-			P_AddThinker( &scroller->thinker );
-			scroller->sector = &sector;
+		}
+	}
+
+	if( createdcount > 0 )
+	{
+		scroller_t* scroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &scroller->thinker );
+		scroller->thinker.function.acp1 = (actionf_p1)&T_ScrollerGeneric;
+		scroller->type				= type;
+		scroller->magx				= FixedMul( line->dx, FlatScrollScale );
+		scroller->magy				= FixedMul( line->dy, FlatScrollScale );
+
+		if( ( scroller->SpeedType() & ( st_accelerative | st_displacement ) ) != st_none )
+		{
+			if( line->frontsector == nullptr )
+			{
+				I_Error( "P_SpawnSectorScroller: non-static scroller line %d has no front sector", line->index );
+			}
+			scroller->controlsector		= line->frontsector;
+			scroller->controlheight		= line->frontsector->ceilingheight - line->frontsector->floorheight;
+			scroller->scrollx			= 0;
+			scroller->scrolly			= 0;
+		}
+		else
+		{
+			scroller->scrollx			= FixedMul( line->dx, FlatScrollScale );
+			scroller->scrolly			= FixedMul( line->dy, FlatScrollScale );
+		}
+
+		scroller->sectorcount = createdcount;
+		scroller->sectors = (sector_t**)Z_Malloc( sizeof( sector_t* ) * createdcount, PU_LEVSPEC, nullptr );
+
+		createdcount = 0;
+		for( sector_t& sector : Sectors() )
+		{
+			if( sector.tag == line->tag )
+			{
+				scroller->sectors[ createdcount++ ] = &sector;
+			}
+		}
+
+		int32_t wallspecial = WallSpecialFor( line->special );
+		if( wallspecial != 0 )
+		{
+			int32_t wallcount = 0;
+			for( line_t& wall : Lines() )
+			{
+				if( wall.special == wallspecial && wall.tag == line->tag )
+				{
+					++wallcount;
+				}
+			}
+
+			if( wallcount > 0 )
+			{
+				scroller->linecount = wallcount;
+				scroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * wallcount, PU_LEVSPEC, nullptr );
+				wallcount = 0;
+				for( line_t& wall : Lines() )
+				{
+					if( wall.special == wallspecial && wall.tag == line->tag )
+					{
+						scroller->lines[ wallcount++ ] = &wall;
+					}
+				}
+			}
 		}
 	}
 
 	return createdcount;
+}
+
+DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t right, int32_t offset )
+{
+	scroller_t* leftscroller = nullptr;
+	scroller_t* rightscroller = nullptr;
+	
+	if( left > 0 )
+	{
+		leftscroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &leftscroller->thinker );
+		leftscroller->thinker.function.acp1 = (actionf_p1)&T_ScrollerGeneric;
+		leftscroller->type = st_wall;
+		leftscroller->scrollx = FRACUNIT;
+		leftscroller->linecount = left;
+		leftscroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * left, PU_LEVSPEC, nullptr );
+	}
+
+	if( right > 0 )
+	{
+		rightscroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &rightscroller->thinker );
+		rightscroller->thinker.function.acp1 = (actionf_p1)&T_ScrollerGeneric;
+		rightscroller->type = st_wall;
+		rightscroller->scrollx = -FRACUNIT;
+		rightscroller->linecount = right;
+		rightscroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * right, PU_LEVSPEC, nullptr );
+	}
+
+	int32_t leftcount = 0;
+	int32_t rightcount = 0;
+	for( line_t& line : Lines() )
+	{
+		switch( line.special )
+		{
+		case Scroll_WallTextureLeft_Always:
+			leftscroller->lines[ leftcount++ ] = &line;
+			break;
+
+		case Scroll_WallTextureRight_Always:
+			rightscroller->lines[ rightcount++ ] = &line;
+			break;
+
+		case Scroll_WallTextureByOffset_Always:
+			{
+				scroller_t* offsetscroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
+				P_AddThinker( &offsetscroller->thinker );
+				offsetscroller->thinker.function.acp1 = (actionf_p1)&T_ScrollerGeneric;
+				offsetscroller->type = st_wall;
+				offsetscroller->scrollx = -line.frontside->textureoffset;
+				offsetscroller->scrolly = line.frontside->rowoffset;
+				offsetscroller->linecount = 1;
+				offsetscroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ), PU_LEVSPEC, nullptr );
+				offsetscroller->lines[ 0 ] = &line;
+			}
+			break;
+		}
+	}
+
+	return 1;
+}
+
+DOOM_C_API doombool P_SpawnExtendedSpecials()
+{
+	if( !sim.generic_specials_handling )
+	{
+		return false;
+	}
+
+	activeceilingshead = nullptr;
+	activeplatshead = nullptr;
+
+	int32_t leftcount = 0;
+	int32_t rightcount = 0;
+	int32_t offsetcount = 0;
+
+	for( line_t& line : Lines() )
+	{
+		switch( line.special )
+		{
+		case Scroll_WallTextureLeft_Always:
+			++leftcount;
+			break;
+
+		default:
+			break;
+		}
+
+		if( sim.boom_line_specials )
+		{
+			switch( line.special )
+			{
+			case Scroll_CeilingTexture_Accelerative_Always:
+			case Scroll_FloorTexture_Accelerative_Always:
+			case Scroll_FloorObjects_Accelerative_Always:
+			case Scroll_FloorTextureObjects_Accelerative_Always:
+			case Scroll_WallTextureBySector_Accelerative_Always:
+			case Transfer_WindByLength_Always:
+			case Transfer_CurrentByLength_Always:
+			case Transfer_WindOrCurrentByPoint_Always:
+			case Scroll_CeilingTexture_Displace_Always:
+			case Scroll_FloorTexture_Displace_Always:
+			case Scroll_FloorObjects_Displace_Always:
+			case Scroll_FloorTextureObjects_Displace_Always:
+			case Scroll_WallTextureBySector_Displace_Always:
+			case Scroll_CeilingTexture_Always:
+			case Scroll_FloorTexture_Always:
+			case Scroll_FloorObjects_Always:
+			case Scroll_FloorTextureObjects_Always:
+			case Scroll_WallTextureBySector_Always:
+				P_SpawnSectorScroller( &line );
+				break;
+
+			case Scroll_WallTextureRight_Always:
+				++rightcount;
+				break;
+
+			case Scroll_WallTextureByOffset_Always:
+				++offsetcount;
+				break;
+
+			case Transfer_FloorLighting_Always:
+			case Transfer_CeilingLighting_Always:
+				if( line.frontsector )
+				{
+					doombool setceil = line.special == Transfer_CeilingLighting_Always;
+					for( sector_t& sector : Sectors() )
+					{
+						if( sector.tag == line.tag )
+						{
+							sector_t** toset = setceil ? &sector.ceilinglightsec : &sector.floorlightsec;
+							rend_fixed_t* tosetprev = setceil ? &prevsectors[ sector.index ].ceillightlevel
+																: &prevsectors[ sector.index ].floorlightlevel;
+							rend_fixed_t* tosetcurr = setceil ? &currsectors[ sector.index ].ceillightlevel
+																: &currsectors[ sector.index ].floorlightlevel;
+
+							*toset = line.frontsector;
+							*tosetprev = *tosetcurr = line.frontsector->lightlevel;
+						}
+					}
+				}
+				break;
+
+			case Transfer_Friction_Always: // Friction
+				{
+					fixed_t linelength = M_CLAMP( P_AproxDistance( line.dx, line.dy ), 0, IntToFixed( 200 ) );
+					fixed_t frictionpercent = FixedDiv( linelength, IntToFixed( 100 ) );
+					fixed_t frictionmul = frictionpercent - IntToFixed( 1 );
+					fixed_t targetfriction = FRICTION + FixedMul( ( IntToFixed( 1 ) - FRICTION ), frictionmul );
+
+					for( sector_t& sector : Sectors() )
+					{
+						if( sector.tag == line.tag )
+						{
+							sector.friction = targetfriction;
+							sector.frictionpercent = frictionpercent;
+						}
+					}
+				}
+				break;
+
+			case Transfer_Properties_Always:
+				if( line.frontside )
+				{
+					side_t* side = line.frontside;
+					line.topcolormap = ( !side->toptexture && side->toptextureindex >= 0 )
+										? R_GetColormapForNum( side->toptextureindex )
+										: colormaps;
+					line.bottomcolormap = ( !side->bottomtexture && side->bottomtextureindex >= 0 )
+										? R_GetColormapForNum( side->bottomtextureindex )
+										: colormaps;
+					line.midcolormap = ( !side->midtexture && side->midtextureindex >= 0 )
+										? R_GetColormapForNum( side->midtextureindex )
+										: colormaps;
+
+					for( sector_t& sector : Sectors() )
+					{
+						if( sector.tag == line.tag )
+						{
+							sector.transferline = &line;
+						}
+					}
+				}
+				break;
+
+			case Texture_Translucent_Always: // Transparency
+				if( line.tag == 0 )
+				{
+					line.transparencymap = tranmap;
+				}
+				else
+				{
+					byte* customtranmap = tranmap;
+					if( line.sidenum[ 0 ] >= 0 && sides[ line.sidenum[ 0 ] ].midtextureindex >= 0 )
+					{
+						lumpindex_t customtranmapindex = sides[ line.sidenum[ 0 ] ].midtextureindex;
+						size_t customtranmaplen = W_LumpLength( customtranmapindex );
+						if( customtranmaplen == 65536 )
+						{
+							customtranmap = (byte*)W_CacheLumpNum( customtranmapindex, PU_LEVEL );
+						}
+						else if( sides[ line.sidenum[ 0 ] ].midtexture == 0 )
+						{
+							I_Error( "Tagged transparent line requires either a valid transmap entry or a valid texture" );
+						}
+					}
+
+					for( int32_t target = 0 ; target < numlines; ++target )
+					{
+						if( lines[ target ].tag == line.tag )
+						{
+							lines[ target ].transparencymap = customtranmap;
+						}
+					}
+				}
+				break;
+			}
+		}
+
+		if( sim.mbf_line_specials )
+		{
+			switch( line.special )
+			{
+			case Transfer_Sky_Always:
+			case Transfer_SkyReversed_Always:
+				if( line.sidenum[ 0 ] >= 0 )
+				{
+					fixed_t scale = IntToFixed( line.special == Transfer_Sky_Always ? -1 : 1 );
+					for( sector_t& sector : Sectors() )
+					{
+						if( sector.tag == line.tag )
+						{
+							sector.skyline = &sides[ line.sidenum[ 0 ] ];
+							sector.skyxscale = scale;
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	if( leftcount > 0 || rightcount > 0 || offsetcount > 0 )
+	{
+		P_SpawnLineScrollers( leftcount, rightcount, offsetcount );
+	}
+
+	return true;
 }
 
 DOOM_C_API void P_MobjInExtendedSector( mobj_t* mobj )
@@ -1771,8 +2104,7 @@ DOOM_C_API void P_MobjInExtendedSector( mobj_t* mobj )
 	if( sim.mbf21_sector_specials )
 	{
 		bool isaltdamage = ( special & SectorAltDamage_Mask ) == SectorAltDamage_Yes;
-		if( candamage
-			&& isaltdamage
+		if( isaltdamage
 			&& player != nullptr )
 		{
 			switch( special & SectorDamage_Mask )

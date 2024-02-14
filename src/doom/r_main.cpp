@@ -880,8 +880,8 @@ void R_AllocateContextData( rendercontext_t& context )
 	M_PROFILE_FUNC();
 
 	context.fuzzworkingbuffer = R_AllocateScratch< pixel_t >( render_height + 4 );
-	R_ClearClipSegs( &context.bspcontext, context.begincolumn, context.endcolumn );
-	R_ClearDrawSegs( &context.bspcontext );
+	R_ClearClipSegs( context.bspcontext, context.begincolumn, context.endcolumn );
+	R_ClearDrawSegs( context.bspcontext );
 	R_ClearPlanes( &context.planecontext, drs_current->viewwidth, drs_current->viewheight );
 	R_ClearSprites( context.spritecontext );
 }
@@ -949,8 +949,6 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 		M_PROFILE_NAMED( "R_RenderBSPNode" );
 		R_RenderBSPNode( rendercontext, numnodes-1 );
 	}
-
-	R_ErrorCheckPlanes( rendercontext );
 
 	{
 		M_PROFILE_NAMED( "R_DrawMasked" );
@@ -1049,6 +1047,8 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.endtime = 1;
 		renderdatas[ currcontext ].context.timetaken = 1;
 
+		renderdatas[ currcontext ].context.bspcontext.maxdrawsegs = MAXDRAWSEGS;
+		renderdatas[ currcontext ].context.bspcontext.maxsolidsegs = MAXSEGS;
 		renderdatas[ currcontext ].context.planecontext.maxopenings = MAXOPENINGS;
 
 		R_ResetContext( renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );

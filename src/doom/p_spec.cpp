@@ -288,21 +288,6 @@ INLINE doombool IsScroller( int32_t special )
 
 }
 
-INLINE doombool IsWallScroller( int32_t special )
-{
-	switch( special )
-	{
-	case Scroll_WallTextureLeft_Always:
-		return true;
-	case Scroll_WallTextureRight_Always:
-	case Scroll_WallTextureBySector_Always:
-	case Scroll_WallTextureByOffset_Always:
-		return sim.boom_line_specials;
-	default:
-		return false;
-	}
-}
-
 //
 // getSide()
 // Will return a side_t*
@@ -1710,7 +1695,11 @@ void P_SpawnSpecials (void)
 		}
     }
 
-    
+	if( P_SpawnExtendedSpecials() )
+	{
+		return;
+	}
+
 	//	Init line EFFECTs
 	int32_t scrollcount = NumScrollers();
 	if( !sim.unlimited_scrollers && scrollcount > VANILLA_MAXLINEANIMS )
@@ -1732,173 +1721,15 @@ void P_SpawnSpecials (void)
 		default:
 			break;
 		}
-
-		if( sim.boom_line_specials )
-		{
-			switch( line.special )
-			{
-			case Scroll_CeilingTexture_Accelerative_Always:
-			case Scroll_FloorTexture_Accelerative_Always:
-			case Scroll_FloorObjects_Accelerative_Always:
-			case Scroll_FloorTextureObjects_Accelerative_Always:
-			case Scroll_WallTextureBySector_Accelerative_Always:
-			case Transfer_WindByLength_Always:
-			case Transfer_CurrentByLength_Always:
-			case Transfer_WindOrCurrentByPoint_Always:
-			case Scroll_CeilingTexture_Displace_Always:
-			case Scroll_FloorTexture_Displace_Always:
-			case Scroll_FloorObjects_Displace_Always:
-			case Scroll_FloorTextureObjects_Displace_Always:
-			case Scroll_WallTextureBySector_Displace_Always:
-			case Scroll_CeilingTexture_Always:
-			case Scroll_FloorTexture_Always:
-			case Scroll_FloorObjects_Always:
-			case Scroll_FloorTextureObjects_Always:
-			//case Scroll_WallTextureBySector_Always:
-				P_SpawnSectorScroller( &line );
-				break;
-
-			case Scroll_WallTextureRight_Always:
-				linespeciallist[ numlinespecials++ ] = &line;
-				line.scrollratex = -FRACUNIT;
-				break;
-
-			case Scroll_WallTextureByOffset_Always:
-				linespeciallist[ numlinespecials++ ] = &line;
-				line.scrollratex = -line.frontside->textureoffset;
-				line.scrollratey = line.frontside->rowoffset;
-				break;
-
-			case Transfer_FloorLighting_Always:
-			case Transfer_CeilingLighting_Always:
-				if( line.frontsector )
-				{
-					doombool setceil = line.special == Transfer_CeilingLighting_Always;
-					for( sector_t& sector : Sectors() )
-					{
-						if( sector.tag == line.tag )
-						{
-							sector_t** toset = setceil ? &sector.ceilinglightsec : &sector.floorlightsec;
-							rend_fixed_t* tosetprev = setceil ? &prevsectors[ sector.index ].ceillightlevel
-																: &prevsectors[ sector.index ].floorlightlevel;
-							rend_fixed_t* tosetcurr = setceil ? &currsectors[ sector.index ].ceillightlevel
-																: &currsectors[ sector.index ].floorlightlevel;
-
-							*toset = line.frontsector;
-							*tosetprev = *tosetcurr = lines[i].frontsector->lightlevel;
-						}
-					}
-				}
-				break;
-
-			case Transfer_Friction_Always: // Friction
-				{
-					fixed_t linelength = M_CLAMP( P_AproxDistance( line.dx, line.dy ), 0, IntToFixed( 200 ) );
-					fixed_t frictionpercent = FixedDiv( linelength, IntToFixed( 100 ) );
-					fixed_t frictionmul = frictionpercent - IntToFixed( 1 );
-					fixed_t targetfriction = FRICTION + FixedMul( ( IntToFixed( 1 ) - FRICTION ), frictionmul );
-
-					for( sector_t& sector : Sectors() )
-					{
-						if( sector.tag == line.tag )
-						{
-							sector.friction = targetfriction;
-							sector.frictionpercent = frictionpercent;
-						}
-					}
-				}
-				break;
-
-			case Transfer_Properties_Always:
-				if( line.frontside )
-				{
-					side_t* side = line.frontside;
-					line.topcolormap = ( !side->toptexture && side->toptextureindex >= 0 )
-										? R_GetColormapForNum( side->toptextureindex )
-										: colormaps;
-					line.bottomcolormap = ( !side->bottomtexture && side->bottomtextureindex >= 0 )
-										? R_GetColormapForNum( side->bottomtextureindex )
-										: colormaps;
-					line.midcolormap = ( !side->midtexture && side->midtextureindex >= 0 )
-										? R_GetColormapForNum( side->midtextureindex )
-										: colormaps;
-
-					for( sector_t& sector : Sectors() )
-					{
-						if( sector.tag == line.tag )
-						{
-							sector.transferline = &line;
-						}
-					}
-				}
-				break;
-
-			case Texture_Translucent_Always: // Transparency
-				if( line.tag == 0 )
-				{
-					line.transparencymap = tranmap;
-				}
-				else
-				{
-					byte* customtranmap = tranmap;
-					if( line.sidenum[ 0 ] >= 0 && sides[ line.sidenum[ 0 ] ].midtextureindex >= 0 )
-					{
-						lumpindex_t customtranmapindex = sides[ line.sidenum[ 0 ] ].midtextureindex;
-						size_t customtranmaplen = W_LumpLength( customtranmapindex );
-						if( customtranmaplen == 65536 )
-						{
-							customtranmap = (byte*)W_CacheLumpNum( customtranmapindex, PU_LEVEL );
-						}
-						else if( sides[ line.sidenum[ 0 ] ].midtexture == 0 )
-						{
-							I_Error( "Tagged transparent line requires either a valid transmap entry or a valid texture" );
-						}
-					}
-
-					for( int32_t target = 0 ; target < numlines; ++target )
-					{
-						if( lines[ target ].tag == line.tag )
-						{
-							lines[ target ].transparencymap = customtranmap;
-						}
-					}
-				}
-				break;
-			}
-		}
-
-		if( sim.mbf_line_specials )
-		{
-			switch( line.special )
-			{
-			case Transfer_Sky_Always:
-			case Transfer_SkyReversed_Always:
-				if( line.sidenum[ 0 ] >= 0 )
-				{
-					fixed_t scale = IntToFixed( line.special == Transfer_Sky_Always ? -1 : 1 );
-					for( sector_t& sector : Sectors() )
-					{
-						if( sector.tag == line.tag )
-						{
-							sector.skyline = &sides[ line.sidenum[ 0 ] ];
-							sector.skyxscale = scale;
-						}
-					}
-				}
-				break;
-			}
-		}
 	}
 
     
     //	Init other misc stuff
-	activeceilingshead = nullptr;
     for (i = 0;i < MAXCEILINGS;i++)
 	{
 		activeceilings[i] = NULL;
 	}
 
-	activeplatshead = nullptr;
     for (i = 0;i < MAXPLATS;i++)
 	{
 		activeplats[i] = NULL;

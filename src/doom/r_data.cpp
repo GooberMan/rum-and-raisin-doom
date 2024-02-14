@@ -786,7 +786,7 @@ void R_InitTextures (void)
 			{
 				std::string lumpname = ClampString( lumpinfo[ curr ]->name );
 				// Need to account for lump overrides outside of markers
-				lumpindex_t index = W_GetNumForName( lumpname.c_str() );
+				lumpindex_t index = curr; //W_GetNumForName( lumpname.c_str() );
 				auto found = patchnamelookup.find( lumpname );
 				if( found == patchnamelookup.end() )
 				{

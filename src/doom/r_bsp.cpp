@@ -1,7 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2024 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,21 +43,46 @@
 //
 // R_ClearClipSegs
 //
-void R_ClearClipSegs ( bspcontext_t* context, int32_t mincol, int32_t maxcol )
+void R_ClearClipSegs ( bspcontext_t& context, int32_t mincol, int32_t maxcol )
 {
-	context->solidsegs[0].first		= INT_MIN;
-	context->solidsegs[0].last		= mincol - 1;
-	context->solidsegs[1].first		= maxcol;
-	context->solidsegs[1].last		= INT_MAX;
-	context->solidsegsend = context->solidsegs + 2;
+	context.solidsegs = R_AllocateScratch< cliprange_t >( context.maxsolidsegs );
+
+	context.solidsegs[0].first		= INT_MIN;
+	context.solidsegs[0].last		= mincol - 1;
+	context.solidsegs[1].first		= maxcol;
+	context.solidsegs[1].last		= INT_MAX;
+	context.solidsegsend = context.solidsegs + 2;
+}
+
+void R_IncreaseClipSegsCapacity( bspcontext_t& context )
+{
+	cliprange_t* oldrange = context.solidsegs;
+	size_t oldsize = context.maxsolidsegs;
+
+	context.maxsolidsegs += ( context.maxsolidsegs / 5 );
+	context.solidsegs = R_AllocateScratch< cliprange_t >( context.maxsolidsegs );
+	memcpy( context.solidsegs, oldrange, sizeof( cliprange_t ) * oldsize );
+	context.solidsegsend = context.solidsegs + oldsize;
 }
 
 //
 // R_ClearDrawSegs
 //
-void R_ClearDrawSegs ( bspcontext_t* context )
+void R_ClearDrawSegs ( bspcontext_t& context )
 {
-	context->thisdrawseg = context->drawsegs;
+	context.drawsegs = R_AllocateScratch< drawseg_t >( context.maxdrawsegs );
+	context.thisdrawseg = context.drawsegs;
+}
+
+void R_IncreaseDrawSegsCapacity( bspcontext_t& context )
+{
+	drawseg_t* oldsegs = context.drawsegs;
+	size_t oldsize = context.maxdrawsegs;
+
+	context.maxdrawsegs += ( context.maxdrawsegs / 5 );
+	context.drawsegs = R_AllocateScratch< drawseg_t >( context.maxdrawsegs );
+	memcpy( context.drawsegs, oldsegs, sizeof( drawseg_t ) * oldsize );
+	context.thisdrawseg = context.drawsegs + oldsize;
 }
 
 //
@@ -88,6 +113,11 @@ void R_ClipSolidWallSegment( rendercontext_t& rendercontext, wallcontext_t& wall
 			// Post is entirely visible (above start),
 			//  so insert a new clippost.
 			R_StoreWallRange( rendercontext, wallcontext, first, last );
+
+			if( bspcontext.solidsegsend == ( bspcontext.solidsegs + bspcontext.maxsolidsegs ) )
+			{
+				R_IncreaseClipSegsCapacity( bspcontext );
+			}
 			next = bspcontext.solidsegsend;
 			bspcontext.solidsegsend++;
 
@@ -150,6 +180,11 @@ crunch:
 	}
 
 	bspcontext.solidsegsend = start+1;
+
+	if( bspcontext.solidsegsend == ( bspcontext.solidsegs + bspcontext.maxsolidsegs ) )
+	{
+		R_IncreaseClipSegsCapacity( bspcontext );
+	}
 }
 
 
@@ -335,24 +370,23 @@ clipsolid:
 // Returns true
 //  if some part of the bbox might be visible.
 //
-int32_t	checkcoord[12][4] =
-{
-	{3,0,2,1},
-	{3,0,2,0},
-	{3,1,2,0},
-	{0},
-	{2,0,2,1},
-	{0,0,0,0},
-	{3,1,3,0},
-	{0},
-	{2,0,3,1},
-	{2,1,3,1},
-	{2,1,3,0}
-};
-
-
 doombool R_CheckBBox( const viewpoint_t& viewpoint, const bspcontext_t& context, rend_fixed_t* bspcoord )
 {
+	constexpr int32_t checkcoord[12][4] =
+	{
+		{3,0,2,1},
+		{3,0,2,0},
+		{3,1,2,0},
+		{0},
+		{2,0,2,1},
+		{0,0,0,0},
+		{3,1,3,0},
+		{0},
+		{2,0,3,1},
+		{2,1,3,1},
+		{2,1,3,0}
+	};
+
 	int32_t			boxx;
 	int32_t			boxy;
 	int32_t			boxpos;

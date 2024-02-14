@@ -603,17 +603,18 @@ DOOM_C_API typedef struct elevator_s
 
 DOOM_C_API typedef enum scrolltype_e
 {
-	st_none			= 0x00,
-	st_ceiling		= 0x01,
-	st_floor		= 0x02,
-	st_conveyor		= 0x04,
-	st_current		= 0x08,
-	st_wind			= 0x10,
-	st_displacement	= 0x20,
-	st_accelerative = 0x40,
-	st_point		= 0x80,
+	st_none			= 0x0000,
+	st_ceiling		= 0x0001,
+	st_floor		= 0x0002,
+	st_wall			= 0x0004,
+	st_conveyor		= 0x0008,
+	st_current		= 0x0010,
+	st_wind			= 0x0020,
+	st_displacement	= 0x0040,
+	st_accelerative = 0x0080,
+	st_point		= 0x0100,
 
-	st_scrollmask	= st_ceiling | st_floor,
+	st_scrollmask	= st_ceiling | st_floor | st_wall,
 	st_carrymask	= st_conveyor | st_current | st_wind,
 	st_speedmask	= st_displacement | st_accelerative | st_point,
 } scrolltype_t;
@@ -640,8 +641,11 @@ constexpr scrolltype_t operator^( const scrolltype_t lhs, const scrolltype_t rhs
 DOOM_C_API typedef struct scroller_s
 {
 	thinker_t		thinker;
-	sector_t*		sector;
+	sector_t**		sectors;
+	line_t**		lines;
 	sector_t*		controlsector;
+	int32_t			sectorcount;
+	int32_t			linecount;
 	fixed_t			controlheight;
 	fixed_t			magx;
 	fixed_t			magy;
@@ -744,6 +748,7 @@ DOOM_C_API void		T_RaisePlatGeneric( plat_t* plat );
 DOOM_C_API void		T_MoveFloorGeneric( floormove_t* floor );
 DOOM_C_API void		T_MoveCeilingGeneric( ceiling_t* ceiling );
 DOOM_C_API void		T_MoveElevatorGeneric( elevator_t* elevator );
+DOOM_C_API void		T_ScrollerGeneric( scroller_t* scroller );
 
 DOOM_C_API int32_t	EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
@@ -764,6 +769,7 @@ DOOM_C_API int32_t	EV_DoStairsGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
 
 DOOM_C_API int32_t	P_SpawnSectorScroller( line_t* line );
+DOOM_C_API doombool	P_SpawnExtendedSpecials();
 DOOM_C_API void		P_MobjInExtendedSector( mobj_t* mobj );
 
 #if defined( __cplusplus )

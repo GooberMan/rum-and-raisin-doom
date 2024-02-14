@@ -520,10 +520,9 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 	texturecomposite_t* floorpic = nullptr;
 	bool floorsky = false;
 
-	// don't overflow and crash
-	if ( bspcontext.thisdrawseg == &bspcontext.drawsegs[MAXDRAWSEGS])
+	if ( bspcontext.thisdrawseg == ( bspcontext.drawsegs + bspcontext.maxdrawsegs ) )
 	{
-		return;
+		R_IncreaseDrawSegsCapacity( bspcontext );
 	}
 		
 #if RANGECHECK

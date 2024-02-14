@@ -39,8 +39,6 @@ extern "C"
 	simoptions_t			sim;
 }
 
-#pragma optimize( "", off )
-
 struct simvalues_t
 {
 	compoptions_t	comp;
