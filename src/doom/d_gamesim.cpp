@@ -664,9 +664,39 @@ static GameVersion_t DetermineFromMap( lumpindex_t mapindex )
 	return version;
 }
 
+static const std::map< std::string, GameVersion_t > complvlversions =
+{
+	{ "vanilla", exe_doom_1_9 },
+	{ "boom", exe_complevel9 },
+	{ "mbf", exe_mbf },
+	{ "mbf21", exe_mbf21 },
+};
+
+static GameVersion_t DetermineFromComplvlLump( lumpindex_t lump )
+{
+	const char* complvl = (const char*)W_CacheLumpNum( lump, PU_CACHE );
+	auto found = complvlversions.find( complvl );
+	if( found != complvlversions.end() )
+	{
+		return found->second;
+	}
+
+	return exe_invalid;
+}
+
+#define VERSION_INCREASE( versionval, newversion ) \
+versionval = M_MAX( versionval, newversion ); \
+if( versionval >= exe_mbf21 ) return versionval
+
 static GameVersion_t DetermineGameExecutable()
 {
 	GameVersion_t version = exe_limit_removing;
+
+	lumpindex_t complvl = W_CheckNumForName( "COMPLVL" );
+	if( complvl >= 0 )
+	{
+		VERSION_INCREASE( version, DetermineFromComplvlLump( complvl ) );
+	}
 
 	constexpr const char* demos[] =
 	{
@@ -676,20 +706,17 @@ static GameVersion_t DetermineGameExecutable()
 		"DEMO4"
 	};
 
-	GameVersion_t demoversion = exe_invalid;
 	for( const char* demoname : std::span( demos ) )
 	{
 		lumpindex_t demolump = W_CheckNumForName( demoname );
 		if( demolump >= 0 )
 		{
-			demoversion = M_MAX( demoversion, DetermineFromDemo( (byte*)W_CacheLumpNum( demolump, PU_CACHE ) ) );
+			VERSION_INCREASE( version, DetermineFromDemo( (byte*)W_CacheLumpNum( demolump, PU_CACHE ) ) );
 		}
 	}
 
-	version = M_MAX( version, demoversion );
-	
-	version = M_MAX( version, DetermineFromBoomLumps() );
-	version = M_MAX( version, DetermineFromMBFLumps() );
+	VERSION_INCREASE( version, DetermineFromBoomLumps() );
+	VERSION_INCREASE( version, DetermineFromMBFLumps() );
 
 	for( episodeinfo_t* episode : D_GetEpisodes() )
 	{
@@ -698,7 +725,7 @@ static GameVersion_t DetermineGameExecutable()
 			lumpindex_t maplump = W_CheckNumForName( AsDoomString( map->data_lump, episode->episode_num, map->map_num ).c_str() );
 			if( maplump >= 0 )
 			{
-				version = M_MAX( version, DetermineFromMap( maplump ) );
+				VERSION_INCREASE( version, DetermineFromMap( maplump ) );
 			}
 		}
 	}
@@ -765,7 +792,7 @@ static void SetDefaultGameflow()
 	}
 }
 
- void SetGamesimOptions( GameVersion_t version )
+ static void SetGamesimOptions( GameVersion_t version )
 {
 	simvalues_t values;
 
@@ -816,7 +843,7 @@ static void SetDefaultGameflow()
 		break;
 
 	default:
-		I_TerminalPrintf( Log_Startup, " Indeterminable version, applying vanilly compatibility\n" );
+		I_TerminalPrintf( Log_Warning, " Indeterminable version, applying vanilla compatibility\n" );
 		values = GetVanillaValues( version, gamemode );
 		break;
 	}
