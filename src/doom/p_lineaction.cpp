@@ -360,7 +360,7 @@ namespace precon
 		&HasAnyKeyOfColour,
 		&HasAnyKeyOfColour,
 		&HasAnyKeyOfColour,
-		&HasAllCards,
+		&HasAllCardsOrSkulls,
 	};
 
 	static constexpr linepreconfunc_t LockLookup_Separate[] =
@@ -372,7 +372,7 @@ namespace precon
 		&HasExactKey,
 		&HasExactKey,
 		&HasExactKey,
-		HasAllCardsOrSkulls,
+		&HasAllKeys,
 	};
 }
 
@@ -1071,7 +1071,22 @@ void lineaction_s::DisplayLockReason( player_t* player )
 	{
 		bool door = ( trigger & LT_AnimatedActivationTypeMask ) == LT_Use;
 		int32_t reason = lock & LL_TypeMask;
-		player->message = DEH_String( door ? doorlockreason[ reason ] : switchlockreason[ reason ] );
+		if( lock == LL_AnyKey )
+		{
+			player->message = DEH_String( door ? PD_BOOM_ANYKEY_DOOR : PD_BOOM_ANYKEY_SWITCH );
+		}
+		else if( lock == LL_AllCardsOrSkulls )
+		{
+			player->message = DEH_String( door ? PD_BOOM_THREEKEYS_DOOR : PD_BOOM_THREEKEYS_SWITCH );
+		}
+		else if( lock == LL_AllKeys )
+		{
+			player->message = DEH_String( door ? PD_BOOM_SIXKEYS_DOOR : PD_BOOM_SIXKEYS_SWITCH );
+		}
+		else
+		{
+			player->message = DEH_String( door ? doorlockreason[ reason ] : switchlockreason[ reason ] );
+		}
 		S_StartSound( nullptr, sfx_oof );
 	}
 }

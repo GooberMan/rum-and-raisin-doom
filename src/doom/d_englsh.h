@@ -707,6 +707,10 @@
 #define PD_BOOM_YELLOWSKULL_DOOR "You need a yellow skull to open this door"
 #define PD_BOOM_REDSKULL_DOOR "You need a red skull to open this door"
 
+#define PD_BOOM_ANYKEY_DOOR "You need any key to open this door"
+#define PD_BOOM_THREEKEYS_DOOR "You need all three keys to open this door"
+#define PD_BOOM_SIXKEYS_DOOR "You need all six keys to open this door"
+
 #define PD_BOOM_BLUECARD_SWITCH "You need a blue card to activate this object"
 #define PD_BOOM_YELLOWCARD_SWITCH "You need a yellow card to activate this object"
 #define PD_BOOM_REDCARD_SWITCH "You need a red card to activate this object"
@@ -714,5 +718,9 @@
 #define PD_BOOM_BLUESKULL_SWITCH "You need a blue skull to activate this object"
 #define PD_BOOM_YELLOWSKULL_SWITCH "You need a yellow skull to activate this object"
 #define PD_BOOM_REDSKULL_SWITCH "You need a red skull to activate this object"
+
+#define PD_BOOM_ANYKEY_SWITCH "You need any key to activate this object"
+#define PD_BOOM_THREEKEYS_SWITCH "You need all three keys to activate this object"
+#define PD_BOOM_SIXKEYS_SWITCH "You need all six keys to activate this object"
 
 #endif
