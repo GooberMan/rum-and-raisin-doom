@@ -76,6 +76,22 @@ fixed_t P_FindShortestLowerTexture( sector_t* sector )
 	return lowestheight;
 }
 
+void P_FindMinMaxLightSurrounding( sector_t& sector, fixed_t& outmin, fixed_t& outmax )
+{
+	outmin = INT_MAX;
+	outmax = -INT_MAX;
+
+	for( line_t* line : Lines( sector ) )
+	{
+		sector_t* other = line->frontsector->index == sector.index ? line->backsector : line->frontsector;
+		if( other != nullptr )
+		{
+			outmin = M_MIN( outmin, other->lightlevel );
+			outmax = M_MAX( outmax, other->lightlevel );
+		}
+	}
+}
+
 int32_t PerformOperationOnSectors( line_t* line, mobj_t* activator
 								, std::function< bool( sector_t& ) >&& precon
 								, std::function< int32_t( line_t*, mobj_t*, sector_t& ) >&& createfunc )
@@ -85,7 +101,7 @@ int32_t PerformOperationOnSectors( line_t* line, mobj_t* activator
 	{
 		if( line->backsector == nullptr )
 		{
-			I_Error("EV_DoDoorGeneric: Dx special type on 1-sided linedef");
+			I_Error("PerformOperationOnSectors: Dx special type on 1-sided linedef");
 			return 0;
 		}
 		if( precon( *line->backsector ) )
@@ -569,7 +585,7 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 		door->dontrecloseoncrush = ( door->direction == sd_close && door->topwait != 0 );
 		door->lighttag = 0;
 
-		if( sim.boom_line_specials )
+		if( sim.boom_line_specials && comp.door_tagged_light )
 		{
 			if( line->action->AnimatedActivationType() == LT_Use
 				&& line->tag != 0
@@ -577,8 +593,7 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 				&& line->backsector != nullptr )
 			{
 				door->lighttag = line->tag;
-				door->lightmax = M_MAX( line->frontsector->lightlevel, line->backsector->lightlevel );
-				door->lightmin = M_MIN( line->frontsector->lightlevel, line->backsector->lightlevel );
+				P_FindMinMaxLightSurrounding( *line->backsector, door->lightmin, door->lightmax );
 			}
 		}
 
