@@ -46,6 +46,16 @@ extern "C"
 	plat_t*		activeplatshead = nullptr;
 }
 
+void Rotate( const angle_t angle, const fixed_t& x, const fixed_t& y, fixed_t& outx, fixed_t& outy )
+{
+	uint32_t fine = FINEANGLE( angle );
+	fixed_t diffsine = finesine[ fine ];
+	fixed_t diffcosine = finecosine[ fine ];
+
+	outx = FixedMul( x, diffcosine ) - FixedMul( y, diffsine );
+	outy = FixedMul( x, diffsine ) + FixedMul( y, diffcosine );
+}
+
 fixed_t P_FindShortestLowerTexture( sector_t* sector )
 {
 	fixed_t lowestheight = INT_MAX;
@@ -1331,15 +1341,15 @@ DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, telep
 			angle_t extraangle = anglebehavior == tt_reverseangle ? 0 : ANG180;
 
 			angle_t diff = targetline.angle - line->angle + extraangle;
-			uint32_t finediff = FINEANGLE( diff );
-			fixed_t diffsine = finesine[ finediff ];
-			fixed_t diffcosine = finecosine[ finediff ];
 
 			fixed_t targetmidx = targetline.v1->x + ( targetline.dx >> 1 );
 			fixed_t targetmidy = targetline.v1->y + ( targetline.dy >> 1 );
 
-			fixed_t destx = targetmidx + FixedMul( mobjtosourcex, diffcosine ) - FixedMul( mobjtosourcey, diffsine );
-			fixed_t desty = targetmidy + FixedMul( mobjtosourcex, diffsine ) + FixedMul( mobjtosourcey, diffcosine );
+			fixed_t destx;
+			fixed_t desty;
+			Rotate( diff, mobjtosourcex, mobjtosourcey, destx, desty );
+			destx += targetmidx;
+			desty += targetmidy;
 
 			if( P_TeleportMove( activator, destx, desty ) )
 			{
@@ -1350,8 +1360,7 @@ DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, telep
 				fixed_t momx = activator->momx;
 				fixed_t momy = activator->momy;
 
-				activator->momx = FixedMul( momx, diffcosine ) - FixedMul( momy, diffsine );
-				activator->momy = FixedMul( momx, diffsine ) + FixedMul( momy, diffcosine );
+				Rotate( diff, momx, momy, activator->momx, activator->momy );
 
 				return true;
 			}
@@ -1481,10 +1490,25 @@ INLINE void T_ScrollFloorTexture( scroller_t* scroller )
 
 INLINE void T_ScrollWallTexture( scroller_t* scroller )
 {
+	fixed_t scrollx = scroller->scrollx;
+	fixed_t scrolly = scroller->scrolly;
+	angle_t boomhack = 0;
+	// Why does Boom special case this
+	if( scroller->controlline && scroller->controlline->special == Scroll_WallTextureBySector_Always )
+	{
+		boomhack = ANG180;
+	}
+
 	for( line_t* line : std::span( scroller->lines, scroller->linecount ) )
 	{
-		line->frontside->textureoffset += scroller->scrollx;
-		line->frontside->rowoffset += scroller->scrolly;
+		if( scroller->controlline )
+		{
+			angle_t diff = line->angle - scroller->controlline->angle - ANG90 + boomhack;
+			Rotate( diff, scroller->scrollx, scroller->scrolly, scrollx, scrolly );
+		}
+
+		line->frontside->textureoffset += scrollx;
+		line->frontside->rowoffset += scrolly;
 	}
 }
 
@@ -1701,24 +1725,6 @@ constexpr scrolltype_t SelectScroller( int32_t special )
 		| SelectSpeedType( special );
 }
 
-constexpr int32_t WallSpecialFor( int32_t special )
-{
-	if( special >= Scroll_CeilingTexture_Accelerative_Always && special <= Scroll_FloorTextureObjects_Accelerative_Always )
-	{
-		return Scroll_WallTextureBySector_Accelerative_Always;
-	}
-	if( special >= Scroll_CeilingTexture_Displace_Always && special <= Scroll_FloorTextureObjects_Displace_Always )
-	{
-		return Scroll_WallTextureBySector_Displace_Always;
-	}
-	if( special >= Scroll_CeilingTexture_Always && special <= Scroll_FloorTextureObjects_Always )
-	{
-		return Scroll_WallTextureBySector_Always;
-	}
-
-	return Unknown_000;
-}
-
 DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 {
 	scrolltype_t type = SelectScroller( line->special );
@@ -1728,11 +1734,24 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 	}
 
 	int32_t createdcount = 0;
-	for( sector_t& sector : Sectors() )
+	if( type & st_wall )
 	{
-		if( sector.tag == line->tag )
+		for( line_t& wall : Lines() )
 		{
-			++createdcount;
+			if( wall.tag == line->tag )
+			{
+				++createdcount;
+			}
+		}
+	}
+	else
+	{
+		for( sector_t& sector : Sectors() )
+		{
+			if( sector.tag == line->tag )
+			{
+				++createdcount;
+			}
 		}
 	}
 
@@ -1744,6 +1763,7 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 		scroller->type				= type;
 		scroller->magx				= FixedMul( line->dx, FlatScrollScale );
 		scroller->magy				= FixedMul( line->dy, FlatScrollScale );
+		scroller->controlline		= line;
 
 		if( ( scroller->SpeedType() & ( st_accelerative | st_displacement ) ) != st_none )
 		{
@@ -1762,41 +1782,30 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 			scroller->scrolly			= FixedMul( line->dy, FlatScrollScale );
 		}
 
-		scroller->sectorcount = createdcount;
-		scroller->sectors = (sector_t**)Z_Malloc( sizeof( sector_t* ) * createdcount, PU_LEVSPEC, nullptr );
-
-		createdcount = 0;
-		for( sector_t& sector : Sectors() )
+		if( type & st_wall )
 		{
-			if( sector.tag == line->tag )
-			{
-				scroller->sectors[ createdcount++ ] = &sector;
-			}
-		}
-
-		int32_t wallspecial = WallSpecialFor( line->special );
-		if( wallspecial != 0 )
-		{
-			int32_t wallcount = 0;
+			scroller->linecount = createdcount;
+			scroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * createdcount, PU_LEVSPEC, nullptr );
+			createdcount = 0;
 			for( line_t& wall : Lines() )
 			{
-				if( wall.special == wallspecial && wall.tag == line->tag )
+				if( wall.tag == line->tag )
 				{
-					++wallcount;
+					scroller->lines[ createdcount++ ] = &wall;
 				}
 			}
+		}
+		else
+		{
+			scroller->sectorcount = createdcount;
+			scroller->sectors = (sector_t**)Z_Malloc( sizeof( sector_t* ) * createdcount, PU_LEVSPEC, nullptr );
 
-			if( wallcount > 0 )
+			createdcount = 0;
+			for( sector_t& sector : Sectors() )
 			{
-				scroller->linecount = wallcount;
-				scroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * wallcount, PU_LEVSPEC, nullptr );
-				wallcount = 0;
-				for( line_t& wall : Lines() )
+				if( sector.tag == line->tag )
 				{
-					if( wall.special == wallspecial && wall.tag == line->tag )
-					{
-						scroller->lines[ wallcount++ ] = &wall;
-					}
+					scroller->sectors[ createdcount++ ] = &sector;
 				}
 			}
 		}
@@ -1902,7 +1911,7 @@ DOOM_C_API doombool P_SpawnExtendedSpecials()
 			case Scroll_WallTextureBySector_Accelerative_Always:
 			case Transfer_WindByLength_Always:
 			case Transfer_CurrentByLength_Always:
-			case Transfer_WindOrCurrentByPoint_Always:
+			//case Transfer_WindOrCurrentByPoint_Always:
 			case Scroll_CeilingTexture_Displace_Always:
 			case Scroll_FloorTexture_Displace_Always:
 			case Scroll_FloorObjects_Displace_Always:

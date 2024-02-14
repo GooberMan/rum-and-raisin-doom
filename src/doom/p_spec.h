@@ -644,6 +644,7 @@ DOOM_C_API typedef struct scroller_s
 	sector_t**		sectors;
 	line_t**		lines;
 	sector_t*		controlsector;
+	line_t*			controlline;
 	int32_t			sectorcount;
 	int32_t			linecount;
 	fixed_t			controlheight;

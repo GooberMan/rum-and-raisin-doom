@@ -1053,9 +1053,9 @@ constexpr lineaction_t builtinmbf21lineactions[ MBF21Actions_Count ] =
 // Another ugly table
 constexpr const char* doorlockreason[] =
 {
-	nullptr, PD_BLUEK, PD_YELLOWK, nullptr, PD_REDK, nullptr, nullptr, nullptr, nullptr, // Any colour
-	nullptr, PD_BOOM_BLUECARD_DOOR, PD_BOOM_YELLOWCARD_DOOR, nullptr, PD_BOOM_REDCARD_DOOR, nullptr, nullptr, nullptr, nullptr, // Cards
-	nullptr, PD_BOOM_BLUESKULL_DOOR, PD_BOOM_YELLOWSKULL_DOOR, nullptr, PD_BOOM_REDSKULL_DOOR, nullptr, nullptr, nullptr, nullptr, // Skulls
+	nullptr, PD_BLUEK, PD_YELLOWK, nullptr, PD_REDK, nullptr, nullptr, nullptr, // Any colour
+	nullptr, PD_BOOM_BLUECARD_DOOR, PD_BOOM_YELLOWCARD_DOOR, nullptr, PD_BOOM_REDCARD_DOOR, nullptr, nullptr, nullptr, // Cards
+	nullptr, PD_BOOM_BLUESKULL_DOOR, PD_BOOM_YELLOWSKULL_DOOR, nullptr, PD_BOOM_REDSKULL_DOOR, nullptr, nullptr, nullptr, // Skulls
 };
 
 constexpr const char* switchlockreason[] =
