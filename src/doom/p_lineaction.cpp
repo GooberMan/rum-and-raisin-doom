@@ -221,7 +221,8 @@ namespace precon
 
 	constexpr bool IsPlayer( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
-		return ValidPlayer( activator, line->action->trigger, activationside ) && ActivationMatches( line->action->trigger, activationtype );
+		return ValidPlayer( activator, line->action->trigger, activationside )
+			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
 	constexpr bool IsMonster( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
@@ -238,6 +239,15 @@ namespace precon
 	constexpr bool CanDoorRaise( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
 	{
 		return ValidDoorActivator( line, activator, line->action->trigger, activationside )
+			&& ActivationMatches( line->action->trigger, activationtype );
+	}
+
+	constexpr bool CanDoorRaiseLocked( line_t* line, mobj_t* activator, linetrigger_t activationtype, int32_t activationside )
+	{
+		return ValidDoorActivator( line, activator, line->action->trigger, activationside )
+			&& ( activator->player == nullptr
+				|| activator->player->cards[ GetCardFor( line->action->lock ) ]
+				|| activator->player->cards[ GetSkullFor( line->action->lock ) ] )
 			&& ActivationMatches( line->action->trigger, activationtype );
 	}
 
@@ -479,6 +489,16 @@ static void DoVanillaW1Teleport( line_t* line, mobj_t* activator )
 	}
 }
 
+static void DoVanillaD1Locked( line_t* line, mobj_t* activator )
+{
+	if( activator->player != nullptr
+		&& ( activator->player->cards[ precon::GetCardFor( line->action->lock ) ]
+			|| activator->player->cards[ precon::GetSkullFor( line->action->lock ) ] ) )
+	{
+		DoGenericOnce< Door >( line, activator );
+	}
+}
+
 
 constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 {
@@ -549,11 +569,11 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_Open_D1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Door >, LT_UseFront, LL_None, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
 	// Door_OpenBlue_D1_Player
-	{ &precon::HasAnyKeyOfColour, &DoGenericOnce< Door >, LT_UseFront, LL_Blue, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
+	{ &precon::CanDoorRaiseLocked, &DoVanillaD1Locked, LT_UseFront, LL_Blue, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
 	// Door_OpenRed_D1_Player
-	{ &precon::HasAnyKeyOfColour, &DoGenericOnce< Door >, LT_UseFront, LL_Red, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
+	{ &precon::CanDoorRaiseLocked, &DoVanillaD1Locked, LT_UseFront, LL_Red, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
 	// Door_OpenYellow_D1_Player
-	{ &precon::HasAnyKeyOfColour, &DoGenericOnce< Door >, LT_UseFront, LL_Yellow, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
+	{ &precon::CanDoorRaiseLocked, &DoVanillaD1Locked, LT_UseFront, LL_Yellow, constants::doorspeeds[ Speed_Slow ], 0, sd_open, door_noraise },
 	// Light_SetTo35_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< LightSet >, LT_WalkBoth, LL_None, 0, 0, lightset_value, 35 },
 	// Floor_LowerHighestFast_W1_Player

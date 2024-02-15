@@ -41,7 +41,7 @@
 #include "z_zone.h"
 
 DOOM_C_API void G_PlayerReborn (int player);
-DOOM_C_API void P_SpawnMapThing (mapthing_t*	mthing);
+DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t*	mthing);
 
 
 //
@@ -596,6 +596,8 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( mobjtype_t type, angle_t angle,
 	else 
 		mobj->z = z;
 
+	mobj->lumpindex = -1;
+
 	mobj->curr.x = FixedToRendFixed( mobj->x );
 	mobj->curr.y = FixedToRendFixed( mobj->y );
 	mobj->curr.z = FixedToRendFixed( mobj->z );
@@ -813,7 +815,7 @@ DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
 // The fields of the mapthing should
 // already be in host byte order.
 //
-DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
+DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 {
     int			i;
     int			bit;
@@ -830,7 +832,7 @@ DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
 	    memcpy (deathmatch_p, mthing, sizeof(*mthing));
 	    deathmatch_p++;
 	}
-	return;
+	return nullptr;
     }
 
     if (mthing->type <= 0)
@@ -838,7 +840,7 @@ DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
         // Thing type 0 is actually "player -1 start".  
         // For some reason, Vanilla Doom accepts/ignores this.
 
-        return;
+        return nullptr;
     }
 	
     // check for players specially
@@ -850,12 +852,12 @@ DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
 	if (!deathmatch)
 	    P_SpawnPlayer (mthing);
 
-	return;
+	return nullptr;
     }
 
     // check for apropriate skill level
     if (!netgame && (mthing->options & MTF_MULTIPLAYER_ONLY) )
-	return;
+	return nullptr;
 		
     if (gameskill == sk_baby)
 	bit = 1;
@@ -865,7 +867,7 @@ DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
 	bit = 1<<(gameskill-1);
 
     if (!(mthing->options & bit) )
-	return;
+	return nullptr;
 	
     // find which type to spawn
     for (i=0 ; i< NUMMOBJTYPES ; i++)
@@ -883,7 +885,7 @@ DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
 			I_LogAddEntryVar( Log_Error, "P_SpawnMapThing: Unknown type %i at (%i, %i)",
 				 mthing->type,
 				 mthing->x, mthing->y );
-			return;
+			return nullptr;
 		}
 
 		I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
@@ -893,14 +895,14 @@ DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
 		
     // don't spawn keycards and players in deathmatch
     if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH)
-	return;
+	return nullptr;
 		
     // don't spawn any monsters if -nomonsters
     if (nomonsters
 	&& ( i == MT_SKULL
 	     || (mobjinfo[i].flags & MF_COUNTKILL)) )
     {
-	return;
+	return nullptr;
     }
     
     // spawn it
@@ -936,6 +938,7 @@ DOOM_C_API void P_SpawnMapThing (mapthing_t* mthing)
     if (mthing->options & MTF_AMBUSH)
 	mobj->flags |= MF_AMBUSH;
 
+	return mobj;
 }
 
 

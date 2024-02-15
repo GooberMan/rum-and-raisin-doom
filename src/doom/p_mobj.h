@@ -324,6 +324,7 @@ DOOM_C_API typedef struct mobj_s
 
     // For nightmare respawn.
     mapthing_t		spawnpoint;
+	int32_t			lumpindex;
 	doombool		hasspawnpoint;
 
     // Thing being chased/attacked for tracers.

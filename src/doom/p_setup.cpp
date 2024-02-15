@@ -1093,7 +1093,7 @@ struct DoomMapLoader
 
 extern "C"
 {
-	void	P_SpawnMapThing (mapthing_t*	mthing);
+	mobj_t* P_SpawnMapThing (mapthing_t*	mthing);
 
 	//
 	// MAP related Lookup tables.
@@ -1221,7 +1221,12 @@ static void P_LoadThings (int lump)
 	spawnthing.type = SHORT(mt->type);
 	spawnthing.options = SHORT(mt->options);
 	
-	P_SpawnMapThing(&spawnthing);
+	mobj_t* spawned = P_SpawnMapThing(&spawnthing);
+	if( spawned )
+	{
+		spawned->lumpindex = i;
+	}
+
     }
 
     if (!deathmatch)
