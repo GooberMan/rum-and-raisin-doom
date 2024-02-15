@@ -63,6 +63,24 @@ const char *sprnames_boom[] = {
     "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","TNT1", NULL
 };
 
+const char *sprnames_mbf[] = {
+    "TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
+    "MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
+    "PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
+    "SPOS","VILE","FIRE","FATB","FBXP","SKEL","MANF","FATT","CPOS","SARG",
+    "HEAD","BAL7","BOSS","BOS2","SKUL","SPID","BSPI","APLS","APBX","CYBR",
+    "PAIN","SSWV","KEEN","BBRN","BOSF","ARM1","ARM2","BAR1","BEXP","FCAN",
+    "BON1","BON2","BKEY","RKEY","YKEY","BSKU","RSKU","YSKU","STIM","MEDI",
+    "SOUL","PINV","PSTR","PINS","MEGA","SUIT","PMAP","PVIS","CLIP","AMMO",
+    "ROCK","BROK","CELL","CELP","SHEL","SBOX","BPAK","BFUG","MGUN","CSAW",
+    "LAUN","PLAS","SHOT","SGN2","COLU","SMT2","GOR1","POL2","POL5","POL4",
+    "POL3","POL1","POL6","GOR2","GOR3","GOR4","GOR5","SMIT","COL1","COL2",
+    "COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
+    "COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
+    "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","TNT1","DOGS",
+	NULL
+};
+
 
 // Doesn't work with g++, needs actionf_p1
 void  A_Light0();
@@ -1110,6 +1128,33 @@ state_t	states[NUMSTATES] = {
     {SPR_TLP2,32770,4,{NULL},S_TECH2LAMP4,0,0},	// S_TECH2LAMP3
     {SPR_TLP2,32771,4,{NULL},S_TECH2LAMP,0,0},	// S_TECH2LAMP4
 	{SPR_TNT1,0,-1,{NULL},S_TNT1,0,0}, // S_TNT1, only used when BEX/Boom support is enabled
+	{SPR_DOGS,0,10,{A_Look},S_DOGS_STND2,0,0},	// S_DOGS_STND
+	{SPR_DOGS,1,10,{A_Look},S_DOGS_STND,0,0},	// S_DOGS_STND2
+	{SPR_DOGS,0,2,{A_Chase},S_DOGS_RUN2,0,0},	// S_DOGS_RUN1
+	{SPR_DOGS,0,2,{A_Chase},S_DOGS_RUN3,0,0},	// S_DOGS_RUN2
+	{SPR_DOGS,1,2,{A_Chase},S_DOGS_RUN4,0,0},	// S_DOGS_RUN3
+	{SPR_DOGS,1,2,{A_Chase},S_DOGS_RUN5,0,0},	// S_DOGS_RUN4
+	{SPR_DOGS,2,2,{A_Chase},S_DOGS_RUN6,0,0},	// S_DOGS_RUN5
+	{SPR_DOGS,2,2,{A_Chase},S_DOGS_RUN7,0,0},	// S_DOGS_RUN6
+	{SPR_DOGS,3,2,{A_Chase},S_DOGS_RUN8,0,0},	// S_DOGS_RUN7
+	{SPR_DOGS,3,2,{A_Chase},S_DOGS_RUN1,0,0},	// S_DOGS_RUN8
+	{SPR_DOGS,4,8,{A_FaceTarget},S_DOGS_ATK2,0,0},	// S_DOGS_ATK1
+	{SPR_DOGS,5,8,{A_FaceTarget},S_DOGS_ATK3,0,0},	// S_DOGS_ATK2
+	{SPR_DOGS,6,8,{A_SargAttack},S_DOGS_RUN1,0,0},	// S_DOGS_ATK3
+	{SPR_DOGS,7,2,{NULL},S_DOGS_PAIN2,0,0},	// S_DOGS_PAIN
+	{SPR_DOGS,7,2,{A_Pain},S_DOGS_RUN1,0,0},	// S_DOGS_PAIN2
+	{SPR_DOGS,8,8,{NULL},S_DOGS_DIE2,0,0},	// S_DOGS_DIE1
+	{SPR_DOGS,9,8,{A_Scream},S_DOGS_DIE3,0,0},	// S_DOGS_DIE2
+	{SPR_DOGS,10,4,{NULL},S_DOGS_DIE4,0,0},	// S_DOGS_DIE3
+	{SPR_DOGS,11,4,{A_Fall},S_DOGS_DIE5,0,0},	// S_DOGS_DIE4
+	{SPR_DOGS,12,4,{NULL},S_DOGS_DIE6,0,0},	// S_DOGS_DIE5
+	{SPR_DOGS,13,-1,{NULL},S_NULL,0,0},	// S_DOGS_DIE6
+	{SPR_DOGS,13,5,{NULL},S_DOGS_RAISE2,0,0},	// S_DOGS_RAISE1
+	{SPR_DOGS,12,5,{NULL},S_DOGS_RAISE3,0,0},	// S_DOGS_RAISE2
+	{SPR_DOGS,11,5,{NULL},S_DOGS_RAISE4,0,0},	// S_DOGS_RAISE3
+	{SPR_DOGS,10,5,{NULL},S_DOGS_RAISE5,0,0},	// S_DOGS_RAISE4
+	{SPR_DOGS,9,5,{NULL},S_DOGS_RAISE6,0,0},	// S_DOGS_RAISE5
+	{SPR_DOGS,8,5,{NULL},S_DOGS_RUN1,0,0},	// S_DOGS_RAISE6
 };
 
 
@@ -4675,6 +4720,111 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP,		// flags
 	S_NULL		// raisestate
-    }
+    },
+
+	{					// MT_PUSH
+		5001,			// doomednum
+		S_TNT1,			// spawnstate
+		1000,			// spawnhealth
+		S_NULL,			// seestate
+		sfx_None,		// seesound
+		8,				// reactiontime
+		sfx_None,		// attacksound
+		S_NULL,			// painstate
+		0,				// painchance
+		sfx_None,		// painsound
+		S_NULL,			// meleestate
+		S_NULL,			// missilestate
+		S_NULL,			// deathstate
+		S_NULL,			// xdeathstate
+		sfx_None,		// deathsound
+		0,				// speed
+		0,				// radius
+		0,				// height
+		100,			// mass
+		0,				// damage
+		sfx_None,		// activesound
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY,		// flags
+		S_NULL			// raisestate
+	},
+
+	{					// MT_PULL
+		5002,			// doomednum
+		S_TNT1,			// spawnstate
+		1000,			// spawnhealth
+		S_NULL,			// seestate
+		sfx_None,		// seesound
+		8,				// reactiontime
+		sfx_None,		// attacksound
+		S_NULL,			// painstate
+		0,				// painchance
+		sfx_None,		// painsound
+		S_NULL,			// meleestate
+		S_NULL,			// missilestate
+		S_NULL,			// deathstate
+		S_NULL,			// xdeathstate
+		sfx_None,		// deathsound
+		0,				// speed
+		0,				// radius
+		0,				// height
+		100,			// mass
+		0,				// damage
+		sfx_None,		// activesound
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY,		// flags
+		S_NULL			// raisestate
+	},
+
+	{					// MT_PULL
+		5002,			// doomednum
+		S_TNT1,			// spawnstate
+		1000,			// spawnhealth
+		S_NULL,			// seestate
+		sfx_None,		// seesound
+		8,				// reactiontime
+		sfx_None,		// attacksound
+		S_NULL,			// painstate
+		0,				// painchance
+		sfx_None,		// painsound
+		S_NULL,			// meleestate
+		S_NULL,			// missilestate
+		S_NULL,			// deathstate
+		S_NULL,			// xdeathstate
+		sfx_None,		// deathsound
+		0,				// speed
+		0,				// radius
+		0,				// height
+		100,			// mass
+		0,				// damage
+		sfx_None,		// activesound
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY,		// flags
+		S_NULL			// raisestate
+	},
+
+	{					// MT_DOGS
+		888,			// doomednum
+		S_DOGS_STND,	// spawnstate
+		500,			// spawnhealth
+		S_DOGS_RUN1,	// seestate
+		sfx_sgtsit,		// seesound
+		8,				// reactiontime
+		sfx_sgtatk,		// attacksound
+		S_DOGS_PAIN,	// painstate
+		180,			// painchance
+		sfx_dmpain,		// painsound
+		S_DOGS_ATK1,	// meleestate
+		0,				// missilestate
+		S_DOGS_DIE1,	// deathstate
+		S_NULL,			// xdeathstate
+		sfx_sgtdth,		// deathsound
+		10,				// speed
+		12*FRACUNIT,	// radius
+		28*FRACUNIT,	// height
+		100,			// mass
+		0,				// damage
+		sfx_dmact,		// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
+		S_DOGS_RAISE1	// raisestate
+	},
+
 };
 

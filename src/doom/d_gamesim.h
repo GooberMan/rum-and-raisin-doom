@@ -88,6 +88,7 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		generic_specials_handling;				// Rewritten specials, based on Boom standards but considered limit removing
 	doombool		separate_floor_ceiling_lights;			// Boom sector specials are allowed to work independently of each other
 	doombool		sector_movement_modifiers;				// Boom sectors can have variable friction, wind, currents
+	doombool		door_tagged_light;						// Dx with tags does the Boom lighting thing
 	doombool		boom_sector_targets;					// All sector targets consider their current sector
 	doombool		boom_line_specials;						// Comes with Boom fixes for specials by default
 	doombool		boom_sector_specials;					// Comes with Boom fixes for specials by default
@@ -115,7 +116,7 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		lost_soul_limit;						// comp_pain				- Pain Elementals limited to 21 lost souls
 	doombool		lost_souls_behind_walls;				// comp_skull				- Lost souls get stuck behind walls
 	doombool		blazing_door_double_sounds;				// comp_blazing				- Blazing doors make double closing sounds
-	doombool		door_tagged_light;						// comp_doorlight			- Tagged doors don't trigger special lighting
+	doombool		door_tagged_light_is_abrupt;			// comp_doorlight			- Tagged doors don't trigger special lighting
 	doombool		god_mode_absolute;						// comp_god					- God mode isn't absolute
 	doombool		powerup_cheats_infinite;				// comp_infcheat			- Powerup cheats are not infinite duration
 	doombool		dead_players_exit_levels;				// comp_zombie				- Dead players can exit levels
@@ -154,6 +155,8 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		noclip_cheats_work_everywhere;			// idspispopd and idclip everywhere
 	doombool		bfg_map02_secret_exit_to_map33;			// Find that one unmarked line in MAP02 in BFG edition
 	doombool		demo4;									// Always attempt to play demo4 if it exists
+
+	doombool		push_pull_affects_monsters;				
 
 	// R&R render additions
 	doombool		additive_data_blocks;					// PP_START, SS_START, FF_START, etc

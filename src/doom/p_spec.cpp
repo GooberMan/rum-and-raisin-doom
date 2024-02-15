@@ -1227,10 +1227,9 @@ DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 	sector_t*&	sector = player->mo->subsector->sector;
 	int16_t&	special = sector->special;
 
-	if( ( sim.boom_sector_specials || sim.mbf21_sector_specials )
-		&& ( special & ~DSS_Mask ) != 0 )
+	if( sim.generic_specials_handling )
 	{
-		// P_MobjInExtendedSector is handled with the standard mobj thinker;
+		P_MobjInSectorGeneric( player->mo );
 		return;
 	}
 
@@ -1282,7 +1281,7 @@ DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 		}
 		break;
 
-	case 11:
+	case DSS_20DamageAndEnd:
 		// EXIT SUPER DAMAGE! (for E1M8 finale)
 		if( !comp.god_mode_absolute )
 		{
@@ -1630,6 +1629,11 @@ void P_SpawnSpecials (void)
 	levelTimer = false;
     }
 
+	if( P_SpawnSectorSpecialsGeneric() )
+	{
+		return;
+	}
+
     //	Init special SECTORs.
     sector = sectors;
     for (i=0 ; i<numsectors ; i++, sector++)
@@ -1642,62 +1646,68 @@ void P_SpawnSpecials (void)
 		  case 1:
 			// FLICKERING LIGHTS
 			P_SpawnLightFlash (sector);
+			sector->special = 0;
 			break;
 
 		  case 2:
 			// STROBE FAST
 			P_SpawnStrobeFlash(sector,FASTDARK,0);
+			sector->special = 0;
 			break;
-	    
+
 		  case 3:
 			// STROBE SLOW
 			P_SpawnStrobeFlash(sector,SLOWDARK,0);
+			sector->special = 0;
 			break;
-	    
+
 		  case 4:
 			// STROBE FAST/DEATH SLIME
 			P_SpawnStrobeFlash(sector,FASTDARK,0);
+			sector->special = 0;
 			break;
-	    
+
 		  case 8:
 			// GLOWING LIGHT
 			P_SpawnGlowingLight(sector);
+			sector->special = 0;
 			break;
+
 		  case 9:
 			// SECRET SECTOR
 			totalsecret++;
 			++session.start_total_secrets;
 			break;
-	    
+
 		  case 10:
 			// DOOR CLOSE IN 30 SECONDS
-			P_SpawnDoorCloseIn30 (sector);
+			P_SpawnDoorCloseIn30(sector);
+			sector->special = 0;
 			break;
-	    
+
 		  case 12:
 			// SYNC STROBE SLOW
 			P_SpawnStrobeFlash (sector, SLOWDARK, 1);
+			sector->special = 0;
 			break;
 
 		  case 13:
 			// SYNC STROBE FAST
 			P_SpawnStrobeFlash (sector, FASTDARK, 1);
+			sector->special = 0;
 			break;
 
 		  case 14:
 			// DOOR RAISE IN 5 MINUTES
 			P_SpawnDoorRaiseIn5Mins (sector, i);
+			sector->special = 0;
 			break;
-	    
+
 		  case 17:
 			P_SpawnFireFlicker(sector);
+			sector->special = 0;
 			break;
 		}
-    }
-
-	if( P_SpawnExtendedSpecials() )
-	{
-		return;
 	}
 
 	//	Init line EFFECTs

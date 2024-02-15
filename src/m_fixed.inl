@@ -40,6 +40,11 @@ CONSTEXPR fixed_t FixedDiv(fixed_t a, fixed_t b)
 	return (fixed_t) result;
 }
 
+CONSTEXPR fixed_t FixedLerp( fixed_t from, fixed_t to, fixed_t percent )
+{
+	return from + FixedMul( ( to - from ), percent );
+}
+
 // Rounds to nearest whole number
 CONSTEXPR fixed_t FixedRound( fixed_t a )
 {

@@ -865,12 +865,15 @@ P_DamageMobj
     // player specific
     if (player)
     {
-	// end of game hell hack
-	if (target->subsector->sector->special == 11
-	    && damage >= target->health)
-	{
-	    damage = target->health - 1;
-	}
+		// end of game hell hack
+		doombool hellhacksector = ( target->subsector->sector->special & ~DSS_Mask ) == 0
+								&& target->subsector->sector->special == DSS_20DamageAndEnd;
+
+		if( hellhacksector
+			&& damage >= target->health)
+		{
+			damage = target->health - 1;
+		}
 	
 
 	// Below certain threshold,

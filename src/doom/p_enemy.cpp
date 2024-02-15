@@ -286,9 +286,14 @@ doombool P_Move (mobj_t*	actor)
 		
     if ((unsigned)actor->movedir >= 8)
 	I_Error ("Weird actor->movedir!");
-		
-    tryx = actor->x + actor->info->speed*xspeed[actor->movedir];
-    tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
+
+	fixed_t friction = IntToFixed( 1 );
+	if( comp.monsters_affected_by_friction && !( actor->flags & MF_NOGRAVITY ) )
+	{
+		friction = actor->subsector->sector->FrictionPercent();
+	}
+    tryx = actor->x + FixedMul( actor->info->speed*xspeed[actor->movedir], friction );
+    tryy = actor->y + FixedMul( actor->info->speed*yspeed[actor->movedir], friction );
 
     try_ok = P_TryMove (actor, tryx, tryy);
 

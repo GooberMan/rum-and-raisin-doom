@@ -110,9 +110,5 @@ DOOM_C_API void A_LineEffect( mobj_t* mobj )
 
 DOOM_C_API void A_Die( mobj_t* mobj )
 {
-	if( mobj->health > 0 )
-	{
-		mobj->health = 0;
-		P_KillMobj( mobj, mobj );
-	}
+	P_DamageMobj( mobj, mobj, mobj, 10000 );
 }

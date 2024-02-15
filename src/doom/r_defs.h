@@ -357,8 +357,8 @@ struct sector_s
 	INLINE void*& FloorSpecial()		{ return sim.separate_floor_ceiling_lights ? floorspecialdata : specialdata; }
 	INLINE void*& CeilingSpecial()		{ return sim.separate_floor_ceiling_lights ? ceilingspecialdata : specialdata; }
 
-	constexpr fixed_t Friction()		{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
-	constexpr fixed_t FrictionPercent()	{ return ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
+	INLINE fixed_t Friction()			{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
+	INLINE fixed_t FrictionPercent()	{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
 
 	constexpr fixed_t FloorEffectHeight() { return transferline ? transferline->frontsector->floorheight : floorheight; }
 #endif // defined( __cplusplus )

@@ -437,8 +437,32 @@ constexpr int32_t DoorSoundFor( sectordir_t dir, doombool blaze )
 
 DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 {
+	if( door->idletics > 0 )
+	{
+		if( --door->idletics > 0 )
+		{
+			return;
+		}
+
+		if( door->direction != sd_none )
+		{
+			S_StartSound( &door->sector->soundorg, DoorSoundFor( door->direction, door->blazing ) );
+		}
+	}
+
 	result_e	res;
-	
+
+	auto DoLight = []( int32_t tag, fixed_t level )
+	{
+		for( sector_t& sector : Sectors() )
+		{
+			if( sector.tag == tag )
+			{
+				sector.lightlevel = level;
+			}
+		}
+	};
+
 	switch(door->direction)
 	{
 	case sd_none:
@@ -454,18 +478,13 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 	case sd_close:
 		// DOWN
 		res = T_MovePlane( door->sector, door->speed, door->sector->floorheight, false, 1, door->direction );
+
 		if (res == pastdest)
 		{
 			door->direction = sd_none;
 			if( door->lighttag > 0 )
 			{
-				for( int32_t secnum = 0; secnum < numsectors; ++secnum )
-				{
-					if( sectors[ secnum ].tag == door->lighttag )
-					{
-						sectors[ secnum ].lightlevel =  door->lightmin;
-					}
-				}
+				DoLight( door->lighttag, door->lightmin );
 			}
 
 			if( door->topcountdown > 0 )
@@ -491,6 +510,15 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 				S_StartSound(&door->sector->soundorg, sfx_doropn);
 			}
 		}
+
+		if( res != pastdest && !comp.door_tagged_light_is_abrupt && door->lighttag > 0 )
+		{
+			fixed_t percent = FixedDiv( door->sector->ceilingheight - door->sector->floorheight, door->topheight - door->sector->floorheight );
+			fixed_t lightminfixed = IntToFixed( door->lightmin );
+			fixed_t lightmaxfixed = IntToFixed( door->lightmax );
+
+			DoLight( door->lighttag, FixedToInt( FixedLerp( lightminfixed, lightmaxfixed, percent ) ) );
+		}
 		break;
 	
 	case sd_open:
@@ -502,13 +530,7 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 			door->direction = sd_none;
 			if( door->lighttag > 0 )
 			{
-				for( int32_t secnum = 0; secnum < numsectors; ++secnum )
-				{
-					if( sectors[ secnum ].tag == door->lighttag )
-					{
-						sectors[ secnum ].lightlevel =  door->lightmax;
-					}
-				}
+				DoLight( door->lighttag, door->lightmax );
 			}
 
 			if( door->topcountdown > 0 )
@@ -520,6 +542,14 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 				door->sector->CeilingSpecial() = nullptr;
 				P_RemoveThinker( &door->thinker ); // unlink and free
 			}
+		}
+		else if( !comp.door_tagged_light_is_abrupt && door->lighttag > 0 )
+		{
+			fixed_t percent = FixedDiv( door->sector->ceilingheight - door->sector->floorheight, door->topheight - door->sector->floorheight );
+			fixed_t lightminfixed = IntToFixed( door->lightmin );
+			fixed_t lightmaxfixed = IntToFixed( door->lightmax );
+
+			DoLight( door->lighttag, FixedToInt( FixedLerp( lightminfixed, lightmaxfixed, percent ) ) );
 		}
 		break;
 
@@ -585,7 +615,7 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 		door->dontrecloseoncrush = ( door->direction == sd_close && door->topwait != 0 );
 		door->lighttag = 0;
 
-		if( sim.boom_line_specials && comp.door_tagged_light )
+		if( sim.door_tagged_light )
 		{
 			if( line->action->AnimatedActivationType() == LT_Use
 				&& line->tag != 0
@@ -614,6 +644,30 @@ DOOM_C_API int32_t EV_DoDoorGeneric( line_t* line, mobj_t* activator )
 
 		return 1;
 	} );
+}
+
+// Not really meant to be used for anything other than the vanilla sector specials
+DOOM_C_API int32_t EV_DoDelayedDoorGeneric( sector_t* sector, sectordir_t dir, int32_t delaybeforestart, int32_t topdelay, fixed_t speed )
+{
+	vldoor_t* door = (vldoor_t*)Z_MallocZero( sizeof(vldoor_t), PU_LEVSPEC, 0 );
+	P_AddThinker (&door->thinker);
+	door->sector = sector;
+	door->sector->CeilingSpecial() = door;
+	door->thinker.function.acp1 = (actionf_p1)T_VerticalDoorGeneric;
+	door->topwait = topdelay;
+	door->topcountdown = topdelay;
+	door->topheight = dir == sd_down ? sector->ceilingheight
+									: P_FindLowestCeilingSurrounding( sector ) - IntToFixed( 4 );
+	door->speed = speed;
+	door->direction = dir;
+	door->nextdirection = sd_none;
+	door->blazing = door->speed >= ( VDOORSPEED * 4 );
+	door->keepclosingoncrush = false;
+	door->dontrecloseoncrush = topdelay == 0;
+	door->lighttag = 0;
+	door->idletics = delaybeforestart;
+
+	return 1;
 }
 
 // =================
@@ -1791,6 +1845,10 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 			scroller->scrollx			= 0;
 			scroller->scrolly			= 0;
 		}
+		else if( ( scroller->SpeedType() & st_point ) != st_none )
+		{
+			
+		}
 		else
 		{
 			scroller->scrollx			= FixedMul( line->dx, FlatScrollScale );
@@ -1889,7 +1947,7 @@ DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t right, int32_t of
 	return 1;
 }
 
-DOOM_C_API doombool P_SpawnExtendedSpecials()
+DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 {
 	if( !sim.generic_specials_handling )
 	{
@@ -1898,6 +1956,89 @@ DOOM_C_API doombool P_SpawnExtendedSpecials()
 
 	activeceilingshead = nullptr;
 	activeplatshead = nullptr;
+
+	bool extendedspecialsectors = sim.boom_sector_specials || sim.mbf21_sector_specials;
+
+	for( sector_t& sector : Sectors() )
+	{
+		bool doextended = extendedspecialsectors && ( sector.special & ~DSS_Mask ) != 0;
+		if( !doextended )
+		{
+			switch( sector.special )
+			{
+			case DSS_LightRandom:
+				P_SpawnLightFlash( &sector );
+				sector.special = 0;
+				break;
+
+			case DSS_LightBlinkHalfSecond:
+				P_SpawnStrobeFlash( &sector, FASTDARK, 0 );
+				sector.special = 0;
+				break;
+
+			case DSS_LightBlinkSecond:
+				P_SpawnStrobeFlash( &sector, SLOWDARK, 0 );
+				sector.special = 0;
+				break;
+
+			case DSS_20DamageAndLightBlink:
+				P_SpawnStrobeFlash( &sector, FASTDARK, 0 );
+				sector.special = 0;
+				break;
+
+			case DSS_LightOscillate:
+				P_SpawnGlowingLight( &sector );
+				sector.special = 0;
+				break;
+
+			case DSS_Secret:
+				// SECRET SECTOR
+				totalsecret++;
+				++session.start_total_secrets;
+				sector.special = SectorSecret_Yes;
+				break;
+
+			case DSS_30SecondsClose:
+				EV_DoDelayedDoorGeneric( &sector, sd_close, 30 * TICRATE, 0, IntToFixed( 2 ) );
+				sector.special = 0;
+				break;
+
+			case DSS_LightBlinkHalfSecondSynchronised:
+				P_SpawnStrobeFlash( &sector, SLOWDARK, 1 );
+				sector.special = 0;
+				break;
+
+			case DSS_LightBlinkSecondSynchronised:
+				P_SpawnStrobeFlash( &sector, FASTDARK, 1 );
+				sector.special = 0;
+				break;
+
+			case DSS_300SecondsOpen:
+				EV_DoDelayedDoorGeneric( &sector, sd_open, 300 * TICRATE, VDOORWAIT, IntToFixed( 2 ) );
+				sector.special = 0;
+				break;
+
+			case DSS_LightFlicker:
+				P_SpawnFireFlicker( &sector );
+				sector.special = 0;
+				break;
+
+			case DSS_None:
+			case DSS_10Damage:
+			case DSS_5Damage:
+			case DSS_20DamageAndEnd:
+			case DSS_20Damage:
+				break;
+
+			case DSS_Unused1:
+			case DSS_Unused2:
+			default:
+				I_LogAddEntryVar( Log_Error, "P_SpawnSectorSpecialsGeneric: Sector %d has unknown special type %d", sector.index, sector.special );
+				sector.special = 0;
+				break;
+			}
+		}
+	}
 
 	int32_t leftcount = 0;
 	int32_t rightcount = 0;
@@ -1926,7 +2067,7 @@ DOOM_C_API doombool P_SpawnExtendedSpecials()
 			case Scroll_WallTextureBySector_Accelerative_Always:
 			case Transfer_WindByLength_Always:
 			case Transfer_CurrentByLength_Always:
-			//case Transfer_WindOrCurrentByPoint_Always:
+			case Transfer_WindOrCurrentByPoint_Always:
 			case Scroll_CeilingTexture_Displace_Always:
 			case Scroll_FloorTexture_Displace_Always:
 			case Scroll_FloorObjects_Displace_Always:
@@ -2077,7 +2218,7 @@ DOOM_C_API doombool P_SpawnExtendedSpecials()
 	return true;
 }
 
-DOOM_C_API void P_MobjInExtendedSector( mobj_t* mobj )
+DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 {
 	sector_t*&	sector = mobj->subsector->sector;
 	int16_t&	special = sector->special;
@@ -2089,6 +2230,65 @@ DOOM_C_API void P_MobjInExtendedSector( mobj_t* mobj )
 	}
 
 	bool candamage = !( leveltime & 0x1f );
+
+	if( player )
+	{
+		if( ( special & ~DSS_Mask ) == 0
+			&& !player->powers[pw_ironfeet] )
+		{
+			switch( special & DSS_Mask )
+			{
+			case DSS_5Damage:
+				if( candamage )
+				{
+					P_DamageMobj( mobj, NULL, NULL, 5 );
+				}
+				break;
+
+			case DSS_10Damage:
+				if( candamage )
+				{
+					P_DamageMobj( mobj, NULL, NULL, 10 );
+				}
+				break;
+
+			case DSS_20Damage:
+			case DSS_20DamageAndLightBlink:
+				if( candamage )
+				{
+					P_DamageMobj( mobj, NULL, NULL, 20 );
+				}
+				break;
+
+			case DSS_20DamageAndEnd:
+				if( !comp.god_mode_absolute )
+				{
+					player->cheats &= ~CF_GODMODE;
+				}
+
+				if( candamage )
+				{
+					P_DamageMobj( mobj, NULL, NULL, 20 );
+				}
+
+				if( player->health <= 10 )
+				{
+					G_ExitLevel();
+				}
+			default:
+				break;
+			}
+		}
+
+		if( sector->secretstate != Secret_Discovered && ( special & SectorSecret_Mask ) == SectorSecret_Yes )
+		{
+			player->secretcount++;
+			sector->special = 0;
+			sector->secretstate = Secret_Discovered;
+			++session.total_found_secrets_global;
+			++session.total_found_secrets[ player - players ];
+		}
+	}
 
 	if( player && sim.boom_sector_specials )
 	{
@@ -2113,15 +2313,6 @@ DOOM_C_API void P_MobjInExtendedSector( mobj_t* mobj )
 			default:
 				break;
 			}
-		}
-
-		if( sector->secretstate != Secret_Discovered && ( special & SectorSecret_Mask ) == SectorSecret_Yes )
-		{
-			player->secretcount++;
-			sector->special = 0;
-			sector->secretstate = Secret_Discovered;
-			++session.total_found_secrets_global;
-			++session.total_found_secrets[ player - players ];
 		}
 	}
 

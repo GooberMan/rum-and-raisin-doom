@@ -31,6 +31,7 @@
 
 #include "w_wad.h"
 
+#pragma optimize( "", off )
 // Externs
 extern "C"
 {
@@ -60,7 +61,7 @@ static simvalues_t GetVanillaValues( GameVersion_t version, GameMode_t mode )
 	values.comp.lost_soul_limit = true;						// comp_pain
 	values.comp.lost_souls_behind_walls = true;				// comp_skull
 	values.comp.blazing_door_double_sounds = true;			// comp_blazing
-	values.comp.door_tagged_light = false;					// comp_doorlight
+	values.comp.door_tagged_light_is_abrupt = true;			// comp_doorlight
 	values.comp.god_mode_absolute = false;					// comp_god
 	values.comp.powerup_cheats_infinite = false;			// comp_infcheat
 	values.comp.dead_players_exit_levels = true;			// comp_zombie
@@ -183,7 +184,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.lost_soul_limit = false;					// comp_pain
 	values.comp.lost_souls_behind_walls = false;			// comp_skull
 	values.comp.blazing_door_double_sounds = false;			// comp_blazing
-	values.comp.door_tagged_light = true;					// comp_doorlight
+	values.comp.door_tagged_light_is_abrupt = true;			// comp_doorlight
 	values.comp.god_mode_absolute = true;					// comp_god
 	values.comp.powerup_cheats_infinite = true;				// comp_infcheat
 	values.comp.dead_players_exit_levels = true;			// comp_zombie
@@ -255,12 +256,14 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.generic_specials_handling = true;			// Rewritten specials, based on Boom standards but considered limit removing
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
+	values.sim.door_tagged_light = true;					// Dx with tags does the Boom lighting thing
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
-	values.sim.mbf_line_specials = true;					// Sky transfers, that's it
+	values.sim.mbf_line_specials = false;					// Sky transfers, that's it
 	values.sim.mbf_thing_mobj_flags = false;				// Bouncy! Friendly! TOUCHY!
 	values.sim.mbf_code_pointers = false;					// Dehacked additions
+	values.sim.mbf_things = false;							// DOGS
 	values.sim.mbf21_line_specials = false;					// New texture scrollers, new flags
 	values.sim.mbf21_sector_specials = false;				// Insta-deaths
 	values.sim.mbf21_thing_flags = false;					// flags2 field
@@ -292,7 +295,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.lost_soul_limit = false;					// comp_pain
 	values.comp.lost_souls_behind_walls = false;			// comp_skull
 	values.comp.blazing_door_double_sounds = false;			// comp_blazing
-	values.comp.door_tagged_light = false;					// comp_doorlight
+	values.comp.door_tagged_light_is_abrupt = false;		// comp_doorlight
 	values.comp.god_mode_absolute = true;					// comp_god
 	values.comp.powerup_cheats_infinite = true;				// comp_infcheat
 	values.comp.dead_players_exit_levels = true;			// comp_zombie
@@ -364,12 +367,14 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.generic_specials_handling = true;			// Rewritten specials, based on Boom standards but considered limit removing
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
+	values.sim.door_tagged_light = true;					// Dx with tags does the Boom lighting thing
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.mbf_line_specials = true;					// Sky transfers, that's it
 	values.sim.mbf_thing_mobj_flags = true;					// Bouncy! Friendly! TOUCHY!
 	values.sim.mbf_code_pointers = true;					// Dehacked additions
+	values.sim.mbf_things = true;							// DOGS
 	values.sim.mbf21_line_specials = false;					// New texture scrollers, new flags
 	values.sim.mbf21_sector_specials = false;				// Insta-deaths
 	values.sim.mbf21_thing_flags = false;					// flags2 field
@@ -392,7 +397,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.lost_soul_limit = true;						// comp_pain
 	values.comp.lost_souls_behind_walls = true;				// comp_skull
 	values.comp.blazing_door_double_sounds = true;			// comp_blazing
-	values.comp.door_tagged_light = false;					// comp_doorlight
+	values.comp.door_tagged_light_is_abrupt = false;		// comp_doorlight
 	values.comp.god_mode_absolute = false;					// comp_god
 	values.comp.powerup_cheats_infinite = false;			// comp_infcheat
 	values.comp.dead_players_exit_levels = true;			// comp_zombie
@@ -416,7 +421,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.monsters_back_out = false;					// monster_backing
 	values.comp.monsters_climb_steep_stairs = false;		// monkeys
 	values.comp.monsters_avoid_hazards = false;				// monster_avoid_hazards
-	values.comp.monsters_affected_by_friction = false;		// monster_friction
+	values.comp.monsters_affected_by_friction = true;		// monster_friction
 	values.comp.monsters_help_friends = false;				// help_friends
 	values.comp.num_helper_dogs = 0;						// player_helpers
 	values.comp.friend_minimum_distance = 0;				// friend_distance
@@ -464,12 +469,14 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.generic_specials_handling = true;			// Rewritten specials, based on Boom standards but considered limit removing
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
+	values.sim.door_tagged_light = true;					// Dx with tags does the Boom lighting thing
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.mbf_line_specials = true;					// Sky transfers, that's it
 	values.sim.mbf_thing_mobj_flags = true;					// Bouncy! Friendly! TOUCHY!
 	values.sim.mbf_code_pointers = true;					// Dehacked additions
+	values.sim.mbf_things = true;							// DOGS
 	values.sim.mbf21_line_specials = true;					// New texture scrollers, new flags
 	values.sim.mbf21_sector_specials = true;				// Insta-deaths
 	values.sim.mbf21_thing_flags = true;					// flags2 field

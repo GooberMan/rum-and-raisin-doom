@@ -29,6 +29,8 @@
 
 #include "m_container.h"
 
+#pragma optimize( "", off )
+
 // This is fairly evil, and won't survive the transition to C++
 extern "C"
 {
@@ -286,15 +288,15 @@ static void DEH_BEXPtrParseLine( deh_context_t *context, char* line, void* tag )
 	}
 
 	int32_t frame_number = 0;
-	if( !sscanf( frame_lookup, "FRAME %d", &frame_number ) )
+	if( !sscanf( frame_lookup, "FRAME %d", &frame_number )
+		&& !sscanf( frame_lookup, "Frame %d", &frame_number ) )
 	{
 		DEH_Warning( context, "'%s' is an invalid frame", frame_lookup );
 		return;
 	}
 
 	auto found = PointerLookup.find( frame_func );
-	if( found == PointerLookup.end()
-		|| found->second.minimumver > DEH_DoomVersion( context ) )
+	if( found == PointerLookup.end()  )
 	{
 		DEH_Warning( context, "'%s' is an invalid function", frame_func );
 		return;

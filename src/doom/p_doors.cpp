@@ -517,7 +517,6 @@ void P_SpawnDoorCloseIn30 (sector_t* sec)
     P_AddThinker (&door->thinker);
 
     sec->specialdata = door;
-    sec->special = 0;
 
     door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
     door->sector = sec;
@@ -542,7 +541,6 @@ P_SpawnDoorRaiseIn5Mins
     P_AddThinker (&door->thinker);
 
     sec->specialdata = door;
-    sec->special = 0;
 
     door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
     door->sector = sec;

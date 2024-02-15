@@ -333,6 +333,8 @@ DOOM_C_API typedef struct
 	int32_t			lighttag;
 	int32_t			lightmin;
 	int32_t			lightmax;
+
+	int32_t			idletics;
 } vldoor_t;
 
 
@@ -770,8 +772,8 @@ DOOM_C_API int32_t	EV_DoStairsGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
 
 DOOM_C_API int32_t	P_SpawnSectorScroller( line_t* line );
-DOOM_C_API doombool	P_SpawnExtendedSpecials();
-DOOM_C_API void		P_MobjInExtendedSector( mobj_t* mobj );
+DOOM_C_API doombool	P_SpawnSectorSpecialsGeneric();
+DOOM_C_API void		P_MobjInSectorGeneric( mobj_t* mobj );
 
 #if defined( __cplusplus )
 

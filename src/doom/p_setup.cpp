@@ -1418,7 +1418,7 @@ DOOM_C_API void P_Init (void)
 {
 	P_InitSwitchList();
 	P_InitPicAnims();
-	R_InitSprites( sim.mbf_things ? sprnames_boom
+	R_InitSprites( sim.mbf_things ? sprnames_mbf
 					: sim.boom_things ? sprnames_boom
 					: sprnames );
 
