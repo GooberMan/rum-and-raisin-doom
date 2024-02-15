@@ -1095,7 +1095,7 @@ void D_IdentifyVersion(void)
 static void D_AddWidescreenPacks()
 {
 	M_DashboardSetLicenceInUse( Licence_WidePix, false );
-	if( remove_limits && !M_CheckParm( "-nowidepix" ) && gamevariant != unityport )
+	if( !M_CheckParm( "-nowidepix" ) && gamevariant != unityport )
 	{
 		const char* widescreenpackname = NULL;
 
@@ -1128,8 +1128,8 @@ static void D_AddWidescreenPacks()
 		const char* widescreenfilename = widescreenpackname ? D_FindWADByName( widescreenpackname ) : NULL;
 		if( widescreenfilename )
 		{
-			I_TerminalPrintf( Log_Startup, " merging %s\n", widescreenfilename );
-			W_MergeFile( widescreenfilename );
+			I_TerminalPrintf( Log_Startup, " Adding %s\n", widescreenfilename );
+			W_AddFileWithType( widescreenfilename, wt_system | wt_widepix );
 			free( (void*)widescreenfilename );
 
 			M_DashboardSetLicenceInUse( Licence_WidePix, true );
@@ -1139,14 +1139,12 @@ static void D_AddWidescreenPacks()
 
 static void D_AddExtendedAssets()
 {
-	if( remove_limits )
+	const char* boomres = D_FindWADByName( "boomres.wad" );
+	if( boomres )
 	{
-		const char* boomres = D_FindWADByName( "boomres.wad" );
-		if( boomres )
-		{
-			W_MergeFile( boomres );
-			free( (void*)boomres );
-		}
+		I_TerminalPrintf( Log_Startup, " Adding boomres.wad\n" );
+		W_AddFileWithType( boomres, wt_system | wt_boomassets );
+		free( (void*)boomres );
 	}
 }
 

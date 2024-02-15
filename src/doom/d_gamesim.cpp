@@ -542,10 +542,10 @@ static GameVersion_t DetermineFromDemo( byte* demo )
 
 static GameVersion_t DetermineFromBoomLumps()
 {
-	if( W_CheckNumForName( "ANIMATED" ) >= 0
-		|| W_CheckNumForName( "SWITCHES" ) >= 0
-		|| W_CheckNumForName( "C_BEGIN" ) >= 0
-		|| W_CheckNumForName( "C_END" ) >= 0 )
+	if( W_CheckNumForNameExcluding( "ANIMATED", wt_system ) >= 0
+		|| W_CheckNumForNameExcluding( "SWITCHES", wt_system ) >= 0
+		|| W_CheckNumForNameExcluding( "C_BEGIN", wt_system ) >= 0
+		|| W_CheckNumForNameExcluding( "C_END", wt_system ) >= 0 )
 	{
 		return exe_boom_2_02;
 	}
@@ -555,7 +555,7 @@ static GameVersion_t DetermineFromBoomLumps()
 
 static GameVersion_t DetermineFromMBFLumps()
 {
-	if( W_CheckNumForName( "OPTIONS" ) >= 0 )
+	if( W_CheckNumForNameExcluding( "OPTIONS", wt_system ) >= 0 )
 	{
 		return exe_mbf;
 	}
@@ -702,7 +702,7 @@ static GameVersion_t DetermineGameExecutable()
 
 	VERSION_INCREASE( version, DEH_GetLoadedGameVersion() );
 
-	lumpindex_t complvl = W_CheckNumForName( "COMPLVL" );
+	lumpindex_t complvl = W_CheckNumForNameExcluding( "COMPLVL", wt_system );
 	if( complvl >= 0 )
 	{
 		VERSION_INCREASE( version, DetermineFromComplvlLump( complvl ) );

@@ -51,6 +51,23 @@ extern "C"
 	extern int32_t remove_limits;
 }
 
+template< typename _type >
+requires std::is_enum_v< _type >
+constexpr auto operator|( _type lhs, _type rhs )
+{
+	using underlying = std::underlying_type_t< _type >;
+	return (_type)( (underlying)lhs | (underlying)rhs );
+}
+
+template< typename _type >
+requires std::is_enum_v< _type >
+constexpr auto operator&( _type lhs, _type rhs )
+{
+	using underlying = std::underlying_type_t< _type >;
+	return (_type)( (underlying)lhs & (underlying)rhs );
+}
+
+
 std::vector< wad_file_t* > wadfiles;
 
 const std::vector< wad_file_t* >& W_GetLoadedWADFiles()
@@ -104,7 +121,7 @@ DOOM_C_API doombool W_HasAnyLumps()
 // Other files are single lumps with the base filename
 //  for the lump name.
 
-wad_file_t *W_AddFile (const char *filename)
+wad_file_t *W_AddFileWithType(const char *filename, wadtype_t type)
 {
     wadinfo_t header;
     lumpindex_t i;
@@ -144,62 +161,69 @@ wad_file_t *W_AddFile (const char *filename)
 		return NULL;
     }
 
+	wadtype_t foundtype = wt_none;
+
 	int32_t iswad = strcasecmp( filename + M_MAX( strlen( filename ) - 3, 0 ), "wad" );
 	int32_t iswidepix = strcasecmp(filename + M_MAX( strlen( filename ) - 7, 0 ), "widepix" );
     if ( iswad != 0	&& iswidepix != 0 )
     {
-	// single lump file
+		// single lump file
 
-        // fraggle: Swap the filepos and size here.  The WAD directory
-        // parsing code expects a little-endian directory, so will swap
-        // them back.  Effectively we're constructing a "fake WAD directory"
-        // here, as it would appear on disk.
+		// fraggle: Swap the filepos and size here.  The WAD directory
+		// parsing code expects a little-endian directory, so will swap
+		// them back.  Effectively we're constructing a "fake WAD directory"
+		// here, as it would appear on disk.
 
-	fileinfo = (filelump_t*)Z_Malloc(sizeof(filelump_t), PU_STATIC, 0);
-	fileinfo->filepos = LONG(0);
-	fileinfo->size = LONG(wad_file->length);
+		fileinfo = (filelump_t*)Z_Malloc(sizeof(filelump_t), PU_STATIC, 0);
+		fileinfo->filepos = LONG(0);
+		fileinfo->size = LONG(wad_file->length);
 
-        // Name the lump after the base of the filename (without the
-        // extension).
+		// Name the lump after the base of the filename (without the
+		// extension).
 
-	M_ExtractFileBase (filename, fileinfo->name);
-	numfilelumps = 1;
+		M_ExtractFileBase (filename, fileinfo->name);
+		numfilelumps = 1;
+		foundtype = type | wt_singlelump;
     }
     else
     {
-	// WAD file
-        W_Read(wad_file, 0, &header, sizeof(header));
+		// WAD file
+		W_Read(wad_file, 0, &header, sizeof(header));
+		foundtype = wt_iwad;
+		if (strncmp(header.identification,"IWAD",4))
+		{
+			foundtype = wt_pwad;
+			// Homebrew levels?
+			if (strncmp(header.identification,"PWAD",4))
+			{
+			W_CloseFile(wad_file);
+			I_Error ("Wad file %s doesn't have IWAD "
+				 "or PWAD id\n", filename);
+			}
 
-	if (strncmp(header.identification,"IWAD",4))
-	{
-	    // Homebrew levels?
-	    if (strncmp(header.identification,"PWAD",4))
-	    {
-		W_CloseFile(wad_file);
-		I_Error ("Wad file %s doesn't have IWAD "
-			 "or PWAD id\n", filename);
-	    }
+			// ???modifiedgame = true;
+		}
 
-	    // ???modifiedgame = true;
-	}
+		header.numlumps = LONG(header.numlumps);
 
-	header.numlumps = LONG(header.numlumps);
+		// Vanilla Doom doesn't like WADs with more than 4046 lumps
+		// https://www.doomworld.com/vb/post/1010985
+		if (!remove_limits && !strncmp(header.identification,"PWAD",4) && header.numlumps > 4046)
+		{
+				W_CloseFile(wad_file);
+				I_Error ("Error: Vanilla limit for lumps in a WAD is 4046, "
+						"PWAD %s has %d", filename, header.numlumps);
+		}
 
-         // Vanilla Doom doesn't like WADs with more than 4046 lumps
-         // https://www.doomworld.com/vb/post/1010985
-         if (!remove_limits && !strncmp(header.identification,"PWAD",4) && header.numlumps > 4046)
-         {
-                 W_CloseFile(wad_file);
-                 I_Error ("Error: Vanilla limit for lumps in a WAD is 4046, "
-                          "PWAD %s has %d", filename, header.numlumps);
-         }
+		header.infotableofs = LONG(header.infotableofs);
+		length = header.numlumps*sizeof(filelump_t);
+		fileinfo = (filelump_t*)Z_Malloc(length, PU_STATIC, 0);
 
-	header.infotableofs = LONG(header.infotableofs);
-	length = header.numlumps*sizeof(filelump_t);
-	fileinfo = (filelump_t*)Z_Malloc(length, PU_STATIC, 0);
+		foundtype = ( type | foundtype );
+		wad_file->type = foundtype;
 
-        W_Read(wad_file, header.infotableofs, fileinfo, length);
-	numfilelumps = header.numlumps;
+		W_Read(wad_file, header.infotableofs, fileinfo, length);
+		numfilelumps = header.numlumps;
     }
 
     // Increase size of numlumps array to accomodate the new file.
@@ -221,6 +245,7 @@ wad_file_t *W_AddFile (const char *filename)
         lump_p->wad_file = wad_file;
         lump_p->position = LONG(filerover->filepos);
         lump_p->size = LONG(filerover->size);
+		lump_p->type = foundtype;
         lump_p->cache = NULL;
         strncpy(lump_p->name, filerover->name, 8);
 		lump_p->namepadding = 0;
@@ -249,7 +274,10 @@ wad_file_t *W_AddFile (const char *filename)
     return wad_file;
 }
 
-
+DOOM_C_API wad_file_t *W_AddFile(const char *filename)
+{
+	return W_AddFileWithType(filename, wt_none);
+}
 
 //
 // W_NumLumps
@@ -266,7 +294,7 @@ int W_NumLumps (void)
 // Returns -1 if name not found.
 //
 
-lumpindex_t W_CheckNumForName(const char *name)
+DOOM_C_API lumpindex_t W_CheckNumForNameExcluding(const char *name, wadtype_t exclude)
 {
     lumpindex_t i;
 
@@ -282,7 +310,7 @@ lumpindex_t W_CheckNumForName(const char *name)
 
         for (i = lumphash[hash]; i != -1; i = lumpinfo[i]->next)
         {
-            if (!strncasecmp(lumpinfo[i]->name, name, 8))
+            if ( !strncasecmp(lumpinfo[i]->name, name, 8) && ( lumpinfo[i]->type ^ exclude ) == lumpinfo[i]->type )
             {
                 return i;
             }
@@ -296,7 +324,7 @@ lumpindex_t W_CheckNumForName(const char *name)
 
         for (i = numlumps - 1; i >= 0; --i)
         {
-            if (!strncasecmp(lumpinfo[i]->name, name, 8))
+            if (!strncasecmp(lumpinfo[i]->name, name, 8) && ( lumpinfo[i]->type ^ exclude ) == lumpinfo[i]->type )
             {
                 return i;
             }
@@ -308,8 +336,10 @@ lumpindex_t W_CheckNumForName(const char *name)
     return -1;
 }
 
-
-
+DOOM_C_API lumpindex_t W_CheckNumForName(const char *name)
+{
+	return W_CheckNumForNameExcluding( name, wt_none );
+}
 
 //
 // W_GetNumForName
@@ -667,5 +697,5 @@ const char *W_WadPathForLumpName( const char* name )
 
 doombool W_IsIWADLump(const lumpinfo_t *lump)
 {
-	return lump->wad_file == lumpinfo[0]->wad_file;
+	return ( lump->type & wt_iwad ) == wt_iwad;
 }

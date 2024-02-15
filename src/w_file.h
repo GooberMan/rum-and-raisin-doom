@@ -23,6 +23,18 @@
 #include <stdio.h>
 #include "doomtype.h"
 
+DOOM_C_API typedef enum wadtype_e
+{
+	wt_none			= 0x00000000,
+	wt_iwad			= 0x00000001,
+	wt_pwad			= 0x00000002,
+	wt_singlelump	= 0x00000004,
+	wt_system		= 0x00000008,
+	wt_widepix		= 0x00000010,
+	wt_boomassets	= 0x00000020,
+	wt_mbfassets	= 0x00000040,
+} wadtype_t;
+
 DOOM_C_API typedef struct _wad_file_s wad_file_t;
 
 DOOM_C_API typedef struct
@@ -50,6 +62,8 @@ DOOM_C_API struct _wad_file_s
 
     // Length of the file, in bytes.
     unsigned int length;
+
+	wadtype_t	type;
 
     // File's location on disk.
     const char *path;

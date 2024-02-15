@@ -35,9 +35,7 @@
 // WADFILE I/O related stuff.
 //
 
-DOOM_C_API typedef struct lumpinfo_s lumpinfo_t;
-
-DOOM_C_API struct lumpinfo_s
+DOOM_C_API typedef struct lumpinfo_s
 {
     wad_file_t *wad_file;
     void		*cache;
@@ -46,10 +44,11 @@ DOOM_C_API struct lumpinfo_s
 	int32_t		namepadding;
     int32_t		position;
     int32_t		size;
+	wadtype_t	type;
 
     // Used for hash table lookups
     lumpindex_t next;
-};
+} lumpinfo_t;
 
 DOOM_C_API typedef PACKED_STRUCT (
 wadinfo_e {
@@ -74,9 +73,11 @@ DOOM_C_API extern doombool wadrenderlock;
 
 DOOM_C_API doombool W_HasAnyLumps();
 DOOM_C_API wad_file_t *W_AddFile(const char *filename);
+DOOM_C_API wad_file_t *W_AddFileWithType(const char *filename, wadtype_t type);
 DOOM_C_API void W_Reload(void);
 
 DOOM_C_API lumpindex_t W_CheckNumForName(const char *name);
+DOOM_C_API lumpindex_t W_CheckNumForNameExcluding(const char *name, wadtype_t exclude);
 DOOM_C_API lumpindex_t W_GetNumForName(const char *name);
 DOOM_C_API const char* W_GetNameForNum( lumpindex_t num );
 
