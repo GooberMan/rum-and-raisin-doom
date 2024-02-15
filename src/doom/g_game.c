@@ -189,6 +189,7 @@ const uint32_t THINGIDENTIFIER		= 0xDEADBEA7;
 		dashboardactive = Dash_Normal; \
 		S_StartSound( NULL, sfx_pdiehi ); \
 		I_LogAddEntryVar( Log_Error, errormessage, __VA_ARGS__ ); \
+		__debugbreak(); \
 		return; \
 	} \
 	auditbufferpos += sizeof( type ); \
@@ -1549,11 +1550,13 @@ void G_ExitLevel (void)
 // Here's for the german edition.
 void G_SecretExitLevel (void) 
 { 
+#if 0
     // IF NO WOLF3D LEVELS, NO SECRET EXIT!
     if ( (gamemode == commercial)
       && (W_CheckNumForName("map31")<0))
 	secretexit = false;
     else
+#endif
 	secretexit = true; 
     gameaction = ga_completed; 
 } 
@@ -1564,49 +1567,28 @@ void G_DoCompleted (void)
 	 
     gameaction = ga_nothing; 
  
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-	if (playeringame[i]) 
-	    G_PlayerFinishLevel (i);        // take away cards and stuff 
-	 
-    if (automapactive) 
-	AM_Stop (); 
-	
-    if (gamemode != commercial)
-    {
-        // Chex Quest ends after 5 levels, rather than 8.
-
-        if (gameversion == exe_chex)
-        {
-            if (current_map->map_num == 5 && !( gameflags & GF_LoopOneLevel ) )
-            {
-                gameaction = ga_victory;
-                return;
-            }
-        }
-        else
-        {
-            switch(current_map->map_num)
-            {
-              case 8:
-				if( !( gameflags & GF_LoopOneLevel ) )
-				{
-					gameaction = ga_victory;
-					return;
-				}
-				break;
-            }
-        }
-    }
-
-//#if 0  Hmmm - why?
-	if ( (current_map->map_num == 8) && (gamemode != commercial) && !( gameflags & GF_LoopOneLevel ) ) 
+	for (i=0 ; i<MAXPLAYERS ; i++) 
 	{
-		// victory 
-		gameaction = ga_victory; 
-		return; 
-	} 
-//#endif
-    
+		if (playeringame[i]) 
+		{
+			G_PlayerFinishLevel (i);        // take away cards and stuff 
+		}
+	}
+	 
+	if (automapactive)
+	{
+		AM_Stop ();
+	}
+	
+	if( !secretexit
+		&& current_map->endgame
+		&& ( current_map->endgame->type & EndGame_StraightToVictory )
+		&& !( gameflags & GF_LoopOneLevel ) )
+	{
+		gameaction = ga_victory;
+		return;
+	}
+
 	for (i=0 ; i<MAXPLAYERS ; i++) 
 	{
 		players[i].didsecret |= ( current_map->map_flags & Map_Secret );
@@ -1627,38 +1609,17 @@ void G_DoCompleted (void)
 		wminfo.nextmap = current_map;
 	}
 
-    wminfo.maxkills = totalkills; 
-    wminfo.maxitems = totalitems; 
-    wminfo.maxsecret = totalsecret; 
-    wminfo.maxfrags = 0; 
+	wminfo.maxkills = totalkills; 
+	wminfo.maxitems = totalitems; 
+	wminfo.maxsecret = totalsecret; 
+	wminfo.maxfrags = 0; 
 	wminfo.partime = DEH_ParTime( current_map ) * TICRATE;
-
-    // Set par time. Exceptions are added for purposes of
-    // statcheck regression testing.
-    //if (gamemode == commercial)
-    //{
-    //    // map33 reads its par time from beyond the cpars[] array
-    //    if (gamemap == 33)
-    //    {
-    //        int cpars32;
-	//
-    //        memcpy(&cpars32, DEH_String(GAMMALVL0), sizeof(int));
-    //        cpars32 = LONG(cpars32);
-	//
-    //        wminfo.partime = TICRATE*cpars32;
-    //    }
-    //    else
-    //    {
-    //        wminfo.partime = TICRATE*cpars[gamemap-1];
-    //    }
-    //}
-
-    wminfo.pnum = consoleplayer; 
+	wminfo.pnum = consoleplayer; 
  
 	size_t buffersize = sizeof( doombool ) * ( current_episode->highest_map_num + 1 );
 
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-    { 
+	for (i=0 ; i<MAXPLAYERS ; i++) 
+	{ 
 		wminfo.plyr[i].in = playeringame[i]; 
 		wminfo.plyr[i].skills = players[i].killcount; 
 		wminfo.plyr[i].sitems = players[i].itemcount; 
@@ -1671,15 +1632,15 @@ void G_DoCompleted (void)
 			wminfo.plyr[i].visited = Z_Malloc( buffersize, PU_LEVEL, &wminfo.plyr[ i ].visited );
 			memcpy( wminfo.plyr[ i ].visited, players[ i ].visitedlevels, buffersize );
 		}
-    } 
+	}
  
-    gamestate = GS_INTERMISSION; 
-    viewactive = false; 
-    automapactive = false; 
+	gamestate = GS_INTERMISSION;
+	viewactive = false;
+	automapactive = false;
 
-    StatCopy(&wminfo);
+	StatCopy(&wminfo);
  
-    WI_Start (&wminfo); 
+	WI_Start (&wminfo);
 } 
 
 
@@ -1735,9 +1696,10 @@ void G_DoWorldDone (void)
 			players[curr].playerstate = PST_REBORN;
 		}
 	}
-    G_DoLoadLevel (); 
-    gameaction = ga_nothing; 
-    viewactive = true; 
+
+	G_DoLoadLevel ();
+	gameaction = ga_nothing;
+	viewactive = true;
 } 
  
 

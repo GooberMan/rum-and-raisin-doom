@@ -39,6 +39,8 @@ DOOM_C_API typedef enum endgametype_e
 
 	EndGame_LoopingMusic		= 0x0100,
 
+	EndGame_StraightToVictory	= 0x0200,
+
 	EndGame_Ultimate			= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
 
 	EndGame_AnyArtScreen		= EndGame_Pic | EndGame_Bunny

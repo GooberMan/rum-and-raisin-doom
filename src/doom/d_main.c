@@ -1361,68 +1361,68 @@ static void InitGameVersion(void)
 
             gameversion = exe_hacx;
         }
-        else if (gamemode == shareware || gamemode == registered
-              || (gamemode == commercial && gamemission == doom2))
-        {
-            // original
-            gameversion = exe_doom_1_9;
-
-            // Detect version from demo lump
-            for (i = 1; i <= 3; ++i)
-            {
-                M_snprintf(demolumpname, 6, "demo%i", i);
-                if (W_CheckNumForName(demolumpname) > 0)
-                {
-                    demolump = W_CacheLumpName(demolumpname, PU_STATIC);
-                    demoversion = demolump[0];
-                    W_ReleaseLumpName(demolumpname);
-                    status = true;
-                    switch (demoversion)
-                    {
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 3:
-                        case 4:
-                            gameversion = exe_doom_1_2;
-                            break;
-                        case 106:
-                            gameversion = exe_doom_1_666;
-                            break;
-                        case 107:
-                            gameversion = exe_doom_1_7;
-                            break;
-                        case 108:
-                            gameversion = exe_doom_1_8;
-                            break;
-                        case 109:
-                            gameversion = exe_doom_1_9;
-                            break;
-                        default:
-                            status = false;
-                            break;
-                    }
-                    if (status)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-        else if (gamemode == retail)
-        {
-            gameversion = exe_ultimate;
-        }
-        else if (gamemode == commercial)
-        {
-            // Final Doom: tnt or plutonia
-            // Defaults to emulating the first Final Doom executable,
-            // which has the crash in the demo loop; however, having
-            // this as the default should mean that it plays back
-            // most demos correctly.
-
-            gameversion = exe_final;
-        }
+        //else if (gamemode == shareware || gamemode == registered
+        //      || (gamemode == commercial && gamemission == doom2))
+        //{
+        //    // original
+        //    gameversion = exe_doom_1_9;
+		//
+        //    // Detect version from demo lump
+        //    for (i = 1; i <= 3; ++i)
+        //    {
+        //        M_snprintf(demolumpname, 6, "demo%i", i);
+        //        if (W_CheckNumForName(demolumpname) > 0)
+        //        {
+        //            demolump = W_CacheLumpName(demolumpname, PU_STATIC);
+        //            demoversion = demolump[0];
+        //            W_ReleaseLumpName(demolumpname);
+        //            status = true;
+        //            switch (demoversion)
+        //            {
+        //                case 0:
+        //                case 1:
+        //                case 2:
+        //                case 3:
+        //                case 4:
+        //                    gameversion = exe_doom_1_2;
+        //                    break;
+        //                case 106:
+        //                    gameversion = exe_doom_1_666;
+        //                    break;
+        //                case 107:
+        //                    gameversion = exe_doom_1_7;
+        //                    break;
+        //                case 108:
+        //                    gameversion = exe_doom_1_8;
+        //                    break;
+        //                case 109:
+        //                    gameversion = exe_doom_1_9;
+        //                    break;
+        //                default:
+        //                    status = false;
+        //                    break;
+        //            }
+        //            if (status)
+        //            {
+        //                break;
+        //            }
+        //        }
+        //    }
+        //}
+        //else if (gamemode == retail)
+        //{
+        //    gameversion = exe_ultimate;
+        //}
+        //else if (gamemode == commercial)
+        //{
+        //    // Final Doom: tnt or plutonia
+        //    // Defaults to emulating the first Final Doom executable,
+        //    // which has the crash in the demo loop; however, having
+        //    // this as the default should mean that it plays back
+        //    // most demos correctly.
+		//
+        //    gameversion = exe_final;
+        //}
     }
 
     // Deathmatch 2.0 did not exist until Doom v1.4
@@ -2098,7 +2098,7 @@ void D_DoomMain (void)
 		    I_Error(DEH_String("\nThis is not the registered version."));
     }
 
-    if (gameversion < exe_limit_removing
+    if ( !comp.additive_data_blocks
 		&& ( W_CheckNumForName("SS_START") >= 0
 			|| W_CheckNumForName("FF_END") >= 0) )
     {

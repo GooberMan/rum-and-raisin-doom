@@ -116,7 +116,6 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 
 	values.sim.extended_saves = true;
 	values.sim.extended_map_formats = true;
-	values.sim.allow_unknown_thing_types = true;
 	values.sim.generic_specials_handling = true;
 	values.sim.hud_combined_keys = true;
 	values.sim.unlimited_scrollers = true;

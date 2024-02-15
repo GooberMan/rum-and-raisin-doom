@@ -1547,7 +1547,7 @@ intermission_t doom_intermission_e1 =
 
 endgame_t doom_endgame_e1 =
 {
-	EndGame_Pic | EndGame_LoopingMusic | EndGame_Ultimate,	// type
+	EndGame_Pic | EndGame_LoopingMusic | EndGame_Ultimate | EndGame_StraightToVictory,	// type
 	&doom_intermission_e1,							// intermission
 	FlowString( "HELP2" ),							// primary_image_lump
 	FlowString( "CREDIT" ),							// secondary_image_lump
@@ -1618,7 +1618,7 @@ intermission_t doom_intermission_e2 =
 
 endgame_t doom_endgame_e2 =
 {
-	EndGame_Pic | EndGame_LoopingMusic,				// type
+	EndGame_Pic | EndGame_LoopingMusic | EndGame_StraightToVictory,	// type
 	&doom_intermission_e2,							// intermission
 	FlowString( "VICTORY2" ),						// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
@@ -1697,7 +1697,7 @@ intermission_t doom_intermission_e3 =
 
 endgame_t doom_endgame_e3 =
 {
-	EndGame_Bunny,									// type
+	EndGame_Bunny | EndGame_StraightToVictory,		// type
 	&doom_intermission_e3,							// intermission
 	FlowString( "PFUB2" ),							// primary_image_lump
 	FlowString( "PFUB1" ),							// secondary_image_lump
@@ -1763,7 +1763,7 @@ intermission_t doom_intermission_e4 =
 
 endgame_t doom_endgame_e4 =
 {
-	EndGame_Pic | EndGame_LoopingMusic,				// type
+	EndGame_Pic | EndGame_LoopingMusic | EndGame_StraightToVictory,	// type
 	&doom_intermission_e4,							// intermission
 	FlowString( "ENDPIC" ),							// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump

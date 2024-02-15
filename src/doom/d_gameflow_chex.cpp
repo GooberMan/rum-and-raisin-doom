@@ -380,7 +380,7 @@ intermission_t chex_intermission_e1 =
 
 endgame_t chex_endgame_e1 =
 {
-	EndGame_Pic | EndGame_LoopingMusic,				// type
+	EndGame_Pic | EndGame_LoopingMusic  | EndGame_StraightToVictory, // type
 	&chex_intermission_e1,							// intermission
 	FlowString( "CREDIT" ),							// primary_image_lump
 	EmptyFlowString( ),								// secondary_image_lump
