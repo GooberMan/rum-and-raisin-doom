@@ -60,14 +60,10 @@ static void *DEH_TextStart(deh_context_t *context, char *line)
         return NULL;
     }
 
-    // Only allow string replacements that are possible in Vanilla Doom.  
-    // Chocolate Doom is unforgiving!
-
-    if (!deh_allow_long_strings && tolen > TXT_MaxStringLength(fromlen))
+    // Only allow string replacements that are possible in Vanilla Doom.
+    if (tolen > TXT_MaxStringLength(fromlen))
     {
-        DEH_Error(context, "Replacement string is longer than the maximum "
-                           "possible in doom.exe");
-        return NULL;
+		DEH_IncreaseGameVersion( context, exe_limit_removing );
     }
 
     from_text = malloc(fromlen + 1);
@@ -110,6 +106,5 @@ deh_section_t deh_section_text =
     DEH_TextParseLine,
     NULL,
     NULL,
-	NULL,
 };
 

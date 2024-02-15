@@ -97,6 +97,8 @@ doombool DEH_SetMapping(deh_context_t *context, deh_mapping_t *mapping,
         return false;
     }
 
+	DEH_IncreaseGameVersion( context, entry->minimum_version );
+
     location = GetStructField(structptr, mapping, entry);
 
     //       I_TerminalPrintf("Setting %p::%s to %i (%i bytes)\n",

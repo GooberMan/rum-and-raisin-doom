@@ -34,20 +34,20 @@
 #define DEH_MAPPING(deh_name, fieldname)                      \
              {deh_name, &deh_mapping_base.fieldname,          \
                  sizeof(deh_mapping_base.fieldname),          \
-                 false, false},
+                 false, exe_doom_1_2},
 
 #define MBF21_MAPPING(deh_name, fieldname)                    \
              {deh_name, &deh_mapping_base.fieldname,          \
                  sizeof(deh_mapping_base.fieldname),          \
-                 false, true},
+                 false, exe_mbf21},
 
 #define DEH_MAPPING_STRING(deh_name, fieldname)               \
              {deh_name, &deh_mapping_base.fieldname,          \
                  sizeof(deh_mapping_base.fieldname),          \
-                 true, false},
+                 true, exe_doom_1_2},
 
 #define DEH_UNSUPPORTED_MAPPING(deh_name)                     \
-             {deh_name, NULL, -1, false, false},
+             {deh_name, NULL, -1, false, exe_invalid},
 
 #define DEH_END_MAPPING                                       \
              {NULL, NULL, -1}                                 \
@@ -80,7 +80,7 @@ struct deh_mapping_entry_s
 
     doombool is_string;
 
-	doombool is_mbf21;
+	GameVersion_t minimum_version;
 };
 
 struct deh_mapping_s

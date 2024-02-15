@@ -57,17 +57,18 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
         return NULL;
     }
     
-    if (frame_number < 0 || frame_number >= ( deh_allow_bex ? NUMSTATES : NUMSTATES_VANILLA ) )
+    if (frame_number < 0 || frame_number >= NUMSTATES )
     {
         DEH_Warning(context, "Invalid frame number: %i", frame_number);
         return NULL;
     }
 
-    if (frame_number >= DEH_VANILLA_NUMSTATES) 
-    {
-        DEH_Warning(context, "Attempt to modify frame %i: this will cause "
-                             "problems in Vanilla dehacked.", frame_number);
-    }
+	GameVersion_t version = frame_number < ( NUMSTATES_VANILLA - 1 ) ? exe_doom_1_2
+							: frame_number < NUMSTATES_VANILLA ? exe_doom_1_2 // exe_limit_removing
+							: frame_number < NUMSTATES_BOOM ? exe_boom_2_02
+							: frame_number < NUMSTATES_MBF ? exe_mbf
+							: exe_mbf21_extended;
+	DEH_IncreaseGameVersion( context, version );
 
     state = &states[frame_number];
 
@@ -82,36 +83,34 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
 // This is noticable in Batman Doom where it is impossible to switch weapons
 // away from the fist once selected.
 
-static void DEH_FrameOverflow(deh_context_t *context, char *varname, int value)
-{
-    if (!strcasecmp(varname, "Duration"))
-    {
-        weaponinfo[0].ammo = value;
-    }
-    else if (!strcasecmp(varname, "Codep frame")) 
-    {
-        weaponinfo[0].upstate = value;
-    }
-    else if (!strcasecmp(varname, "Next frame")) 
-    {
-        weaponinfo[0].downstate = value;
-    }
-    else if (!strcasecmp(varname, "Unknown 1"))
-    {
-        weaponinfo[0].readystate = value;
-    }
-    else if (!strcasecmp(varname, "Unknown 2"))
-    {
-        weaponinfo[0].atkstate = value;
-    }
-    else
-    {
-        DEH_Error(context, "Unable to simulate frame overflow: field '%s'",
-                  varname);
-    }
-}
-
-extern int32_t remove_limits;
+//static void DEH_FrameOverflow(deh_context_t *context, char *varname, int value)
+//{
+//    if (!strcasecmp(varname, "Duration"))
+//    {
+//        weaponinfo[0].ammo = value;
+//    }
+//    else if (!strcasecmp(varname, "Codep frame")) 
+//    {
+//        weaponinfo[0].upstate = value;
+//    }
+//    else if (!strcasecmp(varname, "Next frame")) 
+//    {
+//        weaponinfo[0].downstate = value;
+//    }
+//    else if (!strcasecmp(varname, "Unknown 1"))
+//    {
+//        weaponinfo[0].readystate = value;
+//    }
+//    else if (!strcasecmp(varname, "Unknown 2"))
+//    {
+//        weaponinfo[0].atkstate = value;
+//    }
+//    else
+//    {
+//        DEH_Error(context, "Unable to simulate frame overflow: field '%s'",
+//                  varname);
+//    }
+//}
 
 static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 {
@@ -138,11 +137,12 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 
     ivalue = atoi(value);
     
-    if (!remove_limits && state == &states[NUMSTATES_VANILLA - 1])
-    {
-        DEH_FrameOverflow(context, variable_name, ivalue);
-    }
-    else
+	// TODO: Work out how to retain overflow behavior
+    //if (state == &states[NUMSTATES_VANILLA - 1])
+    //{
+    //    DEH_FrameOverflow(context, variable_name, ivalue);
+    //}
+    //else
     {
         // set the appropriate field
 
@@ -154,7 +154,7 @@ static void DEH_FrameSHA1Sum(sha1_context_t *context)
 {
     int i;
 
-    for (i=0; i<( deh_allow_bex ? NUMSTATES : NUMSTATES_VANILLA ); ++i)
+    for (i=0; i < NUMSTATES; ++i)
     {
         DEH_StructSHA1Sum(context, &state_mapping, &states[i]);
     }
@@ -168,6 +168,5 @@ deh_section_t deh_section_frame =
     DEH_FrameParseLine,
     NULL,
     DEH_FrameSHA1Sum,
-	NULL,
 };
 

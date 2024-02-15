@@ -107,17 +107,15 @@ static void DEH_CheatParseLine(deh_context_t *context, char *line, void *tag)
         // If the cheat length exceeds the Vanilla limit, stop.  This
         // does not apply if we have the limit turned off.
 
-        if (!deh_allow_long_cheats && (size_t)i >= cheat->seq->sequence_len)
+        if ((size_t)i >= cheat->seq->sequence_len)
         {
-            DEH_Warning(context, "Cheat sequence longer than supported by "
-                                 "Vanilla dehacked");
-            break;
+			DEH_IncreaseGameVersion( context, exe_limit_removing );
         }
 
-	if (deh_apply_cheats)
-	{
-	    cheat->seq->sequence[i] = unsvalue[i];
-	}
+		if (deh_apply_cheats)
+		{
+			cheat->seq->sequence[i] = unsvalue[i];
+		}
         ++i;
 
         // Absolute limit - don't exceed
@@ -143,6 +141,5 @@ deh_section_t deh_section_cheat =
     DEH_CheatParseLine,
     NULL,
     NULL,
-	NULL,
 };
 

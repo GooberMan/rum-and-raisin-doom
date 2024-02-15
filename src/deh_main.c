@@ -28,6 +28,7 @@
 #include "i_terminal.h"
 #include "d_iwad.h"
 #include "m_argv.h"
+#include "m_misc.h"
 #include "w_wad.h"
 
 #include "deh_defs.h"
@@ -39,26 +40,11 @@ extern const char *deh_signatures[];
 extern int32_t remove_limits;
 
 static doombool deh_initialized = false;
-
-// If true, we can parse [STRINGS] sections in BEX format.
-
-doombool deh_allow_extended_strings = false;
-
-// If true, we can do long string replacements.
-
-doombool deh_allow_long_strings = false;
-
-// If true, we can do cheat replacements longer than the originals.
-
-doombool deh_allow_long_cheats = false;
+static GameVersion_t deh_loaded_version = exe_invalid;
 
 // If false, dehacked cheat replacements are ignored.
 
 doombool deh_apply_cheats = true;
-
-// We're in BEX mode
-
-doombool deh_allow_bex = false;
 
 void DEH_Checksum(sha1_digest_t digest)
 {
@@ -120,7 +106,7 @@ static deh_section_t *GetSectionByName(char *name)
 
     for (i=0; deh_section_types[i] != NULL; ++i)
     {
-        if (!strcasecmp(deh_section_types[i]->name, name) && ( !deh_section_types[ i ]->can_read || *deh_section_types[ i ]->can_read ) )
+        if (!strcasecmp(deh_section_types[i]->name, name))
         {
             return deh_section_types[i];
         }
@@ -229,55 +215,6 @@ static doombool CheckSignatures(deh_context_t *context)
     return false;
 }
 
-// Parses a comment string in a dehacked file.
-
-static void DEH_ParseComment(char *comment)
-{
-    //
-    // Welcome, to the super-secret Chocolate Doom-specific Dehacked
-    // overrides function.
-    //
-    // Putting these magic comments into your Dehacked lumps will
-    // allow you to go beyond the normal limits of Vanilla Dehacked.
-    // Because of this, these comments are deliberately undocumented,
-    // and if you're using them you should be aware that your mod
-    // is not compatible with Vanilla Doom and you're probably a
-    // very naughty person.
-    //
-
-    // Allow comments containing this special value to allow string
-    // replacements longer than those permitted by DOS dehacked.
-    // This allows us to use a dehacked patch for doing string 
-    // replacements for emulating Chex Quest.
-    //
-    // If you use this, your dehacked patch may not work in Vanilla
-    // Doom.
-
-    if (strstr(comment, "*allow-long-strings*") != NULL)
-    {
-        deh_allow_long_strings = true;
-    }
-
-    // Allow magic comments to allow longer cheat replacements than
-    // those permitted by DOS dehacked.  This is also for Chex
-    // Quest.
-
-    if (strstr(comment, "*allow-long-cheats*") != NULL)
-    {
-        deh_allow_long_cheats = true;
-    }
-
-    // Allow magic comments to allow parsing [STRINGS] section
-    // that are usually only found in BEX format files. This allows
-    // for substitution of map and episode names when loading
-    // Freedoom/FreeDM IWADs.
-
-    if (strstr(comment, "*allow-extended-strings*") != NULL)
-    {
-        deh_allow_extended_strings = true;
-    }
-}
-
 // Parses a dehacked file by reading from the context
 static void DEH_ParseContext(deh_context_t *context)
 {
@@ -317,8 +254,6 @@ static void DEH_ParseContext(deh_context_t *context)
         if (line[0] == '#')
         {
             // comment
-
-            DEH_ParseComment(line);
             continue;
         }
 
@@ -349,9 +284,9 @@ static void DEH_ParseContext(deh_context_t *context)
             {
 				if( strncmp( line, "Doom version", 12 ) == 0 )
 				{
-					int32_t version_number = deh_allow_bex ? deh_boom : deh_vanilla;
-					sscanf( line, "Doom version = %i", &version_number );
-					DEH_SetDoomVersion( context, version_number );
+					//int32_t version_number = 0;
+					//sscanf( line, "Doom version = %i", &version_number );
+					//DEH_SetDoomVersion( context, version_number );
 					continue;
 				}
 				
@@ -390,14 +325,6 @@ int DEH_LoadFile(const char *filename)
         DEH_Init();
     }
 
-    // Before parsing a new file, reset special override flags to false.
-    // Magic comments should only apply to the file in which they were
-    // defined, and shouldn't carry over to subsequent files as well.
-    deh_allow_long_strings = remove_limits ? true : false;
-    deh_allow_long_cheats = remove_limits ? true : false;
-    deh_allow_extended_strings = remove_limits ? true : false;
-    deh_allow_bex = remove_limits ? true : false;
-
     I_TerminalPrintf( Log_Startup, " loading %s\n", filename);
 
     context = DEH_OpenFile(filename);
@@ -410,12 +337,15 @@ int DEH_LoadFile(const char *filename)
 
     DEH_ParseContext(context);
 
-    DEH_CloseFile(context);
-
     if (DEH_HadError(context))
     {
         I_Error("Error parsing dehacked file");
     }
+
+	GameVersion_t version = DEH_GameVersion( context );
+	deh_loaded_version = M_MAX( version, deh_loaded_version );
+
+    DEH_CloseFile(context);
 
     return 1;
 }
@@ -454,11 +384,7 @@ int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error)
         DEH_Init();
     }
 
-    // Reset all special flags to defaults.
-    deh_allow_long_strings = allow_long;
-    deh_allow_long_cheats = allow_long;
-    deh_allow_extended_strings = remove_limits ? true : false;
-    deh_allow_bex = remove_limits ? true : false;
+	deh_loaded_version = M_MAX( exe_limit_removing, deh_loaded_version );
 
     context = DEH_OpenLump(lumpnum);
 
@@ -470,14 +396,17 @@ int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error)
 
     DEH_ParseContext(context);
 
-    DEH_CloseFile(context);
-
     // If there was an error while parsing, abort with an error, but allow
     // errors to just be ignored if allow_error=true.
     if (!allow_error && DEH_HadError(context))
     {
         I_Error("Error parsing dehacked lump");
     }
+
+	GameVersion_t version = DEH_GameVersion( context );
+	deh_loaded_version = M_MAX( version, deh_loaded_version );
+
+    DEH_CloseFile(context);
 
     return 1;
 }
@@ -526,3 +455,7 @@ void DEH_ParseCommandLine(void)
     }
 }
 
+DOOM_C_API GameVersion_t DEH_GetLoadedGameVersion()
+{
+	return deh_loaded_version;
+}

@@ -343,6 +343,8 @@ static void *DEH_BEXStrStart(deh_context_t *context, char *line)
 	DEH_Warning(context, "Parse error on string section start");
     }
 
+	DEH_IncreaseGameVersion( context, exe_limit_removing );
+
     return NULL;
 }
 
@@ -374,5 +376,4 @@ deh_section_t deh_section_bexstr =
     DEH_BEXStrParseLine,
     NULL,
     NULL,
-	&deh_allow_extended_strings,
 };

@@ -1942,8 +1942,6 @@ void D_DoomMain (void)
     // Load PWAD files.
     modifiedgame = W_ParseCommandLine();
 
-	D_RegisterGamesim();
-
     // Debug:
 //    W_PrintDirectory();
 
@@ -2030,7 +2028,7 @@ void D_DoomMain (void)
     // Load Dehacked patches from DEHACKED lumps contained in one of the
     // loaded PWAD files.
     //
-    if ( remove_limits || M_ParmExists("-dehlump"))
+    //if (M_ParmExists("-dehlump"))
     {
         uint32_t i, loaded = 0;
 
@@ -2044,8 +2042,11 @@ void D_DoomMain (void)
             }
         }
 
-        I_TerminalPrintf( Log_Startup, "  loaded %i DEHACKED lumps from PWAD files.\n", loaded);
+        I_TerminalPrintf( Log_Startup, " Loaded %i DEHACKED lumps from WAD files.\n", loaded);
     }
+
+	// With gameflow and dehacked parsed, we can finally set up the gamesim correctly
+	D_RegisterGamesim();
 
 	if( M_ParmExists( "-blackvoid" ) ) voidcleartype = Void_Black;
 	if( M_ParmExists( "-whackyvoid" ) ) voidcleartype = Void_Whacky;
@@ -2097,8 +2098,9 @@ void D_DoomMain (void)
 		    I_Error(DEH_String("\nThis is not the registered version."));
     }
 
-    if (W_CheckNumForName("SS_START") >= 0
-     || W_CheckNumForName("FF_END") >= 0)
+    if (gameversion < exe_limit_removing
+		&& ( W_CheckNumForName("SS_START") >= 0
+			|| W_CheckNumForName("FF_END") >= 0) )
     {
         I_PrintDivider();
 		I_TerminalPrintf( Log_Warning,	" WARNING: The loaded WAD file contains modified sprites or\n"

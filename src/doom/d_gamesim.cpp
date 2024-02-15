@@ -20,6 +20,8 @@
 
 #include "d_gameflow.h"
 
+#include "deh_main.h"
+
 #include "i_terminal.h"
 #include "i_system.h"
 
@@ -699,6 +701,8 @@ static GameVersion_t DetermineGameExecutable()
 {
 	GameVersion_t version = exe_limit_removing;
 
+	VERSION_INCREASE( version, DEH_GetLoadedGameVersion() );
+
 	lumpindex_t complvl = W_CheckNumForName( "COMPLVL" );
 	if( complvl >= 0 )
 	{
@@ -849,6 +853,11 @@ static void SetDefaultGameflow()
 		values = GetMBF21Values( gamemode );
 		break;
 
+	case exe_mbf21_extended:
+		I_TerminalPrintf( Log_Startup, " Applying MBF21 Extended compatibility\n" );
+		values = GetMBF21Values( gamemode );
+		break;
+
 	default:
 		I_TerminalPrintf( Log_Warning, " Indeterminable version, applying vanilla compatibility\n" );
 		values = GetVanillaValues( version, gamemode );
@@ -870,6 +879,13 @@ void D_RegisterGamesim()
 	if( !overridden )
 	{
 		gameversion = DetermineGameExecutable();
+	}
+	else
+	{
+		if( gameversion < DEH_GetLoadedGameVersion() )
+		{
+			I_Error( "Dehacked loaded in more features than the current gameversion supports." );
+		}
 	}
 
 	SetGamesimOptions( gameversion );

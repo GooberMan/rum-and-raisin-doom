@@ -144,17 +144,17 @@ extern "C"
 
 struct funcmapping_t
 {
-	actionf_t	action;
-	int32_t		minimumver;
+	actionf_t		action;
+	GameVersion_t	minimum_version;
 };
 
-#define FuncType( x ) { #x, { { &A_ ## x }, deh_vanilla } }
-#define MBFFuncType( x ) { #x, { { &A_ ## x }, deh_mbf21 } }
-#define MBF21FuncType( x ) { #x, { { &A_ ## x }, deh_mbf21 } }
+#define FuncType( x ) { #x, { { &A_ ## x }, exe_doom_1_2 } }
+#define MBFFuncType( x ) { #x, { { &A_ ## x }, exe_mbf } }
+#define MBF21FuncType( x ) { #x, { { &A_ ## x }, exe_mbf21 } }
 
 static std::map< DoomString, funcmapping_t > PointerLookup =
 {
-	{ "NULL", { { nullptr }, deh_vanilla } },
+	{ "NULL", { { nullptr }, exe_invalid } },
 
 	// Doom actions
 	FuncType( Light0 ),
@@ -302,6 +302,8 @@ static void DEH_BEXPtrParseLine( deh_context_t *context, char* line, void* tag )
 		return;
 	}
 
+	DEH_IncreaseGameVersion( context, found->second.minimum_version );
+
 	states[ frame_number ].action = found->second.action;
 }
 
@@ -312,7 +314,6 @@ DOOM_C_API deh_section_t deh_section_bexptr =
 	DEH_BEXPtrStart,
 	DEH_BEXPtrParseLine,
 	NULL,
-	NULL,
-	&deh_allow_bex,
+	NULL
 };
 

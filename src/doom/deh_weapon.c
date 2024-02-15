@@ -101,6 +101,5 @@ deh_section_t deh_section_weapon =
     DEH_WeaponParseLine,
     NULL,
     DEH_WeaponSHA1Sum,
-	NULL,
 };
 

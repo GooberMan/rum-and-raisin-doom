@@ -100,6 +100,5 @@ deh_section_t deh_section_ammo =
     DEH_AmmoParseLine,
     NULL,
     DEH_AmmoSHA1Hash,
-	NULL,
 };
 

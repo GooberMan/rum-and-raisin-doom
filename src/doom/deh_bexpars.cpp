@@ -86,7 +86,6 @@ DOOM_C_API deh_section_t deh_section_bexpars =
 	DEH_BEXParsStart,
 	DEH_BEXParsParseLine,
 	NULL,
-	NULL,
-	&deh_allow_bex,
+	NULL
 };
 

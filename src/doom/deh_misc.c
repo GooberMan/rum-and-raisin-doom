@@ -204,7 +204,7 @@ static void DEH_MiscParseLine(deh_context_t *context, char *line, void *tag)
         if (!strcasecmp(variable_name, misc_settings[i].deh_name))
         {
             *misc_settings[i].value = ivalue;
-			if( i == MISC_BFGCELLS && DEH_DoomVersion( context ) >= deh_mbf21 )
+			if( i == MISC_BFGCELLS && DEH_GameVersion( context ) >= exe_mbf21 )
 			{
 				weaponinfo[ wp_bfg ].ammopershot = ivalue;
 			}
@@ -233,6 +233,5 @@ deh_section_t deh_section_misc =
     DEH_MiscParseLine,
     NULL,
     DEH_MiscSHA1Sum,
-	NULL,
 };
 

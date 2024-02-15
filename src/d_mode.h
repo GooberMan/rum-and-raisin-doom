@@ -75,6 +75,7 @@ DOOM_C_API typedef enum
 	exe_complevel9,
 	exe_mbf,
 	exe_mbf21,
+	exe_mbf21_extended, // DEHACKED extensions
 
     exe_heretic_1_3, // Heretic 1.3
 

@@ -19,6 +19,7 @@
 #define DEH_IO_H
 
 #include "deh_defs.h"
+#include "d_mode.h"
 
 DOOM_C_API deh_context_t *DEH_OpenFile(const char *filename);
 DOOM_C_API deh_context_t *DEH_OpenLump(int lumpnum);
@@ -28,8 +29,8 @@ DOOM_C_API char *DEH_ReadLine(deh_context_t *context, doombool extended);
 DOOM_C_API void DEH_Error(deh_context_t *context, const char *msg, ...) PRINTF_ATTR(2, 3);
 DOOM_C_API void DEH_Warning(deh_context_t *context, const char *msg, ...) PRINTF_ATTR(2, 3);
 DOOM_C_API doombool DEH_HadError(deh_context_t *context);
-DOOM_C_API int32_t DEH_DoomVersion(deh_context_t* context);
-DOOM_C_API int32_t DEH_SetDoomVersion(deh_context_t* context, int32_t version);
+DOOM_C_API GameVersion_t DEH_GameVersion(deh_context_t* context);
+DOOM_C_API GameVersion_t DEH_IncreaseGameVersion(deh_context_t* context, GameVersion_t version);
 
 #endif /* #ifndef DEH_IO_H */
 

@@ -110,11 +110,11 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
     
 //    printf("Set %s to %s for mobj\n", variable_name, value);
 
-	if( deh_allow_bex && strcmp( variable_name, "Bits" ) == 0 && !isdigit( value[ 0 ] ) )
+	if( strcmp( variable_name, "Bits" ) == 0 && !isdigit( value[ 0 ] ) )
 	{
 		DEH_BexHandleThingBits( context, value, mobj );
 	}
-	else if( deh_allow_bex && strcmp( variable_name, "Bits2" ) == 0 && !isdigit( value[ 0 ] ) )
+	else if( strcmp( variable_name, "Bits2" ) == 0 && !isdigit( value[ 0 ] ) )
 	{
 		DEH_BexHandleThingBits2( context, value, mobj );
 	}
@@ -148,6 +148,5 @@ deh_section_t deh_section_thing =
     DEH_ThingParseLine,
     NULL,
     DEH_ThingSHA1Sum,
-	NULL,
 };
 
