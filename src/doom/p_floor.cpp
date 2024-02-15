@@ -52,6 +52,7 @@ DOOM_C_API result_e T_MovePlane( sector_t* sector, fixed_t speed, fixed_t dest, 
     fixed_t	lastpos;
 
 	sector->snapfloor = sector->snapceiling = false;
+	sector->lastactivetic = gametic;
 
 	if( fix.moveplane_escapes_reality ) // fix_moveplane_escapes_reality
 	{

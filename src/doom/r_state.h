@@ -82,6 +82,8 @@ extern sector_t*	sectors;
 extern sectorinstance_t*	prevsectors;
 extern sectorinstance_t*	currsectors;
 extern sectorinstance_t*	rendsectors;
+extern int32_t		numtransfertargetsectors;
+extern sector_t**	transfertargetsectors;
 
 extern int32_t		numsubsectors;
 extern subsector_t*	subsectors;

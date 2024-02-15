@@ -447,6 +447,7 @@ struct DoomMapLoader
 			out.nosectorthinglist	= nullptr;
 			out.specialdata		= nullptr;
 			out.secretstate		= ( out.special & SectorSecret_Mask ) == SectorSecret_Yes ? Secret_Undiscovered : Secret_None;
+			out.lastactivetic	= gametic;
 			out.friction		= FRICTION;
 			out.frictionpercent = IntToFixed( 1 );
 			out.skyline			= nullptr;
@@ -1110,9 +1111,13 @@ extern "C"
 
 	int32_t		numsectors;
 	sector_t*	sectors;
+
 	sectorinstance_t*	prevsectors;
 	sectorinstance_t*	currsectors;
 	sectorinstance_t*	rendsectors;
+
+	int32_t		numtransfertargetsectors;
+	sector_t**	transfertargetsectors;
 
 	int32_t		numsubsectors;
 	subsector_t*	subsectors;
@@ -1362,6 +1367,8 @@ P_SetupLevel
 	prevsectors		= loader._prevsectors;
 	currsectors		= loader._currsectors;
 	rendsectors		= loader._rendsectors;
+	numtransfertargetsectors = 0;
+	transfertargetsectors = nullptr;
 
 	numsides		= loader._numsides;
 	sides			= loader._sides;

@@ -83,7 +83,7 @@ const char *sprnames_mbf[] = {
 
 
 // Doesn't work with g++, needs actionf_p1
-void  A_Light0();
+void A_Light0();
 void A_WeaponReady();
 void A_Lower();
 void A_Raise();
@@ -1127,7 +1127,11 @@ state_t	states[NUMSTATES] = {
     {SPR_TLP2,32769,4,{NULL},S_TECH2LAMP3,0,0},	// S_TECH2LAMP2
     {SPR_TLP2,32770,4,{NULL},S_TECH2LAMP4,0,0},	// S_TECH2LAMP3
     {SPR_TLP2,32771,4,{NULL},S_TECH2LAMP,0,0},	// S_TECH2LAMP4
-	{SPR_TNT1,0,-1,{NULL},S_TNT1,0,0}, // S_TNT1, only used when BEX/Boom support is enabled
+
+	// Boom states
+	{SPR_TNT1,0,-1,{NULL},S_TNT1,0,0}, // S_TNT1
+
+	// MBF states
 	{SPR_DOGS,0,10,{A_Look},S_DOGS_STND2,0,0},	// S_DOGS_STND
 	{SPR_DOGS,1,10,{A_Look},S_DOGS_STND,0,0},	// S_DOGS_STND2
 	{SPR_DOGS,0,2,{A_Chase},S_DOGS_RUN2,0,0},	// S_DOGS_RUN1
@@ -4722,6 +4726,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	S_NULL		// raisestate
     },
 
+	// Boom things
 	{					// MT_PUSH
 		5001,			// doomednum
 		S_TNT1,			// spawnstate
@@ -4739,12 +4744,12 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		0,				// radius
-		0,				// height
+		16,				// radius
+		16,				// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY,		// flags
+		MF_NOBLOCKMAP | MF_NOGRAVITY, // flags
 		S_NULL			// raisestate
 	},
 
@@ -4765,41 +4770,16 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		0,				// radius
-		0,				// height
+		16,				// radius
+		16,				// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY,		// flags
+		MF_NOBLOCKMAP | MF_NOGRAVITY, // flags
 		S_NULL			// raisestate
 	},
 
-	{					// MT_PULL
-		5002,			// doomednum
-		S_TNT1,			// spawnstate
-		1000,			// spawnhealth
-		S_NULL,			// seestate
-		sfx_None,		// seesound
-		8,				// reactiontime
-		sfx_None,		// attacksound
-		S_NULL,			// painstate
-		0,				// painchance
-		sfx_None,		// painsound
-		S_NULL,			// meleestate
-		S_NULL,			// missilestate
-		S_NULL,			// deathstate
-		S_NULL,			// xdeathstate
-		sfx_None,		// deathsound
-		0,				// speed
-		0,				// radius
-		0,				// height
-		100,			// mass
-		0,				// damage
-		sfx_None,		// activesound
-		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY,		// flags
-		S_NULL			// raisestate
-	},
-
+	// MBF things
 	{					// MT_DOGS
 		888,			// doomednum
 		S_DOGS_STND,	// spawnstate

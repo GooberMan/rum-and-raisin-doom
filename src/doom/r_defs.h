@@ -145,6 +145,7 @@ typedef struct sectorinstance_s
 	int8_t					snapfloor;
 	int8_t					clipceiling;
 	int8_t					snapceiling;
+	int8_t					activethisframe;
 } sectorinstance_t;
 
 typedef struct sideinstance_s
@@ -331,14 +332,16 @@ struct sector_s
 
 	int32_t				linecount;
 	line_t**			lines;	// [linecount] size
-	
-	fixed_t				friction;
-	fixed_t				frictionpercent;
 
+	// Interpolator additions
+	uint64_t			lastactivetic;
 	int32_t				snapfloor;
 	int32_t				snapceiling;
 
 	// Boom additions
+	fixed_t				friction;
+	fixed_t				frictionpercent;
+
 	sector_t*			floorlightsec;
 	sector_t*			ceilinglightsec;
 
@@ -361,6 +364,32 @@ struct sector_s
 	INLINE fixed_t FrictionPercent()	{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
 
 	constexpr fixed_t FloorEffectHeight() { return transferline ? transferline->frontsector->floorheight : floorheight; }
+
+	INLINE fixed_t FrictionMultiplier()			{ return frictionmultipliers[ FrictionPercent() >> 13 ]; }
+	INLINE fixed_t MonsterFrictionMultiplier()	{ return frictionmultipliers[ FrictionPercent() >> 13 ] << 5; }
+
+private:
+	static constexpr int32_t frictionmultipliers[] =
+	{
+		32,		// 0.0
+		64,
+		96,
+		128,
+		256,		// 0.5
+		512,
+		1024,
+		1536,
+		2048,		// 1.0
+		1792,
+		1536,
+		1024,
+		512,		// 1.5
+		256,
+		128,
+		64,
+		32,			// 2.0
+	};
+
 #endif // defined( __cplusplus )
 };
 

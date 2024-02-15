@@ -160,6 +160,9 @@ void P_UpdateInstanceData( void )
 		thissecinst->ceiloffsety		= FixedToRendFixed( thissec->ceiloffsety );
 		thissecinst->snapfloor			= thissec->snapfloor;
 		thissecinst->snapceiling		= thissec->snapceiling;
+		thissecinst->activethisframe	= thissec->lastactivetic == gametic
+										|| thissec->floorlightsec->lastactivetic == gametic
+										|| thissec->ceilinglightsec->lastactivetic == gametic;
 
 		++thissec;
 		++thissecinst;

@@ -246,9 +246,10 @@ DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 	}
 	else
 	{
-		fixed_t friction = mo->z == mo->subsector->sector->floorheight && ( mo->flags & MF_CORPSE ) != MF_CORPSE
-						? mo->subsector->sector->Friction()
-						: FRICTION;
+		fixed_t friction = mo->z == mo->subsector->sector->floorheight
+						&& ( mo->flags & ( MF_CORPSE | MF_NOCLIP ) ) == 0
+							? mo->subsector->sector->Friction()
+							: FRICTION;
 		mo->momx = FixedMul( mo->momx, friction );
 		mo->momy = FixedMul( mo->momy, friction );
 	}

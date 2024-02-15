@@ -1781,17 +1781,24 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 			for( int32_t index : iota( 0, numsectors ) )
 			{
-				rendsectors[ index ].floorheight		= rendsectors[ index ].midtexfloor = DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
-				rendsectors[ index ].ceilheight			= rendsectors[ index ].midtexceil = DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
-				rendsectors[ index ].lightlevel			= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
-				rendsectors[ index ].floorlightlevel	= selectcurr ? currsectors[ index ].floorlightlevel : prevsectors[ index ].floorlightlevel;
-				rendsectors[ index ].ceillightlevel		= selectcurr ? currsectors[ index ].ceillightlevel : prevsectors[ index ].ceillightlevel;
-				rendsectors[ index ].flooroffsetx		= RendFixedLerp( prevsectors[ index ].flooroffsetx, currsectors[ index ].flooroffsetx, viewpoint.lerp );
-				rendsectors[ index ].flooroffsety		= RendFixedLerp( prevsectors[ index ].flooroffsety, currsectors[ index ].flooroffsety, viewpoint.lerp );
-				rendsectors[ index ].ceiloffsetx		= RendFixedLerp( prevsectors[ index ].ceiloffsetx, currsectors[ index ].ceiloffsetx, viewpoint.lerp );
-				rendsectors[ index ].ceiloffsety		= RendFixedLerp( prevsectors[ index ].ceiloffsety, currsectors[ index ].ceiloffsety, viewpoint.lerp );
-				rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
-				rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+				if( currsectors[ index ].activethisframe )
+				{
+					rendsectors[ index ].floorheight		= rendsectors[ index ].midtexfloor = DoSectorHeights( prevsectors[ index ].floorheight, currsectors[ index ].floorheight, viewpoint.lerp, currsectors[ index ].snapfloor, selectcurr );
+					rendsectors[ index ].ceilheight			= rendsectors[ index ].midtexceil = DoSectorHeights( prevsectors[ index ].ceilheight, currsectors[ index ].ceilheight, viewpoint.lerp, currsectors[ index ].snapceiling, selectcurr );
+					rendsectors[ index ].lightlevel			= selectcurr ? currsectors[ index ].lightlevel : prevsectors[ index ].lightlevel;
+					rendsectors[ index ].floorlightlevel	= selectcurr ? currsectors[ index ].floorlightlevel : prevsectors[ index ].floorlightlevel;
+					rendsectors[ index ].ceillightlevel		= selectcurr ? currsectors[ index ].ceillightlevel : prevsectors[ index ].ceillightlevel;
+					rendsectors[ index ].flooroffsetx		= RendFixedLerp( prevsectors[ index ].flooroffsetx, currsectors[ index ].flooroffsetx, viewpoint.lerp );
+					rendsectors[ index ].flooroffsety		= RendFixedLerp( prevsectors[ index ].flooroffsety, currsectors[ index ].flooroffsety, viewpoint.lerp );
+					rendsectors[ index ].ceiloffsetx		= RendFixedLerp( prevsectors[ index ].ceiloffsetx, currsectors[ index ].ceiloffsetx, viewpoint.lerp );
+					rendsectors[ index ].ceiloffsety		= RendFixedLerp( prevsectors[ index ].ceiloffsety, currsectors[ index ].ceiloffsety, viewpoint.lerp );
+					rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
+					rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+				}
+				else
+				{
+					memcpy( &rendsectors[ index ], &currsectors[ index ], sizeof( sectorinstance_t ) );
+				}
 			}
 
 			for( int32_t index : iota( 0, numsides ) )
@@ -1855,42 +1862,45 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 			}
 		}
 
-		for( int32_t index : iota( 0, numsectors ) )
+		if( sim.boom_line_specials && transfertargetsectors != nullptr )
 		{
-			rendsectors[ index ].clipfloor = rendsectors[ index ].clipceiling = false;
-			if( sectors[ index ].transferline )
+			for( sector_t* target : std::span( transfertargetsectors, numtransfertargetsectors ) )
 			{
-				sectorinstance_t& transfersectorinst = rendsectors[ sectors[ index ].transferline->frontsector->index ];
+				sectorinstance_t& targetsector = rendsectors[ target->index ];
+				sectorinstance_t& transfersectorinst = rendsectors[ target->transferline->frontsector->index ];
 				switch( viewpoint.transferzone )
 				{
 				case transfer_normalspace:
-					rendsectors[ index ].floorheight = transfersectorinst.floorheight;
-					rendsectors[ index ].ceilheight = transfersectorinst.ceilheight;
-					rendsectors[ index ].clipfloor = true;
-					rendsectors[ index ].clipceiling = true;
+					targetsector.floorheight	= transfersectorinst.floorheight;
+					targetsector.ceilheight		= transfersectorinst.ceilheight;
+					targetsector.clipfloor		= true;
+					targetsector.clipceiling	= true;
 					break;
+
 				case transfer_ceilingspace:
-					rendsectors[ index ].floortex = transfersectorinst.floortex;
-					rendsectors[ index ].flooroffsetx = transfersectorinst.flooroffsetx;
-					rendsectors[ index ].flooroffsety = transfersectorinst.flooroffsety;
-					rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
-					rendsectors[ index ].ceiloffsetx = transfersectorinst.ceiloffsetx;
-					rendsectors[ index ].ceiloffsety = transfersectorinst.ceiloffsety;
-					rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
-					rendsectors[ index ].floorheight = transfersectorinst.ceilheight;
-					rendsectors[ index ].clipfloor = true;
+					targetsector.floortex		= transfersectorinst.floortex;
+					targetsector.flooroffsetx	= transfersectorinst.flooroffsetx;
+					targetsector.flooroffsety	= transfersectorinst.flooroffsety;
+					targetsector.ceiltex		= transfersectorinst.ceiltex;
+					targetsector.ceiloffsetx	= transfersectorinst.ceiloffsetx;
+					targetsector.ceiloffsety	= transfersectorinst.ceiloffsety;
+					targetsector.lightlevel		= transfersectorinst.lightlevel;
+					targetsector.floorheight	= transfersectorinst.ceilheight;
+					targetsector.clipfloor		= true;
 					break;
+
 				case transfer_floorspace:
-					rendsectors[ index ].floortex = transfersectorinst.floortex;
-					rendsectors[ index ].flooroffsetx = transfersectorinst.flooroffsetx;
-					rendsectors[ index ].flooroffsety = transfersectorinst.flooroffsety;
-					rendsectors[ index ].ceilheight = transfersectorinst.floorheight;
-					rendsectors[ index ].lightlevel = transfersectorinst.lightlevel;
-					rendsectors[ index ].ceiltex = transfersectorinst.ceiltex;
-					rendsectors[ index ].ceiloffsetx = transfersectorinst.ceiloffsetx;
-					rendsectors[ index ].ceiloffsety = transfersectorinst.ceiloffsety;
-					rendsectors[ index ].clipceiling = true;
+					targetsector.floortex		= transfersectorinst.floortex;
+					targetsector.flooroffsetx	= transfersectorinst.flooroffsetx;
+					targetsector.flooroffsety	= transfersectorinst.flooroffsety;
+					targetsector.ceilheight		= transfersectorinst.floorheight;
+					targetsector.lightlevel		= transfersectorinst.lightlevel;
+					targetsector.ceiltex		= transfersectorinst.ceiltex;
+					targetsector.ceiloffsetx	= transfersectorinst.ceiloffsetx;
+					targetsector.ceiloffsety	= transfersectorinst.ceiloffsety;
+					targetsector.clipceiling	= true;
 					break;
+
 				default:
 					break;
 				}

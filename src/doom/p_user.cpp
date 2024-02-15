@@ -150,34 +150,14 @@ DOOM_C_API void P_MovePlayer (player_t* player)
 	bool onsectorground = player->mo->z <= player->mo->subsector->sector->floorheight;
 	int32_t frictionmultiplier = 2048;
 
-	if( onsectorground && player->anymomentumframes != 0 )
+	if( onsectorground
+		&& player->anymomentumframes != 0
+		&& !( player->mo->flags & MF_NOCLIP ) )
 	{
 		// Look up table to accommodate:
 		// * Slippery surfaces have a harsher effect on how you're allowed to accelerate
 		// * Sticky surfaces have a less harsh effect
-		constexpr int32_t frictionmultipliers[] =
-		{
-			32,		// 0.0
-			64,
-			96,
-			128,
-			256,		// 0.5
-			512,
-			1024,
-			1536,
-			2048,		// 1.0
-			1792,
-			1536,
-			1024,
-			512,		// 1.5
-			256,
-			128,
-			64,
-			32,			// 2.0
-		};
-
-		int32_t lookup = M_CLAMP( ( player->mo->subsector->sector->frictionpercent >> 13 ), 0, 16 );
-		frictionmultiplier = frictionmultipliers[ lookup ];
+		frictionmultiplier = player->mo->subsector->sector->FrictionMultiplier();
 	}
 	
 	if (cmd->forwardmove && onground)

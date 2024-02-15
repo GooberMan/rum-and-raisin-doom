@@ -290,7 +290,7 @@ doombool P_Move (mobj_t*	actor)
 	fixed_t friction = IntToFixed( 1 );
 	if( comp.monsters_affected_by_friction && !( actor->flags & MF_NOGRAVITY ) )
 	{
-		friction = actor->subsector->sector->FrictionPercent();
+		friction = actor->subsector->sector->MonsterFrictionMultiplier();
 	}
     tryx = actor->x + FixedMul( actor->info->speed*xspeed[actor->movedir], friction );
     tryy = actor->y + FixedMul( actor->info->speed*yspeed[actor->movedir], friction );
@@ -299,44 +299,52 @@ doombool P_Move (mobj_t*	actor)
 
     if (!try_ok)
     {
-	// open any specials
-	if (actor->flags & MF_FLOAT && floatok)
-	{
-	    // must adjust height
-	    if (actor->z < tmfloorz)
-		actor->z += FLOATSPEED;
-	    else
-		actor->z -= FLOATSPEED;
+		// open any specials
+		if (actor->flags & MF_FLOAT && floatok)
+		{
+			// must adjust height
+			if (actor->z < tmfloorz)
+			actor->z += FLOATSPEED;
+			else
+			actor->z -= FLOATSPEED;
 
-	    actor->flags |= MF_INFLOAT;
-	    return true;
-	}
+			actor->flags |= MF_INFLOAT;
+			return true;
+		}
 		
-	if (!numspechit)
-	    return false;
+		if (!numspechit)
+			return false;
 			
-	actor->movedir = DI_NODIR;
-	good = false;
-	while (numspechit--)
-	{
-	    ld = spechit[numspechit];
-	    // if the special is not a door
-	    // that can be opened,
-	    // return false
-	    if (P_UseSpecialLine (actor, ld,0))
-		good = true;
-	}
-	return good;
+		actor->movedir = DI_NODIR;
+		good = false;
+		while (numspechit--)
+		{
+			ld = spechit[numspechit];
+			// if the special is not a door
+			// that can be opened,
+			// return false
+			good |= P_UseSpecialLine(actor, ld,0);
+		}
+
+		if( comp.stick_on_doors )
+		{
+			return good;
+		}
+
+		return false;
     }
     else
     {
-	actor->flags &= ~MF_INFLOAT;
+		actor->flags &= ~MF_INFLOAT;
     }
 	
 	
-    if (! (actor->flags & MF_FLOAT) )	
-	actor->z = actor->floorz;
-    return true; 
+    if (! (actor->flags & MF_FLOAT) )
+	{
+		actor->z = actor->floorz;
+	}
+
+    return true;
 }
 
 

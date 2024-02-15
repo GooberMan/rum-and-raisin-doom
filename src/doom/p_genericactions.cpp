@@ -459,6 +459,7 @@ DOOM_C_API void T_VerticalDoorGeneric( vldoor_t* door )
 			if( sector.tag == tag )
 			{
 				sector.lightlevel = level;
+				sector.lastactivetic = gametic;
 			}
 		}
 	};
@@ -1119,6 +1120,7 @@ DOOM_C_API int32_t EV_DoLightSetGeneric( line_t* line, mobj_t* activator )
 		{
 			++createdcount;
 			lightsetfuncs[ line->action->param1 ]( sector, lightval );
+			sector.lastactivetic = gametic;
 		}
 	}
 	return createdcount;
@@ -1545,6 +1547,7 @@ INLINE void T_ScrollCeilingTexture( scroller_t* scroller )
 	{
 		sector->ceiloffsetx += scroller->scrollx;
 		sector->ceiloffsety += scroller->scrolly;
+		sector->lastactivetic = gametic;
 	}
 }
 
@@ -1554,6 +1557,7 @@ INLINE void T_ScrollFloorTexture( scroller_t* scroller )
 	{
 		sector->flooroffsetx += scroller->scrollx;
 		sector->flooroffsety += scroller->scrolly;
+		sector->lastactivetic = gametic;
 	}
 }
 
@@ -2044,6 +2048,9 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 	int32_t rightcount = 0;
 	int32_t offsetcount = 0;
 
+	std::vector< sector_t* > transfertargets;
+	transfertargets.reserve( numsectors );
+
 	for( line_t& line : Lines() )
 	{
 		switch( line.special )
@@ -2148,6 +2155,7 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 						if( sector.tag == line.tag )
 						{
 							sector.transferline = &line;
+							transfertargets.push_back( &sector );
 						}
 					}
 				}
@@ -2208,6 +2216,14 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 				break;
 			}
 		}
+	}
+
+	if( !transfertargets.empty() )
+	{
+		size_t size = sizeof( sector_t*) * transfertargets.size();
+		transfertargetsectors = (sector_t**)Z_Malloc( size, PU_LEVEL, nullptr );
+		memcpy( transfertargetsectors, transfertargets.data(), size );
+		numtransfertargetsectors = (int32_t)transfertargets.size();
 	}
 
 	if( leftcount > 0 || rightcount > 0 || offsetcount > 0 )
@@ -2336,7 +2352,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 				break;
 
 			case SectorAltDamage_KillPlayersAndExit:
-				for( player_t& currplayer : std::span( players, 4 ) )
+				for( player_t& currplayer : std::span( players ) )
 				{
 					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000 );
 				}
@@ -2344,7 +2360,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 				break;
 
 			case SectorAltDamage_KillPlayersAndSecretExit:
-				for( player_t& currplayer : std::span( players, 4 ) )
+				for( player_t& currplayer : std::span( players ) )
 				{
 					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000 );
 				}

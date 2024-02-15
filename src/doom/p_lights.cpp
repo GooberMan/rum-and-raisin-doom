@@ -53,6 +53,8 @@ void T_FireFlicker (fireflicker_t* flick)
 	flick->sector->lightlevel = flick->maxlight - amount;
 
     flick->count = 4;
+
+	flick->sector->lastactivetic = gametic;
 }
 
 
@@ -93,15 +95,16 @@ void T_LightFlash (lightflash_t* flash)
 	
     if (flash->sector->lightlevel == flash->maxlight)
     {
-	flash-> sector->lightlevel = flash->minlight;
-	flash->count = (P_Random()&flash->mintime)+1;
+		flash->sector->lightlevel = flash->minlight;
+		flash->count = (P_Random()&flash->mintime)+1;
     }
     else
     {
-	flash-> sector->lightlevel = flash->maxlight;
-	flash->count = (P_Random()&flash->maxtime)+1;
+		flash->sector->lightlevel = flash->maxlight;
+		flash->count = (P_Random()&flash->maxtime)+1;
     }
 
+	flash->sector->lastactivetic = gametic;
 }
 
 
@@ -147,17 +150,18 @@ void T_StrobeFlash (strobe_t*		flash)
     if (--flash->count)
 	return;
 	
-    if (flash->sector->lightlevel == flash->minlight)
-    {
-	flash-> sector->lightlevel = flash->maxlight;
-	flash->count = flash->brighttime;
-    }
-    else
-    {
-	flash-> sector->lightlevel = flash->minlight;
-	flash->count =flash->darktime;
-    }
+	if (flash->sector->lightlevel == flash->minlight)
+	{
+		flash->sector->lightlevel = flash->maxlight;
+		flash->count = flash->brighttime;
+	}
+	else
+	{
+		flash->sector->lightlevel = flash->minlight;
+		flash->count =flash->darktime;
+	}
 
+	flash->sector->lastactivetic = gametic;
 }
 
 
@@ -228,20 +232,21 @@ void EV_TurnTagLightsOff(line_t* line)
     
     for (j = 0;j < numsectors; j++, sector++)
     {
-	if (sector->tag == line->tag)
-	{
-	    min = sector->lightlevel;
-	    for (i = 0;i < sector->linecount; i++)
-	    {
-		templine = sector->lines[i];
-		tsec = getNextSector(templine,sector);
-		if (!tsec)
-		    continue;
-		if (tsec->lightlevel < min)
-		    min = tsec->lightlevel;
-	    }
-	    sector->lightlevel = min;
-	}
+		if (sector->tag == line->tag)
+		{
+			min = sector->lightlevel;
+			for (i = 0;i < sector->linecount; i++)
+			{
+				templine = sector->lines[i];
+				tsec = getNextSector(templine,sector);
+				if (!tsec)
+					continue;
+				if (tsec->lightlevel < min)
+					min = tsec->lightlevel;
+			}
+			sector->lightlevel = min;
+			sector->lastactivetic = gametic;
+		}
     }
 }
 
@@ -264,28 +269,29 @@ EV_LightTurnOn
 	
     for (i=0;i<numsectors;i++, sector++)
     {
-	if (sector->tag == line->tag)
-	{
-	    // bright = 0 means to search
-	    // for highest light level
-	    // surrounding sector
-	    if (!bright)
-	    {
-		for (j = 0;j < sector->linecount; j++)
+		if (sector->tag == line->tag)
 		{
-		    templine = sector->lines[j];
-		    temp = getNextSector(templine,sector);
+			// bright = 0 means to search
+			// for highest light level
+			// surrounding sector
+			if (!bright)
+			{
+				for (j = 0;j < sector->linecount; j++)
+				{
+					templine = sector->lines[j];
+					temp = getNextSector(templine,sector);
 
-		    if (!temp)
-			continue;
+					if (!temp)
+					continue;
 
-		    if (temp->lightlevel > bright)
-			bright = temp->lightlevel;
+					if (temp->lightlevel > bright)
+					bright = temp->lightlevel;
+				}
+			}
+			sector-> lightlevel = bright;
+			sector->lastactivetic = gametic;
 		}
-	    }
-	    sector-> lightlevel = bright;
 	}
-    }
 }
 
     
@@ -317,6 +323,8 @@ void T_Glow(glow_t*	g)
 	}
 	break;
     }
+
+	g->sector->lastactivetic = gametic;
 }
 
 
