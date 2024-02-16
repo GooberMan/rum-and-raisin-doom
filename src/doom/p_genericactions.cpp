@@ -1754,7 +1754,7 @@ constexpr scrolltype_t SelectCarryType( int32_t special )
 		return st_current;
 
 	case Transfer_WindOrCurrentByPoint_Always:
-		return st_wind | st_current;
+		return st_point;
 		break;
 
 	default:
@@ -1782,8 +1782,6 @@ constexpr scrolltype_t SelectSpeedType( int32_t special )
 	case Scroll_WallTextureBySector_Accelerative_Always:
 		return st_accelerative;
 
-	case Transfer_WindOrCurrentByPoint_Always:
-		return st_point;
 	default:
 		break;
 	}
@@ -1849,9 +1847,28 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 			scroller->scrollx			= 0;
 			scroller->scrolly			= 0;
 		}
-		else if( ( scroller->SpeedType() & st_point ) != st_none )
+		else if( ( scroller->CarryType() & st_point ) != st_none )
 		{
-			
+			std::vector< mobj_t* > points;
+			for( sector_t& sector : Sectors() )
+			{
+				if( sector.tag == line->tag )
+				{
+					for( mobj_t* mobj : NoSectorMobjs( sector ) )
+					{
+						if( mobj->type == MT_PUSH || mobj->type == MT_PULL )
+						{
+							points.push_back( mobj );
+						}
+					}
+				}
+			}
+
+			size_t size = sizeof( mobj_t* ) * points.size();
+			scroller->controlpoints = (mobj_t**)Z_Malloc( size, PU_LEVSPEC, nullptr );
+			memcpy( scroller->controlpoints, points.data(), size );
+			scroller->pointcount = points.size();
+
 		}
 		else
 		{
@@ -2221,7 +2238,7 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 	if( !transfertargets.empty() )
 	{
 		size_t size = sizeof( sector_t*) * transfertargets.size();
-		transfertargetsectors = (sector_t**)Z_Malloc( size, PU_LEVEL, nullptr );
+		transfertargetsectors = (sector_t**)Z_Malloc( size, PU_LEVSPEC, nullptr );
 		memcpy( transfertargetsectors, transfertargets.data(), size );
 		numtransfertargetsectors = (int32_t)transfertargets.size();
 	}

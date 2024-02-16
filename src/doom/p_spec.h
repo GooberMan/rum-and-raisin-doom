@@ -606,19 +606,22 @@ DOOM_C_API typedef struct elevator_s
 DOOM_C_API typedef enum scrolltype_e
 {
 	st_none			= 0x0000,
+
 	st_ceiling		= 0x0001,
 	st_floor		= 0x0002,
 	st_wall			= 0x0004,
-	st_conveyor		= 0x0008,
-	st_current		= 0x0010,
-	st_wind			= 0x0020,
-	st_displacement	= 0x0040,
-	st_accelerative = 0x0080,
-	st_point		= 0x0100,
+
+	st_conveyor		= 0x0010,
+	st_current		= 0x0020,
+	st_wind			= 0x0040,
+	st_point		= 0x0080,
+
+	st_displacement	= 0x0100,
+	st_accelerative = 0x0200,
 
 	st_scrollmask	= st_ceiling | st_floor | st_wall,
-	st_carrymask	= st_conveyor | st_current | st_wind,
-	st_speedmask	= st_displacement | st_accelerative | st_point,
+	st_carrymask	= st_conveyor | st_current | st_wind | st_point,
+	st_speedmask	= st_displacement | st_accelerative,
 } scrolltype_t;
 
 #if defined( __cplusplus )
@@ -647,8 +650,10 @@ DOOM_C_API typedef struct scroller_s
 	line_t**		lines;
 	sector_t*		controlsector;
 	line_t*			controlline;
+	mobj_t**		controlpoints;
 	int32_t			sectorcount;
 	int32_t			linecount;
+	int32_t			pointcount;
 	fixed_t			controlheight;
 	fixed_t			magx;
 	fixed_t			magy;

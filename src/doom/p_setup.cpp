@@ -480,6 +480,10 @@ struct DoomMapLoader
 			thisprev->flooroffsety		= thiscurr->flooroffsety		= thissec->flooroffsety;
 			thisprev->ceiloffsetx		= thiscurr->ceiloffsetx			= thissec->ceiloffsetx;
 			thisprev->ceiloffsety		= thiscurr->ceiloffsety			= thissec->ceiloffsety;
+			thisprev->clipfloor			= thiscurr->clipfloor			= false;
+			thisprev->clipceiling		= thiscurr->clipceiling			= false;
+			thisprev->activethisframe	= thiscurr->activethisframe		= false;
+
 
 			++thisprev;
 			++thiscurr;

@@ -1051,5 +1051,65 @@ struct RegionRange
 	iterator _end;
 };
 
+// Mobj iterators that come with built-in fixes for deleted list nodes
+struct mobjsector
+{
+	using basetype_t = sector_t;
+
+	static constexpr mobj_t* First( sector_t* sector ) { return sector->thinglist; }
+	static constexpr mobj_t* Next( mobj_t* mobj ) { return mobj->snext; }
+};
+
+struct mobjnosector
+{
+	using basetype_t = sector_t;
+
+	static constexpr mobj_t* First( sector_t* sector ) { return sector->nosectorthinglist; }
+	static constexpr mobj_t* Next( mobj_t* mobj ) { return mobj->nosectornext; }
+};
+
+struct mobjblockmap
+{
+	using basetype_t = mobj_t;
+
+	static constexpr mobj_t* First( mobj_t* mobj ) { return mobj; }
+	static constexpr mobj_t* Next( mobj_t* mobj ) { return mobj->bnext; }
+};
+
+template< typename getter >
+class mobjrange
+{
+public:
+	using basetype_t = typename getter::basetype_t;
+
+	struct iterator
+	{
+		constexpr mobj_t* operator*() noexcept				{ return val; }
+		constexpr bool operator!=( const iterator& rhs ) 	{ return val != rhs.val; }
+		constexpr iterator& operator++()					{ val = next; if( next ) next = getter::Next( val ); return *this; }
+
+		mobj_t* val;
+		mobj_t* next;
+	};
+
+	constexpr mobjrange( basetype_t* base )
+		: basetype( base )
+	{
+	}
+
+	constexpr iterator begin()		{ mobj_t* first = getter::First( basetype ); return { first, first ? getter::Next( first ) : nullptr }; }
+	constexpr iterator end()		{ return {}; }
+
+private:
+	basetype_t* basetype;
+};
+
+constexpr auto SectorMobjs( sector_t* sector )		{ return mobjrange< mobjsector >( sector ); }
+constexpr auto SectorMobjs( sector_t& sector )		{ return mobjrange< mobjsector >( &sector ); }
+constexpr auto NoSectorMobjs( sector_t* sector )	{ return mobjrange< mobjnosector >( sector ); }
+constexpr auto NoSectorMobjs( sector_t& sector )	{ return mobjrange< mobjnosector >( &sector ); }
+constexpr auto BlockmapMobjs( mobj_t* mobj )		{ return mobjrange< mobjblockmap >( mobj ); }
+
 #endif // defined( __cplusplus )
+
 #endif

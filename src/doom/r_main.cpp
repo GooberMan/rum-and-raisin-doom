@@ -1887,6 +1887,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 					targetsector.lightlevel		= transfersectorinst.lightlevel;
 					targetsector.floorheight	= transfersectorinst.ceilheight;
 					targetsector.clipfloor		= true;
+					targetsector.clipceiling	= false;
 					break;
 
 				case transfer_floorspace:
@@ -1898,6 +1899,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 					targetsector.ceiltex		= transfersectorinst.ceiltex;
 					targetsector.ceiloffsetx	= transfersectorinst.ceiloffsetx;
 					targetsector.ceiloffsety	= transfersectorinst.ceiloffsety;
+					targetsector.clipfloor		= false;
 					targetsector.clipceiling	= true;
 					break;
 
