@@ -1629,6 +1629,41 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 	}
 }
 
+INLINE void T_PushObjects( scroller_t* scroller )
+{
+	for( mobj_t* point : std::span( scroller->controlpoints, scroller->pointcount ) )
+	{
+		if( ( point->subsector->sector->special & SectorWind_Mask ) != SectorWind_Yes )
+		{
+			continue;
+		}
+
+		P_BlockThingsIteratorVertical( point->x, point->y, scroller->mag,
+									[ scroller, point ]( mobj_t* mobj ) -> bool
+		{
+			if( P_CheckSight( point, mobj ) )
+			{
+				fixed_t dx = mobj->x - point->x;
+				fixed_t dy = mobj->y - point->y;
+
+				fixed_t dist = P_AproxDistance( dx, dy );
+				if( dist < scroller->mag )
+				{
+					fixed_t force = FixedDiv( IntToFixed( 1 ), dist );
+					if( point->type == MT_PULL )
+					{
+						force = -force;
+					}
+					mobj->momx += FixedMul( dx, force );
+					mobj->momy += FixedMul( dy, force );
+				}
+			}
+
+			return true;
+		} );
+	}
+}
+
 INLINE void T_UpdateDisplacement( scroller_t* scroller )
 {
 	sector_t*& control = scroller->controlsector;
@@ -1691,9 +1726,13 @@ DOOM_C_API void T_ScrollerGeneric( scroller_t* scroller )
 		break;
 	}
 
-	if( scroller->CarryType() != st_none )
+	if( scroller->CarryType() & st_nopointcarry )
 	{
 		T_CarryObjects( scroller );
+	}
+	else if( scroller->CarryType() & st_point )
+	{
+		T_PushObjects( scroller );
 	}
 }
 
@@ -1830,19 +1869,10 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 		scroller->magy				= FixedMul( line->dy, FlatScrollScale );
 		scroller->controlline		= line;
 
-		if( ( scroller->SpeedType() & ( st_accelerative | st_displacement ) ) != st_none )
+		if( ( scroller->CarryType() & st_point ) != st_none )
 		{
-			if( line->frontsector == nullptr )
-			{
-				I_Error( "P_SpawnSectorScroller: non-static scroller line %d has no front sector", line->index );
-			}
-			scroller->controlsector		= line->frontsector;
-			scroller->controlheight		= line->frontsector->ceilingheight - line->frontsector->floorheight;
-			scroller->scrollx			= 0;
-			scroller->scrolly			= 0;
-		}
-		else if( ( scroller->CarryType() & st_point ) != st_none )
-		{
+			scroller->mag = P_AproxDistance( line->dx, line->dy );
+
 			std::vector< mobj_t* > points;
 			for( sector_t& sector : Sectors() )
 			{
@@ -1858,42 +1888,61 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 				}
 			}
 
-			size_t size = sizeof( mobj_t* ) * points.size();
-			scroller->controlpoints = (mobj_t**)Z_Malloc( size, PU_LEVSPEC, nullptr );
-			memcpy( scroller->controlpoints, points.data(), size );
-			scroller->pointcount = points.size();
+			createdcount = (int32_t)points.size();
+			if( createdcount > 0 )
+			{
+				size_t size = sizeof( mobj_t* ) * points.size();
+				scroller->controlpoints = (mobj_t**)Z_Malloc( size, PU_LEVSPEC, nullptr );
+				memcpy( scroller->controlpoints, points.data(), size );
+				scroller->pointcount = points.size();
+			}
 
 		}
 		else
 		{
-			scroller->scrollx			= FixedMul( line->dx, FlatScrollScale );
-			scroller->scrolly			= FixedMul( line->dy, FlatScrollScale );
-		}
-
-		if( type & st_wall )
-		{
-			scroller->linecount = createdcount;
-			scroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * createdcount, PU_LEVSPEC, nullptr );
-			createdcount = 0;
-			for( line_t& wall : Lines() )
+			if( ( scroller->SpeedType() & ( st_accelerative | st_displacement ) ) != st_none )
 			{
-				if( wall.tag == line->tag )
+				if( line->frontsector == nullptr )
 				{
-					scroller->lines[ createdcount++ ] = &wall;
+					I_Error( "P_SpawnSectorScroller: non-static scroller line %d has no front sector", line->index );
+				}
+				scroller->controlsector		= line->frontsector;
+				scroller->controlheight		= line->frontsector->ceilingheight - line->frontsector->floorheight;
+				scroller->scrollx			= 0;
+				scroller->scrolly			= 0;
+			}
+			else
+			{
+				scroller->scrollx			= FixedMul( line->dx, FlatScrollScale );
+				scroller->scrolly			= FixedMul( line->dy, FlatScrollScale );
+			}
+
+			if( type & st_wall )
+			{
+				scroller->mag = FixedMul( P_AproxDistance( line->dx, line->dy ), IntToFixed( 2 ) );
+				scroller->linecount = createdcount;
+				scroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * createdcount, PU_LEVSPEC, nullptr );
+				createdcount = 0;
+				for( line_t& wall : Lines() )
+				{
+					if( wall.tag == line->tag )
+					{
+						scroller->lines[ createdcount++ ] = &wall;
+					}
 				}
 			}
-		}
-		else
-		{
-			scroller->sectorcount = createdcount;
-			scroller->sectors = (sector_t**)Z_Malloc( sizeof( sector_t* ) * createdcount, PU_LEVSPEC, nullptr );
-
-			createdcount = 0;
-			for( sector_t& sector : Sectors() )
+			else
 			{
-				if( sector.tag == line->tag )
+				scroller->sectorcount = createdcount;
+				scroller->sectors = (sector_t**)Z_Malloc( sizeof( sector_t* ) * createdcount, PU_LEVSPEC, nullptr );
+
+				createdcount = 0;
+				for( sector_t& sector : Sectors() )
 				{
-					scroller->sectors[ createdcount++ ] = &sector;
+					if( sector.tag == line->tag )
+					{
+						scroller->sectors[ createdcount++ ] = &sector;
+					}
 				}
 			}
 		}

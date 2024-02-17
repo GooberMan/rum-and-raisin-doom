@@ -857,9 +857,13 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
     }
 
     // check for apropriate skill level
-    if (!netgame && (mthing->options & MTF_MULTIPLAYER_ONLY) )
-	return nullptr;
-		
+    if( ( !netgame && (mthing->options & MTF_MULTIPLAYER_ONLY) )
+		|| ( netgame && (mthing->options & MTF_BOOM_NOT_IN_DEATHMATCH) && deathmatch == 1 )
+		|| ( netgame && (mthing->options & MTF_BOOM_NOT_IN_COOP) && deathmatch == 0 ) )
+	{
+		return nullptr;
+	}
+
     if (gameskill == sk_baby)
 	bit = 1;
     else if (gameskill == sk_nightmare)

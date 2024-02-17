@@ -988,6 +988,26 @@ doombool P_BlockThingsIteratorVertical( iota&& xrange, iota&& yrange, iteratemob
 	return true;
 }
 
+doombool P_BlockThingsIteratorHorizontal( fixed_t x, fixed_t y, fixed_t radius, iteratemobjfunc_t&& func )
+{
+	int32_t xl = ( x - radius - bmaporgx ) >> MAPBLOCKSHIFT;
+	int32_t xh = ( ( x + radius - bmaporgx ) >> MAPBLOCKSHIFT ) + 1;
+	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
+	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
+
+	return P_BlockThingsIteratorHorizontal( iota( xl, xh ), iota( yl, yh ), std::forward< iteratemobjfunc_t >( func ) );
+}
+
+doombool P_BlockThingsIteratorVertical( fixed_t x, fixed_t y, fixed_t radius, iteratemobjfunc_t&& func )
+{
+	int32_t xl = ( x - radius - bmaporgx ) >> MAPBLOCKSHIFT;
+	int32_t xh = ( ( x + radius - bmaporgx ) >> MAPBLOCKSHIFT ) + 1;
+	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
+	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
+
+	return P_BlockThingsIteratorVertical( iota( xl, xh ), iota( yl, yh ), std::forward< iteratemobjfunc_t >( func ) );
+}
+
 DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
 {
 	if( mobj->subsector->sector == sector )

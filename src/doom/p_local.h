@@ -180,6 +180,8 @@ doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func )
 // Ranged iterators with directional bias, will travel all the way in one direction before moving to the next line
 doombool P_BlockThingsIteratorHorizontal( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
 doombool P_BlockThingsIteratorVertical( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
+doombool P_BlockThingsIteratorHorizontal( fixed_t x, fixed_t y, fixed_t radius, iteratemobjfunc_t&& func );
+doombool P_BlockThingsIteratorVertical( fixed_t x, fixed_t y, fixed_t radius, iteratemobjfunc_t&& func );
 #endif
 
 #define PT_ADDLINES		1

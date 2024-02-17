@@ -621,6 +621,7 @@ DOOM_C_API typedef enum scrolltype_e
 
 	st_scrollmask	= st_ceiling | st_floor | st_wall,
 	st_carrymask	= st_conveyor | st_current | st_wind | st_point,
+	st_nopointcarry	= st_conveyor | st_current | st_wind,
 	st_speedmask	= st_displacement | st_accelerative,
 } scrolltype_t;
 
@@ -655,6 +656,7 @@ DOOM_C_API typedef struct scroller_s
 	int32_t			linecount;
 	int32_t			pointcount;
 	fixed_t			controlheight;
+	fixed_t			mag;
 	fixed_t			magx;
 	fixed_t			magy;
 	fixed_t			scrollx;
