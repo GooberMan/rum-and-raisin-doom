@@ -130,6 +130,13 @@ constexpr const char* GameVersions[] =
 	"Ultimate Doom",
 	"Final Doom",
 	"Final Doom (alt)",
+	"Limit removing",
+	"Bugfixed Limit Removing",
+	"Boom 2.02",
+	"complevel 9",
+	"MBF",
+	"MBF + DEHEXTRA",
+	"MBF21",
 };
 
 constexpr const char* GameVersionsCommand[] =
@@ -143,6 +150,13 @@ constexpr const char* GameVersionsCommand[] =
 	"ultimate",
 	"final",
 	"final2",
+	"limitremoving",
+	"bugfixed",
+	"boom2.02",
+	"complevel9",
+	"mbf",
+	"mbfextra",
+	"mbf21"
 };
 
 #ifdef WIN32
@@ -3811,9 +3825,10 @@ namespace launcher
 				igText( "Executable version" );
 				igSameLine( 0, -1 );
 				igSetNextItemWidth( 150 );
-				if( igBeginCombo( "##executableversion", launchoptions->game_version < 0 ? "Limit removing" : GameVersions[ launchoptions->game_version ], ImGuiComboFlags_None ) )
+				constexpr const char* autodetect = "Auto-detect (Limit Removing minimum)";
+				if( igBeginCombo( "##executableversion", launchoptions->game_version < 0 ? "Auto-detect" : GameVersions[ launchoptions->game_version ], ImGuiComboFlags_None ) )
 				{
-					if( igSelectable_Bool( "Limit removing", launchoptions->game_version < 0, ImGuiSelectableFlags_None, zero ) ) launchoptions->game_version = -1;
+					if( igSelectable_Bool( autodetect, launchoptions->game_version < 0, ImGuiSelectableFlags_None, zero ) ) launchoptions->game_version = -1;
 
 					for( int32_t index : iota( 0, arrlen( GameVersions ) ) )
 					{
@@ -4175,6 +4190,9 @@ std::string M_DashboardLauncherWindow()
 
 	dashboardactive = Dash_Inactive;
 
+	launcher::LaunchOptions& options = initpanel->GetLaunchOptions();
+	GameVersion_t version = options.game_version < 0 ? exe_limit_removing : (GameVersion_t)options.game_version;
+
 	if( initpanel->GetIWADSelector()->Valid() )
 	{
 		parameters += " -iwad \"" + initpanel->GetIWADSelector()->Selected().full_path + "\"";
@@ -4186,7 +4204,11 @@ std::string M_DashboardLauncherWindow()
 		int32_t mergecount = 0;
 		for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedPWADs() )
 		{
-			if( curr.should_merge ) ++mergecount;
+			if( version < exe_limit_removing
+				&& curr.should_merge )
+			{
+				++mergecount;
+			}
 			else ++filecount;
 		}
 
@@ -4204,7 +4226,11 @@ std::string M_DashboardLauncherWindow()
 			parameters += " -file";
 			for( launcher::DoomFileEntry& curr : initpanel->GetDoomFileSelector()->SelectedPWADs() )
 			{
-				if( !curr.should_merge ) parameters += " \"" + curr.full_path + "\"";
+				if( version >= exe_limit_removing
+					|| !curr.should_merge )
+				{
+					parameters += " \"" + curr.full_path + "\"";
+				}
 			}
 		}
 	}
@@ -4217,8 +4243,6 @@ std::string M_DashboardLauncherWindow()
 			parameters += " \"" + curr.full_path + "\"";
 		}
 	}
-
-	launcher::LaunchOptions& options = initpanel->GetLaunchOptions();
 
 	if( options.game_version >= 0 )
 	{

@@ -79,6 +79,7 @@ DOOM_C_API void W_Reload(void);
 DOOM_C_API lumpindex_t W_CheckNumForName(const char *name);
 DOOM_C_API lumpindex_t W_CheckNumForNameExcluding(const char *name, wadtype_t exclude);
 DOOM_C_API lumpindex_t W_GetNumForName(const char *name);
+DOOM_C_API lumpindex_t W_GetNumForNameExcluding(const char *name, wadtype_t exclude);
 DOOM_C_API const char* W_GetNameForNum( lumpindex_t num );
 
 DOOM_C_API int W_LumpLength(lumpindex_t lump);

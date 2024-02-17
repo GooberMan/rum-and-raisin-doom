@@ -159,6 +159,8 @@ typedef PACKED_STRUCT (
 // Can't have an actual human getting through here thank you very much
 #define ML_MBF21_BLOCKPLAYER	8192
 
+#define ML_VANILLAONLY			32768
+#define ML_VANILLAMASK			255
 
 // Sector definition, from editing.
 typedef	PACKED_STRUCT (

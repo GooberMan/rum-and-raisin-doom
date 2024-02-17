@@ -827,7 +827,8 @@ void M_QuickLoad(void)
 
 void M_DrawFullScreenPage( const char* pagename )
 {
-	patch_t* patch = W_CacheLumpName( pagename, PU_CACHE );
+	lumpindex_t lump = W_GetNumForNameExcluding( pagename, comp.widescreen_assets ? wt_none : wt_widepix );
+	patch_t* patch = W_CacheLumpNum( lump, PU_CACHE );
 	// WIDESCREEN HACK
 	int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
 

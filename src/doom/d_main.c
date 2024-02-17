@@ -723,7 +723,8 @@ void D_PageTicker (void)
 //
 void D_PageDrawer (void)
 {
-	patch_t* patch = W_CacheLumpName( pagename, PU_CACHE );
+	lumpindex_t pagenum = W_GetNumForNameExcluding( pagename, comp.widescreen_assets ? wt_none : wt_widepix );
+	patch_t* patch = W_CacheLumpNum( pagenum, PU_CACHE );
 	// WIDESCREEN HACK
 	int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
 
@@ -1289,9 +1290,11 @@ static struct
     {"Final Doom (alt)",     "final2",     exe_final2},
     {"Chex Quest",           "chex",       exe_chex},
     {"Limit Removing",       "limitremoving", exe_limit_removing},
+    {"Bug Fixed Limit Removing", "bugfixed", exe_limit_removing_fixed},
     {"Boom 2.02",            "boom2.02",   exe_boom_2_02},
     {"-complevel 9",         "complevel9", exe_complevel9},
     {"MBF",                  "mbf",        exe_mbf},
+	{"MBF + DEHEXTRA",       "mbfextra",   exe_mbf_dehextra},
     {"MBF21",                "mbf21",      exe_mbf21},
     { NULL,                  NULL,         0},
 };

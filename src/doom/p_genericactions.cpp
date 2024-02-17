@@ -1593,6 +1593,11 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 								iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
 								[ scroller, sector ]( mobj_t* mobj ) -> bool
 		{
+			if( mobj->flags & ( MF_NOGRAVITY | MF_NOCLIP ) )
+			{
+				return true;
+			}
+
 			fixed_t scrollheight = sector->FloorEffectHeight();
 
 			bool cancarry = false;
@@ -1612,13 +1617,7 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 				cancarry |= mobj->z <= scrollheight;
 			}
 
-			if( !cancarry
-				|| ( mobj->flags & MF_NOGRAVITY ) )
-			{
-				return true;
-			}
-
-			if( P_MobjOverlapsSector( sector, mobj ) )
+			if( cancarry && P_MobjOverlapsSector( sector, mobj ) )
 			{
 				mobj->momx += FixedMul( ( scroller->scrollx >> carryshift ), AccelScale );
 				mobj->momy += FixedMul( ( scroller->scrolly >> carryshift ), AccelScale );
@@ -1641,7 +1640,8 @@ INLINE void T_PushObjects( scroller_t* scroller )
 		P_BlockThingsIteratorVertical( point->x, point->y, scroller->mag,
 									[ scroller, point ]( mobj_t* mobj ) -> bool
 		{
-			if( P_CheckSight( point, mobj ) )
+			if( !( mobj->flags & MF_NOCLIP )
+				&& P_CheckSight( point, mobj ) )
 			{
 				fixed_t dx = mobj->x - point->x;
 				fixed_t dy = mobj->y - point->y;

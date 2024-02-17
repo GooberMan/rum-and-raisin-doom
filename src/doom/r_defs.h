@@ -114,6 +114,7 @@ typedef struct texturecomposite_s
 	int32_t			height;
 	int32_t			pitch;
 	int32_t			widthmask;
+	int32_t			patchcount;
 	rend_fixed_t	renderheight;
 
 	colfunc_t		wallrender;

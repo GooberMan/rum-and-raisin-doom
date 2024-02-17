@@ -74,6 +74,7 @@ DOOM_C_API typedef enum
 	exe_boom_2_02,
 	exe_complevel9,
 	exe_mbf,
+	exe_mbf_dehextra,
 	exe_mbf21,
 	exe_mbf21_extended, // DEHACKED extensions
 

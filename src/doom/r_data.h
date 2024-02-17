@@ -35,7 +35,7 @@ DOOM_C_API byte* R_GetColumn( int32_t tex, int32_t col );
 DOOM_C_API byte* R_GetColumnComposite( texturecomposite_t* composite, int32_t col );
 
 // A raw column is a non-composited column as you'd find in your WAD
-DOOM_C_API byte* R_GetRawColumn( int32_t tex, int32_t col );
+DOOM_C_API column_t* R_GetRawColumn( int32_t tex, int32_t patch, int32_t col );
 
 
 // I/O, setting up the stuff.

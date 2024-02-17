@@ -323,7 +323,8 @@ public:
 
 		if( imagelump.size() > 0 )
 		{
-			image = (patch_t*)W_CacheLumpName( imagelump.c_str(), PU_LEVEL );
+			lumpindex_t imagenum = W_GetNumForNameExcluding( imagelump.c_str(), comp.widescreen_assets ? wt_none : wt_widepix );
+			image = (patch_t*)W_CacheLumpNum( imagenum, PU_LEVEL );
 		}
 	}
 
@@ -574,7 +575,7 @@ public:
 			duration_left = 1 + ( M_Random() % ( duration_left - 1 ) );
 		}
 
-		if( frames_curr->Is< Frame_AdjustForWidescreen >() )
+		if( frames_curr->Is< Frame_AdjustForWidescreen >() && comp.widescreen_assets )
 		{
 			x_pos -= ( ( frames_curr->Image()->width - V_VIRTUALWIDTH ) / 2 );
 		}
@@ -1768,7 +1769,8 @@ static void WI_loadUnloadData(load_callback_t callback)
 
 static void WI_loadCallback(const char *name, patch_t **variable)
 {
-    *variable = (patch_t*)W_CacheLumpName(name, PU_LEVEL);
+	lumpindex_t num = W_GetNumForNameExcluding( name, comp.widescreen_assets ? wt_none : wt_widepix );
+    *variable = (patch_t*)W_CacheLumpNum(num, PU_LEVEL);
 }
 
 void WI_loadData(void)

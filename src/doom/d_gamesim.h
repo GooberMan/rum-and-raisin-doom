@@ -156,8 +156,6 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		bfg_map02_secret_exit_to_map33;			// Find that one unmarked line in MAP02 in BFG edition
 	doombool		demo4;									// Always attempt to play demo4 if it exists
 
-	doombool		push_pull_affects_monsters;				
-
 	// R&R render additions
 	doombool		additive_data_blocks;					// PP_START, SS_START, FF_START, etc
 	doombool		no_medusa;								// Composites are cleared before rendering patches
@@ -166,6 +164,8 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		zero_length_texture_names;				// Allow zero-length names to act like "-"
 	doombool		use_translucency;						// Sprites and 2S lines can use translucency maps
 	doombool		use_colormaps;							// Colormaps can be used to translate sectors
+	doombool		multi_patch_2S_linedefs;				// Now 2S linedefs can render properly. Also handles columns without data
+	doombool		widescreen_assets;						// Replace assets with widescreen equivalents if they exist
 
 	// MBF21 additions
 	doombool		respawn_non_map_things_at_origin;		// comp_respawn

@@ -310,7 +310,8 @@ DOOM_C_API lumpindex_t W_CheckNumForNameExcluding(const char *name, wadtype_t ex
 
         for (i = lumphash[hash]; i != -1; i = lumpinfo[i]->next)
         {
-            if ( !strncasecmp(lumpinfo[i]->name, name, 8) && ( lumpinfo[i]->type ^ exclude ) == lumpinfo[i]->type )
+			bool excludelump = exclude != wt_none && ( lumpinfo[i]->type & exclude ) != 0;
+            if ( !excludelump && !strncasecmp(lumpinfo[i]->name, name, 8) )
             {
                 return i;
             }
@@ -345,11 +346,11 @@ DOOM_C_API lumpindex_t W_CheckNumForName(const char *name)
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-lumpindex_t W_GetNumForName(const char *name)
+lumpindex_t W_GetNumForNameExcluding(const char *name, wadtype_t exclude)
 {
     lumpindex_t i;
 
-    i = W_CheckNumForName (name);
+    i = W_CheckNumForNameExcluding(name, exclude);
 
     if (i < 0)
     {
@@ -357,6 +358,11 @@ lumpindex_t W_GetNumForName(const char *name)
     }
  
     return i;
+}
+
+lumpindex_t W_GetNumForName(const char *name)
+{
+	return W_GetNumForNameExcluding( name, wt_none );
 }
 
 const char* W_GetNameForNum( lumpindex_t num )

@@ -133,8 +133,8 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.arbitrary_wall_sizes = true;
 	values.comp.any_texture_any_surface = true;
 	values.comp.zero_length_texture_names = true;
-	values.comp.use_translucency = true;
-	values.comp.use_colormaps = true;
+	values.comp.multi_patch_2S_linedefs = true;
+	values.comp.widescreen_assets = true;
 
 	return values;
 }
@@ -231,6 +231,8 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.zero_length_texture_names = true;			// Allow zero-length names to act like "-"
 	values.comp.use_translucency = true;					// Sprites and 2S lines can use translucency maps
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
+	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
+	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -343,6 +345,8 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.zero_length_texture_names = true;			// Allow zero-length names to act like "-"
 	values.comp.use_translucency = true;					// Sprites and 2S lines can use translucency maps
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
+	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
+	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -446,6 +450,8 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.zero_length_texture_names = true;			// Allow zero-length names to act like "-"
 	values.comp.use_translucency = true;					// Sprites and 2S lines can use translucency maps
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
+	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
+	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = true;			// comp_ledgeblock
@@ -583,14 +589,17 @@ static GameVersion_t DetermineFromSector( mapsector_t& sector )
 
 static GameVersion_t DetermineFromLinedef( maplinedef_t& line )
 {
-	if( line.flags & ( ML_MBF21_BLOCKLANDMONSTER | ML_MBF21_BLOCKPLAYER ) )
+	if( !( line.flags & ML_VANILLAONLY ) )
 	{
-		return exe_mbf21;
-	}
+		if( line.flags & ( ML_MBF21_BLOCKLANDMONSTER | ML_MBF21_BLOCKPLAYER ) )
+		{
+			return exe_mbf21;
+		}
 
-	if( line.flags & ML_BOOM_PASSTHROUGH )
-	{
-		return exe_boom_2_02;
+		if( line.flags & ML_BOOM_PASSTHROUGH )
+		{
+			return exe_boom_2_02;
+		}
 	}
 
 	if( line.special >= DoomActions_Min && line.special < DoomActions_Max

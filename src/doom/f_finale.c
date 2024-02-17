@@ -519,7 +519,8 @@ void F_CastDrawer (void)
     patch_t*		patch;
     
 	// WIDESCREEN HACK
-	patch_t* bossback = (patch_t*)W_CacheLumpName (DEH_String("BOSSBACK"), PU_LEVEL);
+	lumpindex_t bossbacknum = W_GetNumForNameExcluding( DEH_String("BOSSBACK"), comp.widescreen_assets ? wt_none : wt_widepix );
+	patch_t* bossback = (patch_t*)W_CacheLumpNum(bossbacknum, PU_LEVEL);
 	int32_t xpos = -( ( bossback->width - V_VIRTUALWIDTH ) / 2 );
 
     // erase the entire screen to a background
@@ -549,9 +550,12 @@ void F_BunnyScroll (void)
 	char	name[10];
 	int		stage;
 	static int	laststage;
-		
-	patch_t* p1 = (patch_t*)W_CacheLumpName( DEH_String( finaleendgame->primary_image_lump.val ), PU_LEVEL );
-	patch_t* p2 = (patch_t*)W_CacheLumpName( DEH_String( finaleendgame->secondary_image_lump.val ), PU_LEVEL );
+
+	lumpindex_t p1num = W_CheckNumForNameExcluding( DEH_String( finaleendgame->primary_image_lump.val ), comp.widescreen_assets ? wt_none : wt_widepix );
+	lumpindex_t p2num = W_CheckNumForNameExcluding( DEH_String( finaleendgame->secondary_image_lump.val ), comp.widescreen_assets ? wt_none : wt_widepix );
+
+	patch_t* p1 = (patch_t*)W_CacheLumpNum( p1num, PU_LEVEL );
+	patch_t* p2 = (patch_t*)W_CacheLumpNum( p2num, PU_LEVEL );
 	int32_t totalwidth = p1->width + p2->width;
 	// WIDESCREEN HACK
 	int32_t overlap = ( totalwidth - ( V_VIRTUALWIDTH * 2 ) ) / 2;
@@ -618,7 +622,8 @@ static void F_ArtScreenDrawer(void)
 		lumpname = DEH_String( lumpname );
 
 		// WIDESCREEN HACK
-		patch_t* art = (patch_t*)W_CacheLumpName( lumpname, PU_LEVEL );
+		lumpindex_t artnum = W_GetNumForNameExcluding( lumpname, comp.widescreen_assets ? wt_none : wt_widepix );
+		patch_t* art = (patch_t*)W_CacheLumpNum( artnum, PU_LEVEL );
 		int32_t xpos = -( ( art->width - V_VIRTUALWIDTH ) / 2 );
 
 		V_DrawPatch( xpos, 0, art );

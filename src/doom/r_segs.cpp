@@ -194,11 +194,20 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 			// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
 			// spritecolcontext.colfunc = colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
 
+			int32_t patchcount = comp.multi_patch_2S_linedefs	? texturelookup[ texnum ]->patchcount
+																: 1;
+
 			// draw the texture
-			col = (column_t *)( R_GetRawColumn( texnum, maskedtexturecol[ spritecolcontext.x ] ) -3 );
-			spritecolcontext.sourceheight = IntToRendFixed( col->length );
-			
-			R_DrawMaskedColumn( spritecontext, spritecolcontext, col );
+			for( int32_t patch : iota( 0, patchcount ) )
+			{
+				col = R_GetRawColumn( texnum, patch, maskedtexturecol[ spritecolcontext.x ] );
+				if( col != nullptr )
+				{
+					spritecolcontext.sourceheight = IntToRendFixed( col->length );
+					R_DrawMaskedColumn( spritecontext, spritecolcontext, col );
+				}
+			}
+
 			maskedtexturecol[spritecolcontext.x] = MASKEDTEXCOL_INVALID;
 		}
 		spritecontext.spryscale += scalestep;

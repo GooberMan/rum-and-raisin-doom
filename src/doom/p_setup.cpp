@@ -539,6 +539,10 @@ struct DoomMapLoader
 		{
 			out.index			= index;
 			out.flags			= Read::AsIs( in.flags );
+			if( out.flags & ML_VANILLAONLY )
+			{
+				out.flags &= ML_VANILLAMASK;
+			}
 			out.special			= Read::AsIs( in.special );
 			out.tag				= Read::AsIs( in.tag );
 			out.v1				= &Vertices()[ Read::AsIs( in.v1 ) ];
