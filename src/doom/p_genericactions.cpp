@@ -2026,6 +2026,12 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 	for( sector_t& sector : Sectors() )
 	{
 		bool doextended = extendedspecialsectors && ( sector.special & ~DSS_Mask ) != 0;
+		if( doextended && ( sector.special & SectorSecret_Mask ) == SectorSecret_Yes )
+		{
+			totalsecret++;
+			++session.start_total_secrets;
+		}
+
 		switch( sector.special & DSS_Mask )
 		{
 		case DSS_LightRandom:
@@ -2053,7 +2059,6 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 			break;
 
 		case DSS_Secret:
-			// SECRET SECTOR
 			totalsecret++;
 			++session.start_total_secrets;
 			sector.special &= ~DSS_Mask;
@@ -2061,8 +2066,11 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 			break;
 
 		case DSS_30SecondsClose:
-			EV_DoDelayedDoorGeneric( &sector, sd_close, 30 * TICRATE, 0, IntToFixed( 2 ) );
-			sector.special &= ~DSS_Mask;
+			if( !doextended )
+			{
+				EV_DoDelayedDoorGeneric( &sector, sd_close, 30 * TICRATE, 0, IntToFixed( 2 ) );
+				sector.special &= ~DSS_Mask;
+			}
 			break;
 
 		case DSS_LightBlinkHalfSecondSynchronised:
@@ -2076,8 +2084,11 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 			break;
 
 		case DSS_300SecondsOpen:
-			EV_DoDelayedDoorGeneric( &sector, sd_open, 300 * TICRATE, VDOORWAIT, IntToFixed( 2 ) );
-			sector.special &= ~DSS_Mask;
+			if( !doextended )
+			{
+				EV_DoDelayedDoorGeneric( &sector, sd_open, 300 * TICRATE, VDOORWAIT, IntToFixed( 2 ) );
+				sector.special &= ~DSS_Mask;
+			}
 			break;
 
 		case DSS_LightFlicker:

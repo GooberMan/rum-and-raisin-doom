@@ -195,7 +195,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 			// spritecolcontext.colfunc = colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
 
 			// draw the texture
-			col = (column_t *)( R_GetRawColumn( texnum,maskedtexturecol[spritecolcontext.x] ) -3 );
+			col = (column_t *)( R_GetRawColumn( texnum, maskedtexturecol[ spritecolcontext.x ] ) -3 );
 			spritecolcontext.sourceheight = IntToRendFixed( col->length );
 			
 			R_DrawMaskedColumn( spritecontext, spritecolcontext, col );
