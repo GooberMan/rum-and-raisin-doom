@@ -1395,25 +1395,6 @@ DOOM_C_API mobj_t* P_FindTracerTarget( mobj_t* source, fixed_t distance, angle_t
 	return target;
 }
 
-DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
-{
-	if( mobj->subsector->sector == sector )
-	{
-		return true;
-	}
-
-	constexpr auto CheckPos = []( sector_t* sector, fixed_t x, fixed_t y ) -> bool
-	{
-		subsector_t* sub = BSP_PointInSubsector( x, y );
-		return sub->sector == sector;
-	};
-
-	return CheckPos( sector, mobj->x - mobj->radius, mobj->y - mobj->radius )
-		|| CheckPos( sector, mobj->x + mobj->radius, mobj->y - mobj->radius )
-		|| CheckPos( sector, mobj->x - mobj->radius, mobj->y + mobj->radius )
-		|| CheckPos( sector, mobj->x + mobj->radius, mobj->y + mobj->radius );
-}
-
 //
 // P_ChangeSector
 //

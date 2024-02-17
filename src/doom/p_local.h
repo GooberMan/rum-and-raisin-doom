@@ -167,6 +167,8 @@ DOOM_C_API void				P_LineOpening (line_t* linedef);
 DOOM_C_API doombool			P_BlockLinesIterator (int x, int y, doombool(*func)(line_t*) );
 DOOM_C_API doombool			P_BlockThingsIterator (int x, int y, doombool(*func)(mobj_t*) );
 
+DOOM_C_API doombool			P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj );
+
 #if defined( __cplusplus )
 #include <functional>
 #include "m_container.h"

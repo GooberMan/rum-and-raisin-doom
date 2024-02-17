@@ -1664,7 +1664,6 @@ void P_SpawnSpecials (void)
 		  case 4:
 			// STROBE FAST/DEATH SLIME
 			P_SpawnStrobeFlash(sector,FASTDARK,0);
-			sector->special = 0;
 			break;
 
 		  case 8:

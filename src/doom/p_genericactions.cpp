@@ -1618,13 +1618,7 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 				return true;
 			}
 
-			bool insector = mobj->subsector->sector->index == sector->index
-				|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
-				|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y + mobj->radius )->sector->index == sector->index
-				|| BSP_PointInSubsector( mobj->x - mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index
-				|| BSP_PointInSubsector( mobj->x + mobj->radius, mobj->y - mobj->radius )->sector->index == sector->index;
-
-			if( insector )
+			if( P_MobjOverlapsSector( sector, mobj ) )
 			{
 				mobj->momx += FixedMul( ( scroller->scrollx >> carryshift ), AccelScale );
 				mobj->momy += FixedMul( ( scroller->scrolly >> carryshift ), AccelScale );
@@ -1983,81 +1977,78 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 	for( sector_t& sector : Sectors() )
 	{
 		bool doextended = extendedspecialsectors && ( sector.special & ~DSS_Mask ) != 0;
-		if( !doextended )
+		switch( sector.special & DSS_Mask )
 		{
-			switch( sector.special )
-			{
-			case DSS_LightRandom:
-				P_SpawnLightFlash( &sector );
-				sector.special = 0;
-				break;
+		case DSS_LightRandom:
+			P_SpawnLightFlash( &sector );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_LightBlinkHalfSecond:
-				P_SpawnStrobeFlash( &sector, FASTDARK, 0 );
-				sector.special = 0;
-				break;
+		case DSS_LightBlinkHalfSecond:
+			P_SpawnStrobeFlash( &sector, FASTDARK, 0 );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_LightBlinkSecond:
-				P_SpawnStrobeFlash( &sector, SLOWDARK, 0 );
-				sector.special = 0;
-				break;
+		case DSS_LightBlinkSecond:
+			P_SpawnStrobeFlash( &sector, SLOWDARK, 0 );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_20DamageAndLightBlink:
-				P_SpawnStrobeFlash( &sector, FASTDARK, 0 );
-				sector.special = 0;
-				break;
+		case DSS_20DamageAndLightBlink:
+			P_SpawnStrobeFlash( &sector, FASTDARK, 0 );
+			break;
 
-			case DSS_LightOscillate:
-				P_SpawnGlowingLight( &sector );
-				sector.special = 0;
-				break;
+		case DSS_LightOscillate:
+			P_SpawnGlowingLight( &sector );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_Secret:
-				// SECRET SECTOR
-				totalsecret++;
-				++session.start_total_secrets;
-				sector.special = SectorSecret_Yes;
-				break;
+		case DSS_Secret:
+			// SECRET SECTOR
+			totalsecret++;
+			++session.start_total_secrets;
+			sector.special &= ~DSS_Mask;
+			sector.special |= SectorSecret_Yes;
+			break;
 
-			case DSS_30SecondsClose:
-				EV_DoDelayedDoorGeneric( &sector, sd_close, 30 * TICRATE, 0, IntToFixed( 2 ) );
-				sector.special = 0;
-				break;
+		case DSS_30SecondsClose:
+			EV_DoDelayedDoorGeneric( &sector, sd_close, 30 * TICRATE, 0, IntToFixed( 2 ) );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_LightBlinkHalfSecondSynchronised:
-				P_SpawnStrobeFlash( &sector, SLOWDARK, 1 );
-				sector.special = 0;
-				break;
+		case DSS_LightBlinkHalfSecondSynchronised:
+			P_SpawnStrobeFlash( &sector, SLOWDARK, 1 );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_LightBlinkSecondSynchronised:
-				P_SpawnStrobeFlash( &sector, FASTDARK, 1 );
-				sector.special = 0;
-				break;
+		case DSS_LightBlinkSecondSynchronised:
+			P_SpawnStrobeFlash( &sector, FASTDARK, 1 );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_300SecondsOpen:
-				EV_DoDelayedDoorGeneric( &sector, sd_open, 300 * TICRATE, VDOORWAIT, IntToFixed( 2 ) );
-				sector.special = 0;
-				break;
+		case DSS_300SecondsOpen:
+			EV_DoDelayedDoorGeneric( &sector, sd_open, 300 * TICRATE, VDOORWAIT, IntToFixed( 2 ) );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_LightFlicker:
-				P_SpawnFireFlicker( &sector );
-				sector.special = 0;
-				break;
+		case DSS_LightFlicker:
+			P_SpawnFireFlicker( &sector );
+			sector.special &= ~DSS_Mask;
+			break;
 
-			case DSS_None:
-			case DSS_10Damage:
-			case DSS_5Damage:
-			case DSS_20DamageAndEnd:
-			case DSS_20Damage:
-				break;
+		case DSS_None:
+		case DSS_10Damage:
+		case DSS_5Damage:
+		case DSS_20DamageAndEnd:
+		case DSS_20Damage:
+			break;
 
-			case DSS_Unused1:
-			case DSS_Unused2:
-			default:
-				I_LogAddEntryVar( Log_Error, "P_SpawnSectorSpecialsGeneric: Sector %d has unknown special type %d", sector.index, sector.special );
-				sector.special = 0;
-				break;
-			}
+		case DSS_Unused1:
+		case DSS_Unused2:
+		default:
+			I_LogAddEntryVar( Log_Error, "P_SpawnSectorSpecialsGeneric: Sector %d has unknown special type %d", sector.index, sector.special );
+			sector.special &= ~DSS_Mask;
+			break;
 		}
 	}
 
@@ -2316,7 +2307,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 		if( sector->secretstate != Secret_Discovered && ( special & SectorSecret_Mask ) == SectorSecret_Yes )
 		{
 			player->secretcount++;
-			sector->special = 0;
+			sector->special &= ~SectorSecret_Mask;
 			sector->secretstate = Secret_Discovered;
 			++session.total_found_secrets_global;
 			++session.total_found_secrets[ player - players ];

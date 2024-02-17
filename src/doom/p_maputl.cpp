@@ -988,3 +988,60 @@ doombool P_BlockThingsIteratorVertical( iota&& xrange, iota&& yrange, iteratemob
 	return true;
 }
 
+DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
+{
+	if( mobj->subsector->sector == sector )
+	{
+		return true;
+	}
+
+	fixed_t bbox[ 4 ] =
+	{
+		mobj->y + mobj->radius,	// BOXTOP
+		mobj->y - mobj->radius,	// BOXBOTTOM
+		mobj->x - mobj->radius,	// BOXLEFT
+		mobj->x + mobj->radius,	// BOXRIGHT
+	};
+
+	auto Test = [&bbox]( const fixed_t& coeff1, const fixed_t& coeff2, const fixed_t& cross, const int32_t horiz, const int32_t vert )
+	{
+		return FixedMul( coeff1, bbox[ horiz ] ) + FixedMul( coeff2, bbox[ vert ] ) + cross;
+	};
+
+	for( line_t* line : Lines( *sector ) )
+	{
+		vertex_t* v1 = line->v1;
+		vertex_t* v2 = line->v2;
+		if( line->frontsector != sector )
+		{
+			std::swap( v1, v2 );
+		}
+
+		if( ( ( v1->x > bbox[ BOXRIGHT ] ) & ( v2->x > bbox[ BOXRIGHT ] ) )
+			|| ( ( v1->x < bbox[ BOXLEFT ] ) & ( v2->x < bbox[ BOXLEFT ] ) )
+			|| ( ( v1->y > bbox[ BOXTOP ] ) & ( v2->y > bbox[ BOXTOP ] ) )
+			|| ( ( v1->y < bbox[ BOXBOTTOM ] ) & ( v2->y < bbox[ BOXBOTTOM ] ) ) )
+		{
+			continue;
+		}
+
+		fixed_t coeff1 = v2->y - v1->y;
+		fixed_t coeff2 = v1->x - v2->x;
+		fixed_t cross = FixedMul( v2->x, v1->y ) - FixedMul( v1->x, v2->y );
+
+		fixed_t bl = Test( coeff1, coeff2, cross, BOXLEFT, BOXBOTTOM );
+		fixed_t tl = Test( coeff1, coeff2, cross, BOXLEFT, BOXTOP );
+		fixed_t br = Test( coeff1, coeff2, cross, BOXRIGHT, BOXBOTTOM );
+		fixed_t tr = Test( coeff1, coeff2, cross, BOXRIGHT, BOXTOP );
+
+		bool allpositive = ( bl > 0 ) & ( tl > 0 ) & ( br > 0 ) & ( tr > 0 );
+		bool allnegative = ( bl < 0 ) & ( tl < 0 ) & ( br < 0 ) & ( tr < 0 );
+
+		if( !( allpositive | allnegative ) )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
