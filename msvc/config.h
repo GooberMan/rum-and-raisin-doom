@@ -1,9 +1,9 @@
 #define PACKAGE_NAME "Rum and Raisin Doom"
 #define PACKAGE_TARNAME "run-and-raisin-doom"
-#define PACKAGE_VERSION "0.3.1-pre.9"
-#define PACKAGE_STRING "Rum and Raisin Doom 0.3.1-pre.9"
+#define PACKAGE_VERSION "0.3.1-pre.10"
+#define PACKAGE_STRING "Rum and Raisin Doom 0.3.1-pre.10"
 #define PROGRAM_PREFIX "rum-and-raisin-"
-#define PACKAGE_BANNER_BACK TXT_COLOR_BLACK
+#define PACKAGE_BANNER_BACK TXT_COLOR_GREY
 
 #define HAVE_LIBPNG
 /* #undef HAVE_DIRENT_H */
