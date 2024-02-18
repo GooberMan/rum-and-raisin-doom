@@ -264,6 +264,8 @@ struct line_s
 	constexpr bool AutomapInvisible()	const { return flags & ML_DONTDRAW; }
 	constexpr bool AutomapSeen()		const { return flags & ML_MAPPED; } // This probably needs to be atomic bool
 	constexpr bool Passthrough()		const { return flags & ML_BOOM_PASSTHROUGH; }
+	constexpr bool BlockLandMonsters()	const { return flags & ML_MBF21_BLOCKLANDMONSTER; }
+	constexpr bool BlockPlayers()		const { return flags & ML_MBF21_BLOCKPLAYERS; }
 #endif
 };
 

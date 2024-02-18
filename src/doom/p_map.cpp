@@ -240,12 +240,32 @@ DOOM_C_API doombool PIT_CheckLine( line_t* ld )
 		
     if (!(tmthing->flags & MF_MISSILE) )
     {
-	if ( ld->flags & ML_BLOCKING )
-	    return false;	// explicitly blocking everything
+		if ( ld->flags & ML_BLOCKING )
+			return false;	// explicitly blocking everything
 
-	if ( !tmthing->player && ld->flags & ML_BLOCKMONSTERS )
-	    return false;	// block monsters only
-    }
+		if ( !tmthing->player )
+		{
+			if( ld->BlockMonsters() )
+			{
+				return false;	// block monsters only
+			}
+
+			if( sim.mbf21_line_specials
+				&& ld->BlockLandMonsters()
+				&& !( tmthing->flags & MF_NOGRAVITY ) )
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if( sim.mbf21_line_specials
+				&& ld->BlockPlayers() )
+			{
+				return false;
+			}
+		}
+	}
 
     // set openrange, opentop, openbottom
     P_LineOpening (ld);	

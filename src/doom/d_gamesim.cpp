@@ -591,7 +591,7 @@ static GameVersion_t DetermineFromLinedef( maplinedef_t& line )
 {
 	if( !( line.flags & ML_VANILLAONLY ) )
 	{
-		if( line.flags & ( ML_MBF21_BLOCKLANDMONSTER | ML_MBF21_BLOCKPLAYER ) )
+		if( line.flags & ( ML_MBF21_BLOCKLANDMONSTER | ML_MBF21_BLOCKPLAYERS ) )
 		{
 			return exe_mbf21;
 		}

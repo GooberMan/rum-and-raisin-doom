@@ -157,9 +157,10 @@ typedef PACKED_STRUCT (
 #define ML_MBF21_BLOCKLANDMONSTER	4096
 
 // Can't have an actual human getting through here thank you very much
-#define ML_MBF21_BLOCKPLAYER	8192
+#define ML_MBF21_BLOCKPLAYERS	8192
 
-#define ML_VANILLAONLY			32768
+// 2048 matches EE's implementation of this flag.
+#define ML_VANILLAONLY			2048
 #define ML_VANILLAMASK			255
 
 // Sector definition, from editing.

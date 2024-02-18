@@ -883,7 +883,7 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 					: sim.boom_things ? MT_NUMBOOMTYPES
 					: MT_NUMVANILLATYPES;
 	
-    if (i==NUMMOBJTYPES)
+    if( i >= maxtype )
 	{
 		if( sim.allow_unknown_thing_types )
 		{
