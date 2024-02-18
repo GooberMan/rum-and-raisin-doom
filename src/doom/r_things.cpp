@@ -318,7 +318,7 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 	{
 		// calculate unclipped screen coordinates
 		//  for post
-		rend_fixed_t topscreen = spritecontext.sprtopscreen + spritecontext.spryscale*column->topdelta;
+		rend_fixed_t topscreen = spritecontext.sprtopscreen + spritecontext.spryscale * ( column->topdelta + colcontext.sourceyoffset );
 		rend_fixed_t bottomscreen = topscreen + spritecontext.spryscale*column->length;
 
 		colcontext.yl = RendFixedToInt( topscreen + RENDFRACUNIT - 1 );
@@ -338,7 +338,7 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 		if (colcontext.yl < colcontext.yh)
 		{
 			colcontext.source = (byte *)column + 3;
-			colcontext.texturemid = basetexturemid - IntToRendFixed( column->topdelta );
+			colcontext.texturemid = basetexturemid - IntToRendFixed( column->topdelta + colcontext.sourceyoffset );
 			// colcontext.source = (byte *)column + 3 - column->topdelta;
 
 			// Drawn by either R_DrawColumn
@@ -370,7 +370,7 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 	patch_t*			patch;
 	int32_t				fuzzcolumn;
 
-	colcontext_t		spritecolcontext;
+	colcontext_t		spritecolcontext = {};
 
 	patch = spritepatches[ vis->patch ];
 

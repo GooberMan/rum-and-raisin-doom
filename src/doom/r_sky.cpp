@@ -81,7 +81,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 	rend_fixed_t skyoffsetfixed = RendFixedMul( RendFixedMul( skytextureline->coloffset, skyoneunit ), ninetydegree );
 	angle_t skyoffsetangle = RendFixedToInt( skyoffsetfixed );
 
-	colcontext_t	skycontext;
+	colcontext_t	skycontext = {};
 
 	skycontext.colfunc = &R_DrawColumn;
 

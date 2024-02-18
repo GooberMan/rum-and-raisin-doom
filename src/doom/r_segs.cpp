@@ -191,9 +191,6 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 				spritecolcontext.colormap = rendercontext.viewpoint.colormaps + walllightoffsets[index];
 			}
 
-			// Mental note: Can't use the optimised funcs until we pre-light sprites etc :=(
-			// spritecolcontext.colfunc = colfuncs[ M_MIN( ( dc_iscale >> 12 ), 15 ) ];
-
 			int32_t patchcount = comp.multi_patch_2S_linedefs	? texturelookup[ texnum ]->patchcount
 																: 1;
 
@@ -204,6 +201,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 				if( col != nullptr )
 				{
 					spritecolcontext.sourceheight = IntToRendFixed( col->length );
+					spritecolcontext.sourceyoffset = R_GetPatchYOffset( texnum, patch );
 					R_DrawMaskedColumn( spritecontext, spritecolcontext, col );
 				}
 			}
@@ -257,7 +255,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 	rend_fixed_t	topfrac = segcontext->topfrac;
 	rend_fixed_t	bottomfrac = segcontext->bottomfrac;
 
-	colcontext_t	wallcolcontext;
+	colcontext_t	wallcolcontext = {};
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		starttime = I_GetTimeUS();

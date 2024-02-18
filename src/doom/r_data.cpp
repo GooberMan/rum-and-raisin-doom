@@ -142,6 +142,7 @@ extern "C"
 	struct patchdata_t
 	{
 		lumpindex_t			lump;
+		int32_t				rowoffset;
 		int32_t*			columnoffset;
 	};
 
@@ -367,6 +368,7 @@ void R_GenerateLookup (int texnum)
 		x1 = M_MAX( 0, x1 );
 
 		data->lump = patch.patch;
+		data->rowoffset = patch.originy;
 		for( int32_t x : iota( x1, x2 ) )
 		{
 			data->columnoffset[ x ] = LONG( realpatch->columnofs[ x - x1 ] );
@@ -494,6 +496,16 @@ thread_local byte flatcolumnhack[ 72 ] =
 	0, 0xFF, 0, 0, 0
 };
 
+int32_t R_GetPatchYOffset( int32_t tex, int32_t patch )
+{
+	if( tex > numtextures || patch >= texturelookup[ tex ]->patchcount )
+	{
+		return 0;
+	}
+
+	return texturepatchdata[ tex ][ patch ].rowoffset;
+}
+
 column_t* R_GetRawColumn( int32_t tex, int32_t patch, int32_t col )
 {
 	if( tex > numtextures )
@@ -513,7 +525,6 @@ column_t* R_GetRawColumn( int32_t tex, int32_t patch, int32_t col )
 		if( data.lump > 0 && ofs >= 0 )
 		{
 			byte* loaded = (byte*)W_CacheLumpNum( data.lump, COMPOSITE_ZONE );
-			patch_t* realpatch = (patch_t*)loaded;
 			column_t* column = (column_t*)( loaded + ofs );
 			return column;
 		}

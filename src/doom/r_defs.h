@@ -834,6 +834,7 @@ typedef struct colcontext_s
 	pixel_t*			fuzzworkingbuffer;
 	byte*				source;
 	rend_fixed_t		sourceheight;
+	rend_fixed_t		sourceyoffset;
 
 	lighttable_t*		colormap;
 	lighttable_t*		fuzzlightmap;
