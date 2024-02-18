@@ -219,6 +219,14 @@ DOOM_C_API void T_MoveCeilingGeneric( ceiling_t* ceiling )
 		}
 		else
 		{
+			if( ceiling->newspecial >= 0 )
+			{
+				ceiling->sector->special = ceiling->newspecial;
+			}
+			if( ceiling->newtexture >= 0 )
+			{
+				ceiling->sector->ceilingpic = ceiling->newtexture;
+			}
 			P_RemoveActiveCeilingGeneric( ceiling );
 		}
 	}
@@ -365,17 +373,28 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 							, sectorchangetype_t type
 							, sector_t& setfrom )
 		{
-			int16_t& targetspecial = target->direction == sd_down ? target->newspecial : sourcesector.special;
-			int16_t& targettexture = target->direction == sd_down ? target->newtexture : sourcesector.ceilingpic;
-
-			targetspecial = type == sct_zerospecial
-								? 0
-								: type == sct_copyboth
-									? setfrom.special
+			if( target->direction == sd_up )
+			{
+				target->newspecial = type == sct_zerospecial
+									? 0
+									: type == sct_copyboth
+										? setfrom.special
+										: -1;
+				target->newtexture = ( type == sct_copytexture || type == sct_copyboth )
+									? setfrom.ceilingpic
 									: -1;
-			targettexture = ( type == sct_copytexture || type == sct_copyboth )
-								? setfrom.ceilingpic
-								: -1;
+			}
+			else
+			{
+				sourcesector.special = type == sct_zerospecial
+										? 0
+										: type == sct_copyboth
+											? setfrom.special
+											: sourcesector.special;
+				sourcesector.ceilingpic = ( type == sct_copytexture || type == sct_copyboth )
+										? setfrom.ceilingpic
+										: sourcesector.ceilingpic;
+			}
 		};
 
 		if( line->action->param4 != sct_none )
@@ -993,17 +1012,28 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 							, sectorchangetype_t type
 							, sector_t& setfrom )
 		{
-			int16_t& targetspecial = target->direction == sd_down ? target->newspecial : sourcesector.special;
-			int16_t& targettexture = target->direction == sd_down ? target->texture : sourcesector.floorpic;
-
-			targetspecial = type == sct_zerospecial
-								? 0
-								: type == sct_copyboth
-									? setfrom.special
+			if( target->direction == sd_down )
+			{
+				target->newspecial = type == sct_zerospecial
+									? 0
+									: type == sct_copyboth
+										? setfrom.special
+										: -1;
+				target->texture =	( type == sct_copytexture || type == sct_copyboth )
+									? setfrom.floorpic
 									: -1;
-			targettexture = ( type == sct_copytexture || type == sct_copyboth )
-								? setfrom.floorpic
-								: -1;
+			}
+			else
+			{
+				sourcesector.special = type == sct_zerospecial
+										? 0
+										: type == sct_copyboth
+											? setfrom.special
+											: sourcesector.special;
+				sourcesector.floorpic = ( type == sct_copytexture || type == sct_copyboth )
+										? setfrom.floorpic
+										: sourcesector.floorpic;
+			}
 		};
 
 		if( line->action->param4 != sct_none )
