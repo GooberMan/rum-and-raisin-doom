@@ -235,10 +235,6 @@ static int		cnt_time;
 static int		cnt_par;
 static int		cnt_pause;
 
-// # of commercial levels
-static int		NUMCMAPS; 
-
-
 //
 //	GRAPHICS
 //
@@ -411,7 +407,7 @@ public:
 			return fits;
 		};
 
-		auto checkfitsinframegrouping = [ this, &anims ]( int32_t group ) -> bool
+		auto checkfitsinframegrouping = [ &anims ]( int32_t group ) -> bool
 		{
 			bool passedcheck = true;
 			for( auto& curranim : anims )
@@ -675,7 +671,7 @@ private:
 	{
 		auto animcache = cache.AllAnims();
 		size_t validanims = 0;
-		size_t invalidanims = 0;
+		[[maybe_unused]] size_t invalidanims = 0;
 		for( auto& anim : animcache )
 		{
 			if( anim.ConditionsMet() )
@@ -1654,7 +1650,6 @@ typedef void (*load_callback_t)(const char *lumpname, patch_t **variable);
 
 static void WI_loadUnloadData(load_callback_t callback)
 {
-    int i, j;
 	DoomString currname;
 	DoomString nextname;
 
@@ -1691,7 +1686,7 @@ static void WI_loadUnloadData(load_callback_t callback)
     else
         wiminus = NULL;
 
-    for (i=0;i<10;i++)
+    for( int32_t i : iota( 0, 10 ) )
     {
 		 // numbers 0-9
 		DEH_snprintf(name, 9, "WINUM%d", i);
@@ -1754,7 +1749,7 @@ static void WI_loadUnloadData(load_callback_t callback)
     // "total"
     callback(DEH_String("WIMSTT"), &total);
 
-    for (i=0 ; i<MAXPLAYERS ; i++)
+    for( int32_t i : iota( 0, MAXPLAYERS ) )
     {
 		// "1,2,3,4"
 		DEH_snprintf(name, 9, "STPB%d", i);

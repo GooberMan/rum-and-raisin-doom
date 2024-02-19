@@ -1225,7 +1225,6 @@ P_ShootSpecialLine
 DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 {
 	sector_t*&	sector = player->mo->subsector->sector;
-	int16_t&	special = sector->special;
 
 	if( sim.generic_specials_handling )
 	{

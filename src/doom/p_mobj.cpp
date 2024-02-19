@@ -876,8 +876,12 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 	
     // find which type to spawn
     for (i=0 ; i< NUMMOBJTYPES ; i++)
-	if (mthing->type == mobjinfo[i].doomednum)
-	    break;
+	{
+		if (mthing->type == mobjinfo[i].doomednum)
+		{
+			break;
+		}
+	}
 
 	int32_t maxtype = sim.mbf_things ? MT_NUMMBFTYPES
 					: sim.boom_things ? MT_NUMBOOMTYPES
@@ -940,8 +944,11 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 	}
 		
     mobj->prev.angle = mobj->curr.angle = mobj->angle = ANG45 * (mthing->angle/45);
+
     if (mthing->options & MTF_AMBUSH)
-	mobj->flags |= MF_AMBUSH;
+	{
+		mobj->flags |= MF_AMBUSH;
+	}
 
 	return mobj;
 }

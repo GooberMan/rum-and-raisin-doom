@@ -378,7 +378,6 @@ struct DoomMapLoader
 				int32_t firstentry = baseoffset % MaxEntries16bit;
 				int32_t offsetaddition = baseoffset & ~( MaxEntries16bit - 1 );
 				int32_t lastindex = 0;
-				int32_t count = 0;
 				doombool foundproblem = false;
 				for( int32_t& currindex : std::span( _blockmap, numindices ) )
 				{
@@ -402,7 +401,6 @@ struct DoomMapLoader
 						lastindex = currindex;
 						currindex += offsetaddition;
 					}
-					++count;
 				}
 			}
 			break;
@@ -467,7 +465,7 @@ struct DoomMapLoader
 		sectorinstance_t* thiscurr = _currsectors;
 		sectorinstance_t* thisprev = _prevsectors;
 
-		for( int32_t index : iota( 0, _numsectors ) )
+		for( [[maybe_unused]] int32_t index : iota( 0, _numsectors ) )
 		{
 			thisprev->floortex			= thiscurr->floortex			= flatlookup[ thissec->floorpic ];
 			thisprev->ceiltex			= thiscurr->ceiltex				= flatlookup[ thissec->ceilingpic ];
@@ -518,7 +516,7 @@ struct DoomMapLoader
 		sideinstance_t* thiscurr = _currsides;
 		sideinstance_t* thisprev = _prevsides;
 
-		for( int32_t index : iota( 0, _numsides ) )
+		for( [[maybe_unused]] int32_t index : iota( 0, _numsides ) )
 		{
 			thisprev->toptex		= thiscurr->toptex			= thisside->toptexture ? texturelookup[ thisside->toptexture ] : NULL;
 			thisprev->midtex		= thiscurr->midtex			= thisside->midtexture ? texturelookup[ thisside->midtexture ] : NULL;

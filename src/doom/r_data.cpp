@@ -436,7 +436,7 @@ void R_CacheCompositeFlat( int32_t flat )
 	for( int32_t y : iota( 0, 64 ) )
 	{
 		byte* currdest = transposedflatdata + y;
-		for( int32_t x : iota( 0, 64 ) )
+		for( [[maybe_unused]] int32_t x : iota( 0, 64 ) )
 		{
 			*currdest = *currsource;
 			++currsource;

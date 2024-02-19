@@ -239,6 +239,8 @@ EV_DoPlat
 
 	    S_StartSound(&sec->soundorg,sfx_pstart);
 	    break;
+	default:
+		break;
 	}
 	P_AddActivePlat(plat);
     }

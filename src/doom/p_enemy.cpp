@@ -285,7 +285,9 @@ doombool P_Move (mobj_t*	actor)
 	return false;
 		
     if ((unsigned)actor->movedir >= 8)
-	I_Error ("Weird actor->movedir!");
+	{
+		I_Error ("Weird actor->movedir!");
+	}
 
 	fixed_t friction = IntToFixed( 1 );
 	if( comp.monsters_affected_by_friction && !( actor->flags & MF_NOGRAVITY ) )

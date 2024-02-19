@@ -148,7 +148,9 @@ void P_SpawnLightFlash (sector_t*	sector)
 void T_StrobeFlash (strobe_t*		flash)
 {
     if (--flash->count)
-	return;
+	{
+		return;
+	}
 	
 	if (flash->sector->lightlevel == flash->minlight)
 	{

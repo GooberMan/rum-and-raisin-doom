@@ -79,7 +79,7 @@ struct DoomAllocator
 
 	void deallocate( pointer p, std::size_t n )
 	{
-		if constexpr( tag < PU_LEVEL )
+		if constexpr( tag < (int32_t)PU_LEVEL )
 		{
 			Z_Free( p );
 		}
@@ -278,6 +278,7 @@ auto MultiRangeView( _ranges&... r )
 			{
 				std::apply(	[]( auto&... it )
 							{
+								[[maybe_unused]]
 								auto val = std::make_tuple( ++it... );
 							}, curr.val );
 
