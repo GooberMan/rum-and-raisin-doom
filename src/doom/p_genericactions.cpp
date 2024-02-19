@@ -1383,6 +1383,11 @@ DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator )
 
 DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, teleporttype_e anglebehavior, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
 {
+	if( activator->flags & MF_MISSILE )
+	{
+		return false;
+	}
+
 	for( sector_t& sector : Sectors() )
 	{
 		if ( sector.tag == line->tag )

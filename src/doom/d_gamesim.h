@@ -166,6 +166,7 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		use_colormaps;							// Colormaps can be used to translate sectors
 	doombool		multi_patch_2S_linedefs;				// Now 2S linedefs can render properly. Also handles columns without data
 	doombool		widescreen_assets;						// Replace assets with widescreen equivalents if they exist
+	doombool		strict_boom_feature_matching;			// When disabled, line 85 (texture scrolling) and thing DM flags will be considered limit removing for version matching
 
 	// MBF21 additions
 	doombool		respawn_non_map_things_at_origin;		// comp_respawn

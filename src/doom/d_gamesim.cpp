@@ -608,7 +608,15 @@ static GameVersion_t DetermineFromLinedef( maplinedef_t& line )
 		return exe_limit_removing;
 	}
 
-	if( line.special >= BoomActions_Min && line.special < BoomActions_Max )
+	if( !comp.strict_boom_feature_matching
+		&& line.special == Unknown_085 ) // Scroll_WallTextureRight_Always
+	{
+		return exe_limit_removing;
+	}
+
+	if( line.special == Floor_ChangeTexture_NumericModel_SR_Player
+		|| line.special == Scroll_WallTextureRight_Always
+		|| ( line.special >= BoomActions_Min && line.special < BoomActions_Max ) )
 	{
 		return exe_boom_2_02;
 	}
@@ -639,7 +647,9 @@ static GameVersion_t DetermineFromThing( mapthing_t& thing )
 	{
 		return exe_mbf;
 	}
-	if( flags & ( MTF_BOOM_NOT_IN_DEATHMATCH | MTF_BOOM_NOT_IN_COOP ) )
+
+	if( comp.strict_boom_feature_matching
+		&& ( flags & ( MTF_BOOM_NOT_IN_DEATHMATCH | MTF_BOOM_NOT_IN_COOP ) ) )
 	{
 		return exe_boom_2_02;
 	}
