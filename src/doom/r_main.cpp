@@ -1698,6 +1698,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 
 	renderscratchpos = 0;
 	viewpoint.player = player;
+	viewpoint.weaponbob = FixedToRendFixed( player->bob );
 	extralight = player->extralight + additional_light_boost;
 
 	{

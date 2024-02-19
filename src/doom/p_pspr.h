@@ -66,7 +66,18 @@ DOOM_C_API typedef struct
     fixed_t	sx;
     fixed_t	sy;
 
+	fixed_t		lastx;
+	fixed_t		lasty;
+	fixed_t		duration;
+	fixed_t		leveltime;
+	doombool	viewbob;
 } pspdef_t;
+
+#define LOWERSPEED		FRACUNIT*6
+#define RAISESPEED		FRACUNIT*6
+
+#define WEAPONBOTTOM	128*FRACUNIT
+#define WEAPONTOP		32*FRACUNIT
 
 #define PSPARG( psp, name, index )				auto & name = psp->state->arg ## index
 #define PSPARG_INT( psp, name, index )			PSPARG( psp, name, index )._ ## int

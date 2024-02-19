@@ -85,6 +85,7 @@ DOOM_C_API typedef struct player_s
     //  including viewpoint bobbing during movement.
     // Focal origin above r.z
     fixed_t		viewz;
+	fixed_t		viewbob;
     // Base height above floor for viewz.
     fixed_t		viewheight;
     // Bob/squat speed.

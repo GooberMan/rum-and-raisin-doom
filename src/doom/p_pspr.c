@@ -23,8 +23,11 @@
 
 #include "deh_misc.h"
 
+#include "m_misc.h"
 #include "m_random.h"
+
 #include "p_local.h"
+
 #include "s_sound.h"
 
 // State.
@@ -34,14 +37,6 @@
 #include "sounds.h"
 
 #include "p_pspr.h"
-
-#define LOWERSPEED		FRACUNIT*6
-#define RAISESPEED		FRACUNIT*6
-
-#define WEAPONBOTTOM	128*FRACUNIT
-#define WEAPONTOP		32*FRACUNIT
-
-
 
 //
 // P_SetPsprite
@@ -56,37 +51,44 @@ P_SetPsprite
     state_t*	state;
 	
     psp = &player->psprites[position];
-	
+
+	psp->lastx = psp->sx;
+	psp->lasty = psp->sy;
+	psp->duration = -1;
+	psp->leveltime = leveltime;
+	psp->viewbob = false;
+
     do
     {
-	if (!stnum)
-	{
-	    // object removed itself
-	    psp->state = NULL;
-	    break;	
-	}
+		if (!stnum)
+		{
+			// object removed itself
+			psp->state = NULL;
+			break;	
+		}
 	
-	state = &states[stnum];
-	psp->state = state;
-	psp->tics = state->tics;	// could be 0
+		state = &states[stnum];
+		psp->state = state;
+		psp->tics = state->tics;	// could be 0
+		psp->duration = M_MAX( psp->tics, psp->duration );
 
-	if (state->misc1._int)
-	{
-	    // coordinate set
-	    psp->sx = state->misc1._int << FRACBITS;
-	    psp->sy = state->misc2._int << FRACBITS;
-	}
+		if (state->misc1._int)
+		{
+			// coordinate set
+			psp->sx = state->misc1._int << FRACBITS;
+			psp->sy = state->misc2._int << FRACBITS;
+		}
 	
-	// Call action routine.
-	// Modified handling.
-	if (state->action.acp2)
-	{
-	    state->action.acp2(player, psp);
-	    if (!psp->state)
-		break;
-	}
+		// Call action routine.
+		// Modified handling.
+		if (state->action.acp2)
+		{
+			state->action.acp2(player, psp);
+			if (!psp->state)
+			break;
+		}
 	
-	stnum = psp->state->nextstate;
+		stnum = psp->state->nextstate;
 	
     } while (!psp->tics);
     // an initial state of 0 could cycle through
@@ -322,6 +324,8 @@ A_WeaponReady
     psp->sx = FRACUNIT + FixedMul (player->bob, finecosine[angle]);
     angle &= FINEANGLES/2-1;
     psp->sy = WEAPONTOP + FixedMul (player->bob, finesine[angle]);
+
+	psp->viewbob = true;
 }
 
 
@@ -848,6 +852,13 @@ void P_SetupPsprites (player_t* player)
     // spawn the gun
     player->pendingweapon = player->readyweapon;
     P_BringUpWeapon (player);
+
+    for (i=0 ; i<NUMPSPRITES ; i++)
+	{
+		player->psprites[i].lastx = player->psprites[i].sx;
+		player->psprites[i].lasty = player->psprites[i].sy;
+		player->psprites[i].duration = player->psprites[i].tics;
+	}
 }
 
 

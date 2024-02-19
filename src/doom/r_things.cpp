@@ -745,8 +745,37 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	lump = sprframe->lump[0];
 	flip = (doombool)sprframe->flip[0];
 
+	rend_fixed_t sx = FixedToRendFixed( psp->sx );
+	rend_fixed_t sy = FixedToRendFixed( psp->sy );
+	rend_fixed_t lastx = FixedToRendFixed( psp->lastx );
+	rend_fixed_t lasty = FixedToRendFixed( psp->lasty );
+
+	if( interpolate_this_frame && psp->duration > 0 )
+	{
+		if( psp->viewbob )
+		{
+			rend_fixed_t fracleveltime = IntToRendFixed( leveltime ) + viewpoint.lerp;
+			rend_fixed_t adjusted = fracleveltime * 128;
+			int32_t actual = RendFixedToInt( adjusted );
+			angle_t angle = actual & FINEMASK;
+			sx = RENDFRACUNIT + RendFixedMul( viewpoint.weaponbob, renderfinecosine[ angle << RENDERQUALITYSHIFT ] );
+			angle &= FINEANGLES/2-1;
+			sy = FixedToRendFixed( WEAPONTOP ) + RendFixedMul( viewpoint.weaponbob, renderfinesine[ angle << RENDERQUALITYSHIFT ] );
+		
+		}
+		else
+		{
+			int64_t thisframe = leveltime - psp->leveltime;
+			rend_fixed_t framecount = IntToRendFixed( thisframe + 1 );
+			rend_fixed_t framelen = RendFixedDiv( IntToRendFixed( 1 ), framecount );
+			rend_fixed_t amount = thisframe * framelen + RendFixedDiv( viewpoint.lerp, framecount );
+			sx = RendFixedLerp( lastx, sx, amount );
+			sy = RendFixedLerp( lasty, sy, amount );
+		}
+	}
+
 	// calculate edges of the shape
-	rend_fixed_t tx = FixedToRendFixed( psp->sx ) - IntToRendFixed( V_VIRTUALWIDTH / 2 );
+	rend_fixed_t tx = sx - IntToRendFixed( V_VIRTUALWIDTH / 2 );
 	
 	tx -= spriteoffset[lump]; 	
 	x1 = RendFixedToInt( drs_current->centerxfrac + RendFixedMul( tx, drs_current->pspritescalex ) );
@@ -769,7 +798,7 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	// store information in a vissprite
 	vis = &avis;
 	vis->mobjflags = 0;
-	vis->texturemid = IntToRendFixed( BASEYCENTER ) + RENDFRACUNIT / 2 -( FixedToRendFixed( psp->sy ) - spritetopoffset[ lump ] );
+	vis->texturemid = IntToRendFixed( BASEYCENTER ) + RENDFRACUNIT / 2 -( sy - spritetopoffset[ lump ] );
 	vis->x1 = x1 < spritecontext.leftclip ? spritecontext.leftclip : x1;
 	vis->x2 = x2 >= spritecontext.rightclip ? spritecontext.rightclip-1 : x2;	
 	vis->scale = drs_current->pspritescaley;

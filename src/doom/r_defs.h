@@ -874,6 +874,7 @@ typedef struct viewpoint_s
 	lighttable_t*		colormaps;
 	transferzone_t		transferzone;
 	angle_t				angle;
+	rend_fixed_t		weaponbob;
 } viewpoint_t;
 
 typedef struct rendercontext_s
