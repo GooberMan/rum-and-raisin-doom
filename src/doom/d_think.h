@@ -58,25 +58,30 @@ DOOM_C_API typedef struct thinker_s
 
 #if defined( __cplusplus )
 
+#include <array>
+
 template< typename _ty >
 struct thinkfunclookup
 {
-	//constexpr static void* func = nullptr;
+protected:
+	template< typename... _args >
+	static constexpr std::array< void*, sizeof...( _args ) > toarray( _args&&... args)
+	{
+		return { (void*)args... };
+	}
 };
 
-#define MakeThinkFuncLookup( type, funcptr ) template<> \
-struct thinkfunclookup< type > \
+#define MakeThinkFuncLookup( type, ... ) template<> \
+struct thinkfunclookup< type > : thinkfunclookup< void > \
 { \
-	constexpr static void* func = (void*)funcptr; \
+	constexpr static auto funcs = toarray( __VA_ARGS__ ); \
 }
 
-template< typename _ty >
-inline constexpr void* thinkfunclookup_v = thinkfunclookup< _ty >::func;
-
 template< typename _to, typename _from >
-_to* thinker_cast( _from* from )
+constexpr _to* thinker_cast( _from* from )
 {
-	return *(void**)from == thinkfunclookup_v< _to > ? (_to*)from : nullptr;
+	auto found = std::find( thinkfunclookup< _to >::funcs.begin(), thinkfunclookup< _to >::funcs.end(), *(void**)from );
+	return found == thinkfunclookup< _to >::funcs.end() ? nullptr : (_to*)from;
 }
 #endif
 

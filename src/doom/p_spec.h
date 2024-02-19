@@ -166,7 +166,7 @@ DOOM_C_API void EV_LightTurnOn( line_t* line, int bright );
 DOOM_C_API void    T_Glow(glow_t* g);
 DOOM_C_API void    P_SpawnGlowingLight(sector_t* sector);
 
-
+DOOM_C_API void    T_FireFlicker (fireflicker_t* flick);
 
 
 //
@@ -784,8 +784,16 @@ DOOM_C_API void		P_MobjInSectorGeneric( mobj_t* mobj );
 
 #if defined( __cplusplus )
 
-MakeThinkFuncLookup( vldoor_t, T_VerticalDoorGeneric );
-MakeThinkFuncLookup( ceiling_t, T_MoveCeilingGeneric );
+MakeThinkFuncLookup( vldoor_t,		T_VerticalDoorGeneric,	T_VerticalDoor );
+MakeThinkFuncLookup( plat_t,		T_RaisePlatGeneric,		T_PlatRaise );
+MakeThinkFuncLookup( floormove_t,	T_MoveFloorGeneric,		T_MoveFloor );
+MakeThinkFuncLookup( ceiling_t,		T_MoveCeilingGeneric,	T_MoveCeiling );
+MakeThinkFuncLookup( elevator_t,	T_MoveElevatorGeneric );
+MakeThinkFuncLookup( scroller_t,	T_ScrollerGeneric );
+MakeThinkFuncLookup( lightflash_t,	T_LightFlash );
+MakeThinkFuncLookup( strobe_t,		T_StrobeFlash );
+MakeThinkFuncLookup( glow_t,		T_Glow );
+MakeThinkFuncLookup( fireflicker_t,	T_FireFlicker );
 
 #endif // defined( __cplusplus )
 
