@@ -18,7 +18,6 @@
 //	generation of lookups, caching, retrieval by name.
 //
 
-#include "m_fixed.h"
 
 #include "doomdef.h"
 #include "doomstat.h"
@@ -33,10 +32,10 @@
 #include "i_terminal.h"
 
 #include "m_conv.h"
+#include "m_fixed.h"
 #include "m_misc.h"
 
 #include "p_local.h"
-// NEEEEEEED ANIMATION DATA
 #include "p_spec.h"
 
 #include "r_main.h"
@@ -120,9 +119,6 @@ extern "C"
 
 	struct texture_s
 	{
-		// Next in hash table chain
-		texture_t  *next;
-
 		// Keep name for switch changing, etc.
 		char		name[8];
 		int32_t		padding;
@@ -130,7 +126,6 @@ extern "C"
 		int16_t		height;
 
 		// Index in textures list
-
 		int32_t		index;
 
 		// All the patches[patchcount]
@@ -155,7 +150,6 @@ extern "C"
 
 	int						numtextures;
 	texture_t**				textures;
-	texture_t**				textures_hashtable;
 
 	patchdata_t**			texturepatchdata;
 	texturecomposite_t*		texturecomposite;
@@ -177,6 +171,8 @@ extern "C"
 	lighttable_t	*colormaps;
 	byte*			tranmap;
 }
+
+std::unordered_map< std::string, texture_t* >	texturenamelookup;
 
 std::unordered_map< std::string, lookup_t >		flatnamelookup;
 std::vector< lookup_t >							flatindexlookup;
@@ -533,47 +529,6 @@ column_t* R_GetRawColumn( int32_t tex, int32_t patch, int32_t col )
 	return nullptr;
 }
 
-
-static void GenerateTextureHashTable(void)
-{
-    texture_t **rover;
-    int i;
-    int key;
-
-    textures_hashtable = (texture_t**)Z_Malloc(sizeof(texture_t *) * numtextures, PU_STATIC, 0);
-
-    memset(textures_hashtable, 0, sizeof(texture_t *) * numtextures);
-
-    // Add all textures to hash table
-
-    for (i=0; i<numtextures; ++i)
-    {
-        // Store index
-
-        textures[i]->index = i;
-
-        // Vanilla Doom does a linear search of the texures array
-        // and stops at the first entry it finds.  If there are two
-        // entries with the same name, the first one in the array
-        // wins. The new entry must therefore be added at the end
-        // of the hash chain, so that earlier entries win.
-
-        key = W_LumpNameHash(textures[i]->name) % numtextures;
-
-        rover = &textures_hashtable[key];
-
-        while (*rover != NULL)
-        {
-            rover = &(*rover)->next;
-        }
-
-        // Hook into hash table
-
-        textures[i]->next = NULL;
-        *rover = textures[i];
-    }
-}
-
 constexpr colfunc_t colfuncsforheight[] =
 {
 	&R_DrawColumn_Colormap_16,
@@ -890,8 +845,9 @@ void R_InitTextures (void)
 	
 		mtexture = (maptexture_t *) ( (byte *)maptex + offset);
 
-		texture = textures[i] = (texture_t*)Z_Malloc(sizeof(texture_t) + sizeof(texpatch_t)*(SHORT(mtexture->patchcount)-1), PU_STATIC, 0);
-	
+		texture = texturenamelookup[ ClampString( mtexture->name ) ] = textures[i] = (texture_t*)Z_Malloc(sizeof(texture_t) + sizeof(texpatch_t)*(SHORT(mtexture->patchcount)-1), PU_STATIC, 0);
+
+		texture->index = i;
 		texture->width = SHORT(mtexture->width);
 		texture->height = SHORT(mtexture->height);
 		texture->patchcount = SHORT(mtexture->patchcount);
@@ -924,8 +880,6 @@ void R_InitTextures (void)
 	{
 		W_ReleaseLumpName(DEH_String("TEXTURE2"));
 	}
-
-	GenerateTextureHashTable();
 }
 
 
@@ -1150,11 +1104,8 @@ const std::vector< lookup_t >& R_GetSpriteLumps()
 //
 int R_CheckTextureNumForName(const char *name)
 {
-    texture_t *texture;
-    int key;
-
-    // "NoTexture" marker.
-    if( name[0] == '-' )
+	// "NoTexture" marker.
+	if( name[0] == '-' )
 	{
 		return 0;
 	}
@@ -1163,19 +1114,11 @@ int R_CheckTextureNumForName(const char *name)
 	{
 		return 0;
 	}
-		
-	key = W_LumpNameHash( name ) % numtextures;
 
-	texture = textures_hashtable[ key ];
-
-	while( texture != NULL )
+	auto found = texturenamelookup.find( ClampString( name ) );
+	if( found != texturenamelookup.end() )
 	{
-		if( !strncasecmp( texture->name, name, 8 ) )
-		{
-			return texture->index;
-		}
-
-		texture = texture->next;
+		return found->second->index;
 	}
 
 	return -1;
@@ -1185,7 +1128,6 @@ const char* R_TextureNameForNum( int32_t tex )
 {
 	return textures[ tex ]->name;
 }
-
 
 //
 // R_TextureNumForName

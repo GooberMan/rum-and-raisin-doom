@@ -474,10 +474,10 @@ struct DoomMapLoader
 			thisprev->lightlevel		= thiscurr->lightlevel			= thissec->lightlevel;
 			thisprev->floorlightlevel	= thiscurr->floorlightlevel		= thissec->lightlevel;
 			thisprev->ceillightlevel	= thiscurr->ceillightlevel		= thissec->lightlevel;
-			thisprev->flooroffsetx		= thiscurr->flooroffsetx		= thissec->flooroffsetx;
-			thisprev->flooroffsety		= thiscurr->flooroffsety		= thissec->flooroffsety;
-			thisprev->ceiloffsetx		= thiscurr->ceiloffsetx			= thissec->ceiloffsetx;
-			thisprev->ceiloffsety		= thiscurr->ceiloffsety			= thissec->ceiloffsety;
+			thisprev->flooroffsetx		= thiscurr->flooroffsetx		= FixedToRendFixed( thissec->flooroffsetx );
+			thisprev->flooroffsety		= thiscurr->flooroffsety		= FixedToRendFixed( thissec->flooroffsety );
+			thisprev->ceiloffsetx		= thiscurr->ceiloffsetx			= FixedToRendFixed( thissec->ceiloffsetx );
+			thisprev->ceiloffsety		= thiscurr->ceiloffsety			= FixedToRendFixed( thissec->ceiloffsety );
 			thisprev->clipfloor			= thiscurr->clipfloor			= false;
 			thisprev->clipceiling		= thiscurr->clipceiling			= false;
 			thisprev->activethisframe	= thiscurr->activethisframe		= false;

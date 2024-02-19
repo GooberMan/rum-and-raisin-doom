@@ -563,12 +563,6 @@ void R_Subsector( rendercontext_t& rendercontext, int32_t num )
 	uint64_t		endaddsprites = I_GetTimeUS();
 	bspcontext.addspritestimetaken += ( endaddsprites - startaddsprites );
 #endif // RENDER_PERF_GRAPHING
-
-	// check for solidsegs overflow - extremely unsatisfactory!
-	if( !remove_limits && bspcontext.solidsegsend > &bspcontext.solidsegs[ VANILLA_MAXSEGS ] )
-	{
-		I_Error("R_Subsector: solidsegs overflow (vanilla may crash here)\n");
-	}
 }
 
 
@@ -608,5 +602,3 @@ void R_RenderBSPNode( rendercontext_t& rendercontext, int32_t bspnum )
 		R_RenderBSPNode( rendercontext, bsp->children[ side ^ 1 ] );
 	}
 }
-
-
