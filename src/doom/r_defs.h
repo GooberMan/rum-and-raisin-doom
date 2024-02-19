@@ -31,6 +31,7 @@
 // Some more or less basic data types
 // we depend on.
 #include "m_fixed.h"
+#include "m_misc.h"
 
 // We rely on the thinker data struct
 // to handle sound origins in sectors.
@@ -366,7 +367,7 @@ struct sector_s
 	INLINE fixed_t Friction()			{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
 	INLINE fixed_t FrictionPercent()	{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
 
-	constexpr fixed_t FloorEffectHeight() { return transferline ? transferline->frontsector->floorheight : floorheight; }
+	constexpr fixed_t FloorEffectHeight() { return transferline ? M_MAX( transferline->frontsector->floorheight, floorheight ) : floorheight; }
 
 	INLINE fixed_t FrictionMultiplier()			{ return frictionmultipliers[ FrictionPercent() >> 13 ]; }
 	INLINE fixed_t MonsterFrictionMultiplier()	{ return frictionmultipliers[ FrictionPercent() >> 13 ] << 5; }
