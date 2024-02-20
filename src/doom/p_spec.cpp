@@ -247,27 +247,6 @@ int32_t P_GetPicAnimLength( doombool istexture, int32_t start )
 	return -1;
 }
 
-int32_t P_GetPicSwitchOpposite( int32_t tex )
-{
-	char texnamecache[ 16 ];
-	size_t texnamelength;
-	const char* texname = R_TextureNameForNum( tex );
-	texnamelength = M_MIN( strlen( texname ), 8 );
-
-	strncpy( texnamecache, texname, texnamelength );
-	texnamecache[ texnamelength ] = 0;
-	
-	if( tolower( texnamecache[ 0 ] ) == 's' && tolower( texnamecache[ 1 ] ) == 'w'
-		&& ( texnamecache[ 2 ] == '1' || texnamecache[ 2 ] == '2' ) )
-	{
-		texnamecache[ 2 ] = texnamecache[ 2 ] == '1' ? '2' : '1';
-		return R_TextureNumForName( texnamecache );
-	}
-
-	return -1;
-}
-
-
 //
 // UTILITIES
 //

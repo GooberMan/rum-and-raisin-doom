@@ -520,17 +520,11 @@ namespace DrawColumn
 #endif // R_DRAWCOLUMN_SIMDOPTIMISED
 }
 
-void R_DrawColumn( colcontext_t* context ) 
+void R_DrawColumn_128( colcontext_t* context ) 
 { 
 	M_PROFILE_FUNC();
-	DrawColumn::Bytewise::Draw( context );
+	DrawColumn::Bytewise::SizedDraw< 128 >( context );
 } 
-
-void R_DrawColumn_Colormap( colcontext_t* context )
-{
-	M_PROFILE_FUNC();
-	DrawColumn::Bytewise::ColormapDraw( context );
-}
 
 void R_DrawColumn_Colormap_16( colcontext_t* context )
 {

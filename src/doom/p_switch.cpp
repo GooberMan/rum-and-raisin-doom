@@ -166,6 +166,19 @@ void P_InitSwitchList(void)
 
 }
 
+int32_t P_GetPicSwitchOpposite( int32_t tex )
+{
+	for( int32_t index : iota( 0, numswitches * 2 ) )
+	{
+		if( switchlist[ index ] == tex )
+		{
+			return ( index & 1 ) ? switchlist[ index - 1 ] : switchlist[ index + 1 ];
+		}
+	}
+
+	return -1;
+}
+
 
 //
 // Start a button counting down till it turns off.

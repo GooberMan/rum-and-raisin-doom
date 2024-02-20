@@ -28,8 +28,8 @@ extern "C" {
 // The span blitting interface.
 // Hook in assembler or system specific BLT
 //  here.
-void R_DrawColumn( colcontext_t* context );
-void R_DrawColumn_Colormap( colcontext_t* context );
+void R_DrawColumn_128( colcontext_t* context );
+
 void R_DrawColumn_Colormap_16( colcontext_t* context );
 void R_DrawColumn_Colormap_32( colcontext_t* context );
 void R_DrawColumn_Colormap_64( colcontext_t* context );
@@ -42,15 +42,16 @@ void R_DrawColumn_Transparent_64( colcontext_t* context );
 void R_DrawColumn_Transparent_128( colcontext_t* context );
 void R_DrawColumn_Transparent_256( colcontext_t* context );
 
-void R_SpriteDrawColumn ( colcontext_t* context );
-void R_SpriteDrawColumn_Colormap ( colcontext_t* context );
-void R_SpriteDrawColumn_Transparent ( colcontext_t* context );
+void R_SpriteDrawColumn( colcontext_t* context );
+void R_SpriteDrawColumn_Colormap( colcontext_t* context );
+void R_SpriteDrawColumn_Transparent( colcontext_t* context );
 
-void R_LimitRemovingDrawColumn ( colcontext_t* context );
-void R_LimitRemovingDrawColumn_Colormap ( colcontext_t* context );
-void R_LimitRemovingDrawColumn_Transparent ( colcontext_t* context );
-void R_BackbufferDrawColumn ( colcontext_t* context );
-void R_BackbufferDrawColumn_Colormap ( colcontext_t* context );
+void R_LimitRemovingDrawColumn( colcontext_t* context );
+void R_LimitRemovingDrawColumn_Colormap( colcontext_t* context );
+void R_LimitRemovingDrawColumn_Transparent( colcontext_t* context );
+
+void R_BackbufferDrawColumn( colcontext_t* context );
+void R_BackbufferDrawColumn_Colormap( colcontext_t* context );
 
 // Rum and raisin extensions.
 // Needs a whole overhaul of how we define output buffers.
