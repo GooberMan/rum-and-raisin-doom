@@ -3510,6 +3510,16 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igPopItemWidth();
 			igPopID();
 
+			extern int32_t allow_view_bobbing;
+			igNextColumn();
+			igText( "View bobbing" );
+			igNextColumn();
+			igPushID_Ptr( &allow_view_bobbing );
+			igPushItemWidth( 200.f );
+			igCheckbox( "", (bool*)&allow_view_bobbing );
+			igPopItemWidth();
+			igPopID();
+
 			extern int32_t vertical_fov_degrees;
 			igNextColumn();
 			igText( "Vertical FOV" );

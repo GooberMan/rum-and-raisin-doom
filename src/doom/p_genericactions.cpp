@@ -1401,9 +1401,9 @@ DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, tele
 
 				if( P_TeleportMove( activator, targetmobj->x, targetmobj->y ) )
 				{
-					outtargetx		= targetmobj->x;
-					outtargety		= targetmobj->y;
-					outtargetangle	= targetmobj->angle;
+					outtargetx				= targetmobj->x;
+					outtargety				= targetmobj->y;
+					outtargetangle			= targetmobj->angle;
 					switch( anglebehavior )
 					{
 					case tt_setangle:

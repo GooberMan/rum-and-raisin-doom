@@ -35,6 +35,10 @@
 // Index of the special effects (INVUL inverse) map.
 #define INVERSECOLORMAP		32
 
+extern "C"
+{
+	extern int32_t allow_view_bobbing;
+}
 
 //
 // Movement.
@@ -125,7 +129,15 @@ DOOM_C_API void P_CalcHeight (player_t* player)
 		player->deltaviewheight = 1;
 	}
     }
-    player->viewz = player->mo->z + player->viewheight + bob;
+
+	if( allow_view_bobbing )
+	{
+		player->viewz = player->mo->z + player->viewheight + bob;
+	}
+	else
+	{
+		player->viewz = player->mo->z + player->viewheight;
+	}
 
     if (player->viewz > player->mo->ceilingz-4*FRACUNIT)
 	player->viewz = player->mo->ceilingz-4*FRACUNIT;

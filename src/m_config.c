@@ -895,6 +895,14 @@ static default_t extra_defaults_list[] =
     //!
     // @game doom
     //
+    // You know that iconic view bobbing? Disable it if you want I don't care.
+    //
+
+    CONFIG_VARIABLE_INT(allow_view_bobbing),
+
+    //!
+    // @game doom
+    //
     // Control whether closing the window asks if you want to quit Vanilla style.
     //
 

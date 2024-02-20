@@ -141,9 +141,9 @@ int32_t				show_endoom = 1;
 int32_t				show_text_startup = 1;
 int32_t				show_diskicon = Disk_ByCommandLine;
 int32_t				remove_limits = 1;
-int32_t				enable_frame_interpolation = 1;
 int32_t				window_close_behavior = WindowClose_Ask;
 
+extern int32_t		enable_frame_interpolation;
 extern int32_t		maxrendercontexts;
 extern int32_t		num_render_contexts;
 extern int32_t		num_software_backbuffers;
@@ -504,12 +504,7 @@ void D_BindVariables(void)
     M_BindIntVariable("vanilla_demo_limit",     &vanilla_demo_limit);
     M_BindIntVariable("show_endoom",            &show_endoom);
 	M_BindIntVariable("show_text_startup",		&show_text_startup);
-	M_BindIntVariable("enable_frame_interpolation", &enable_frame_interpolation);
     M_BindIntVariable("show_diskicon",          &show_diskicon);
-	M_BindIntVariable("num_render_contexts",    &num_render_contexts);
-	M_BindIntVariable("num_software_backbuffers", &num_software_backbuffers);
-	M_BindIntVariable("additional_light_boost",	&additional_light_boost );
-	M_BindIntVariable("vertical_fov_degrees",	&vertical_fov_degrees );
 	M_BindIntVariable("window_close_behavior",	&window_close_behavior );
 
 	M_BindIntVariable("stats_style",			&stats_style );

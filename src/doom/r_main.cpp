@@ -149,9 +149,9 @@ extern "C"
 	int32_t			frame_height;
 
 	int32_t			additional_light_boost = 0;
-
-	extern int32_t	 enable_frame_interpolation;
+	int32_t			enable_frame_interpolation = 1;
 	int32_t			interpolate_this_frame = 0;
+	int32_t			allow_view_bobbing = 1;
 
 	doombool		setsizeneeded;
 	int				setblocks;
@@ -517,7 +517,13 @@ rend_fixed_t R_PointToDist( const viewpoint_t* viewpoint, rend_fixed_t x, rend_f
 
 void R_BindRenderVariables( void )
 {
-	M_BindIntVariable("fuzz_style",			&fuzz_style);
+	M_BindIntVariable("fuzz_style",					&fuzz_style);
+	M_BindIntVariable("enable_frame_interpolation", &enable_frame_interpolation);
+	M_BindIntVariable("num_render_contexts",		&num_render_contexts);
+	M_BindIntVariable("num_software_backbuffers",	&num_software_backbuffers);
+	M_BindIntVariable("additional_light_boost",		&additional_light_boost );
+	M_BindIntVariable("vertical_fov_degrees",		&vertical_fov_degrees );
+	M_BindIntVariable("allow_view_bobbing",			&allow_view_bobbing );
 }
 
 #define PI acos(-1.0)

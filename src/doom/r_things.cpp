@@ -53,6 +53,7 @@ extern "C"
 	#define BASEYCENTER			(V_VIRTUALHEIGHT/2)
 
 	extern int32_t interpolate_this_frame;
+	extern int32_t allow_view_bobbing;
 
 	// Constant arrays, don't need to live in a context
 
@@ -747,21 +748,26 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 
 	rend_fixed_t sx = FixedToRendFixed( psp->sx );
 	rend_fixed_t sy = FixedToRendFixed( psp->sy );
-	rend_fixed_t lastx = FixedToRendFixed( psp->lastx );
-	rend_fixed_t lasty = FixedToRendFixed( psp->lasty );
 
 	if( interpolate_this_frame && psp->duration > 0 )
 	{
 		if( psp->viewbob )
 		{
-			rend_fixed_t fracleveltime = IntToRendFixed( leveltime ) + viewpoint.lerp;
-			rend_fixed_t adjusted = fracleveltime * 128;
-			int32_t actual = RendFixedToInt( adjusted );
-			angle_t angle = actual & FINEMASK;
-			sx = RENDFRACUNIT + RendFixedMul( viewpoint.weaponbob, renderfinecosine[ angle << RENDERQUALITYSHIFT ] );
-			angle &= FINEANGLES/2-1;
-			sy = FixedToRendFixed( WEAPONTOP ) + RendFixedMul( viewpoint.weaponbob, renderfinesine[ angle << RENDERQUALITYSHIFT ] );
-		
+			if( allow_view_bobbing )
+			{
+				rend_fixed_t fracleveltime = IntToRendFixed( leveltime ) + viewpoint.lerp;
+				rend_fixed_t adjusted = fracleveltime * 128;
+				int32_t actual = RendFixedToInt( adjusted );
+				angle_t angle = actual & FINEMASK;
+				sx = RENDFRACUNIT + RendFixedMul( viewpoint.weaponbob, renderfinecosine[ angle << RENDERQUALITYSHIFT ] );
+				angle &= FINEANGLES/2-1;
+				sy = FixedToRendFixed( WEAPONTOP ) + RendFixedMul( viewpoint.weaponbob, renderfinesine[ angle << RENDERQUALITYSHIFT ] );
+			}
+			else
+			{
+				sx = 0;
+				sy = FixedToRendFixed( WEAPONTOP );
+			}
 		}
 		else
 		{
@@ -769,9 +775,16 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 			rend_fixed_t framecount = IntToRendFixed( thisframe + 1 );
 			rend_fixed_t framelen = RendFixedDiv( IntToRendFixed( 1 ), framecount );
 			rend_fixed_t amount = thisframe * framelen + RendFixedDiv( viewpoint.lerp, framecount );
+			rend_fixed_t lastx = FixedToRendFixed( psp->lastx );
+			rend_fixed_t lasty = FixedToRendFixed( psp->lasty );
 			sx = RendFixedLerp( lastx, sx, amount );
 			sy = RendFixedLerp( lasty, sy, amount );
 		}
+	}
+	else if( !allow_view_bobbing && psp->viewbob )
+	{
+		sx = RENDFRACUNIT;
+		sy = FixedToRendFixed( WEAPONTOP );
 	}
 
 	// calculate edges of the shape
