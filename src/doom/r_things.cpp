@@ -53,7 +53,7 @@ extern "C"
 	#define BASEYCENTER			(V_VIRTUALHEIGHT/2)
 
 	extern int32_t interpolate_this_frame;
-	extern int32_t allow_view_bobbing;
+	extern int32_t view_bobbing_percent;
 
 	// Constant arrays, don't need to live in a context
 
@@ -753,21 +753,14 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	{
 		if( psp->viewbob )
 		{
-			if( allow_view_bobbing )
-			{
-				rend_fixed_t fracleveltime = IntToRendFixed( leveltime ) + viewpoint.lerp;
-				rend_fixed_t adjusted = fracleveltime * 128;
-				int32_t actual = RendFixedToInt( adjusted );
-				angle_t angle = actual & FINEMASK;
-				sx = RENDFRACUNIT + RendFixedMul( viewpoint.weaponbob, renderfinecosine[ angle << RENDERQUALITYSHIFT ] );
-				angle &= FINEANGLES/2-1;
-				sy = FixedToRendFixed( WEAPONTOP ) + RendFixedMul( viewpoint.weaponbob, renderfinesine[ angle << RENDERQUALITYSHIFT ] );
-			}
-			else
-			{
-				sx = 0;
-				sy = FixedToRendFixed( WEAPONTOP );
-			}
+			rend_fixed_t percent = RendFixedDiv( IntToRendFixed( view_bobbing_percent ), IntToRendFixed( 100 ) );
+			rend_fixed_t fracleveltime = IntToRendFixed( leveltime ) + viewpoint.lerp;
+			rend_fixed_t adjusted = fracleveltime * 128;
+			int32_t actual = RendFixedToInt( adjusted );
+			angle_t angle = actual & FINEMASK;
+			sx = RENDFRACUNIT + RendFixedMul( RendFixedMul( viewpoint.weaponbob, renderfinecosine[ angle << RENDERQUALITYSHIFT ] ), percent );
+			angle &= FINEANGLES/2-1;
+			sy = FixedToRendFixed( WEAPONTOP ) + RendFixedMul( RendFixedMul( viewpoint.weaponbob, renderfinesine[ angle << RENDERQUALITYSHIFT ] ), percent );
 		}
 		else
 		{
@@ -781,10 +774,16 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 			sy = RendFixedLerp( lasty, sy, amount );
 		}
 	}
-	else if( !allow_view_bobbing && psp->viewbob )
+	else if( psp->viewbob )
 	{
-		sx = RENDFRACUNIT;
-		sy = FixedToRendFixed( WEAPONTOP );
+		rend_fixed_t percent = RendFixedDiv( IntToRendFixed( view_bobbing_percent ), IntToRendFixed( 100 ) );
+		rend_fixed_t fracleveltime = IntToRendFixed( psp->leveltime );
+		rend_fixed_t adjusted = fracleveltime * 128;
+		int32_t actual = RendFixedToInt( adjusted );
+		angle_t angle = actual & FINEMASK;
+		sx = RENDFRACUNIT + RendFixedMul( RendFixedMul( viewpoint.weaponbob, renderfinecosine[ angle << RENDERQUALITYSHIFT ] ), percent );
+		angle &= FINEANGLES/2-1;
+		sy = FixedToRendFixed( WEAPONTOP ) + RendFixedMul( RendFixedMul( viewpoint.weaponbob, renderfinesine[ angle << RENDERQUALITYSHIFT ] ), percent );
 	}
 
 	// calculate edges of the shape

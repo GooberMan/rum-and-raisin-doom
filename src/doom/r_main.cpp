@@ -151,7 +151,7 @@ extern "C"
 	int32_t			additional_light_boost = 0;
 	int32_t			enable_frame_interpolation = 1;
 	int32_t			interpolate_this_frame = 0;
-	int32_t			allow_view_bobbing = 1;
+	int32_t			view_bobbing_percent = 100;
 
 	doombool		setsizeneeded;
 	int				setblocks;
@@ -523,7 +523,7 @@ void R_BindRenderVariables( void )
 	M_BindIntVariable("num_software_backbuffers",	&num_software_backbuffers);
 	M_BindIntVariable("additional_light_boost",		&additional_light_boost );
 	M_BindIntVariable("vertical_fov_degrees",		&vertical_fov_degrees );
-	M_BindIntVariable("allow_view_bobbing",			&allow_view_bobbing );
+	M_BindIntVariable("view_bobbing_percent",			&view_bobbing_percent );
 }
 
 #define PI acos(-1.0)

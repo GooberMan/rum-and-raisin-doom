@@ -898,7 +898,7 @@ static default_t extra_defaults_list[] =
     // You know that iconic view bobbing? Disable it if you want I don't care.
     //
 
-    CONFIG_VARIABLE_INT(allow_view_bobbing),
+    CONFIG_VARIABLE_INT(view_bobbing_percent),
 
     //!
     // @game doom

@@ -268,10 +268,10 @@ DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
     // check for smooth step up
     if (mo->player && mo->z < mo->floorz)
     {
-	mo->player->viewheight -= mo->floorz-mo->z;
+		mo->player->viewheight -= mo->floorz-mo->z;
 
-	mo->player->deltaviewheight
-	    = (VIEWHEIGHT - mo->player->viewheight)>>3;
+		mo->player->deltaviewheight
+			= (VIEWHEIGHT - mo->player->viewheight)>>3;
     }
     
     // adjust height

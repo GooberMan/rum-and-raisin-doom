@@ -3510,13 +3510,13 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igPopItemWidth();
 			igPopID();
 
-			extern int32_t allow_view_bobbing;
+			extern int32_t view_bobbing_percent;
 			igNextColumn();
 			igText( "View bobbing" );
 			igNextColumn();
-			igPushID_Ptr( &allow_view_bobbing );
+			igPushID_Ptr( &view_bobbing_percent );
 			igPushItemWidth( 200.f );
-			igCheckbox( "", (bool*)&allow_view_bobbing );
+			igSliderInt( "", &view_bobbing_percent, 0, 100, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput);
 			igPopItemWidth();
 			igPopID();
 

@@ -37,7 +37,7 @@
 
 extern "C"
 {
-	extern int32_t allow_view_bobbing;
+	extern int32_t view_bobbing_percent;
 }
 
 //
@@ -130,14 +130,8 @@ DOOM_C_API void P_CalcHeight (player_t* player)
 	}
     }
 
-	if( allow_view_bobbing )
-	{
-		player->viewz = player->mo->z + player->viewheight + bob;
-	}
-	else
-	{
-		player->viewz = player->mo->z + player->viewheight;
-	}
+	fixed_t percent = FixedDiv( IntToFixed( view_bobbing_percent ), IntToFixed( 100 ) );
+	player->viewz = player->mo->z + player->viewheight + FixedMul( bob, percent );
 
     if (player->viewz > player->mo->ceilingz-4*FRACUNIT)
 	player->viewz = player->mo->ceilingz-4*FRACUNIT;
