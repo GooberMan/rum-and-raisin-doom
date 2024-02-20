@@ -1301,7 +1301,7 @@ void R_PrecacheLevel (void)
 		for (j=0 ; j<texture->patchcount ; j++)
 		{
 			lump = texture->patches[j].patch;
-			W_CacheLumpNum( lump , PU_LEVEL ); // TODO: Switch to cache after masked textures get a SIMD renderer
+			W_CacheLumpNum( lump , PU_LEVEL );
 		}
 
 		R_CacheCompositeTexture( i );
