@@ -262,139 +262,146 @@ DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 //
 DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
 {
-    fixed_t	dist;
-    fixed_t	delta;
-    
-    // check for smooth step up
-    if (mo->player && mo->z < mo->floorz)
-    {
+	auto GetBounceVel = []( int32_t flags, fixed_t vel )
+	{
+		fixed_t newvel = -vel;
+		if( flags & MF_MISSILE )
+		{
+			constexpr fixed_t bounceamount = FixedDiv( IntToFixed( 50 ), IntToFixed( 100 ) );
+			newvel = FixedMul( newvel, bounceamount );
+		}
+		else if( ( flags & ( MF_FLOAT | MF_DROPOFF ) ) == ( MF_FLOAT | MF_DROPOFF ) )
+		{
+			constexpr fixed_t bounceamount = FixedDiv( IntToFixed( 875 ), IntToFixed( 1000 ) );
+			newvel = FixedMul( newvel, bounceamount );
+		}
+		else if( flags & MF_FLOAT )
+		{
+			constexpr fixed_t bounceamount = FixedDiv( IntToFixed( 75 ), IntToFixed( 100 ) );
+			newvel = FixedMul( newvel, bounceamount );
+		}
+		else
+		{
+			constexpr fixed_t bounceamount = FixedDiv( IntToFixed( 50 ), IntToFixed( 100 ) );
+			newvel = FixedMul( newvel, bounceamount );
+		}
+
+		return newvel;
+	};
+
+	// check for smooth step up
+	if (mo->player && mo->z < mo->floorz)
+	{
 		mo->player->viewheight -= mo->floorz-mo->z;
 
 		mo->player->deltaviewheight
 			= (VIEWHEIGHT - mo->player->viewheight)>>3;
-    }
-    
-    // adjust height
-    mo->z += mo->momz;
-	
-    if ( mo->flags & MF_FLOAT
-	 && mo->target)
-    {
-	// float down towards target if too close
-	if ( !(mo->flags & MF_SKULLFLY)
-	     && !(mo->flags & MF_INFLOAT) )
-	{
-	    dist = P_AproxDistance (mo->x - mo->target->x,
-				    mo->y - mo->target->y);
-	    
-	    delta =(mo->target->z + (mo->height>>1)) - mo->z;
-
-	    if (delta<0 && dist < -(delta*3) )
-		mo->z -= FLOATSPEED;
-	    else if (delta>0 && dist < (delta*3) )
-		mo->z += FLOATSPEED;			
-	}
-	
-    }
-    
-    // clip movement
-    if (mo->z <= mo->floorz)
-    {
-	// hit the floor
-
-	// Note (id):
-	//  somebody left this after the setting momz to 0,
-	//  kinda useless there.
-	//
-	// cph - This was the a bug in the linuxdoom-1.10 source which
-	//  caused it not to sync Doom 2 v1.9 demos. Someone
-	//  added the above comment and moved up the following code. So
-	//  demos would desync in close lost soul fights.
-	// Note that this only applies to original Doom 1 or Doom2 demos - not
-	//  Final Doom and Ultimate Doom.  So we test demo_compatibility *and*
-	//  gamemission. (Note we assume that Doom1 is always Ult Doom, which
-	//  seems to hold for most published demos.)
-        //  
-        //  fraggle - cph got the logic here slightly wrong.  There are three
-        //  versions of Doom 1.9:
-        //
-        //  * The version used in registered doom 1.9 + doom2 - no bounce
-        //  * The version used in ultimate doom - has bounce
-        //  * The version used in final doom - has bounce
-        //
-        // So we need to check that this is either retail or commercial
-        // (but not doom2)
-	
-	int correct_lost_soul_bounce = gameversion >= exe_ultimate;
-
-	if (correct_lost_soul_bounce && mo->flags & MF_SKULLFLY)
-	{
-	    // the skull slammed into something
-	    mo->momz = -mo->momz;
-	}
-	
-	if (mo->momz < 0)
-	{
-	    if (mo->player
-		&& mo->momz < -GRAVITY*8)	
-	    {
-		// Squat down.
-		// Decrease viewheight for a moment
-		// after hitting the ground (hard),
-		// and utter appropriate sound.
-		mo->player->deltaviewheight = mo->momz>>3;
-		S_StartSound (mo, sfx_oof);
-	    }
-	    mo->momz = 0;
-	}
-	mo->z = mo->floorz;
-
-
-	// cph 2001/05/26 -
-	// See lost soul bouncing comment above. We need this here for bug
-	// compatibility with original Doom2 v1.9 - if a soul is charging and
-	// hit by a raising floor this incorrectly reverses its Y momentum.
-	//
-
-        if (!correct_lost_soul_bounce && mo->flags & MF_SKULLFLY)
-            mo->momz = -mo->momz;
-
-	if ( (mo->flags & MF_MISSILE)
-	     && !(mo->flags & MF_NOCLIP) )
-	{
-	    P_ExplodeMissile (mo);
-	    NULL;
-	}
-    }
-    else if (! (mo->flags & MF_NOGRAVITY) )
-    {
-	if (mo->momz == 0)
-	    mo->momz = -GRAVITY*2;
-	else
-	    mo->momz -= GRAVITY;
-    }
-	
-    if (mo->z + mo->height > mo->ceilingz)
-    {
-	// hit the ceiling
-	if (mo->momz > 0)
-	    mo->momz = 0;
-	{
-	    mo->z = mo->ceilingz - mo->height;
 	}
 
-	if (mo->flags & MF_SKULLFLY)
-	{	// the skull slammed into something
-	    mo->momz = -mo->momz;
+	// adjust height
+	mo->z += mo->momz;
+	
+	if ( mo->flags & MF_FLOAT
+		&& mo->target)
+	{
+		// float down towards target if too close
+		if ( !(mo->flags & MF_SKULLFLY)
+				&& !(mo->flags & MF_INFLOAT) )
+		{
+			fixed_t dist = P_AproxDistance (mo->x - mo->target->x,
+											mo->y - mo->target->y);
+
+			fixed_t delta = (mo->target->z + (mo->height>>1)) - mo->z;
+
+			if (delta<0 && dist < -(delta*3) )
+			mo->z -= FLOATSPEED;
+			else if (delta>0 && dist < (delta*3) )
+			mo->z += FLOATSPEED;			
+		}
+	
+	}
+
+	bool bounces = sim.mbf_mobj_flags && ( mo->flags & MF_MBF_BOUNCES );
+	// clip movement
+	if (mo->z <= mo->floorz)
+	{
+		// hit the floor
+
+		if (comp.lost_souls_bounce && mo->flags & MF_SKULLFLY)
+		{
+			// the skull slammed into something
+			mo->momz = -mo->momz;
+		}
+	
+		if( bounces )
+		{
+			fixed_t floordiff = mo->floorz - mo->floorz;
+			mo->momz = GetBounceVel( mo->flags, mo->momz ) - GRAVITY;
+			mo->z = mo->floorz + floordiff;
+		}
+		else if (mo->momz < 0)
+		{
+			if (mo->player && mo->momz < -GRAVITY * 8)
+			{
+				// Squat down.
+				// Decrease viewheight for a moment
+				// after hitting the ground (hard),
+				// and utter appropriate sound.
+				mo->player->deltaviewheight = mo->momz>>3;
+				S_StartSound (mo, sfx_oof);
+			}
+			mo->momz = 0;
+		}
+		mo->z = mo->floorz;
+
+		if (!comp.lost_souls_bounce && mo->flags & MF_SKULLFLY)
+		{
+			mo->momz = -mo->momz;
+		}
+
+		if ( (mo->flags & MF_MISSILE)
+			 && !bounces
+			 && !(mo->flags & MF_NOCLIP) )
+		{
+			P_ExplodeMissile (mo);
+			NULL;
+		}
+	}
+	else if (! (mo->flags & MF_NOGRAVITY) )
+	{
+		if (mo->momz == 0)
+			mo->momz = -GRAVITY*2;
+		else
+			mo->momz -= GRAVITY;
 	}
 	
-	if ( (mo->flags & MF_MISSILE)
-	     && !(mo->flags & MF_NOCLIP) )
+	if (mo->z + mo->height > mo->ceilingz)
 	{
-	    P_ExplodeMissile (mo);
-	    return NULL;
+		// hit the ceiling
+		if( bounces )
+		{
+			mo->momz = GetBounceVel( mo->flags, mo->momz );
+		}
+		else if (mo->momz > 0)
+		{
+			mo->momz = 0;
+		}
+
+		mo->z = mo->ceilingz - mo->height;
+
+		if (mo->flags & MF_SKULLFLY)
+		{	// the skull slammed into something
+			mo->momz = -mo->momz;
+		}
+	
+		if ( (mo->flags & MF_MISSILE)
+			 && !bounces
+			 && !(mo->flags & MF_NOCLIP) )
+		{
+			P_ExplodeMissile (mo);
+			return NULL;
+		}
 	}
-    }
 
 	return mo;
 } 

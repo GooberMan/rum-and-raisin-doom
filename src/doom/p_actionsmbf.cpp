@@ -110,5 +110,6 @@ DOOM_C_API void A_LineEffect( mobj_t* mobj )
 
 DOOM_C_API void A_Die( mobj_t* mobj )
 {
-	P_DamageMobj( mobj, mobj, mobj, 10000 );
+	constexpr damage_t damagetype = (damage_t)( damage_totalkill | damage_alsononshootables | damage_ignorearmor | damage_nothrust );
+	P_DamageMobjEx( mobj, mobj, mobj, 10000, damagetype );
 }

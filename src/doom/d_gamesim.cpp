@@ -265,7 +265,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_things = true;							// Pushers, pullers, TNT1
 	values.sim.mbf_line_specials = false;					// Sky transfers, that's it
-	values.sim.mbf_thing_mobj_flags = false;				// Bouncy! Friendly! TOUCHY!
+	values.sim.mbf_mobj_flags = false;						// Bouncy! Friendly! TOUCHY!
 	values.sim.mbf_code_pointers = false;					// Dehacked additions
 	values.sim.mbf_things = false;							// DOGS
 	values.sim.mbf21_line_specials = false;					// New texture scrollers, new flags
@@ -379,7 +379,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_things = true;							// Pushers, pullers, TNT1
 	values.sim.mbf_line_specials = true;					// Sky transfers, that's it
-	values.sim.mbf_thing_mobj_flags = true;					// Bouncy! Friendly! TOUCHY!
+	values.sim.mbf_mobj_flags = true;						// Bouncy! Friendly! TOUCHY!
 	values.sim.mbf_code_pointers = true;					// Dehacked additions
 	values.sim.mbf_things = true;							// DOGS
 	values.sim.mbf21_line_specials = false;					// New texture scrollers, new flags
@@ -484,7 +484,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_things = true;							// Pushers, pullers, TNT1
 	values.sim.mbf_line_specials = true;					// Sky transfers, that's it
-	values.sim.mbf_thing_mobj_flags = true;					// Bouncy! Friendly! TOUCHY!
+	values.sim.mbf_mobj_flags = true;						// Bouncy! Friendly! TOUCHY!
 	values.sim.mbf_code_pointers = true;					// Dehacked additions
 	values.sim.mbf_things = true;							// DOGS
 	values.sim.mbf21_line_specials = true;					// New texture scrollers, new flags

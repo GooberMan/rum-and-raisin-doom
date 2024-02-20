@@ -158,6 +158,36 @@ void A_SpawnSound();
 void A_SpawnFly();
 void A_BrainExplode();
 
+// MBF actions
+void A_Detonate();
+void A_Mushroom();
+void A_Spawn();
+void A_Turn();
+void A_Face();
+void A_Scratch();
+void A_RandomJump();
+void A_LineEffect();
+void A_Die();
+
+// MBF21 Actions
+void A_SpawnObject();
+void A_MonsterProjectile();
+void A_MonsterBulletAttack();
+void A_MonsterMeleeAttack();
+void A_RadiusDamage();
+void A_NoiseAlert();
+void A_HealChase();
+void A_SeekTracer();
+void A_FindTracer();
+void A_ClearTracer();
+void A_JumpIfHealthBelow();
+void A_JumpIfTargetInSight();
+void A_JumpIfTargetCloser();
+void A_JumpIfTracerInSight();
+void A_JumpIfTracerCloser();
+void A_JumpIfFlagsSet();
+void A_AddFlags();
+void A_RemoveFlags();
 
 state_t	states[NUMSTATES] = {
     { SPR_TROO,	0,	-1,{NULL},S_NULL,					{ 0 },	{ 0 } },	// S_NULL
@@ -1132,6 +1162,11 @@ state_t	states[NUMSTATES] = {
 	{SPR_TNT1,	0,	-1,{NULL},S_TNT1,					{ 0 },	{ 0 } },	// S_TNT1
 
 	// MBF states
+	{ SPR_MISL,	32768,	1000,{A_Die},S_GRENADE,			{ 0 },	{ 0 } },	// S_DOGS_STND
+	{ SPR_MISL, 32769,	4,{A_Scream},S_DETONATE2,		{ 0 },	{ 0 } },	// S_DETONATE1
+	{ SPR_MISL, 32770,	6,{A_Detonate},S_DETONATE3,		{ 0 },	{ 0 } },	// S_DETONATE2
+	{ SPR_MISL, 32771,	10,{NULL},S_NULL,				{ 0 },	{ 0 } },	// S_DETONATE3
+
 	{ SPR_DOGS,	0,	10,{A_Look},S_DOGS_STND2,			{ 0 },	{ 0 } },	// S_DOGS_STND
 	{ SPR_DOGS,	1,	10,{A_Look},S_DOGS_STND,			{ 0 },	{ 0 } },	// S_DOGS_STND2
 	{ SPR_DOGS,	0,	2,{A_Chase},S_DOGS_RUN2,			{ 0 },	{ 0 } },	// S_DOGS_RUN1

@@ -263,9 +263,19 @@ DOOM_C_API extern mobj_t**			blocklinks;	// for thing chains
 DOOM_C_API extern int		maxammo[NUMAMMO];
 DOOM_C_API extern int		clipammo[NUMAMMO];
 
+DOOM_C_API typedef enum damage_e
+{
+	damage_none					= 0x00000000,
+	damage_totalkill			= 0x00000001,
+	damage_alsononshootables	= 0x00000002,
+	damage_nothrust				= 0x00000004,
+	damage_ignorearmor			= 0x00000008,
+} damage_t;
+
 DOOM_C_API void P_TouchSpecialThing( mobj_t* special,  mobj_t* toucher );
 
 DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int damage );
+DOOM_C_API void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int damage, damage_t flags );
 DOOM_C_API void P_KillMobj( mobj_t* source, mobj_t* target );
 
 

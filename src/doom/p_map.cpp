@@ -339,64 +339,68 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 	return false;		// stop moving
     }
 
-    
-    // missiles can hit other things
-    if (tmthing->flags & MF_MISSILE)
-    {
-	// see if it went over / under
-	if (tmthing->z > thing->z + thing->height)
-	    return true;		// overhead
-	if (tmthing->z+tmthing->height < thing->z)
-	    return true;		// underneath
+    bool dobouncescheck = sim.mbf_mobj_flags
+						&& (tmthing->flags & MF_MBF_BOUNCES)
+						&& tmthing->target != nullptr;
+						
+	// missiles can hit other things
+	if( (tmthing->flags & MF_MISSILE)
+		|| dobouncescheck )
+	{
+		// see if it went over / under
+		if (tmthing->z > thing->z + thing->height)
+			return true;		// overhead
+		if (tmthing->z+tmthing->height < thing->z)
+			return true;		// underneath
 		
-	if (tmthing->target 
-         && (tmthing->target->type == thing->type || 
-	    (tmthing->target->type == MT_KNIGHT && thing->type == MT_BRUISER)||
-	    (tmthing->target->type == MT_BRUISER && thing->type == MT_KNIGHT) ) )
-	{
-	    // Don't hit same species as originator.
-	    if (thing == tmthing->target)
-		return true;
+		if (tmthing->target 
+			 && (tmthing->target->type == thing->type || 
+			(tmthing->target->type == MT_KNIGHT && thing->type == MT_BRUISER) ||
+			(tmthing->target->type == MT_BRUISER && thing->type == MT_KNIGHT) ) )
+		{
+			// Don't hit same species as originator.
+			if (thing == tmthing->target)
+			return true;
 
-            // sdh: Add deh_species_infighting here.  We can override the
-            // "monsters of the same species cant hurt each other" behavior
-            // through dehacked patches
+				// sdh: Add deh_species_infighting here.  We can override the
+				// "monsters of the same species cant hurt each other" behavior
+				// through dehacked patches
 
-	    if (thing->type != MT_PLAYER && !deh_species_infighting)
-	    {
-		// Explode, but do no damage.
-		// Let players missile other players.
+			if (thing->type != MT_PLAYER && !deh_species_infighting)
+			{
+				// Explode, but do no damage.
+				// Let players missile other players.
+				return false;
+			}
+		}
+	
+		if (! (thing->flags & MF_SHOOTABLE) )
+		{
+			// didn't do any damage
+			return !(thing->flags & MF_SOLID);	
+		}
+	
+		// damage / explode
+		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		P_DamageMobj (thing, tmthing, tmthing->target, damage);
+
+		// don't traverse any more
 		return false;
-	    }
 	}
-	
-	if (! (thing->flags & MF_SHOOTABLE) )
-	{
-	    // didn't do any damage
-	    return !(thing->flags & MF_SOLID);	
-	}
-	
-	// damage / explode
-	damage = ((P_Random()%8)+1)*tmthing->info->damage;
-	P_DamageMobj (thing, tmthing, tmthing->target, damage);
-
-	// don't traverse any more
-	return false;				
-    }
     
-    // check for special pickup
-    if (thing->flags & MF_SPECIAL)
-    {
-	solid = (thing->flags & MF_SOLID) != 0;
-	if (tmflags&MF_PICKUP)
+	// check for special pickup
+	if (thing->flags & MF_SPECIAL)
 	{
-	    // can remove thing
-	    P_TouchSpecialThing (thing, tmthing);
+		solid = (thing->flags & MF_SOLID) != 0;
+		if (tmflags&MF_PICKUP)
+		{
+			// can remove thing
+			P_TouchSpecialThing (thing, tmthing);
+		}
+		return !solid;
 	}
-	return !solid;
-    }
 	
-    return !(thing->flags & MF_SOLID);
+	return !(thing->flags & MF_SOLID);
 }
 
 

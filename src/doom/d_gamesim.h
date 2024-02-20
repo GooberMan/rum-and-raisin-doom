@@ -94,7 +94,7 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		boom_sector_specials;					// Comes with Boom fixes for specials by default
 	doombool		boom_things;							// Pushers, pullers, TNT1
 	doombool		mbf_line_specials;						// Sky transfers, that's it
-	doombool		mbf_thing_mobj_flags;					// Bouncy! Friendly! TOUCHY!
+	doombool		mbf_mobj_flags;							// Bouncy! Friendly! TOUCHY!
 	doombool		mbf_code_pointers;						// Dehacked additions
 	doombool		mbf_things;								// DOGS
 	doombool		mbf21_line_specials;					// New texture scrollers, new flags
