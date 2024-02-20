@@ -67,6 +67,7 @@ DOOM_C_API typedef struct fixoptions_s
 	doombool		moveplane_escapes_reality;				// Independent floor and ceiling thinkers (or the donut bug) causes floors and ceilings to clip through each other
 	doombool		overzealous_changesector;				// Sector blockmap overlaps your mobj? That's clearly going to affect that mobj.
 	doombool		spechit_overflow;						// Just keep adding things to a static array, it'll be fine
+	doombool		missiles_on_blockmap;					// Spawning a missile would just assume it cand do whatever it wants to the mobj's x/y/z coordinates
 } fixoptions_t;
 
 DOOM_C_API typedef struct simoptions_s

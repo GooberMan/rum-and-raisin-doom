@@ -1029,14 +1029,34 @@ DOOM_C_API void P_CheckMissileSpawn( mobj_t* th )
     if (th->tics < 1)
 	th->tics = 1;
     
-    // move a little forward so an angle can
-    // be computed if it immediately explodes
-    th->x += (th->momx>>1);
-    th->y += (th->momy>>1);
-    th->z += (th->momz>>1);
+	if( fix.missiles_on_blockmap )
+	{
+		// move a little forward so an angle can
+		// be computed if it immediately explodes
+		fixed_t newx = th->x + (th->momx>>1);
+		fixed_t newy = th->y + (th->momy>>1);
+		fixed_t newz = th->z + (th->momz>>1);
 
-    if (!P_TryMove (th, th->x, th->y))
-	P_ExplodeMissile (th);
+		if( !P_TryMove( th, newx, newy ) )
+		{
+			P_ExplodeMissile (th);
+		}
+		else
+		{
+			P_ZMovement( th );
+		}
+	}
+	else
+	{
+		// move a little forward so an angle can
+		// be computed if it immediately explodes
+		th->x += (th->momx>>1);
+		th->y += (th->momy>>1);
+		th->z += (th->momz>>1);
+
+		if (!P_TryMove (th, th->x, th->y))
+			P_ExplodeMissile (th);
+	}
 }
 
 // Certain functions assume that a mobj_t pointer is non-NULL,

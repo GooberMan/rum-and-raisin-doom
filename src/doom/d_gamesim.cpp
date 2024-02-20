@@ -160,6 +160,7 @@ static fixoptions_t GetAllFixed()
 	options.moveplane_escapes_reality = true;
 	options.overzealous_changesector = true;
 	options.spechit_overflow = true;
+	options.missiles_on_blockmap = true;
 
 	return options;
 }
