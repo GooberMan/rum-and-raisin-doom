@@ -270,6 +270,8 @@ DOOM_C_API typedef enum damage_e
 	damage_alsononshootables	= 0x00000002,
 	damage_nothrust				= 0x00000004,
 	damage_ignorearmor			= 0x00000008,
+
+	damage_theworks				= damage_totalkill | damage_alsononshootables | damage_ignorearmor | damage_nothrust,
 } damage_t;
 
 DOOM_C_API void P_TouchSpecialThing( mobj_t* special,  mobj_t* toucher );

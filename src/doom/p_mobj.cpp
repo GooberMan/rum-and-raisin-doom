@@ -325,6 +325,13 @@ DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
 	// clip movement
 	if (mo->z <= mo->floorz)
 	{
+		if( sim.mbf_mobj_flags
+			&& mo->momz != 0
+			&& ( mo->flags & MF_MBF_TOUCHY ) )
+		{
+			P_DamageMobjEx( mo, mo, mo, 10000, damage_theworks );
+			return nullptr;
+		}
 		// hit the floor
 
 		if (comp.lost_souls_bounce && mo->flags & MF_SKULLFLY)
@@ -364,7 +371,7 @@ DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
 			 && !(mo->flags & MF_NOCLIP) )
 		{
 			P_ExplodeMissile (mo);
-			NULL;
+			return nullptr;
 		}
 	}
 	else if (! (mo->flags & MF_NOGRAVITY) )
@@ -399,7 +406,7 @@ DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
 			 && !(mo->flags & MF_NOCLIP) )
 		{
 			P_ExplodeMissile (mo);
-			return NULL;
+			return nullptr;
 		}
 	}
 

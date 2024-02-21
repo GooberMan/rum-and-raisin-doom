@@ -307,39 +307,59 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
     fixed_t		blockdist;
     doombool		solid;
     int			damage;
-		
-    if (!(thing->flags & (MF_SOLID|MF_SPECIAL|MF_SHOOTABLE) ))
-	return true;
-    
+
+	int32_t testflags = MF_SOLID | MF_SPECIAL | MF_SHOOTABLE;
+	if( sim.mbf_mobj_flags )
+	{
+		testflags |= MF_MBF_TOUCHY;
+	}
+
+	if ( !(thing->flags & testflags ) )
+	{
+		return true;
+	}
+
     blockdist = thing->radius + tmthing->radius;
 
-    if ( abs(thing->x - tmx) >= blockdist
-	 || abs(thing->y - tmy) >= blockdist )
-    {
-	// didn't hit it
-	return true;	
-    }
-    
-    // don't clip against self
-    if (thing == tmthing)
-	return true;
-    
-    // check for skulls slamming into things
-    if (tmthing->flags & MF_SKULLFLY)
-    {
-	damage = ((P_Random()%8)+1)*tmthing->info->damage;
-	
-	P_DamageMobj (thing, tmthing, tmthing, damage);
-	
-	tmthing->flags &= ~MF_SKULLFLY;
-	tmthing->momx = tmthing->momy = tmthing->momz = 0;
-	
-	P_SetMobjState(tmthing, (statenum_t)tmthing->info->spawnstate);
-	
-	return false;		// stop moving
-    }
+	if ( abs(thing->x - tmx) >= blockdist
+		|| abs(thing->y - tmy) >= blockdist )
+	{
+		// didn't hit it
+		return true;	
+	}
 
-    bool dobouncescheck = sim.mbf_mobj_flags
+	// don't clip against self
+	if (thing == tmthing)
+	{
+		return true;
+	}
+
+	if( sim.mbf_mobj_flags
+		&& thing->flags & MF_MBF_TOUCHY
+		&& thing->health > 0
+		&& tmthing->z <= thing->z + thing->height
+		&& tmthing->z + tmthing->height >= thing->z )
+	{
+		P_DamageMobjEx( thing, tmthing, tmthing, 10000, damage_theworks );
+		return true;
+	}
+
+	// check for skulls slamming into things
+	if (tmthing->flags & MF_SKULLFLY)
+	{
+		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+	
+		P_DamageMobj (thing, tmthing, tmthing, damage);
+	
+		tmthing->flags &= ~MF_SKULLFLY;
+		tmthing->momx = tmthing->momy = tmthing->momz = 0;
+	
+		P_SetMobjState(tmthing, (statenum_t)tmthing->info->spawnstate);
+	
+		return false;		// stop moving
+	}
+
+	bool dobouncescheck = sim.mbf_mobj_flags
 						&& (tmthing->flags & MF_MBF_BOUNCES)
 						&& tmthing->target != nullptr;
 						
@@ -360,12 +380,13 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 		{
 			// Don't hit same species as originator.
 			if (thing == tmthing->target)
-			return true;
+			{
+				return true;
+			}
 
-				// sdh: Add deh_species_infighting here.  We can override the
-				// "monsters of the same species cant hurt each other" behavior
-				// through dehacked patches
-
+			// sdh: Add deh_species_infighting here.  We can override the
+			// "monsters of the same species cant hurt each other" behavior
+			// through dehacked patches
 			if (thing->type != MT_PLAYER && !deh_species_infighting)
 			{
 				// Explode, but do no damage.
@@ -381,13 +402,13 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 		}
 	
 		// damage / explode
-		damage = ((P_Random()%8)+1)*tmthing->info->damage;
-		P_DamageMobj (thing, tmthing, tmthing->target, damage);
+		damage = ( (P_Random()%8 ) + 1 ) * tmthing->info->damage;
+		P_DamageMobj( thing, tmthing, tmthing->target, damage );
 
 		// don't traverse any more
 		return false;
 	}
-    
+
 	// check for special pickup
 	if (thing->flags & MF_SPECIAL)
 	{
