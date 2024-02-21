@@ -927,7 +927,7 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 	{
 		colcontext_t skycontext = {};
 
-		skycontext.colfunc = &R_DrawColumn;
+		skycontext.colfunc = &R_DrawColumn_128;
 		skycontext.iscale = drs_current->skyiscaley;
 		skycontext.texturemid = constants::skytexturemid;
 		skycontext.output = rendercontext.buffer;

@@ -83,7 +83,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 
 	colcontext_t	skycontext = {};
 
-	skycontext.colfunc = &R_DrawColumn;
+	skycontext.colfunc = &R_DrawColumn_128;
 
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook

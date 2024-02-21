@@ -149,8 +149,6 @@ line_t**	linespeciallist;
 
 void P_InitPicAnims (void)
 {
-    int		i;
-
 	lumpindex_t animdeflumpindex = sim.animated_lump ? W_CheckNumForName( "ANIMATED" ) : -1;
 	if( animdeflumpindex > 0 )
 	{
@@ -177,20 +175,20 @@ void P_InitPicAnims (void)
 
 	anims = (anim_t*)Z_Malloc( sizeof(animdef_t) * numanimdefs, PU_STATIC, nullptr );
 
-    //	Init animation
-    lastanim = anims;
-    for (i=0 ; animdefs[i].istexture != -1 ; i++)
-    {
-        const char *startname, *endname;
-
-        startname = DEH_String(animdefs[i].startname);
-        endname = DEH_String(animdefs[i].endname);
+	//	Init animation
+	lastanim = anims;
+	for( int32_t i = 0; animdefs[ i ].istexture != -1; ++i )
+	{
+		const char* startname = DEH_String(animdefs[i].startname);
+		const char* endname = DEH_String(animdefs[i].endname);
 
 		if (animdefs[i].istexture)
 		{
 			// different episode ?
 			if (R_CheckTextureNumForName(startname) == -1)
-			continue;	
+			{
+				continue;
+			}
 
 			lastanim->picnum = R_TextureNumForName(endname);
 			lastanim->basepic = R_TextureNumForName(startname);
@@ -208,12 +206,14 @@ void P_InitPicAnims (void)
 		lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
 
 		if (lastanim->numpics < 2)
+		{
 			I_Error ("P_InitPicAnims: bad cycle from %s to %s",
-				 startname, endname);
+					startname, endname);
+		}
 	
 		lastanim->speed = animdefs[i].speed;
 		lastanim++;
-    }
+	}
 	
 }
 
@@ -246,27 +246,6 @@ int32_t P_GetPicAnimLength( doombool istexture, int32_t start )
 
 	return -1;
 }
-
-int32_t P_GetPicSwitchOpposite( int32_t tex )
-{
-	char texnamecache[ 16 ];
-	size_t texnamelength;
-	const char* texname = R_TextureNameForNum( tex );
-	texnamelength = M_MIN( strlen( texname ), 8 );
-
-	strncpy( texnamecache, texname, texnamelength );
-	texnamecache[ texnamelength ] = 0;
-	
-	if( tolower( texnamecache[ 0 ] ) == 's' && tolower( texnamecache[ 1 ] ) == 'w'
-		&& ( texnamecache[ 2 ] == '1' || texnamecache[ 2 ] == '2' ) )
-	{
-		texnamecache[ 2 ] = texnamecache[ 2 ] == '1' ? '2' : '1';
-		return R_TextureNumForName( texnamecache );
-	}
-
-	return -1;
-}
-
 
 //
 // UTILITIES

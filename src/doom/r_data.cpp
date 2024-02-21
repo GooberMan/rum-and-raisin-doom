@@ -148,7 +148,7 @@ extern "C"
 	lumpindex_t				lastcolormap = -1;
 	int32_t					numcolormaps = 0;
 
-	int						numtextures;
+	int32_t					numtextures;
 	texture_t**				textures;
 
 	patchdata_t**			texturepatchdata;
@@ -160,16 +160,16 @@ extern "C"
 	texturecomposite_t**	flatlookup;
 
 	// for global animation
-	int*		flattranslation;
-	int*		texturetranslation;
+	int32_t*				flattranslation;
+	int32_t*				texturetranslation;
 
 	// needed for pre rendering
-	rend_fixed_t*	spritewidth;
-	rend_fixed_t*	spriteoffset;
-	rend_fixed_t*	spritetopoffset;
+	rend_fixed_t*			spritewidth;
+	rend_fixed_t*			spriteoffset;
+	rend_fixed_t*			spritetopoffset;
 
-	lighttable_t	*colormaps;
-	byte*			tranmap;
+	lighttable_t			*colormaps;
+	byte*					tranmap;
 }
 
 std::unordered_map< std::string, texture_t* >	texturenamelookup;
