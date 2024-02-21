@@ -41,27 +41,58 @@ DOOM_C_API void A_Detonate( mobj_t* mobj )
 
 DOOM_C_API void A_Mushroom( mobj_t* mobj )
 {
-	I_LogAddEntry( Log_Error, "A_Mushroom unimplemented" );
+	ARG_FIXED( mobj, definedangle, 1 );
+	ARG_FIXED( mobj, definedspeed, 2 );
+
+	fixed_t angle = definedangle ? definedangle : IntToFixed( 16 );
+	fixed_t speed = definedspeed ? definedspeed : DoubleToFixed( 0.5 );
+
+	mobj_t dummymobj = *mobj;
+
+	for( int32_t ballnum : iota( 0, 8 ) )
+	{
+		angle_t spawnangle = ballnum * ANG45;
+		int32_t lookup = FINEANGLE( spawnangle );
+		const fixed_t& sinval = finesine[ lookup ];
+		const fixed_t& cosval = finecosine[ lookup ];
+
+		dummymobj.x = mobj->x + FixedMul( speed, cosval );
+		dummymobj.y = mobj->y + FixedMul( speed, sinval );
+		dummymobj.z = mobj->z + angle;
+		dummymobj.angle = spawnangle;
+
+		mobj_t* spawned = P_SpawnMissile( mobj, &dummymobj, MT_FATSHOT );
+		spawned->flags &= ~MF_NOGRAVITY;
+	}
 }
 
 DOOM_C_API void A_Spawn( mobj_t* mobj )
 {
-	// [MBF] Unclear from spec what misc2 does exactly???
-	P_SpawnMobj( mobj->x, mobj->y, mobj->z + mobj->state->misc2._fixed, mobj->state->misc1._mobjtype );
+	ARG_MOBJTYPE( mobj, type, 1 );
+	ARG_FIXED( mobj, zoffset, 2 );
+	
+	P_SpawnMobj( mobj->x, mobj->y, mobj->z + zoffset, type );
 }
 
 DOOM_C_API void A_Turn( mobj_t* mobj )
 {
-	mobj->angle += mobj->state->misc1._angle;
+	ARG_ANGLE( mobj, angle, 1 );
+
+	mobj->angle += angle;
 }
 
 DOOM_C_API void A_Face( mobj_t* mobj )
 {
-	mobj->angle = mobj->state->misc1._angle;
+	ARG_ANGLE( mobj, angle, 1 );
+
+	mobj->angle = angle;
 }
 
 DOOM_C_API void A_Scratch( mobj_t* mobj )
 {
+	ARG_INT( mobj, damage, 1 );
+	ARG_SOUND( mobj, sound, 2 );
+
 	if( !mobj->target )
 	{
 		return;
@@ -70,28 +101,34 @@ DOOM_C_API void A_Scratch( mobj_t* mobj )
 	A_FaceTarget( mobj );
 	if( P_CheckMeleeRange( mobj ) )
 	{
-		S_StartSound( mobj, mobj->state->misc2._int );
+		S_StartSound( mobj, sound );
 		// [MBF] Is damage randomised???
-		P_DamageMobj( mobj->target, mobj, mobj, mobj->state->misc1._int );
+		P_DamageMobj( mobj->target, mobj, mobj, damage );
 		return;
 	}
 }
 
 DOOM_C_API void A_RandomJump( mobj_t* mobj )
 {
-	if( P_Random() < mobj->state->misc2._int )
+	ARG_STATENUM( mobj, state, 1 );
+	ARG_INT( mobj, probability, 2 );
+
+	if( P_Random() < probability )
 	{
-		P_SetMobjState( mobj, mobj->state->misc1._statenum );
+		P_SetMobjState( mobj, state );
 	}
 }
 
 DOOM_C_API void A_LineEffect( mobj_t* mobj )
 {
+	ARG_INT( mobj, special, 1 );
+	ARG_INT( mobj, tag, 2 );
+
 	if( !mobj->successfullineeffect )
 	{
 		line_t dummyline = {};
-		dummyline.special = mobj->state->misc1._int;
-		dummyline.tag = mobj->state->misc2._int;
+		dummyline.special = special;
+		dummyline.tag = tag;
 		lineaction_t* action = dummyline.action = P_GetLineActionFor( &dummyline );
 
 		player_t dummyplayer = {};
