@@ -118,6 +118,12 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 	{
 		DEH_BexHandleThingBits2( context, value, mobj );
 	}
+	else if( strcmp( variable_name, "Retro Bits" ) == 0
+		|| strcmp( variable_name, "Name1" ) == 0
+		|| strcmp( variable_name, "Plural1" ) == 0 )
+	{
+		// Silently ignore
+	}
 	else
 	{
 		// all values are integers

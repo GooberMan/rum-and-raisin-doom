@@ -4932,8 +4932,8 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 
 	{					// MT_PLASMA1
 		-1,				// doomednum
-		SPR_PLS1,		// spawnstate
-		10,				// spawnhealth
+		S_BETABALL_SPAWN1, // spawnstate
+		1000,			// spawnhealth
 		S_NULL,			// seestate
 		sfx_None,		// seesound
 		8,				// reactiontime
@@ -4943,23 +4943,23 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,		// painsound
 		S_NULL,			// meleestate
 		S_NULL,			// missilestate
-		S_NULL,			// deathstate
+		S_BETABALL_EXPLODE1, // deathstate
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		16,				// radius
-		16,				// height
+		20*FRACUNIT,	// radius
+		16*FRACUNIT,	// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
 		S_NULL			// raisestate
 	},
 
 	{					// MT_PLASMA2
 		-1,				// doomednum
-		SPR_PLS2,		// spawnstate
-		10,				// spawnhealth
+		S_BETABALL2_SPAWN1, // spawnstate
+		1000,			// spawnhealth
 		S_NULL,			// seestate
 		sfx_None,		// seesound
 		8,				// reactiontime
@@ -4969,23 +4969,23 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,		// painsound
 		S_NULL,			// meleestate
 		S_NULL,			// missilestate
-		S_NULL,			// deathstate
+		S_BETABALL2_SPAWN1, // deathstate
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		16,				// radius
-		16,				// height
+		20*FRACUNIT,	// radius
+		16*FRACUNIT,	// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
 		S_NULL			// raisestate
 	},
 
 	{					// MT_SCEPTRE
 		2016,			// doomednum
-		SPR_BON3,		// spawnstate
-		10,				// spawnhealth
+		S_BETASCEPTRE,	// spawnstate
+		1000,			// spawnhealth
 		S_NULL,			// seestate
 		sfx_None,		// seesound
 		8,				// reactiontime
@@ -4999,19 +4999,19 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		16,				// radius
-		16,				// height
+		20*FRACUNIT,	// radius
+		16*FRACUNIT,	// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
 		S_NULL			// raisestate
 	},
 
 	{					// MT_BIBLE
 		2017,			// doomednum
-		SPR_BON4,		// spawnstate
-		10,				// spawnhealth
+		S_BETABIBLE,	// spawnstate
+		1000,			// spawnhealth
 		S_NULL,			// seestate
 		sfx_None,		// seesound
 		8,				// reactiontime
@@ -5025,12 +5025,12 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		16,				// radius
-		16,				// height
+		20*FRACUNIT,	// radius
+		16*FRACUNIT,	// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
 		S_NULL			// raisestate
 	},
 };
