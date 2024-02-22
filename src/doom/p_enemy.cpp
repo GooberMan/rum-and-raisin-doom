@@ -1862,16 +1862,21 @@ DOOM_C_API void A_BrainSpit (mobj_t*	mo)
     
     static int	easy = 0;
 	
+	if( numbraintargets == 0 )
+	{
+		if( fix.zero_brainspawn_targets )
+		{
+			return;
+		}
+		I_Error( "A_BrainSpit: No targets defined in map" );
+	}
+
     easy ^= 1;
     if (gameskill <= sk_easy && (!easy))
 	return;
 		
     // shoot a cube at current target
     targ = braintargets[braintargeton];
-    if (numbraintargets == 0)
-    {
-        I_Error("A_BrainSpit: numbraintargets was 0 (vanilla crashes here)");
-    }
     braintargeton = (braintargeton+1)%numbraintargets;
 
     // spawn brain missile

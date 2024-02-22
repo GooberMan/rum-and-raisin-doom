@@ -68,10 +68,13 @@ DOOM_C_API void A_Mushroom( mobj_t* mobj )
 
 DOOM_C_API void A_Spawn( mobj_t* mobj )
 {
-	MISC_MOBJTYPE( mobj, type, 1 );
+	MISC_INT( mobj, type, 1 );
 	MISC_FIXED( mobj, zoffset, 2 );
-	
-	P_SpawnMobj( mobj->x, mobj->y, mobj->z + zoffset, type );
+
+	if( type > 0 )
+	{
+		P_SpawnMobjEx( (mobjtype_t)(type - 1), mobj->angle, mobj->x, mobj->y, mobj->z + zoffset, 0, 0, 0 );
+	}
 }
 
 DOOM_C_API void A_Turn( mobj_t* mobj )

@@ -161,6 +161,7 @@ static fixoptions_t GetAllFixed()
 	options.overzealous_changesector = true;
 	options.spechit_overflow = true;
 	options.missiles_on_blockmap = true;
+	options.zero_brainspawn_targets = true;
 
 	return options;
 }
