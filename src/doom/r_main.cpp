@@ -927,9 +927,18 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 	{
 		colcontext_t skycontext = {};
 
-		skycontext.colfunc = &R_DrawColumn_128;
+		if( sim.tall_skies )
+		{
+			skycontext.texturemid = texturelookup[ skytexture ]->renderheight - constants::skytexturemidoffset;
+			skycontext.colfunc = &R_LimitRemovingDrawColumn;
+		}
+		else
+		{
+			skycontext.texturemid = constants::skytexturemid;
+			skycontext.colfunc = &R_DrawColumn_128;
+		}
+
 		skycontext.iscale = drs_current->skyiscaley;
-		skycontext.texturemid = constants::skytexturemid;
 		skycontext.output = rendercontext.buffer;
 		skycontext.output.data += skycontext.output.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
 		skycontext.yl = 0;

@@ -91,6 +91,7 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		separate_floor_ceiling_lights;			// Boom sector specials are allowed to work independently of each other
 	doombool		sector_movement_modifiers;				// Boom sectors can have variable friction, wind, currents
 	doombool		door_tagged_light;						// Dx with tags does the Boom lighting thing
+	doombool		tall_skies;								// Sky bigger than 128 high? We've got you covered
 	doombool		boom_sector_targets;					// All sector targets consider their current sector
 	doombool		boom_line_specials;						// Comes with Boom fixes for specials by default
 	doombool		boom_sector_specials;					// Comes with Boom fixes for specials by default

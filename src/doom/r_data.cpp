@@ -744,7 +744,7 @@ void R_InitTextures (void)
 			{
 				std::string lumpname = ClampString( lumpinfo[ curr ]->name );
 				// Need to account for lump overrides outside of markers
-				lumpindex_t index = curr; //W_GetNumForName( lumpname.c_str() );
+				lumpindex_t index = curr;
 				auto found = patchnamelookup.find( lumpname );
 				if( found == patchnamelookup.end() )
 				{
@@ -763,9 +763,10 @@ void R_InitTextures (void)
 			auto found = patchnamelookup.find( patchname );
 			if( found == patchnamelookup.end() )
 			{
-				// This errors further down if it TEXTURE1/2 can't find it
-				// I_LogAddEntryVar( Log_Startup, "PNAMES entry %s not found", patchname.c_str() );
-				patchlookup.push_back( { -1, mappatch } );
+				// Some WADs have their patches sitting outside of markers. Let's try to find it.
+				lookup_t lookup = { W_CheckNumForName( patchname.c_str() ), numpatchentries++ };
+				patchnamelookup[ patchname ] = lookup;
+				patchlookup.push_back( lookup );
 			}
 			else
 			{

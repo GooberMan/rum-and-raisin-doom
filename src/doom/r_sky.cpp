@@ -83,13 +83,21 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 
 	colcontext_t	skycontext = {};
 
-	skycontext.colfunc = &R_DrawColumn_128;
-
 	// Originally this would setup the column renderer for every instance of a sky found.
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
 	skycontext.iscale = drs_current->skyiscaley;
-	skycontext.texturemid = constants::skytexturemid + skytextureline->rowoffset;
+	if( sim.tall_skies )
+	{
+		skycontext.texturemid = sky->renderheight - constants::skytexturemidoffset;
+		skycontext.colfunc = &R_LimitRemovingDrawColumn;
+	}
+	else
+	{
+		skycontext.texturemid = constants::skytexturemid;
+		skycontext.colfunc = &R_DrawColumn_128;
+	}
+	skycontext.texturemid +=  + skytextureline->rowoffset;
 
 	// This isn't a constant though...
 	skycontext.output = dest;

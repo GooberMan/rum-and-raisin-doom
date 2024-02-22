@@ -26,6 +26,7 @@
 namespace constants
 {
 	static constexpr rend_fixed_t	skytexturemid = IntToRendFixed( 100 );
+	static constexpr rend_fixed_t	skytexturemidoffset = IntToRendFixed( 28 );
 }
 #endif //defined(__cplusplus)
 
