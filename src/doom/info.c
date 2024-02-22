@@ -1249,40 +1249,40 @@ state_t	states[NUMSTATES] =
 	{ SPR_PLS2,		2,			8,		{NULL},				S_BETABALL2_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE1
 	{ SPR_PLS2,		3,			8,		{NULL},				S_BETABALL2_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE2
 	{ SPR_PLS2,		4,			8,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE3
-	{ SPR_TNT1,		5,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASCEPTRE
-	{ SPR_TNT1,		6,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETABIBLE
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_STAND
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_RUN1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_RUN2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_RUN3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_RUN4
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_ATK1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_ATK2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_ATK3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_PAIN1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_PAIN2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_PAIN3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE4
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE5
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE6
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE7
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_BETASOUL_DIE8
+	{ SPR_TNT1,		5,			-1,		{NULL},				S_BETASCEPTRE,			{ 0 },	{ 0 } },	// S_BETASCEPTRE
+	{ SPR_TNT1,		6,			-1,		{NULL},				S_BETABIBLE,			{ 0 },	{ 0 } },	// S_BETABIBLE
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_STAND,		{ 0 },	{ 0 } },	// S_BETASOUL_STAND
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN2,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN1
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN3,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN2
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN4,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN3
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN4
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_ATK2,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK1
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_ATK3,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK2
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK3
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_PAIN2,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN1
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_PAIN3,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN2
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN2,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN3
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE2,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE1
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE3,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE2
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE4,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE3
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE5,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE4
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE6,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE5
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE7,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE6
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE7
+	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE8
 	{ SPR_MISL,		32769,		8,		{A_Mushroom},		S_EXPLODE2,				{ 0 },	{ 0 } },	// S_MUSHROOM
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG4
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG5
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG6
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG7
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG8
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG9
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG10
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG11
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG12
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG2,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG1
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG3,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG2
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG4,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG3
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG5,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG4
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG6,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG5
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG7,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG6
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG8,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG7
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG9,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG8
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG10,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG9
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG11,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG10
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG12,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG11
+	{ SPR_PLAY,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG12
 };
 
 
