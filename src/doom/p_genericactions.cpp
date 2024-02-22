@@ -337,6 +337,10 @@ DOOM_C_API int32_t EV_DoCeilingGeneric( line_t* line, mobj_t* activator )
 			heighttarget = P_FindLowestCeilingSurrounding( &sector );
 			break;
 
+		case stt_nexthighestneighborceiling:
+			heighttarget = P_FindNextHighestCeilingSurrounding( &sector );
+			break;
+
 		case stt_nextlowestneighborceiling:
 			heighttarget = P_FindNextLowestCeilingSurrounding( &sector );
 			break;
@@ -970,6 +974,10 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 			{
 				floor->floordestheight = M_MIN( floor->floordestheight, sector.ceilingheight );
 			}
+			break;
+
+		case stt_nexthighestneighborceiling:
+			floor->floordestheight = P_FindNextHighestCeilingSurrounding( &sector );
 			break;
 
 		case stt_nextlowestneighborceiling:

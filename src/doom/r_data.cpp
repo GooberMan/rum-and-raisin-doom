@@ -915,7 +915,7 @@ void R_InitFlats (void)
 		const char* FF_START = "FF_START";
 
 		const char* F_END = DEH_String("F_END");
-		const char* FF_END = "F_END";
+		const char* FF_END = "FF_END";
 
 		FillLookup( F_START, F_END, FF_START, FF_END, &AddLumpRangeToFlats );
 	}

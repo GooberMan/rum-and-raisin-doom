@@ -117,6 +117,7 @@ extern "C"
 	void A_Turn();
 	void A_Face();
 	void A_Scratch();
+	void A_PlaySound();
 	void A_RandomJump();
 	void A_LineEffect();
 	void A_Die();
@@ -239,6 +240,7 @@ static std::map< DoomString, funcmapping_t > PointerLookup =
 	MBFFuncType( Turn ),
 	MBFFuncType( Face ),
 	MBFFuncType( Scratch ),
+	MBFFuncType( PlaySound ),
 	MBFFuncType( RandomJump ),
 	MBFFuncType( LineEffect ),
 	MBFFuncType( Die ),

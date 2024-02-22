@@ -736,7 +736,11 @@ void WI_drawLF(void)
 		// draw "Finished!"
 		y += ( 5 * SHORT( currlevelname->height ) ) / 4;
 
-		V_DrawPatch((V_VIRTUALWIDTH - SHORT(finished->width)) / 2, y, finished);
+		// TODO: Fix patch rendering to not draw out of Y bounds
+		if( y < V_VIRTUALHEIGHT )
+		{
+			V_DrawPatch((V_VIRTUALWIDTH - SHORT(finished->width)) / 2, y, finished);
+		}
 	}
 	else
 	{
@@ -772,7 +776,11 @@ void WI_drawEL(void)
 		// draw "Finished!"
 		y += ( 5 * SHORT( nextlevelname->height ) ) / 4;
 
-		V_DrawPatch( ( V_VIRTUALWIDTH - SHORT( nextlevelname->width ) ) / 2, y, nextlevelname );
+		// TODO: Fix patch rendering to not draw out of Y bounds
+		if( y < V_VIRTUALHEIGHT )
+		{
+			V_DrawPatch( ( V_VIRTUALWIDTH - SHORT( nextlevelname->width ) ) / 2, y, nextlevelname );
+		}
 	}
 }
 

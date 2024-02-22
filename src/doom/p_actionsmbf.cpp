@@ -41,8 +41,8 @@ DOOM_C_API void A_Detonate( mobj_t* mobj )
 
 DOOM_C_API void A_Mushroom( mobj_t* mobj )
 {
-	ARG_FIXED( mobj, definedangle, 1 );
-	ARG_FIXED( mobj, definedspeed, 2 );
+	MISC_FIXED( mobj, definedangle, 1 );
+	MISC_FIXED( mobj, definedspeed, 2 );
 
 	fixed_t angle = definedangle ? definedangle : IntToFixed( 16 );
 	fixed_t speed = definedspeed ? definedspeed : DoubleToFixed( 0.5 );
@@ -68,30 +68,30 @@ DOOM_C_API void A_Mushroom( mobj_t* mobj )
 
 DOOM_C_API void A_Spawn( mobj_t* mobj )
 {
-	ARG_MOBJTYPE( mobj, type, 1 );
-	ARG_FIXED( mobj, zoffset, 2 );
+	MISC_MOBJTYPE( mobj, type, 1 );
+	MISC_FIXED( mobj, zoffset, 2 );
 	
 	P_SpawnMobj( mobj->x, mobj->y, mobj->z + zoffset, type );
 }
 
 DOOM_C_API void A_Turn( mobj_t* mobj )
 {
-	ARG_ANGLE( mobj, angle, 1 );
+	MISC_ANGLE( mobj, angle, 1 );
 
 	mobj->angle += angle;
 }
 
 DOOM_C_API void A_Face( mobj_t* mobj )
 {
-	ARG_ANGLE( mobj, angle, 1 );
+	MISC_ANGLE( mobj, angle, 1 );
 
 	mobj->angle = angle;
 }
 
 DOOM_C_API void A_Scratch( mobj_t* mobj )
 {
-	ARG_INT( mobj, damage, 1 );
-	ARG_SOUND( mobj, sound, 2 );
+	MISC_INT( mobj, damage, 1 );
+	MISC_SOUND( mobj, sound, 2 );
 
 	if( !mobj->target )
 	{
@@ -108,10 +108,18 @@ DOOM_C_API void A_Scratch( mobj_t* mobj )
 	}
 }
 
+DOOM_C_API void A_PlaySound( mobj_t* mobj )
+{
+	MISC_SOUND( mobj, sound, 1 );
+	MISC_INT( mobj, fullvolume, 2 );
+
+	S_StartSound( fullvolume ? nullptr : mobj, sound );
+}
+
 DOOM_C_API void A_RandomJump( mobj_t* mobj )
 {
-	ARG_STATENUM( mobj, state, 1 );
-	ARG_INT( mobj, probability, 2 );
+	MISC_STATENUM( mobj, state, 1 );
+	MISC_INT( mobj, probability, 2 );
 
 	if( P_Random() < probability )
 	{
@@ -121,8 +129,8 @@ DOOM_C_API void A_RandomJump( mobj_t* mobj )
 
 DOOM_C_API void A_LineEffect( mobj_t* mobj )
 {
-	ARG_INT( mobj, special, 1 );
-	ARG_INT( mobj, tag, 2 );
+	MISC_INT( mobj, special, 1 );
+	MISC_INT( mobj, tag, 2 );
 
 	if( !mobj->successfullineeffect )
 	{

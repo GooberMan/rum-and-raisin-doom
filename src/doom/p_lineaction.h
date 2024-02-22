@@ -491,7 +491,7 @@ enum BoomCeilingFlags : uint32_t
 	Ceiling_Target_HighestNeighborCeiling	= 0x0000,
 	Ceiling_Target_LowestNeighborCeiling	= 0x0080,
 	Ceiling_Target_NearestNeighborCeiling	= 0x0100,
-	Ceiling_Target_LowestNeighborFloor		= 0x0180,
+	Ceiling_Target_HighestNeighborFloor		= 0x0180,
 	Ceiling_Target_Floor					= 0x0200,
 	Ceiling_Target_ShortestLowerTexture		= 0x0280,
 	Ceiling_Target_24						= 0x0300,

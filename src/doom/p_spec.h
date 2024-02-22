@@ -76,6 +76,7 @@ DOOM_C_API fixed_t P_FindNextHighestFloor( sector_t* sec );
 DOOM_C_API fixed_t P_FindLowestCeilingSurrounding(sector_t* sec);
 DOOM_C_API fixed_t P_FindHighestCeilingSurrounding(sector_t* sec);
 DOOM_C_API fixed_t P_FindNextLowestCeilingSurrounding(sector_t* sec);
+DOOM_C_API fixed_t P_FindNextHighestCeilingSurrounding(sector_t* sec);
 
 DOOM_C_API int P_FindSectorFromLineTag( line_t* line, int start );
 
@@ -685,6 +686,7 @@ DOOM_C_API typedef enum sectortargettype_e
 	stt_nextlowestneighborfloor,
 	stt_highestneighborceiling,
 	stt_lowestneighborceiling,
+	stt_nexthighestneighborceiling,
 	stt_nextlowestneighborceiling,
 	stt_floor,
 	stt_ceiling,

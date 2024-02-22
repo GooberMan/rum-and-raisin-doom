@@ -78,7 +78,7 @@ const char *sprnames_mbf[] = {
 "COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
 "COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
 "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","TNT1","DOGS",
-	"PLS1","PLS2","BON3","BON4",NULL
+"PLS1","PLS2","BON3","BON4",NULL
 };
 
 
@@ -4928,6 +4928,110 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_dmact,		// activesound
 		MF_SOLID | MF_SHOOTABLE | MF_COUNTKILL, // flags
 		S_DOGS_RAISE1	// raisestate
+	},
+
+	{					// MT_PLASMA1
+		-1,				// doomednum
+		SPR_PLS1,		// spawnstate
+		10,				// spawnhealth
+		S_NULL,			// seestate
+		sfx_None,		// seesound
+		8,				// reactiontime
+		sfx_None,		// attacksound
+		S_NULL,			// painstate
+		0,				// painchance
+		sfx_None,		// painsound
+		S_NULL,			// meleestate
+		S_NULL,			// missilestate
+		S_NULL,			// deathstate
+		S_NULL,			// xdeathstate
+		sfx_None,		// deathsound
+		0,				// speed
+		16,				// radius
+		16,				// height
+		100,			// mass
+		0,				// damage
+		sfx_None,		// activesound
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		S_NULL			// raisestate
+	},
+
+	{					// MT_PLASMA2
+		-1,				// doomednum
+		SPR_PLS2,		// spawnstate
+		10,				// spawnhealth
+		S_NULL,			// seestate
+		sfx_None,		// seesound
+		8,				// reactiontime
+		sfx_None,		// attacksound
+		S_NULL,			// painstate
+		0,				// painchance
+		sfx_None,		// painsound
+		S_NULL,			// meleestate
+		S_NULL,			// missilestate
+		S_NULL,			// deathstate
+		S_NULL,			// xdeathstate
+		sfx_None,		// deathsound
+		0,				// speed
+		16,				// radius
+		16,				// height
+		100,			// mass
+		0,				// damage
+		sfx_None,		// activesound
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		S_NULL			// raisestate
+	},
+
+	{					// MT_SCEPTRE
+		2016,			// doomednum
+		SPR_BON3,		// spawnstate
+		10,				// spawnhealth
+		S_NULL,			// seestate
+		sfx_None,		// seesound
+		8,				// reactiontime
+		sfx_None,		// attacksound
+		S_NULL,			// painstate
+		0,				// painchance
+		sfx_None,		// painsound
+		S_NULL,			// meleestate
+		S_NULL,			// missilestate
+		S_NULL,			// deathstate
+		S_NULL,			// xdeathstate
+		sfx_None,		// deathsound
+		0,				// speed
+		16,				// radius
+		16,				// height
+		100,			// mass
+		0,				// damage
+		sfx_None,		// activesound
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		S_NULL			// raisestate
+	},
+
+	{					// MT_BIBLE
+		2017,			// doomednum
+		SPR_BON4,		// spawnstate
+		10,				// spawnhealth
+		S_NULL,			// seestate
+		sfx_None,		// seesound
+		8,				// reactiontime
+		sfx_None,		// attacksound
+		S_NULL,			// painstate
+		0,				// painchance
+		sfx_None,		// painsound
+		S_NULL,			// meleestate
+		S_NULL,			// missilestate
+		S_NULL,			// deathstate
+		S_NULL,			// xdeathstate
+		sfx_None,		// deathsound
+		0,				// speed
+		16,				// radius
+		16,				// height
+		100,			// mass
+		0,				// damage
+		sfx_None,		// activesound
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
+		S_NULL			// raisestate
 	},
 };
 

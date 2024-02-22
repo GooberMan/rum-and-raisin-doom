@@ -1196,10 +1196,10 @@ static lineaction_t* CreateBoomGeneralisedCeilingAction( line_t* line )
 {
 	constexpr uint32_t targetmapping[] =
 	{
-		stt_highestneighborfloor,		// Ceiling_Target_HighestNeighborFloor
-		stt_lowestneighborfloor,		// Ceiling_Target_LowestNeighborFloor
-		stt_nexthighestneighborfloor,	// Ceiling_Target_NearestNeighborFloor
+		stt_highestneighborceiling,		// Ceiling_Target_HighestNeighborCeiling
 		stt_lowestneighborceiling,		// Ceiling_Target_LowestNeighborCeiling
+		stt_nexthighestneighborceiling,	// Ceiling_Target_NearestNeighborCeiling
+		stt_highestneighborfloor,		// Ceiling_Target_HighestNeighborFloor
 		stt_floor,						// Ceiling_Target_Floor
 		stt_shortestlowertexture,		// Ceiling_Target_ShortestLowerTexture
 		stt_nosearch,					// Ceiling_Target_24
@@ -1233,9 +1233,9 @@ static lineaction_t* CreateBoomGeneralisedCeilingAction( line_t* line )
 	action->delay = 0;
 	action->param1 = targetmapping[ target ];
 	action->param2 = direction;
-	if( direction == sd_down && action->param1 == stt_nexthighestneighborfloor ) // Slight hack
+	if( direction == sd_down && action->param1 == stt_nexthighestneighborceiling ) // Slight hack
 	{
-		action->param1 = stt_nextlowestneighborfloor;
+		action->param1 = stt_nextlowestneighborceiling;
 	}
 	action->param3 = targetdistance[ target ];
 	action->param4 = change;
