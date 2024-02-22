@@ -19,6 +19,8 @@
 
 #include "d_gameflow.h"
 
+#include "p_mobj.h"
+
 // Forward declarations
 extern episodeinfo_t	tnt_episode;
 
@@ -312,8 +314,8 @@ mapinfo_t tnt_map_map06 =
 
 static bossaction_t		tnt_map07special[] =
 {
-	{ 8 /*MT_FATSO*/, 82 /*lowerFloorToLowest repeatable*/, 666 },
-	{ 20 /*MT_BABY*/, 96 /*raiseToTexture repeatable*/, 667 },
+	{ 8 /*MT_FATSO*/, MF2_MBF21_MAP07BOSS1, 82 /*lowerFloorToLowest repeatable*/, 666 },
+	{ 20 /*MT_BABY*/, MF2_MBF21_MAP07BOSS2, 96 /*raiseToTexture repeatable*/, 667 },
 };
 
 mapinfo_t tnt_map_map07 =

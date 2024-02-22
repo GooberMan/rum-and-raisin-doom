@@ -201,63 +201,78 @@ doombool P_CheckMeleeRange (mobj_t*	actor)
 //
 doombool P_CheckMissileRange (mobj_t* actor)
 {
-    fixed_t	dist;
+	if (! P_CheckSight (actor, actor->target) )
+	{
+		return false;
+	}
 	
-    if (! P_CheckSight (actor, actor->target) )
-	return false;
+	if ( actor->flags & MF_JUSTHIT )
+	{
+		// the target just hit the enemy,
+		// so fight back!
+		actor->flags &= ~MF_JUSTHIT;
+		return true;
+	}
 	
-    if ( actor->flags & MF_JUSTHIT )
-    {
-	// the target just hit the enemy,
-	// so fight back!
-	actor->flags &= ~MF_JUSTHIT;
+	if (actor->reactiontime)
+	{
+		return false;	// do not attack yet
+	}
+		
+	// OPTIMIZE: get this from a global checksight
+	fixed_t physicaldist = P_AproxDistance( actor->x-actor->target->x,
+											actor->y-actor->target->y) - 64*FRACUNIT;
+
+	if (!actor->info->meleestate)
+	{
+		physicaldist -= 128*FRACUNIT;	// no melee attack, so fire more
+	}
+
+	int32_t dist = FixedToInt( physicaldist );
+
+	if (actor->type == MT_VILE
+		|| actor->ShortMissileRange() )
+	{
+		if (dist > 14*64)
+		{
+			return false;	// too far away
+		}
+	}
+
+	if (actor->type == MT_UNDEAD
+		|| actor->LongMeleeRange() )
+	{
+		if (dist < 196)
+		{
+			return false;	// close for fist attack
+		}
+		dist >>= 1;
+	}
+	
+	if (actor->type == MT_CYBORG
+		|| actor->type == MT_SPIDER
+		|| actor->type == MT_SKULL
+		|| actor->MissileHalfRangeProbability() )
+	{
+		dist >>= 1;
+	}
+
+	dist = M_MIN( dist, 200 );
+
+	bool lowerdist = actor->type == MT_CYBORG
+				|| actor->MissileHigherProbability();
+
+	if( lowerdist )
+	{
+		dist = M_MIN( dist, 160 );
+	}
+
+	if (P_Random () < dist)
+	{
+		return false;
+	}
+
 	return true;
-    }
-	
-    if (actor->reactiontime)
-	return false;	// do not attack yet
-		
-    // OPTIMIZE: get this from a global checksight
-    dist = P_AproxDistance ( actor->x-actor->target->x,
-			     actor->y-actor->target->y) - 64*FRACUNIT;
-    
-    if (!actor->info->meleestate)
-	dist -= 128*FRACUNIT;	// no melee attack, so fire more
-
-    dist >>= FRACBITS;
-
-    if (actor->type == MT_VILE)
-    {
-	if (dist > 14*64)	
-	    return false;	// too far away
-    }
-	
-
-    if (actor->type == MT_UNDEAD)
-    {
-	if (dist < 196)	
-	    return false;	// close for fist attack
-	dist >>= 1;
-    }
-	
-
-    if (actor->type == MT_CYBORG
-	|| actor->type == MT_SPIDER
-	|| actor->type == MT_SKULL)
-    {
-	dist >>= 1;
-    }
-    
-    if (dist > 200)
-	dist = 200;
-		
-    if (actor->type == MT_CYBORG && dist > 160)
-	dist = 160;
-		
-    if (P_Random () < dist)
-	return false;
-		
-    return true;
 }
 
 
@@ -642,34 +657,38 @@ DOOM_C_API void A_Look (mobj_t* actor)
   seeyou:
     if (actor->info->seesound)
     {
-	int		sound;
+		int		sound;
 		
-	switch (actor->info->seesound)
-	{
-	  case sfx_posit1:
-	  case sfx_posit2:
-	  case sfx_posit3:
-	    sound = sfx_posit1+P_Random()%3;
-	    break;
+		switch (actor->info->seesound)
+		{
+		  case sfx_posit1:
+		  case sfx_posit2:
+		  case sfx_posit3:
+			sound = sfx_posit1+P_Random()%3;
+			break;
 
-	  case sfx_bgsit1:
-	  case sfx_bgsit2:
-	    sound = sfx_bgsit1+P_Random()%2;
-	    break;
+		  case sfx_bgsit1:
+		  case sfx_bgsit2:
+			sound = sfx_bgsit1+P_Random()%2;
+			break;
 
-	  default:
-	    sound = actor->info->seesound;
-	    break;
-	}
+		  default:
+			sound = actor->info->seesound;
+			break;
+		}
 
-	if (actor->type==MT_SPIDER
-	    || actor->type == MT_CYBORG)
-	{
-	    // full volume
-	    S_StartSound (NULL, sound);
-	}
-	else
-	    S_StartSound (actor, sound);
+
+		if (actor->type==MT_SPIDER
+			|| actor->type == MT_CYBORG
+			|| actor->FullVolumeSounds() )
+		{
+			// full volume
+			S_StartSound (NULL, sound);
+		}
+		else
+		{
+			S_StartSound (actor, sound);
+		}
     }
 
     P_SetMobjState(actor, (statenum_t)actor->info->seestate);
@@ -1615,13 +1634,16 @@ DOOM_C_API void A_Scream (mobj_t* actor)
 
     // Check for bosses.
     if (actor->type==MT_SPIDER
-	|| actor->type == MT_CYBORG)
+		|| actor->type == MT_CYBORG
+		|| actor->FullVolumeSounds() )
     {
-	// full volume
-	S_StartSound (NULL, sound);
+		// full volume
+		S_StartSound (NULL, sound);
     }
     else
-	S_StartSound (actor, sound);
+	{
+		S_StartSound (actor, sound);
+	}
 }
 
 
@@ -1678,7 +1700,10 @@ DOOM_C_API void A_BossDeath (mobj_t* mo)
 	{
 		// -1 is shorthand for any thing type to trigger A_BossDeath actions.
 		// Required for pre-v1.9 compatibility.
-		matched |= ( action->thing_type == -1 || mo->type == action->thing_type );
+		matched |= ( action->thing_type == -1
+					|| mo->type == action->thing_type
+					|| ( sim.mbf21_thing_flags && ( mo->flags2 & action->mbf21_flag_type ) )
+					);
 	}
 
 	if( !matched )

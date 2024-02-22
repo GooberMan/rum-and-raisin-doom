@@ -128,6 +128,7 @@ DOOM_C_API typedef struct episodeinfo_s episodeinfo_t;
 DOOM_C_API typedef struct bossaction_s
 {
 	int32_t					thing_type;
+	int32_t					mbf21_flag_type;
 	int32_t					line_special;
 	int32_t					tag;
 } bossaction_t;

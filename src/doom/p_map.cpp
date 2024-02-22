@@ -1296,10 +1296,16 @@ DOOM_C_API doombool PIT_RadiusAttack( mobj_t* thing )
 
     // Boss spider and cyborg
     // take no damage from concussion.
-    if (thing->type == MT_CYBORG
-	|| thing->type == MT_SPIDER)
-	return true;	
-		
+	if( !bombsource->ForceSplashDamage() )
+	{
+		if (thing->type == MT_CYBORG
+			|| thing->type == MT_SPIDER
+			|| thing->NoSplashDamage() )
+		{
+			return true;
+		}
+	}
+
     dx = abs(thing->x - bombspot->x);
     dy = abs(thing->y - bombspot->y);
     
@@ -1363,8 +1369,12 @@ DOOM_C_API void P_RadiusAttackDistance( mobj_t* spot, mobj_t* source, int32_t da
 	P_BlockThingsIteratorHorizontal( iota( xl, xh + 1 ), iota( yl, yh + 1 ), [ &spot, &source, &damage, &distance ]( mobj_t* mobj ) -> bool
 	{
 		if( (mobj->flags & MF_SHOOTABLE)
-			&& mobj->type != MT_CYBORG
-			&& mobj->type != MT_SPIDER )
+			&& ( source->ForceSplashDamage()
+				|| ( mobj->type != MT_CYBORG
+					&& mobj->type != MT_SPIDER
+					&& !source->NoSplashDamage()
+					)
+				) )
 		{
 			fixed_t dx = FixedAbs( mobj->x - spot->x );
 			fixed_t dy = FixedAbs( mobj->y - spot->y );

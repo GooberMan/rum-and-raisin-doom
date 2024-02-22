@@ -941,9 +941,14 @@ void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t 
 			
 	target->reactiontime = 0;		// we're awake now...	
 
-	if ( (!target->threshold || target->type == MT_VILE)
+	doombool ignorevile = source->type == MT_VILE
+						|| ( sim.mbf21_thing_flags && ( source->flags2 & MF2_MBF21_DMGIGNORED ) );
+
+	doombool nothreshold = (!target->threshold || target->type == MT_VILE)
+							|| ( sim.mbf21_thing_flags && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
+	if ( nothreshold
 		&& source && (source != target || gameversion <= exe_doom_1_2)
-		&& source->type != MT_VILE)
+		&& !ignorevile )
 	{
 		// if not intent on another player,
 		// chase after this one

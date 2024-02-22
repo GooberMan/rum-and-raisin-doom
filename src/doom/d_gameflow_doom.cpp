@@ -23,6 +23,8 @@
 
 #include "m_container.h"
 
+#include "p_mobj.h"
+
 // Forward declarations
 extern episodeinfo_t	doom_episode_one;
 extern episodeinfo_t	doom_episode_two;
@@ -744,7 +746,7 @@ mapinfo_t doom_map_e1m7 =
 
 static bossaction_t doom_e1m8special[] =
 {
-	{ 15 /*MT_BRUISER*/, 82 /*lowerFloorToLowest repeatable*/, 666 }
+	{ 15 /*MT_BRUISER*/, MF2_MBF21_E1M8BOSS, 82 /*lowerFloorToLowest repeatable*/, 666 }
 };
 
 mapinfo_t doom_map_e1m8 =
@@ -969,12 +971,12 @@ mapinfo_t doom_map_e2m7 =
 
 static bossaction_t doom_e2m8special[] =
 {
-	{ 21 /*MT_CYBORG*/, 52 /*exitlevel*/, 0 }
+	{ 21 /*MT_CYBORG*/, MF2_MBF21_E2M8BOSS, 52 /*exitlevel*/, 0 }
 };
 
 static bossaction_t doom_bossspecial_pre_v1_9[] =
 {
-	{ -1 /*any*/, 52 /*exitlevel*/, 0 }
+	{ -1 /*any*/, MF2_MBF21_E2M8BOSS, 52 /*exitlevel*/, 0 }
 };
 
 mapinfo_t doom_map_e2m8 =
@@ -1223,7 +1225,7 @@ mapinfo_t doom_map_e3m7 =
 
 static bossaction_t doom_e3m8special[] =
 {
-	{ 19 /*MT_SPIDER*/, 52 /*exitlevel*/, 0 }
+	{ 19 /*MT_SPIDER*/, MF2_MBF21_E3M8BOSS, 52 /*exitlevel*/, 0 }
 };
 
 mapinfo_t doom_map_e3m8 =
@@ -1424,7 +1426,7 @@ mapinfo_t doom_map_e4m5 =
 
 static bossaction_t doom_e4m6special[] =
 {
-	{ 21 /*MT_CYBORG*/, 106 /*vld_blazeOpen repeatable*/, 666 }
+	{ 21 /*MT_CYBORG*/, MF2_MBF21_E4M6BOSS, 106 /*vld_blazeOpen repeatable*/, 666 }
 };
 
 mapinfo_t doom_map_e4m6 =
@@ -1477,7 +1479,7 @@ mapinfo_t doom_map_e4m7 =
 
 static bossaction_t doom_e4m8special[] =
 {
-	{ 19 /*MT_SPIDER*/, 82 /*lowerFloorToLowest repeatable*/, 666 }
+	{ 19 /*MT_SPIDER*/, MF2_MBF21_E4M8BOSS, 82 /*lowerFloorToLowest repeatable*/, 666 }
 };
 
 

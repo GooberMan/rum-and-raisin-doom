@@ -64,8 +64,8 @@ DOOM_C_API doombool P_SetMobjState( mobj_t* mobj, statenum_t state )
     {
 		if (state == S_NULL)
 		{
-			mobj->state = (state_t *) S_NULL;
-			P_RemoveMobj (mobj);
+			mobj->state = nullptr;
+			P_RemoveMobj( mobj );
 			return false;
 		}
 
@@ -342,8 +342,14 @@ DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
 	
 		if( bounces )
 		{
+			fixed_t gravity = GRAVITY;
+			if( mo->LowGravity() )
+			{
+				gravity /= 8;
+			}
+
 			fixed_t floordiff = mo->floorz - mo->floorz;
-			mo->momz = GetBounceVel( mo->flags, mo->momz ) - GRAVITY;
+			mo->momz = GetBounceVel( mo->flags, mo->momz ) - gravity;
 			mo->z = mo->floorz + floordiff;
 		}
 		else if (mo->momz < 0)
@@ -376,10 +382,17 @@ DOOM_C_API mobj_t* P_ZMovement( mobj_t* mo )
 	}
 	else if (! (mo->flags & MF_NOGRAVITY) )
 	{
+		fixed_t gravity = GRAVITY;
 		if (mo->momz == 0)
-			mo->momz = -GRAVITY*2;
-		else
-			mo->momz -= GRAVITY;
+		{
+			gravity *= 2;
+		}
+		if( mo->LowGravity() )
+		{
+			gravity /= 8;
+		}
+
+		mo->momz -= gravity;
 	}
 	
 	if (mo->z + mo->height > mo->ceilingz)

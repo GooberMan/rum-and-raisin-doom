@@ -875,6 +875,11 @@ static void SetDefaultGameflow()
 		values = GetMBFValues( gamemode );
 		break;
 
+	case exe_mbf_dehextra:
+		I_TerminalPrintf( Log_Startup, " Applying MBF + DEHEXTRA compatibility\n" );
+		values = GetMBFValues( gamemode );
+		break;
+
 	case exe_mbf21:
 		I_TerminalPrintf( Log_Startup, " Applying MBF21 compatibility\n" );
 		values = GetMBF21Values( gamemode );

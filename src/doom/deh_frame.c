@@ -67,6 +67,7 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
 							: frame_number < NUMSTATES_VANILLA ? exe_doom_1_2 // exe_limit_removing
 							: frame_number < NUMSTATES_BOOM ? exe_boom_2_02
 							: frame_number < NUMSTATES_MBF ? exe_mbf
+							: frame_number < NUMSTATES_PRBOOMPLUS ? exe_mbf_dehextra
 							: exe_mbf21_extended;
 	DEH_IncreaseGameVersion( context, version );
 

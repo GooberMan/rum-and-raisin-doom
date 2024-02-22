@@ -26,6 +26,7 @@
 
 // We need the thinker_t stuff.
 #include "d_think.h"
+#include "d_gamesim.h"
 
 // We need the WAD data structure for Map things,
 // from the THINGS lump.
@@ -336,6 +337,19 @@ DOOM_C_API typedef struct mobj_s
 
 	int32_t resurrection_count;
 	int32_t successfullineeffect;
+
+#if defined( __cplusplus )
+	INLINE const bool ShortMissileRange() const				{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_SHORTMRANGE ); }
+	INLINE const bool LongMeleeRange() const				{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_LONGMELEE ); }
+	INLINE const bool MissileHalfRangeProbability() const	{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_RANGEHALF ); }
+	INLINE const bool MissileHigherProbability() const		{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_HIGHERMPROB ); }
+	INLINE const bool FullVolumeSounds() const				{ return sim.mbf21_thing_flags && ( flags2 & ( MF2_MBF21_FULLVOLSOUNDS | MF2_MBF21_BOSS ) ); }
+	INLINE const bool MonstersIgnoreDamage() const			{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_DMGIGNORED ); }
+	INLINE const bool NoTargetingThreshold() const			{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_NOTHRESHOLD ); }
+	INLINE const bool ForceSplashDamage() const				{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_FORCERADIUSDMG ); }
+	INLINE const bool NoSplashDamage() const				{ return sim.mbf21_thing_flags && ( flags2 & ( MF2_MBF21_NORADIUSDMG | MF2_MBF21_BOSS ) ); }
+	INLINE const bool LowGravity() const					{ return sim.mbf21_thing_flags && ( flags2 & MF2_MBF21_LOGRAV ); }
+#endif
 } mobj_t;
 
 #if defined( __cplusplus )

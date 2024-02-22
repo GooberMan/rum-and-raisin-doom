@@ -736,7 +736,10 @@ static void BuildNewGameInfo()
 		if( !map.nextsecret.empty() )
 		{
 			newmap.secret_map = &umapinfogame.maps[ map.nextsecret ];
-			newmap.map_flags = newmap.map_flags | Map_Secret;
+			if( newmap.secret_map != newmap.next_map )
+			{
+				newmap.secret_map->map_flags = newmap.map_flags | Map_Secret;
+			}
 		}
 
 		if( map.bossactionclear )
@@ -752,6 +755,7 @@ static void BuildNewGameInfo()
 			{
 				bossaction_t& targetaction = *mapactions.insert( mapactions.end(), bossaction_t() );
 				targetaction.thing_type = sourceaction.thingtype;
+				targetaction.mbf21_flag_type = 0;
 				targetaction.line_special = sourceaction.linespecial;
 				targetaction.tag = sourceaction.tag;
 			}

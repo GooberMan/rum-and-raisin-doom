@@ -18,6 +18,8 @@
 #include "m_container.h"
 #include "m_conv.h"
 
+#include "p_mobj.h"
+
 #include "w_wad.h"
 
 #include <sstream>
@@ -285,8 +287,8 @@ typedef struct dmapinfo_gameinfo_s
 
 static bossaction_t map07special[] =
 {
-	{ 8 /*MT_FATSO*/, 82 /*lowerFloorToLowest repeatable*/, 666 },
-	{ 20 /*MT_BABY*/, 96 /*raiseToTexture repeatable*/, 667 },
+	{ 8 /*MT_FATSO*/, 0x00400 /* MF2_MBF21_MAP07BOSS1 */, 82 /*lowerFloorToLowest repeatable*/, 666 },
+	{ 20 /*MT_BABY*/, 0x00800 /* MF2_MBF21_MAP07BOSS2 */, 96 /*raiseToTexture repeatable*/, 667 },
 };
 
 // This needs to live in a header somewhere... and I think we need to 100% opt-in to it, at least while we mix C and C++ code everywhere
@@ -344,9 +346,9 @@ static void BuildNewGameInfo()
 
 		targetmap.next_map				= sourcemap.next_map.empty() ? nullptr : &dmapinfogame.maps[ sourcemap.next_map ];
 		targetmap.secret_map			= sourcemap.secret_map.empty() ? nullptr : &dmapinfogame.maps[ sourcemap.secret_map ];
-		if( targetmap.secret_map )
+		if( targetmap.secret_map && targetmap.secret_map != targetmap.next_map )
 		{
-			targetmap.map_flags = targetmap.map_flags | Map_Secret;
+			targetmap.secret_map->map_flags = targetmap.map_flags | Map_Secret;
 		}
 		// targetmap.secret_map_intermission;
 
