@@ -502,6 +502,9 @@ namespace DrawColumn
 		static INLINE void LimitRemovingColormapPaletteSwapDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, ViewportLookup, WriterDirect >( context ); }
 		static INLINE void LimitRemovingTransparentDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::Colormap, ViewportLookup, WriterTransparent >( context ); }
 
+		static INLINE void LimitRemovingSpriteColormapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::Colormap, ViewportSpriteLookup, WriterDirect >( context ); }
+		static INLINE void LimitRemovingSpriteTransparentDraw( colcontext_t* context )		{ DrawWith< SamplerLimitRemoving::Colormap, ViewportSpriteLookup, WriterTransparent >( context ); }
+
 		static INLINE void BackbufferDraw( colcontext_t* context )							{ DrawWith< SamplerLimitRemoving::Direct, BackbufferLookup, WriterDirect >( context ); }
 		static INLINE void BackbufferPaletteSwapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::PaletteSwap, BackbufferLookup, WriterDirect >( context ); }
 		static INLINE void BackbufferColormapDraw( colcontext_t* context )					{ DrawWith< SamplerLimitRemoving::Colormap, BackbufferLookup, WriterDirect >( context ); }
@@ -556,6 +559,12 @@ void R_DrawColumn_Colormap_256( colcontext_t* context )
 	DrawColumn::Bytewise::SizedColormapDraw< 256 >( context );
 }
 
+void R_DrawColumn_Colormap_512( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedColormapDraw< 512 >( context );
+}
+
 void R_DrawColumn_Transparent_16( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
@@ -586,6 +595,12 @@ void R_DrawColumn_Transparent_256( colcontext_t* context )
 	DrawColumn::Bytewise::SizedTransparentDraw< 256 >( context );
 }
 
+void R_DrawColumn_Transparent_512( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SizedTransparentDraw< 256 >( context );
+}
+
 void R_SpriteDrawColumn( colcontext_t* context ) 
 { 
 	M_PROFILE_FUNC();
@@ -598,7 +613,19 @@ void R_SpriteDrawColumn_Colormap( colcontext_t* context )
 	DrawColumn::Bytewise::SpriteColormapDraw( context );
 }
 
-void R_SpriteDrawColumn_Transparent ( colcontext_t* context )
+void R_SpriteDrawColumn_Transparent( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SpriteTransparentDraw( context );
+}
+
+void R_LimitRemovingSpriteDrawColumn_Colormap( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SpriteColormapDraw( context );
+}
+
+void R_LimitRemovingSpriteDrawColumn_Transparent( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::SpriteTransparentDraw( context );

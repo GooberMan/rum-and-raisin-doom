@@ -120,6 +120,8 @@ typedef struct texturecomposite_s
 
 	colfunc_t		wallrender;
 	colfunc_t		transparentwallrender;
+	colfunc_t		midtexrender;
+	colfunc_t		transparentmidtexrender;
 	rasterfunc_t	floorrender;
 
 	int32_t			index;

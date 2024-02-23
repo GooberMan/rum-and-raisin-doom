@@ -35,16 +35,20 @@ void R_DrawColumn_Colormap_32( colcontext_t* context );
 void R_DrawColumn_Colormap_64( colcontext_t* context );
 void R_DrawColumn_Colormap_128( colcontext_t* context );
 void R_DrawColumn_Colormap_256( colcontext_t* context );
+void R_DrawColumn_Colormap_512( colcontext_t* context );
 
 void R_DrawColumn_Transparent_16( colcontext_t* context );
 void R_DrawColumn_Transparent_32( colcontext_t* context );
 void R_DrawColumn_Transparent_64( colcontext_t* context );
 void R_DrawColumn_Transparent_128( colcontext_t* context );
 void R_DrawColumn_Transparent_256( colcontext_t* context );
+void R_DrawColumn_Transparent_512( colcontext_t* context );
 
 void R_SpriteDrawColumn( colcontext_t* context );
 void R_SpriteDrawColumn_Colormap( colcontext_t* context );
 void R_SpriteDrawColumn_Transparent( colcontext_t* context );
+void R_LimitRemovingSpriteDrawColumn_Colormap( colcontext_t* context );
+void R_LimitRemovingSpriteDrawColumn_Transparent( colcontext_t* context );
 
 void R_LimitRemovingDrawColumn( colcontext_t* context );
 void R_LimitRemovingDrawColumn_Colormap( colcontext_t* context );

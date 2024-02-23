@@ -536,6 +536,7 @@ constexpr colfunc_t colfuncsforheight[] =
 	&R_DrawColumn_Colormap_64,
 	&R_DrawColumn_Colormap_128,
 	&R_DrawColumn_Colormap_256,
+	&R_DrawColumn_Colormap_512,
 };
 
 constexpr colfunc_t transcolfuncsforheight[] =
@@ -545,6 +546,7 @@ constexpr colfunc_t transcolfuncsforheight[] =
 	&R_DrawColumn_Transparent_64,
 	&R_DrawColumn_Transparent_128,
 	&R_DrawColumn_Transparent_256,
+	&R_DrawColumn_Transparent_512,
 };
 
 constexpr rasterfunc_t floorfuncs[ 7 ][ 4 ] =
@@ -558,7 +560,7 @@ constexpr rasterfunc_t floorfuncs[ 7 ][ 4 ] =
 	{	&R_RasteriseRegion1024x16,	&R_RasteriseRegion1024x32,	&R_RasteriseRegion1024x64,	&R_RasteriseRegion1024x128	},
 };
 
-constexpr int32_t maxcolfuncs = 4;
+constexpr int32_t maxcolfuncs = 5;
 
 void R_InitTextureAndFlatComposites( void )
 {
@@ -586,12 +588,25 @@ void R_InitTextureAndFlatComposites( void )
 		{
 			composite.wallrender = &R_DrawColumn_Colormap_128;
 			composite.transparentwallrender = &R_DrawColumn_Transparent_128;
+			composite.midtexrender = &R_SpriteDrawColumn_Colormap;
+			composite.transparentmidtexrender = &R_SpriteDrawColumn_Transparent;
 			composite.floorrender = &R_RasteriseRegion64x64;
 		}
 		else
 		{
 			double_t logheightdouble = log2( texture->height ) - 4.0;
 			int32_t logheight = (int32_t)logheightdouble;
+
+			if( texture->height > 128 )
+			{
+				composite.midtexrender = &R_LimitRemovingSpriteDrawColumn_Colormap;
+				composite.transparentmidtexrender = &R_LimitRemovingSpriteDrawColumn_Transparent;
+			}
+			else
+			{
+				composite.midtexrender = &R_SpriteDrawColumn_Colormap;
+				composite.transparentmidtexrender = &R_SpriteDrawColumn_Transparent;
+			}
 
 			if( logheightdouble != (double_t)logheight || logheight < 0 || logheight >= maxcolfuncs )
 			{

@@ -135,7 +135,9 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 
 	spritecolcontext.output = dest;
 	spritecolcontext.transparency = bspcontext.curline->linedef->transparencymap;
-	spritecolcontext.colfunc = bspcontext.curline->linedef->transparencymap == nullptr ? &R_SpriteDrawColumn_Colormap : texturelookup[ texnum ]->transparentwallrender;
+	spritecolcontext.colfunc = bspcontext.curline->linedef->transparencymap == nullptr
+									? texturelookup[ texnum ]->midtexrender
+									: texturelookup[ texnum ]->transparentmidtexrender;
 
 	lightnum = (bspcontext.frontsectorinst->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
