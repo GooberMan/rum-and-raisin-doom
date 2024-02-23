@@ -319,30 +319,26 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 	rend_fixed_t basetexturemid = colcontext.texturemid;
 	
 	int32_t baseoffset = 0;
-	int32_t baseaccum = 0;
-	int32_t lastdelta = -1;
 	for ( ; column->topdelta != 0xff ; )
 	{
-		if( comp.tall_patches )
+		if( comp.tall_patches && column->topdelta <= baseoffset )
 		{
-			if( column->topdelta <= lastdelta )
-			{
-				baseoffset += baseaccum;
-				baseaccum = 0;
-			}
-			lastdelta = column->topdelta;
-			baseaccum += column->topdelta;
+			baseoffset += column->topdelta;
+		}
+		else
+		{
+			baseoffset = column->topdelta;
+		}
 
-			if( column->length == 0 )
-			{
-				column = (column_t *)(  (byte *)column + 4);
-				continue;
-			}
+		if( column->length == 0 )
+		{
+			column = (column_t *)(  (byte *)column + 4);
+			continue;
 		}
 
 		// calculate unclipped screen coordinates
 		//  for post
-		rend_fixed_t topscreen = spritecontext.sprtopscreen + spritecontext.spryscale * ( baseoffset + column->topdelta + colcontext.sourceyoffset );
+		rend_fixed_t topscreen = spritecontext.sprtopscreen + spritecontext.spryscale * ( baseoffset + colcontext.sourceyoffset );
 		rend_fixed_t bottomscreen = topscreen + spritecontext.spryscale*column->length;
 
 		colcontext.yl = RendFixedToInt( topscreen + RENDFRACUNIT - 1 );
@@ -354,15 +350,13 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 			colcontext.yh = M_MIN( colcontext.yh, drs_current->viewheight - 1 );
 		}
 
-		if (colcontext.yh >= spritecontext.mfloorclip[colcontext.x])
-			colcontext.yh = spritecontext.mfloorclip[colcontext.x]-1;
-		if (colcontext.yl <= spritecontext.mceilingclip[colcontext.x])
-			colcontext.yl = spritecontext.mceilingclip[colcontext.x]+1;
+		colcontext.yh = M_MIN( colcontext.yh, spritecontext.mfloorclip[colcontext.x] -1 );
+		colcontext.yl = M_MAX( colcontext.yl, spritecontext.mceilingclip[colcontext.x] + 1 );
 
 		if (colcontext.yl < colcontext.yh)
 		{
 			colcontext.source = (byte *)column + 3;
-			colcontext.texturemid = basetexturemid - IntToRendFixed( baseoffset + column->topdelta + colcontext.sourceyoffset );
+			colcontext.texturemid = basetexturemid - IntToRendFixed( baseoffset + colcontext.sourceyoffset );
 			// colcontext.source = (byte *)column + 3 - column->topdelta;
 
 			// Drawn by either R_DrawColumn

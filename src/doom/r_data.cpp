@@ -255,37 +255,44 @@ typedef struct compositedata_s
 // Clip and draw a column
 //  from a patch into a cached post.
 //
-void
-R_DrawColumnInCache
-( column_t*	patch,
-  byte*		cache,
-  int		originy,
-  int		cacheheight )
+void R_DrawColumnInCache( column_t* patch, byte* cache, int originy, int cacheheight )
 {
-    int		count;
-    int		position;
-    byte*	source;
+	int		count = 0;
+	int		position = 0;
+	byte*	source = nullptr;
 
-    while (patch->topdelta != 0xff)
-    {
-	source = (byte *)patch + 3;
-	count = patch->length;
-	position = originy + patch->topdelta;
-
-	if (position < 0)
+	int32_t baseoffset = -1;
+	while (patch->topdelta != 0xff)
 	{
-	    count += position;
-	    position = 0;
-	}
+		source = (byte *)patch + 3;
+		count = patch->length;
+		if( comp.tall_patches && patch->topdelta <= baseoffset )
+		{
+			baseoffset += patch->topdelta;
+		}
+		else
+		{
+			baseoffset = patch->topdelta;
+		}
 
-	if (position + count > cacheheight)
-	    count = cacheheight - position;
+		position = originy + baseoffset;
 
-	if (count > 0)
-	    memcpy (cache + position, source, count);
+		if (position < 0)
+		{
+			count += position;
+			position = 0;
+		}
+
+		if (position + count > cacheheight)
+			count = cacheheight - position;
+
+		if (count > 0)
+		{
+			memcpy (cache + position, source, count);
+		}
 		
-	patch = (column_t *)(  (byte *)patch + patch->length + 4); 
-    }
+		patch = (column_t *)(  (byte *)patch + patch->length + 4); 
+	}
 }
 
 //
