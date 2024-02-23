@@ -90,7 +90,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 	if( sim.tall_skies )
 	{
 		skycontext.texturemid = sky->renderheight - constants::skytexturemidoffset;
-		skycontext.colfunc = &R_LimitRemovingDrawColumn;
+		skycontext.colfunc = sky->height == 128 ? & R_DrawColumn_128 : &R_LimitRemovingDrawColumn;
 	}
 	else
 	{
