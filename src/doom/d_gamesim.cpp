@@ -274,7 +274,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.mbf_things = false;							// DOGS
 	values.sim.mbf21_line_specials = false;					// New texture scrollers, new flags
 	values.sim.mbf21_sector_specials = false;				// Insta-deaths
-	values.sim.mbf21_thing_flags = false;					// flags2 field
+	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 
 	return values;
@@ -389,7 +389,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.mbf_things = true;							// DOGS
 	values.sim.mbf21_line_specials = false;					// New texture scrollers, new flags
 	values.sim.mbf21_sector_specials = false;				// Insta-deaths
-	values.sim.mbf21_thing_flags = false;					// flags2 field
+	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 
 	return values;
@@ -495,7 +495,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.mbf_things = true;							// DOGS
 	values.sim.mbf21_line_specials = true;					// New texture scrollers, new flags
 	values.sim.mbf21_sector_specials = true;				// Insta-deaths
-	values.sim.mbf21_thing_flags = true;					// flags2 field
+	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 
 	return values;

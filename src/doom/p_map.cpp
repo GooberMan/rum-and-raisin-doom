@@ -299,6 +299,30 @@ DOOM_C_API doombool PIT_CheckLine( line_t* ld )
     return true;
 }
 
+inline bool InfightingImmunity( mobj_t* lhs, mobj_t* rhs )
+{
+	if( sim.mbf_mobj_flags )
+	{
+		if( ( lhs->player && rhs->IsFriendly() )
+			|| ( rhs->player && lhs->IsFriendly() )
+			|| ( lhs->IsFriendly() && rhs->IsFriendly() )
+			)
+		{
+			return true;
+		}
+	}
+
+	if( !sim.mbf21_thing_extensions )
+	{
+		return lhs->type == rhs->type
+			|| (lhs->type == MT_KNIGHT && rhs->type == MT_BRUISER)
+			|| (lhs->type == MT_BRUISER && rhs->type == MT_KNIGHT);
+	}
+
+	return lhs->info->infightinggroup > 0
+		&& lhs->info->infightinggroup == rhs->info->infightinggroup;
+}
+
 //
 // PIT_CheckThing
 //
@@ -373,10 +397,7 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 		if (tmthing->z+tmthing->height < thing->z)
 			return true;		// underneath
 		
-		if (tmthing->target 
-			 && (tmthing->target->type == thing->type || 
-			(tmthing->target->type == MT_KNIGHT && thing->type == MT_BRUISER) ||
-			(tmthing->target->type == MT_BRUISER && thing->type == MT_KNIGHT) ) )
+		if (tmthing->target && InfightingImmunity( tmthing->target, thing ) )
 		{
 			// Don't hit same species as originator.
 			if (thing == tmthing->target)
@@ -1287,12 +1308,14 @@ int		bombdamage;
 //
 DOOM_C_API doombool PIT_RadiusAttack( mobj_t* thing )
 {
-    fixed_t	dx;
-    fixed_t	dy;
-    fixed_t	dist;
+	fixed_t	dx;
+	fixed_t	dy;
+	fixed_t	dist;
 	
-    if (!(thing->flags & MF_SHOOTABLE) )
-	return true;
+	if (!(thing->flags & MF_SHOOTABLE) )
+	{
+		return true;
+	}
 
     // Boss spider and cyborg
     // take no damage from concussion.

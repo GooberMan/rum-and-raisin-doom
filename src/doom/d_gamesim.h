@@ -102,7 +102,7 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		mbf_things;								// DOGS
 	doombool		mbf21_line_specials;					// New texture scrollers, new flags
 	doombool		mbf21_sector_specials;					// Insta-deaths
-	doombool		mbf21_thing_flags;						// flags2 field
+	doombool		mbf21_thing_extensions;					// infighting, flags2, etc
 	doombool		mbf21_code_pointers;					// Dehacked additions
 } simoptions_t;
 

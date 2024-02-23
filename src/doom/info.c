@@ -1,6 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
+// Copyright(C) 2024 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1701,7 +1702,8 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_dmact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_BOSS_RAISE1		// raisestate
+		S_BOSS_RAISE1,		// raisestate
+		infighting_hellnobles, // infightinggroup
 	},
 
 	{		// MT_BRUISERSHOT
@@ -1753,7 +1755,8 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_dmact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_BOS2_RAISE1		// raisestate
+		S_BOS2_RAISE1,		// raisestate
+		infighting_hellnobles, // infightinggroup
 	},
 
 	{		// MT_SKULL

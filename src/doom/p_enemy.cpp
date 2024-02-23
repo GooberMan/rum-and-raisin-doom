@@ -1271,6 +1271,10 @@ DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_
 				corpsehit->height <<= 2;
 			}
 		    corpsehit->flags = info->flags;
+			if( sim.mbf_mobj_flags )
+			{
+				corpsehit->flags |= ( actor->flags & MF_MBF_FRIEND );
+			}
 		    corpsehit->health = info->spawnhealth;
 		    corpsehit->target = NULL;
 			++corpsehit->resurrection_count;
@@ -1702,7 +1706,7 @@ DOOM_C_API void A_BossDeath (mobj_t* mo)
 		// Required for pre-v1.9 compatibility.
 		matched |= ( action->thing_type == -1
 					|| mo->type == action->thing_type
-					|| ( sim.mbf21_thing_flags && ( mo->flags2 & action->mbf21_flag_type ) )
+					|| ( sim.mbf21_thing_extensions && ( mo->flags2 & action->mbf21_flag_type ) )
 					);
 	}
 

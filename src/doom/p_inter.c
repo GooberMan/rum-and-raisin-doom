@@ -943,11 +943,11 @@ void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t 
 
 	doombool ignorevile = source
 						&& ( source->type == MT_VILE
-							|| ( sim.mbf21_thing_flags && ( source->flags2 & MF2_MBF21_DMGIGNORED ) )
+							|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_DMGIGNORED ) )
 							);
 
 	doombool nothreshold = (!target->threshold || target->type == MT_VILE)
-							|| ( sim.mbf21_thing_flags && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
+							|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
 	if ( nothreshold
 		&& source && (source != target || gameversion <= exe_doom_1_2)
 		&& !ignorevile )

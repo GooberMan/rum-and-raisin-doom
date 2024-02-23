@@ -1522,6 +1522,20 @@ DOOM_C_API extern const char *sprnames[];
 DOOM_C_API extern const char *sprnames_boom[];
 DOOM_C_API extern const char *sprnames_mbf[];
 
+DOOM_C_API typedef enum mobjgroups_e
+{
+	infighting_none = 0,
+	infighting_hellnobles,
+	infighting_user,
+
+	projectile_none = 0,
+	projectile_user,
+	projectile_noimmunity = -1,
+
+	splash_none = 0,
+	splash_user,
+} mobjgroups_t;
+
 DOOM_C_API typedef struct
 {
 	int32_t		doomednum;
@@ -1548,7 +1562,10 @@ DOOM_C_API typedef struct
 	int32_t		flags;
 	int32_t		raisestate;
 
-	// MBF extensions
+	// MBF21 extensions
+	int32_t		infightinggroup;
+	int32_t		projectilegroup;
+	int32_t		splashgroup;
 	int32_t		flags2;
 	int32_t		fastspeed;
 	int32_t		meleerange;
