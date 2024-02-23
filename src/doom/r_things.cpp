@@ -105,8 +105,11 @@ R_InstallSpriteLump
 
 		if (sprtemp[frame].rotate == 1)
 		{
-			I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
-				 "and a rot=0 lump", spritename, 'A'+frame);
+			if( !comp.additive_data_blocks )
+			{
+				I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
+					 "and a rot=0 lump", spritename, 'A'+frame);
+			}
 		}
 			
 		sprtemp[frame].rotate = 0;

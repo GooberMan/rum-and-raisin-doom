@@ -1008,21 +1008,8 @@ doombool P_BlockThingsIteratorVertical( fixed_t x, fixed_t y, fixed_t radius, it
 	return P_BlockThingsIteratorVertical( iota( xl, xh ), iota( yl, yh ), std::forward< iteratemobjfunc_t >( func ) );
 }
 
-DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
+DOOM_C_API doombool P_BBoxOverlapsSector( sector_t* sector, fixed_t* bbox )
 {
-	if( mobj->subsector->sector == sector )
-	{
-		return true;
-	}
-
-	fixed_t bbox[ 4 ] =
-	{
-		mobj->y + mobj->radius,	// BOXTOP
-		mobj->y - mobj->radius,	// BOXBOTTOM
-		mobj->x - mobj->radius,	// BOXLEFT
-		mobj->x + mobj->radius,	// BOXRIGHT
-	};
-
 	auto Test = [&bbox]( const fixed_t& coeff1, const fixed_t& coeff2, const fixed_t& cross, const int32_t horiz, const int32_t vert )
 	{
 		return FixedMul( coeff1, bbox[ horiz ] ) + FixedMul( coeff2, bbox[ vert ] ) + cross;
@@ -1064,4 +1051,22 @@ DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
 	}
 
 	return false;
+}
+
+DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
+{
+	if( mobj->subsector->sector == sector )
+	{
+		return true;
+	}
+
+	fixed_t bbox[ 4 ] =
+	{
+		mobj->y + mobj->radius,	// BOXTOP
+		mobj->y - mobj->radius,	// BOXBOTTOM
+		mobj->x - mobj->radius,	// BOXLEFT
+		mobj->x + mobj->radius,	// BOXRIGHT
+	};
+
+	return P_BBoxOverlapsSector( sector, bbox );
 }

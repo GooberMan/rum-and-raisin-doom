@@ -1060,7 +1060,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 };
 
-constexpr lineaction_t builtinmbf21lineactions[ MBF21Actions_Count ] =
+constexpr lineaction_t builtinmbf21lineactions[ Actions_MBF21_Count ] =
 {
 	// Texture_ScrollSpeedDiv8Standard_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },

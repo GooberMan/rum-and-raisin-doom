@@ -130,7 +130,7 @@ static doombool IsWhitespace(char *s)
 
 // Strip whitespace from the start and end of a string
 
-static char *CleanString(char *s)
+static char *CleanString(char *s, int32_t stripcomments)
 {
     char *strending;
 
@@ -142,6 +142,15 @@ static char *CleanString(char *s)
     // Trailing whitespace
    
     strending = s + strlen(s) - 1;
+
+	if( stripcomments )
+	{
+		char* found = strchr( s, '/' );
+		if( found && found != s )
+		{
+			strending = found - 1;
+		}
+	}
 
     while (strlen(s) > 0 && isspace(*strending))
     {
@@ -179,11 +188,11 @@ doombool DEH_ParseAssignment(char *line, char **variable_name, char **value)
     // turn the '=' into a \0 to terminate the string here
 
     *p = '\0';
-    *variable_name = CleanString(line);
+    *variable_name = CleanString(line, false);
     
     // value immediately follows the '='
     
-    *value = CleanString(p+1);
+    *value = CleanString(p+1, true);
     
     return true;
 }

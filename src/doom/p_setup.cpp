@@ -45,6 +45,7 @@
 #include "m_misc.h"
 
 #include "p_local.h"
+#include "p_lineaction.h"
 
 #include "r_local.h"
 
@@ -368,6 +369,8 @@ struct DoomMapLoader
 		default:
 			LoadBlockmap< mapblockmap_extended_t >( lumpnum );
 
+			bool forcerebuild = false;
+
 			// Fixing bad blockmaps that indiscriminately built with integer wraparounds
 			if( _blockmapend - _blockmap >= MaxEntries16bit )
 			{
@@ -393,15 +396,113 @@ struct DoomMapLoader
 						}
 						else if( currindex >= ( MaxEntries16bit - Bias16bit ) && lastindex < Bias16bit )
 						{
-							if( !foundproblem ) I_LogAddEntry( Log_Warning, "Blockmap correction has potential problems around 16-bit boundary" );
-							foundproblem = true;
-
-							offsetaddition -= MaxEntries16bit;
+							I_LogAddEntry( Log_System, "Blockmap correction has problems around 16-bit boundary, regenerating" );
+							forcerebuild = true;
+							break;
 						}
 						lastindex = currindex;
 						currindex += offsetaddition;
 					}
 				}
+			}
+
+			if( forcerebuild )
+			{
+				I_LogAddEntry( Log_System, "Rebuilding blockmap" );
+				fixed_t minx = INT_MAX;
+				fixed_t miny = INT_MAX;
+				fixed_t maxx = -INT_MAX;
+				fixed_t maxy = -INT_MAX;
+
+				for( vertex_t& vert : Vertices() )
+				{
+					minx = M_MIN( minx, vert.x );
+					miny = M_MIN( miny, vert.y );
+					maxx = M_MAX( maxx, vert.x );
+					maxy = M_MAX( maxy, vert.y );
+				}
+
+				minx -= IntToFixed( 8 );
+				miny -= IntToFixed( 8 );
+				maxx += IntToFixed( 8 );
+				maxy += IntToFixed( 8 );
+
+				blockmap_t width	= FixedToInt( ( maxx - minx ) / 128 ) + 1;
+				blockmap_t height	= FixedToInt( ( maxy - miny ) / 128 ) + 1;
+				blockmap_t count	= width * height;
+
+				// Want vanilla style blockmaps? Use this
+				//std::vector< std::vector< blockmap_t > > blockindices( count, { 0 } );
+				std::vector< std::vector< blockmap_t > > blockindices( count );
+
+				blockmap_t lineindex = 0;
+				for( line_t& line : Lines() )
+				{
+					if( line.special == Zokum_NoBlockmap )
+					{
+						continue;
+					}
+
+					blockmap_t v1x = FixedToInt( ( line.v1->x - minx ) / 128 );
+					blockmap_t v1y = FixedToInt( ( line.v1->y - miny ) / 128 );
+					blockmap_t v2x = FixedToInt( ( line.v2->x - minx ) / 128 );
+					blockmap_t v2y = FixedToInt( ( line.v2->y - miny ) / 128 );
+					if( v1x > v2x ) std::swap( v1x, v2x );
+					if( v1y > v2y ) std::swap( v1y, v2y );
+
+					for( blockmap_t blockx : iota( v1x, v2x + 1 ) )
+					{
+						for( blockmap_t blocky : iota( v1y, v2y + 1 ) )
+						{
+							blockmap_t blockindex = blocky * width + blockx;
+							blockindices[ blockindex ].push_back( lineindex );
+						}
+					}
+
+					++lineindex;
+				}
+
+				blockmap_t offset = 4 + count;
+				std::vector< blockmap_t > blockoffsets;
+				blockoffsets.reserve( count );
+
+				for( auto& thisblockindex : blockindices )
+				{
+					blockoffsets.push_back( offset );
+					thisblockindex.push_back( BLOCKMAP_INVALID );
+					offset += thisblockindex.size();
+				}
+
+				_blockmap = (blockmap_t*)Z_Malloc( sizeof( blockmap_t ) * offset, PU_LEVEL, nullptr );
+				_blockmapend = _blockmap + offset;
+				_blockmapbase = _blockmap;
+				_blockmaplength = offset;
+				_blockmaporgx = minx;
+				_blockmaporgy = miny;
+				_blockmapwidth = width;
+				_blockmapheight = height;
+
+				*_blockmap++ = FixedToInt( minx );
+				*_blockmap++ = FixedToInt( miny );
+				*_blockmap++ = width;
+				*_blockmap++ = height;
+
+				blockmap_t* output = _blockmap;
+				auto CopyToBlockmap = [&output]( std::vector< blockmap_t >& entries )
+				{
+					memcpy( output, entries.data(), sizeof( blockmap_t ) * entries.size() );
+					output += entries.size();
+				};
+
+				CopyToBlockmap( blockoffsets );
+				for( auto& thisblockindex : blockindices )
+				{
+					CopyToBlockmap( thisblockindex );
+				}
+
+				int32_t linkssize = sizeof(*_blocklinks) * _blockmapwidth * _blockmapheight;
+				_blocklinks = (mobj_t**)Z_Malloc( linkssize, PU_LEVEL, 0 );
+				memset( _blocklinks, 0, linkssize );
 			}
 			break;
 		}
@@ -1335,11 +1436,12 @@ P_SetupLevel
 	case LoadingCode::RnRLimitRemoving:
 		{
 			loader.DetermineExtendedFormat( lumpnum );
-			loader.LoadExtendedBlockmap( lumpnum + ML_BLOCKMAP );
 			loader.LoadVertices( lumpnum + ML_VERTEXES );
 			loader.LoadSectors( lumpnum + ML_SECTORS );
 			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
 			loader.LoadExtendedLinedefs( lumpnum + ML_LINEDEFS );
+			// This would load first in pure vanilla. Should be harmless here
+			loader.LoadExtendedBlockmap( lumpnum + ML_BLOCKMAP );
 			// We're going to switch the order of nodes and subsectors
 			// loading for limit removing maps.
 			loader.LoadExtendedNodes( lumpnum + ML_NODES );

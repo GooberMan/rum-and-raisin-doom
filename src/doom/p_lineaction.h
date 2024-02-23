@@ -344,17 +344,28 @@ enum MBF21Actions : uint32_t
 
 	MBF21Actions_Max,
 	MBF21Actions_Min = Texture_ScrollSpeedDiv8Standard_Always,
+};
 
-	MBF21Actions_Count = MBF21Actions_Max - MBF21Actions_Min,
+enum ZokumBSPActions : uint32_t
+{
+	Zokum_DoNotRender = 998,			// Do not render this linedef.
+	Zokum_NoBlockmap = 999,				// Do not add this linedef to the blockmap.
+	Zokum_RemoteScroll = 1048,			// Remote scroll nearest wall with same tag.
+	Zokum_ChangeStartVertex = 1078,		// Change start vertex of all with same tag to be same as this line. Make line non-render. Also copies sidedefs.
+	Zokum_ChangeEndVertex = 1079,		// Change end vertex of all with same tag to be the same as this line. Make line non-render. Also copies sidedefs.
+	Zokum_RotateDegrees = 1080,			// Rotate the rendered wall N degrees, where degrees is taken from tag.
+	Zokum_RotateDegreesHard = 1081,		// Set the wall rotation to a hardcoded degree, degree taken from tag.
+	Zokum_RotateAngleT = 1082,			// Rotate the rendered wall N BAMs, BAMs taken from tag.
+	Zokum_RotateAngleTHard = 1083,		// Set the wall rotation to a hardoced BAM, taken from tag.
+	Zokum_DoNotRenderBackSeg = 1084,	// Do not render seg on the second side of a linedef.
+	Zokum_DoNotRenderFrontSeg = 1085,	// Do not render seg on the front side of a lindedef.
+	Zokum_DoNotRenderAnySeg = 1086,		// Do not render segs on any side of a linedef.
 };
 
 enum ActionArrayValues : uint32_t
 {
 	Actions_BuiltIn_Count	= (uint32_t)MBFActions_Max - (uint32_t)DoomActions_Min + 1,
-	Actions_BuiltIn_Min		= 0,
-
-	Actions_MBF21_Count		= (uint32_t)MBF21Actions_Max,
-	Actions_MBF21_Min		= (uint32_t)MBF21Actions_Max - (uint32_t)MBF21Actions_Min,
+	Actions_MBF21_Count		= (uint32_t)MBF21Actions_Max - (uint32_t)MBF21Actions_Min,
 };
 
 enum BoomFloorActions : uint32_t

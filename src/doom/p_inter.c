@@ -941,8 +941,10 @@ void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t 
 			
 	target->reactiontime = 0;		// we're awake now...	
 
-	doombool ignorevile = source->type == MT_VILE
-						|| ( sim.mbf21_thing_flags && ( source->flags2 & MF2_MBF21_DMGIGNORED ) );
+	doombool ignorevile = source
+						&& ( source->type == MT_VILE
+							|| ( sim.mbf21_thing_flags && ( source->flags2 & MF2_MBF21_DMGIGNORED ) )
+							);
 
 	doombool nothreshold = (!target->threshold || target->type == MT_VILE)
 							|| ( sim.mbf21_thing_flags && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
