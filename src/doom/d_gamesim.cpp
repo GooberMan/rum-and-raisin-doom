@@ -136,6 +136,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.zero_length_texture_names = true;
 	values.comp.multi_patch_2S_linedefs = true;
 	values.comp.widescreen_assets = true;
+	values.comp.tall_patches = true;
 
 	return values;
 }
@@ -236,6 +237,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
 	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
+	values.comp.tall_patches = true;						// Additive deltas
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -351,6 +353,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
 	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
+	values.comp.tall_patches = true;						// Additive deltas
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -457,6 +460,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
 	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
+	values.comp.tall_patches = true;						// Additive deltas
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = true;			// comp_ledgeblock

@@ -318,11 +318,31 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 
 	rend_fixed_t basetexturemid = colcontext.texturemid;
 	
-	for ( ; column->topdelta != 0xff ; ) 
+	int32_t baseoffset = 0;
+	int32_t baseaccum = 0;
+	int32_t lastdelta = -1;
+	for ( ; column->topdelta != 0xff ; )
 	{
+		if( comp.tall_patches )
+		{
+			if( column->topdelta <= lastdelta )
+			{
+				baseoffset += baseaccum;
+				baseaccum = 0;
+			}
+			lastdelta = column->topdelta;
+			baseaccum += column->topdelta;
+
+			if( column->length == 0 )
+			{
+				column = (column_t *)(  (byte *)column + 4);
+				continue;
+			}
+		}
+
 		// calculate unclipped screen coordinates
 		//  for post
-		rend_fixed_t topscreen = spritecontext.sprtopscreen + spritecontext.spryscale * ( column->topdelta + colcontext.sourceyoffset );
+		rend_fixed_t topscreen = spritecontext.sprtopscreen + spritecontext.spryscale * ( baseoffset + column->topdelta + colcontext.sourceyoffset );
 		rend_fixed_t bottomscreen = topscreen + spritecontext.spryscale*column->length;
 
 		colcontext.yl = RendFixedToInt( topscreen + RENDFRACUNIT - 1 );
@@ -342,7 +362,7 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 		if (colcontext.yl < colcontext.yh)
 		{
 			colcontext.source = (byte *)column + 3;
-			colcontext.texturemid = basetexturemid - IntToRendFixed( column->topdelta + colcontext.sourceyoffset );
+			colcontext.texturemid = basetexturemid - IntToRendFixed( baseoffset + column->topdelta + colcontext.sourceyoffset );
 			// colcontext.source = (byte *)column + 3 - column->topdelta;
 
 			// Drawn by either R_DrawColumn
