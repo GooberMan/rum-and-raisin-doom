@@ -91,7 +91,6 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		separate_floor_ceiling_lights;			// Boom sector specials are allowed to work independently of each other
 	doombool		sector_movement_modifiers;				// Boom sectors can have variable friction, wind, currents
 	doombool		door_tagged_light;						// Dx with tags does the Boom lighting thing
-	doombool		tall_skies;								// Sky bigger than 128 high? We've got you covered
 	doombool		boom_sector_targets;					// All sector targets consider their current sector
 	doombool		boom_line_specials;						// Comes with Boom fixes for specials by default
 	doombool		boom_sector_specials;					// Comes with Boom fixes for specials by default
@@ -170,6 +169,7 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		multi_patch_2S_linedefs;				// Now 2S linedefs can render properly. Also handles columns without data
 	doombool		widescreen_assets;						// Replace assets with widescreen equivalents if they exist
 	doombool		strict_boom_feature_matching;			// When disabled, line 85 (texture scrolling) and thing DM flags will be considered limit removing for version matching
+	doombool		tall_skies;								// Sky bigger than 128 high? We've got you covered
 	doombool		tall_patches;							// Additive deltas
 
 	// MBF21 additions

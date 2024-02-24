@@ -20,9 +20,6 @@
 
 
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "doomdef.h"
 #include "m_fixed.h"
 
@@ -65,37 +62,13 @@ extern "C"
 	spritedef_t*	sprites;
 	int32_t			numsprites;
 
-	// Only used in initialisation? Might be safe to keep on stack
-	spriteframe_t	sprtemp[29];
-	int32_t			maxframe;
-	const char		*spritename;
 }
 
 
-//
-// R_InstallSpriteLump
-// Local function for R_InitSprites.
-//
-void
-R_InstallSpriteLump
-( int32_t	lump,
-  unsigned	frame,
-  unsigned	rotation,
-  doombool	flipped )
+int32_t R_InstallSpriteLump( spriteframe_t* sprtemp, const char* spritename, int32_t maxframe, int32_t lump, int32_t frame, int32_t rotation, bool flipped )
 {
-    int		r;
-	
-    //if (frame >= 29 || rotation > 8)
-	//I_Error("R_InstallSpriteLump: "
-	//	"Bad frame characters in lump %i", lump);
-	
-    if ((int)frame > maxframe)
+	if (rotation == 0)
 	{
-		maxframe = frame;
-	}
-		
-    if (rotation == 0)
-    {
 		// the lump should be used for all rotations
 		if (sprtemp[frame].rotate == 0)
 		{
@@ -113,40 +86,44 @@ R_InstallSpriteLump
 		}
 			
 		sprtemp[frame].rotate = 0;
-		for (r=0 ; r<8 ; r++)
+		for( int32_t r : iota( 0, 8 ) )
 		{
 			sprtemp[frame].lump[r] = lump;
 			sprtemp[frame].flip[r] = (byte)flipped;
 		}
-		return;
-    }
 
-	// the lump is only used for one rotation
-	if (sprtemp[frame].rotate == 0)
+	}
+	else
 	{
-		if( !comp.additive_data_blocks )
+		// the lump is only used for one rotation
+		if (sprtemp[frame].rotate == 0)
 		{
-			I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
-				 "and a rot=0 lump", spritename, 'A'+frame);
+			if( !comp.additive_data_blocks )
+			{
+				I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
+					 "and a rot=0 lump", spritename, 'A'+frame);
+			}
 		}
+
+		sprtemp[frame].rotate = 1;
+
+		// make 0 based
+		rotation--;
+		if( sprtemp[frame].lump[rotation] != -1 )
+		{
+			if( !comp.additive_data_blocks )
+			{
+				I_Error ("R_InitSprites: Sprite %s : %c : %c "
+					 "has two lumps mapped to it",
+					 spritename, 'A'+frame, '1'+rotation);
+			}
+		}
+
+		sprtemp[frame].lump[rotation] = lump;
+		sprtemp[frame].flip[rotation] = (byte)flipped;
 	}
 
-    sprtemp[frame].rotate = 1;
-
-    // make 0 based
-    rotation--;
-    if( sprtemp[frame].lump[rotation] != -1 )
-	{
-		if( !comp.additive_data_blocks )
-		{
-			I_Error ("R_InitSprites: Sprite %s : %c : %c "
-				 "has two lumps mapped to it",
-				 spritename, 'A'+frame, '1'+rotation);
-		}
-	}
-
-	sprtemp[frame].lump[rotation] = lump;
-	sprtemp[frame].flip[rotation] = (byte)flipped;
+	return M_MAX( frame, maxframe );
 }
 
 
@@ -170,7 +147,6 @@ R_InstallSpriteLump
 void R_InitSpriteDefs(const char **namelist)
 { 
     const char **check;
-    int		i;
     int		frame;
     int		rotation;
 
@@ -183,18 +159,21 @@ void R_InitSpriteDefs(const char **namelist)
 	
     if (!numsprites)
 	return;
+
+    spriteframe_t* sprtemp = (spriteframe_t*)Z_Malloc( sizeof(spriteframe_t) * 29, PU_STATIC, NULL );
 		
-    sprites = (spritedef_t*)Z_Malloc(numsprites *sizeof(*sprites), PU_STATIC, NULL);
+    sprites = (spritedef_t*)Z_Malloc(numsprites * sizeof(spritedef_t), PU_STATIC, NULL);
 	
     // scan all the lump names for each of the names,
     //  noting the highest frame letter.
     // Just compare 4 characters as ints
-    for (i=0 ; i<numsprites ; i++)
+    const char** currname = namelist;
+    for( spritedef_t& currsprite : std::span( sprites, numsprites ) )
     {
-		spritename = DEH_String( namelist[ i ] );
-		memset( sprtemp,-1, sizeof(sprtemp));
+		const char* spritename = DEH_String( *currname++ );
+		memset( sprtemp,-1, sizeof(spriteframe_t) * 29);
 		
-		maxframe = -1;
+		int32_t maxframe = -1;
 	
 		// scan the lumps,
 		//  filling in the frames for whatever is found
@@ -208,13 +187,13 @@ void R_InitSpriteDefs(const char **namelist)
 
 				int32_t patch = lookup.compositeindex;
 
-				R_InstallSpriteLump( patch, frame, rotation, false );
+				maxframe = R_InstallSpriteLump( sprtemp, spritename, maxframe, patch, frame, rotation, false );
 
 				if( lump->name[ 6 ] )
 				{
 					frame = lump->name[6] - 'A';
 					rotation = lump->name[7] - '0';
-					R_InstallSpriteLump( patch, frame, rotation, true );
+					maxframe = R_InstallSpriteLump( sprtemp, spritename, maxframe, patch, frame, rotation, true );
 				}
 			}
 		}
@@ -222,7 +201,7 @@ void R_InitSpriteDefs(const char **namelist)
 		// check the frames that were found for completeness
 		if (maxframe == -1)
 		{
-			sprites[ i ].numframes = 0;
+			currsprite.numframes = 0;
 			continue;
 		}
 		
@@ -258,11 +237,12 @@ void R_InitSpriteDefs(const char **namelist)
 		}
 	
 		// allocate space for the frames present and copy sprtemp to it
-		sprites[i].numframes = maxframe;
-		sprites[i].spriteframes = (spriteframe_t*)Z_Malloc( maxframe * sizeof(spriteframe_t), PU_STATIC, NULL );
-		memcpy (sprites[i].spriteframes, sprtemp, maxframe*sizeof(spriteframe_t));
+		currsprite.numframes = maxframe;
+		currsprite.spriteframes = (spriteframe_t*)Z_Malloc( maxframe * sizeof(spriteframe_t), PU_STATIC, NULL );
+		memcpy(currsprite.spriteframes, sprtemp, maxframe*sizeof(spriteframe_t));
 	}
 
+	Z_Free( sprtemp );
 }
 
 

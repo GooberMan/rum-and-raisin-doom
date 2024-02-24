@@ -87,7 +87,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
 	skycontext.iscale = drs_current->skyiscaley;
-	if( sim.tall_skies )
+	if( comp.tall_skies )
 	{
 		skycontext.texturemid = sky->renderheight - constants::skytexturemidoffset;
 		skycontext.colfunc = sky->height == 128 ? & R_DrawColumn_128 : &R_LimitRemovingDrawColumn;
