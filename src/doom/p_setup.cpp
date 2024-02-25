@@ -381,7 +381,6 @@ struct DoomMapLoader
 				int32_t firstentry = baseoffset % MaxEntries16bit;
 				int32_t offsetaddition = baseoffset & ~( MaxEntries16bit - 1 );
 				int32_t lastindex = 0;
-				doombool foundproblem = false;
 				for( int32_t& currindex : std::span( _blockmap, numindices ) )
 				{
 					if( currindex == firstentry )

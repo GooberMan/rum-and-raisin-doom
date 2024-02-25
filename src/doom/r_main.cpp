@@ -927,7 +927,7 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 	{
 		colcontext_t skycontext = {};
 
-		if( sim.tall_skies )
+		if( comp.tall_skies )
 		{
 			skycontext.texturemid = texturelookup[ skytexture ]->renderheight - constants::skytexturemidoffset;
 			skycontext.colfunc = &R_LimitRemovingDrawColumn;

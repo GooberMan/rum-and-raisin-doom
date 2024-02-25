@@ -1025,6 +1025,84 @@ namespace constants
 	static constexpr double_t radtodeg = 180.0 / pi;
 }
 
+template< typename _buffertype >
+struct bufferview_t
+{
+	using buffertype_t = _buffertype;
+
+	buffertype_t*	buffer;
+	pixel_t*		data;
+
+	bufferview_t() = delete;
+
+	constexpr bufferview_t( buffertype_t& vb )
+		: buffer( &vb )
+		, data( vb.data )
+	{
+	}
+
+	constexpr bufferview_t( buffertype_t* vb )
+		: buffer( vb )
+		, data( vb->data )
+	{
+	}
+
+
+	constexpr bufferview_t	IncrementX() const
+	{
+		return { buffer, data + buffer->pitch };
+	}
+
+	constexpr bufferview_t	IncrementX( uint32_t dist ) const
+	{
+		return { buffer, data + dist * buffer->pitch };
+	}
+
+	constexpr bufferview_t	IncrementY() const
+	{
+		return { buffer, data + 1 };
+	}
+
+	constexpr bufferview_t	IncrementY( uint32_t dist ) const
+	{
+		return { buffer, data + dist };
+	}
+
+	constexpr bufferview_t	Store( const pixel_t& val )
+	{
+		*data = val;
+		return *this;
+	}
+
+	constexpr pixel_t		Load() const
+	{
+		return *data;
+	}
+
+	template< typename _fn >
+	constexpr bufferview_t	ApplyColumn( int32_t count, _fn&& functor )
+	{
+		pixel_t* output = data;
+		while( count-- > 0 )
+		{
+			functor( *output );
+			++output;
+		}
+
+		return { buffer, output };
+	}
+
+private:
+	constexpr bufferview_t( buffertype_t* vb, pixel_t* d )
+		: buffer( vb )
+		, data( d )
+	{
+	}
+};
+
+using compositeview_t = bufferview_t< texturecomposite_t >;
+using vbufferview_t = bufferview_t< vbuffer_t >;
+
 struct RegionRange
 {
 	struct iterator

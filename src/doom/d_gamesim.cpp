@@ -121,7 +121,6 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.sim.unlimited_scrollers = true;
 	values.sim.unlimited_platforms = true;
 	values.sim.unlimited_ceilings = true;
-	values.sim.tall_skies = true;
 
 	values.comp.finale_allow_mouse_to_skip = true;
 	values.comp.finale_always_allow_skip_text = true;
@@ -136,6 +135,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.zero_length_texture_names = true;
 	values.comp.multi_patch_2S_linedefs = true;
 	values.comp.widescreen_assets = true;
+	values.comp.tall_skies = true;
 	values.comp.tall_patches = true;
 
 	return values;
@@ -237,6 +237,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
 	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
+	values.comp.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.comp.tall_patches = true;						// Additive deltas
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
@@ -265,7 +266,6 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
 	values.sim.door_tagged_light = true;					// Dx with tags does the Boom lighting thing
-	values.sim.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
@@ -353,6 +353,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
 	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
+	values.comp.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.comp.tall_patches = true;						// Additive deltas
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
@@ -381,7 +382,6 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
 	values.sim.door_tagged_light = true;					// Dx with tags does the Boom lighting thing
-	values.sim.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
@@ -460,6 +460,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
 	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
+	values.comp.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.comp.tall_patches = true;						// Additive deltas
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
@@ -488,7 +489,6 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
 	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
 	values.sim.door_tagged_light = true;					// Dx with tags does the Boom lighting thing
-	values.sim.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
 	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
 	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
