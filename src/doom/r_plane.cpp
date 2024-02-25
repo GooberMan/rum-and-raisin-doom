@@ -46,14 +46,14 @@
 //
 void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height )
 {
-	context->floorclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, drs_current->viewheight );
-	context->ceilingclip = R_AllocateScratch< vertclip_t >( drs_current->viewwidth, -1 );
+	context->floorclip = R_AllocateScratch< vertclip_t >( width, height );
+	context->ceilingclip = R_AllocateScratch< vertclip_t >( width, -1 );
 
 	context->openingscount = context->maxopenings;
 	context->openings = R_AllocateScratch< vertclip_t >( context->openingscount );
 	context->lastopening = context->openings;
 
-	context->raster = R_AllocateScratch< rastercache_t >( drs_current->viewheight );
+	context->raster = R_AllocateScratch< rastercache_t >( height );
 }
 
 void R_IncreaseOpenings( planecontext_t& context )

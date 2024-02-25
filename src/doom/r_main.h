@@ -42,11 +42,9 @@ DOOM_C_API extern int32_t		validcount;
 #define LIGHTSEGSHIFT		4
 
 #define MAXLIGHTSCALE		48
-#define LIGHTSCALESHIFT		12
 #define RENDLIGHTSCALESHIFT	( RENDFRACBITS - 4 )
 #define LIGHTSCALEMUL		( drs_current->frame_adjusted_light_mul )
 #define MAXLIGHTZ			128
-#define LIGHTZSHIFT			20
 #define RENDLIGHTZSHIFT		( RENDFRACBITS + 4 )
 
 DOOM_C_API extern int32_t			extralight;

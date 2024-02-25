@@ -828,23 +828,17 @@ void R_InitAspectAdjustedValues( drsdata_t* current )
 
 void R_InitLightTables( drsdata_t* current )
 {
-	int		i;
-	int		j;
-	int		level;
-	int		startmap; 	
-	int		scale;
-
 	// Calculate the light levels to use
 	//  for each level / distance combination.
-	for (i=0 ; i< LIGHTLEVELS ; i++)
+	for( int32_t lightlevel : iota( 0, LIGHTLEVELS ) )
 	{
-		startmap = ((LIGHTLEVELS-1-i)*2)*NUMLIGHTCOLORMAPS/LIGHTLEVELS;
-		for (j=0 ; j<MAXLIGHTZ ; j++)
+		int32_t startmap = ( ( LIGHTLEVELS - 1 - lightlevel ) * 2 ) * NUMLIGHTCOLORMAPS / LIGHTLEVELS;
+		for( int32_t lightz : iota( 0, MAXLIGHTZ ) )
 		{
-			scale = FixedDiv( IntToFixed( VANILLA_SCREENWIDTH / 2 ), ( j + 1 ) << LIGHTZSHIFT );
-			scale >>= LIGHTSCALESHIFT;
+			rend_fixed_t scale = RendFixedDiv( IntToRendFixed( VANILLA_SCREENWIDTH / 2 ), ( lightz + 1 ) << RENDLIGHTZSHIFT );
+			scale >>= RENDLIGHTSCALESHIFT;
 
-			level = startmap - scale/DISTMAP;
+			int32_t level = startmap - scale/DISTMAP;
 
 			if (level < 0)
 				level = 0;
@@ -852,8 +846,8 @@ void R_InitLightTables( drsdata_t* current )
 			if (level >= NUMLIGHTCOLORMAPS)
 				level = NUMLIGHTCOLORMAPS-1;
 
-			current->zlightoffset[i * MAXLIGHTZ + j] = level*256;
-			current->zlightindex[i * MAXLIGHTZ + j] = level;
+			current->zlightoffset[lightlevel * MAXLIGHTZ + lightz] = level*256;
+			current->zlightindex[lightlevel * MAXLIGHTZ + lightz] = level;
 		}
 	}
 }
@@ -1129,17 +1123,22 @@ R_SetViewSize
 //
 // R_ExecuteSetViewSize
 //
-
-rend_fixed_t R_PerspectiveMulFor( drsdata_t* current, int32_t fov )
+struct pmul_t
 {
-	int32_t actualheight = (int32_t)( current->frame_height * ( render_post_scaling ? 1.2 : 1.0 ) );
+	rend_fixed_t	pmul;
+	int32_t			hfov_deg;
+};
+
+constexpr pmul_t R_PerspectiveMulFor( drsdata_t* current, int32_t fov, bool postscaling )
+{
+	int32_t actualheight = (int32_t)( current->frame_height * ( postscaling ? 1.2 : 1.0 ) );
 
 	double_t vertical_fov_rad = fov * constants::degtorad;
 	double_t horizontal_fov_rad = 2.0 * atan( tan( vertical_fov_rad * 0.5 ) * ( (double_t)current->frame_width / (double_t)actualheight) );
-	horizontal_fov_degrees = horizontal_fov_rad * constants::radtodeg;
+	int32_t horizontal_fov_deg = (int32_t)( horizontal_fov_rad * constants::radtodeg );
 	double_t perspective_mul_float = 1.0 / tan( horizontal_fov_rad * 0.5 );
 
-	return DoubleToRendFixed( perspective_mul_float );
+	return { DoubleToRendFixed( perspective_mul_float ), horizontal_fov_deg };
 }
 
 void R_ExecuteSetViewSizeFor( drsdata_t* current )
@@ -1152,7 +1151,9 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	current->generated = true;
 	R_InitLightTables( current );
 
-	rend_fixed_t perspective_mul = R_PerspectiveMulFor( current, vertical_fov_degrees );
+	pmul_t pmul = R_PerspectiveMulFor( current, vertical_fov_degrees, render_post_scaling );
+	horizontal_fov_degrees = pmul.hfov_deg;
+	rend_fixed_t& perspective_mul = pmul.pmul;
 
 	setsizeneeded = false;
 
@@ -1184,7 +1185,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	R_InitTextureMapping( current );
 
 	// psprite scales
-	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( current->frame_width ), R_PerspectiveMulFor( current, 74 ) ) / V_VIRTUALWIDTH );
+	rend_fixed_t perspectivecorrectscale = ( RendFixedMul( IntToRendFixed( current->frame_width ), R_PerspectiveMulFor( current, 74, render_post_scaling ).pmul ) / V_VIRTUALWIDTH );
 
 	current->pspritescalex	= RendFixedMul( IntToRendFixed( current->viewwidth ) / current->frame_width, perspectivecorrectscale );
 	current->pspriteiscalex	= RendFixedDiv( IntToRendFixed( current->frame_width ) / current->viewwidth, perspectivecorrectscale );
