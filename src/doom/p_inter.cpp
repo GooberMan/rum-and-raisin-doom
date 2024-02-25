@@ -62,11 +62,7 @@ int	clipammo[NUMAMMO] = {10, 4, 20, 1};
 // Returns false if the ammo can't be picked up at all
 //
 
-doombool
-P_GiveAmmo
-( player_t*	player,
-  ammotype_t	ammo,
-  int		num )
+DOOM_C_API doombool P_GiveAmmo( player_t* player, ammotype_t ammo, int num )
 {
     int		oldammo;
 	
@@ -160,11 +156,7 @@ P_GiveAmmo
 // P_GiveWeapon
 // The weapon name may have a MF_DROPPED flag ored in.
 //
-doombool
-P_GiveWeapon
-( player_t*	player,
-  weapontype_t	weapon,
-  doombool	dropped )
+DOOM_C_API doombool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
 {
     doombool	gaveammo;
     doombool	gaveweapon;
@@ -221,10 +213,7 @@ P_GiveWeapon
 // P_GiveBody
 // Returns false if the body isn't needed at all
 //
-doombool
-P_GiveBody
-( player_t*	player,
-  int		num )
+DOOM_C_API doombool P_GiveBody( player_t* player, int num )
 {
     if (player->health >= MAXHEALTH)
 	return false;
@@ -244,10 +233,7 @@ P_GiveBody
 // Returns false if the armor is worse
 // than the current armor.
 //
-doombool
-P_GiveArmor
-( player_t*	player,
-  int		armortype )
+DOOM_C_API doombool P_GiveArmor( player_t* player, int armortype )
 {
     int		hits;
 	
@@ -266,10 +252,7 @@ P_GiveArmor
 //
 // P_GiveCard
 //
-void
-P_GiveCard
-( player_t*	player,
-  card_t	card )
+DOOM_C_API void P_GiveCard( player_t* player, card_t card )
 {
     if (player->cards[card])
 	return;
@@ -282,10 +265,7 @@ P_GiveCard
 //
 // P_GivePower
 //
-doombool
-P_GivePower
-( player_t*	player,
-  int /*powertype_t*/	power )
+DOOM_C_API doombool P_GivePower( player_t* player, int /*powertype_t*/ power )
 {
     if (power == pw_invulnerability)
     {
@@ -331,10 +311,7 @@ P_GivePower
 //
 // P_TouchSpecialThing
 //
-void
-P_TouchSpecialThing
-( mobj_t*	special,
-  mobj_t*	toucher )
+DOOM_C_API void P_TouchSpecialThing( mobj_t* special, mobj_t* toucher )
 {
     player_t*	player;
     int		i;
@@ -602,7 +579,7 @@ P_TouchSpecialThing
 	    player->backpack = true;
 	}
 	for (i=0 ; i<NUMAMMO ; i++)
-	    P_GiveAmmo (player, i, 1);
+	    P_GiveAmmo (player, (ammotype_t)i, 1);
 	player->message = DEH_String(GOTBACKPACK);
 	break;
 	
@@ -679,7 +656,7 @@ P_TouchSpecialThing
 //
 // KillMobj
 //
-void P_KillMobj( mobj_t* source, mobj_t* target )
+DOOM_C_API void P_KillMobj( mobj_t* source, mobj_t* target )
 {
 	mobjtype_t	item;
 	mobj_t*	mo;
@@ -744,10 +721,10 @@ void P_KillMobj( mobj_t* source, mobj_t* target )
     if (target->health < -target->info->spawnhealth 
 	&& target->info->xdeathstate)
     {
-	P_SetMobjState (target, target->info->xdeathstate);
+	P_SetMobjState (target, (statenum_t)target->info->xdeathstate);
     }
     else
-	P_SetMobjState (target, target->info->deathstate);
+	P_SetMobjState (target, (statenum_t)target->info->deathstate);
     target->tics -= P_Random()&3;
 
     if (target->tics < 1)
@@ -802,7 +779,7 @@ void P_KillMobj( mobj_t* source, mobj_t* target )
 // Source can be NULL for slime, barrel explosions
 // and other environmental stuff.
 //
-void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t damage, damage_t flags )
+DOOM_C_API void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t damage, damage_t flags )
 {
 	unsigned	ang;
 	int		saved;
@@ -936,19 +913,22 @@ void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t 
 	{
 		target->flags |= MF_JUSTHIT;	// fight back!
 	
-		P_SetMobjState (target, target->info->painstate);
+		P_SetMobjState (target, (statenum_t)target->info->painstate);
 	}
 			
 	target->reactiontime = 0;		// we're awake now...	
 
-	doombool ignorevile = source
-						&& ( source->type == MT_VILE
-							|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_DMGIGNORED ) )
-							);
+	bool infightingimmunity = InfightingImmunity( source, target );
 
-	doombool nothreshold = (!target->threshold || target->type == MT_VILE)
-							|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
-	if ( nothreshold
+	bool ignorevile = source
+					&& ( source->type == MT_VILE
+						|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_DMGIGNORED ) )
+						);
+
+	bool nothreshold = (!target->threshold || target->type == MT_VILE)
+						|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
+	if( !infightingimmunity
+		&& nothreshold
 		&& source && (source != target || gameversion <= exe_doom_1_2)
 		&& !ignorevile )
 	{
@@ -958,11 +938,11 @@ void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t 
 		target->threshold = BASETHRESHOLD;
 		if (target->state == &states[target->info->spawnstate]
 			&& target->info->seestate != S_NULL)
-			P_SetMobjState (target, target->info->seestate);
+			P_SetMobjState (target, (statenum_t)target->info->seestate);
 	}
 }
 
-void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t damage )
+DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t damage )
 {
 	P_DamageMobjEx( target, inflictor, source, damage, damage_none );
 }

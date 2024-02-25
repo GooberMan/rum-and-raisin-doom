@@ -23,7 +23,7 @@
 
 
 
-doombool	P_GivePower(player_t*, int);
+DOOM_C_API doombool	P_GivePower(player_t*, int);
 
 
 

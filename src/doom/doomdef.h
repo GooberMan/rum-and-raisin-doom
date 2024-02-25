@@ -200,7 +200,8 @@ typedef enum demoversion_e
 	demo_doom_1_91		= 111,
 	demo_boom_2_02		= 202,
 	demo_mbf			= 203,
-	demo_complevel9		= 214,
+	demo_complevel11	= 214,
+	demo_mbf21			= 221,
 } demoversion_t;
 
 #endif          // __DOOMDEF__

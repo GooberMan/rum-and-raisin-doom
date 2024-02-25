@@ -786,6 +786,60 @@ DOOM_C_API void		P_MobjInSectorGeneric( mobj_t* mobj );
 
 #if defined( __cplusplus )
 
+inline bool BasicImmunity( mobj_t* source, mobj_t* target )
+{
+	if( !source )
+	{
+		return false;
+	}
+
+	if( sim.mbf_mobj_flags )
+	{
+		if( ( source->player && target->IsFriendly() )
+			|| ( target->player && source->IsFriendly() )
+			|| ( source->IsFriendly() && target->IsFriendly() )
+			)
+		{
+			return true;
+		}
+	}
+
+	if( !sim.mbf21_thing_extensions )
+	{
+		return source->type == target->type
+			|| (source->type == MT_KNIGHT && target->type == MT_BRUISER)
+			|| (source->type == MT_BRUISER && target->type == MT_KNIGHT);
+	}
+
+	return false;
+}
+
+inline bool InfightingImmunity( mobj_t* source, mobj_t* target )
+{
+	if( !BasicImmunity( source, target ) && source && sim.mbf21_thing_extensions )
+	{
+		return source->info->infightinggroup > 0
+			&& source->info->infightinggroup == target->info->infightinggroup;
+	}
+
+	return false;
+}
+
+inline bool ProjectileImmunity( mobj_t* source, mobj_t* target )
+{
+	if( !BasicImmunity( source, target ) && sim.mbf21_thing_extensions )
+	{
+		if( target->info->projectilegroup == projectile_noimmunity )
+		{
+			return false;
+		}
+		return source->info->infightinggroup > 0
+			&& source->info->infightinggroup == target->info->infightinggroup;
+	}
+
+	return false;
+}
+
 MakeThinkFuncLookup( vldoor_t,		T_VerticalDoorGeneric,	T_VerticalDoor );
 MakeThinkFuncLookup( plat_t,		T_RaisePlatGeneric,		T_PlatRaise );
 MakeThinkFuncLookup( floormove_t,	T_MoveFloorGeneric,		T_MoveFloor );

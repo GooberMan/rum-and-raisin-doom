@@ -2315,7 +2315,7 @@ void G_DoPlayDemo (void)
 			I_Error( "Malformed Boom demo encountered" );
 		}
 
-		longtics = ismbf;
+		longtics = demoversion == demo_complevel9;
 
 		int32_t compatibility = *demo_p++;
 	}
