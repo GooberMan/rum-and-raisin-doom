@@ -2299,7 +2299,7 @@ void G_DoPlayDemo (void)
 
 	// Using https://www.doomworld.com/forum/topic/72033-boom-mbf-demo-header-format/ as documentation
 	doombool boomdemo = sim.extended_demos
-					&& ( demoversion == demo_boom_2_02 || demoversion == demo_mbf || demoversion == demo_complevel9 );
+					&& ( demoversion == demo_boom_2_02 || demoversion == demo_mbf || demoversion == demo_complevel11 );
 	if( boomdemo )
 	{
 		const byte boomsig[6] = { 0x1D, 'B', 'o', 'o', 'm', 0xE6 };
@@ -2315,7 +2315,7 @@ void G_DoPlayDemo (void)
 			I_Error( "Malformed Boom demo encountered" );
 		}
 
-		longtics = demoversion == demo_complevel9;
+		longtics = demoversion == demo_complevel11;
 
 		int32_t compatibility = *demo_p++;
 	}
