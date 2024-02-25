@@ -804,13 +804,6 @@ inline bool BasicImmunity( mobj_t* source, mobj_t* target )
 		}
 	}
 
-	if( !sim.mbf21_thing_extensions )
-	{
-		return source->type == target->type
-			|| (source->type == MT_KNIGHT && target->type == MT_BRUISER)
-			|| (source->type == MT_BRUISER && target->type == MT_KNIGHT);
-	}
-
 	return false;
 }
 
@@ -827,6 +820,13 @@ inline bool InfightingImmunity( mobj_t* source, mobj_t* target )
 
 inline bool ProjectileImmunity( mobj_t* source, mobj_t* target )
 {
+	if( !sim.mbf21_thing_extensions )
+	{
+		return source->type == target->type
+			|| (source->type == MT_KNIGHT && target->type == MT_BRUISER)
+			|| (source->type == MT_BRUISER && target->type == MT_KNIGHT);
+	}
+
 	if( !BasicImmunity( source, target ) && sim.mbf21_thing_extensions )
 	{
 		if( target->info->projectilegroup == projectile_noimmunity )
