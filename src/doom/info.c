@@ -5004,12 +5004,12 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		20*FRACUNIT,	// radius
+		10*FRACUNIT,	// radius
 		16*FRACUNIT,	// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
+		MF_SPECIAL|MF_COUNTITEM, // flags
 		S_NULL			// raisestate
 	},
 
@@ -5030,12 +5030,12 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		20*FRACUNIT,	// radius
+		10*FRACUNIT,	// radius
 		16*FRACUNIT,	// height
 		100,			// mass
 		0,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
+		MF_SPECIAL|MF_COUNTITEM, // flags
 		S_NULL			// raisestate
 	},
 };
