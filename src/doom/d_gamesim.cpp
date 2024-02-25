@@ -518,7 +518,7 @@ static GameVersion_t DetermineFromDemo( byte* demo )
 
 	doombool boomdemo = demoversion == demo_boom_2_02
 					|| demoversion == demo_mbf
-					|| demoversion == demo_complevel9;
+					|| demoversion == demo_complevel11;
 
 	if( boomdemo )
 	{
@@ -548,8 +548,8 @@ static GameVersion_t DetermineFromDemo( byte* demo )
 		return exe_doom_1_9;
 	case demo_boom_2_02:
 		return exe_boom_2_02;
-	case demo_complevel9:
-		return exe_complevel9;
+	case demo_complevel11:
+		return exe_mbf;
 	case demo_mbf:
 		return exe_mbf;
 	default:
