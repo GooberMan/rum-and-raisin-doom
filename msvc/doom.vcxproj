@@ -420,6 +420,7 @@
     <ClCompile Include="..\src\doom\p_enemy.cpp" />
     <ClCompile Include="..\src\doom\p_floor.cpp" />
     <ClCompile Include="..\src\doom\p_genericactions.cpp" />
+    <ClCompile Include="..\src\doom\p_inter.cpp" />
     <ClCompile Include="..\src\doom\p_lights.cpp" />
     <ClCompile Include="..\src\doom\p_lineaction.cpp" />
     <ClCompile Include="..\src\doom\p_map.cpp" />
@@ -478,7 +479,6 @@
     <ClInclude Include="..\src\doom\m_menu.h" />
     <ClCompile Include="..\src\doom\m_random.c" />
     <ClInclude Include="..\src\doom\m_random.h" />
-    <ClCompile Include="..\src\doom\p_inter.c" />
     <ClInclude Include="..\src\doom\p_inter.h" />
     <ClInclude Include="..\src\doom\p_lineaction.h" />
     <ClInclude Include="..\src\doom\p_local.h" />

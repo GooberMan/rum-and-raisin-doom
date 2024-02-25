@@ -76,9 +76,6 @@
     <ClCompile Include="..\src\doom\m_random.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_inter.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\p_pspr.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -218,6 +215,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\p_mobj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_inter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
