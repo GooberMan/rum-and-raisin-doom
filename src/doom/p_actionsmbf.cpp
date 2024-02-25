@@ -160,3 +160,19 @@ DOOM_C_API void A_Die( mobj_t* mobj )
 {
 	P_DamageMobjEx( mobj, mobj, mobj, 10000, damage_theworks );
 }
+
+DOOM_C_API void A_BetaSoulAttack( mobj_t* mobj )
+{
+	I_LogAddEntry( Log_Error, "A_BetaSoulAttack unimplemented, why would you use this" );
+}
+
+DOOM_C_API void A_Stop( mobj_t* mobj )
+{
+	mobj->momx = mobj->momy = mobj->momz = 0;
+}
+
+DOOM_C_API void A_FireOldBFG( player_t* player, pspdef_t* psp )
+{
+	I_LogAddEntry( Log_Error, "A_FireOldBFG unimplemented, why would you use this" );
+}
+

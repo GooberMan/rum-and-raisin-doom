@@ -169,6 +169,8 @@ void A_Scratch();
 void A_RandomJump();
 void A_LineEffect();
 void A_Die();
+void A_BetaSoulAttack();
+void A_FireOldBFG();
 
 // MBF21 Actions
 void A_SpawnObject();
@@ -1195,82 +1197,82 @@ state_t	states[NUMSTATES] =
 	{ SPR_DOGS,		10,			5,		{NULL},				S_DOGS_RAISE5,			{ 0 },	{ 0 } },	// S_DOGS_RAISE4
 	{ SPR_DOGS,		9,			5,		{NULL},				S_DOGS_RAISE6,			{ 0 },	{ 0 } },	// S_DOGS_RAISE5
 	{ SPR_DOGS,		8,			5,		{NULL},				S_DOGS_RUN1,			{ 0 },	{ 0 } },	// S_DOGS_RAISE6
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME2,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME1
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME3,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME2
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME4,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME3
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME5,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME4
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME6,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME5
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME7,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME6
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME8,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME7
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME9,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME8
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME10,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME9
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME11,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME10
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME12,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME11
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME13,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME12
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME14,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME13
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME15,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME14
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME16,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME15
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME17,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME16
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME18,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME17
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME19,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME18
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME20,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME19
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME21,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME20
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME22,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME21
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME23,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME22
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME24,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME23
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME25,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME24
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME26,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME25
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME27,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME26
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME28,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME27
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME29,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME28
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME30,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME29
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME31,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME30
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME32,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME31
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME33,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME32
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME34,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME33
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME35,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME34
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME36,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME35
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME37,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME36
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME38,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME37
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME39,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME38
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME40,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME39
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME41,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME40
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME42,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME41
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BETABFG_FRAME43,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME42
-	{ SPR_BFGG,		0,			8,		{NULL},				S_BFG,					{ 0 },	{ 0 } },	// S_BETABFG_FRAME43
-	{ SPR_PLS1,		0,			8,		{NULL},				S_BETABALL_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN1
-	{ SPR_PLS1,		1,			8,		{NULL},				S_BETABALL_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN2
-	{ SPR_PLS1,		2,			8,		{NULL},				S_BETABALL_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE1
-	{ SPR_PLS1,		3,			8,		{NULL},				S_BETABALL_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE2
-	{ SPR_PLS1,		4,			8,		{NULL},				S_BETABALL_EXPLODE4,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE3
-	{ SPR_PLS1,		5,			8,		{NULL},				S_BETABALL_EXPLODE5,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE4
-	{ SPR_PLS1,		6,			8,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE5
-	{ SPR_PLS2,		0,			8,		{NULL},				S_BETABALL2_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN1
-	{ SPR_PLS2,		1,			8,		{NULL},				S_BETABALL2_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN2
-	{ SPR_PLS2,		2,			8,		{NULL},				S_BETABALL2_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE1
-	{ SPR_PLS2,		3,			8,		{NULL},				S_BETABALL2_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE2
-	{ SPR_PLS2,		4,			8,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE3
-	{ SPR_TNT1,		5,			-1,		{NULL},				S_BETASCEPTRE,			{ 0 },	{ 0 } },	// S_BETASCEPTRE
-	{ SPR_TNT1,		6,			-1,		{NULL},				S_BETABIBLE,			{ 0 },	{ 0 } },	// S_BETABIBLE
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_STAND,		{ 0 },	{ 0 } },	// S_BETASOUL_STAND
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN2,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN3,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN4,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN4
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_ATK2,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_ATK3,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_PAIN2,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_PAIN3,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_RUN2,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE2,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE1
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE3,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE2
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE4,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE3
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE5,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE4
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE6,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE5
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE7,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE6
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE7
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE8
+	{ SPR_BFGG,		0,			10,		{A_BFGsound},		S_BETABFG_FRAME2,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME1
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME3,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME2
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME4,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME3
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME5,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME4
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME6,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME5
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME7,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME6
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME8,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME7
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME9,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME8
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME10,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME9
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME11,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME10
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME12,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME11
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME13,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME12
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME14,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME13
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME15,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME14
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME16,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME15
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME17,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME16
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME18,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME17
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME19,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME18
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME20,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME19
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME21,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME20
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME22,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME21
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME23,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME22
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME24,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME23
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME25,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME24
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME26,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME25
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME27,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME26
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME28,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME27
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME29,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME28
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME30,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME29
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME31,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME30
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME32,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME31
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME33,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME32
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME34,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME33
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME35,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME34
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME36,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME35
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME37,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME36
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME38,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME37
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME39,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME38
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME40,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME39
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME41,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME40
+	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME42,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME41
+	{ SPR_BFGG,		1,			0,		{A_Light2},			S_BETABFG_FRAME43,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME42
+	{ SPR_BFGG,		1,			20,		{A_ReFire},			S_BFG,					{ 0 },	{ 0 } },	// S_BETABFG_FRAME43
+	{ SPR_PLS1,		0,			6,		{NULL},				S_BETABALL_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN1
+	{ SPR_PLS1,		1,			6,		{NULL},				S_BETABALL_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN2
+	{ SPR_PLS1,		2,			4,		{NULL},				S_BETABALL_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE1
+	{ SPR_PLS1,		3,			4,		{NULL},				S_BETABALL_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE2
+	{ SPR_PLS1,		4,			4,		{NULL},				S_BETABALL_EXPLODE4,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE3
+	{ SPR_PLS1,		5,			4,		{NULL},				S_BETABALL_EXPLODE5,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE4
+	{ SPR_PLS1,		6,			4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE5
+	{ SPR_PLS2,		0,			4,		{NULL},				S_BETABALL2_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN1
+	{ SPR_PLS2,		1,			4,		{NULL},				S_BETABALL2_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN2
+	{ SPR_PLS2,		2,			6,		{NULL},				S_BETABALL2_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE1
+	{ SPR_PLS2,		3,			6,		{NULL},				S_BETABALL2_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE2
+	{ SPR_PLS2,		4,			6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE3
+	{ SPR_BON3,		0,			6,		{NULL},				S_BETASCEPTRE,			{ 0 },	{ 0 } },	// S_BETASCEPTRE
+	{ SPR_BON4,		0,			6,		{NULL},				S_BETABIBLE,			{ 0 },	{ 0 } },	// S_BETABIBLE
+	{ SPR_SKUL,		0,			10,		{A_Look},			S_BETASOUL_STAND,		{ 0 },	{ 0 } },	// S_BETASOUL_STAND
+	{ SPR_SKUL,		1,			5,		{A_Chase},			S_BETASOUL_RUN2,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN1
+	{ SPR_SKUL,		2,			5,		{A_Chase},			S_BETASOUL_RUN3,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN2
+	{ SPR_SKUL,		3,			5,		{A_Chase},			S_BETASOUL_RUN4,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN3
+	{ SPR_SKUL,		0,			5,		{A_Chase},			S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN4
+	{ SPR_SKUL,		4,			4,		{A_FaceTarget},		S_BETASOUL_ATK2,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK1
+	{ SPR_SKUL,		5,			5,		{A_BetaSoulAttack},	S_BETASOUL_ATK3,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK2
+	{ SPR_SKUL,		4,			4,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK3
+	{ SPR_SKUL,		6,			4,		{NULL},				S_BETASOUL_PAIN2,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN1
+	{ SPR_SKUL,		7,			2,		{A_Pain},			S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN2
+	{ SPR_SKUL,		8,			4,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN3
+	{ SPR_SKUL,		9,			5,		{NULL},				S_BETASOUL_DIE2,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE1
+	{ SPR_SKUL,		10,			5,		{NULL},				S_BETASOUL_DIE3,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE2
+	{ SPR_SKUL,		11,			5,		{NULL},				S_BETASOUL_DIE4,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE3
+	{ SPR_SKUL,		12,			5,		{NULL},				S_BETASOUL_DIE5,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE4
+	{ SPR_SKUL,		13,			5,		{A_Scream},			S_BETASOUL_DIE6,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE5
+	{ SPR_SKUL,		14,			5,		{NULL},				S_BETASOUL_DIE7,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE6
+	{ SPR_SKUL,		15,			5,		{A_Fall},			S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE7
+	{ SPR_SKUL,		16,			-1,		{NULL},				S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE8
 	{ SPR_MISL,		32769,		8,		{A_Mushroom},		S_EXPLODE2,				{ 0 },	{ 0 } },	// S_MUSHROOM
 	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG2,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG1
 	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG3,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG2
@@ -4949,13 +4951,13 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_BETABALL_EXPLODE1, // deathstate
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
-		0,				// speed
-		20*FRACUNIT,	// radius
-		16*FRACUNIT,	// height
+		25,				// speed
+		13*FRACUNIT,	// radius
+		8*FRACUNIT,		// height
 		100,			// mass
-		0,				// damage
+		4,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
+		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_DROPOFF|MF_MISSILE|MF_MBF_BOUNCES, // flags
 		S_NULL			// raisestate
 	},
 
@@ -4976,12 +4978,12 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,			// xdeathstate
 		sfx_None,		// deathsound
 		0,				// speed
-		20*FRACUNIT,	// radius
-		16*FRACUNIT,	// height
+		6*FRACUNIT,		// radius
+		8*FRACUNIT,		// height
 		100,			// mass
-		0,				// damage
+		4,				// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP|MF_NOSECTOR, // flags
+		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_DROPOFF|MF_MISSILE|MF_MBF_BOUNCES, // flags
 		S_NULL			// raisestate
 	},
 
