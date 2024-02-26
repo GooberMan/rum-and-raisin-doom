@@ -68,7 +68,7 @@ DOOM_C_API typedef struct
 
 	fixed_t		lastx;
 	fixed_t		lasty;
-	fixed_t		duration;
+	int32_t		duration;
 	int32_t		leveltime;
 	doombool	viewbob;
 } pspdef_t;

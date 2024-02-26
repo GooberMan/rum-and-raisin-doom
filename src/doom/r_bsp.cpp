@@ -321,11 +321,10 @@ void R_AddLine( rendercontext_t& rendercontext, seg_t* line )
 		return;
 	}
 	
-	bspcontext.backsector = line->backsector;
-	bspcontext.backsectorinst = line->backsector ? &rendsectors[ line->backsector->index ] : NULL;
+	bspcontext.backsectorinst = line->backsector ? &rendsectors[ line->backsector->index ] : nullptr;
 
 	// Single sided line?
-	if (!bspcontext.backsector)
+	if (!bspcontext.backsectorinst)
 	{
 		goto clipsolid;
 	}
@@ -533,7 +532,6 @@ void R_Subsector( rendercontext_t& rendercontext, int32_t num )
 #endif
 
 	sub = &subsectors[num];
-	bspcontext.frontsector = sub->sector;
 	bspcontext.frontsectorinst = &rendsectors[ sub->sector->index ];
 	count = sub->numlines;
 	line = &segs[sub->firstline];
@@ -557,7 +555,7 @@ void R_Subsector( rendercontext_t& rendercontext, int32_t num )
 	uint64_t		startaddsprites = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
 		
-	R_AddSprites( rendercontext, bspcontext.frontsector );
+	R_AddSprites( rendercontext, sub->sector );
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		endaddsprites = I_GetTimeUS();

@@ -581,7 +581,7 @@ struct DoomMapLoader
 			thisprev->clipfloor			= thiscurr->clipfloor			= false;
 			thisprev->clipceiling		= thiscurr->clipceiling			= false;
 			thisprev->activethisframe	= thiscurr->activethisframe		= false;
-
+			thisprev->skyline			= thiscurr->skyline				= nullptr;
 
 			++thisprev;
 			++thiscurr;

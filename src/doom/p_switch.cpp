@@ -153,7 +153,7 @@ void P_InitSwitchList(void)
 	switchlist[ numswitches * 2 + 1 ] = -1;
 
 	int32_t slindex = 0;
-	for ( int32_t thisswitch = 0; thisswitch < loadedswitchlistcount; ++thisswitch )
+	for ( int32_t thisswitch = 0; thisswitch < numswitches; ++thisswitch )
 	{
 		if( loadedswitchlist[ thisswitch ].episode <= episode )
 		{

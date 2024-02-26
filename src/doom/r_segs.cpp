@@ -126,9 +126,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 	//   for horizontal / vertical / diagonal. Diagonal?
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 	bspcontext.curline = ds->curline;
-	bspcontext.frontsector = bspcontext.curline->frontsector;
 	bspcontext.frontsectorinst = &rendsectors[ bspcontext.curline->frontsector->index ];
-	bspcontext.backsector = bspcontext.curline->backsector;
 	bspcontext.backsectorinst = &rendsectors[ bspcontext.curline->backsector->index ];
 
 	texnum = texturetranslation[ bspcontext.curline->sidedef->midtexture ];
@@ -593,7 +591,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
 		bspcontext.thisdrawseg->maskedtexturecol = NULL;
 	
-		if (!bspcontext.backsector)
+		if (!bspcontext.backsectorinst)
 		{
 			// single sided line
 			loopcontext.midtexture = texturetranslation[bspcontext.sidedef->midtexture];
@@ -843,7 +841,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		loopcontext.bottomstep = -RendFixedMul( wallcontext.scalestep, worldbottom );
 		loopcontext.bottomfrac = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext.scale );
 	
-		if (bspcontext.backsector)
+		if (bspcontext.backsectorinst)
 		{	
 			worldhigh >>= 4;
 			worldlow >>= 4;
@@ -899,7 +897,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		}
 		else
 		{
-			R_DrawSky( rendercontext, ceil, bspcontext.frontsector->skyline ? &rendsides[ bspcontext.frontsector->skyline->index ] : nullptr );
+			R_DrawSky( rendercontext, ceil, bspcontext.frontsectorinst->skyline ? &rendsides[ bspcontext.frontsectorinst->skyline->index ] : nullptr );
 		}
 	}
 
@@ -911,7 +909,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		}
 		else
 		{
-			R_DrawSky( rendercontext, floor, bspcontext.frontsector->skyline ? &rendsides[ bspcontext.frontsector->skyline->index ] : nullptr );
+			R_DrawSky( rendercontext, floor, bspcontext.frontsectorinst->skyline ? &rendsides[ bspcontext.frontsectorinst->skyline->index ] : nullptr );
 		}
 	}
 

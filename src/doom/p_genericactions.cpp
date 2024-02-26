@@ -2319,7 +2319,11 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 					{
 						if( sector.tag == line.tag )
 						{
-							sector.skyline = &sides[ line.sidenum[ 0 ] ];
+							prevsectors[ sector.index ].skyline
+								= currsectors[ sector.index ].skyline
+								= sector.skyline
+									= &sides[ line.sidenum[ 0 ] ];
+
 							sector.skyxscale = scale;
 						}
 					}

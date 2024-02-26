@@ -1811,6 +1811,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 					rendsectors[ index ].ceiloffsety		= RendFixedLerp( prevsectors[ index ].ceiloffsety, currsectors[ index ].ceiloffsety, viewpoint.lerp );
 					rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
 					rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+					rendsectors[ index ].skyline			= currsectors[ index ].skyline;
 				}
 				else
 				{

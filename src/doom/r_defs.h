@@ -101,30 +101,33 @@ typedef struct colcontext_s colcontext_t;
 typedef struct rendercontext_s rendercontext_t;
 typedef struct rasterregion_s rasterregion_t;
 typedef struct texturecomposite_s texturecomposite_t;
+typedef struct side_s side_t;
+typedef struct line_s line_t;
+typedef struct sector_s sector_t;
 
 typedef void (*colfunc_t)( colcontext_t* );
 typedef void (*rasterfunc_t)( rendercontext_t*, rasterregion_t* firstregion, texturecomposite_t* texture );
 
 typedef struct texturecomposite_s
 {
-	byte*			data;
-	char			name[8];
-	int32_t			namepadding;
-	int32_t			size;
-	int32_t			width;
-	int32_t			height;
-	int32_t			pitch;
-	int32_t			widthmask;
-	int32_t			patchcount;
-	rend_fixed_t	renderheight;
+	byte*					data;
+	char					name[8];
+	int32_t					namepadding;
+	int32_t					size;
+	int32_t					width;
+	int32_t					height;
+	int32_t					pitch;
+	int32_t					widthmask;
+	int32_t					patchcount;
+	rend_fixed_t			renderheight;
 
-	colfunc_t		wallrender;
-	colfunc_t		transparentwallrender;
-	colfunc_t		midtexrender;
-	colfunc_t		transparentmidtexrender;
-	rasterfunc_t	floorrender;
+	colfunc_t				wallrender;
+	colfunc_t				transparentwallrender;
+	colfunc_t				midtexrender;
+	colfunc_t				transparentmidtexrender;
+	rasterfunc_t			floorrender;
 
-	int32_t			index;
+	int32_t					index;
 } texturecomposite_t;
 
 typedef struct sectorinstance_s
@@ -145,6 +148,7 @@ typedef struct sectorinstance_s
 	rend_fixed_t			ceilheight;
 	rend_fixed_t			midtexfloor;
 	rend_fixed_t			midtexceil;
+	side_t*					skyline;
 	int8_t					clipfloor;
 	int8_t					snapfloor;
 	int8_t					clipceiling;
@@ -186,11 +190,6 @@ typedef struct vertex_s
 	fixed_t				y;
 
 } vertex_t;
-
-
-typedef struct side_s side_t;
-typedef struct line_s line_t;
-typedef struct sector_s sector_t;
 
 //
 // Move clipping aid for LineDefs.
@@ -692,9 +691,7 @@ typedef struct bspcontext_s
 	side_t*				sidedef;
 	sideinstance_t*		sideinst;
 	line_t*				linedef;
-	sector_t*			frontsector;
 	sectorinstance_t*	frontsectorinst;
-	sector_t*			backsector;
 	sectorinstance_t*	backsectorinst;
 
 	drawseg_t*			drawsegs;
