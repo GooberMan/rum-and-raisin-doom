@@ -142,11 +142,11 @@ DOOM_C_API typedef struct
 
 // Extended MAXINTERCEPTS, to allow for intercepts overrun emulation.
 
-#define MAXINTERCEPTS_ORIGINAL 128
-#define MAXINTERCEPTS          (MAXINTERCEPTS_ORIGINAL + 61)
+#define MAXINTERCEPTS           128
 
-DOOM_C_API extern intercept_t	intercepts[MAXINTERCEPTS];
+DOOM_C_API extern intercept_t*	intercepts;
 DOOM_C_API extern intercept_t*	intercept_p;
+DOOM_C_API extern size_t		interceptscount;
 
 typedef doombool (*traverser_t) (intercept_t *in);
 
@@ -218,11 +218,11 @@ DOOM_C_API extern	line_t*		ceilingline;
 // We keep the original limit, to detect what variables in memory were
 // overwritten (see SpechitOverrun())
 
-#define MAXSPECIALCROSS 		20
-#define MAXSPECIALCROSS_ORIGINAL	8
+#define MAXSPECIALCROSS		8
 
-DOOM_C_API extern	line_t*	spechit[MAXSPECIALCROSS];
-DOOM_C_API extern	int	numspechit;
+DOOM_C_API extern	line_t** spechit;
+DOOM_C_API extern	int32_t	numspechit;
+DOOM_C_API extern	size_t	spechitcount;
 
 DOOM_C_API doombool			P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y);
 DOOM_C_API mobj_t*			P_XYMovement (mobj_t* mo); // Returns the mobj if it still exists after movement

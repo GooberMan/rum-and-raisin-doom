@@ -478,12 +478,33 @@ DOOM_C_API doombool P_BlockThingsIterator( int x, int y, doombool(*func)(mobj_t*
 //
 // INTERCEPT ROUTINES
 //
-intercept_t	intercepts[MAXINTERCEPTS];
-intercept_t*	intercept_p;
+intercept_t*	intercepts = nullptr;
+intercept_t*	intercept_p =  nullptr;
+size_t			interceptscount = 0;
 
 divline_t 	trace;
 doombool 	earlyout;
-int		ptflags;
+int			ptflags;
+
+static void IncreaseIntercepts()
+{
+	if( intercept_p >= intercepts + interceptscount )
+	{
+		intercept_t* oldintercepts = intercepts;
+		size_t oldcount = interceptscount;
+		ptrdiff_t oldp = intercept_p - intercepts;
+
+		interceptscount += MAXINTERCEPTS;
+		intercepts = Z_MallocArrayAs( intercept_t, interceptscount, PU_STATIC, nullptr );
+		intercept_p = intercepts + oldp;
+
+		if( oldintercepts )
+		{
+			memcpy( intercepts, oldintercepts, sizeof( intercept_t ) * oldcount );
+			Z_Free( oldintercepts );
+		}
+	}
+}
 
 static void InterceptsOverrun(int num_intercepts, intercept_t *intercept);
 
@@ -537,7 +558,8 @@ DOOM_C_API doombool PIT_AddLineIntercepts (line_t* ld)
 	return false;	// stop checking
     }
     
-	
+	IncreaseIntercepts();
+
     intercept_p->frac = frac;
     intercept_p->isaline = true;
     intercept_p->d.line = ld;
@@ -603,6 +625,8 @@ DOOM_C_API doombool PIT_AddThingIntercepts( mobj_t* thing )
 
     if (frac < 0)
 	return true;		// behind source
+
+	IncreaseIntercepts();
 
     intercept_p->frac = frac;
     intercept_p->isaline = false;
@@ -766,14 +790,14 @@ static void InterceptsOverrun(int num_intercepts, intercept_t *intercept)
 {
     int location;
 
-    if (num_intercepts <= MAXINTERCEPTS_ORIGINAL)
+    if (fix.spechit_overflow || num_intercepts <= MAXINTERCEPTS)
     {
         // No overrun
 
         return;
     }
 
-    location = (num_intercepts - MAXINTERCEPTS_ORIGINAL - 1) * 12;
+    location = (num_intercepts - MAXINTERCEPTS - 1) * 12;
 
     // Overwrite memory that is overwritten in Vanilla Doom, using
     // the values from the intercept structure.

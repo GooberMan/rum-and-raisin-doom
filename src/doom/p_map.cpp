@@ -90,10 +90,28 @@ extern "C"
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
 
-	line_t*		spechit[MAXSPECIALCROSS];
-	int		numspechit;
+	line_t**	spechit = nullptr;
+	int32_t		numspechit = 0;
+	size_t		spechitcount = 0;
 }
 
+static void IncreaseSpecHits()
+{
+	if( numspechit >= spechitcount )
+	{
+		line_t** oldspechit = spechit;
+		size_t oldcount = spechitcount;
+
+		spechitcount += MAXSPECIALCROSS;
+		spechit = Z_MallocArrayAs( line_t*, spechitcount, PU_STATIC, nullptr );
+
+		if( oldspechit )
+		{
+			memcpy( spechit, oldspechit, sizeof( intercept_t ) * oldcount );
+			Z_Free( oldspechit );
+		}
+	}
+}
 
 //
 // TELEPORT MOVE
@@ -286,11 +304,12 @@ DOOM_C_API doombool PIT_CheckLine( line_t* ld )
     // if contacted a special line, add it to the list
     if (ld->special)
     {
+		IncreaseSpecHits();
         spechit[numspechit] = ld;
-	numspechit++;
+		numspechit++;
 
         // fraggle: spechits overrun emulation code from prboom-plus
-        if (numspechit > MAXSPECIALCROSS_ORIGINAL)
+        if (!fix.spechit_overflow && numspechit > MAXSPECIALCROSS)
         {
             SpechitOverrun(ld);
         }

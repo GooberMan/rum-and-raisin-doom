@@ -138,6 +138,9 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.tall_skies = true;
 	values.comp.tall_patches = true;
 
+	values.fix.intercepts_overflow = true;
+	values.fix.spechit_overflow = true;
+
 	return values;
 }
 

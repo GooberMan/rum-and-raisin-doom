@@ -91,6 +91,12 @@ INLINE void Z_MallocConstructEntry( _ty*& val )
 }
 
 template< typename _ty >
+INLINE _ty&& Z_MallocDefaultFor()
+{
+	return {};
+}
+
+template< typename _ty >
 INLINE void Z_MallocDestructEntry( _ty* val, size_t /*datasize*/ )
 {
 	if constexpr( !std::is_trivially_destructible_v< _ty > )
@@ -144,7 +150,7 @@ template< typename _ty >
 INLINE _ty* Z_MallocTracked( const char* file, size_t line, int32_t tag, void* ptr )
 {
 	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ), tag, ptr, Z_DestructorFor< _ty >() );
-	Z_MallocConstructEntry( val );
+	*val = Z_MallocDefaultFor< _ty >();
 	return val;
 }
 
@@ -154,7 +160,7 @@ INLINE _ty* Z_MallocArrayTracked( const char* file, size_t line, size_t count, i
 	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ) * count, tag, ptr, Z_DestructorForArray< _ty >() );
 	for( _ty* curr = val; curr < val + count; ++curr )
 	{
-		Z_MallocConstructEntry( curr );
+		*curr = Z_MallocDefaultFor< _ty >();
 	}
 	return val;
 }

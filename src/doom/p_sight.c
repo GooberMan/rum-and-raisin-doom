@@ -39,9 +39,6 @@ divline_t	strace;			// from t1 to t2
 fixed_t		t2x;
 fixed_t		t2y;
 
-int		sightcounts[2];
-
-
 // PTR_SightTraverse() for Doom 1.2 sight calculations
 // taken from prboom-plus/src/p_sight.c:69-102
 doombool PTR_SightTraverse(intercept_t *in)
@@ -366,16 +363,12 @@ P_CheckSight
     // Check in REJECT table.
     if (rejectmatrix[bytenum]&bitnum)
     {
-	sightcounts[0]++;
-
-	// can't possibly be connected
-	return false;	
+		// can't possibly be connected
+		return false;
     }
 
     // An unobstructed LOS is possible.
     // Now look from eyes of t1 to any part of t2.
-    sightcounts[1]++;
-
     validcount++;
 	
     sightzstart = t1->z + t1->height - (t1->height>>2);
