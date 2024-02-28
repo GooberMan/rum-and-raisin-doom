@@ -651,7 +651,9 @@ DOOM_C_API void A_Look (mobj_t* actor)
 	
 	
     if (!P_LookForPlayers (actor, false) )
-	return;
+	{
+		return;
+	}
 		
     // go into chase state
   seeyou:

@@ -1227,8 +1227,72 @@ void P_ActivateInStasisPlatsGeneric( int tag )
 
 DOOM_C_API void T_RaisePlatGeneric( plat_t* plat )
 {
-	// BIG BIG TODO HERE
-	T_PlatRaise( plat );
+	result_e res = ok;
+	
+	switch(plat->status)
+	{
+	case up:
+		res = T_MovePlane(plat->sector,
+					plat->speed,
+					plat->high,
+					plat->crush,0,1);
+					
+		if (plat->type == raiseAndChange
+			|| plat->type == raiseToNearestAndChange)
+		{
+			if ( !( leveltime & 7 ) )
+			{
+				S_StartSound(&plat->sector->soundorg, sfx_stnmov);
+			}
+		}
+
+		if (res == crushed && (!plat->crush))
+		{
+			plat->count = plat->wait;
+			plat->status = down;
+			S_StartSound(&plat->sector->soundorg, sfx_pstart);
+		}
+		else if (res == pastdest)
+		{
+			plat->count = plat->wait;
+			plat->status = waiting;
+			S_StartSound(&plat->sector->soundorg, sfx_pstop);
+
+			if(plat->type != perpetualRaise)
+			{
+				P_RemoveActivePlatGeneric(plat);
+			}
+		}
+		break;
+
+	case down:
+		res = T_MovePlane(plat->sector,plat->speed,plat->low,false,0,-1);
+
+		if (res == pastdest)
+		{
+			plat->count = plat->wait;
+			plat->status = waiting;
+			S_StartSound(&plat->sector->soundorg, sfx_pstop);
+		}
+		break;
+
+	case waiting:
+		if (!--plat->count)
+		{
+			if (plat->sector->floorheight == plat->low)
+			{
+				plat->status = up;
+			}
+			else
+			{
+				plat->status = down;
+			}
+			S_StartSound(&plat->sector->soundorg, sfx_pstart);
+		}
+
+	case in_stasis:
+		break;
+	}
 }
 
 DOOM_C_API int32_t EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator )
