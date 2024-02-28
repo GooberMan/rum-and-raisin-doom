@@ -415,9 +415,12 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 				{
 					column.source += -thisy;
 				}
-				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height - 1 );
-				column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
-				R_BackbufferDrawColumn( &column );
+				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height );
+				if( column.yl < frame_height )
+				{
+					column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
+					R_BackbufferDrawColumn( &column );
+				}
 			}
 
 			patchcol = (column_t *)( (byte *)patchcol + patchcol->length + 4 );
@@ -509,9 +512,12 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 				{
 					column.source += -thisy;
 				}
-				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height - 1 );
-				column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
-				R_BackbufferDrawColumn( &column );
+				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height );
+				if( column.yl < frame_height )
+				{
+					column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
+					R_BackbufferDrawColumn( &column );
+				}
 			}
 
 			patchcol = (column_t *)( (byte *)patchcol + patchcol->length + 4 );
