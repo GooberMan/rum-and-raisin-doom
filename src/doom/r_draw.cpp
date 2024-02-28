@@ -313,9 +313,7 @@ namespace DrawColumn
 
 		static INLINE size_t StartPos( colcontext_t*& context )
 		{
-			// TODO: This isn't accurate enough, needs to be more like the backbuffer lookup
-			//return context->texturemid;
-			return context->texturemid + ( context->yl - drs_current->centery ) * context->iscale;
+			return M_MAX( 0, context->texturemid + ( context->yl - drs_current->centery ) * context->iscale );
 		}
 	};
 
@@ -622,13 +620,13 @@ void R_SpriteDrawColumn_Transparent( colcontext_t* context )
 void R_LimitRemovingSpriteDrawColumn_Colormap( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
-	DrawColumn::Bytewise::SpriteColormapDraw( context );
+	DrawColumn::Bytewise::LimitRemovingSpriteColormapDraw( context );
 }
 
 void R_LimitRemovingSpriteDrawColumn_Transparent( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
-	DrawColumn::Bytewise::SpriteTransparentDraw( context );
+	DrawColumn::Bytewise::LimitRemovingSpriteTransparentDraw( context );
 }
 
 void R_LimitRemovingDrawColumn( colcontext_t* context ) 

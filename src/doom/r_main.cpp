@@ -1129,7 +1129,7 @@ struct pmul_t
 	int32_t			hfov_deg;
 };
 
-constexpr pmul_t R_PerspectiveMulFor( drsdata_t* current, int32_t fov, bool postscaling )
+INLINE pmul_t R_PerspectiveMulFor( drsdata_t* current, int32_t fov, bool postscaling )
 {
 	int32_t actualheight = (int32_t)( current->frame_height * ( postscaling ? 1.2 : 1.0 ) );
 

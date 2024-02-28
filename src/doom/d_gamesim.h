@@ -171,6 +171,7 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		strict_boom_feature_matching;			// When disabled, line 85 (texture scrolling) and thing DM flags will be considered limit removing for version matching
 	doombool		tall_skies;								// Sky bigger than 128 high? We've got you covered
 	doombool		tall_patches;							// Additive deltas
+	doombool		drawpatch_unbounded;					// V_DrawPatch calls will get properly clipped with negative x/y values etc
 
 	// MBF21 additions
 	doombool		respawn_non_map_things_at_origin;		// comp_respawn

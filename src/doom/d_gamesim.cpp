@@ -137,6 +137,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.widescreen_assets = true;
 	values.comp.tall_skies = true;
 	values.comp.tall_patches = true;
+	values.comp.drawpatch_unbounded = true;
 
 	values.fix.intercepts_overflow = true;
 	values.fix.spechit_overflow = true;
@@ -242,6 +243,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
 	values.comp.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.comp.tall_patches = true;						// Additive deltas
+	values.comp.drawpatch_unbounded = true;					// V_DrawPatch calls will get properly clipped with negative x/y values etc
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -358,6 +360,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
 	values.comp.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.comp.tall_patches = true;						// Additive deltas
+	values.comp.drawpatch_unbounded = true;					// V_DrawPatch calls will get properly clipped with negative x/y values etc
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = false;			// comp_ledgeblock
@@ -465,6 +468,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
 	values.comp.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
 	values.comp.tall_patches = true;						// Additive deltas
+	values.comp.drawpatch_unbounded = true;					// V_DrawPatch calls will get properly clipped with negative x/y values etc
 
 	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
 	values.comp.monsters_blocked_by_ledges = true;			// comp_ledgeblock

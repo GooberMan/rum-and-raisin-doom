@@ -364,20 +364,12 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	}
 
 #if RANGECHECK
-	if( !remove_limits )
+	if( !comp.drawpatch_unbounded )
 	{
 		if (x < 0
 			|| x + clippedwidth > V_VIRTUALWIDTH
 			|| y < 0
 			|| y + clippedheight > V_VIRTUALHEIGHT
-			|| clippedy > 0)
-		{
-			I_Error("Bad V_DrawPatch");
-		}
-	}
-	else
-	{
-		if( y < 0
 			|| clippedy > 0)
 		{
 			I_Error("Bad V_DrawPatch");
@@ -392,8 +384,6 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	column.transparency		= NULL;
 	column.texturemid		= 0;
 	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale ) + 1;
-	column.yl				= FixedToInt( FixedRound( y * V_HEIGHTMULTIPLIER ) );
-	column.yh				= FixedToInt( FixedRound( M_MIN( y + clippedheight, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
 
 	rend_fixed_t xwidth		= IntToRendFixed( patch->width );
 	rend_fixed_t xsource	= IntToRendFixed( clippedx );
@@ -419,9 +409,16 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 		{
 			int32_t thisy		= y + patchcol->topdelta;
 			column.source		= (byte*)patchcol + 3;
-			column.yl			= FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) );
-			column.yh			= FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
-			R_BackbufferDrawColumn( &column );
+			if( thisy >= 0 || -thisy < patchcol->length )
+			{
+				if( thisy < 0 )
+				{
+					column.source += -thisy;
+				}
+				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height - 1 );
+				column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
+				R_BackbufferDrawColumn( &column );
+			}
 
 			patchcol = (column_t *)( (byte *)patchcol + patchcol->length + 4 );
 		}
@@ -462,7 +459,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 	}
 
 #if RANGECHECK
-	if( !remove_limits )
+	if( !comp.drawpatch_unbounded )
 	{
 		if (x < 0
 			|| x + SHORT(patch->width) > V_VIRTUALWIDTH
@@ -470,13 +467,6 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 			|| y + SHORT(patch->height) > V_VIRTUALHEIGHT)
 		{
 			I_Error("Bad V_DrawPatchFlipped");
-		}
-	}
-	else
-	{
-		if( y < 0 )
-		{
-			I_Error("Bad V_DrawPatch");
 		}
 	}
 #endif
@@ -488,8 +478,6 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 	column.transparency		= NULL;
 	column.texturemid		= 0;
 	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale ) + 1;
-	column.yl				= FixedToInt( FixedRound( y * V_HEIGHTMULTIPLIER ) );
-	column.yh				= FixedToInt( FixedRound( M_MIN( y + SHORT(patch->height), V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
 
 	rend_fixed_t xwidth		= IntToRendFixed( patch->width );
 	rend_fixed_t xsource	= IntToRendFixed( patch->width ) - 1;
@@ -515,9 +503,16 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 		{
 			int32_t thisy		= y + patchcol->topdelta;
 			column.source		= (byte*)patchcol + 3;
-			column.yl			= FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) );
-			column.yh			= FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 );
-			R_BackbufferDrawColumn( &column );
+			if( thisy >= 0 || -thisy < patchcol->length )
+			{
+				if( thisy < 0 )
+				{
+					column.source += -thisy;
+				}
+				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height - 1 );
+				column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
+				R_BackbufferDrawColumn( &column );
+			}
 
 			patchcol = (column_t *)( (byte *)patchcol + patchcol->length + 4 );
 		}
@@ -982,7 +977,7 @@ void WritePNGfile(char *filename, pixel_t *data,
     png_infop pinfo;
     png_colorp pcolor;
     FILE *handle;
-    int i, j;
+    int i;
 
     handle = fopen(filename, "wb");
     if (!handle)
