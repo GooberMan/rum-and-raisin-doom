@@ -1839,30 +1839,37 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_BSPI_RAISE1		// raisestate
 	},
 
-	{		// MT_CYBORG
-		16,		// doomednum
+	{						// MT_CYBORG
+		16,					// doomednum
 		S_CYBER_STND,		// spawnstate
-		4000,		// spawnhealth
+		4000,				// spawnhealth
 		S_CYBER_RUN1,		// seestate
-		sfx_cybsit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
+		sfx_cybsit,			// seesound
+		8,					// reactiontime
+		0,					// attacksound
 		S_CYBER_PAIN,		// painstate
-		20,		// painchance
-		sfx_dmpain,		// painsound
-		0,		// meleestate
+		20,					// painchance
+		sfx_dmpain,			// painsound
+		0,					// meleestate
 		S_CYBER_ATK1,		// missilestate
 		S_CYBER_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_cybdth,		// deathsound
-		16,		// speed
+		S_NULL,				// xdeathstate
+		sfx_cybdth,			// deathsound
+		16,					// speed
 		40*FRACUNIT,		// radius
 		110*FRACUNIT,		// height
-		1000,		// mass
-		0,		// damage
-		sfx_dmact,		// activesound
-		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_NULL		// raisestate
+		1000,				// mass
+		0,					// damage
+		sfx_dmact,			// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL, // flags
+		S_NULL,				// raisestate
+		infighting_none,	// infightinggroup
+		projectile_none,	// projectilegroup
+		splash_none,		// splashgroup
+							// flags2
+							// fastspeed
+							// meleerange
+							// ripsound
 	},
 
 	{		// MT_PAIN

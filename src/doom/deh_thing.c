@@ -53,7 +53,7 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   DEH_MAPPING("Action sound",        activesound)
   DEH_MAPPING("Bits",                flags)
   DEH_MAPPING("Respawn frame",       raisestate)
-  MBF21_MAPPING("Bits2",             flags2)
+  MBF21_MAPPING("MBF21 Bits",        flags2)
   MBF21_MAPPING("Infighting group",  infightinggroup)
   MBF21_MAPPING("Projectile group",  projectilegroup)
   MBF21_MAPPING("Splash group",      splashgroup)
@@ -117,7 +117,7 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 	{
 		DEH_BexHandleThingBits( context, value, mobj );
 	}
-	else if( strcmp( variable_name, "Bits2" ) == 0 && !isdigit( value[ 0 ] ) )
+	else if( strcmp( variable_name, "MBF21 Bits" ) == 0 && !isdigit( value[ 0 ] ) )
 	{
 		DEH_BexHandleThingBits2( context, value, mobj );
 	}

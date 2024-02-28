@@ -34,7 +34,7 @@ DOOM_C_API typedef struct
 
 	// MBF extensions
 	int32_t			ammopershot;
-
+	int32_t			mbf21flags;
 } weaponinfo_t;
 
 DOOM_C_API extern  weaponinfo_t    weaponinfo[NUMWEAPONS];

@@ -1478,25 +1478,25 @@ DOOM_C_API typedef union statearg_u
 
 DOOM_C_API typedef struct
 {
-    spritenum_t sprite;
-    int frame;
-    int tics;
-    // void (*action) ();
-    actionf_t action;
-    statenum_t nextstate;
+	spritenum_t sprite;
+	int32_t		frame;
+	int32_t		tics;
+	actionf_t	action;
+	statenum_t	nextstate;
 
-	statearg_t misc1;
-	statearg_t misc2;
+	statearg_t	misc1;
+	statearg_t	misc2;
 	
 	// MBF extensions
-	statearg_t arg1;
-	statearg_t arg2;
-	statearg_t arg3;
-	statearg_t arg4;
-	statearg_t arg5;
-	statearg_t arg6;
-	statearg_t arg7;
-	statearg_t arg8;
+	int32_t		mbf21flags;
+	statearg_t	arg1;
+	statearg_t	arg2;
+	statearg_t	arg3;
+	statearg_t	arg4;
+	statearg_t	arg5;
+	statearg_t	arg6;
+	statearg_t	arg7;
+	statearg_t	arg8;
 } state_t;
 
 #define STATEMISC( mobj, name, index )				auto & name = mobj->state->misc ## index
