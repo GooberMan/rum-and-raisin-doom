@@ -23,6 +23,7 @@
 #define __D_THINK__
 
 #include "doomtype.h"
+#include "i_error.h"
 
 //
 // Experimental stuff.
@@ -49,16 +50,8 @@ DOOM_C_API typedef enum actiontype_e
 	at_p2,
 } actiontype_t;
 
-DOOM_C_API typedef struct actionf_s
+typedef struct actionf_s
 {
-	union
-	{
-		actionf_v		acv;
-		actionf_p1		acp1;
-		actionf_p2		acp2;
-	};
-	actiontype_t type;
-
 #if defined(__cplusplus)
 	actionf_s()
 		: acv( nullptr )
@@ -70,30 +63,110 @@ DOOM_C_API typedef struct actionf_s
 		, type( at_void )
 	{
 	}
+
 	actionf_s( actionf_p1 func )
 		: acp1( func )
 		, type( at_p1 )
 	{
 	}
+
 	actionf_s( actionf_p2 func )
 		: acp2( func )
 		, type( at_p2 )
 	{
 	}
+
+	actionf_s& operator=(std::nullptr_t v)
+	{
+		acv = v;
+		type = at_none;
+		return *this;
+	}
+
+	template< typename _param >
+	actionf_s& operator=( void(*func)(_param*) )
+	{
+		//if constexpr( !std::is_same_v< _param, thinker_t >
+		//			|| !std::is_same_v< thinker_t*, decltype( thinker_cast< thinker_t >( (_param*)nullptr ) ) > )
+		//{
+		//	I_Error( "Non-thinker assignment of actionf_t" );
+		//}
+
+		acp1 = (actionf_p1)func;
+		type = at_p1;
+		return *this;
+	}
+
+	void operator()()
+	{
+		if( type != at_void )
+		{
+			I_Error( "Invoking wrong actionf_t type" );
+		}
+		acv();
+	}
+
+	template< typename _param >
+	void operator()( _param* val )
+	{
+		if( type != at_p1 )
+		{
+			I_Error( "Invoking wrong actionf_t type" );
+		}
+
+		if constexpr( !std::is_same_v< _param, thinker_t > )
+		{
+			if( thinker_cast< thinker_t >( val ) == nullptr )
+			{
+				I_Error( "Non-thinker invocation of actionf_t" );
+			}
+		}
+
+		acp1( (thinker_t*)val );
+	}
+
+	void operator()( player_t* player, pspdef_t* pspr )
+	{
+		if( type != at_p2 )
+		{
+			I_Error( "Invoking wrong actionf_t type" );
+		}
+
+		acp2( player, pspr );
+	}
+
+	template< typename _param >
+	bool operator==( void(*func)(_param*) )
+	{
+		if constexpr( !std::is_same_v< _param, thinker_t >
+					|| !std::is_same_v< thinker_t*, decltype( thinker_cast< thinker_t >( (_param*)nullptr ) ) > )
+		{
+			I_Error( "Non-thinker assignment of actionf_t" );
+		}
+
+		return type == at_p1 && acp1 == (actionf_p1)func;
+	}
+
+	inline bool Valid()
+	{
+		return type != at_none && acv != nullptr;
+	}
+private:
 #endif // defined(__cplusplus)
+	union
+	{
+		actionf_v		acv;
+		actionf_p1		acp1;
+		actionf_p2		acp2;
+	};
+	actiontype_t type;
 } actionf_t;
 
-// Historically, "think_t" is yet another
-//  function pointer to a routine to handle
-//  an actor.
-DOOM_C_API typedef actionf_t  think_t;
-
-
 // Doubly linked list of actors.
-DOOM_C_API typedef struct thinker_s
+DOOM_C_API struct thinker_s
 {
 	// Changing the order from vanilla for better type punning
-	think_t				function;
+	actionf_t			function;
 	struct thinker_s*	prev;
 	struct thinker_s*	next;
 };
@@ -113,7 +186,14 @@ protected:
 	}
 };
 
-#define MakeThinkFuncLookup( type, ... ) template<> \
+#define MakeThinkFuncLookup( type, ... ) \
+template<> \
+constexpr thinker_t* thinker_cast< thinker_t >( type* from ) \
+{ \
+	return (thinker_t*)from; \
+} \
+ \
+template<> \
 struct thinkfunclookup< type > : thinkfunclookup< void > \
 { \
 	constexpr static auto funcs = toarray( __VA_ARGS__ ); \

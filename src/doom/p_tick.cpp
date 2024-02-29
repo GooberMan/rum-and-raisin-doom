@@ -38,13 +38,16 @@ int	leveltime;
 
 
 // Both the head and tail of the thinker list.
-thinker_t	thinkercap;
+extern "C"
+{
+	thinker_t	thinkercap;
+}
 
 
 //
 // P_InitThinkers
 //
-void P_InitThinkers (void)
+DOOM_C_API void P_InitThinkers (void)
 {
     thinkercap.prev = thinkercap.next  = &thinkercap;
 }
@@ -56,7 +59,7 @@ void P_InitThinkers (void)
 // P_AddThinker
 // Adds a new thinker at the end of the list.
 //
-void P_AddThinker (thinker_t* thinker)
+DOOM_C_API void P_AddThinker (thinker_t* thinker)
 {
     thinkercap.prev->next = thinker;
     thinker->next = &thinkercap;
@@ -71,23 +74,10 @@ void P_AddThinker (thinker_t* thinker)
 // Deallocation is lazy -- it will not actually be freed
 // until its thinking turn comes up.
 //
-void P_RemoveThinker (thinker_t* thinker)
+DOOM_C_API void P_RemoveThinker (thinker_t* thinker)
 {
-  // FIXME: NOP.
-  thinker->function.acv = (actionf_v)(-1);
+	thinker->function = nullptr;
 }
-
-
-
-//
-// P_AllocateThinker
-// Allocates memory and adds a new thinker at the end of the list.
-//
-void P_AllocateThinker (thinker_t*	thinker)
-{
-}
-
-
 
 //
 // P_RunThinkers
@@ -99,21 +89,23 @@ void P_RunThinkers (void)
     currentthinker = thinkercap.next;
     while (currentthinker != &thinkercap)
     {
-	if ( currentthinker->function.acv == (actionf_v)(-1) )
-	{
-	    // time to remove it
-            nextthinker = currentthinker->next;
-	    currentthinker->next->prev = currentthinker->prev;
-	    currentthinker->prev->next = currentthinker->next;
-	    Z_Free(currentthinker);
-	}
-	else
-	{
-	    if (currentthinker->function.acp1)
-		currentthinker->function.acp1 (currentthinker);
-            nextthinker = currentthinker->next;
-	}
-	currentthinker = nextthinker;
+		if ( !currentthinker->function.Valid() )
+		{
+			// time to remove it
+			nextthinker = currentthinker->next;
+			currentthinker->next->prev = currentthinker->prev;
+			currentthinker->prev->next = currentthinker->next;
+			Z_Free(currentthinker);
+		}
+		else
+		{
+			if (currentthinker->function.Valid())
+			{
+				currentthinker->function(currentthinker);
+			}
+			nextthinker = currentthinker->next;
+		}
+		currentthinker = nextthinker;
     }
 }
 
@@ -129,16 +121,14 @@ void P_FlipInstanceData( void )
 
 	for( thinker_t* th = thinkercap.next; th != &thinkercap; th = th->next )
 	{
-		if (th->function.acp1 == (actionf_p1)P_MobjThinker)
+		if( mobj_t* mobj = thinker_cast< mobj_t >( th ) )
 		{
-			// This is so nasty, I think we can do better these days
-			mobj_t* mobj = (mobj_t*)th;
 			mobj->prev = mobj->curr;
 		}
 	}
 }
 
-void P_UpdateInstanceData( void )
+DOOM_C_API void P_UpdateInstanceData( void )
 {
 	int32_t index = 0;
 
@@ -185,10 +175,8 @@ void P_UpdateInstanceData( void )
 
 	for( thinker_t* th = thinkercap.next; th != &thinkercap; th = th->next )
 	{
-		if (th->function.acp1 == (actionf_p1)P_MobjThinker)
+		if( mobj_t* mobj = thinker_cast< mobj_t >( th ) )
 		{
-			// This is so nasty, I think we can do better these days
-			mobj_t* mobj = (mobj_t*)th;
 			mobj->curr.x = FixedToRendFixed( mobj->x );
 			mobj->curr.y = FixedToRendFixed( mobj->y );
 			mobj->curr.z = FixedToRendFixed( mobj->z );
@@ -204,7 +192,7 @@ void P_UpdateInstanceData( void )
 // P_Ticker
 //
 
-void P_Ticker (void)
+DOOM_C_API void P_Ticker (void)
 {
     int		i;
 

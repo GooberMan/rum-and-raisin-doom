@@ -77,8 +77,8 @@ DOOM_C_API doombool P_SetMobjState( mobj_t* mobj, statenum_t state )
 
 		// Modified handling.
 		// Call action functions when the state is set
-		if (st->action.acp1)
-			st->action.acp1(&mobj->thinker);
+		if (st->action.Valid())
+			st->action( mobj );
 	
 		state = st->nextstate;
 
@@ -505,29 +505,32 @@ DOOM_C_API void P_MobjThinker( mobj_t* mobj )
 	|| mobj->momy
 	|| (mobj->flags&MF_SKULLFLY) )
     {
-	P_XYMovement (mobj);
+		P_XYMovement (mobj);
 
-	// FIXME: decent NOP/NULL/Nil function pointer please.
-	if (mobj->thinker.function.acv == (actionf_v) (-1))
-	    return;		// mobj was removed
+		if (!mobj->thinker.function.Valid())
+		{
+			return;
+		}
     }
     if ( (mobj->z != mobj->floorz)
 	 || mobj->momz )
     {
-	P_ZMovement (mobj);
+		P_ZMovement (mobj);
 	
-	// FIXME: decent NOP/NULL/Nil function pointer please.
-	if (mobj->thinker.function.acv == (actionf_v) (-1))
-	    return;		// mobj was removed
+		if (!mobj->thinker.function.Valid())
+		{
+			return;
+		}
     }
 
 	// Player handles special sectors in its own thinker
     if( sim.generic_specials_handling && !mobj->player )
 	{
 		P_MobjInSectorGeneric( mobj );
-		// FIXME: decent NOP/NULL/Nil function pointer please.
-		if (mobj->thinker.function.acv == (actionf_v) (-1))
-			return;		// mobj was removed
+		if (!mobj->thinker.function.Valid())
+		{
+			return;
+		}
 	}
 
     // cycle through states,
@@ -638,7 +641,7 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( mobjtype_t type, angle_t angle,
 	mobj->curr.frame = mobj->frame;
 	mobj->curr.sprite = mobj->sprite;
 
-	mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
+	mobj->thinker.function = P_MobjThinker;
 	
 	P_AddThinker( &mobj->thinker );
 

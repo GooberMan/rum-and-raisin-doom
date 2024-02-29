@@ -1718,8 +1718,6 @@ void G_LoadGame (char* name)
     gameaction = ga_loadgame; 
 } 
 
-void P_UpdateInstanceData( void );
-
 void G_DoLoadGame (void) 
 { 
     int savedleveltime;

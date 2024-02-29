@@ -307,7 +307,7 @@ DOOM_C_API int EV_DoFloor( line_t* line, floor_e floortype )
 	floor = (floormove_t*)Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
 	P_AddThinker (&floor->thinker);
 	sec->specialdata = floor;
-	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+	floor->thinker.function = T_MoveFloor;
 	floor->type = floortype;
 	floor->crush = false;
 
@@ -499,7 +499,7 @@ DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
 	floor = (floormove_t*)Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
 	P_AddThinker (&floor->thinker);
 	sec->specialdata = floor;
-	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+	floor->thinker.function = T_MoveFloor;
 	floor->direction = 1;
 	floor->sector = sec;
 	switch(type)
@@ -560,7 +560,7 @@ DOOM_C_API int EV_BuildStairs( line_t* line, stair_e type )
 		P_AddThinker (&floor->thinker);
 
 		sec->specialdata = floor;
-		floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+		floor->thinker.function = T_MoveFloor;
 		floor->direction = 1;
 		floor->sector = sec;
 		floor->speed = speed;

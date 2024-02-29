@@ -602,17 +602,20 @@ DOOM_C_API void A_KeenDie (mobj_t* mo)
     // to see if all Keens are dead
     for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
     {
-	if (th->function.acp1 != (actionf_p1)P_MobjThinker)
-	    continue;
+		mo2 = thinker_cast< mobj_t >( th );
+		if( !mo2 )
+		{
+			continue;
+		}
 
-	mo2 = (mobj_t *)th;
-	if (mo2 != mo
-	    && mo2->type == mo->type
-	    && mo2->health > 0)
-	{
-	    // other Keen not dead
-	    return;		
-	}
+		mo2 = (mobj_t *)th;
+		if (mo2 != mo
+			&& mo2->type == mo->type
+			&& mo2->health > 0)
+		{
+			// other Keen not dead
+			return;		
+		}
     }
 
     junk.tag = 666;
@@ -1548,10 +1551,13 @@ A_PainShootSkull
     currentthinker = thinkercap.next;
     while (currentthinker != &thinkercap)
     {
-	if (   (currentthinker->function.acp1 == (actionf_p1)P_MobjThinker)
-	    && ((mobj_t *)currentthinker)->type == MT_SKULL)
-	    count++;
-	currentthinker = currentthinker->next;
+		mobj_t* mobj = thinker_cast< mobj_t >( currentthinker );
+		if ( mobj != nullptr
+			&& mobj->type == MT_SKULL )
+		{
+			count++;
+		}
+		currentthinker = currentthinker->next;
     }
 
     // if there are allready 20 skulls on the level,
@@ -1728,10 +1734,11 @@ DOOM_C_API void A_BossDeath (mobj_t* mo)
 	// if all bosses are dead
 	for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
 	{
-		if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+		mo2 = thinker_cast< mobj_t >( th );
+		if( mo2 == nullptr )
+		{
 			continue;
-	
-		mo2 = (mobj_t *)th;
+		}
 		if (mo2 != mo
 			&& mo2->type == mo->type
 			&& mo2->health > 0)
@@ -1812,16 +1819,17 @@ DOOM_C_API void A_BrainAwake (mobj_t* mo)
 	 thinker != &thinkercap ;
 	 thinker = thinker->next)
     {
-	if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
-	    continue;	// not a mobj
+		m = thinker_cast< mobj_t >( thinker );
+		if( m == nullptr )
+		{
+			continue;
+		}
 
-	m = (mobj_t *)thinker;
-
-	if (m->type == MT_BOSSTARGET )
-	{
-	    braintargets[numbraintargets] = m;
-	    numbraintargets++;
-	}
+		if( m->type == MT_BOSSTARGET )
+		{
+			braintargets[numbraintargets] = m;
+			numbraintargets++;
+		}
     }
 	
     S_StartSound (NULL,sfx_bossit);

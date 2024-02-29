@@ -259,7 +259,7 @@ int EV_DoDoor ( line_t* line, vldoor_e type )
 		P_AddThinker (&door->thinker);
 		sec->specialdata = door;
 
-		door->thinker.function.acp1 = (actionf_p1) T_VerticalDoor;
+		door->thinker.function = T_VerticalDoor;
 		door->sector = sec;
 		door->type = type;
 		door->topwait = VDOORWAIT;
@@ -405,11 +405,11 @@ EV_VerticalDoor
 					// In Vanilla, door->direction is set, even though
 					// "specialdata" might not actually point at a door.
 
-					if (door->thinker.function.acp1 == (actionf_p1) T_VerticalDoor)
+					if( thinker_cast< vldoor_t >( &door->thinker ) != nullptr )
 					{
 						door->direction = sd_close;	// start going down immediately
 					}
-					else if (door->thinker.function.acp1 == (actionf_p1) T_PlatRaise)
+					else if( thinker_cast< plat_t >( &door->thinker ) != nullptr )
 					{
 						// Erm, this is a plat, not a door.
 						// This notably causes a problem in ep1-0500.lmp where
@@ -462,7 +462,7 @@ EV_VerticalDoor
     door = (vldoor_t*)Z_Malloc(sizeof(*door), PU_LEVSPEC, 0);
     P_AddThinker (&door->thinker);
     sec->specialdata = door;
-    door->thinker.function.acp1 = (actionf_p1) T_VerticalDoor;
+    door->thinker.function = T_VerticalDoor;
     door->sector = sec;
     door->direction = sd_open;
     door->speed = VDOORSPEED;
@@ -518,7 +518,7 @@ void P_SpawnDoorCloseIn30 (sector_t* sec)
 
     sec->specialdata = door;
 
-    door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
+    door->thinker.function = T_VerticalDoor;
     door->sector = sec;
     door->direction = sd_none;
     door->type = vld_normal;
@@ -542,7 +542,7 @@ P_SpawnDoorRaiseIn5Mins
 
     sec->specialdata = door;
 
-    door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
+    door->thinker.function = T_VerticalDoor;
     door->sector = sec;
     door->direction = sd_raisein5nonsense;
     door->type = vld_raiseIn5Mins;

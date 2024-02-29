@@ -77,8 +77,9 @@ EV_Teleport
 		 thinker != &thinkercap;
 		 thinker = thinker->next)
 	    {
+		m = thinker_cast< mobj_t >( thinker );
 		// not a mobj
-		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+		if (m == nullptr)
 		    continue;	
 
 		m = (mobj_t *)thinker;

@@ -194,7 +194,7 @@ DOOM_C_API int EV_DoCeiling( line_t* line, ceiling_e type )
 	ceiling = (ceiling_t*)Z_Malloc (sizeof(ceiling_t), PU_LEVSPEC, 0);
 	P_AddThinker (&ceiling->thinker);
 	sec->specialdata = ceiling;
-	ceiling->thinker.function.acp1 = (actionf_p1)T_MoveCeiling;
+	ceiling->thinker.function = T_MoveCeiling;
 	ceiling->sector = sec;
 	ceiling->crush = false;
 	
@@ -292,8 +292,7 @@ DOOM_C_API void P_ActivateInStasisCeiling(line_t* line)
 	    && (activeceilings[i]->direction == 0))
 	{
 	    activeceilings[i]->direction = activeceilings[i]->olddirection;
-	    activeceilings[i]->thinker.function.acp1
-	      = (actionf_p1)T_MoveCeiling;
+	    activeceilings[i]->thinker.function = T_MoveCeiling;
 	}
     }
 }
@@ -317,7 +316,7 @@ DOOM_C_API int	EV_CeilingCrushStop(line_t	*line)
 	    && (activeceilings[i]->direction != 0))
 	{
 	    activeceilings[i]->olddirection = activeceilings[i]->direction;
-	    activeceilings[i]->thinker.function.acv = (actionf_v)NULL;
+	    activeceilings[i]->thinker.function = nullptr;
 	    activeceilings[i]->direction = 0;		// in-stasis
 	    rtn = 1;
 	}
