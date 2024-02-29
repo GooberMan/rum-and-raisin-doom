@@ -155,7 +155,7 @@ struct funcmapping_t
 
 static std::map< DoomString, funcmapping_t > PointerLookup =
 {
-	{ "NULL", { { nullptr }, exe_invalid } },
+	{ "NULL", { {}, exe_invalid } },
 
 	// Doom actions
 	FuncType( Light0 ),

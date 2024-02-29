@@ -59,7 +59,7 @@ DOOM_C_API typedef enum
 
 } psprnum_t;
 
-DOOM_C_API typedef struct
+DOOM_C_API typedef struct pspdef_s
 {
     state_t*	state;	// a NULL state means not active
     int		tics;

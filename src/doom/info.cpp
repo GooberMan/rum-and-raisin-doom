@@ -30,7 +30,16 @@
 
 #include "p_mobj.h"
 
-const char *sprnames[] = {
+// You can use std::enable_if in earlier C++ versions if required...
+template< typename _type >
+requires std::is_enum_v< _type >
+constexpr auto operator|( _type lhs, _type rhs )
+{
+	using underlying = std::underlying_type_t< _type >;
+	return (_type)( (underlying)lhs | (underlying)rhs );
+}
+
+DOOM_C_API const char *sprnames[] = {
 "TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
 "MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
 "PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
@@ -47,7 +56,7 @@ const char *sprnames[] = {
 "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2", NULL
 };
 
-const char *sprnames_boom[] = {
+DOOM_C_API const char *sprnames_boom[] = {
 "TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
 "MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
 "PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
@@ -64,7 +73,7 @@ const char *sprnames_boom[] = {
 "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","TNT1", NULL
 };
 
-const char *sprnames_mbf[] = {
+DOOM_C_API const char *sprnames_mbf[] = {
 "TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
 "MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
 "PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
@@ -84,163 +93,163 @@ const char *sprnames_mbf[] = {
 
 
 // Doesn't work with g++, needs actionf_p1
-void A_Light0();
-void A_WeaponReady();
-void A_Lower();
-void A_Raise();
-void A_Punch();
-void A_ReFire();
-void A_FirePistol();
-void A_Light1();
-void A_FireShotgun();
-void A_Light2();
-void A_FireShotgun2();
-void A_CheckReload();
-void A_OpenShotgun2();
-void A_LoadShotgun2();
-void A_CloseShotgun2();
-void A_FireCGun();
-void A_GunFlash();
-void A_FireMissile();
-void A_Saw();
-void A_FirePlasma();
-void A_BFGsound();
-void A_FireBFG();
-void A_BFGSpray();
-void A_Explode();
-void A_Pain();
-void A_PlayerScream();
-void A_Fall();
-void A_XScream();
-void A_Look();
-void A_Chase();
-void A_FaceTarget();
-void A_PosAttack();
-void A_Scream();
-void A_SPosAttack();
-void A_VileChase();
-void A_VileStart();
-void A_VileTarget();
-void A_VileAttack();
-void A_StartFire();
-void A_Fire();
-void A_FireCrackle();
-void A_Tracer();
-void A_SkelWhoosh();
-void A_SkelFist();
-void A_SkelMissile();
-void A_FatRaise();
-void A_FatAttack1();
-void A_FatAttack2();
-void A_FatAttack3();
-void A_BossDeath();
-void A_CPosAttack();
-void A_CPosRefire();
-void A_TroopAttack();
-void A_SargAttack();
-void A_HeadAttack();
-void A_BruisAttack();
-void A_SkullAttack();
-void A_Metal();
-void A_SpidRefire();
-void A_BabyMetal();
-void A_BspiAttack();
-void A_Hoof();
-void A_CyberAttack();
-void A_PainAttack();
-void A_PainDie();
-void A_KeenDie();
-void A_BrainPain();
-void A_BrainScream();
-void A_BrainDie();
-void A_BrainAwake();
-void A_BrainSpit();
-void A_SpawnSound();
-void A_SpawnFly();
-void A_BrainExplode();
+DOOM_C_API void A_Light0();
+DOOM_C_API void A_WeaponReady();
+DOOM_C_API void A_Lower();
+DOOM_C_API void A_Raise();
+DOOM_C_API void A_Punch();
+DOOM_C_API void A_ReFire();
+DOOM_C_API void A_FirePistol();
+DOOM_C_API void A_Light1();
+DOOM_C_API void A_FireShotgun();
+DOOM_C_API void A_Light2();
+DOOM_C_API void A_FireShotgun2();
+DOOM_C_API void A_CheckReload();
+DOOM_C_API void A_OpenShotgun2();
+DOOM_C_API void A_LoadShotgun2();
+DOOM_C_API void A_CloseShotgun2();
+DOOM_C_API void A_FireCGun();
+DOOM_C_API void A_GunFlash();
+DOOM_C_API void A_FireMissile();
+DOOM_C_API void A_Saw();
+DOOM_C_API void A_FirePlasma();
+DOOM_C_API void A_BFGsound();
+DOOM_C_API void A_FireBFG();
+DOOM_C_API void A_BFGSpray();
+DOOM_C_API void A_Explode();
+DOOM_C_API void A_Pain();
+DOOM_C_API void A_PlayerScream();
+DOOM_C_API void A_Fall();
+DOOM_C_API void A_XScream();
+DOOM_C_API void A_Look();
+DOOM_C_API void A_Chase();
+DOOM_C_API void A_FaceTarget();
+DOOM_C_API void A_PosAttack();
+DOOM_C_API void A_Scream();
+DOOM_C_API void A_SPosAttack();
+DOOM_C_API void A_VileChase();
+DOOM_C_API void A_VileStart();
+DOOM_C_API void A_VileTarget();
+DOOM_C_API void A_VileAttack();
+DOOM_C_API void A_StartFire();
+DOOM_C_API void A_Fire();
+DOOM_C_API void A_FireCrackle();
+DOOM_C_API void A_Tracer();
+DOOM_C_API void A_SkelWhoosh();
+DOOM_C_API void A_SkelFist();
+DOOM_C_API void A_SkelMissile();
+DOOM_C_API void A_FatRaise();
+DOOM_C_API void A_FatAttack1();
+DOOM_C_API void A_FatAttack2();
+DOOM_C_API void A_FatAttack3();
+DOOM_C_API void A_BossDeath();
+DOOM_C_API void A_CPosAttack();
+DOOM_C_API void A_CPosRefire();
+DOOM_C_API void A_TroopAttack();
+DOOM_C_API void A_SargAttack();
+DOOM_C_API void A_HeadAttack();
+DOOM_C_API void A_BruisAttack();
+DOOM_C_API void A_SkullAttack();
+DOOM_C_API void A_Metal();
+DOOM_C_API void A_SpidRefire();
+DOOM_C_API void A_BabyMetal();
+DOOM_C_API void A_BspiAttack();
+DOOM_C_API void A_Hoof();
+DOOM_C_API void A_CyberAttack();
+DOOM_C_API void A_PainAttack();
+DOOM_C_API void A_PainDie();
+DOOM_C_API void A_KeenDie();
+DOOM_C_API void A_BrainPain();
+DOOM_C_API void A_BrainScream();
+DOOM_C_API void A_BrainDie();
+DOOM_C_API void A_BrainAwake();
+DOOM_C_API void A_BrainSpit();
+DOOM_C_API void A_SpawnSound();
+DOOM_C_API void A_SpawnFly();
+DOOM_C_API void A_BrainExplode();
 
 // MBF actions
-void A_Detonate();
-void A_Mushroom();
-void A_Spawn();
-void A_Turn();
-void A_Face();
-void A_Scratch();
-void A_RandomJump();
-void A_LineEffect();
-void A_Die();
-void A_BetaSoulAttack();
-void A_FireOldBFG();
+DOOM_C_API void A_Detonate();
+DOOM_C_API void A_Mushroom();
+DOOM_C_API void A_Spawn();
+DOOM_C_API void A_Turn();
+DOOM_C_API void A_Face();
+DOOM_C_API void A_Scratch();
+DOOM_C_API void A_RandomJump();
+DOOM_C_API void A_LineEffect();
+DOOM_C_API void A_Die();
+DOOM_C_API void A_BetaSoulAttack();
+DOOM_C_API void A_FireOldBFG();
 
 // MBF21 Actions
-void A_SpawnObject();
-void A_MonsterProjectile();
-void A_MonsterBulletAttack();
-void A_MonsterMeleeAttack();
-void A_RadiusDamage();
-void A_NoiseAlert();
-void A_HealChase();
-void A_SeekTracer();
-void A_FindTracer();
-void A_ClearTracer();
-void A_JumpIfHealthBelow();
-void A_JumpIfTargetInSight();
-void A_JumpIfTargetCloser();
-void A_JumpIfTracerInSight();
-void A_JumpIfTracerCloser();
-void A_JumpIfFlagsSet();
-void A_AddFlags();
-void A_RemoveFlags();
+DOOM_C_API void A_SpawnObject();
+DOOM_C_API void A_MonsterProjectile();
+DOOM_C_API void A_MonsterBulletAttack();
+DOOM_C_API void A_MonsterMeleeAttack();
+DOOM_C_API void A_RadiusDamage();
+DOOM_C_API void A_NoiseAlert();
+DOOM_C_API void A_HealChase();
+DOOM_C_API void A_SeekTracer();
+DOOM_C_API void A_FindTracer();
+DOOM_C_API void A_ClearTracer();
+DOOM_C_API void A_JumpIfHealthBelow();
+DOOM_C_API void A_JumpIfTargetInSight();
+DOOM_C_API void A_JumpIfTargetCloser();
+DOOM_C_API void A_JumpIfTracerInSight();
+DOOM_C_API void A_JumpIfTracerCloser();
+DOOM_C_API void A_JumpIfFlagsSet();
+DOOM_C_API void A_AddFlags();
+DOOM_C_API void A_RemoveFlags();
 
-state_t	states[NUMSTATES] =
+DOOM_C_API state_t	states[NUMSTATES] =
 {
-	{ SPR_TROO,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_NULL
+	{ SPR_TROO,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_NULL
 	{ SPR_SHTG,		4,			0,		{A_Light0},			S_NULL,					{ 0 },	{ 0 } },	// S_LIGHTDONE
 	{ SPR_PUNG,		0,			1,		{A_WeaponReady},	S_PUNCH,				{ 0 },	{ 0 } },	// S_PUNCH
 	{ SPR_PUNG,		0,			1,		{A_Lower},			S_PUNCHDOWN,			{ 0 },	{ 0 } },	// S_PUNCHDOWN
 	{ SPR_PUNG,		0,			1,		{A_Raise},			S_PUNCHUP,				{ 0 },	{ 0 } },	// S_PUNCHUP
-	{ SPR_PUNG,		1,			4,		{NULL},				S_PUNCH2,				{ 0 },	{ 0 } },	// S_PUNCH1
+	{ SPR_PUNG,		1,			4,		{},					S_PUNCH2,				{ 0 },	{ 0 } },	// S_PUNCH1
 	{ SPR_PUNG,		2,			4,		{A_Punch},			S_PUNCH3,				{ 0 },	{ 0 } },	// S_PUNCH2
-	{ SPR_PUNG,		3,			5,		{NULL},				S_PUNCH4,				{ 0 },	{ 0 } },	// S_PUNCH3
-	{ SPR_PUNG,		2,			4,		{NULL},				S_PUNCH5,				{ 0 },	{ 0 } },	// S_PUNCH4
+	{ SPR_PUNG,		3,			5,		{},					S_PUNCH4,				{ 0 },	{ 0 } },	// S_PUNCH3
+	{ SPR_PUNG,		2,			4,		{},					S_PUNCH5,				{ 0 },	{ 0 } },	// S_PUNCH4
 	{ SPR_PUNG,		1,			5,		{A_ReFire},			S_PUNCH,				{ 0 },	{ 0 } },	// S_PUNCH5
 	{ SPR_PISG,		0,			1,		{A_WeaponReady},	S_PISTOL,				{ 0 },	{ 0 } },	// S_PISTOL
 	{ SPR_PISG,		0,			1,		{A_Lower},			S_PISTOLDOWN,			{ 0 },	{ 0 } },	// S_PISTOLDOWN
 	{ SPR_PISG,		0,			1,		{A_Raise},			S_PISTOLUP,				{ 0 },	{ 0 } },	// S_PISTOLUP
-	{ SPR_PISG,		0,			4,		{NULL},				S_PISTOL2,				{ 0 },	{ 0 } },	// S_PISTOL1
+	{ SPR_PISG,		0,			4,		{},					S_PISTOL2,				{ 0 },	{ 0 } },	// S_PISTOL1
 	{ SPR_PISG,		1,			6,		{A_FirePistol},		S_PISTOL3,				{ 0 },	{ 0 } },	// S_PISTOL2
-	{ SPR_PISG,		2,			4,		{NULL},				S_PISTOL4,				{ 0 },	{ 0 } },	// S_PISTOL3
+	{ SPR_PISG,		2,			4,		{},					S_PISTOL4,				{ 0 },	{ 0 } },	// S_PISTOL3
 	{ SPR_PISG,		1,			5,		{A_ReFire},			S_PISTOL,				{ 0 },	{ 0 } },	// S_PISTOL4
 	{ SPR_PISF,		32768,		7,		{A_Light1},			S_LIGHTDONE,			{ 0 },	{ 0 } },	// S_PISTOLFLASH
 	{ SPR_SHTG,		0,			1,		{A_WeaponReady},	S_SGUN,					{ 0 },	{ 0 } },	// S_SGUN
 	{ SPR_SHTG,		0,			1,		{A_Lower},			S_SGUNDOWN,				{ 0 },	{ 0 } },	// S_SGUNDOWN
 	{ SPR_SHTG,		0,			1,		{A_Raise},			S_SGUNUP,				{ 0 },	{ 0 } },	// S_SGUNUP
-	{ SPR_SHTG,		0,			3,		{NULL},				S_SGUN2,				{ 0 },	{ 0 } },	// S_SGUN1
+	{ SPR_SHTG,		0,			3,		{},					S_SGUN2,				{ 0 },	{ 0 } },	// S_SGUN1
 	{ SPR_SHTG,		0,			7,		{A_FireShotgun},	S_SGUN3,				{ 0 },	{ 0 } },	// S_SGUN2
-	{ SPR_SHTG,		1,			5,		{NULL},				S_SGUN4,				{ 0 },	{ 0 } },	// S_SGUN3
-	{ SPR_SHTG,		2,			5,		{NULL},				S_SGUN5,				{ 0 },	{ 0 } },	// S_SGUN4
-	{ SPR_SHTG,		3,			4,		{NULL},				S_SGUN6,				{ 0 },	{ 0 } },	// S_SGUN5
-	{ SPR_SHTG,		2,			5,		{NULL},				S_SGUN7,				{ 0 },	{ 0 } },	// S_SGUN6
-	{ SPR_SHTG,		1,			5,		{NULL},				S_SGUN8,				{ 0 },	{ 0 } },	// S_SGUN7
-	{ SPR_SHTG,		0,			3,		{NULL},				S_SGUN9,				{ 0 },	{ 0 } },	// S_SGUN8
+	{ SPR_SHTG,		1,			5,		{},					S_SGUN4,				{ 0 },	{ 0 } },	// S_SGUN3
+	{ SPR_SHTG,		2,			5,		{},					S_SGUN5,				{ 0 },	{ 0 } },	// S_SGUN4
+	{ SPR_SHTG,		3,			4,		{},					S_SGUN6,				{ 0 },	{ 0 } },	// S_SGUN5
+	{ SPR_SHTG,		2,			5,		{},					S_SGUN7,				{ 0 },	{ 0 } },	// S_SGUN6
+	{ SPR_SHTG,		1,			5,		{},					S_SGUN8,				{ 0 },	{ 0 } },	// S_SGUN7
+	{ SPR_SHTG,		0,			3,		{},					S_SGUN9,				{ 0 },	{ 0 } },	// S_SGUN8
 	{ SPR_SHTG,		0,			7,		{A_ReFire},			S_SGUN,					{ 0 },	{ 0 } },	// S_SGUN9
 	{ SPR_SHTF,		32768,		4,		{A_Light1},			S_SGUNFLASH2,			{ 0 },	{ 0 } },	// S_SGUNFLASH1
 	{ SPR_SHTF,		32769,		3,		{A_Light2},			S_LIGHTDONE,			{ 0 },	{ 0 } },	// S_SGUNFLASH2
 	{ SPR_SHT2,		0,			1,		{A_WeaponReady},	S_DSGUN,				{ 0 },	{ 0 } },	// S_DSGUN
 	{ SPR_SHT2,		0,			1,		{A_Lower},			S_DSGUNDOWN,			{ 0 },	{ 0 } },	// S_DSGUNDOWN
 	{ SPR_SHT2,		0,			1,		{A_Raise},			S_DSGUNUP,				{ 0 },	{ 0 } },	// S_DSGUNUP
-	{ SPR_SHT2,		0,			3,		{NULL},				S_DSGUN2,				{ 0 },	{ 0 } },	// S_DSGUN1
+	{ SPR_SHT2,		0,			3,		{},					S_DSGUN2,				{ 0 },	{ 0 } },	// S_DSGUN1
 	{ SPR_SHT2,		0,			7,		{A_FireShotgun2},	S_DSGUN3,				{ 0 },	{ 0 } },	// S_DSGUN2
-	{ SPR_SHT2,		1,			7,		{NULL},				S_DSGUN4,				{ 0 },	{ 0 } },	// S_DSGUN3
+	{ SPR_SHT2,		1,			7,		{},					S_DSGUN4,				{ 0 },	{ 0 } },	// S_DSGUN3
 	{ SPR_SHT2,		2,			7,		{A_CheckReload},	S_DSGUN5,				{ 0 },	{ 0 } },	// S_DSGUN4
 	{ SPR_SHT2,		3,			7,		{A_OpenShotgun2},	S_DSGUN6,				{ 0 },	{ 0 } },	// S_DSGUN5
-	{ SPR_SHT2,		4,			7,		{NULL},				S_DSGUN7,				{ 0 },	{ 0 } },	// S_DSGUN6
+	{ SPR_SHT2,		4,			7,		{},					S_DSGUN7,				{ 0 },	{ 0 } },	// S_DSGUN6
 	{ SPR_SHT2,		5,			7,		{A_LoadShotgun2},	S_DSGUN8,				{ 0 },	{ 0 } },	// S_DSGUN7
-	{ SPR_SHT2,		6,			6,		{NULL},				S_DSGUN9,				{ 0 },	{ 0 } },	// S_DSGUN8
+	{ SPR_SHT2,		6,			6,		{},					S_DSGUN9,				{ 0 },	{ 0 } },	// S_DSGUN8
 	{ SPR_SHT2,		7,			6,		{A_CloseShotgun2},	S_DSGUN10,				{ 0 },	{ 0 } },	// S_DSGUN9
 	{ SPR_SHT2,		0,			5,		{A_ReFire},			S_DSGUN,				{ 0 },	{ 0 } },	// S_DSGUN10
-	{ SPR_SHT2,		1,			7,		{NULL},				S_DSNR2,				{ 0 },	{ 0 } },	// S_DSNR1
-	{ SPR_SHT2,		0,			3,		{NULL},				S_DSGUNDOWN,			{ 0 },	{ 0 } },	// S_DSNR2
+	{ SPR_SHT2,		1,			7,		{},					S_DSNR2,				{ 0 },	{ 0 } },	// S_DSNR1
+	{ SPR_SHT2,		0,			3,		{},					S_DSGUNDOWN,			{ 0 },	{ 0 } },	// S_DSNR2
 	{ SPR_SHT2,		32776,		5,		{A_Light1},			S_DSGUNFLASH2,			{ 0 },	{ 0 } },	// S_DSGUNFLASH1
 	{ SPR_SHT2,		32777,		4,		{A_Light2},			S_LIGHTDONE,			{ 0 },	{ 0 } },	// S_DSGUNFLASH2
 	{ SPR_CHGG,		0,			1,		{A_WeaponReady},	S_CHAIN,				{ 0 },	{ 0 } },	// S_CHAIN
@@ -258,7 +267,7 @@ state_t	states[NUMSTATES] =
 	{ SPR_MISG,		1,			12,		{A_FireMissile},	S_MISSILE3,				{ 0 },	{ 0 } },	// S_MISSILE2
 	{ SPR_MISG,		1,			0,		{A_ReFire},			S_MISSILE,				{ 0 },	{ 0 } },	// S_MISSILE3
 	{ SPR_MISF,		32768,		3,		{A_Light1},			S_MISSILEFLASH2,		{ 0 },	{ 0 } },	// S_MISSILEFLASH1
-	{ SPR_MISF,		32769,		4,		{NULL},				S_MISSILEFLASH3,		{ 0 },	{ 0 } },	// S_MISSILEFLASH2
+	{ SPR_MISF,		32769,		4,		{},					S_MISSILEFLASH3,		{ 0 },	{ 0 } },	// S_MISSILEFLASH2
 	{ SPR_MISF,		32770,		4,		{A_Light2},			S_MISSILEFLASH4,		{ 0 },	{ 0 } },	// S_MISSILEFLASH3
 	{ SPR_MISF,		32771,		4,		{A_Light2},			S_LIGHTDONE,			{ 0 },	{ 0 } },	// S_MISSILEFLASH4
 	{ SPR_SAWG,		2,			4,		{A_WeaponReady},	S_SAWB,					{ 0 },	{ 0 } },	// S_SAW
@@ -284,90 +293,90 @@ state_t	states[NUMSTATES] =
 	{ SPR_BFGG,		1,			20,		{A_ReFire},			S_BFG,					{ 0 },	{ 0 } },	// S_BFG4
 	{ SPR_BFGF,		32768,		11,		{A_Light1},			S_BFGFLASH2,			{ 0 },	{ 0 } },	// S_BFGFLASH1
 	{ SPR_BFGF,		32769,		6,		{A_Light2},			S_LIGHTDONE,			{ 0 },	{ 0 } },	// S_BFGFLASH2
-	{ SPR_BLUD,		2,			8,		{NULL},				S_BLOOD2,				{ 0 },	{ 0 } },	// S_BLOOD1
-	{ SPR_BLUD,		1,			8,		{NULL},				S_BLOOD3,				{ 0 },	{ 0 } },	// S_BLOOD2
-	{ SPR_BLUD,		0,			8,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BLOOD3
-	{ SPR_PUFF,		32768,		4,		{NULL},				S_PUFF2,				{ 0 },	{ 0 } },	// S_PUFF1
-	{ SPR_PUFF,		1,			4,		{NULL},				S_PUFF3,				{ 0 },	{ 0 } },	// S_PUFF2
-	{ SPR_PUFF,		2,			4,		{NULL},				S_PUFF4,				{ 0 },	{ 0 } },	// S_PUFF3
-	{ SPR_PUFF,		3,			4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PUFF4
-	{ SPR_BAL1,		32768,		4,		{NULL},				S_TBALL2,				{ 0 },	{ 0 } },	// S_TBALL1
-	{ SPR_BAL1,		32769,		4,		{NULL},				S_TBALL1,				{ 0 },	{ 0 } },	// S_TBALL2
-	{ SPR_BAL1,		32770,		6,		{NULL},				S_TBALLX2,				{ 0 },	{ 0 } },	// S_TBALLX1
-	{ SPR_BAL1,		32771,		6,		{NULL},				S_TBALLX3,				{ 0 },	{ 0 } },	// S_TBALLX2
-	{ SPR_BAL1,		32772,		6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TBALLX3
-	{ SPR_BAL2,		32768,		4,		{NULL},				S_RBALL2,				{ 0 },	{ 0 } },	// S_RBALL1
-	{ SPR_BAL2,		32769,		4,		{NULL},				S_RBALL1,				{ 0 },	{ 0 } },	// S_RBALL2
-	{ SPR_BAL2,		32770,		6,		{NULL},				S_RBALLX2,				{ 0 },	{ 0 } },	// S_RBALLX1
-	{ SPR_BAL2,		32771,		6,		{NULL},				S_RBALLX3,				{ 0 },	{ 0 } },	// S_RBALLX2
-	{ SPR_BAL2,		32772,		6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_RBALLX3
-	{ SPR_PLSS,		32768,		6,		{NULL},				S_PLASBALL2,			{ 0 },	{ 0 } },	// S_PLASBALL
-	{ SPR_PLSS,		32769,		6,		{NULL},				S_PLASBALL,				{ 0 },	{ 0 } },	// S_PLASBALL2
-	{ SPR_PLSE,		32768,		4,		{NULL},				S_PLASEXP2,				{ 0 },	{ 0 } },	// S_PLASEXP
-	{ SPR_PLSE,		32769,		4,		{NULL},				S_PLASEXP3,				{ 0 },	{ 0 } },	// S_PLASEXP2
-	{ SPR_PLSE,		32770,		4,		{NULL},				S_PLASEXP4,				{ 0 },	{ 0 } },	// S_PLASEXP3
-	{ SPR_PLSE,		32771,		4,		{NULL},				S_PLASEXP5,				{ 0 },	{ 0 } },	// S_PLASEXP4
-	{ SPR_PLSE,		32772,		4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PLASEXP5
-	{ SPR_MISL,		32768,		1,		{NULL},				S_ROCKET,				{ 0 },	{ 0 } },	// S_ROCKET
-	{ SPR_BFS1,		32768,		4,		{NULL},				S_BFGSHOT2,				{ 0 },	{ 0 } },	// S_BFGSHOT
-	{ SPR_BFS1,		32769,		4,		{NULL},				S_BFGSHOT,				{ 0 },	{ 0 } },	// S_BFGSHOT2
-	{ SPR_BFE1,		32768,		8,		{NULL},				S_BFGLAND2,				{ 0 },	{ 0 } },	// S_BFGLAND
-	{ SPR_BFE1,		32769,		8,		{NULL},				S_BFGLAND3,				{ 0 },	{ 0 } },	// S_BFGLAND2
+	{ SPR_BLUD,		2,			8,		{},					S_BLOOD2,				{ 0 },	{ 0 } },	// S_BLOOD1
+	{ SPR_BLUD,		1,			8,		{},					S_BLOOD3,				{ 0 },	{ 0 } },	// S_BLOOD2
+	{ SPR_BLUD,		0,			8,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BLOOD3
+	{ SPR_PUFF,		32768,		4,		{},					S_PUFF2,				{ 0 },	{ 0 } },	// S_PUFF1
+	{ SPR_PUFF,		1,			4,		{},					S_PUFF3,				{ 0 },	{ 0 } },	// S_PUFF2
+	{ SPR_PUFF,		2,			4,		{},					S_PUFF4,				{ 0 },	{ 0 } },	// S_PUFF3
+	{ SPR_PUFF,		3,			4,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PUFF4
+	{ SPR_BAL1,		32768,		4,		{},					S_TBALL2,				{ 0 },	{ 0 } },	// S_TBALL1
+	{ SPR_BAL1,		32769,		4,		{},					S_TBALL1,				{ 0 },	{ 0 } },	// S_TBALL2
+	{ SPR_BAL1,		32770,		6,		{},					S_TBALLX2,				{ 0 },	{ 0 } },	// S_TBALLX1
+	{ SPR_BAL1,		32771,		6,		{},					S_TBALLX3,				{ 0 },	{ 0 } },	// S_TBALLX2
+	{ SPR_BAL1,		32772,		6,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TBALLX3
+	{ SPR_BAL2,		32768,		4,		{},					S_RBALL2,				{ 0 },	{ 0 } },	// S_RBALL1
+	{ SPR_BAL2,		32769,		4,		{},					S_RBALL1,				{ 0 },	{ 0 } },	// S_RBALL2
+	{ SPR_BAL2,		32770,		6,		{},					S_RBALLX2,				{ 0 },	{ 0 } },	// S_RBALLX1
+	{ SPR_BAL2,		32771,		6,		{},					S_RBALLX3,				{ 0 },	{ 0 } },	// S_RBALLX2
+	{ SPR_BAL2,		32772,		6,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_RBALLX3
+	{ SPR_PLSS,		32768,		6,		{},					S_PLASBALL2,			{ 0 },	{ 0 } },	// S_PLASBALL
+	{ SPR_PLSS,		32769,		6,		{},					S_PLASBALL,				{ 0 },	{ 0 } },	// S_PLASBALL2
+	{ SPR_PLSE,		32768,		4,		{},					S_PLASEXP2,				{ 0 },	{ 0 } },	// S_PLASEXP
+	{ SPR_PLSE,		32769,		4,		{},					S_PLASEXP3,				{ 0 },	{ 0 } },	// S_PLASEXP2
+	{ SPR_PLSE,		32770,		4,		{},					S_PLASEXP4,				{ 0 },	{ 0 } },	// S_PLASEXP3
+	{ SPR_PLSE,		32771,		4,		{},					S_PLASEXP5,				{ 0 },	{ 0 } },	// S_PLASEXP4
+	{ SPR_PLSE,		32772,		4,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PLASEXP5
+	{ SPR_MISL,		32768,		1,		{},					S_ROCKET,				{ 0 },	{ 0 } },	// S_ROCKET
+	{ SPR_BFS1,		32768,		4,		{},					S_BFGSHOT2,				{ 0 },	{ 0 } },	// S_BFGSHOT
+	{ SPR_BFS1,		32769,		4,		{},					S_BFGSHOT,				{ 0 },	{ 0 } },	// S_BFGSHOT2
+	{ SPR_BFE1,		32768,		8,		{},					S_BFGLAND2,				{ 0 },	{ 0 } },	// S_BFGLAND
+	{ SPR_BFE1,		32769,		8,		{},					S_BFGLAND3,				{ 0 },	{ 0 } },	// S_BFGLAND2
 	{ SPR_BFE1,		32770,		8,		{A_BFGSpray},		S_BFGLAND4,				{ 0 },	{ 0 } },	// S_BFGLAND3
-	{ SPR_BFE1,		32771,		8,		{NULL},				S_BFGLAND5,				{ 0 },	{ 0 } },	// S_BFGLAND4
-	{ SPR_BFE1,		32772,		8,		{NULL},				S_BFGLAND6,				{ 0 },	{ 0 } },	// S_BFGLAND5
-	{ SPR_BFE1,		32773,		8,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BFGLAND6
-	{ SPR_BFE2,		32768,		8,		{NULL},				S_BFGEXP2,				{ 0 },	{ 0 } },	// S_BFGEXP
-	{ SPR_BFE2,		32769,		8,		{NULL},				S_BFGEXP3,				{ 0 },	{ 0 } },	// S_BFGEXP2
-	{ SPR_BFE2,		32770,		8,		{NULL},				S_BFGEXP4,				{ 0 },	{ 0 } },	// S_BFGEXP3
-	{ SPR_BFE2,		32771,		8,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BFGEXP4
+	{ SPR_BFE1,		32771,		8,		{},					S_BFGLAND5,				{ 0 },	{ 0 } },	// S_BFGLAND4
+	{ SPR_BFE1,		32772,		8,		{},					S_BFGLAND6,				{ 0 },	{ 0 } },	// S_BFGLAND5
+	{ SPR_BFE1,		32773,		8,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BFGLAND6
+	{ SPR_BFE2,		32768,		8,		{},					S_BFGEXP2,				{ 0 },	{ 0 } },	// S_BFGEXP
+	{ SPR_BFE2,		32769,		8,		{},					S_BFGEXP3,				{ 0 },	{ 0 } },	// S_BFGEXP2
+	{ SPR_BFE2,		32770,		8,		{},					S_BFGEXP4,				{ 0 },	{ 0 } },	// S_BFGEXP3
+	{ SPR_BFE2,		32771,		8,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BFGEXP4
 	{ SPR_MISL,		32769,		8,		{A_Explode},		S_EXPLODE2,				{ 0 },	{ 0 } },	// S_EXPLODE1
-	{ SPR_MISL,		32770,		6,		{NULL},				S_EXPLODE3,				{ 0 },	{ 0 } },	// S_EXPLODE2
-	{ SPR_MISL,		32771,		4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_EXPLODE3
-	{ SPR_TFOG,		32768,		6,		{NULL},				S_TFOG01,				{ 0 },	{ 0 } },	// S_TFOG
-	{ SPR_TFOG,		32769,		6,		{NULL},				S_TFOG02,				{ 0 },	{ 0 } },	// S_TFOG01
-	{ SPR_TFOG,		32768,		6,		{NULL},				S_TFOG2,				{ 0 },	{ 0 } },	// S_TFOG02
-	{ SPR_TFOG,		32769,		6,		{NULL},				S_TFOG3,				{ 0 },	{ 0 } },	// S_TFOG2
-	{ SPR_TFOG,		32770,		6,		{NULL},				S_TFOG4,				{ 0 },	{ 0 } },	// S_TFOG3
-	{ SPR_TFOG,		32771,		6,		{NULL},				S_TFOG5,				{ 0 },	{ 0 } },	// S_TFOG4
-	{ SPR_TFOG,		32772,		6,		{NULL},				S_TFOG6,				{ 0 },	{ 0 } },	// S_TFOG5
-	{ SPR_TFOG,		32773,		6,		{NULL},				S_TFOG7,				{ 0 },	{ 0 } },	// S_TFOG6
-	{ SPR_TFOG,		32774,		6,		{NULL},				S_TFOG8,				{ 0 },	{ 0 } },	// S_TFOG7
-	{ SPR_TFOG,		32775,		6,		{NULL},				S_TFOG9,				{ 0 },	{ 0 } },	// S_TFOG8
-	{ SPR_TFOG,		32776,		6,		{NULL},				S_TFOG10,				{ 0 },	{ 0 } },	// S_TFOG9
-	{ SPR_TFOG,		32777,		6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TFOG10
-	{ SPR_IFOG,		32768,		6,		{NULL},				S_IFOG01,				{ 0 },	{ 0 } },	// S_IFOG
-	{ SPR_IFOG,		32769,		6,		{NULL},				S_IFOG02,				{ 0 },	{ 0 } },	// S_IFOG01
-	{ SPR_IFOG,		32768,		6,		{NULL},				S_IFOG2,				{ 0 },	{ 0 } },	// S_IFOG02
-	{ SPR_IFOG,		32769,		6,		{NULL},				S_IFOG3,				{ 0 },	{ 0 } },	// S_IFOG2
-	{ SPR_IFOG,		32770,		6,		{NULL},				S_IFOG4,				{ 0 },	{ 0 } },	// S_IFOG3
-	{ SPR_IFOG,		32771,		6,		{NULL},				S_IFOG5,				{ 0 },	{ 0 } },	// S_IFOG4
-	{ SPR_IFOG,		32772,		6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_IFOG5
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PLAY
-	{ SPR_PLAY,		0,			4,		{NULL},				S_PLAY_RUN2,			{ 0 },	{ 0 } },	// S_PLAY_RUN1
-	{ SPR_PLAY,		1,			4,		{NULL},				S_PLAY_RUN3,			{ 0 },	{ 0 } },	// S_PLAY_RUN2
-	{ SPR_PLAY,		2,			4,		{NULL},				S_PLAY_RUN4,			{ 0 },	{ 0 } },	// S_PLAY_RUN3
-	{ SPR_PLAY,		3,			4,		{NULL},				S_PLAY_RUN1,			{ 0 },	{ 0 } },	// S_PLAY_RUN4
-	{ SPR_PLAY,		4,			12,		{NULL},				S_PLAY,					{ 0 },	{ 0 } },	// S_PLAY_ATK1
-	{ SPR_PLAY,		32773,		6,		{NULL},				S_PLAY_ATK1,			{ 0 },	{ 0 } },	// S_PLAY_ATK2
-	{ SPR_PLAY,		6,			4,		{NULL},				S_PLAY_PAIN2,			{ 0 },	{ 0 } },	// S_PLAY_PAIN
+	{ SPR_MISL,		32770,		6,		{},					S_EXPLODE3,				{ 0 },	{ 0 } },	// S_EXPLODE2
+	{ SPR_MISL,		32771,		4,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_EXPLODE3
+	{ SPR_TFOG,		32768,		6,		{},					S_TFOG01,				{ 0 },	{ 0 } },	// S_TFOG
+	{ SPR_TFOG,		32769,		6,		{},					S_TFOG02,				{ 0 },	{ 0 } },	// S_TFOG01
+	{ SPR_TFOG,		32768,		6,		{},					S_TFOG2,				{ 0 },	{ 0 } },	// S_TFOG02
+	{ SPR_TFOG,		32769,		6,		{},					S_TFOG3,				{ 0 },	{ 0 } },	// S_TFOG2
+	{ SPR_TFOG,		32770,		6,		{},					S_TFOG4,				{ 0 },	{ 0 } },	// S_TFOG3
+	{ SPR_TFOG,		32771,		6,		{},					S_TFOG5,				{ 0 },	{ 0 } },	// S_TFOG4
+	{ SPR_TFOG,		32772,		6,		{},					S_TFOG6,				{ 0 },	{ 0 } },	// S_TFOG5
+	{ SPR_TFOG,		32773,		6,		{},					S_TFOG7,				{ 0 },	{ 0 } },	// S_TFOG6
+	{ SPR_TFOG,		32774,		6,		{},					S_TFOG8,				{ 0 },	{ 0 } },	// S_TFOG7
+	{ SPR_TFOG,		32775,		6,		{},					S_TFOG9,				{ 0 },	{ 0 } },	// S_TFOG8
+	{ SPR_TFOG,		32776,		6,		{},					S_TFOG10,				{ 0 },	{ 0 } },	// S_TFOG9
+	{ SPR_TFOG,		32777,		6,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TFOG10
+	{ SPR_IFOG,		32768,		6,		{},					S_IFOG01,				{ 0 },	{ 0 } },	// S_IFOG
+	{ SPR_IFOG,		32769,		6,		{},					S_IFOG02,				{ 0 },	{ 0 } },	// S_IFOG01
+	{ SPR_IFOG,		32768,		6,		{},					S_IFOG2,				{ 0 },	{ 0 } },	// S_IFOG02
+	{ SPR_IFOG,		32769,		6,		{},					S_IFOG3,				{ 0 },	{ 0 } },	// S_IFOG2
+	{ SPR_IFOG,		32770,		6,		{},					S_IFOG4,				{ 0 },	{ 0 } },	// S_IFOG3
+	{ SPR_IFOG,		32771,		6,		{},					S_IFOG5,				{ 0 },	{ 0 } },	// S_IFOG4
+	{ SPR_IFOG,		32772,		6,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_IFOG5
+	{ SPR_PLAY,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PLAY
+	{ SPR_PLAY,		0,			4,		{},					S_PLAY_RUN2,			{ 0 },	{ 0 } },	// S_PLAY_RUN1
+	{ SPR_PLAY,		1,			4,		{},					S_PLAY_RUN3,			{ 0 },	{ 0 } },	// S_PLAY_RUN2
+	{ SPR_PLAY,		2,			4,		{},					S_PLAY_RUN4,			{ 0 },	{ 0 } },	// S_PLAY_RUN3
+	{ SPR_PLAY,		3,			4,		{},					S_PLAY_RUN1,			{ 0 },	{ 0 } },	// S_PLAY_RUN4
+	{ SPR_PLAY,		4,			12,		{},					S_PLAY,					{ 0 },	{ 0 } },	// S_PLAY_ATK1
+	{ SPR_PLAY,		32773,		6,		{},					S_PLAY_ATK1,			{ 0 },	{ 0 } },	// S_PLAY_ATK2
+	{ SPR_PLAY,		6,			4,		{},					S_PLAY_PAIN2,			{ 0 },	{ 0 } },	// S_PLAY_PAIN
 	{ SPR_PLAY,		6,			4,		{A_Pain},			S_PLAY,					{ 0 },	{ 0 } },	// S_PLAY_PAIN2
-	{ SPR_PLAY,		7,			10,		{NULL},				S_PLAY_DIE2,			{ 0 },	{ 0 } },	// S_PLAY_DIE1
+	{ SPR_PLAY,		7,			10,		{},					S_PLAY_DIE2,			{ 0 },	{ 0 } },	// S_PLAY_DIE1
 	{ SPR_PLAY,		8,			10,		{A_PlayerScream},	S_PLAY_DIE3,			{ 0 },	{ 0 } },	// S_PLAY_DIE2
 	{ SPR_PLAY,		9,			10,		{A_Fall},			S_PLAY_DIE4,			{ 0 },	{ 0 } },	// S_PLAY_DIE3
-	{ SPR_PLAY,		10,			10,		{NULL},				S_PLAY_DIE5,			{ 0 },	{ 0 } },	// S_PLAY_DIE4
-	{ SPR_PLAY,		11,			10,		{NULL},				S_PLAY_DIE6,			{ 0 },	{ 0 } },	// S_PLAY_DIE5
-	{ SPR_PLAY,		12,			10,		{NULL},				S_PLAY_DIE7,			{ 0 },	{ 0 } },	// S_PLAY_DIE6
-	{ SPR_PLAY,		13,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PLAY_DIE7
-	{ SPR_PLAY,		14,			5,		{NULL},				S_PLAY_XDIE2,			{ 0 },	{ 0 } },	// S_PLAY_XDIE1
+	{ SPR_PLAY,		10,			10,		{},					S_PLAY_DIE5,			{ 0 },	{ 0 } },	// S_PLAY_DIE4
+	{ SPR_PLAY,		11,			10,		{},					S_PLAY_DIE6,			{ 0 },	{ 0 } },	// S_PLAY_DIE5
+	{ SPR_PLAY,		12,			10,		{},					S_PLAY_DIE7,			{ 0 },	{ 0 } },	// S_PLAY_DIE6
+	{ SPR_PLAY,		13,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PLAY_DIE7
+	{ SPR_PLAY,		14,			5,		{},					S_PLAY_XDIE2,			{ 0 },	{ 0 } },	// S_PLAY_XDIE1
 	{ SPR_PLAY,		15,			5,		{A_XScream},		S_PLAY_XDIE3,			{ 0 },	{ 0 } },	// S_PLAY_XDIE2
 	{ SPR_PLAY,		16,			5,		{A_Fall},			S_PLAY_XDIE4,			{ 0 },	{ 0 } },	// S_PLAY_XDIE3
-	{ SPR_PLAY,		17,			5,		{NULL},				S_PLAY_XDIE5,			{ 0 },	{ 0 } },	// S_PLAY_XDIE4
-	{ SPR_PLAY,		18,			5,		{NULL},				S_PLAY_XDIE6,			{ 0 },	{ 0 } },	// S_PLAY_XDIE5
-	{ SPR_PLAY,		19,			5,		{NULL},				S_PLAY_XDIE7,			{ 0 },	{ 0 } },	// S_PLAY_XDIE6
-	{ SPR_PLAY,		20,			5,		{NULL},				S_PLAY_XDIE8,			{ 0 },	{ 0 } },	// S_PLAY_XDIE7
-	{ SPR_PLAY,		21,			5,		{NULL},				S_PLAY_XDIE9,			{ 0 },	{ 0 } },	// S_PLAY_XDIE8
-	{ SPR_PLAY,		22,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PLAY_XDIE9
+	{ SPR_PLAY,		17,			5,		{},					S_PLAY_XDIE5,			{ 0 },	{ 0 } },	// S_PLAY_XDIE4
+	{ SPR_PLAY,		18,			5,		{},					S_PLAY_XDIE6,			{ 0 },	{ 0 } },	// S_PLAY_XDIE5
+	{ SPR_PLAY,		19,			5,		{},					S_PLAY_XDIE7,			{ 0 },	{ 0 } },	// S_PLAY_XDIE6
+	{ SPR_PLAY,		20,			5,		{},					S_PLAY_XDIE8,			{ 0 },	{ 0 } },	// S_PLAY_XDIE7
+	{ SPR_PLAY,		21,			5,		{},					S_PLAY_XDIE9,			{ 0 },	{ 0 } },	// S_PLAY_XDIE8
+	{ SPR_PLAY,		22,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PLAY_XDIE9
 	{ SPR_POSS,		0,			10,		{A_Look},			S_POSS_STND2,			{ 0 },	{ 0 } },	// S_POSS_STND
 	{ SPR_POSS,		1,			10,		{A_Look},			S_POSS_STND,			{ 0 },	{ 0 } },	// S_POSS_STND2
 	{ SPR_POSS,		0,			4,		{A_Chase},			S_POSS_RUN2,			{ 0 },	{ 0 } },	// S_POSS_RUN1
@@ -380,27 +389,27 @@ state_t	states[NUMSTATES] =
 	{ SPR_POSS,		3,			4,		{A_Chase},			S_POSS_RUN1,			{ 0 },	{ 0 } },	// S_POSS_RUN8
 	{ SPR_POSS,		4,			10,		{A_FaceTarget},		S_POSS_ATK2,			{ 0 },	{ 0 } },	// S_POSS_ATK1
 	{ SPR_POSS,		5,			8,		{A_PosAttack},		S_POSS_ATK3,			{ 0 },	{ 0 } },	// S_POSS_ATK2
-	{ SPR_POSS,		4,			8,		{NULL},				S_POSS_RUN1,			{ 0 },	{ 0 } },	// S_POSS_ATK3
-	{ SPR_POSS,		6,			3,		{NULL},				S_POSS_PAIN2,			{ 0 },	{ 0 } },	// S_POSS_PAIN
+	{ SPR_POSS,		4,			8,		{},					S_POSS_RUN1,			{ 0 },	{ 0 } },	// S_POSS_ATK3
+	{ SPR_POSS,		6,			3,		{},					S_POSS_PAIN2,			{ 0 },	{ 0 } },	// S_POSS_PAIN
 	{ SPR_POSS,		6,			3,		{A_Pain},			S_POSS_RUN1,			{ 0 },	{ 0 } },	// S_POSS_PAIN2
-	{ SPR_POSS,		7,			5,		{NULL},				S_POSS_DIE2,			{ 0 },	{ 0 } },	// S_POSS_DIE1
+	{ SPR_POSS,		7,			5,		{},					S_POSS_DIE2,			{ 0 },	{ 0 } },	// S_POSS_DIE1
 	{ SPR_POSS,		8,			5,		{A_Scream},			S_POSS_DIE3,			{ 0 },	{ 0 } },	// S_POSS_DIE2
 	{ SPR_POSS,		9,			5,		{A_Fall},			S_POSS_DIE4,			{ 0 },	{ 0 } },	// S_POSS_DIE3
-	{ SPR_POSS,		10,			5,		{NULL},				S_POSS_DIE5,			{ 0 },	{ 0 } },	// S_POSS_DIE4
-	{ SPR_POSS,		11,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_POSS_DIE5
-	{ SPR_POSS,		12,			5,		{NULL},				S_POSS_XDIE2,			{ 0 },	{ 0 } },	// S_POSS_XDIE1
+	{ SPR_POSS,		10,			5,		{},					S_POSS_DIE5,			{ 0 },	{ 0 } },	// S_POSS_DIE4
+	{ SPR_POSS,		11,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_POSS_DIE5
+	{ SPR_POSS,		12,			5,		{},					S_POSS_XDIE2,			{ 0 },	{ 0 } },	// S_POSS_XDIE1
 	{ SPR_POSS,		13,			5,		{A_XScream},		S_POSS_XDIE3,			{ 0 },	{ 0 } },	// S_POSS_XDIE2
 	{ SPR_POSS,		14,			5,		{A_Fall},			S_POSS_XDIE4,			{ 0 },	{ 0 } },	// S_POSS_XDIE3
-	{ SPR_POSS,		15,			5,		{NULL},				S_POSS_XDIE5,			{ 0 },	{ 0 } },	// S_POSS_XDIE4
-	{ SPR_POSS,		16,			5,		{NULL},				S_POSS_XDIE6,			{ 0 },	{ 0 } },	// S_POSS_XDIE5
-	{ SPR_POSS,		17,			5,		{NULL},				S_POSS_XDIE7,			{ 0 },	{ 0 } },	// S_POSS_XDIE6
-	{ SPR_POSS,		18,			5,		{NULL},				S_POSS_XDIE8,			{ 0 },	{ 0 } },	// S_POSS_XDIE7
-	{ SPR_POSS,		19,			5,		{NULL},				S_POSS_XDIE9,			{ 0 },	{ 0 } },	// S_POSS_XDIE8
-	{ SPR_POSS,		20,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_POSS_XDIE9
-	{ SPR_POSS,		10,			5,		{NULL},				S_POSS_RAISE2,			{ 0 },	{ 0 } },	// S_POSS_RAISE1
-	{ SPR_POSS,		9,			5,		{NULL},				S_POSS_RAISE3,			{ 0 },	{ 0 } },	// S_POSS_RAISE2
-	{ SPR_POSS,		8,			5,		{NULL},				S_POSS_RAISE4,			{ 0 },	{ 0 } },	// S_POSS_RAISE3
-	{ SPR_POSS,		7,			5,		{NULL},				S_POSS_RUN1,			{ 0 },	{ 0 } },	// S_POSS_RAISE4
+	{ SPR_POSS,		15,			5,		{},					S_POSS_XDIE5,			{ 0 },	{ 0 } },	// S_POSS_XDIE4
+	{ SPR_POSS,		16,			5,		{},					S_POSS_XDIE6,			{ 0 },	{ 0 } },	// S_POSS_XDIE5
+	{ SPR_POSS,		17,			5,		{},					S_POSS_XDIE7,			{ 0 },	{ 0 } },	// S_POSS_XDIE6
+	{ SPR_POSS,		18,			5,		{},					S_POSS_XDIE8,			{ 0 },	{ 0 } },	// S_POSS_XDIE7
+	{ SPR_POSS,		19,			5,		{},					S_POSS_XDIE9,			{ 0 },	{ 0 } },	// S_POSS_XDIE8
+	{ SPR_POSS,		20,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_POSS_XDIE9
+	{ SPR_POSS,		10,			5,		{},					S_POSS_RAISE2,			{ 0 },	{ 0 } },	// S_POSS_RAISE1
+	{ SPR_POSS,		9,			5,		{},					S_POSS_RAISE3,			{ 0 },	{ 0 } },	// S_POSS_RAISE2
+	{ SPR_POSS,		8,			5,		{},					S_POSS_RAISE4,			{ 0 },	{ 0 } },	// S_POSS_RAISE3
+	{ SPR_POSS,		7,			5,		{},					S_POSS_RUN1,			{ 0 },	{ 0 } },	// S_POSS_RAISE4
 	{ SPR_SPOS,		0,			10,		{A_Look},			S_SPOS_STND2,			{ 0 },	{ 0 } },	// S_SPOS_STND
 	{ SPR_SPOS,		1,			10,		{A_Look},			S_SPOS_STND,			{ 0 },	{ 0 } },	// S_SPOS_STND2
 	{ SPR_SPOS,		0,			3,		{A_Chase},			S_SPOS_RUN2,			{ 0 },	{ 0 } },	// S_SPOS_RUN1
@@ -413,28 +422,28 @@ state_t	states[NUMSTATES] =
 	{ SPR_SPOS,		3,			3,		{A_Chase},			S_SPOS_RUN1,			{ 0 },	{ 0 } },	// S_SPOS_RUN8
 	{ SPR_SPOS,		4,			10,		{A_FaceTarget},		S_SPOS_ATK2,			{ 0 },	{ 0 } },	// S_SPOS_ATK1
 	{ SPR_SPOS,		32773,		10,		{A_SPosAttack},		S_SPOS_ATK3,			{ 0 },	{ 0 } },	// S_SPOS_ATK2
-	{ SPR_SPOS,		4,			10,		{NULL},				S_SPOS_RUN1,			{ 0 },	{ 0 } },	// S_SPOS_ATK3
-	{ SPR_SPOS,		6,			3,		{NULL},				S_SPOS_PAIN2,			{ 0 },	{ 0 } },	// S_SPOS_PAIN
+	{ SPR_SPOS,		4,			10,		{},					S_SPOS_RUN1,			{ 0 },	{ 0 } },	// S_SPOS_ATK3
+	{ SPR_SPOS,		6,			3,		{},					S_SPOS_PAIN2,			{ 0 },	{ 0 } },	// S_SPOS_PAIN
 	{ SPR_SPOS,		6,			3,		{A_Pain},			S_SPOS_RUN1,			{ 0 },	{ 0 } },	// S_SPOS_PAIN2
-	{ SPR_SPOS,		7,			5,		{NULL},				S_SPOS_DIE2,			{ 0 },	{ 0 } },	// S_SPOS_DIE1
+	{ SPR_SPOS,		7,			5,		{},					S_SPOS_DIE2,			{ 0 },	{ 0 } },	// S_SPOS_DIE1
 	{ SPR_SPOS,		8,			5,		{A_Scream},			S_SPOS_DIE3,			{ 0 },	{ 0 } },	// S_SPOS_DIE2
 	{ SPR_SPOS,		9,			5,		{A_Fall},			S_SPOS_DIE4,			{ 0 },	{ 0 } },	// S_SPOS_DIE3
-	{ SPR_SPOS,		10,			5,		{NULL},				S_SPOS_DIE5,			{ 0 },	{ 0 } },	// S_SPOS_DIE4
-	{ SPR_SPOS,		11,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SPOS_DIE5
-	{ SPR_SPOS,		12,			5,		{NULL},				S_SPOS_XDIE2,			{ 0 },	{ 0 } },	// S_SPOS_XDIE1
+	{ SPR_SPOS,		10,			5,		{},					S_SPOS_DIE5,			{ 0 },	{ 0 } },	// S_SPOS_DIE4
+	{ SPR_SPOS,		11,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SPOS_DIE5
+	{ SPR_SPOS,		12,			5,		{},					S_SPOS_XDIE2,			{ 0 },	{ 0 } },	// S_SPOS_XDIE1
 	{ SPR_SPOS,		13,			5,		{A_XScream},		S_SPOS_XDIE3,			{ 0 },	{ 0 } },	// S_SPOS_XDIE2
 	{ SPR_SPOS,		14,			5,		{A_Fall},			S_SPOS_XDIE4,			{ 0 },	{ 0 } },	// S_SPOS_XDIE3
-	{ SPR_SPOS,		15,			5,		{NULL},				S_SPOS_XDIE5,			{ 0 },	{ 0 } },	// S_SPOS_XDIE4
-	{ SPR_SPOS,		16,			5,		{NULL},				S_SPOS_XDIE6,			{ 0 },	{ 0 } },	// S_SPOS_XDIE5
-	{ SPR_SPOS,		17,			5,		{NULL},				S_SPOS_XDIE7,			{ 0 },	{ 0 } },	// S_SPOS_XDIE6
-	{ SPR_SPOS,		18,			5,		{NULL},				S_SPOS_XDIE8,			{ 0 },	{ 0 } },	// S_SPOS_XDIE7
-	{ SPR_SPOS,		19,			5,		{NULL},				S_SPOS_XDIE9,			{ 0 },	{ 0 } },	// S_SPOS_XDIE8
-	{ SPR_SPOS,		20,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SPOS_XDIE9
-	{ SPR_SPOS,		11,			5,		{NULL},				S_SPOS_RAISE2,			{ 0 },	{ 0 } },	// S_SPOS_RAISE1
-	{ SPR_SPOS,		10,			5,		{NULL},				S_SPOS_RAISE3,			{ 0 },	{ 0 } },	// S_SPOS_RAISE2
-	{ SPR_SPOS,		9,			5,		{NULL},				S_SPOS_RAISE4,			{ 0 },	{ 0 } },	// S_SPOS_RAISE3
-	{ SPR_SPOS,		8,			5,		{NULL},				S_SPOS_RAISE5,			{ 0 },	{ 0 } },	// S_SPOS_RAISE4
-	{ SPR_SPOS,		7,			5,		{NULL},				S_SPOS_RUN1,			{ 0 },	{ 0 } },	// S_SPOS_RAISE5
+	{ SPR_SPOS,		15,			5,		{},					S_SPOS_XDIE5,			{ 0 },	{ 0 } },	// S_SPOS_XDIE4
+	{ SPR_SPOS,		16,			5,		{},					S_SPOS_XDIE6,			{ 0 },	{ 0 } },	// S_SPOS_XDIE5
+	{ SPR_SPOS,		17,			5,		{},					S_SPOS_XDIE7,			{ 0 },	{ 0 } },	// S_SPOS_XDIE6
+	{ SPR_SPOS,		18,			5,		{},					S_SPOS_XDIE8,			{ 0 },	{ 0 } },	// S_SPOS_XDIE7
+	{ SPR_SPOS,		19,			5,		{},					S_SPOS_XDIE9,			{ 0 },	{ 0 } },	// S_SPOS_XDIE8
+	{ SPR_SPOS,		20,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SPOS_XDIE9
+	{ SPR_SPOS,		11,			5,		{},					S_SPOS_RAISE2,			{ 0 },	{ 0 } },	// S_SPOS_RAISE1
+	{ SPR_SPOS,		10,			5,		{},					S_SPOS_RAISE3,			{ 0 },	{ 0 } },	// S_SPOS_RAISE2
+	{ SPR_SPOS,		9,			5,		{},					S_SPOS_RAISE4,			{ 0 },	{ 0 } },	// S_SPOS_RAISE3
+	{ SPR_SPOS,		8,			5,		{},					S_SPOS_RAISE5,			{ 0 },	{ 0 } },	// S_SPOS_RAISE4
+	{ SPR_SPOS,		7,			5,		{},					S_SPOS_RUN1,			{ 0 },	{ 0 } },	// S_SPOS_RAISE5
 	{ SPR_VILE,		0,			10,		{A_Look},			S_VILE_STND2,			{ 0 },	{ 0 } },	// S_VILE_STND
 	{ SPR_VILE,		1,			10,		{A_Look},			S_VILE_STND,			{ 0 },	{ 0 } },	// S_VILE_STND2
 	{ SPR_VILE,		0,			2,		{A_VileChase},		S_VILE_RUN2,			{ 0 },	{ 0 } },	// S_VILE_RUN1
@@ -459,22 +468,22 @@ state_t	states[NUMSTATES] =
 	{ SPR_VILE,		32780,		8,		{A_FaceTarget},		S_VILE_ATK9,			{ 0 },	{ 0 } },	// S_VILE_ATK8
 	{ SPR_VILE,		32781,		8,		{A_FaceTarget},		S_VILE_ATK10,			{ 0 },	{ 0 } },	// S_VILE_ATK9
 	{ SPR_VILE,		32782,		8,		{A_VileAttack},		S_VILE_ATK11,			{ 0 },	{ 0 } },	// S_VILE_ATK10
-	{ SPR_VILE,		32783,		20,		{NULL},				S_VILE_RUN1,			{ 0 },	{ 0 } },	// S_VILE_ATK11
-	{ SPR_VILE,		32794,		10,		{NULL},				S_VILE_HEAL2,			{ 0 },	{ 0 } },	// S_VILE_HEAL1
-	{ SPR_VILE,		32795,		10,		{NULL},				S_VILE_HEAL3,			{ 0 },	{ 0 } },	// S_VILE_HEAL2
-	{ SPR_VILE,		32796,		10,		{NULL},				S_VILE_RUN1,			{ 0 },	{ 0 } },	// S_VILE_HEAL3
-	{ SPR_VILE,		16,			5,		{NULL},				S_VILE_PAIN2,			{ 0 },	{ 0 } },	// S_VILE_PAIN
+	{ SPR_VILE,		32783,		20,		{},					S_VILE_RUN1,			{ 0 },	{ 0 } },	// S_VILE_ATK11
+	{ SPR_VILE,		32794,		10,		{},					S_VILE_HEAL2,			{ 0 },	{ 0 } },	// S_VILE_HEAL1
+	{ SPR_VILE,		32795,		10,		{},					S_VILE_HEAL3,			{ 0 },	{ 0 } },	// S_VILE_HEAL2
+	{ SPR_VILE,		32796,		10,		{},					S_VILE_RUN1,			{ 0 },	{ 0 } },	// S_VILE_HEAL3
+	{ SPR_VILE,		16,			5,		{},					S_VILE_PAIN2,			{ 0 },	{ 0 } },	// S_VILE_PAIN
 	{ SPR_VILE,		16,			5,		{A_Pain},			S_VILE_RUN1,			{ 0 },	{ 0 } },	// S_VILE_PAIN2
-	{ SPR_VILE,		16,			7,		{NULL},				S_VILE_DIE2,			{ 0 },	{ 0 } },	// S_VILE_DIE1
+	{ SPR_VILE,		16,			7,		{},					S_VILE_DIE2,			{ 0 },	{ 0 } },	// S_VILE_DIE1
 	{ SPR_VILE,		17,			7,		{A_Scream},			S_VILE_DIE3,			{ 0 },	{ 0 } },	// S_VILE_DIE2
 	{ SPR_VILE,		18,			7,		{A_Fall},			S_VILE_DIE4,			{ 0 },	{ 0 } },	// S_VILE_DIE3
-	{ SPR_VILE,		19,			7,		{NULL},				S_VILE_DIE5,			{ 0 },	{ 0 } },	// S_VILE_DIE4
-	{ SPR_VILE,		20,			7,		{NULL},				S_VILE_DIE6,			{ 0 },	{ 0 } },	// S_VILE_DIE5
-	{ SPR_VILE,		21,			7,		{NULL},				S_VILE_DIE7,			{ 0 },	{ 0 } },	// S_VILE_DIE6
-	{ SPR_VILE,		22,			7,		{NULL},				S_VILE_DIE8,			{ 0 },	{ 0 } },	// S_VILE_DIE7
-	{ SPR_VILE,		23,			5,		{NULL},				S_VILE_DIE9,			{ 0 },	{ 0 } },	// S_VILE_DIE8
-	{ SPR_VILE,		24,			5,		{NULL},				S_VILE_DIE10,			{ 0 },	{ 0 } },	// S_VILE_DIE9
-	{ SPR_VILE,		25,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_VILE_DIE10
+	{ SPR_VILE,		19,			7,		{},					S_VILE_DIE5,			{ 0 },	{ 0 } },	// S_VILE_DIE4
+	{ SPR_VILE,		20,			7,		{},					S_VILE_DIE6,			{ 0 },	{ 0 } },	// S_VILE_DIE5
+	{ SPR_VILE,		21,			7,		{},					S_VILE_DIE7,			{ 0 },	{ 0 } },	// S_VILE_DIE6
+	{ SPR_VILE,		22,			7,		{},					S_VILE_DIE8,			{ 0 },	{ 0 } },	// S_VILE_DIE7
+	{ SPR_VILE,		23,			5,		{},					S_VILE_DIE9,			{ 0 },	{ 0 } },	// S_VILE_DIE8
+	{ SPR_VILE,		24,			5,		{},					S_VILE_DIE10,			{ 0 },	{ 0 } },	// S_VILE_DIE9
+	{ SPR_VILE,		25,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_VILE_DIE10
 	{ SPR_FIRE,		32768,		2,		{A_StartFire},		S_FIRE2,				{ 0 },	{ 0 } },	// S_FIRE1
 	{ SPR_FIRE,		32769,		2,		{A_Fire},			S_FIRE3,				{ 0 },	{ 0 } },	// S_FIRE2
 	{ SPR_FIRE,		32768,		2,		{A_Fire},			S_FIRE4,				{ 0 },	{ 0 } },	// S_FIRE3
@@ -505,16 +514,16 @@ state_t	states[NUMSTATES] =
 	{ SPR_FIRE,		32775,		2,		{A_Fire},			S_FIRE29,				{ 0 },	{ 0 } },	// S_FIRE28
 	{ SPR_FIRE,		32774,		2,		{A_Fire},			S_FIRE30,				{ 0 },	{ 0 } },	// S_FIRE29
 	{ SPR_FIRE,		32775,		2,		{A_Fire},			S_NULL,					{ 0 },	{ 0 } },	// S_FIRE30
-	{ SPR_PUFF,		1,			4,		{NULL},				S_SMOKE2,				{ 0 },	{ 0 } },	// S_SMOKE1
-	{ SPR_PUFF,		2,			4,		{NULL},				S_SMOKE3,				{ 0 },	{ 0 } },	// S_SMOKE2
-	{ SPR_PUFF,		1,			4,		{NULL},				S_SMOKE4,				{ 0 },	{ 0 } },	// S_SMOKE3
-	{ SPR_PUFF,		2,			4,		{NULL},				S_SMOKE5,				{ 0 },	{ 0 } },	// S_SMOKE4
-	{ SPR_PUFF,		3,			4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SMOKE5
+	{ SPR_PUFF,		1,			4,		{},					S_SMOKE2,				{ 0 },	{ 0 } },	// S_SMOKE1
+	{ SPR_PUFF,		2,			4,		{},					S_SMOKE3,				{ 0 },	{ 0 } },	// S_SMOKE2
+	{ SPR_PUFF,		1,			4,		{},					S_SMOKE4,				{ 0 },	{ 0 } },	// S_SMOKE3
+	{ SPR_PUFF,		2,			4,		{},					S_SMOKE5,				{ 0 },	{ 0 } },	// S_SMOKE4
+	{ SPR_PUFF,		3,			4,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SMOKE5
 	{ SPR_FATB,		32768,		2,		{A_Tracer},			S_TRACER2,				{ 0 },	{ 0 } },	// S_TRACER
 	{ SPR_FATB,		32769,		2,		{A_Tracer},			S_TRACER,				{ 0 },	{ 0 } },	// S_TRACER2
-	{ SPR_FBXP,		32768,		8,		{NULL},				S_TRACEEXP2,			{ 0 },	{ 0 } },	// S_TRACEEXP1
-	{ SPR_FBXP,		32769,		6,		{NULL},				S_TRACEEXP3,			{ 0 },	{ 0 } },	// S_TRACEEXP2
-	{ SPR_FBXP,		32770,		4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TRACEEXP3
+	{ SPR_FBXP,		32768,		8,		{},					S_TRACEEXP2,			{ 0 },	{ 0 } },	// S_TRACEEXP1
+	{ SPR_FBXP,		32769,		6,		{},					S_TRACEEXP3,			{ 0 },	{ 0 } },	// S_TRACEEXP2
+	{ SPR_FBXP,		32770,		4,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TRACEEXP3
 	{ SPR_SKEL,		0,			10,		{A_Look},			S_SKEL_STND2,			{ 0 },	{ 0 } },	// S_SKEL_STND
 	{ SPR_SKEL,		1,			10,		{A_Look},			S_SKEL_STND,			{ 0 },	{ 0 } },	// S_SKEL_STND2
 	{ SPR_SKEL,		0,			2,		{A_Chase},			S_SKEL_RUN2,			{ 0 },	{ 0 } },	// S_SKEL_RUN1
@@ -537,25 +546,25 @@ state_t	states[NUMSTATES] =
 	{ SPR_SKEL,		32777,		10,		{A_FaceTarget},		S_SKEL_MISS3,			{ 0 },	{ 0 } },	// S_SKEL_MISS2
 	{ SPR_SKEL,		10,			10,		{A_SkelMissile},	S_SKEL_MISS4,			{ 0 },	{ 0 } },	// S_SKEL_MISS3
 	{ SPR_SKEL,		10,			10,		{A_FaceTarget},		S_SKEL_RUN1,			{ 0 },	{ 0 } },	// S_SKEL_MISS4
-	{ SPR_SKEL,		11,			5,		{NULL},				S_SKEL_PAIN2,			{ 0 },	{ 0 } },	// S_SKEL_PAIN
+	{ SPR_SKEL,		11,			5,		{},					S_SKEL_PAIN2,			{ 0 },	{ 0 } },	// S_SKEL_PAIN
 	{ SPR_SKEL,		11,			5,		{A_Pain},			S_SKEL_RUN1,			{ 0 },	{ 0 } },	// S_SKEL_PAIN2
-	{ SPR_SKEL,		11,			7,		{NULL},				S_SKEL_DIE2,			{ 0 },	{ 0 } },	// S_SKEL_DIE1
-	{ SPR_SKEL,		12,			7,		{NULL},				S_SKEL_DIE3,			{ 0 },	{ 0 } },	// S_SKEL_DIE2
+	{ SPR_SKEL,		11,			7,		{},					S_SKEL_DIE2,			{ 0 },	{ 0 } },	// S_SKEL_DIE1
+	{ SPR_SKEL,		12,			7,		{},					S_SKEL_DIE3,			{ 0 },	{ 0 } },	// S_SKEL_DIE2
 	{ SPR_SKEL,		13,			7,		{A_Scream},			S_SKEL_DIE4,			{ 0 },	{ 0 } },	// S_SKEL_DIE3
 	{ SPR_SKEL,		14,			7,		{A_Fall},			S_SKEL_DIE5,			{ 0 },	{ 0 } },	// S_SKEL_DIE4
-	{ SPR_SKEL,		15,			7,		{NULL},				S_SKEL_DIE6,			{ 0 },	{ 0 } },	// S_SKEL_DIE5
-	{ SPR_SKEL,		16,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SKEL_DIE6
-	{ SPR_SKEL,		16,			5,		{NULL},				S_SKEL_RAISE2,			{ 0 },	{ 0 } },	// S_SKEL_RAISE1
-	{ SPR_SKEL,		15,			5,		{NULL},				S_SKEL_RAISE3,			{ 0 },	{ 0 } },	// S_SKEL_RAISE2
-	{ SPR_SKEL,		14,			5,		{NULL},				S_SKEL_RAISE4,			{ 0 },	{ 0 } },	// S_SKEL_RAISE3
-	{ SPR_SKEL,		13,			5,		{NULL},				S_SKEL_RAISE5,			{ 0 },	{ 0 } },	// S_SKEL_RAISE4
-	{ SPR_SKEL,		12,			5,		{NULL},				S_SKEL_RAISE6,			{ 0 },	{ 0 } },	// S_SKEL_RAISE5
-	{ SPR_SKEL,		11,			5,		{NULL},				S_SKEL_RUN1,			{ 0 },	{ 0 } },	// S_SKEL_RAISE6
-	{ SPR_MANF,		32768,		4,		{NULL},				S_FATSHOT2,				{ 0 },	{ 0 } },	// S_FATSHOT1
-	{ SPR_MANF,		32769,		4,		{NULL},				S_FATSHOT1,				{ 0 },	{ 0 } },	// S_FATSHOT2
-	{ SPR_MISL,		32769,		8,		{NULL},				S_FATSHOTX2,			{ 0 },	{ 0 } },	// S_FATSHOTX1
-	{ SPR_MISL,		32770,		6,		{NULL},				S_FATSHOTX3,			{ 0 },	{ 0 } },	// S_FATSHOTX2
-	{ SPR_MISL,		32771,		4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_FATSHOTX3
+	{ SPR_SKEL,		15,			7,		{},					S_SKEL_DIE6,			{ 0 },	{ 0 } },	// S_SKEL_DIE5
+	{ SPR_SKEL,		16,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SKEL_DIE6
+	{ SPR_SKEL,		16,			5,		{},					S_SKEL_RAISE2,			{ 0 },	{ 0 } },	// S_SKEL_RAISE1
+	{ SPR_SKEL,		15,			5,		{},					S_SKEL_RAISE3,			{ 0 },	{ 0 } },	// S_SKEL_RAISE2
+	{ SPR_SKEL,		14,			5,		{},					S_SKEL_RAISE4,			{ 0 },	{ 0 } },	// S_SKEL_RAISE3
+	{ SPR_SKEL,		13,			5,		{},					S_SKEL_RAISE5,			{ 0 },	{ 0 } },	// S_SKEL_RAISE4
+	{ SPR_SKEL,		12,			5,		{},					S_SKEL_RAISE6,			{ 0 },	{ 0 } },	// S_SKEL_RAISE5
+	{ SPR_SKEL,		11,			5,		{},					S_SKEL_RUN1,			{ 0 },	{ 0 } },	// S_SKEL_RAISE6
+	{ SPR_MANF,		32768,		4,		{},					S_FATSHOT2,				{ 0 },	{ 0 } },	// S_FATSHOT1
+	{ SPR_MANF,		32769,		4,		{},					S_FATSHOT1,				{ 0 },	{ 0 } },	// S_FATSHOT2
+	{ SPR_MISL,		32769,		8,		{},					S_FATSHOTX2,			{ 0 },	{ 0 } },	// S_FATSHOTX1
+	{ SPR_MISL,		32770,		6,		{},					S_FATSHOTX3,			{ 0 },	{ 0 } },	// S_FATSHOTX2
+	{ SPR_MISL,		32771,		4,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_FATSHOTX3
 	{ SPR_FATT,		0,			15,		{A_Look},			S_FATT_STND2,			{ 0 },	{ 0 } },	// S_FATT_STND
 	{ SPR_FATT,		1,			15,		{A_Look},			S_FATT_STND,			{ 0 },	{ 0 } },	// S_FATT_STND2
 	{ SPR_FATT,		0,			4,		{A_Chase},			S_FATT_RUN2,			{ 0 },	{ 0 } },	// S_FATT_RUN1
@@ -580,26 +589,26 @@ state_t	states[NUMSTATES] =
 	{ SPR_FATT,		32775,		10,		{A_FatAttack3},		S_FATT_ATK9,			{ 0 },	{ 0 } },	// S_FATT_ATK8
 	{ SPR_FATT,		8,			5,		{A_FaceTarget},		S_FATT_ATK10,			{ 0 },	{ 0 } },	// S_FATT_ATK9
 	{ SPR_FATT,		6,			5,		{A_FaceTarget},		S_FATT_RUN1,			{ 0 },	{ 0 } },	// S_FATT_ATK10
-	{ SPR_FATT,		9,			3,		{NULL},				S_FATT_PAIN2,			{ 0 },	{ 0 } },	// S_FATT_PAIN
+	{ SPR_FATT,		9,			3,		{},					S_FATT_PAIN2,			{ 0 },	{ 0 } },	// S_FATT_PAIN
 	{ SPR_FATT,		9,			3,		{A_Pain},			S_FATT_RUN1,			{ 0 },	{ 0 } },	// S_FATT_PAIN2
-	{ SPR_FATT,		10,			6,		{NULL},				S_FATT_DIE2,			{ 0 },	{ 0 } },	// S_FATT_DIE1
+	{ SPR_FATT,		10,			6,		{},					S_FATT_DIE2,			{ 0 },	{ 0 } },	// S_FATT_DIE1
 	{ SPR_FATT,		11,			6,		{A_Scream},			S_FATT_DIE3,			{ 0 },	{ 0 } },	// S_FATT_DIE2
 	{ SPR_FATT,		12,			6,		{A_Fall},			S_FATT_DIE4,			{ 0 },	{ 0 } },	// S_FATT_DIE3
-	{ SPR_FATT,		13,			6,		{NULL},				S_FATT_DIE5,			{ 0 },	{ 0 } },	// S_FATT_DIE4
-	{ SPR_FATT,		14,			6,		{NULL},				S_FATT_DIE6,			{ 0 },	{ 0 } },	// S_FATT_DIE5
-	{ SPR_FATT,		15,			6,		{NULL},				S_FATT_DIE7,			{ 0 },	{ 0 } },	// S_FATT_DIE6
-	{ SPR_FATT,		16,			6,		{NULL},				S_FATT_DIE8,			{ 0 },	{ 0 } },	// S_FATT_DIE7
-	{ SPR_FATT,		17,			6,		{NULL},				S_FATT_DIE9,			{ 0 },	{ 0 } },	// S_FATT_DIE8
-	{ SPR_FATT,		18,			6,		{NULL},				S_FATT_DIE10,			{ 0 },	{ 0 } },	// S_FATT_DIE9
+	{ SPR_FATT,		13,			6,		{},					S_FATT_DIE5,			{ 0 },	{ 0 } },	// S_FATT_DIE4
+	{ SPR_FATT,		14,			6,		{},					S_FATT_DIE6,			{ 0 },	{ 0 } },	// S_FATT_DIE5
+	{ SPR_FATT,		15,			6,		{},					S_FATT_DIE7,			{ 0 },	{ 0 } },	// S_FATT_DIE6
+	{ SPR_FATT,		16,			6,		{},					S_FATT_DIE8,			{ 0 },	{ 0 } },	// S_FATT_DIE7
+	{ SPR_FATT,		17,			6,		{},					S_FATT_DIE9,			{ 0 },	{ 0 } },	// S_FATT_DIE8
+	{ SPR_FATT,		18,			6,		{},					S_FATT_DIE10,			{ 0 },	{ 0 } },	// S_FATT_DIE9
 	{ SPR_FATT,		19,			-1,		{A_BossDeath},		S_NULL,					{ 0 },	{ 0 } },	// S_FATT_DIE10
-	{ SPR_FATT,		17,			5,		{NULL},				S_FATT_RAISE2,			{ 0 },	{ 0 } },	// S_FATT_RAISE1
-	{ SPR_FATT,		16,			5,		{NULL},				S_FATT_RAISE3,			{ 0 },	{ 0 } },	// S_FATT_RAISE2
-	{ SPR_FATT,		15,			5,		{NULL},				S_FATT_RAISE4,			{ 0 },	{ 0 } },	// S_FATT_RAISE3
-	{ SPR_FATT,		14,			5,		{NULL},				S_FATT_RAISE5,			{ 0 },	{ 0 } },	// S_FATT_RAISE4
-	{ SPR_FATT,		13,			5,		{NULL},				S_FATT_RAISE6,			{ 0 },	{ 0 } },	// S_FATT_RAISE5
-	{ SPR_FATT,		12,			5,		{NULL},				S_FATT_RAISE7,			{ 0 },	{ 0 } },	// S_FATT_RAISE6
-	{ SPR_FATT,		11,			5,		{NULL},				S_FATT_RAISE8,			{ 0 },	{ 0 } },	// S_FATT_RAISE7
-	{ SPR_FATT,		10,			5,		{NULL},				S_FATT_RUN1,			{ 0 },	{ 0 } },	// S_FATT_RAISE8
+	{ SPR_FATT,		17,			5,		{},					S_FATT_RAISE2,			{ 0 },	{ 0 } },	// S_FATT_RAISE1
+	{ SPR_FATT,		16,			5,		{},					S_FATT_RAISE3,			{ 0 },	{ 0 } },	// S_FATT_RAISE2
+	{ SPR_FATT,		15,			5,		{},					S_FATT_RAISE4,			{ 0 },	{ 0 } },	// S_FATT_RAISE3
+	{ SPR_FATT,		14,			5,		{},					S_FATT_RAISE5,			{ 0 },	{ 0 } },	// S_FATT_RAISE4
+	{ SPR_FATT,		13,			5,		{},					S_FATT_RAISE6,			{ 0 },	{ 0 } },	// S_FATT_RAISE5
+	{ SPR_FATT,		12,			5,		{},					S_FATT_RAISE7,			{ 0 },	{ 0 } },	// S_FATT_RAISE6
+	{ SPR_FATT,		11,			5,		{},					S_FATT_RAISE8,			{ 0 },	{ 0 } },	// S_FATT_RAISE7
+	{ SPR_FATT,		10,			5,		{},					S_FATT_RUN1,			{ 0 },	{ 0 } },	// S_FATT_RAISE8
 	{ SPR_CPOS,		0,			10,		{A_Look},			S_CPOS_STND2,			{ 0 },	{ 0 } },	// S_CPOS_STND
 	{ SPR_CPOS,		1,			10,		{A_Look},			S_CPOS_STND,			{ 0 },	{ 0 } },	// S_CPOS_STND2
 	{ SPR_CPOS,		0,			3,		{A_Chase},			S_CPOS_RUN2,			{ 0 },	{ 0 } },	// S_CPOS_RUN1
@@ -614,28 +623,28 @@ state_t	states[NUMSTATES] =
 	{ SPR_CPOS,		32773,		4,		{A_CPosAttack},		S_CPOS_ATK3,			{ 0 },	{ 0 } },	// S_CPOS_ATK2
 	{ SPR_CPOS,		32772,		4,		{A_CPosAttack},		S_CPOS_ATK4,			{ 0 },	{ 0 } },	// S_CPOS_ATK3
 	{ SPR_CPOS,		5,			1,		{A_CPosRefire},		S_CPOS_ATK2,			{ 0 },	{ 0 } },	// S_CPOS_ATK4
-	{ SPR_CPOS,		6,			3,		{NULL},				S_CPOS_PAIN2,			{ 0 },	{ 0 } },	// S_CPOS_PAIN
+	{ SPR_CPOS,		6,			3,		{},					S_CPOS_PAIN2,			{ 0 },	{ 0 } },	// S_CPOS_PAIN
 	{ SPR_CPOS,		6,			3,		{A_Pain},			S_CPOS_RUN1,			{ 0 },	{ 0 } },	// S_CPOS_PAIN2
-	{ SPR_CPOS,		7,			5,		{NULL},				S_CPOS_DIE2,			{ 0 },	{ 0 } },	// S_CPOS_DIE1
+	{ SPR_CPOS,		7,			5,		{},					S_CPOS_DIE2,			{ 0 },	{ 0 } },	// S_CPOS_DIE1
 	{ SPR_CPOS,		8,			5,		{A_Scream},			S_CPOS_DIE3,			{ 0 },	{ 0 } },	// S_CPOS_DIE2
 	{ SPR_CPOS,		9,			5,		{A_Fall},			S_CPOS_DIE4,			{ 0 },	{ 0 } },	// S_CPOS_DIE3
-	{ SPR_CPOS,		10,			5,		{NULL},				S_CPOS_DIE5,			{ 0 },	{ 0 } },	// S_CPOS_DIE4
-	{ SPR_CPOS,		11,			5,		{NULL},				S_CPOS_DIE6,			{ 0 },	{ 0 } },	// S_CPOS_DIE5
-	{ SPR_CPOS,		12,			5,		{NULL},				S_CPOS_DIE7,			{ 0 },	{ 0 } },	// S_CPOS_DIE6
-	{ SPR_CPOS,		13,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CPOS_DIE7
-	{ SPR_CPOS,		14,			5,		{NULL},				S_CPOS_XDIE2,			{ 0 },	{ 0 } },	// S_CPOS_XDIE1
+	{ SPR_CPOS,		10,			5,		{},					S_CPOS_DIE5,			{ 0 },	{ 0 } },	// S_CPOS_DIE4
+	{ SPR_CPOS,		11,			5,		{},					S_CPOS_DIE6,			{ 0 },	{ 0 } },	// S_CPOS_DIE5
+	{ SPR_CPOS,		12,			5,		{},					S_CPOS_DIE7,			{ 0 },	{ 0 } },	// S_CPOS_DIE6
+	{ SPR_CPOS,		13,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CPOS_DIE7
+	{ SPR_CPOS,		14,			5,		{},					S_CPOS_XDIE2,			{ 0 },	{ 0 } },	// S_CPOS_XDIE1
 	{ SPR_CPOS,		15,			5,		{A_XScream},		S_CPOS_XDIE3,			{ 0 },	{ 0 } },	// S_CPOS_XDIE2
 	{ SPR_CPOS,		16,			5,		{A_Fall},			S_CPOS_XDIE4,			{ 0 },	{ 0 } },	// S_CPOS_XDIE3
-	{ SPR_CPOS,		17,			5,		{NULL},				S_CPOS_XDIE5,			{ 0 },	{ 0 } },	// S_CPOS_XDIE4
-	{ SPR_CPOS,		18,			5,		{NULL},				S_CPOS_XDIE6,			{ 0 },	{ 0 } },	// S_CPOS_XDIE5
-	{ SPR_CPOS,		19,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CPOS_XDIE6
-	{ SPR_CPOS,		13,			5,		{NULL},				S_CPOS_RAISE2,			{ 0 },	{ 0 } },	// S_CPOS_RAISE1
-	{ SPR_CPOS,		12,			5,		{NULL},				S_CPOS_RAISE3,			{ 0 },	{ 0 } },	// S_CPOS_RAISE2
-	{ SPR_CPOS,		11,			5,		{NULL},				S_CPOS_RAISE4,			{ 0 },	{ 0 } },	// S_CPOS_RAISE3
-	{ SPR_CPOS,		10,			5,		{NULL},				S_CPOS_RAISE5,			{ 0 },	{ 0 } },	// S_CPOS_RAISE4
-	{ SPR_CPOS,		9,			5,		{NULL},				S_CPOS_RAISE6,			{ 0 },	{ 0 } },	// S_CPOS_RAISE5
-	{ SPR_CPOS,		8,			5,		{NULL},				S_CPOS_RAISE7,			{ 0 },	{ 0 } },	// S_CPOS_RAISE6
-	{ SPR_CPOS,		7,			5,		{NULL},				S_CPOS_RUN1,			{ 0 },	{ 0 } },	// S_CPOS_RAISE7
+	{ SPR_CPOS,		17,			5,		{},					S_CPOS_XDIE5,			{ 0 },	{ 0 } },	// S_CPOS_XDIE4
+	{ SPR_CPOS,		18,			5,		{},					S_CPOS_XDIE6,			{ 0 },	{ 0 } },	// S_CPOS_XDIE5
+	{ SPR_CPOS,		19,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CPOS_XDIE6
+	{ SPR_CPOS,		13,			5,		{},					S_CPOS_RAISE2,			{ 0 },	{ 0 } },	// S_CPOS_RAISE1
+	{ SPR_CPOS,		12,			5,		{},					S_CPOS_RAISE3,			{ 0 },	{ 0 } },	// S_CPOS_RAISE2
+	{ SPR_CPOS,		11,			5,		{},					S_CPOS_RAISE4,			{ 0 },	{ 0 } },	// S_CPOS_RAISE3
+	{ SPR_CPOS,		10,			5,		{},					S_CPOS_RAISE5,			{ 0 },	{ 0 } },	// S_CPOS_RAISE4
+	{ SPR_CPOS,		9,			5,		{},					S_CPOS_RAISE6,			{ 0 },	{ 0 } },	// S_CPOS_RAISE5
+	{ SPR_CPOS,		8,			5,		{},					S_CPOS_RAISE7,			{ 0 },	{ 0 } },	// S_CPOS_RAISE6
+	{ SPR_CPOS,		7,			5,		{},					S_CPOS_RUN1,			{ 0 },	{ 0 } },	// S_CPOS_RAISE7
 	{ SPR_TROO,		0,			10,		{A_Look},			S_TROO_STND2,			{ 0 },	{ 0 } },	// S_TROO_STND
 	{ SPR_TROO,		1,			10,		{A_Look},			S_TROO_STND,			{ 0 },	{ 0 } },	// S_TROO_STND2
 	{ SPR_TROO,		0,			3,		{A_Chase},			S_TROO_RUN2,			{ 0 },	{ 0 } },	// S_TROO_RUN1
@@ -649,26 +658,26 @@ state_t	states[NUMSTATES] =
 	{ SPR_TROO,		4,			8,		{A_FaceTarget},		S_TROO_ATK2,			{ 0 },	{ 0 } },	// S_TROO_ATK1
 	{ SPR_TROO,		5,			8,		{A_FaceTarget},		S_TROO_ATK3,			{ 0 },	{ 0 } },	// S_TROO_ATK2
 	{ SPR_TROO,		6,			6,		{A_TroopAttack},	S_TROO_RUN1,			{ 0 },	{ 0 } },	// S_TROO_ATK3
-	{ SPR_TROO,		7,			2,		{NULL},				S_TROO_PAIN2,			{ 0 },	{ 0 } },	// S_TROO_PAIN
+	{ SPR_TROO,		7,			2,		{},					S_TROO_PAIN2,			{ 0 },	{ 0 } },	// S_TROO_PAIN
 	{ SPR_TROO,		7,			2,		{A_Pain},			S_TROO_RUN1,			{ 0 },	{ 0 } },	// S_TROO_PAIN2
-	{ SPR_TROO,		8,			8,		{NULL},				S_TROO_DIE2,			{ 0 },	{ 0 } },	// S_TROO_DIE1
+	{ SPR_TROO,		8,			8,		{},					S_TROO_DIE2,			{ 0 },	{ 0 } },	// S_TROO_DIE1
 	{ SPR_TROO,		9,			8,		{A_Scream},			S_TROO_DIE3,			{ 0 },	{ 0 } },	// S_TROO_DIE2
-	{ SPR_TROO,		10,			6,		{NULL},				S_TROO_DIE4,			{ 0 },	{ 0 } },	// S_TROO_DIE3
+	{ SPR_TROO,		10,			6,		{},					S_TROO_DIE4,			{ 0 },	{ 0 } },	// S_TROO_DIE3
 	{ SPR_TROO,		11,			6,		{A_Fall},			S_TROO_DIE5,			{ 0 },	{ 0 } },	// S_TROO_DIE4
-	{ SPR_TROO,		12,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TROO_DIE5
-	{ SPR_TROO,		13,			5,		{NULL},				S_TROO_XDIE2,			{ 0 },	{ 0 } },	// S_TROO_XDIE1
+	{ SPR_TROO,		12,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TROO_DIE5
+	{ SPR_TROO,		13,			5,		{},					S_TROO_XDIE2,			{ 0 },	{ 0 } },	// S_TROO_XDIE1
 	{ SPR_TROO,		14,			5,		{A_XScream},		S_TROO_XDIE3,			{ 0 },	{ 0 } },	// S_TROO_XDIE2
-	{ SPR_TROO,		15,			5,		{NULL},				S_TROO_XDIE4,			{ 0 },	{ 0 } },	// S_TROO_XDIE3
+	{ SPR_TROO,		15,			5,		{},					S_TROO_XDIE4,			{ 0 },	{ 0 } },	// S_TROO_XDIE3
 	{ SPR_TROO,		16,			5,		{A_Fall},			S_TROO_XDIE5,			{ 0 },	{ 0 } },	// S_TROO_XDIE4
-	{ SPR_TROO,		17,			5,		{NULL},				S_TROO_XDIE6,			{ 0 },	{ 0 } },	// S_TROO_XDIE5
-	{ SPR_TROO,		18,			5,		{NULL},				S_TROO_XDIE7,			{ 0 },	{ 0 } },	// S_TROO_XDIE6
-	{ SPR_TROO,		19,			5,		{NULL},				S_TROO_XDIE8,			{ 0 },	{ 0 } },	// S_TROO_XDIE7
-	{ SPR_TROO,		20,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TROO_XDIE8
-	{ SPR_TROO,		12,			8,		{NULL},				S_TROO_RAISE2,			{ 0 },	{ 0 } },	// S_TROO_RAISE1
-	{ SPR_TROO,		11,			8,		{NULL},				S_TROO_RAISE3,			{ 0 },	{ 0 } },	// S_TROO_RAISE2
-	{ SPR_TROO,		10,			6,		{NULL},				S_TROO_RAISE4,			{ 0 },	{ 0 } },	// S_TROO_RAISE3
-	{ SPR_TROO,		9,			6,		{NULL},				S_TROO_RAISE5,			{ 0 },	{ 0 } },	// S_TROO_RAISE4
-	{ SPR_TROO,		8,			6,		{NULL},				S_TROO_RUN1,			{ 0 },	{ 0 } },	// S_TROO_RAISE5
+	{ SPR_TROO,		17,			5,		{},					S_TROO_XDIE6,			{ 0 },	{ 0 } },	// S_TROO_XDIE5
+	{ SPR_TROO,		18,			5,		{},					S_TROO_XDIE7,			{ 0 },	{ 0 } },	// S_TROO_XDIE6
+	{ SPR_TROO,		19,			5,		{},					S_TROO_XDIE8,			{ 0 },	{ 0 } },	// S_TROO_XDIE7
+	{ SPR_TROO,		20,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TROO_XDIE8
+	{ SPR_TROO,		12,			8,		{},					S_TROO_RAISE2,			{ 0 },	{ 0 } },	// S_TROO_RAISE1
+	{ SPR_TROO,		11,			8,		{},					S_TROO_RAISE3,			{ 0 },	{ 0 } },	// S_TROO_RAISE2
+	{ SPR_TROO,		10,			6,		{},					S_TROO_RAISE4,			{ 0 },	{ 0 } },	// S_TROO_RAISE3
+	{ SPR_TROO,		9,			6,		{},					S_TROO_RAISE5,			{ 0 },	{ 0 } },	// S_TROO_RAISE4
+	{ SPR_TROO,		8,			6,		{},					S_TROO_RUN1,			{ 0 },	{ 0 } },	// S_TROO_RAISE5
 	{ SPR_SARG,		0,			10,		{A_Look},			S_SARG_STND2,			{ 0 },	{ 0 } },	// S_SARG_STND
 	{ SPR_SARG,		1,			10,		{A_Look},			S_SARG_STND,			{ 0 },	{ 0 } },	// S_SARG_STND2
 	{ SPR_SARG,		0,			2,		{A_Chase},			S_SARG_RUN2,			{ 0 },	{ 0 } },	// S_SARG_RUN1
@@ -682,45 +691,45 @@ state_t	states[NUMSTATES] =
 	{ SPR_SARG,		4,			8,		{A_FaceTarget},		S_SARG_ATK2,			{ 0 },	{ 0 } },	// S_SARG_ATK1
 	{ SPR_SARG,		5,			8,		{A_FaceTarget},		S_SARG_ATK3,			{ 0 },	{ 0 } },	// S_SARG_ATK2
 	{ SPR_SARG,		6,			8,		{A_SargAttack},		S_SARG_RUN1,			{ 0 },	{ 0 } },	// S_SARG_ATK3
-	{ SPR_SARG,		7,			2,		{NULL},				S_SARG_PAIN2,			{ 0 },	{ 0 } },	// S_SARG_PAIN
+	{ SPR_SARG,		7,			2,		{},					S_SARG_PAIN2,			{ 0 },	{ 0 } },	// S_SARG_PAIN
 	{ SPR_SARG,		7,			2,		{A_Pain},			S_SARG_RUN1,			{ 0 },	{ 0 } },	// S_SARG_PAIN2
-	{ SPR_SARG,		8,			8,		{NULL},				S_SARG_DIE2,			{ 0 },	{ 0 } },	// S_SARG_DIE1
+	{ SPR_SARG,		8,			8,		{},					S_SARG_DIE2,			{ 0 },	{ 0 } },	// S_SARG_DIE1
 	{ SPR_SARG,		9,			8,		{A_Scream},			S_SARG_DIE3,			{ 0 },	{ 0 } },	// S_SARG_DIE2
-	{ SPR_SARG,		10,			4,		{NULL},				S_SARG_DIE4,			{ 0 },	{ 0 } },	// S_SARG_DIE3
+	{ SPR_SARG,		10,			4,		{},					S_SARG_DIE4,			{ 0 },	{ 0 } },	// S_SARG_DIE3
 	{ SPR_SARG,		11,			4,		{A_Fall},			S_SARG_DIE5,			{ 0 },	{ 0 } },	// S_SARG_DIE4
-	{ SPR_SARG,		12,			4,		{NULL},				S_SARG_DIE6,			{ 0 },	{ 0 } },	// S_SARG_DIE5
-	{ SPR_SARG,		13,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SARG_DIE6
-	{ SPR_SARG,		13,			5,		{NULL},				S_SARG_RAISE2,			{ 0 },	{ 0 } },	// S_SARG_RAISE1
-	{ SPR_SARG,		12,			5,		{NULL},				S_SARG_RAISE3,			{ 0 },	{ 0 } },	// S_SARG_RAISE2
-	{ SPR_SARG,		11,			5,		{NULL},				S_SARG_RAISE4,			{ 0 },	{ 0 } },	// S_SARG_RAISE3
-	{ SPR_SARG,		10,			5,		{NULL},				S_SARG_RAISE5,			{ 0 },	{ 0 } },	// S_SARG_RAISE4
-	{ SPR_SARG,		9,			5,		{NULL},				S_SARG_RAISE6,			{ 0 },	{ 0 } },	// S_SARG_RAISE5
-	{ SPR_SARG,		8,			5,		{NULL},				S_SARG_RUN1,			{ 0 },	{ 0 } },	// S_SARG_RAISE6
+	{ SPR_SARG,		12,			4,		{},					S_SARG_DIE6,			{ 0 },	{ 0 } },	// S_SARG_DIE5
+	{ SPR_SARG,		13,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SARG_DIE6
+	{ SPR_SARG,		13,			5,		{},					S_SARG_RAISE2,			{ 0 },	{ 0 } },	// S_SARG_RAISE1
+	{ SPR_SARG,		12,			5,		{},					S_SARG_RAISE3,			{ 0 },	{ 0 } },	// S_SARG_RAISE2
+	{ SPR_SARG,		11,			5,		{},					S_SARG_RAISE4,			{ 0 },	{ 0 } },	// S_SARG_RAISE3
+	{ SPR_SARG,		10,			5,		{},					S_SARG_RAISE5,			{ 0 },	{ 0 } },	// S_SARG_RAISE4
+	{ SPR_SARG,		9,			5,		{},					S_SARG_RAISE6,			{ 0 },	{ 0 } },	// S_SARG_RAISE5
+	{ SPR_SARG,		8,			5,		{},					S_SARG_RUN1,			{ 0 },	{ 0 } },	// S_SARG_RAISE6
 	{ SPR_HEAD,		0,			10,		{A_Look},			S_HEAD_STND,			{ 0 },	{ 0 } },	// S_HEAD_STND
 	{ SPR_HEAD,		0,			3,		{A_Chase},			S_HEAD_RUN1,			{ 0 },	{ 0 } },	// S_HEAD_RUN1
 	{ SPR_HEAD,		1,			5,		{A_FaceTarget},		S_HEAD_ATK2,			{ 0 },	{ 0 } },	// S_HEAD_ATK1
 	{ SPR_HEAD,		2,			5,		{A_FaceTarget},		S_HEAD_ATK3,			{ 0 },	{ 0 } },	// S_HEAD_ATK2
 	{ SPR_HEAD,		32771,		5,		{A_HeadAttack},		S_HEAD_RUN1,			{ 0 },	{ 0 } },	// S_HEAD_ATK3
-	{ SPR_HEAD,		4,			3,		{NULL},				S_HEAD_PAIN2,			{ 0 },	{ 0 } },	// S_HEAD_PAIN
+	{ SPR_HEAD,		4,			3,		{},					S_HEAD_PAIN2,			{ 0 },	{ 0 } },	// S_HEAD_PAIN
 	{ SPR_HEAD,		4,			3,		{A_Pain},			S_HEAD_PAIN3,			{ 0 },	{ 0 } },	// S_HEAD_PAIN2
-	{ SPR_HEAD,		5,			6,		{NULL},				S_HEAD_RUN1,			{ 0 },	{ 0 } },	// S_HEAD_PAIN3
-	{ SPR_HEAD,		6,			8,		{NULL},				S_HEAD_DIE2,			{ 0 },	{ 0 } },	// S_HEAD_DIE1
+	{ SPR_HEAD,		5,			6,		{},					S_HEAD_RUN1,			{ 0 },	{ 0 } },	// S_HEAD_PAIN3
+	{ SPR_HEAD,		6,			8,		{},					S_HEAD_DIE2,			{ 0 },	{ 0 } },	// S_HEAD_DIE1
 	{ SPR_HEAD,		7,			8,		{A_Scream},			S_HEAD_DIE3,			{ 0 },	{ 0 } },	// S_HEAD_DIE2
-	{ SPR_HEAD,		8,			8,		{NULL},				S_HEAD_DIE4,			{ 0 },	{ 0 } },	// S_HEAD_DIE3
-	{ SPR_HEAD,		9,			8,		{NULL},				S_HEAD_DIE5,			{ 0 },	{ 0 } },	// S_HEAD_DIE4
+	{ SPR_HEAD,		8,			8,		{},					S_HEAD_DIE4,			{ 0 },	{ 0 } },	// S_HEAD_DIE3
+	{ SPR_HEAD,		9,			8,		{},					S_HEAD_DIE5,			{ 0 },	{ 0 } },	// S_HEAD_DIE4
 	{ SPR_HEAD,		10,			8,		{A_Fall},			S_HEAD_DIE6,			{ 0 },	{ 0 } },	// S_HEAD_DIE5
-	{ SPR_HEAD,		11,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HEAD_DIE6
-	{ SPR_HEAD,		11,			8,		{NULL},				S_HEAD_RAISE2,			{ 0 },	{ 0 } },	// S_HEAD_RAISE1
-	{ SPR_HEAD,		10,			8,		{NULL},				S_HEAD_RAISE3,			{ 0 },	{ 0 } },	// S_HEAD_RAISE2
-	{ SPR_HEAD,		9,			8,		{NULL},				S_HEAD_RAISE4,			{ 0 },	{ 0 } },	// S_HEAD_RAISE3
-	{ SPR_HEAD,		8,			8,		{NULL},				S_HEAD_RAISE5,			{ 0 },	{ 0 } },	// S_HEAD_RAISE4
-	{ SPR_HEAD,		7,			8,		{NULL},				S_HEAD_RAISE6,			{ 0 },	{ 0 } },	// S_HEAD_RAISE5
-	{ SPR_HEAD,		6,			8,		{NULL},				S_HEAD_RUN1,			{ 0 },	{ 0 } },	// S_HEAD_RAISE6
-	{ SPR_BAL7,		32768,		4,		{NULL},				S_BRBALL2,				{ 0 },	{ 0 } },	// S_BRBALL1
-	{ SPR_BAL7,		32769,		4,		{NULL},				S_BRBALL1,				{ 0 },	{ 0 } },	// S_BRBALL2
-	{ SPR_BAL7,		32770,		6,		{NULL},				S_BRBALLX2,				{ 0 },	{ 0 } },	// S_BRBALLX1
-	{ SPR_BAL7,		32771,		6,		{NULL},				S_BRBALLX3,				{ 0 },	{ 0 } },	// S_BRBALLX2
-	{ SPR_BAL7,		32772,		6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BRBALLX3
+	{ SPR_HEAD,		11,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HEAD_DIE6
+	{ SPR_HEAD,		11,			8,		{},					S_HEAD_RAISE2,			{ 0 },	{ 0 } },	// S_HEAD_RAISE1
+	{ SPR_HEAD,		10,			8,		{},					S_HEAD_RAISE3,			{ 0 },	{ 0 } },	// S_HEAD_RAISE2
+	{ SPR_HEAD,		9,			8,		{},					S_HEAD_RAISE4,			{ 0 },	{ 0 } },	// S_HEAD_RAISE3
+	{ SPR_HEAD,		8,			8,		{},					S_HEAD_RAISE5,			{ 0 },	{ 0 } },	// S_HEAD_RAISE4
+	{ SPR_HEAD,		7,			8,		{},					S_HEAD_RAISE6,			{ 0 },	{ 0 } },	// S_HEAD_RAISE5
+	{ SPR_HEAD,		6,			8,		{},					S_HEAD_RUN1,			{ 0 },	{ 0 } },	// S_HEAD_RAISE6
+	{ SPR_BAL7,		32768,		4,		{},					S_BRBALL2,				{ 0 },	{ 0 } },	// S_BRBALL1
+	{ SPR_BAL7,		32769,		4,		{},					S_BRBALL1,				{ 0 },	{ 0 } },	// S_BRBALL2
+	{ SPR_BAL7,		32770,		6,		{},					S_BRBALLX2,				{ 0 },	{ 0 } },	// S_BRBALLX1
+	{ SPR_BAL7,		32771,		6,		{},					S_BRBALLX3,				{ 0 },	{ 0 } },	// S_BRBALLX2
+	{ SPR_BAL7,		32772,		6,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BRBALLX3
 	{ SPR_BOSS,		0,			10,		{A_Look},			S_BOSS_STND2,			{ 0 },	{ 0 } },	// S_BOSS_STND
 	{ SPR_BOSS,		1,			10,		{A_Look},			S_BOSS_STND,			{ 0 },	{ 0 } },	// S_BOSS_STND2
 	{ SPR_BOSS,		0,			3,		{A_Chase},			S_BOSS_RUN2,			{ 0 },	{ 0 } },	// S_BOSS_RUN1
@@ -734,22 +743,22 @@ state_t	states[NUMSTATES] =
 	{ SPR_BOSS,		4,			8,		{A_FaceTarget},		S_BOSS_ATK2,			{ 0 },	{ 0 } },	// S_BOSS_ATK1
 	{ SPR_BOSS,		5,			8,		{A_FaceTarget},		S_BOSS_ATK3,			{ 0 },	{ 0 } },	// S_BOSS_ATK2
 	{ SPR_BOSS,		6,			8,		{A_BruisAttack},	S_BOSS_RUN1,			{ 0 },	{ 0 } },	// S_BOSS_ATK3
-	{ SPR_BOSS,		7,			2,		{NULL},				S_BOSS_PAIN2,			{ 0 },	{ 0 } },	// S_BOSS_PAIN
+	{ SPR_BOSS,		7,			2,		{},					S_BOSS_PAIN2,			{ 0 },	{ 0 } },	// S_BOSS_PAIN
 	{ SPR_BOSS,		7,			2,		{A_Pain},			S_BOSS_RUN1,			{ 0 },	{ 0 } },	// S_BOSS_PAIN2
-	{ SPR_BOSS,		8,			8,		{NULL},				S_BOSS_DIE2,			{ 0 },	{ 0 } },	// S_BOSS_DIE1
+	{ SPR_BOSS,		8,			8,		{},					S_BOSS_DIE2,			{ 0 },	{ 0 } },	// S_BOSS_DIE1
 	{ SPR_BOSS,		9,			8,		{A_Scream},			S_BOSS_DIE3,			{ 0 },	{ 0 } },	// S_BOSS_DIE2
-	{ SPR_BOSS,		10,			8,		{NULL},				S_BOSS_DIE4,			{ 0 },	{ 0 } },	// S_BOSS_DIE3
+	{ SPR_BOSS,		10,			8,		{},					S_BOSS_DIE4,			{ 0 },	{ 0 } },	// S_BOSS_DIE3
 	{ SPR_BOSS,		11,			8,		{A_Fall},			S_BOSS_DIE5,			{ 0 },	{ 0 } },	// S_BOSS_DIE4
-	{ SPR_BOSS,		12,			8,		{NULL},				S_BOSS_DIE6,			{ 0 },	{ 0 } },	// S_BOSS_DIE5
-	{ SPR_BOSS,		13,			8,		{NULL},				S_BOSS_DIE7,			{ 0 },	{ 0 } },	// S_BOSS_DIE6
+	{ SPR_BOSS,		12,			8,		{},					S_BOSS_DIE6,			{ 0 },	{ 0 } },	// S_BOSS_DIE5
+	{ SPR_BOSS,		13,			8,		{},					S_BOSS_DIE7,			{ 0 },	{ 0 } },	// S_BOSS_DIE6
 	{ SPR_BOSS,		14,			-1,		{A_BossDeath},		S_NULL,					{ 0 },	{ 0 } },	// S_BOSS_DIE7
-	{ SPR_BOSS,		14,			8,		{NULL},				S_BOSS_RAISE2,			{ 0 },	{ 0 } },	// S_BOSS_RAISE1
-	{ SPR_BOSS,		13,			8,		{NULL},				S_BOSS_RAISE3,			{ 0 },	{ 0 } },	// S_BOSS_RAISE2
-	{ SPR_BOSS,		12,			8,		{NULL},				S_BOSS_RAISE4,			{ 0 },	{ 0 } },	// S_BOSS_RAISE3
-	{ SPR_BOSS,		11,			8,		{NULL},				S_BOSS_RAISE5,			{ 0 },	{ 0 } },	// S_BOSS_RAISE4
-	{ SPR_BOSS,		10,			8,		{NULL},				S_BOSS_RAISE6,			{ 0 },	{ 0 } },	// S_BOSS_RAISE5
-	{ SPR_BOSS,		9,			8,		{NULL},				S_BOSS_RAISE7,			{ 0 },	{ 0 } },	// S_BOSS_RAISE6
-	{ SPR_BOSS,		8,			8,		{NULL},				S_BOSS_RUN1,			{ 0 },	{ 0 } },	// S_BOSS_RAISE7
+	{ SPR_BOSS,		14,			8,		{},					S_BOSS_RAISE2,			{ 0 },	{ 0 } },	// S_BOSS_RAISE1
+	{ SPR_BOSS,		13,			8,		{},					S_BOSS_RAISE3,			{ 0 },	{ 0 } },	// S_BOSS_RAISE2
+	{ SPR_BOSS,		12,			8,		{},					S_BOSS_RAISE4,			{ 0 },	{ 0 } },	// S_BOSS_RAISE3
+	{ SPR_BOSS,		11,			8,		{},					S_BOSS_RAISE5,			{ 0 },	{ 0 } },	// S_BOSS_RAISE4
+	{ SPR_BOSS,		10,			8,		{},					S_BOSS_RAISE6,			{ 0 },	{ 0 } },	// S_BOSS_RAISE5
+	{ SPR_BOSS,		9,			8,		{},					S_BOSS_RAISE7,			{ 0 },	{ 0 } },	// S_BOSS_RAISE6
+	{ SPR_BOSS,		8,			8,		{},					S_BOSS_RUN1,			{ 0 },	{ 0 } },	// S_BOSS_RAISE7
 	{ SPR_BOS2,		0,			10,		{A_Look},			S_BOS2_STND2,			{ 0 },	{ 0 } },	// S_BOS2_STND
 	{ SPR_BOS2,		1,			10,		{A_Look},			S_BOS2_STND,			{ 0 },	{ 0 } },	// S_BOS2_STND2
 	{ SPR_BOS2,		0,			3,		{A_Chase},			S_BOS2_RUN2,			{ 0 },	{ 0 } },	// S_BOS2_RUN1
@@ -763,38 +772,38 @@ state_t	states[NUMSTATES] =
 	{ SPR_BOS2,		4,			8,		{A_FaceTarget},		S_BOS2_ATK2,			{ 0 },	{ 0 } },	// S_BOS2_ATK1
 	{ SPR_BOS2,		5,			8,		{A_FaceTarget},		S_BOS2_ATK3,			{ 0 },	{ 0 } },	// S_BOS2_ATK2
 	{ SPR_BOS2,		6,			8,		{A_BruisAttack},	S_BOS2_RUN1,			{ 0 },	{ 0 } },	// S_BOS2_ATK3
-	{ SPR_BOS2,		7,			2,		{NULL},				S_BOS2_PAIN2,			{ 0 },	{ 0 } },	// S_BOS2_PAIN
+	{ SPR_BOS2,		7,			2,		{},					S_BOS2_PAIN2,			{ 0 },	{ 0 } },	// S_BOS2_PAIN
 	{ SPR_BOS2,		7,			2,		{A_Pain},			S_BOS2_RUN1,			{ 0 },	{ 0 } },	// S_BOS2_PAIN2
-	{ SPR_BOS2,		8,			8,		{NULL},				S_BOS2_DIE2,			{ 0 },	{ 0 } },	// S_BOS2_DIE1
+	{ SPR_BOS2,		8,			8,		{},					S_BOS2_DIE2,			{ 0 },	{ 0 } },	// S_BOS2_DIE1
 	{ SPR_BOS2,		9,			8,		{A_Scream},			S_BOS2_DIE3,			{ 0 },	{ 0 } },	// S_BOS2_DIE2
-	{ SPR_BOS2,		10,			8,		{NULL},				S_BOS2_DIE4,			{ 0 },	{ 0 } },	// S_BOS2_DIE3
+	{ SPR_BOS2,		10,			8,		{},					S_BOS2_DIE4,			{ 0 },	{ 0 } },	// S_BOS2_DIE3
 	{ SPR_BOS2,		11,			8,		{A_Fall},			S_BOS2_DIE5,			{ 0 },	{ 0 } },	// S_BOS2_DIE4
-	{ SPR_BOS2,		12,			8,		{NULL},				S_BOS2_DIE6,			{ 0 },	{ 0 } },	// S_BOS2_DIE5
-	{ SPR_BOS2,		13,			8,		{NULL},				S_BOS2_DIE7,			{ 0 },	{ 0 } },	// S_BOS2_DIE6
-	{ SPR_BOS2,		14,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BOS2_DIE7
-	{ SPR_BOS2,		14,			8,		{NULL},				S_BOS2_RAISE2,			{ 0 },	{ 0 } },	// S_BOS2_RAISE1
-	{ SPR_BOS2,		13,			8,		{NULL},				S_BOS2_RAISE3,			{ 0 },	{ 0 } },	// S_BOS2_RAISE2
-	{ SPR_BOS2,		12,			8,		{NULL},				S_BOS2_RAISE4,			{ 0 },	{ 0 } },	// S_BOS2_RAISE3
-	{ SPR_BOS2,		11,			8,		{NULL},				S_BOS2_RAISE5,			{ 0 },	{ 0 } },	// S_BOS2_RAISE4
-	{ SPR_BOS2,		10,			8,		{NULL},				S_BOS2_RAISE6,			{ 0 },	{ 0 } },	// S_BOS2_RAISE5
-	{ SPR_BOS2,		9,			8,		{NULL},				S_BOS2_RAISE7,			{ 0 },	{ 0 } },	// S_BOS2_RAISE6
-	{ SPR_BOS2,		8,			8,		{NULL},				S_BOS2_RUN1,			{ 0 },	{ 0 } },	// S_BOS2_RAISE7
+	{ SPR_BOS2,		12,			8,		{},					S_BOS2_DIE6,			{ 0 },	{ 0 } },	// S_BOS2_DIE5
+	{ SPR_BOS2,		13,			8,		{},					S_BOS2_DIE7,			{ 0 },	{ 0 } },	// S_BOS2_DIE6
+	{ SPR_BOS2,		14,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BOS2_DIE7
+	{ SPR_BOS2,		14,			8,		{},					S_BOS2_RAISE2,			{ 0 },	{ 0 } },	// S_BOS2_RAISE1
+	{ SPR_BOS2,		13,			8,		{},					S_BOS2_RAISE3,			{ 0 },	{ 0 } },	// S_BOS2_RAISE2
+	{ SPR_BOS2,		12,			8,		{},					S_BOS2_RAISE4,			{ 0 },	{ 0 } },	// S_BOS2_RAISE3
+	{ SPR_BOS2,		11,			8,		{},					S_BOS2_RAISE5,			{ 0 },	{ 0 } },	// S_BOS2_RAISE4
+	{ SPR_BOS2,		10,			8,		{},					S_BOS2_RAISE6,			{ 0 },	{ 0 } },	// S_BOS2_RAISE5
+	{ SPR_BOS2,		9,			8,		{},					S_BOS2_RAISE7,			{ 0 },	{ 0 } },	// S_BOS2_RAISE6
+	{ SPR_BOS2,		8,			8,		{},					S_BOS2_RUN1,			{ 0 },	{ 0 } },	// S_BOS2_RAISE7
 	{ SPR_SKUL,		32768,		10,		{A_Look},			S_SKULL_STND2,			{ 0 },	{ 0 } },	// S_SKULL_STND
 	{ SPR_SKUL,		32769,		10,		{A_Look},			S_SKULL_STND,			{ 0 },	{ 0 } },	// S_SKULL_STND2
 	{ SPR_SKUL,		32768,		6,		{A_Chase},			S_SKULL_RUN2,			{ 0 },	{ 0 } },	// S_SKULL_RUN1
 	{ SPR_SKUL,		32769,		6,		{A_Chase},			S_SKULL_RUN1,			{ 0 },	{ 0 } },	// S_SKULL_RUN2
 	{ SPR_SKUL,		32770,		10,		{A_FaceTarget},		S_SKULL_ATK2,			{ 0 },	{ 0 } },	// S_SKULL_ATK1
 	{ SPR_SKUL,		32771,		4,		{A_SkullAttack},	S_SKULL_ATK3,			{ 0 },	{ 0 } },	// S_SKULL_ATK2
-	{ SPR_SKUL,		32770,		4,		{NULL},				S_SKULL_ATK4,			{ 0 },	{ 0 } },	// S_SKULL_ATK3
-	{ SPR_SKUL,		32771,		4,		{NULL},				S_SKULL_ATK3,			{ 0 },	{ 0 } },	// S_SKULL_ATK4
-	{ SPR_SKUL,		32772,		3,		{NULL},				S_SKULL_PAIN2,			{ 0 },	{ 0 } },	// S_SKULL_PAIN
+	{ SPR_SKUL,		32770,		4,		{},					S_SKULL_ATK4,			{ 0 },	{ 0 } },	// S_SKULL_ATK3
+	{ SPR_SKUL,		32771,		4,		{},					S_SKULL_ATK3,			{ 0 },	{ 0 } },	// S_SKULL_ATK4
+	{ SPR_SKUL,		32772,		3,		{},					S_SKULL_PAIN2,			{ 0 },	{ 0 } },	// S_SKULL_PAIN
 	{ SPR_SKUL,		32772,		3,		{A_Pain},			S_SKULL_RUN1,			{ 0 },	{ 0 } },	// S_SKULL_PAIN2
-	{ SPR_SKUL,		32773,		6,		{NULL},				S_SKULL_DIE2,			{ 0 },	{ 0 } },	// S_SKULL_DIE1
+	{ SPR_SKUL,		32773,		6,		{},					S_SKULL_DIE2,			{ 0 },	{ 0 } },	// S_SKULL_DIE1
 	{ SPR_SKUL,		32774,		6,		{A_Scream},			S_SKULL_DIE3,			{ 0 },	{ 0 } },	// S_SKULL_DIE2
-	{ SPR_SKUL,		32775,		6,		{NULL},				S_SKULL_DIE4,			{ 0 },	{ 0 } },	// S_SKULL_DIE3
+	{ SPR_SKUL,		32775,		6,		{},					S_SKULL_DIE4,			{ 0 },	{ 0 } },	// S_SKULL_DIE3
 	{ SPR_SKUL,		32776,		6,		{A_Fall},			S_SKULL_DIE5,			{ 0 },	{ 0 } },	// S_SKULL_DIE4
-	{ SPR_SKUL,		9,			6,		{NULL},				S_SKULL_DIE6,			{ 0 },	{ 0 } },	// S_SKULL_DIE5
-	{ SPR_SKUL,		10,			6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SKULL_DIE6
+	{ SPR_SKUL,		9,			6,		{},					S_SKULL_DIE6,			{ 0 },	{ 0 } },	// S_SKULL_DIE5
+	{ SPR_SKUL,		10,			6,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SKULL_DIE6
 	{ SPR_SPID,		0,			10,		{A_Look},			S_SPID_STND2,			{ 0 },	{ 0 } },	// S_SPID_STND
 	{ SPR_SPID,		1,			10,		{A_Look},			S_SPID_STND,			{ 0 },	{ 0 } },	// S_SPID_STND2
 	{ SPR_SPID,		0,			3,		{A_Metal},			S_SPID_RUN2,			{ 0 },	{ 0 } },	// S_SPID_RUN1
@@ -813,22 +822,22 @@ state_t	states[NUMSTATES] =
 	{ SPR_SPID,		32774,		4,		{A_SPosAttack},		S_SPID_ATK3,			{ 0 },	{ 0 } },	// S_SPID_ATK2
 	{ SPR_SPID,		32775,		4,		{A_SPosAttack},		S_SPID_ATK4,			{ 0 },	{ 0 } },	// S_SPID_ATK3
 	{ SPR_SPID,		32775,		1,		{A_SpidRefire},		S_SPID_ATK2,			{ 0 },	{ 0 } },	// S_SPID_ATK4
-	{ SPR_SPID,		8,			3,		{NULL},				S_SPID_PAIN2,			{ 0 },	{ 0 } },	// S_SPID_PAIN
+	{ SPR_SPID,		8,			3,		{},					S_SPID_PAIN2,			{ 0 },	{ 0 } },	// S_SPID_PAIN
 	{ SPR_SPID,		8,			3,		{A_Pain},			S_SPID_RUN1,			{ 0 },	{ 0 } },	// S_SPID_PAIN2
 	{ SPR_SPID,		9,			20,		{A_Scream},			S_SPID_DIE2,			{ 0 },	{ 0 } },	// S_SPID_DIE1
 	{ SPR_SPID,		10,			10,		{A_Fall},			S_SPID_DIE3,			{ 0 },	{ 0 } },	// S_SPID_DIE2
-	{ SPR_SPID,		11,			10,		{NULL},				S_SPID_DIE4,			{ 0 },	{ 0 } },	// S_SPID_DIE3
-	{ SPR_SPID,		12,			10,		{NULL},				S_SPID_DIE5,			{ 0 },	{ 0 } },	// S_SPID_DIE4
-	{ SPR_SPID,		13,			10,		{NULL},				S_SPID_DIE6,			{ 0 },	{ 0 } },	// S_SPID_DIE5
-	{ SPR_SPID,		14,			10,		{NULL},				S_SPID_DIE7,			{ 0 },	{ 0 } },	// S_SPID_DIE6
-	{ SPR_SPID,		15,			10,		{NULL},				S_SPID_DIE8,			{ 0 },	{ 0 } },	// S_SPID_DIE7
-	{ SPR_SPID,		16,			10,		{NULL},				S_SPID_DIE9,			{ 0 },	{ 0 } },	// S_SPID_DIE8
-	{ SPR_SPID,		17,			10,		{NULL},				S_SPID_DIE10,			{ 0 },	{ 0 } },	// S_SPID_DIE9
-	{ SPR_SPID,		18,			30,		{NULL},				S_SPID_DIE11,			{ 0 },	{ 0 } },	// S_SPID_DIE10
+	{ SPR_SPID,		11,			10,		{},					S_SPID_DIE4,			{ 0 },	{ 0 } },	// S_SPID_DIE3
+	{ SPR_SPID,		12,			10,		{},					S_SPID_DIE5,			{ 0 },	{ 0 } },	// S_SPID_DIE4
+	{ SPR_SPID,		13,			10,		{},					S_SPID_DIE6,			{ 0 },	{ 0 } },	// S_SPID_DIE5
+	{ SPR_SPID,		14,			10,		{},					S_SPID_DIE7,			{ 0 },	{ 0 } },	// S_SPID_DIE6
+	{ SPR_SPID,		15,			10,		{},					S_SPID_DIE8,			{ 0 },	{ 0 } },	// S_SPID_DIE7
+	{ SPR_SPID,		16,			10,		{},					S_SPID_DIE9,			{ 0 },	{ 0 } },	// S_SPID_DIE8
+	{ SPR_SPID,		17,			10,		{},					S_SPID_DIE10,			{ 0 },	{ 0 } },	// S_SPID_DIE9
+	{ SPR_SPID,		18,			30,		{},					S_SPID_DIE11,			{ 0 },	{ 0 } },	// S_SPID_DIE10
 	{ SPR_SPID,		18,			-1,		{A_BossDeath},		S_NULL,					{ 0 },	{ 0 } },	// S_SPID_DIE11
 	{ SPR_BSPI,		0,			10,		{A_Look},			S_BSPI_STND2,			{ 0 },	{ 0 } },	// S_BSPI_STND
 	{ SPR_BSPI,		1,			10,		{A_Look},			S_BSPI_STND,			{ 0 },	{ 0 } },	// S_BSPI_STND2
-	{ SPR_BSPI,		0,			20,		{NULL},				S_BSPI_RUN1,			{ 0 },	{ 0 } },	// S_BSPI_SIGHT
+	{ SPR_BSPI,		0,			20,		{},					S_BSPI_RUN1,			{ 0 },	{ 0 } },	// S_BSPI_SIGHT
 	{ SPR_BSPI,		0,			3,		{A_BabyMetal},		S_BSPI_RUN2,			{ 0 },	{ 0 } },	// S_BSPI_RUN1
 	{ SPR_BSPI,		0,			3,		{A_Chase},			S_BSPI_RUN3,			{ 0 },	{ 0 } },	// S_BSPI_RUN2
 	{ SPR_BSPI,		1,			3,		{A_Chase},			S_BSPI_RUN4,			{ 0 },	{ 0 } },	// S_BSPI_RUN3
@@ -843,31 +852,31 @@ state_t	states[NUMSTATES] =
 	{ SPR_BSPI,		5,			3,		{A_Chase},			S_BSPI_RUN1,			{ 0 },	{ 0 } },	// S_BSPI_RUN12
 	{ SPR_BSPI,		32768,		20,		{A_FaceTarget},		S_BSPI_ATK2,			{ 0 },	{ 0 } },	// S_BSPI_ATK1
 	{ SPR_BSPI,		32774,		4,		{A_BspiAttack},		S_BSPI_ATK3,			{ 0 },	{ 0 } },	// S_BSPI_ATK2
-	{ SPR_BSPI,		32775,		4,		{NULL},				S_BSPI_ATK4,			{ 0 },	{ 0 } },	// S_BSPI_ATK3
+	{ SPR_BSPI,		32775,		4,		{},					S_BSPI_ATK4,			{ 0 },	{ 0 } },	// S_BSPI_ATK3
 	{ SPR_BSPI,		32775,		1,		{A_SpidRefire},		S_BSPI_ATK2,			{ 0 },	{ 0 } },	// S_BSPI_ATK4
-	{ SPR_BSPI,		8,			3,		{NULL},				S_BSPI_PAIN2,			{ 0 },	{ 0 } },	// S_BSPI_PAIN
+	{ SPR_BSPI,		8,			3,		{},					S_BSPI_PAIN2,			{ 0 },	{ 0 } },	// S_BSPI_PAIN
 	{ SPR_BSPI,		8,			3,		{A_Pain},			S_BSPI_RUN1,			{ 0 },	{ 0 } },	// S_BSPI_PAIN2
 	{ SPR_BSPI,		9,			20,		{A_Scream},			S_BSPI_DIE2,			{ 0 },	{ 0 } },	// S_BSPI_DIE1
 	{ SPR_BSPI,		10,			7,		{A_Fall},			S_BSPI_DIE3,			{ 0 },	{ 0 } },	// S_BSPI_DIE2
-	{ SPR_BSPI,		11,			7,		{NULL},				S_BSPI_DIE4,			{ 0 },	{ 0 } },	// S_BSPI_DIE3
-	{ SPR_BSPI,		12,			7,		{NULL},				S_BSPI_DIE5,			{ 0 },	{ 0 } },	// S_BSPI_DIE4
-	{ SPR_BSPI,		13,			7,		{NULL},				S_BSPI_DIE6,			{ 0 },	{ 0 } },	// S_BSPI_DIE5
-	{ SPR_BSPI,		14,			7,		{NULL},				S_BSPI_DIE7,			{ 0 },	{ 0 } },	// S_BSPI_DIE6
+	{ SPR_BSPI,		11,			7,		{},					S_BSPI_DIE4,			{ 0 },	{ 0 } },	// S_BSPI_DIE3
+	{ SPR_BSPI,		12,			7,		{},					S_BSPI_DIE5,			{ 0 },	{ 0 } },	// S_BSPI_DIE4
+	{ SPR_BSPI,		13,			7,		{},					S_BSPI_DIE6,			{ 0 },	{ 0 } },	// S_BSPI_DIE5
+	{ SPR_BSPI,		14,			7,		{},					S_BSPI_DIE7,			{ 0 },	{ 0 } },	// S_BSPI_DIE6
 	{ SPR_BSPI,		15,			-1,		{A_BossDeath},		S_NULL,					{ 0 },	{ 0 } },	// S_BSPI_DIE7
-	{ SPR_BSPI,		15,			5,		{NULL},				S_BSPI_RAISE2,			{ 0 },	{ 0 } },	// S_BSPI_RAISE1
-	{ SPR_BSPI,		14,			5,		{NULL},				S_BSPI_RAISE3,			{ 0 },	{ 0 } },	// S_BSPI_RAISE2
-	{ SPR_BSPI,		13,			5,		{NULL},				S_BSPI_RAISE4,			{ 0 },	{ 0 } },	// S_BSPI_RAISE3
-	{ SPR_BSPI,		12,			5,		{NULL},				S_BSPI_RAISE5,			{ 0 },	{ 0 } },	// S_BSPI_RAISE4
-	{ SPR_BSPI,		11,			5,		{NULL},				S_BSPI_RAISE6,			{ 0 },	{ 0 } },	// S_BSPI_RAISE5
-	{ SPR_BSPI,		10,			5,		{NULL},				S_BSPI_RAISE7,			{ 0 },	{ 0 } },	// S_BSPI_RAISE6
-	{ SPR_BSPI,		9,			5,		{NULL},				S_BSPI_RUN1,			{ 0 },	{ 0 } },	// S_BSPI_RAISE7
-	{ SPR_APLS,		32768,		5,		{NULL},				S_ARACH_PLAZ2,			{ 0 },	{ 0 } },	// S_ARACH_PLAZ
-	{ SPR_APLS,		32769,		5,		{NULL},				S_ARACH_PLAZ,			{ 0 },	{ 0 } },	// S_ARACH_PLAZ2
-	{ SPR_APBX,		32768,		5,		{NULL},				S_ARACH_PLEX2,			{ 0 },	{ 0 } },	// S_ARACH_PLEX
-	{ SPR_APBX,		32769,		5,		{NULL},				S_ARACH_PLEX3,			{ 0 },	{ 0 } },	// S_ARACH_PLEX2
-	{ SPR_APBX,		32770,		5,		{NULL},				S_ARACH_PLEX4,			{ 0 },	{ 0 } },	// S_ARACH_PLEX3
-	{ SPR_APBX,		32771,		5,		{NULL},				S_ARACH_PLEX5,			{ 0 },	{ 0 } },	// S_ARACH_PLEX4
-	{ SPR_APBX,		32772,		5,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_ARACH_PLEX5
+	{ SPR_BSPI,		15,			5,		{},					S_BSPI_RAISE2,			{ 0 },	{ 0 } },	// S_BSPI_RAISE1
+	{ SPR_BSPI,		14,			5,		{},					S_BSPI_RAISE3,			{ 0 },	{ 0 } },	// S_BSPI_RAISE2
+	{ SPR_BSPI,		13,			5,		{},					S_BSPI_RAISE4,			{ 0 },	{ 0 } },	// S_BSPI_RAISE3
+	{ SPR_BSPI,		12,			5,		{},					S_BSPI_RAISE5,			{ 0 },	{ 0 } },	// S_BSPI_RAISE4
+	{ SPR_BSPI,		11,			5,		{},					S_BSPI_RAISE6,			{ 0 },	{ 0 } },	// S_BSPI_RAISE5
+	{ SPR_BSPI,		10,			5,		{},					S_BSPI_RAISE7,			{ 0 },	{ 0 } },	// S_BSPI_RAISE6
+	{ SPR_BSPI,		9,			5,		{},					S_BSPI_RUN1,			{ 0 },	{ 0 } },	// S_BSPI_RAISE7
+	{ SPR_APLS,		32768,		5,		{},					S_ARACH_PLAZ2,			{ 0 },	{ 0 } },	// S_ARACH_PLAZ
+	{ SPR_APLS,		32769,		5,		{},					S_ARACH_PLAZ,			{ 0 },	{ 0 } },	// S_ARACH_PLAZ2
+	{ SPR_APBX,		32768,		5,		{},					S_ARACH_PLEX2,			{ 0 },	{ 0 } },	// S_ARACH_PLEX
+	{ SPR_APBX,		32769,		5,		{},					S_ARACH_PLEX3,			{ 0 },	{ 0 } },	// S_ARACH_PLEX2
+	{ SPR_APBX,		32770,		5,		{},					S_ARACH_PLEX4,			{ 0 },	{ 0 } },	// S_ARACH_PLEX3
+	{ SPR_APBX,		32771,		5,		{},					S_ARACH_PLEX5,			{ 0 },	{ 0 } },	// S_ARACH_PLEX4
+	{ SPR_APBX,		32772,		5,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_ARACH_PLEX5
 	{ SPR_CYBR,		0,			10,		{A_Look},			S_CYBER_STND2,			{ 0 },	{ 0 } },	// S_CYBER_STND
 	{ SPR_CYBR,		1,			10,		{A_Look},			S_CYBER_STND,			{ 0 },	{ 0 } },	// S_CYBER_STND2
 	{ SPR_CYBR,		0,			3,		{A_Hoof},			S_CYBER_RUN2,			{ 0 },	{ 0 } },	// S_CYBER_RUN1
@@ -885,15 +894,15 @@ state_t	states[NUMSTATES] =
 	{ SPR_CYBR,		4,			12,		{A_FaceTarget},		S_CYBER_ATK6,			{ 0 },	{ 0 } },	// S_CYBER_ATK5
 	{ SPR_CYBR,		5,			12,		{A_CyberAttack},	S_CYBER_RUN1,			{ 0 },	{ 0 } },	// S_CYBER_ATK6
 	{ SPR_CYBR,		6,			10,		{A_Pain},			S_CYBER_RUN1,			{ 0 },	{ 0 } },	// S_CYBER_PAIN
-	{ SPR_CYBR,		7,			10,		{NULL},				S_CYBER_DIE2,			{ 0 },	{ 0 } },	// S_CYBER_DIE1
+	{ SPR_CYBR,		7,			10,		{},					S_CYBER_DIE2,			{ 0 },	{ 0 } },	// S_CYBER_DIE1
 	{ SPR_CYBR,		8,			10,		{A_Scream},			S_CYBER_DIE3,			{ 0 },	{ 0 } },	// S_CYBER_DIE2
-	{ SPR_CYBR,		9,			10,		{NULL},				S_CYBER_DIE4,			{ 0 },	{ 0 } },	// S_CYBER_DIE3
-	{ SPR_CYBR,		10,			10,		{NULL},				S_CYBER_DIE5,			{ 0 },	{ 0 } },	// S_CYBER_DIE4
-	{ SPR_CYBR,		11,			10,		{NULL},				S_CYBER_DIE6,			{ 0 },	{ 0 } },	// S_CYBER_DIE5
+	{ SPR_CYBR,		9,			10,		{},					S_CYBER_DIE4,			{ 0 },	{ 0 } },	// S_CYBER_DIE3
+	{ SPR_CYBR,		10,			10,		{},					S_CYBER_DIE5,			{ 0 },	{ 0 } },	// S_CYBER_DIE4
+	{ SPR_CYBR,		11,			10,		{},					S_CYBER_DIE6,			{ 0 },	{ 0 } },	// S_CYBER_DIE5
 	{ SPR_CYBR,		12,			10,		{A_Fall},			S_CYBER_DIE7,			{ 0 },	{ 0 } },	// S_CYBER_DIE6
-	{ SPR_CYBR,		13,			10,		{NULL},				S_CYBER_DIE8,			{ 0 },	{ 0 } },	// S_CYBER_DIE7
-	{ SPR_CYBR,		14,			10,		{NULL},				S_CYBER_DIE9,			{ 0 },	{ 0 } },	// S_CYBER_DIE8
-	{ SPR_CYBR,		15,			30,		{NULL},				S_CYBER_DIE10,			{ 0 },	{ 0 } },	// S_CYBER_DIE9
+	{ SPR_CYBR,		13,			10,		{},					S_CYBER_DIE8,			{ 0 },	{ 0 } },	// S_CYBER_DIE7
+	{ SPR_CYBR,		14,			10,		{},					S_CYBER_DIE9,			{ 0 },	{ 0 } },	// S_CYBER_DIE8
+	{ SPR_CYBR,		15,			30,		{},					S_CYBER_DIE10,			{ 0 },	{ 0 } },	// S_CYBER_DIE9
 	{ SPR_CYBR,		15,			-1,		{A_BossDeath},		S_NULL,					{ 0 },	{ 0 } },	// S_CYBER_DIE10
 	{ SPR_PAIN,		0,			10,		{A_Look},			S_PAIN_STND,			{ 0 },	{ 0 } },	// S_PAIN_STND
 	{ SPR_PAIN,		0,			3,		{A_Chase},			S_PAIN_RUN2,			{ 0 },	{ 0 } },	// S_PAIN_RUN1
@@ -906,20 +915,20 @@ state_t	states[NUMSTATES] =
 	{ SPR_PAIN,		4,			5,		{A_FaceTarget},		S_PAIN_ATK3,			{ 0 },	{ 0 } },	// S_PAIN_ATK2
 	{ SPR_PAIN,		32773,		5,		{A_FaceTarget},		S_PAIN_ATK4,			{ 0 },	{ 0 } },	// S_PAIN_ATK3
 	{ SPR_PAIN,		32773,		0,		{A_PainAttack},		S_PAIN_RUN1,			{ 0 },	{ 0 } },	// S_PAIN_ATK4
-	{ SPR_PAIN,		6,			6,		{NULL},				S_PAIN_PAIN2,			{ 0 },	{ 0 } },	// S_PAIN_PAIN
+	{ SPR_PAIN,		6,			6,		{},					S_PAIN_PAIN2,			{ 0 },	{ 0 } },	// S_PAIN_PAIN
 	{ SPR_PAIN,		6,			6,		{A_Pain},			S_PAIN_RUN1,			{ 0 },	{ 0 } },	// S_PAIN_PAIN2
-	{ SPR_PAIN,		32775,		8,		{NULL},				S_PAIN_DIE2,			{ 0 },	{ 0 } },	// S_PAIN_DIE1
+	{ SPR_PAIN,		32775,		8,		{},					S_PAIN_DIE2,			{ 0 },	{ 0 } },	// S_PAIN_DIE1
 	{ SPR_PAIN,		32776,		8,		{A_Scream},			S_PAIN_DIE3,			{ 0 },	{ 0 } },	// S_PAIN_DIE2
-	{ SPR_PAIN,		32777,		8,		{NULL},				S_PAIN_DIE4,			{ 0 },	{ 0 } },	// S_PAIN_DIE3
-	{ SPR_PAIN,		32778,		8,		{NULL},				S_PAIN_DIE5,			{ 0 },	{ 0 } },	// S_PAIN_DIE4
+	{ SPR_PAIN,		32777,		8,		{},					S_PAIN_DIE4,			{ 0 },	{ 0 } },	// S_PAIN_DIE3
+	{ SPR_PAIN,		32778,		8,		{},					S_PAIN_DIE5,			{ 0 },	{ 0 } },	// S_PAIN_DIE4
 	{ SPR_PAIN,		32779,		8,		{A_PainDie},		S_PAIN_DIE6,			{ 0 },	{ 0 } },	// S_PAIN_DIE5
-	{ SPR_PAIN,		32780,		8,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PAIN_DIE6
-	{ SPR_PAIN,		12,			8,		{NULL},				S_PAIN_RAISE2,			{ 0 },	{ 0 } },	// S_PAIN_RAISE1
-	{ SPR_PAIN,		11,			8,		{NULL},				S_PAIN_RAISE3,			{ 0 },	{ 0 } },	// S_PAIN_RAISE2
-	{ SPR_PAIN,		10,			8,		{NULL},				S_PAIN_RAISE4,			{ 0 },	{ 0 } },	// S_PAIN_RAISE3
-	{ SPR_PAIN,		9,			8,		{NULL},				S_PAIN_RAISE5,			{ 0 },	{ 0 } },	// S_PAIN_RAISE4
-	{ SPR_PAIN,		8,			8,		{NULL},				S_PAIN_RAISE6,			{ 0 },	{ 0 } },	// S_PAIN_RAISE5
-	{ SPR_PAIN,		7,			8,		{NULL},				S_PAIN_RUN1,			{ 0 },	{ 0 } },	// S_PAIN_RAISE6
+	{ SPR_PAIN,		32780,		8,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PAIN_DIE6
+	{ SPR_PAIN,		12,			8,		{},					S_PAIN_RAISE2,			{ 0 },	{ 0 } },	// S_PAIN_RAISE1
+	{ SPR_PAIN,		11,			8,		{},					S_PAIN_RAISE3,			{ 0 },	{ 0 } },	// S_PAIN_RAISE2
+	{ SPR_PAIN,		10,			8,		{},					S_PAIN_RAISE4,			{ 0 },	{ 0 } },	// S_PAIN_RAISE3
+	{ SPR_PAIN,		9,			8,		{},					S_PAIN_RAISE5,			{ 0 },	{ 0 } },	// S_PAIN_RAISE4
+	{ SPR_PAIN,		8,			8,		{},					S_PAIN_RAISE6,			{ 0 },	{ 0 } },	// S_PAIN_RAISE5
+	{ SPR_PAIN,		7,			8,		{},					S_PAIN_RUN1,			{ 0 },	{ 0 } },	// S_PAIN_RAISE6
 	{ SPR_SSWV,		0,			10,		{A_Look},			S_SSWV_STND2,			{ 0 },	{ 0 } },	// S_SSWV_STND
 	{ SPR_SSWV,		1,			10,		{A_Look},			S_SSWV_STND,			{ 0 },	{ 0 } },	// S_SSWV_STND2
 	{ SPR_SSWV,		0,			3,		{A_Chase},			S_SSWV_RUN2,			{ 0 },	{ 0 } },	// S_SSWV_RUN1
@@ -936,47 +945,47 @@ state_t	states[NUMSTATES] =
 	{ SPR_SSWV,		5,			6,		{A_FaceTarget},		S_SSWV_ATK5,			{ 0 },	{ 0 } },	// S_SSWV_ATK4
 	{ SPR_SSWV,		32774,		4,		{A_CPosAttack},		S_SSWV_ATK6,			{ 0 },	{ 0 } },	// S_SSWV_ATK5
 	{ SPR_SSWV,		5,			1,		{A_CPosRefire},		S_SSWV_ATK2,			{ 0 },	{ 0 } },	// S_SSWV_ATK6
-	{ SPR_SSWV,		7,			3,		{NULL},				S_SSWV_PAIN2,			{ 0 },	{ 0 } },	// S_SSWV_PAIN
+	{ SPR_SSWV,		7,			3,		{},					S_SSWV_PAIN2,			{ 0 },	{ 0 } },	// S_SSWV_PAIN
 	{ SPR_SSWV,		7,			3,		{A_Pain},			S_SSWV_RUN1,			{ 0 },	{ 0 } },	// S_SSWV_PAIN2
-	{ SPR_SSWV,		8,			5,		{NULL},				S_SSWV_DIE2,			{ 0 },	{ 0 } },	// S_SSWV_DIE1
+	{ SPR_SSWV,		8,			5,		{},					S_SSWV_DIE2,			{ 0 },	{ 0 } },	// S_SSWV_DIE1
 	{ SPR_SSWV,		9,			5,		{A_Scream},			S_SSWV_DIE3,			{ 0 },	{ 0 } },	// S_SSWV_DIE2
 	{ SPR_SSWV,		10,			5,		{A_Fall},			S_SSWV_DIE4,			{ 0 },	{ 0 } },	// S_SSWV_DIE3
-	{ SPR_SSWV,		11,			5,		{NULL},				S_SSWV_DIE5,			{ 0 },	{ 0 } },	// S_SSWV_DIE4
-	{ SPR_SSWV,		12,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SSWV_DIE5
-	{ SPR_SSWV,		13,			5,		{NULL},				S_SSWV_XDIE2,			{ 0 },	{ 0 } },	// S_SSWV_XDIE1
+	{ SPR_SSWV,		11,			5,		{},					S_SSWV_DIE5,			{ 0 },	{ 0 } },	// S_SSWV_DIE4
+	{ SPR_SSWV,		12,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SSWV_DIE5
+	{ SPR_SSWV,		13,			5,		{},					S_SSWV_XDIE2,			{ 0 },	{ 0 } },	// S_SSWV_XDIE1
 	{ SPR_SSWV,		14,			5,		{A_XScream},		S_SSWV_XDIE3,			{ 0 },	{ 0 } },	// S_SSWV_XDIE2
 	{ SPR_SSWV,		15,			5,		{A_Fall},			S_SSWV_XDIE4,			{ 0 },	{ 0 } },	// S_SSWV_XDIE3
-	{ SPR_SSWV,		16,			5,		{NULL},				S_SSWV_XDIE5,			{ 0 },	{ 0 } },	// S_SSWV_XDIE4
-	{ SPR_SSWV,		17,			5,		{NULL},				S_SSWV_XDIE6,			{ 0 },	{ 0 } },	// S_SSWV_XDIE5
-	{ SPR_SSWV,		18,			5,		{NULL},				S_SSWV_XDIE7,			{ 0 },	{ 0 } },	// S_SSWV_XDIE6
-	{ SPR_SSWV,		19,			5,		{NULL},				S_SSWV_XDIE8,			{ 0 },	{ 0 } },	// S_SSWV_XDIE7
-	{ SPR_SSWV,		20,			5,		{NULL},				S_SSWV_XDIE9,			{ 0 },	{ 0 } },	// S_SSWV_XDIE8
-	{ SPR_SSWV,		21,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SSWV_XDIE9
-	{ SPR_SSWV,		12,			5,		{NULL},				S_SSWV_RAISE2,			{ 0 },	{ 0 } },	// S_SSWV_RAISE1
-	{ SPR_SSWV,		11,			5,		{NULL},				S_SSWV_RAISE3,			{ 0 },	{ 0 } },	// S_SSWV_RAISE2
-	{ SPR_SSWV,		10,			5,		{NULL},				S_SSWV_RAISE4,			{ 0 },	{ 0 } },	// S_SSWV_RAISE3
-	{ SPR_SSWV,		9,			5,		{NULL},				S_SSWV_RAISE5,			{ 0 },	{ 0 } },	// S_SSWV_RAISE4
-	{ SPR_SSWV,		8,			5,		{NULL},				S_SSWV_RUN1,			{ 0 },	{ 0 } },	// S_SSWV_RAISE5
-	{ SPR_KEEN,		0,			-1,		{NULL},				S_KEENSTND,				{ 0 },	{ 0 } },	// S_KEENSTND
-	{ SPR_KEEN,		0,			6,		{NULL},				S_COMMKEEN2,			{ 0 },	{ 0 } },	// S_COMMKEEN
-	{ SPR_KEEN,		1,			6,		{NULL},				S_COMMKEEN3,			{ 0 },	{ 0 } },	// S_COMMKEEN2
+	{ SPR_SSWV,		16,			5,		{},					S_SSWV_XDIE5,			{ 0 },	{ 0 } },	// S_SSWV_XDIE4
+	{ SPR_SSWV,		17,			5,		{},					S_SSWV_XDIE6,			{ 0 },	{ 0 } },	// S_SSWV_XDIE5
+	{ SPR_SSWV,		18,			5,		{},					S_SSWV_XDIE7,			{ 0 },	{ 0 } },	// S_SSWV_XDIE6
+	{ SPR_SSWV,		19,			5,		{},					S_SSWV_XDIE8,			{ 0 },	{ 0 } },	// S_SSWV_XDIE7
+	{ SPR_SSWV,		20,			5,		{},					S_SSWV_XDIE9,			{ 0 },	{ 0 } },	// S_SSWV_XDIE8
+	{ SPR_SSWV,		21,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SSWV_XDIE9
+	{ SPR_SSWV,		12,			5,		{},					S_SSWV_RAISE2,			{ 0 },	{ 0 } },	// S_SSWV_RAISE1
+	{ SPR_SSWV,		11,			5,		{},					S_SSWV_RAISE3,			{ 0 },	{ 0 } },	// S_SSWV_RAISE2
+	{ SPR_SSWV,		10,			5,		{},					S_SSWV_RAISE4,			{ 0 },	{ 0 } },	// S_SSWV_RAISE3
+	{ SPR_SSWV,		9,			5,		{},					S_SSWV_RAISE5,			{ 0 },	{ 0 } },	// S_SSWV_RAISE4
+	{ SPR_SSWV,		8,			5,		{},					S_SSWV_RUN1,			{ 0 },	{ 0 } },	// S_SSWV_RAISE5
+	{ SPR_KEEN,		0,			-1,		{},					S_KEENSTND,				{ 0 },	{ 0 } },	// S_KEENSTND
+	{ SPR_KEEN,		0,			6,		{},					S_COMMKEEN2,			{ 0 },	{ 0 } },	// S_COMMKEEN
+	{ SPR_KEEN,		1,			6,		{},					S_COMMKEEN3,			{ 0 },	{ 0 } },	// S_COMMKEEN2
 	{ SPR_KEEN,		2,			6,		{A_Scream},			S_COMMKEEN4,			{ 0 },	{ 0 } },	// S_COMMKEEN3
-	{ SPR_KEEN,		3,			6,		{NULL},				S_COMMKEEN5,			{ 0 },	{ 0 } },	// S_COMMKEEN4
-	{ SPR_KEEN,		4,			6,		{NULL},				S_COMMKEEN6,			{ 0 },	{ 0 } },	// S_COMMKEEN5
-	{ SPR_KEEN,		5,			6,		{NULL},				S_COMMKEEN7,			{ 0 },	{ 0 } },	// S_COMMKEEN6
-	{ SPR_KEEN,		6,			6,		{NULL},				S_COMMKEEN8,			{ 0 },	{ 0 } },	// S_COMMKEEN7
-	{ SPR_KEEN,		7,			6,		{NULL},				S_COMMKEEN9,			{ 0 },	{ 0 } },	// S_COMMKEEN8
-	{ SPR_KEEN,		8,			6,		{NULL},				S_COMMKEEN10,			{ 0 },	{ 0 } },	// S_COMMKEEN9
-	{ SPR_KEEN,		9,			6,		{NULL},				S_COMMKEEN11,			{ 0 },	{ 0 } },	// S_COMMKEEN10
+	{ SPR_KEEN,		3,			6,		{},					S_COMMKEEN5,			{ 0 },	{ 0 } },	// S_COMMKEEN4
+	{ SPR_KEEN,		4,			6,		{},					S_COMMKEEN6,			{ 0 },	{ 0 } },	// S_COMMKEEN5
+	{ SPR_KEEN,		5,			6,		{},					S_COMMKEEN7,			{ 0 },	{ 0 } },	// S_COMMKEEN6
+	{ SPR_KEEN,		6,			6,		{},					S_COMMKEEN8,			{ 0 },	{ 0 } },	// S_COMMKEEN7
+	{ SPR_KEEN,		7,			6,		{},					S_COMMKEEN9,			{ 0 },	{ 0 } },	// S_COMMKEEN8
+	{ SPR_KEEN,		8,			6,		{},					S_COMMKEEN10,			{ 0 },	{ 0 } },	// S_COMMKEEN9
+	{ SPR_KEEN,		9,			6,		{},					S_COMMKEEN11,			{ 0 },	{ 0 } },	// S_COMMKEEN10
 	{ SPR_KEEN,		10,			6,		{A_KeenDie},		S_COMMKEEN12,			{ 0 },	{ 0 } },	// S_COMMKEEN11
-	{ SPR_KEEN,		11,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_COMMKEEN12
-	{ SPR_KEEN,		12,			4,		{NULL},				S_KEENPAIN2,			{ 0 },	{ 0 } },	// S_KEENPAIN
+	{ SPR_KEEN,		11,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_COMMKEEN12
+	{ SPR_KEEN,		12,			4,		{},					S_KEENPAIN2,			{ 0 },	{ 0 } },	// S_KEENPAIN
 	{ SPR_KEEN,		12,			8,		{A_Pain},			S_KEENSTND,				{ 0 },	{ 0 } },	// S_KEENPAIN2
-	{ SPR_BBRN,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BRAIN
+	{ SPR_BBRN,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BRAIN
 	{ SPR_BBRN,		1,			36,		{A_BrainPain},		S_BRAIN,				{ 0 },	{ 0 } },	// S_BRAIN_PAIN
 	{ SPR_BBRN,		0,			100,	{A_BrainScream},	S_BRAIN_DIE2,			{ 0 },	{ 0 } },	// S_BRAIN_DIE1
-	{ SPR_BBRN,		0,			10,		{NULL},				S_BRAIN_DIE3,			{ 0 },	{ 0 } },	// S_BRAIN_DIE2
-	{ SPR_BBRN,		0,			10,		{NULL},				S_BRAIN_DIE4,			{ 0 },	{ 0 } },	// S_BRAIN_DIE3
+	{ SPR_BBRN,		0,			10,		{},					S_BRAIN_DIE3,			{ 0 },	{ 0 } },	// S_BRAIN_DIE2
+	{ SPR_BBRN,		0,			10,		{},					S_BRAIN_DIE4,			{ 0 },	{ 0 } },	// S_BRAIN_DIE3
 	{ SPR_BBRN,		0,			-1,		{A_BrainDie},		S_NULL,					{ 0 },	{ 0 } },	// S_BRAIN_DIE4
 	{ SPR_SSWV,		0,			10,		{A_Look},			S_BRAINEYE,				{ 0 },	{ 0 } },	// S_BRAINEYE
 	{ SPR_SSWV,		0,			181,	{A_BrainAwake},		S_BRAINEYE1,			{ 0 },	{ 0 } },	// S_BRAINEYESEE
@@ -993,183 +1002,183 @@ state_t	states[NUMSTATES] =
 	{ SPR_FIRE,		32773,		4,		{A_Fire},			S_SPAWNFIRE7,			{ 0 },	{ 0 } },	// S_SPAWNFIRE6
 	{ SPR_FIRE,		32774,		4,		{A_Fire},			S_SPAWNFIRE8,			{ 0 },	{ 0 } },	// S_SPAWNFIRE7
 	{ SPR_FIRE,		32775,		4,		{A_Fire},			S_NULL,					{ 0 },	{ 0 } },	// S_SPAWNFIRE8
-	{ SPR_MISL,		32769,		10,		{NULL},				S_BRAINEXPLODE2,		{ 0 },	{ 0 } },	// S_BRAINEXPLODE1
-	{ SPR_MISL,		32770,		10,		{NULL},				S_BRAINEXPLODE3,		{ 0 },	{ 0 } },	// S_BRAINEXPLODE2
+	{ SPR_MISL,		32769,		10,		{},					S_BRAINEXPLODE2,		{ 0 },	{ 0 } },	// S_BRAINEXPLODE1
+	{ SPR_MISL,		32770,		10,		{},					S_BRAINEXPLODE3,		{ 0 },	{ 0 } },	// S_BRAINEXPLODE2
 	{ SPR_MISL,		32771,		10,		{A_BrainExplode},	S_NULL,					{ 0 },	{ 0 } },	// S_BRAINEXPLODE3
-	{ SPR_ARM1,		0,			6,		{NULL},				S_ARM1A,				{ 0 },	{ 0 } },	// S_ARM1
-	{ SPR_ARM1,		32769,		7,		{NULL},				S_ARM1,					{ 0 },	{ 0 } },	// S_ARM1A
-	{ SPR_ARM2,		0,			6,		{NULL},				S_ARM2A,				{ 0 },	{ 0 } },	// S_ARM2
-	{ SPR_ARM2,		32769,		6,		{NULL},				S_ARM2,					{ 0 },	{ 0 } },	// S_ARM2A
-	{ SPR_BAR1,		0,			6,		{NULL},				S_BAR2,					{ 0 },	{ 0 } },	// S_BAR1
-	{ SPR_BAR1,		1,			6,		{NULL},				S_BAR1,					{ 0 },	{ 0 } },	// S_BAR2
-	{ SPR_BEXP,		32768,		5,		{NULL},				S_BEXP2,				{ 0 },	{ 0 } },	// S_BEXP
+	{ SPR_ARM1,		0,			6,		{},					S_ARM1A,				{ 0 },	{ 0 } },	// S_ARM1
+	{ SPR_ARM1,		32769,		7,		{},					S_ARM1,					{ 0 },	{ 0 } },	// S_ARM1A
+	{ SPR_ARM2,		0,			6,		{},					S_ARM2A,				{ 0 },	{ 0 } },	// S_ARM2
+	{ SPR_ARM2,		32769,		6,		{},					S_ARM2,					{ 0 },	{ 0 } },	// S_ARM2A
+	{ SPR_BAR1,		0,			6,		{},					S_BAR2,					{ 0 },	{ 0 } },	// S_BAR1
+	{ SPR_BAR1,		1,			6,		{},					S_BAR1,					{ 0 },	{ 0 } },	// S_BAR2
+	{ SPR_BEXP,		32768,		5,		{},					S_BEXP2,				{ 0 },	{ 0 } },	// S_BEXP
 	{ SPR_BEXP,		32769,		5,		{A_Scream},			S_BEXP3,				{ 0 },	{ 0 } },	// S_BEXP2
-	{ SPR_BEXP,		32770,		5,		{NULL},				S_BEXP4,				{ 0 },	{ 0 } },	// S_BEXP3
+	{ SPR_BEXP,		32770,		5,		{},					S_BEXP4,				{ 0 },	{ 0 } },	// S_BEXP3
 	{ SPR_BEXP,		32771,		10,		{A_Explode},		S_BEXP5,				{ 0 },	{ 0 } },	// S_BEXP4
-	{ SPR_BEXP,		32772,		10,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BEXP5
-	{ SPR_FCAN,		32768,		4,		{NULL},				S_BBAR2,				{ 0 },	{ 0 } },	// S_BBAR1
-	{ SPR_FCAN,		32769,		4,		{NULL},				S_BBAR3,				{ 0 },	{ 0 } },	// S_BBAR2
-	{ SPR_FCAN,		32770,		4,		{NULL},				S_BBAR1,				{ 0 },	{ 0 } },	// S_BBAR3
-	{ SPR_BON1,		0,			6,		{NULL},				S_BON1A,				{ 0 },	{ 0 } },	// S_BON1
-	{ SPR_BON1,		1,			6,		{NULL},				S_BON1B,				{ 0 },	{ 0 } },	// S_BON1A
-	{ SPR_BON1,		2,			6,		{NULL},				S_BON1C,				{ 0 },	{ 0 } },	// S_BON1B
-	{ SPR_BON1,		3,			6,		{NULL},				S_BON1D,				{ 0 },	{ 0 } },	// S_BON1C
-	{ SPR_BON1,		2,			6,		{NULL},				S_BON1E,				{ 0 },	{ 0 } },	// S_BON1D
-	{ SPR_BON1,		1,			6,		{NULL},				S_BON1,					{ 0 },	{ 0 } },	// S_BON1E
-	{ SPR_BON2,		0,			6,		{NULL},				S_BON2A,				{ 0 },	{ 0 } },	// S_BON2
-	{ SPR_BON2,		1,			6,		{NULL},				S_BON2B,				{ 0 },	{ 0 } },	// S_BON2A
-	{ SPR_BON2,		2,			6,		{NULL},				S_BON2C,				{ 0 },	{ 0 } },	// S_BON2B
-	{ SPR_BON2,		3,			6,		{NULL},				S_BON2D,				{ 0 },	{ 0 } },	// S_BON2C
-	{ SPR_BON2,		2,			6,		{NULL},				S_BON2E,				{ 0 },	{ 0 } },	// S_BON2D
-	{ SPR_BON2,		1,			6,		{NULL},				S_BON2,					{ 0 },	{ 0 } },	// S_BON2E
-	{ SPR_BKEY,		0,			10,		{NULL},				S_BKEY2,				{ 0 },	{ 0 } },	// S_BKEY
-	{ SPR_BKEY,		32769,		10,		{NULL},				S_BKEY,					{ 0 },	{ 0 } },	// S_BKEY2
-	{ SPR_RKEY,		0,			10,		{NULL},				S_RKEY2,				{ 0 },	{ 0 } },	// S_RKEY
-	{ SPR_RKEY,		32769,		10,		{NULL},				S_RKEY,					{ 0 },	{ 0 } },	// S_RKEY2
-	{ SPR_YKEY,		0,			10,		{NULL},				S_YKEY2,				{ 0 },	{ 0 } },	// S_YKEY
-	{ SPR_YKEY,		32769,		10,		{NULL},				S_YKEY,					{ 0 },	{ 0 } },	// S_YKEY2
-	{ SPR_BSKU,		0,			10,		{NULL},				S_BSKULL2,				{ 0 },	{ 0 } },	// S_BSKULL
-	{ SPR_BSKU,		32769,		10,		{NULL},				S_BSKULL,				{ 0 },	{ 0 } },	// S_BSKULL2
-	{ SPR_RSKU,		0,			10,		{NULL},				S_RSKULL2,				{ 0 },	{ 0 } },	// S_RSKULL
-	{ SPR_RSKU,		32769,		10,		{NULL},				S_RSKULL,				{ 0 },	{ 0 } },	// S_RSKULL2
-	{ SPR_YSKU,		0,			10,		{NULL},				S_YSKULL2,				{ 0 },	{ 0 } },	// S_YSKULL
-	{ SPR_YSKU,		32769,		10,		{NULL},				S_YSKULL,				{ 0 },	{ 0 } },	// S_YSKULL2
-	{ SPR_STIM,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_STIM
-	{ SPR_MEDI,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_MEDI
-	{ SPR_SOUL,		32768,		6,		{NULL},				S_SOUL2,				{ 0 },	{ 0 } },	// S_SOUL
-	{ SPR_SOUL,		32769,		6,		{NULL},				S_SOUL3,				{ 0 },	{ 0 } },	// S_SOUL2
-	{ SPR_SOUL,		32770,		6,		{NULL},				S_SOUL4,				{ 0 },	{ 0 } },	// S_SOUL3
-	{ SPR_SOUL,		32771,		6,		{NULL},				S_SOUL5,				{ 0 },	{ 0 } },	// S_SOUL4
-	{ SPR_SOUL,		32770,		6,		{NULL},				S_SOUL6,				{ 0 },	{ 0 } },	// S_SOUL5
-	{ SPR_SOUL,		32769,		6,		{NULL},				S_SOUL,					{ 0 },	{ 0 } },	// S_SOUL6
-	{ SPR_PINV,		32768,		6,		{NULL},				S_PINV2,				{ 0 },	{ 0 } },	// S_PINV
-	{ SPR_PINV,		32769,		6,		{NULL},				S_PINV3,				{ 0 },	{ 0 } },	// S_PINV2
-	{ SPR_PINV,		32770,		6,		{NULL},				S_PINV4,				{ 0 },	{ 0 } },	// S_PINV3
-	{ SPR_PINV,		32771,		6,		{NULL},				S_PINV,					{ 0 },	{ 0 } },	// S_PINV4
-	{ SPR_PSTR,		32768,		-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PSTR
-	{ SPR_PINS,		32768,		6,		{NULL},				S_PINS2,				{ 0 },	{ 0 } },	// S_PINS
-	{ SPR_PINS,		32769,		6,		{NULL},				S_PINS3,				{ 0 },	{ 0 } },	// S_PINS2
-	{ SPR_PINS,		32770,		6,		{NULL},				S_PINS4,				{ 0 },	{ 0 } },	// S_PINS3
-	{ SPR_PINS,		32771,		6,		{NULL},				S_PINS,					{ 0 },	{ 0 } },	// S_PINS4
-	{ SPR_MEGA,		32768,		6,		{NULL},				S_MEGA2,				{ 0 },	{ 0 } },	// S_MEGA
-	{ SPR_MEGA,		32769,		6,		{NULL},				S_MEGA3,				{ 0 },	{ 0 } },	// S_MEGA2
-	{ SPR_MEGA,		32770,		6,		{NULL},				S_MEGA4,				{ 0 },	{ 0 } },	// S_MEGA3
-	{ SPR_MEGA,		32771,		6,		{NULL},				S_MEGA,					{ 0 },	{ 0 } },	// S_MEGA4
-	{ SPR_SUIT,		32768,		-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SUIT
-	{ SPR_PMAP,		32768,		6,		{NULL},				S_PMAP2,				{ 0 },	{ 0 } },	// S_PMAP
-	{ SPR_PMAP,		32769,		6,		{NULL},				S_PMAP3,				{ 0 },	{ 0 } },	// S_PMAP2
-	{ SPR_PMAP,		32770,		6,		{NULL},				S_PMAP4,				{ 0 },	{ 0 } },	// S_PMAP3
-	{ SPR_PMAP,		32771,		6,		{NULL},				S_PMAP5,				{ 0 },	{ 0 } },	// S_PMAP4
-	{ SPR_PMAP,		32770,		6,		{NULL},				S_PMAP6,				{ 0 },	{ 0 } },	// S_PMAP5
-	{ SPR_PMAP,		32769,		6,		{NULL},				S_PMAP,					{ 0 },	{ 0 } },	// S_PMAP6
-	{ SPR_PVIS,		32768,		6,		{NULL},				S_PVIS2,				{ 0 },	{ 0 } },	// S_PVIS
-	{ SPR_PVIS,		1,			6,		{NULL},				S_PVIS,					{ 0 },	{ 0 } },	// S_PVIS2
-	{ SPR_CLIP,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CLIP
-	{ SPR_AMMO,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_AMMO
-	{ SPR_ROCK,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_ROCK
-	{ SPR_BROK,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BROK
-	{ SPR_CELL,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CELL
-	{ SPR_CELP,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CELP
-	{ SPR_SHEL,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SHEL
-	{ SPR_SBOX,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SBOX
-	{ SPR_BPAK,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BPAK
-	{ SPR_BFUG,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BFUG
-	{ SPR_MGUN,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_MGUN
-	{ SPR_CSAW,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CSAW
-	{ SPR_LAUN,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_LAUN
-	{ SPR_PLAS,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PLAS
-	{ SPR_SHOT,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SHOT
-	{ SPR_SGN2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SHOT2
-	{ SPR_COLU,		32768,		-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_COLU
-	{ SPR_SMT2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_STALAG
-	{ SPR_GOR1,		0,			10,		{NULL},				S_BLOODYTWITCH2,		{ 0 },	{ 0 } },	// S_BLOODYTWITCH
-	{ SPR_GOR1,		1,			15,		{NULL},				S_BLOODYTWITCH3,		{ 0 },	{ 0 } },	// S_BLOODYTWITCH2
-	{ SPR_GOR1,		2,			8,		{NULL},				S_BLOODYTWITCH4,		{ 0 },	{ 0 } },	// S_BLOODYTWITCH3
-	{ SPR_GOR1,		1,			6,		{NULL},				S_BLOODYTWITCH,			{ 0 },	{ 0 } },	// S_BLOODYTWITCH4
-	{ SPR_PLAY,		13,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_DEADTORSO
-	{ SPR_PLAY,		18,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_DEADBOTTOM
-	{ SPR_POL2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HEADSONSTICK
-	{ SPR_POL5,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_GIBS
-	{ SPR_POL4,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HEADONASTICK
-	{ SPR_POL3,		32768,		6,		{NULL},				S_HEADCANDLES2,			{ 0 },	{ 0 } },	// S_HEADCANDLES
-	{ SPR_POL3,		32769,		6,		{NULL},				S_HEADCANDLES,			{ 0 },	{ 0 } },	// S_HEADCANDLES2
-	{ SPR_POL1,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_DEADSTICK
-	{ SPR_POL6,		0,			6,		{NULL},				S_LIVESTICK2,			{ 0 },	{ 0 } },	// S_LIVESTICK
-	{ SPR_POL6,		1,			8,		{NULL},				S_LIVESTICK,			{ 0 },	{ 0 } },	// S_LIVESTICK2
-	{ SPR_GOR2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_MEAT2
-	{ SPR_GOR3,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_MEAT3
-	{ SPR_GOR4,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_MEAT4
-	{ SPR_GOR5,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_MEAT5
-	{ SPR_SMIT,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_STALAGTITE
-	{ SPR_COL1,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TALLGRNCOL
-	{ SPR_COL2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SHRTGRNCOL
-	{ SPR_COL3,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TALLREDCOL
-	{ SPR_COL4,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SHRTREDCOL
-	{ SPR_CAND,		32768,		-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CANDLESTIK
-	{ SPR_CBRA,		32768,		-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_CANDELABRA
-	{ SPR_COL6,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SKULLCOL
-	{ SPR_TRE1,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TORCHTREE
-	{ SPR_TRE2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BIGTREE
-	{ SPR_ELEC,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_TECHPILLAR
-	{ SPR_CEYE,		32768,		6,		{NULL},				S_EVILEYE2,				{ 0 },	{ 0 } },	// S_EVILEYE
-	{ SPR_CEYE,		32769,		6,		{NULL},				S_EVILEYE3,				{ 0 },	{ 0 } },	// S_EVILEYE2
-	{ SPR_CEYE,		32770,		6,		{NULL},				S_EVILEYE4,				{ 0 },	{ 0 } },	// S_EVILEYE3
-	{ SPR_CEYE,		32769,		6,		{NULL},				S_EVILEYE,				{ 0 },	{ 0 } },	// S_EVILEYE4
-	{ SPR_FSKU,		32768,		6,		{NULL},				S_FLOATSKULL2,			{ 0 },	{ 0 } },	// S_FLOATSKULL
-	{ SPR_FSKU,		32769,		6,		{NULL},				S_FLOATSKULL3,			{ 0 },	{ 0 } },	// S_FLOATSKULL2
-	{ SPR_FSKU,		32770,		6,		{NULL},				S_FLOATSKULL,			{ 0 },	{ 0 } },	// S_FLOATSKULL3
-	{ SPR_COL5,		0,			14,		{NULL},				S_HEARTCOL2,			{ 0 },	{ 0 } },	// S_HEARTCOL
-	{ SPR_COL5,		1,			14,		{NULL},				S_HEARTCOL,				{ 0 },	{ 0 } },	// S_HEARTCOL2
-	{ SPR_TBLU,		32768,		4,		{NULL},				S_BLUETORCH2,			{ 0 },	{ 0 } },	// S_BLUETORCH
-	{ SPR_TBLU,		32769,		4,		{NULL},				S_BLUETORCH3,			{ 0 },	{ 0 } },	// S_BLUETORCH2
-	{ SPR_TBLU,		32770,		4,		{NULL},				S_BLUETORCH4,			{ 0 },	{ 0 } },	// S_BLUETORCH3
-	{ SPR_TBLU,		32771,		4,		{NULL},				S_BLUETORCH,			{ 0 },	{ 0 } },	// S_BLUETORCH4
-	{ SPR_TGRN,		32768,		4,		{NULL},				S_GREENTORCH2,			{ 0 },	{ 0 } },	// S_GREENTORCH
-	{ SPR_TGRN,		32769,		4,		{NULL},				S_GREENTORCH3,			{ 0 },	{ 0 } },	// S_GREENTORCH2
-	{ SPR_TGRN,		32770,		4,		{NULL},				S_GREENTORCH4,			{ 0 },	{ 0 } },	// S_GREENTORCH3
-	{ SPR_TGRN,		32771,		4,		{NULL},				S_GREENTORCH,			{ 0 },	{ 0 } },	// S_GREENTORCH4
-	{ SPR_TRED,		32768,		4,		{NULL},				S_REDTORCH2,			{ 0 },	{ 0 } },	// S_REDTORCH
-	{ SPR_TRED,		32769,		4,		{NULL},				S_REDTORCH3,			{ 0 },	{ 0 } },	// S_REDTORCH2
-	{ SPR_TRED,		32770,		4,		{NULL},				S_REDTORCH4,			{ 0 },	{ 0 } },	// S_REDTORCH3
-	{ SPR_TRED,		32771,		4,		{NULL},				S_REDTORCH,				{ 0 },	{ 0 } },	// S_REDTORCH4
-	{ SPR_SMBT,		32768,		4,		{NULL},				S_BTORCHSHRT2,			{ 0 },	{ 0 } },	// S_BTORCHSHRT
-	{ SPR_SMBT,		32769,		4,		{NULL},				S_BTORCHSHRT3,			{ 0 },	{ 0 } },	// S_BTORCHSHRT2
-	{ SPR_SMBT,		32770,		4,		{NULL},				S_BTORCHSHRT4,			{ 0 },	{ 0 } },	// S_BTORCHSHRT3
-	{ SPR_SMBT,		32771,		4,		{NULL},				S_BTORCHSHRT,			{ 0 },	{ 0 } },	// S_BTORCHSHRT4
-	{ SPR_SMGT,		32768,		4,		{NULL},				S_GTORCHSHRT2,			{ 0 },	{ 0 } },	// S_GTORCHSHRT
-	{ SPR_SMGT,		32769,		4,		{NULL},				S_GTORCHSHRT3,			{ 0 },	{ 0 } },	// S_GTORCHSHRT2
-	{ SPR_SMGT,		32770,		4,		{NULL},				S_GTORCHSHRT4,			{ 0 },	{ 0 } },	// S_GTORCHSHRT3
-	{ SPR_SMGT,		32771,		4,		{NULL},				S_GTORCHSHRT,			{ 0 },	{ 0 } },	// S_GTORCHSHRT4
-	{ SPR_SMRT,		32768,		4,		{NULL},				S_RTORCHSHRT2,			{ 0 },	{ 0 } },	// S_RTORCHSHRT
-	{ SPR_SMRT,		32769,		4,		{NULL},				S_RTORCHSHRT3,			{ 0 },	{ 0 } },	// S_RTORCHSHRT2
-	{ SPR_SMRT,		32770,		4,		{NULL},				S_RTORCHSHRT4,			{ 0 },	{ 0 } },	// S_RTORCHSHRT3
-	{ SPR_SMRT,		32771,		4,		{NULL},				S_RTORCHSHRT,			{ 0 },	{ 0 } },	// S_RTORCHSHRT4
-	{ SPR_HDB1,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HANGNOGUTS
-	{ SPR_HDB2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HANGBNOBRAIN
-	{ SPR_HDB3,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HANGTLOOKDN
-	{ SPR_HDB4,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HANGTSKULL
-	{ SPR_HDB5,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HANGTLOOKUP
-	{ SPR_HDB6,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_HANGTNOBRAIN
-	{ SPR_POB1,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_COLONGIBS
-	{ SPR_POB2,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_SMALLPOOL
-	{ SPR_BRS1,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BRAINSTEM
-	{ SPR_TLMP,		32768,		4,		{NULL},				S_TECHLAMP2,			{ 0 },	{ 0 } },	// S_TECHLAMP
-	{ SPR_TLMP,		32769,		4,		{NULL},				S_TECHLAMP3,			{ 0 },	{ 0 } },	// S_TECHLAMP2
-	{ SPR_TLMP,		32770,		4,		{NULL},				S_TECHLAMP4,			{ 0 },	{ 0 } },	// S_TECHLAMP3
-	{ SPR_TLMP,		32771,		4,		{NULL},				S_TECHLAMP,				{ 0 },	{ 0 } },	// S_TECHLAMP4
-	{ SPR_TLP2,		32768,		4,		{NULL},				S_TECH2LAMP2,			{ 0 },	{ 0 } },	// S_TECH2LAMP
-	{ SPR_TLP2,		32769,		4,		{NULL},				S_TECH2LAMP3,			{ 0 },	{ 0 } },	// S_TECH2LAMP2
-	{ SPR_TLP2,		32770,		4,		{NULL},				S_TECH2LAMP4,			{ 0 },	{ 0 } },	// S_TECH2LAMP3
-	{ SPR_TLP2,		32771,		4,		{NULL},				S_TECH2LAMP,			{ 0 },	{ 0 } },	// S_TECH2LAMP4
+	{ SPR_BEXP,		32772,		10,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BEXP5
+	{ SPR_FCAN,		32768,		4,		{},					S_BBAR2,				{ 0 },	{ 0 } },	// S_BBAR1
+	{ SPR_FCAN,		32769,		4,		{},					S_BBAR3,				{ 0 },	{ 0 } },	// S_BBAR2
+	{ SPR_FCAN,		32770,		4,		{},					S_BBAR1,				{ 0 },	{ 0 } },	// S_BBAR3
+	{ SPR_BON1,		0,			6,		{},					S_BON1A,				{ 0 },	{ 0 } },	// S_BON1
+	{ SPR_BON1,		1,			6,		{},					S_BON1B,				{ 0 },	{ 0 } },	// S_BON1A
+	{ SPR_BON1,		2,			6,		{},					S_BON1C,				{ 0 },	{ 0 } },	// S_BON1B
+	{ SPR_BON1,		3,			6,		{},					S_BON1D,				{ 0 },	{ 0 } },	// S_BON1C
+	{ SPR_BON1,		2,			6,		{},					S_BON1E,				{ 0 },	{ 0 } },	// S_BON1D
+	{ SPR_BON1,		1,			6,		{},					S_BON1,					{ 0 },	{ 0 } },	// S_BON1E
+	{ SPR_BON2,		0,			6,		{},					S_BON2A,				{ 0 },	{ 0 } },	// S_BON2
+	{ SPR_BON2,		1,			6,		{},					S_BON2B,				{ 0 },	{ 0 } },	// S_BON2A
+	{ SPR_BON2,		2,			6,		{},					S_BON2C,				{ 0 },	{ 0 } },	// S_BON2B
+	{ SPR_BON2,		3,			6,		{},					S_BON2D,				{ 0 },	{ 0 } },	// S_BON2C
+	{ SPR_BON2,		2,			6,		{},					S_BON2E,				{ 0 },	{ 0 } },	// S_BON2D
+	{ SPR_BON2,		1,			6,		{},					S_BON2,					{ 0 },	{ 0 } },	// S_BON2E
+	{ SPR_BKEY,		0,			10,		{},					S_BKEY2,				{ 0 },	{ 0 } },	// S_BKEY
+	{ SPR_BKEY,		32769,		10,		{},					S_BKEY,					{ 0 },	{ 0 } },	// S_BKEY2
+	{ SPR_RKEY,		0,			10,		{},					S_RKEY2,				{ 0 },	{ 0 } },	// S_RKEY
+	{ SPR_RKEY,		32769,		10,		{},					S_RKEY,					{ 0 },	{ 0 } },	// S_RKEY2
+	{ SPR_YKEY,		0,			10,		{},					S_YKEY2,				{ 0 },	{ 0 } },	// S_YKEY
+	{ SPR_YKEY,		32769,		10,		{},					S_YKEY,					{ 0 },	{ 0 } },	// S_YKEY2
+	{ SPR_BSKU,		0,			10,		{},					S_BSKULL2,				{ 0 },	{ 0 } },	// S_BSKULL
+	{ SPR_BSKU,		32769,		10,		{},					S_BSKULL,				{ 0 },	{ 0 } },	// S_BSKULL2
+	{ SPR_RSKU,		0,			10,		{},					S_RSKULL2,				{ 0 },	{ 0 } },	// S_RSKULL
+	{ SPR_RSKU,		32769,		10,		{},					S_RSKULL,				{ 0 },	{ 0 } },	// S_RSKULL2
+	{ SPR_YSKU,		0,			10,		{},					S_YSKULL2,				{ 0 },	{ 0 } },	// S_YSKULL
+	{ SPR_YSKU,		32769,		10,		{},					S_YSKULL,				{ 0 },	{ 0 } },	// S_YSKULL2
+	{ SPR_STIM,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_STIM
+	{ SPR_MEDI,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_MEDI
+	{ SPR_SOUL,		32768,		6,		{},					S_SOUL2,				{ 0 },	{ 0 } },	// S_SOUL
+	{ SPR_SOUL,		32769,		6,		{},					S_SOUL3,				{ 0 },	{ 0 } },	// S_SOUL2
+	{ SPR_SOUL,		32770,		6,		{},					S_SOUL4,				{ 0 },	{ 0 } },	// S_SOUL3
+	{ SPR_SOUL,		32771,		6,		{},					S_SOUL5,				{ 0 },	{ 0 } },	// S_SOUL4
+	{ SPR_SOUL,		32770,		6,		{},					S_SOUL6,				{ 0 },	{ 0 } },	// S_SOUL5
+	{ SPR_SOUL,		32769,		6,		{},					S_SOUL,					{ 0 },	{ 0 } },	// S_SOUL6
+	{ SPR_PINV,		32768,		6,		{},					S_PINV2,				{ 0 },	{ 0 } },	// S_PINV
+	{ SPR_PINV,		32769,		6,		{},					S_PINV3,				{ 0 },	{ 0 } },	// S_PINV2
+	{ SPR_PINV,		32770,		6,		{},					S_PINV4,				{ 0 },	{ 0 } },	// S_PINV3
+	{ SPR_PINV,		32771,		6,		{},					S_PINV,					{ 0 },	{ 0 } },	// S_PINV4
+	{ SPR_PSTR,		32768,		-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PSTR
+	{ SPR_PINS,		32768,		6,		{},					S_PINS2,				{ 0 },	{ 0 } },	// S_PINS
+	{ SPR_PINS,		32769,		6,		{},					S_PINS3,				{ 0 },	{ 0 } },	// S_PINS2
+	{ SPR_PINS,		32770,		6,		{},					S_PINS4,				{ 0 },	{ 0 } },	// S_PINS3
+	{ SPR_PINS,		32771,		6,		{},					S_PINS,					{ 0 },	{ 0 } },	// S_PINS4
+	{ SPR_MEGA,		32768,		6,		{},					S_MEGA2,				{ 0 },	{ 0 } },	// S_MEGA
+	{ SPR_MEGA,		32769,		6,		{},					S_MEGA3,				{ 0 },	{ 0 } },	// S_MEGA2
+	{ SPR_MEGA,		32770,		6,		{},					S_MEGA4,				{ 0 },	{ 0 } },	// S_MEGA3
+	{ SPR_MEGA,		32771,		6,		{},					S_MEGA,					{ 0 },	{ 0 } },	// S_MEGA4
+	{ SPR_SUIT,		32768,		-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SUIT
+	{ SPR_PMAP,		32768,		6,		{},					S_PMAP2,				{ 0 },	{ 0 } },	// S_PMAP
+	{ SPR_PMAP,		32769,		6,		{},					S_PMAP3,				{ 0 },	{ 0 } },	// S_PMAP2
+	{ SPR_PMAP,		32770,		6,		{},					S_PMAP4,				{ 0 },	{ 0 } },	// S_PMAP3
+	{ SPR_PMAP,		32771,		6,		{},					S_PMAP5,				{ 0 },	{ 0 } },	// S_PMAP4
+	{ SPR_PMAP,		32770,		6,		{},					S_PMAP6,				{ 0 },	{ 0 } },	// S_PMAP5
+	{ SPR_PMAP,		32769,		6,		{},					S_PMAP,					{ 0 },	{ 0 } },	// S_PMAP6
+	{ SPR_PVIS,		32768,		6,		{},					S_PVIS2,				{ 0 },	{ 0 } },	// S_PVIS
+	{ SPR_PVIS,		1,			6,		{},					S_PVIS,					{ 0 },	{ 0 } },	// S_PVIS2
+	{ SPR_CLIP,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CLIP
+	{ SPR_AMMO,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_AMMO
+	{ SPR_ROCK,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_ROCK
+	{ SPR_BROK,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BROK
+	{ SPR_CELL,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CELL
+	{ SPR_CELP,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CELP
+	{ SPR_SHEL,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SHEL
+	{ SPR_SBOX,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SBOX
+	{ SPR_BPAK,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BPAK
+	{ SPR_BFUG,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BFUG
+	{ SPR_MGUN,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_MGUN
+	{ SPR_CSAW,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CSAW
+	{ SPR_LAUN,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_LAUN
+	{ SPR_PLAS,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PLAS
+	{ SPR_SHOT,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SHOT
+	{ SPR_SGN2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SHOT2
+	{ SPR_COLU,		32768,		-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_COLU
+	{ SPR_SMT2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_STALAG
+	{ SPR_GOR1,		0,			10,		{},					S_BLOODYTWITCH2,		{ 0 },	{ 0 } },	// S_BLOODYTWITCH
+	{ SPR_GOR1,		1,			15,		{},					S_BLOODYTWITCH3,		{ 0 },	{ 0 } },	// S_BLOODYTWITCH2
+	{ SPR_GOR1,		2,			8,		{},					S_BLOODYTWITCH4,		{ 0 },	{ 0 } },	// S_BLOODYTWITCH3
+	{ SPR_GOR1,		1,			6,		{},					S_BLOODYTWITCH,			{ 0 },	{ 0 } },	// S_BLOODYTWITCH4
+	{ SPR_PLAY,		13,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_DEADTORSO
+	{ SPR_PLAY,		18,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_DEADBOTTOM
+	{ SPR_POL2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HEADSONSTICK
+	{ SPR_POL5,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_GIBS
+	{ SPR_POL4,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HEADONASTICK
+	{ SPR_POL3,		32768,		6,		{},					S_HEADCANDLES2,			{ 0 },	{ 0 } },	// S_HEADCANDLES
+	{ SPR_POL3,		32769,		6,		{},					S_HEADCANDLES,			{ 0 },	{ 0 } },	// S_HEADCANDLES2
+	{ SPR_POL1,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_DEADSTICK
+	{ SPR_POL6,		0,			6,		{},					S_LIVESTICK2,			{ 0 },	{ 0 } },	// S_LIVESTICK
+	{ SPR_POL6,		1,			8,		{},					S_LIVESTICK,			{ 0 },	{ 0 } },	// S_LIVESTICK2
+	{ SPR_GOR2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_MEAT2
+	{ SPR_GOR3,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_MEAT3
+	{ SPR_GOR4,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_MEAT4
+	{ SPR_GOR5,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_MEAT5
+	{ SPR_SMIT,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_STALAGTITE
+	{ SPR_COL1,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TALLGRNCOL
+	{ SPR_COL2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SHRTGRNCOL
+	{ SPR_COL3,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TALLREDCOL
+	{ SPR_COL4,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SHRTREDCOL
+	{ SPR_CAND,		32768,		-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CANDLESTIK
+	{ SPR_CBRA,		32768,		-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_CANDELABRA
+	{ SPR_COL6,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SKULLCOL
+	{ SPR_TRE1,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TORCHTREE
+	{ SPR_TRE2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BIGTREE
+	{ SPR_ELEC,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_TECHPILLAR
+	{ SPR_CEYE,		32768,		6,		{},					S_EVILEYE2,				{ 0 },	{ 0 } },	// S_EVILEYE
+	{ SPR_CEYE,		32769,		6,		{},					S_EVILEYE3,				{ 0 },	{ 0 } },	// S_EVILEYE2
+	{ SPR_CEYE,		32770,		6,		{},					S_EVILEYE4,				{ 0 },	{ 0 } },	// S_EVILEYE3
+	{ SPR_CEYE,		32769,		6,		{},					S_EVILEYE,				{ 0 },	{ 0 } },	// S_EVILEYE4
+	{ SPR_FSKU,		32768,		6,		{},					S_FLOATSKULL2,			{ 0 },	{ 0 } },	// S_FLOATSKULL
+	{ SPR_FSKU,		32769,		6,		{},					S_FLOATSKULL3,			{ 0 },	{ 0 } },	// S_FLOATSKULL2
+	{ SPR_FSKU,		32770,		6,		{},					S_FLOATSKULL,			{ 0 },	{ 0 } },	// S_FLOATSKULL3
+	{ SPR_COL5,		0,			14,		{},					S_HEARTCOL2,			{ 0 },	{ 0 } },	// S_HEARTCOL
+	{ SPR_COL5,		1,			14,		{},					S_HEARTCOL,				{ 0 },	{ 0 } },	// S_HEARTCOL2
+	{ SPR_TBLU,		32768,		4,		{},					S_BLUETORCH2,			{ 0 },	{ 0 } },	// S_BLUETORCH
+	{ SPR_TBLU,		32769,		4,		{},					S_BLUETORCH3,			{ 0 },	{ 0 } },	// S_BLUETORCH2
+	{ SPR_TBLU,		32770,		4,		{},					S_BLUETORCH4,			{ 0 },	{ 0 } },	// S_BLUETORCH3
+	{ SPR_TBLU,		32771,		4,		{},					S_BLUETORCH,			{ 0 },	{ 0 } },	// S_BLUETORCH4
+	{ SPR_TGRN,		32768,		4,		{},					S_GREENTORCH2,			{ 0 },	{ 0 } },	// S_GREENTORCH
+	{ SPR_TGRN,		32769,		4,		{},					S_GREENTORCH3,			{ 0 },	{ 0 } },	// S_GREENTORCH2
+	{ SPR_TGRN,		32770,		4,		{},					S_GREENTORCH4,			{ 0 },	{ 0 } },	// S_GREENTORCH3
+	{ SPR_TGRN,		32771,		4,		{},					S_GREENTORCH,			{ 0 },	{ 0 } },	// S_GREENTORCH4
+	{ SPR_TRED,		32768,		4,		{},					S_REDTORCH2,			{ 0 },	{ 0 } },	// S_REDTORCH
+	{ SPR_TRED,		32769,		4,		{},					S_REDTORCH3,			{ 0 },	{ 0 } },	// S_REDTORCH2
+	{ SPR_TRED,		32770,		4,		{},					S_REDTORCH4,			{ 0 },	{ 0 } },	// S_REDTORCH3
+	{ SPR_TRED,		32771,		4,		{},					S_REDTORCH,				{ 0 },	{ 0 } },	// S_REDTORCH4
+	{ SPR_SMBT,		32768,		4,		{},					S_BTORCHSHRT2,			{ 0 },	{ 0 } },	// S_BTORCHSHRT
+	{ SPR_SMBT,		32769,		4,		{},					S_BTORCHSHRT3,			{ 0 },	{ 0 } },	// S_BTORCHSHRT2
+	{ SPR_SMBT,		32770,		4,		{},					S_BTORCHSHRT4,			{ 0 },	{ 0 } },	// S_BTORCHSHRT3
+	{ SPR_SMBT,		32771,		4,		{},					S_BTORCHSHRT,			{ 0 },	{ 0 } },	// S_BTORCHSHRT4
+	{ SPR_SMGT,		32768,		4,		{},					S_GTORCHSHRT2,			{ 0 },	{ 0 } },	// S_GTORCHSHRT
+	{ SPR_SMGT,		32769,		4,		{},					S_GTORCHSHRT3,			{ 0 },	{ 0 } },	// S_GTORCHSHRT2
+	{ SPR_SMGT,		32770,		4,		{},					S_GTORCHSHRT4,			{ 0 },	{ 0 } },	// S_GTORCHSHRT3
+	{ SPR_SMGT,		32771,		4,		{},					S_GTORCHSHRT,			{ 0 },	{ 0 } },	// S_GTORCHSHRT4
+	{ SPR_SMRT,		32768,		4,		{},					S_RTORCHSHRT2,			{ 0 },	{ 0 } },	// S_RTORCHSHRT
+	{ SPR_SMRT,		32769,		4,		{},					S_RTORCHSHRT3,			{ 0 },	{ 0 } },	// S_RTORCHSHRT2
+	{ SPR_SMRT,		32770,		4,		{},					S_RTORCHSHRT4,			{ 0 },	{ 0 } },	// S_RTORCHSHRT3
+	{ SPR_SMRT,		32771,		4,		{},					S_RTORCHSHRT,			{ 0 },	{ 0 } },	// S_RTORCHSHRT4
+	{ SPR_HDB1,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HANGNOGUTS
+	{ SPR_HDB2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HANGBNOBRAIN
+	{ SPR_HDB3,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HANGTLOOKDN
+	{ SPR_HDB4,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HANGTSKULL
+	{ SPR_HDB5,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HANGTLOOKUP
+	{ SPR_HDB6,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_HANGTNOBRAIN
+	{ SPR_POB1,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_COLONGIBS
+	{ SPR_POB2,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_SMALLPOOL
+	{ SPR_BRS1,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BRAINSTEM
+	{ SPR_TLMP,		32768,		4,		{},					S_TECHLAMP2,			{ 0 },	{ 0 } },	// S_TECHLAMP
+	{ SPR_TLMP,		32769,		4,		{},					S_TECHLAMP3,			{ 0 },	{ 0 } },	// S_TECHLAMP2
+	{ SPR_TLMP,		32770,		4,		{},					S_TECHLAMP4,			{ 0 },	{ 0 } },	// S_TECHLAMP3
+	{ SPR_TLMP,		32771,		4,		{},					S_TECHLAMP,				{ 0 },	{ 0 } },	// S_TECHLAMP4
+	{ SPR_TLP2,		32768,		4,		{},					S_TECH2LAMP2,			{ 0 },	{ 0 } },	// S_TECH2LAMP
+	{ SPR_TLP2,		32769,		4,		{},					S_TECH2LAMP3,			{ 0 },	{ 0 } },	// S_TECH2LAMP2
+	{ SPR_TLP2,		32770,		4,		{},					S_TECH2LAMP4,			{ 0 },	{ 0 } },	// S_TECH2LAMP3
+	{ SPR_TLP2,		32771,		4,		{},					S_TECH2LAMP,			{ 0 },	{ 0 } },	// S_TECH2LAMP4
 
 	// Boom states
-	{ SPR_TNT1,		0,			-1,		{NULL},				S_TNT1,					{ 0 },	{ 0 } },	// S_TNT1
+	{ SPR_TNT1,		0,			-1,		{},					S_TNT1,					{ 0 },	{ 0 } },	// S_TNT1
 
 	// MBF states
 	{ SPR_MISL,		32768,		1000,	{A_Die},			S_GRENADE,				{ 0 },	{ 0 } },	// S_DOGS_STND
 	{ SPR_MISL,		32769,		4,		{A_Scream},			S_DETONATE2,			{ 0 },	{ 0 } },	// S_DETONATE1
 	{ SPR_MISL,		32770,		6,		{A_Detonate},		S_DETONATE3,			{ 0 },	{ 0 } },	// S_DETONATE2
-	{ SPR_MISL,		32771,		10,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_DETONATE3
+	{ SPR_MISL,		32771,		10,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_DETONATE3
 	{ SPR_DOGS,		0,			10,		{A_Look},			S_DOGS_STND2,			{ 0 },	{ 0 } },	// S_DOGS_STND
 	{ SPR_DOGS,		1,			10,		{A_Look},			S_DOGS_STND,			{ 0 },	{ 0 } },	// S_DOGS_STND2
 	{ SPR_DOGS,		0,			2,		{A_Chase},			S_DOGS_RUN2,			{ 0 },	{ 0 } },	// S_DOGS_RUN1
@@ -1183,20 +1192,20 @@ state_t	states[NUMSTATES] =
 	{ SPR_DOGS,		4,			8,		{A_FaceTarget},		S_DOGS_ATK2,			{ 0 },	{ 0 } },	// S_DOGS_ATK1
 	{ SPR_DOGS,		5,			8,		{A_FaceTarget},		S_DOGS_ATK3,			{ 0 },	{ 0 } },	// S_DOGS_ATK2
 	{ SPR_DOGS,		6,			8,		{A_SargAttack},		S_DOGS_RUN1,			{ 0 },	{ 0 } },	// S_DOGS_ATK3
-	{ SPR_DOGS,		7,			2,		{NULL},				S_DOGS_PAIN2,			{ 0 },	{ 0 } },	// S_DOGS_PAIN
+	{ SPR_DOGS,		7,			2,		{},					S_DOGS_PAIN2,			{ 0 },	{ 0 } },	// S_DOGS_PAIN
 	{ SPR_DOGS,		7,			2,		{A_Pain},			S_DOGS_RUN1,			{ 0 },	{ 0 } },	// S_DOGS_PAIN2
-	{ SPR_DOGS,		8,			8,		{NULL},				S_DOGS_DIE2,			{ 0 },	{ 0 } },	// S_DOGS_DIE1
+	{ SPR_DOGS,		8,			8,		{},					S_DOGS_DIE2,			{ 0 },	{ 0 } },	// S_DOGS_DIE1
 	{ SPR_DOGS,		9,			8,		{A_Scream},			S_DOGS_DIE3,			{ 0 },	{ 0 } },	// S_DOGS_DIE2
-	{ SPR_DOGS,		10,			4,		{NULL},				S_DOGS_DIE4,			{ 0 },	{ 0 } },	// S_DOGS_DIE3
+	{ SPR_DOGS,		10,			4,		{},					S_DOGS_DIE4,			{ 0 },	{ 0 } },	// S_DOGS_DIE3
 	{ SPR_DOGS,		11,			4,		{A_Fall},			S_DOGS_DIE5,			{ 0 },	{ 0 } },	// S_DOGS_DIE4
-	{ SPR_DOGS,		12,			4,		{NULL},				S_DOGS_DIE6,			{ 0 },	{ 0 } },	// S_DOGS_DIE5
-	{ SPR_DOGS,		13,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_DOGS_DIE6
-	{ SPR_DOGS,		13,			5,		{NULL},				S_DOGS_RAISE2,			{ 0 },	{ 0 } },	// S_DOGS_RAISE1
-	{ SPR_DOGS,		12,			5,		{NULL},				S_DOGS_RAISE3,			{ 0 },	{ 0 } },	// S_DOGS_RAISE2
-	{ SPR_DOGS,		11,			5,		{NULL},				S_DOGS_RAISE4,			{ 0 },	{ 0 } },	// S_DOGS_RAISE3
-	{ SPR_DOGS,		10,			5,		{NULL},				S_DOGS_RAISE5,			{ 0 },	{ 0 } },	// S_DOGS_RAISE4
-	{ SPR_DOGS,		9,			5,		{NULL},				S_DOGS_RAISE6,			{ 0 },	{ 0 } },	// S_DOGS_RAISE5
-	{ SPR_DOGS,		8,			5,		{NULL},				S_DOGS_RUN1,			{ 0 },	{ 0 } },	// S_DOGS_RAISE6
+	{ SPR_DOGS,		12,			4,		{},					S_DOGS_DIE6,			{ 0 },	{ 0 } },	// S_DOGS_DIE5
+	{ SPR_DOGS,		13,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_DOGS_DIE6
+	{ SPR_DOGS,		13,			5,		{},					S_DOGS_RAISE2,			{ 0 },	{ 0 } },	// S_DOGS_RAISE1
+	{ SPR_DOGS,		12,			5,		{},					S_DOGS_RAISE3,			{ 0 },	{ 0 } },	// S_DOGS_RAISE2
+	{ SPR_DOGS,		11,			5,		{},					S_DOGS_RAISE4,			{ 0 },	{ 0 } },	// S_DOGS_RAISE3
+	{ SPR_DOGS,		10,			5,		{},					S_DOGS_RAISE5,			{ 0 },	{ 0 } },	// S_DOGS_RAISE4
+	{ SPR_DOGS,		9,			5,		{},					S_DOGS_RAISE6,			{ 0 },	{ 0 } },	// S_DOGS_RAISE5
+	{ SPR_DOGS,		8,			5,		{},					S_DOGS_RUN1,			{ 0 },	{ 0 } },	// S_DOGS_RAISE6
 	{ SPR_BFGG,		0,			10,		{A_BFGsound},		S_BETABFG_FRAME2,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME1
 	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME3,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME2
 	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME4,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME3
@@ -1240,20 +1249,20 @@ state_t	states[NUMSTATES] =
 	{ SPR_BFGG,		1,			1,		{A_FireOldBFG},		S_BETABFG_FRAME42,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME41
 	{ SPR_BFGG,		1,			0,		{A_Light2},			S_BETABFG_FRAME43,		{ 0 },	{ 0 } },	// S_BETABFG_FRAME42
 	{ SPR_BFGG,		1,			20,		{A_ReFire},			S_BFG,					{ 0 },	{ 0 } },	// S_BETABFG_FRAME43
-	{ SPR_PLS1,		0,			6,		{NULL},				S_BETABALL_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN1
-	{ SPR_PLS1,		1,			6,		{NULL},				S_BETABALL_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN2
-	{ SPR_PLS1,		2,			4,		{NULL},				S_BETABALL_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE1
-	{ SPR_PLS1,		3,			4,		{NULL},				S_BETABALL_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE2
-	{ SPR_PLS1,		4,			4,		{NULL},				S_BETABALL_EXPLODE4,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE3
-	{ SPR_PLS1,		5,			4,		{NULL},				S_BETABALL_EXPLODE5,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE4
-	{ SPR_PLS1,		6,			4,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE5
-	{ SPR_PLS2,		0,			4,		{NULL},				S_BETABALL2_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN1
-	{ SPR_PLS2,		1,			4,		{NULL},				S_BETABALL2_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN2
-	{ SPR_PLS2,		2,			6,		{NULL},				S_BETABALL2_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE1
-	{ SPR_PLS2,		3,			6,		{NULL},				S_BETABALL2_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE2
-	{ SPR_PLS2,		4,			6,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE3
-	{ SPR_BON3,		0,			6,		{NULL},				S_BETASCEPTRE,			{ 0 },	{ 0 } },	// S_BETASCEPTRE
-	{ SPR_BON4,		0,			6,		{NULL},				S_BETABIBLE,			{ 0 },	{ 0 } },	// S_BETABIBLE
+	{ SPR_PLS1,		0,			6,		{},					S_BETABALL_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN1
+	{ SPR_PLS1,		1,			6,		{},					S_BETABALL_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL_SPAWN2
+	{ SPR_PLS1,		2,			4,		{},					S_BETABALL_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE1
+	{ SPR_PLS1,		3,			4,		{},					S_BETABALL_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE2
+	{ SPR_PLS1,		4,			4,		{},					S_BETABALL_EXPLODE4,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE3
+	{ SPR_PLS1,		5,			4,		{},					S_BETABALL_EXPLODE5,	{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE4
+	{ SPR_PLS1,		6,			4,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL_EXPLODE5
+	{ SPR_PLS2,		0,			4,		{},					S_BETABALL2_SPAWN2,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN1
+	{ SPR_PLS2,		1,			4,		{},					S_BETABALL2_SPAWN1,		{ 0 },	{ 0 } },	// S_BETABALL2_SPAWN2
+	{ SPR_PLS2,		2,			6,		{},					S_BETABALL2_EXPLODE2,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE1
+	{ SPR_PLS2,		3,			6,		{},					S_BETABALL2_EXPLODE3,	{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE2
+	{ SPR_PLS2,		4,			6,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_BETABALL2_EXPLODE3
+	{ SPR_BON3,		0,			6,		{},					S_BETASCEPTRE,			{ 0 },	{ 0 } },	// S_BETASCEPTRE
+	{ SPR_BON4,		0,			6,		{},					S_BETABIBLE,			{ 0 },	{ 0 } },	// S_BETABIBLE
 	{ SPR_SKUL,		0,			10,		{A_Look},			S_BETASOUL_STAND,		{ 0 },	{ 0 } },	// S_BETASOUL_STAND
 	{ SPR_SKUL,		1,			5,		{A_Chase},			S_BETASOUL_RUN2,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN1
 	{ SPR_SKUL,		2,			5,		{A_Chase},			S_BETASOUL_RUN3,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN2
@@ -1261,35 +1270,35 @@ state_t	states[NUMSTATES] =
 	{ SPR_SKUL,		0,			5,		{A_Chase},			S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_RUN4
 	{ SPR_SKUL,		4,			4,		{A_FaceTarget},		S_BETASOUL_ATK2,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK1
 	{ SPR_SKUL,		5,			5,		{A_BetaSoulAttack},	S_BETASOUL_ATK3,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK2
-	{ SPR_SKUL,		4,			4,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK3
-	{ SPR_SKUL,		6,			4,		{NULL},				S_BETASOUL_PAIN2,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN1
+	{ SPR_SKUL,		4,			4,		{},					S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_ATK3
+	{ SPR_SKUL,		6,			4,		{},					S_BETASOUL_PAIN2,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN1
 	{ SPR_SKUL,		7,			2,		{A_Pain},			S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN2
-	{ SPR_SKUL,		8,			4,		{NULL},				S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN3
-	{ SPR_SKUL,		9,			5,		{NULL},				S_BETASOUL_DIE2,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE1
-	{ SPR_SKUL,		10,			5,		{NULL},				S_BETASOUL_DIE3,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE2
-	{ SPR_SKUL,		11,			5,		{NULL},				S_BETASOUL_DIE4,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE3
-	{ SPR_SKUL,		12,			5,		{NULL},				S_BETASOUL_DIE5,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE4
+	{ SPR_SKUL,		8,			4,		{},					S_BETASOUL_RUN1,		{ 0 },	{ 0 } },	// S_BETASOUL_PAIN3
+	{ SPR_SKUL,		9,			5,		{},					S_BETASOUL_DIE2,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE1
+	{ SPR_SKUL,		10,			5,		{},					S_BETASOUL_DIE3,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE2
+	{ SPR_SKUL,		11,			5,		{},					S_BETASOUL_DIE4,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE3
+	{ SPR_SKUL,		12,			5,		{},					S_BETASOUL_DIE5,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE4
 	{ SPR_SKUL,		13,			5,		{A_Scream},			S_BETASOUL_DIE6,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE5
-	{ SPR_SKUL,		14,			5,		{NULL},				S_BETASOUL_DIE7,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE6
+	{ SPR_SKUL,		14,			5,		{},					S_BETASOUL_DIE7,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE6
 	{ SPR_SKUL,		15,			5,		{A_Fall},			S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE7
-	{ SPR_SKUL,		16,			-1,		{NULL},				S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE8
+	{ SPR_SKUL,		16,			-1,		{},					S_BETASOUL_DIE8,		{ 0 },	{ 0 } },	// S_BETASOUL_DIE8
 	{ SPR_MISL,		32769,		8,		{A_Mushroom},		S_EXPLODE2,				{ 0 },	{ 0 } },	// S_MUSHROOM
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG2,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG1
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG3,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG2
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG4,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG3
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG5,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG4
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG6,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG5
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG7,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG6
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG8,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG7
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG9,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG8
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG10,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG9
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG11,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG10
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_PRBOOM_EASTEREGG12,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG11
-	{ SPR_PLAY,		0,			-1,		{NULL},				S_NULL,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG12
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG2,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG1
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG3,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG2
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG4,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG3
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG5,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG4
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG6,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG5
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG7,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG6
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG8,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG7
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG9,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG8
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG10,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG9
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG11,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG10
+	{ SPR_PLAY,		0,			-1,		{},					S_PRBOOM_EASTEREGG12,	{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG11
+	{ SPR_PLAY,		0,			-1,		{},					S_NULL,					{ 0 },	{ 0 } },	// S_PRBOOM_EASTEREGG12
 };
 
 
-mobjinfo_t mobjinfo[NUMMOBJTYPES] =
+DOOM_C_API mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 {
 	{		// MT_PLAYER
 		-1,		// doomednum

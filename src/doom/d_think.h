@@ -30,15 +30,57 @@
 //  we will need to handle the various
 //  action functions cleanly.
 //
-DOOM_C_API typedef  void (*actionf_v)();
-DOOM_C_API typedef  void (*actionf_p1)( void* );
-DOOM_C_API typedef  void (*actionf_p2)( void*, void* );
 
-DOOM_C_API typedef union
+DOOM_C_API typedef struct mobj_s mobj_t;
+DOOM_C_API typedef struct player_s player_t;
+DOOM_C_API typedef struct pspdef_s pspdef_t;
+DOOM_C_API typedef struct thinker_s thinker_t;
+
+
+DOOM_C_API typedef  void (*actionf_v)();
+DOOM_C_API typedef  void (*actionf_p1)( thinker_t* );
+DOOM_C_API typedef  void (*actionf_p2)( player_t*, pspdef_t* );
+
+DOOM_C_API typedef enum actiontype_e
 {
-  actionf_v		acv;
-  actionf_p1	acp1;
-  actionf_p2	acp2;
+	at_none,
+	at_void,
+	at_p1,
+	at_p2,
+} actiontype_t;
+
+DOOM_C_API typedef struct actionf_s
+{
+	union
+	{
+		actionf_v		acv;
+		actionf_p1		acp1;
+		actionf_p2		acp2;
+	};
+	actiontype_t type;
+
+#if defined(__cplusplus)
+	actionf_s()
+		: acv( nullptr )
+	{
+	}
+
+	actionf_s( actionf_v func )
+		: acv( func )
+		, type( at_void )
+	{
+	}
+	actionf_s( actionf_p1 func )
+		: acp1( func )
+		, type( at_p1 )
+	{
+	}
+	actionf_s( actionf_p2 func )
+		: acp2( func )
+		, type( at_p2 )
+	{
+	}
+#endif // defined(__cplusplus)
 } actionf_t;
 
 // Historically, "think_t" is yet another
@@ -54,7 +96,7 @@ DOOM_C_API typedef struct thinker_s
 	think_t				function;
 	struct thinker_s*	prev;
 	struct thinker_s*	next;
-} thinker_t;
+};
 
 #if defined( __cplusplus )
 

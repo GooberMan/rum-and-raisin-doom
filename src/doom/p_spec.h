@@ -256,7 +256,7 @@ DOOM_C_API typedef struct platdata_e
 	int			tag;
 	plattype_e	type;
 
-	// Limit removing linked list
+	// Generic functionality
 	struct platdata_e*	prevactive;
 	struct platdata_e*  nextactive;
 } plat_t;
@@ -325,7 +325,7 @@ DOOM_C_API typedef struct
 	// when it reaches 0, start going down
 	int32_t			topcountdown;
 
-	// Generic door extensions
+	// Generic functionality
 	sectordir_t		nextdirection;
 	doombool		blazing;
 	doombool		keepclosingoncrush;

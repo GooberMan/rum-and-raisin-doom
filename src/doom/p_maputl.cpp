@@ -298,18 +298,28 @@ DOOM_C_API void P_UnsetThingPosition( mobj_t* thing )
 
     if ( ! (thing->flags & MF_NOSECTOR) )
     {
-	// inert things don't need to be in blockmap?
-	// unlink from subsector
-	if (thing->snext)
-	    thing->snext->sprev = thing->sprev;
+		// inert things don't need to be in blockmap?
+		// unlink from subsector
+		if (thing->snext)
+			thing->snext->sprev = thing->sprev;
 
-	if (thing->sprev)
-	    thing->sprev->snext = thing->snext;
-	else
-	    thing->subsector->sector->thinglist = thing->snext;
+		if (thing->sprev)
+			thing->sprev->snext = thing->snext;
+		else
+			thing->subsector->sector->thinglist = thing->snext;
     }
-	
-    if ( ! (thing->flags & MF_NOBLOCKMAP) )
+	else
+	{
+		if (thing->nosectornext)
+			thing->nosectornext->nosectorprev = thing->nosectorprev;
+
+		if (thing->nosectorprev)
+			thing->nosectorprev->nosectornext = thing->nosectornext;
+		else
+			thing->subsector->sector->nosectorthinglist = thing->nosectornext;
+	}
+
+	if ( ! (thing->flags & MF_NOBLOCKMAP) )
     {
 	// inert things don't need to be in blockmap
 	// unlink from block map
@@ -951,7 +961,6 @@ DOOM_C_API doombool P_PathTraverse( fixed_t x1, fixed_t y1, fixed_t x2, fixed_t 
     // go through the sorted list
     return P_TraverseIntercepts ( trav, FRACUNIT );
 }
-
 
 
 //

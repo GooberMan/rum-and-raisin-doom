@@ -1257,7 +1257,7 @@ DOOM_C_API doombool PTR_UseTraverse( intercept_t* in )
 
 	if( sim.boom_line_specials )
 	{
-		return ( in->d.line->flags & ML_BOOM_PASSTHROUGH ) == ML_BOOM_PASSTHROUGH;
+		return in->d.line->Passthrough();
 	}
     // can't use for than one special line in a row
     return false;

@@ -135,9 +135,9 @@ typedef struct sectorinstance_s
 	// Need to compare these for BSP rejection
 	texturecomposite_t*		floortex;
 	texturecomposite_t*		ceiltex;
-	rend_fixed_t			lightlevel;
-	rend_fixed_t			floorlightlevel;
-	rend_fixed_t			ceillightlevel;
+	int32_t					lightlevel;
+	int32_t					floorlightlevel;
+	int32_t					ceillightlevel;
 	rend_fixed_t			flooroffsetx;
 	rend_fixed_t			flooroffsety;
 	rend_fixed_t			ceiloffsetx;
@@ -370,8 +370,8 @@ struct sector_s
 
 	constexpr fixed_t FloorEffectHeight() { return transferline ? M_MAX( transferline->frontsector->floorheight, floorheight ) : floorheight; }
 
-	INLINE fixed_t FrictionMultiplier()			{ return frictionmultipliers[ FrictionPercent() >> 13 ]; }
-	INLINE fixed_t MonsterFrictionMultiplier()	{ return frictionmultipliers[ FrictionPercent() >> 13 ] << 5; }
+	INLINE int32_t FrictionMultiplier()			{ return frictionmultipliers[ FrictionPercent() >> 13 ]; }
+	INLINE int32_t MonsterFrictionMultiplier()	{ return frictionmultipliers[ FrictionPercent() >> 13 ] << 5; }
 
 private:
 	static constexpr int32_t frictionmultipliers[] =

@@ -2281,10 +2281,10 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 						if( sector.tag == line.tag )
 						{
 							sector_t** toset = setceil ? &sector.ceilinglightsec : &sector.floorlightsec;
-							rend_fixed_t* tosetprev = setceil ? &prevsectors[ sector.index ].ceillightlevel
-																: &prevsectors[ sector.index ].floorlightlevel;
-							rend_fixed_t* tosetcurr = setceil ? &currsectors[ sector.index ].ceillightlevel
-																: &currsectors[ sector.index ].floorlightlevel;
+							int32_t* tosetprev = setceil ? &prevsectors[ sector.index ].ceillightlevel
+														: &prevsectors[ sector.index ].floorlightlevel;
+							int32_t* tosetcurr = setceil ? &currsectors[ sector.index ].ceillightlevel
+														: &currsectors[ sector.index ].floorlightlevel;
 
 							*toset = line.frontsector;
 							*tosetprev = *tosetcurr = line.frontsector->lightlevel;

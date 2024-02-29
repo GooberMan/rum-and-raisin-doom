@@ -769,11 +769,11 @@ void R_InitTextures (void)
 				auto found = patchnamelookup.find( lumpname );
 				if( found == patchnamelookup.end() )
 				{
-					patchnamelookup[ lumpname ] = { W_CheckNumForName( lumpname.c_str() ), numpatchentries++ };
+					patchnamelookup[ lumpname ] = { curr, numpatchentries++ };
 				}
 				else
 				{
-					found->second.lumpindex = W_CheckNumForName( lumpname.c_str() );
+					found->second.lumpindex = curr;
 				}
 			}
 		} );

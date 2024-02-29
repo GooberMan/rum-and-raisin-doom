@@ -413,6 +413,7 @@
     <ClCompile Include="..\src\doom\d_gameflow_plutonia.cpp" />
     <ClCompile Include="..\src\doom\d_gameflow_tnt.cpp" />
     <ClCompile Include="..\src\doom\d_gamesim.cpp" />
+    <ClCompile Include="..\src\doom\info.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf21.cpp" />
     <ClCompile Include="..\src\doom\p_ceilng.cpp" />
@@ -473,7 +474,6 @@
     <ClInclude Include="..\src\doom\hu_lib.h" />
     <ClCompile Include="..\src\doom\hu_stuff.c" />
     <ClInclude Include="..\src\doom\hu_stuff.h" />
-    <ClCompile Include="..\src\doom\info.c" />
     <ClInclude Include="..\src\doom\info.h" />
     <ClCompile Include="..\src\doom\m_menu.c" />
     <ClInclude Include="..\src\doom\m_menu.h" />

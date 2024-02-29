@@ -342,23 +342,23 @@ getNextSector
 //
 fixed_t	P_FindLowestFloorSurrounding(sector_t* sec)
 {
-    int			i;
-    line_t*		check;
-    sector_t*		other;
-    fixed_t		floor = INT_MAX;
+	int			i;
+	line_t*		check;
+	sector_t*	other;
+	fixed_t		floor = INT_MAX;
 	
-    for (i=0 ;i < sec->linecount ; i++)
-    {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+	for (i=0 ;i < sec->linecount ; i++)
+	{
+		check = sec->lines[i];
+		other = getNextSector(check,sec);
 
-	if (!other)
-	    continue;
+		if (!other)
+			continue;
 	
-	if (other->floorheight < floor)
-	    floor = other->floorheight;
-    }
-    return floor;
+		if (other->floorheight < floor)
+			floor = other->floorheight;
+	}
+	return floor;
 }
 
 fixed_t	P_FindNextLowestFloorSurrounding( sector_t* sec )
@@ -456,23 +456,23 @@ fixed_t	P_FindNextHighestFloorSurrounding( sector_t* sec )
 //
 fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 {
-    int			i;
-    line_t*		check;
-    sector_t*		other;
-    fixed_t		floor = fix.findhighestfloorsurrounding ? -INT_MAX : -500*FRACUNIT;
+	int			i;
+	line_t*		check;
+	sector_t*	other;
+	fixed_t		floor = fix.findhighestfloorsurrounding ? -INT_MAX : -500*FRACUNIT;
 	
-    for (i=0 ;i < sec->linecount ; i++)
-    {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+	for (i=0 ;i < sec->linecount ; i++)
+	{
+		check = sec->lines[i];
+		other = getNextSector(check,sec);
 	
-	if (!other)
-	    continue;
+		if (!other)
+			continue;
 	
-	if (other->floorheight > floor)
-	    floor = other->floorheight;
-    }
-    return floor;
+		if (other->floorheight > floor)
+			floor = other->floorheight;
+	}
+	return floor;
 }
 
 

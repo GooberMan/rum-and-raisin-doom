@@ -78,7 +78,7 @@ DOOM_C_API doombool P_SetMobjState( mobj_t* mobj, statenum_t state )
 		// Modified handling.
 		// Call action functions when the state is set
 		if (st->action.acp1)
-			st->action.acp1(mobj);
+			st->action.acp1(&mobj->thinker);
 	
 		state = st->nextstate;
 
