@@ -82,9 +82,6 @@
     <ClCompile Include="..\src\doom\p_sight.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\p_tick.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\r_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -218,6 +215,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\info.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\p_tick.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -29,118 +29,125 @@
 
 #include "m_container.h"
 
-#pragma optimize( "", off )
-
-// This is fairly evil, and won't survive the transition to C++
 extern "C"
 {
 	// Doom actions
-	void A_Light0();
-	void A_WeaponReady();
-	void A_Lower();
-	void A_Raise();
-	void A_Punch();
-	void A_ReFire();
-	void A_FirePistol();
-	void A_Light1();
-	void A_FireShotgun();
-	void A_Light2();
-	void A_FireShotgun2();
-	void A_CheckReload();
-	void A_OpenShotgun2();
-	void A_LoadShotgun2();
-	void A_CloseShotgun2();
-	void A_FireCGun();
-	void A_GunFlash();
-	void A_FireMissile();
-	void A_Saw();
-	void A_FirePlasma();
-	void A_BFGsound();
-	void A_FireBFG();
-	void A_BFGSpray();
-	void A_Explode();
-	void A_Pain();
-	void A_PlayerScream();
-	void A_Fall();
-	void A_XScream();
-	void A_Look();
-	void A_Chase();
-	void A_FaceTarget();
-	void A_PosAttack();
-	void A_Scream();
-	void A_SPosAttack();
-	void A_VileChase();
-	void A_VileStart();
-	void A_VileTarget();
-	void A_VileAttack();
-	void A_StartFire();
-	void A_Fire();
-	void A_FireCrackle();
-	void A_Tracer();
-	void A_SkelWhoosh();
-	void A_SkelFist();
-	void A_SkelMissile();
-	void A_FatRaise();
-	void A_FatAttack1();
-	void A_FatAttack2();
-	void A_FatAttack3();
-	void A_BossDeath();
-	void A_CPosAttack();
-	void A_CPosRefire();
-	void A_TroopAttack();
-	void A_SargAttack();
-	void A_HeadAttack();
-	void A_BruisAttack();
-	void A_SkullAttack();
-	void A_Metal();
-	void A_SpidRefire();
-	void A_BabyMetal();
-	void A_BspiAttack();
-	void A_Hoof();
-	void A_CyberAttack();
-	void A_PainAttack();
-	void A_PainDie();
-	void A_KeenDie();
-	void A_BrainPain();
-	void A_BrainScream();
-	void A_BrainDie();
-	void A_BrainAwake();
-	void A_BrainSpit();
-	void A_SpawnSound();
-	void A_SpawnFly();
-	void A_BrainExplode();
+	void A_Light0( player_t *player, pspdef_t *psp );
+	void A_WeaponReady( player_t *player, pspdef_t *psp );
+	void A_Lower( player_t *player, pspdef_t *psp );
+	void A_Raise( player_t *player, pspdef_t *psp );
+	void A_Punch( player_t *player, pspdef_t *psp );
+	void A_ReFire( player_t *player, pspdef_t *psp );
+	void A_FirePistol( player_t *player, pspdef_t *psp );
+	void A_Light1( player_t *player, pspdef_t *psp );
+	void A_FireShotgun( player_t *player, pspdef_t *psp );
+	void A_Light2( player_t *player, pspdef_t *psp );
+	void A_FireShotgun2( player_t *player, pspdef_t *psp );
+	void A_CheckReload( player_t *player, pspdef_t *psp );
+	void A_OpenShotgun2( player_t *player, pspdef_t *psp );
+	void A_LoadShotgun2( player_t *player, pspdef_t *psp );
+	void A_CloseShotgun2( player_t *player, pspdef_t *psp );
+	void A_FireCGun( player_t *player, pspdef_t *psp );
+	void A_GunFlash( player_t *player, pspdef_t *psp );
+	void A_FireMissile( player_t *player, pspdef_t *psp );
+	void A_Saw( player_t *player, pspdef_t *psp );
+	void A_FirePlasma( player_t *player, pspdef_t *psp );
+	void A_BFGsound( player_t *player, pspdef_t *psp );
+	void A_FireBFG( player_t *player, pspdef_t *psp );
+	void A_BFGSpray( mobj_t* mobj );
+	void A_Explode( mobj_t* mobj );
+	void A_Pain( mobj_t* mobj );
+	void A_PlayerScream( mobj_t* mobj );
+	void A_Fall( mobj_t* mobj );
+	void A_XScream( mobj_t* mobj );
+	void A_Look( mobj_t* mobj );
+	void A_Chase( mobj_t* mobj );
+	void A_FaceTarget( mobj_t* mobj );
+	void A_PosAttack( mobj_t* mobj );
+	void A_Scream( mobj_t* mobj );
+	void A_SPosAttack( mobj_t* mobj );
+	void A_VileChase( mobj_t* mobj );
+	void A_VileStart( mobj_t* mobj );
+	void A_VileTarget( mobj_t* mobj );
+	void A_VileAttack( mobj_t* mobj );
+	void A_StartFire( mobj_t* mobj );
+	void A_Fire( mobj_t* mobj );
+	void A_FireCrackle( mobj_t* mobj );
+	void A_Tracer( mobj_t* mobj );
+	void A_SkelWhoosh( mobj_t* mobj );
+	void A_SkelFist( mobj_t* mobj );
+	void A_SkelMissile( mobj_t* mobj );
+	void A_FatRaise( mobj_t* mobj );
+	void A_FatAttack1( mobj_t* mobj );
+	void A_FatAttack2( mobj_t* mobj );
+	void A_FatAttack3( mobj_t* mobj );
+	void A_BossDeath( mobj_t* mobj );
+	void A_CPosAttack( mobj_t* mobj );
+	void A_CPosRefire( mobj_t* mobj );
+	void A_TroopAttack( mobj_t* mobj );
+	void A_SargAttack( mobj_t* mobj );
+	void A_HeadAttack( mobj_t* mobj );
+	void A_BruisAttack( mobj_t* mobj );
+	void A_SkullAttack( mobj_t* mobj );
+	void A_Metal( mobj_t* mobj );
+	void A_SpidRefire( mobj_t* mobj );
+	void A_BabyMetal( mobj_t* mobj );
+	void A_BspiAttack( mobj_t* mobj );
+	void A_Hoof( mobj_t* mobj );
+	void A_CyberAttack( mobj_t* mobj );
+	void A_PainAttack( mobj_t* mobj );
+	void A_PainDie( mobj_t* mobj );
+	void A_KeenDie( mobj_t* mobj );
+	void A_BrainPain( mobj_t* mobj );
+	void A_BrainScream( mobj_t* mobj );
+	void A_BrainDie( mobj_t* mobj );
+	void A_BrainAwake( mobj_t* mobj );
+	void A_BrainSpit( mobj_t* mobj );
+	void A_SpawnSound( mobj_t* mobj );
+	void A_SpawnFly( mobj_t* mobj );
+	void A_BrainExplode( mobj_t* mobj );
 
 	// MBF actions
-	void A_Detonate();
-	void A_Mushroom();
-	void A_Spawn();
-	void A_Turn();
-	void A_Face();
-	void A_Scratch();
-	void A_PlaySound();
-	void A_RandomJump();
-	void A_LineEffect();
-	void A_Die();
+	void A_Detonate( mobj_t* mobj );
+	void A_Mushroom( mobj_t* mobj );
+	void A_Spawn( mobj_t* mobj );
+	void A_Turn( mobj_t* mobj );
+	void A_Face( mobj_t* mobj );
+	void A_Scratch( mobj_t* mobj );
+	void A_PlaySound( mobj_t* mobj );
+	void A_RandomJump( mobj_t* mobj );
+	void A_LineEffect( mobj_t* mobj );
+	void A_Die( mobj_t* mobj );
 
 	// MBF21 Actions
-	void A_SpawnObject();
-	void A_MonsterProjectile();
-	void A_MonsterBulletAttack();
-	void A_MonsterMeleeAttack();
-	void A_RadiusDamage();
-	void A_NoiseAlert();
-	void A_HealChase();
-	void A_SeekTracer();
-	void A_FindTracer();
-	void A_ClearTracer();
-	void A_JumpIfHealthBelow();
-	void A_JumpIfTargetInSight();
-	void A_JumpIfTargetCloser();
-	void A_JumpIfTracerInSight();
-	void A_JumpIfTracerCloser();
-	void A_JumpIfFlagsSet();
-	void A_AddFlags();
-	void A_RemoveFlags();
+	void A_SpawnObject( mobj_t* mobj );
+	void A_MonsterProjectile( mobj_t* mobj );
+	void A_MonsterBulletAttack( mobj_t* mobj );
+	void A_MonsterMeleeAttack( mobj_t* mobj );
+	void A_RadiusDamage( mobj_t* mobj );
+	void A_NoiseAlert( mobj_t* mobj );
+	void A_HealChase( mobj_t* mobj );
+	void A_SeekTracer( mobj_t* mobj );
+	void A_FindTracer( mobj_t* mobj );
+	void A_ClearTracer( mobj_t* mobj );
+	void A_JumpIfHealthBelow( mobj_t* mobj );
+	void A_JumpIfTargetInSight( mobj_t* mobj );
+	void A_JumpIfTargetCloser( mobj_t* mobj );
+	void A_JumpIfTracerInSight( mobj_t* mobj );
+	void A_JumpIfTracerCloser( mobj_t* mobj );
+	void A_JumpIfFlagsSet( mobj_t* mobj );
+	void A_AddFlags( mobj_t* mobj );
+	void A_RemoveFlags( mobj_t* mobj );
+	void A_WeaponProjectile( player_t* player, pspdef_t* psp );
+	void A_WeaponBulletAttack( player_t* player, pspdef_t* psp );
+	void A_WeaponMeleeAttack( player_t* player, pspdef_t* psp );
+	void A_WeaponSound( player_t* player, pspdef_t* psp );
+	void A_WeaponJump( player_t* player, pspdef_t* psp );
+	void A_ConsumeAmmo( player_t* player, pspdef_t* psp );
+	void A_CheckAmmo( player_t* player, pspdef_t* psp );
+	void A_RefireTo( player_t* player, pspdef_t* psp );
+	void A_GunFlashTo( player_t* player, pspdef_t* psp );
+	void A_WeaponAlert( player_t* player, pspdef_t* psp );
 }
 
 struct funcmapping_t
@@ -149,13 +156,13 @@ struct funcmapping_t
 	GameVersion_t	minimum_version;
 };
 
-#define FuncType( x ) { #x, { { &A_ ## x }, exe_doom_1_2 } }
-#define MBFFuncType( x ) { #x, { { &A_ ## x }, exe_mbf } }
-#define MBF21FuncType( x ) { #x, { { &A_ ## x }, exe_mbf21 } }
+#define FuncType( x ) { #x, { &A_ ## x, exe_doom_1_2 } }
+#define MBFFuncType( x ) { #x, { &A_ ## x, exe_mbf } }
+#define MBF21FuncType( x ) { #x, { &A_ ## x, exe_mbf21 } }
 
-static std::map< DoomString, funcmapping_t > PointerLookup =
+static std::map< std::string, funcmapping_t > PointerLookup =
 {
-	{ "NULL", { {}, exe_invalid } },
+	{ "NULL", { nullptr, exe_invalid } },
 
 	// Doom actions
 	FuncType( Light0 ),

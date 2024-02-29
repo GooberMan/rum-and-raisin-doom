@@ -25,6 +25,10 @@
 #include "doomtype.h"
 #include "i_error.h"
 
+#if defined(__cplusplus)
+#include <type_traits>
+#endif //defined(__cplusplus)
+
 //
 // Experimental stuff.
 // To compile this as "ANSI C with classes"
@@ -76,6 +80,20 @@ typedef struct actionf_s
 	{
 	}
 
+	actionf_s(std::nullptr_t v)
+		: acv( v )
+		, type( at_none )
+	{
+	}
+
+	template< typename _param,
+			std::enable_if_t< std::is_same_v< _param*, decltype( thinker_cast< _param >( (_param*)nullptr ) ) >, bool > = true >
+	actionf_s( void(*func)(_param*) )
+		: acp1( (actionf_p1)func )
+		, type( at_p1 )
+	{
+	}
+
 	actionf_s& operator=(std::nullptr_t v)
 	{
 		acv = v;
@@ -86,11 +104,10 @@ typedef struct actionf_s
 	template< typename _param >
 	actionf_s& operator=( void(*func)(_param*) )
 	{
-		//if constexpr( !std::is_same_v< _param, thinker_t >
-		//			|| !std::is_same_v< thinker_t*, decltype( thinker_cast< thinker_t >( (_param*)nullptr ) ) > )
-		//{
-		//	I_Error( "Non-thinker assignment of actionf_t" );
-		//}
+		if constexpr( !std::is_same_v< _param*, decltype( thinker_cast< _param >( (_param*)nullptr ) ) > )
+		{
+			I_Error( "Non-thinker assignment of actionf_t" );
+		}
 
 		acp1 = (actionf_p1)func;
 		type = at_p1;
@@ -114,12 +131,9 @@ typedef struct actionf_s
 			I_Error( "Invoking wrong actionf_t type" );
 		}
 
-		if constexpr( !std::is_same_v< _param, thinker_t > )
+		if constexpr( !std::is_same_v< _param*, decltype( thinker_cast< _param >( (_param*)nullptr ) ) > )
 		{
-			if( thinker_cast< thinker_t >( val ) == nullptr )
-			{
-				I_Error( "Non-thinker invocation of actionf_t" );
-			}
+			I_Error( "Non-thinker invocation of actionf_t" );
 		}
 
 		acp1( (thinker_t*)val );
@@ -138,10 +152,9 @@ typedef struct actionf_s
 	template< typename _param >
 	bool operator==( void(*func)(_param*) )
 	{
-		if constexpr( !std::is_same_v< _param, thinker_t >
-					|| !std::is_same_v< thinker_t*, decltype( thinker_cast< thinker_t >( (_param*)nullptr ) ) > )
+		if constexpr( !std::is_same_v< _param*, decltype( thinker_cast< _param >( (_param*)nullptr ) ) > )
 		{
-			I_Error( "Non-thinker assignment of actionf_t" );
+			I_Error( "Non-thinker comparison of actionf_t" );
 		}
 
 		return type == at_p1 && acp1 == (actionf_p1)func;
@@ -204,6 +217,12 @@ constexpr _to* thinker_cast( _from* from )
 {
 	auto found = std::find( thinkfunclookup< _to >::funcs.begin(), thinkfunclookup< _to >::funcs.end(), *(void**)from );
 	return found == thinkfunclookup< _to >::funcs.end() ? nullptr : (_to*)from;
+}
+
+template<>
+constexpr thinker_t* thinker_cast< thinker_t >( thinker_t* val )
+{
+	return val;
 }
 #endif
 
