@@ -58,30 +58,30 @@ typedef struct actionf_s
 {
 #if defined(__cplusplus)
 	actionf_s()
-		: acv( nullptr )
+		: _acv( nullptr )
 	{
 	}
 
 	actionf_s( actionf_v func )
-		: acv( func )
+		: _acv( func )
 		, type( at_void )
 	{
 	}
 
 	actionf_s( actionf_p1 func )
-		: acp1( func )
+		: _acp1( func )
 		, type( at_p1 )
 	{
 	}
 
 	actionf_s( actionf_p2 func )
-		: acp2( func )
+		: _acp2( func )
 		, type( at_p2 )
 	{
 	}
 
 	actionf_s(std::nullptr_t v)
-		: acv( v )
+		: _acv( v )
 		, type( at_none )
 	{
 	}
@@ -89,14 +89,14 @@ typedef struct actionf_s
 	template< typename _param,
 			std::enable_if_t< std::is_same_v< _param*, decltype( thinker_cast< _param >( (_param*)nullptr ) ) >, bool > = true >
 	actionf_s( void(*func)(_param*) )
-		: acp1( (actionf_p1)func )
+		: _acp1( (actionf_p1)func )
 		, type( at_p1 )
 	{
 	}
 
 	actionf_s& operator=(std::nullptr_t v)
 	{
-		acv = v;
+		_acv = v;
 		type = at_none;
 		return *this;
 	}
@@ -109,7 +109,7 @@ typedef struct actionf_s
 			I_Error( "Non-thinker assignment of actionf_t" );
 		}
 
-		acp1 = (actionf_p1)func;
+		_acp1 = (actionf_p1)func;
 		type = at_p1;
 		return *this;
 	}
@@ -120,7 +120,7 @@ typedef struct actionf_s
 		{
 			I_Error( "Invoking wrong actionf_t type" );
 		}
-		acv();
+		_acv();
 	}
 
 	template< typename _param >
@@ -136,7 +136,7 @@ typedef struct actionf_s
 			I_Error( "Non-thinker invocation of actionf_t" );
 		}
 
-		acp1( (thinker_t*)val );
+		_acp1( (thinker_t*)val );
 	}
 
 	void operator()( player_t* player, pspdef_t* pspr )
@@ -146,7 +146,7 @@ typedef struct actionf_s
 			I_Error( "Invoking wrong actionf_t type" );
 		}
 
-		acp2( player, pspr );
+		_acp2( player, pspr );
 	}
 
 	template< typename _param >
@@ -157,20 +157,20 @@ typedef struct actionf_s
 			I_Error( "Non-thinker comparison of actionf_t" );
 		}
 
-		return type == at_p1 && acp1 == (actionf_p1)func;
+		return type == at_p1 && _acp1 == (actionf_p1)func;
 	}
 
 	inline bool Valid()
 	{
-		return type != at_none && acv != nullptr;
+		return type != at_none && _acv != nullptr;
 	}
 private:
 #endif // defined(__cplusplus)
 	union
 	{
-		actionf_v		acv;
-		actionf_p1		acp1;
-		actionf_p2		acp2;
+		actionf_v		_acv;
+		actionf_p1		_acp1;
+		actionf_p2		_acp2;
 	};
 	actiontype_t type;
 } actionf_t;

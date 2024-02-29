@@ -37,40 +37,40 @@ typedef enum savegametype_e
 
 // temporary filename to use while saving.
 
-char *P_TempSaveGameFile(void);
+DOOM_C_API char *P_TempSaveGameFile(void);
 
 // filename to use for a savegame slot
 
-char *P_SaveGameFile(int slot);
+DOOM_C_API char *P_SaveGameFile(int slot);
 
 // Savegame file header read/write functions
 
-doombool P_ReadSaveGameHeader(void);
-void P_WriteSaveGameHeader(char *description);
+DOOM_C_API doombool P_ReadSaveGameHeader(void);
+DOOM_C_API void P_WriteSaveGameHeader(char *description);
 
 // Savegame end-of-file read/write functions
 
-savegametype_t P_ReadSaveGameEOF(void);
-void P_WriteSaveGameEOF( savegametype_t type );
+DOOM_C_API savegametype_t P_ReadSaveGameEOF(void);
+DOOM_C_API void P_WriteSaveGameEOF( savegametype_t type );
 
-savegametype_t P_ReadSaveGameType( void );
+DOOM_C_API savegametype_t P_ReadSaveGameType( void );
 
-void P_ArchiveLimitRemovingData( void );
-void P_UnArchiveLimitRemovingData( doombool gameflagsonly );
+DOOM_C_API void P_ArchiveLimitRemovingData( void );
+DOOM_C_API void P_UnArchiveLimitRemovingData( doombool gameflagsonly );
 
 // Persistent storage/archiving.
 // These are the load / save game routines.
-void P_ArchivePlayers (void);
-void P_UnArchivePlayers (void);
-void P_ArchiveWorld (void);
-void P_UnArchiveWorld (void);
-void P_ArchiveThinkers (void);
-void P_UnArchiveThinkers (void);
-void P_ArchiveSpecials (void);
-void P_UnArchiveSpecials (void);
+DOOM_C_API void P_ArchivePlayers (void);
+DOOM_C_API void P_UnArchivePlayers (void);
+DOOM_C_API void P_ArchiveWorld (void);
+DOOM_C_API void P_UnArchiveWorld (void);
+DOOM_C_API void P_ArchiveThinkers (void);
+DOOM_C_API void P_UnArchiveThinkers (void);
+DOOM_C_API void P_ArchiveSpecials (void);
+DOOM_C_API void P_UnArchiveSpecials (void);
 
-extern FILE *save_stream;
-extern doombool savegame_error;
+DOOM_C_API extern FILE *save_stream;
+DOOM_C_API extern doombool savegame_error;
 
 
 #endif

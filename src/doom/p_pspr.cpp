@@ -41,11 +41,7 @@
 //
 // P_SetPsprite
 //
-void
-P_SetPsprite
-( player_t*	player,
-  int		position,
-  statenum_t	stnum ) 
+DOOM_C_API void P_SetPsprite( player_t* player, int position, statenum_t stnum ) 
 {
     pspdef_t*	psp;
     state_t*	state;
@@ -81,9 +77,9 @@ P_SetPsprite
 	
 		// Call action routine.
 		// Modified handling.
-		if (state->action.acp2)
+		if (state->action.Valid())
 		{
-			state->action.acp2(player, psp);
+			state->action(player, psp);
 			if (!psp->state)
 			break;
 		}
@@ -138,7 +134,7 @@ void P_BringUpWeapon (player_t* player)
     if (player->pendingweapon == wp_chainsaw)
 	S_StartSound (player->mo, sfx_sawup);
 		
-    newstate = weaponinfo[player->pendingweapon].upstate;
+    newstate = (statenum_t)weaponinfo[player->pendingweapon].upstate;
 
     player->pendingweapon = wp_nochange;
     player->psprites[ps_weapon].sy = WEAPONBOTTOM;
@@ -151,7 +147,7 @@ void P_BringUpWeapon (player_t* player)
 // Returns true if there is enough ammo to shoot.
 // If not, selects the next weapon to use.
 //
-doombool P_CheckAmmo (player_t* player)
+DOOM_C_API doombool P_CheckAmmo (player_t* player)
 {
     ammotype_t		ammo;
     int			count;
@@ -227,7 +223,7 @@ doombool P_CheckAmmo (player_t* player)
     // Now set appropriate weapon overlay.
     P_SetPsprite (player,
 		  ps_weapon,
-		  weaponinfo[player->readyweapon].downstate);
+		  (statenum_t)weaponinfo[player->readyweapon].downstate);
 
     return false;	
 }
@@ -236,7 +232,7 @@ doombool P_CheckAmmo (player_t* player)
 //
 // P_FireWeapon.
 //
-void P_FireWeapon (player_t* player)
+DOOM_C_API void P_FireWeapon (player_t* player)
 {
     statenum_t	newstate;
 	
@@ -244,7 +240,7 @@ void P_FireWeapon (player_t* player)
 	return;
 	
     P_SetMobjState (player->mo, S_PLAY_ATK1);
-    newstate = weaponinfo[player->readyweapon].atkstate;
+    newstate = (statenum_t)weaponinfo[player->readyweapon].atkstate;
     P_SetPsprite (player, ps_weapon, newstate);
     P_NoiseAlert (player->mo, player->mo);
 }
@@ -255,11 +251,11 @@ void P_FireWeapon (player_t* player)
 // P_DropWeapon
 // Player died, so put the weapon away.
 //
-void P_DropWeapon (player_t* player)
+DOOM_C_API void P_DropWeapon (player_t* player)
 {
     P_SetPsprite (player,
 		  ps_weapon,
-		  weaponinfo[player->readyweapon].downstate);
+		  (statenum_t)weaponinfo[player->readyweapon].downstate);
 }
 
 
@@ -271,7 +267,7 @@ void P_DropWeapon (player_t* player)
 // Follows after getting weapon up,
 // or after previous attack/fire sequence.
 //
-void
+DOOM_C_API void
 A_WeaponReady
 ( player_t*	player,
   pspdef_t*	psp )
@@ -298,7 +294,7 @@ A_WeaponReady
     {
 	// change weapon
 	//  (pending weapon should allready be validated)
-	newstate = weaponinfo[player->readyweapon].downstate;
+	newstate = (statenum_t)weaponinfo[player->readyweapon].downstate;
 	P_SetPsprite (player, ps_weapon, newstate);
 	return;	
     }
@@ -335,7 +331,7 @@ A_WeaponReady
 // The player can re-fire the weapon
 // without lowering it entirely.
 //
-void A_ReFire
+DOOM_C_API void A_ReFire
 ( player_t*	player,
   pspdef_t*	psp )
 {
@@ -357,7 +353,7 @@ void A_ReFire
 }
 
 
-void
+DOOM_C_API void
 A_CheckReload
 ( player_t*	player,
   pspdef_t*	psp )
@@ -376,7 +372,7 @@ A_CheckReload
 // Lowers current weapon,
 //  and changes weapon at bottom.
 //
-void
+DOOM_C_API void
 A_Lower
 ( player_t*	player,
   pspdef_t*	psp )
@@ -414,7 +410,7 @@ A_Lower
 //
 // A_Raise
 //
-void
+DOOM_C_API void
 A_Raise
 ( player_t*	player,
   pspdef_t*	psp )
@@ -430,7 +426,7 @@ A_Raise
     
     // The weapon has been raised all the way,
     //  so change to the ready state.
-    newstate = weaponinfo[player->readyweapon].readystate;
+    newstate = (statenum_t)weaponinfo[player->readyweapon].readystate;
 
     P_SetPsprite (player, ps_weapon, newstate);
 }
@@ -440,13 +436,13 @@ A_Raise
 //
 // A_GunFlash
 //
-void
+DOOM_C_API void
 A_GunFlash
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
     P_SetMobjState (player->mo, S_PLAY_ATK2);
-    P_SetPsprite (player,ps_flash,weaponinfo[player->readyweapon].flashstate);
+    P_SetPsprite (player,ps_flash,(statenum_t)weaponinfo[player->readyweapon].flashstate);
 }
 
 
@@ -459,7 +455,7 @@ A_GunFlash
 //
 // A_Punch
 //
-void
+DOOM_C_API void
 A_Punch
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -493,7 +489,7 @@ A_Punch
 //
 // A_Saw
 //
-void
+DOOM_C_API void
 A_Saw
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -559,7 +555,7 @@ static void DecreaseAmmo(player_t *player, int ammonum, int amount)
 //
 // A_FireMissile
 //
-void
+DOOM_C_API void
 A_FireMissile
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -572,7 +568,7 @@ A_FireMissile
 //
 // A_FireBFG
 //
-void
+DOOM_C_API void
 A_FireBFG
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -587,7 +583,7 @@ A_FireBFG
 //
 // A_FirePlasma
 //
-void
+DOOM_C_API void
 A_FirePlasma
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -596,7 +592,7 @@ A_FirePlasma
 
     P_SetPsprite (player,
 		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate+(P_Random ()&1) );
+		  (statenum_t)(weaponinfo[player->readyweapon].flashstate+(P_Random ()&1)) );
 
     P_SpawnPlayerMissile (player->mo, MT_PLASMA);
 }
@@ -608,7 +604,10 @@ A_FirePlasma
 // Sets a slope so a near miss is at aproximately
 // the height of the intended target
 //
-fixed_t		bulletslope;
+extern "C"
+{
+	fixed_t		bulletslope;
+}
 
 
 void P_BulletSlope (mobj_t*	mo)
@@ -656,7 +655,7 @@ P_GunShot
 //
 // A_FirePistol
 //
-void
+DOOM_C_API void
 A_FirePistol
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -668,7 +667,7 @@ A_FirePistol
 
     P_SetPsprite (player,
 		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate);
+		  (statenum_t)weaponinfo[player->readyweapon].flashstate);
 
     P_BulletSlope (player->mo);
     P_GunShot (player->mo, !player->refire);
@@ -678,7 +677,7 @@ A_FirePistol
 //
 // A_FireShotgun
 //
-void
+DOOM_C_API void
 A_FireShotgun
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -692,7 +691,7 @@ A_FireShotgun
 
     P_SetPsprite (player,
 		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate);
+		  (statenum_t)weaponinfo[player->readyweapon].flashstate);
 
     P_BulletSlope (player->mo);
 	
@@ -705,7 +704,7 @@ A_FireShotgun
 //
 // A_FireShotgun2
 //
-void
+DOOM_C_API void
 A_FireShotgun2
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -722,7 +721,7 @@ A_FireShotgun2
 
     P_SetPsprite (player,
 		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate);
+		  (statenum_t)weaponinfo[player->readyweapon].flashstate);
 
     P_BulletSlope (player->mo);
 	
@@ -742,7 +741,7 @@ A_FireShotgun2
 //
 // A_FireCGun
 //
-void
+DOOM_C_API void
 A_FireCGun
 ( player_t*	player,
   pspdef_t*	psp ) 
@@ -757,9 +756,9 @@ A_FireCGun
 
     P_SetPsprite (player,
 		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate
+		  (statenum_t)(weaponinfo[player->readyweapon].flashstate
 		  + psp->state
-		  - &states[S_CHAIN1] );
+		  - &states[S_CHAIN1]) );
 
     P_BulletSlope (player->mo);
 	
@@ -771,17 +770,17 @@ A_FireCGun
 //
 // ?
 //
-void A_Light0 (player_t *player, pspdef_t *psp)
+DOOM_C_API void A_Light0 (player_t *player, pspdef_t *psp)
 {
     player->extralight = 0;
 }
 
-void A_Light1 (player_t *player, pspdef_t *psp)
+DOOM_C_API void A_Light1 (player_t *player, pspdef_t *psp)
 {
     player->extralight = 1;
 }
 
-void A_Light2 (player_t *player, pspdef_t *psp)
+DOOM_C_API void A_Light2 (player_t *player, pspdef_t *psp)
 {
     player->extralight = 2;
 }
@@ -791,7 +790,7 @@ void A_Light2 (player_t *player, pspdef_t *psp)
 // A_BFGSpray
 // Spawn a BFG explosion on every monster in view
 //
-void A_BFGSpray (mobj_t* mo) 
+DOOM_C_API void A_BFGSpray (mobj_t* mo) 
 {
     int			i;
     int			j;
@@ -827,7 +826,7 @@ void A_BFGSpray (mobj_t* mo)
 //
 // A_BFGsound
 //
-void
+DOOM_C_API void
 A_BFGsound
 ( player_t*	player,
   pspdef_t*	psp )
@@ -841,7 +840,7 @@ A_BFGsound
 // P_SetupPsprites
 // Called at start of level for each player.
 //
-void P_SetupPsprites (player_t* player) 
+DOOM_C_API void P_SetupPsprites (player_t* player) 
 {
     int	i;
 	
@@ -868,7 +867,7 @@ void P_SetupPsprites (player_t* player)
 // P_MovePsprites
 // Called every tic by player thinking routine.
 //
-void P_MovePsprites (player_t* player) 
+DOOM_C_API void P_MovePsprites (player_t* player) 
 {
     int		i;
     pspdef_t*	psp;
