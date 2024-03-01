@@ -167,7 +167,7 @@ INLINE _str&& ToLower( _str&& str )
 	return std::move( str );
 }
 
-template< typename _output = DoomString >
+template< typename _output = std::string >
 INLINE auto ToLower( const char* str )
 {
 	return ToLower( _output( str ) );
@@ -198,7 +198,7 @@ INLINE _str&& ToUpper( _str&& str )
 	return std::move( str );
 }
 
-template< typename _output = DoomString >
+template< typename _output = std::string >
 INLINE auto ToUpper( const char* str )
 {
 	return ToUpper( _output( str ) );

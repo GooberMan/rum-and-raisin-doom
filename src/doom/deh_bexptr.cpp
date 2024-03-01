@@ -28,6 +28,7 @@
 #include "deh_main.h"
 
 #include "m_container.h"
+#include "m_conv.h"
 
 extern "C"
 {
@@ -156,13 +157,13 @@ struct funcmapping_t
 	GameVersion_t	minimum_version;
 };
 
-#define FuncType( x ) { #x, { &A_ ## x, exe_doom_1_2 } }
-#define MBFFuncType( x ) { #x, { &A_ ## x, exe_mbf } }
-#define MBF21FuncType( x ) { #x, { &A_ ## x, exe_mbf21 } }
+#define FuncType( x ) { ToLower( #x ), { &A_ ## x, exe_doom_1_2 } }
+#define MBFFuncType( x ) { ToLower( #x ), { &A_ ## x, exe_mbf } }
+#define MBF21FuncType( x ) { ToLower( #x ), { &A_ ## x, exe_mbf21 } }
 
 static std::map< std::string, funcmapping_t > PointerLookup =
 {
-	{ "NULL", { nullptr, exe_invalid } },
+	{ "null", { nullptr, exe_invalid } },
 
 	// Doom actions
 	FuncType( Light0 ),
@@ -304,7 +305,7 @@ static void DEH_BEXPtrParseLine( deh_context_t *context, char* line, void* tag )
 		return;
 	}
 
-	auto found = PointerLookup.find( frame_func );
+	auto found = PointerLookup.find( ToLower( frame_func ) );
 	if( found == PointerLookup.end()  )
 	{
 		DEH_Warning( context, "'%s' is an invalid function", frame_func );
