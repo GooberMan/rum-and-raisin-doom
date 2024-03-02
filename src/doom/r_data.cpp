@@ -433,17 +433,24 @@ void R_CacheCompositeFlat( int32_t flat )
 	int32_t lump = info.lumpindex;
 
 	byte* transposedflatdata = (byte*)Z_Malloc( 64 * 64, COMPOSITE_ZONE, &flatcomposite[ flat ].data );
-	byte* originalflatdata = (byte*)W_CacheLumpNum( lump, PU_CACHE );
-
-	byte* currsource = originalflatdata;
-	for( int32_t y : iota( 0, 64 ) )
+	if( W_LumpLength( lump ) == 0 )
 	{
-		byte* currdest = transposedflatdata + y;
-		for( [[maybe_unused]] int32_t x : iota( 0, 64 ) )
+		memset( transposedflatdata, 0, 64 * 64 );
+	}
+	else
+	{
+		byte* originalflatdata = (byte*)W_CacheLumpNum( lump, PU_CACHE );
+
+		byte* currsource = originalflatdata;
+		for( int32_t y : iota( 0, 64 ) )
 		{
-			*currdest = *currsource;
-			++currsource;
-			currdest += 64;
+			byte* currdest = transposedflatdata + y;
+			for( [[maybe_unused]] int32_t x : iota( 0, 64 ) )
+			{
+				*currdest = *currsource;
+				++currsource;
+				currdest += 64;
+			}
 		}
 	}
 }
@@ -1090,7 +1097,7 @@ int R_FlatNumForName(const char *name)
 
 	if( index == -1 )
 	{
-		I_Error ("R_FlatNumForName: %s not found in textures", name );
+		I_LogAddEntryVar( Log_Warning, "R_FlatNumForName: %s not found in textures or flats, replacing with %s", ClampString( name ).c_str(), flatcomposite[ 0 ].name );
 	}
 
 	return index + NumFlats();
@@ -1177,7 +1184,7 @@ int R_TextureNumForName(const char *name)
 
 	if( found == flatnamelookup.end() )
 	{
-		I_LogAddEntryVar( Log_Warning, "R_TextureNumForName: %s not found in textures or flats, replacing with %s", name, textures[ 0 ]->name );
+		I_LogAddEntryVar( Log_Warning, "R_TextureNumForName: %s not found in textures or flats, replacing with %s", ClampString( name ).c_str(), textures[ 0 ]->name );
 		return 0;
 	}
 

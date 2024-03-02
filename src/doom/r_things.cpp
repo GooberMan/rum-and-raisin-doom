@@ -336,6 +336,7 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& colcontex
 		if (colcontext.yl < colcontext.yh)
 		{
 			colcontext.source = (byte *)column + 3;
+			colcontext.sourceheight = IntToRendFixed( column->length );
 			colcontext.texturemid = basetexturemid - IntToRendFixed( baseoffset + colcontext.sourceyoffset );
 			// colcontext.source = (byte *)column + 3 - column->topdelta;
 

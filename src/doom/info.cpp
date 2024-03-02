@@ -92,7 +92,6 @@ DOOM_C_API const char *sprnames_mbf[] = {
 };
 
 
-// Doesn't work with g++, needs actionf_p1
 DOOM_C_API void A_Light0( player_t *player, pspdef_t *psp );
 DOOM_C_API void A_WeaponReady( player_t *player, pspdef_t *psp );
 DOOM_C_API void A_Lower( player_t *player, pspdef_t *psp );

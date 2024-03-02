@@ -197,23 +197,11 @@ doombool DEH_ParseAssignment(char *line, char **variable_name, char **value)
     return true;
 }
 
-static doombool CheckSignatures(deh_context_t *context)
+static doombool CheckSignatures(const char* line)
 {
-    size_t i;
-    char *line;
-    
-    // Read the first line
-
-    line = DEH_ReadLine(context, false);
-
-    if (line == NULL)
-    {
-        return false;
-    }
-
     // Check all signatures to see if one matches
 
-    for (i=0; deh_signatures[i] != NULL; ++i)
+    for (size_t i=0; deh_signatures[i] != NULL; ++i)
     {
         if (!strcmp(deh_signatures[i], line))
         {
@@ -232,24 +220,21 @@ static void DEH_ParseContext(deh_context_t *context)
     void *tag = NULL;
     doombool extended;
     char *line;
+    doombool cangetnewsection = true;
 
     // Read the header and check it matches the signature
 
-    if (!CheckSignatures(context))
+	line = DEH_ReadLine(context, false);
+
+    if (CheckSignatures(line))
     {
-        DEH_Error(context, "This is not a valid dehacked patch file!");
+		line = DEH_ReadLine(context, false);
     }
 
     // Read the file
 
     while (!DEH_HadError(context))
     {
-        // Read the next line. We only allow the special extended parsing
-        // for the BEX [STRINGS] section.
-        extended = current_section != NULL
-                && !strcasecmp(current_section->name, "[STRINGS]");
-        line = DEH_ReadLine(context, extended);
-
         // end of file?
 
         if (line == NULL)
@@ -260,30 +245,27 @@ static void DEH_ParseContext(deh_context_t *context)
         while (line[0] != '\0' && isspace(line[0]))
             ++line;
 
-        if (line[0] == '#')
+		doombool iswhitespace = IsWhitespace(line);
+        if( line != '#'
+			&& !iswhitespace )
         {
-            // comment
-            continue;
-        }
+            sscanf(line, "%19s", section_name);
+            deh_section_t* newsection = cangetnewsection ? GetSectionByName(section_name) : NULL;
 
-        if (IsWhitespace(line))
-        {
-            if (current_section != NULL)
+            if( newsection != NULL )
             {
-                // end of section
-
-                if (current_section->end != NULL)
+                if (current_section != NULL
+                    && current_section->end != NULL)
                 {
+                    // end of section
                     current_section->end(context, tag);
                 }
 
-                //printf("end %s tag\n", current_section->name);
-                current_section = NULL;
+                current_section = newsection;
+                tag = current_section->start(context, line);
+                cangetnewsection = false;
             }
-        }
-        else
-        {
-            if (current_section != NULL)
+			else if (current_section != NULL)
             {
                 // parse this line
 
@@ -293,34 +275,28 @@ static void DEH_ParseContext(deh_context_t *context)
             {
 				if( strncmp( line, "Doom version", 12 ) == 0 )
 				{
-					//int32_t version_number = 0;
-					//sscanf( line, "Doom version = %i", &version_number );
-					//DEH_SetDoomVersion( context, version_number );
-					continue;
+					int32_t version_number = 0;
+					sscanf( line, "Doom version = %i", &version_number );
+					if( version_number == 2021 )
+					{
+						DEH_IncreaseGameVersion( context, exe_mbf21_extended );
+					}
 				}
-				
-				if( strncmp( line, "Patch format", 12 ) == 0 )
-				{
-					continue;
-				}
-
-                // possibly the start of a new section
-                sscanf(line, "%19s", section_name);
-
-                current_section = GetSectionByName(section_name);
-
-                if (current_section != NULL)
-                {
-                    tag = current_section->start(context, line);
-                    //printf("started %s tag\n", section_name);
-                }
-                else
-                {
-                    DEH_Warning( context, "unknown section name %s", section_name );
-                }
+				//if( strncmp( line, "Patch format", 12 ) == 0 )
+				//{
+				//	continue;
+				//}
             }
         }
-    }
+
+        cangetnewsection |= iswhitespace;
+
+		// Read the next line. We only allow the special extended parsing
+        // for the BEX [STRINGS] section.
+        extended = current_section != NULL
+                && !strcasecmp(current_section->name, "[STRINGS]");
+        line = DEH_ReadLine(context, extended);
+	}
 }
 
 // Parses a dehacked file

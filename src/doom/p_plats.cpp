@@ -263,12 +263,6 @@ void P_ActivateInStasis(int tag)
 
 void EV_StopPlat(line_t* line)
 {
-	if( sim.generic_specials_handling )
-	{
-		EV_StopAnyLiftGeneric( line, nullptr );
-		return;
-	}
-
     int		j;
 	
     for (j = 0;j < MAXPLATS;j++)

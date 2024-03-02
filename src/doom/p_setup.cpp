@@ -1058,8 +1058,11 @@ struct DoomMapLoader
 		// count number of lines in each sector
 		for( line_t& line : Lines() )
 		{
-			++_totallines;
-			++line.frontsector->linecount;
+			if( line.frontsector )
+			{
+				++_totallines;
+				++line.frontsector->linecount;
+			}
 
 			if (line.backsector && line.backsector != line.frontsector)
 			{

@@ -41,10 +41,52 @@ DOOM_C_API typedef struct player_s player_t;
 DOOM_C_API typedef struct pspdef_s pspdef_t;
 DOOM_C_API typedef struct thinker_s thinker_t;
 
-
 DOOM_C_API typedef  void (*actionf_v)();
 DOOM_C_API typedef  void (*actionf_p1)( thinker_t* );
 DOOM_C_API typedef  void (*actionf_p2)( player_t*, pspdef_t* );
+
+#if defined( __cplusplus )
+
+#include <array>
+
+template< typename _ty >
+struct thinkfunclookup
+{
+protected:
+	template< typename... _args >
+	static constexpr std::array< void*, sizeof...( _args ) > toarray( _args&&... args)
+	{
+		return { (void*)args... };
+	}
+};
+
+#define MakeThinkFuncLookup( type, ... ) \
+template<> \
+constexpr thinker_t* thinker_cast< thinker_t >( type* from ) \
+{ \
+	return (thinker_t*)from; \
+} \
+ \
+template<> \
+struct thinkfunclookup< type > : thinkfunclookup< void > \
+{ \
+	constexpr static auto funcs = toarray( __VA_ARGS__ ); \
+}
+
+template< typename _to, typename _from >
+constexpr _to* thinker_cast( _from* from )
+{
+	auto found = std::find( thinkfunclookup< _to >::funcs.begin(), thinkfunclookup< _to >::funcs.end(), *(void**)from );
+	return found == thinkfunclookup< _to >::funcs.end() ? nullptr : (_to*)from;
+}
+
+template<>
+constexpr thinker_t* thinker_cast< thinker_t >( thinker_t* val )
+{
+	return val;
+}
+#endif
+
 
 DOOM_C_API typedef enum actiontype_e
 {
@@ -183,48 +225,5 @@ DOOM_C_API struct thinker_s
 	struct thinker_s*	prev;
 	struct thinker_s*	next;
 };
-
-#if defined( __cplusplus )
-
-#include <array>
-
-template< typename _ty >
-struct thinkfunclookup
-{
-protected:
-	template< typename... _args >
-	static constexpr std::array< void*, sizeof...( _args ) > toarray( _args&&... args)
-	{
-		return { (void*)args... };
-	}
-};
-
-#define MakeThinkFuncLookup( type, ... ) \
-template<> \
-constexpr thinker_t* thinker_cast< thinker_t >( type* from ) \
-{ \
-	return (thinker_t*)from; \
-} \
- \
-template<> \
-struct thinkfunclookup< type > : thinkfunclookup< void > \
-{ \
-	constexpr static auto funcs = toarray( __VA_ARGS__ ); \
-}
-
-template< typename _to, typename _from >
-constexpr _to* thinker_cast( _from* from )
-{
-	auto found = std::find( thinkfunclookup< _to >::funcs.begin(), thinkfunclookup< _to >::funcs.end(), *(void**)from );
-	return found == thinkfunclookup< _to >::funcs.end() ? nullptr : (_to*)from;
-}
-
-template<>
-constexpr thinker_t* thinker_cast< thinker_t >( thinker_t* val )
-{
-	return val;
-}
-#endif
-
 
 #endif

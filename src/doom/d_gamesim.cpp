@@ -139,6 +139,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.comp.tall_patches = true;
 	values.comp.drawpatch_unbounded = true;
 
+	values.fix.same_sky_texture = true;
 	values.fix.intercepts_overflow = true;
 	values.fix.spechit_overflow = true;
 
@@ -167,7 +168,7 @@ static fixoptions_t GetAllFixed()
 	options.overzealous_changesector = true;
 	options.spechit_overflow = true;
 	options.missiles_on_blockmap = true;
-	options.zero_brainspawn_targets = true;
+	options.brainspawn_targets = true;
 
 	return options;
 }

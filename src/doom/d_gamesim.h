@@ -68,7 +68,7 @@ DOOM_C_API typedef struct fixoptions_s
 	doombool		overzealous_changesector;				// Sector blockmap overlaps your mobj? That's clearly going to affect that mobj.
 	doombool		spechit_overflow;						// Just keep adding things to a static array, it'll be fine
 	doombool		missiles_on_blockmap;					// Spawning a missile would just assume it cand do whatever it wants to the mobj's x/y/z coordinates
-	doombool		zero_brainspawn_targets;				// Vanilla would just merrily spawn from a null pointer
+	doombool		brainspawn_targets;						// Vanilla would just merrily spawn from a null pointer; and would stomp over the stack of an array
 } fixoptions_t;
 
 DOOM_C_API typedef struct simoptions_s

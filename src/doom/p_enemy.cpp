@@ -340,7 +340,7 @@ doombool P_Move (mobj_t*	actor)
 			// if the special is not a door
 			// that can be opened,
 			// return false
-			good |= P_UseSpecialLine(actor, ld,0);
+			good = P_UseSpecialLine(actor, ld,0);
 		}
 
 		if( comp.stick_on_doors )
@@ -1827,8 +1827,11 @@ DOOM_C_API void A_BrainAwake (mobj_t* mo)
 
 		if( m->type == MT_BOSSTARGET )
 		{
-			braintargets[numbraintargets] = m;
-			numbraintargets++;
+			if( fix.brainspawn_targets && numbraintargets < arrlen( braintargets ) )
+			{
+				braintargets[numbraintargets] = m;
+				numbraintargets++;
+			}
 		}
     }
 	
@@ -1903,7 +1906,7 @@ DOOM_C_API void A_BrainSpit (mobj_t*	mo)
 	
 	if( numbraintargets == 0 )
 	{
-		if( fix.zero_brainspawn_targets )
+		if( fix.brainspawn_targets )
 		{
 			return;
 		}
