@@ -272,6 +272,16 @@ static std::map< std::string, funcmapping_t > PointerLookup =
 	MBF21FuncType( JumpIfFlagsSet ),
 	MBF21FuncType( AddFlags ),
 	MBF21FuncType( RemoveFlags ),
+	MBF21FuncType( WeaponProjectile ),
+	MBF21FuncType( WeaponBulletAttack ),
+	MBF21FuncType( WeaponMeleeAttack ),
+	MBF21FuncType( WeaponSound ),
+	MBF21FuncType( WeaponJump ),
+	MBF21FuncType( ConsumeAmmo ),
+	MBF21FuncType( CheckAmmo ),
+	MBF21FuncType( RefireTo ),
+	MBF21FuncType( GunFlashTo ),
+	MBF21FuncType( WeaponAlert ),
 };
 
 static void *DEH_BEXPtrStart( deh_context_t* context, char* line )
@@ -317,7 +327,7 @@ static void DEH_BEXPtrParseLine( deh_context_t *context, char* line, void* tag )
 	states[ frame_number ].action = found->second.action;
 }
 
-DOOM_C_API deh_section_t deh_section_bexptr =
+deh_section_t deh_section_bexptr =
 {
 	"[CODEPTR]",
 	NULL,

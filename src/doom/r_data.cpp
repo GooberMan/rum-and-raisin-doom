@@ -368,7 +368,7 @@ void R_GenerateLookup (int texnum)
 		patch_t* realpatch = (patch_t*)W_CacheLumpNum( patch.patch, COMPOSITE_ZONE );
 		int32_t x1 = patch.originx;
 		int32_t x2 = M_MIN( texture->width, x1 + SHORT( realpatch->width ) );
-		x1 = M_MAX( 0, x1 );
+		x1 = M_CLAMP( x1, 0, texture->width );
 
 		data->lump = patch.patch;
 		data->rowoffset = patch.originy;

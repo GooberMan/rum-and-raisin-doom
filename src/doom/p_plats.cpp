@@ -257,7 +257,7 @@ void P_ActivateInStasis(int tag)
 	    && (activeplats[i])->status == in_stasis)
 	{
 	    (activeplats[i])->status = (activeplats[i])->oldstatus;
-	    (activeplats[i])->thinker.function = T_PlatRaise;
+	    (activeplats[i])->thinker.function.Enable();
 	}
 }
 
@@ -272,7 +272,7 @@ void EV_StopPlat(line_t* line)
 	{
 	    (activeplats[j])->oldstatus = (activeplats[j])->status;
 	    (activeplats[j])->status = in_stasis;
-	    (activeplats[j])->thinker.function = nullptr;
+	    (activeplats[j])->thinker.function.Disable();
 	}
 }
 

@@ -94,13 +94,35 @@ DOOM_C_API typedef enum actiontype_e
 	at_void,
 	at_p1,
 	at_p2,
+
+	at_disabled = 0x80000000,
 } actiontype_t;
+
+#if defined( __cplusplus )
+using underlyingactiontype_t = std::underlying_type_t< actiontype_t >;
+
+constexpr actiontype_t operator|( const actiontype_t lhs, const actiontype_t rhs )
+{
+	return (actiontype_t)( (underlyingactiontype_t)lhs | (underlyingactiontype_t)rhs );
+};
+
+constexpr actiontype_t operator&( const actiontype_t lhs, const actiontype_t rhs )
+{
+	return (actiontype_t)( (underlyingactiontype_t)lhs & (underlyingactiontype_t)rhs );
+};
+
+constexpr actiontype_t operator^( const actiontype_t lhs, const actiontype_t rhs )
+{
+	return (actiontype_t)( (underlyingactiontype_t)lhs ^ (underlyingactiontype_t)rhs );
+};
+#endif // defined( __cplusplus )
 
 typedef struct actionf_s
 {
 #if defined(__cplusplus)
 	actionf_s()
 		: _acv( nullptr )
+		, type( at_none )
 	{
 	}
 
@@ -158,7 +180,7 @@ typedef struct actionf_s
 
 	void operator()()
 	{
-		if( type != at_void )
+		if( Type() != at_void )
 		{
 			I_Error( "Invoking wrong actionf_t type" );
 		}
@@ -168,7 +190,7 @@ typedef struct actionf_s
 	template< typename _param >
 	void operator()( _param* val )
 	{
-		if( type != at_p1 )
+		if( Type() != at_p1 )
 		{
 			I_Error( "Invoking wrong actionf_t type" );
 		}
@@ -183,7 +205,7 @@ typedef struct actionf_s
 
 	void operator()( player_t* player, pspdef_t* pspr )
 	{
-		if( type != at_p2 )
+		if( Type() != at_p2 )
 		{
 			I_Error( "Invoking wrong actionf_t type" );
 		}
@@ -199,14 +221,34 @@ typedef struct actionf_s
 			I_Error( "Non-thinker comparison of actionf_t" );
 		}
 
-		return type == at_p1 && _acp1 == (actionf_p1)func;
+		return Type() == at_p1 && _acp1 == (actionf_p1)func;
 	}
 
-	inline bool Valid()
+	inline const bool Valid() const
 	{
-		return type != at_none && _acv != nullptr;
+		return Type() != at_none && _acv != nullptr;
 	}
+
+	inline bool Enabled() const
+	{
+		return (type & at_disabled) != at_disabled;
+	}
+
+	inline void Disable()
+	{
+		type = (type | at_disabled);
+	}
+
+	inline void Enable()
+	{
+		type = (actiontype_t)(type & ~at_disabled);
+	}
+
 private:
+	inline actiontype_t Type() const
+	{
+		return (actiontype_t)(type & ~at_disabled);
+	}
 #endif // defined(__cplusplus)
 	union
 	{

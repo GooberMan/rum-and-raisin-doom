@@ -89,21 +89,17 @@ void P_RunThinkers (void)
     currentthinker = thinkercap.next;
     while (currentthinker != &thinkercap)
     {
+		nextthinker = currentthinker->next;
 		if ( !currentthinker->function.Valid() )
 		{
 			// time to remove it
-			nextthinker = currentthinker->next;
 			currentthinker->next->prev = currentthinker->prev;
 			currentthinker->prev->next = currentthinker->next;
 			Z_Free(currentthinker);
 		}
-		else
+		else if( currentthinker->function.Enabled() )
 		{
-			if (currentthinker->function.Valid())
-			{
-				currentthinker->function(currentthinker);
-			}
-			nextthinker = currentthinker->next;
+			currentthinker->function(currentthinker);
 		}
 		currentthinker = nextthinker;
     }

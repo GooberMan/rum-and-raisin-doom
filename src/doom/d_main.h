@@ -27,24 +27,24 @@
 
 // Read events from all input devices
 
-void D_ProcessEvents (void); 
+DOOM_C_API void D_ProcessEvents (void); 
 	
 
 //
 // BASE LEVEL
 //
-void D_PageTicker (void);
-void D_PageDrawer (void);
-void D_AdvanceDemo (void);
-void D_DoAdvanceDemo (void);
-void D_StartTitle (void);
+DOOM_C_API void D_PageTicker (void);
+DOOM_C_API void D_PageDrawer (void);
+DOOM_C_API void D_AdvanceDemo (void);
+DOOM_C_API void D_DoAdvanceDemo (void);
+DOOM_C_API void D_StartTitle (void);
 
-void D_SetupLoadingDisk( int32_t disk_icon_style );
+DOOM_C_API void D_SetupLoadingDisk( int32_t disk_icon_style );
 //
 // GLOBAL VARIABLES
 //
 
-extern  gameaction_t    gameaction;
+DOOM_C_API extern  gameaction_t    gameaction;
 
 
 #endif

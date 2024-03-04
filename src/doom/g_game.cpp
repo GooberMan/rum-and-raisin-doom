@@ -86,90 +86,92 @@
 
 #define SAVEGAMESIZE	0x2c000
 
-void	G_ReadDemoTiccmd (ticcmd_t* cmd); 
-void	G_WriteDemoTiccmd (ticcmd_t* cmd); 
-void	G_PlayerReborn (int player); 
+DOOM_C_API void	G_ReadDemoTiccmd (ticcmd_t* cmd); 
+DOOM_C_API void	G_WriteDemoTiccmd (ticcmd_t* cmd); 
+DOOM_C_API void	G_PlayerReborn (int player); 
  
-void	G_DoReborn (int playernum); 
+DOOM_C_API void	G_DoReborn (int playernum); 
  
-void	G_DoLoadLevel (void); 
-void	G_DoNewGame (void); 
-void	G_DoPlayDemo (void); 
-void	G_DoCompleted (void); 
-void	G_DoWorldDone (void); 
-void	G_DoSaveGame (void); 
+DOOM_C_API void	G_DoLoadLevel (void); 
+DOOM_C_API void	G_DoNewGame (void); 
+DOOM_C_API void	G_DoPlayDemo (void); 
+DOOM_C_API void	G_DoCompleted (void); 
+DOOM_C_API void	G_DoWorldDone (void); 
+DOOM_C_API void	G_DoSaveGame (void); 
  
 // Gamestate the last time G_Ticker was called.
-
-gamestate_t     oldgamestate; 
- 
-gameaction_t    gameaction; 
-gamestate_t     gamestate; 
-skill_t         gameskill; 
-doombool			respawnmonsters;
-int32_t			gameflags;
-
-// If non-zero, exit the level after this number of minutes.
-
-int             timelimit;
-
-doombool         paused;
-doombool			renderpaused;
-doombool         sendpause;             	// send a pause event next tic 
-doombool         sendsave;             	// send a save event next tic 
-doombool         usergame;               // ok to save / end game 
- 
-doombool         timingdemo;             // if true, exit with report on completion 
-doombool         nodrawers;              // for comparative timing purposes 
-uint64_t        starttime;          	// for comparative timing purposes  	 
- 
-doombool         viewactive; 
- 
-int             deathmatch;           	// only if started as net death 
-doombool         netgame;                // only true if packets are broadcast 
-doombool			solonetgame;
-doombool         playeringame[MAXPLAYERS]; 
-player_t        players[MAXPLAYERS]; 
-
-doombool         turbodetected[MAXPLAYERS];
- 
-int             consoleplayer;          // player taking events and displaying 
-int             displayplayer;          // view being displayed 
-int             levelstarttic;          // gametic at level start 
-int             totalkills, totalitems, totalsecret;    // for intermission 
- 
-char           *demoname;
-doombool         demorecording;
-doombool         longtics;               // cph's doom 1.91 longtics hack
-doombool         lowres_turn;            // low resolution turning for longtics
-doombool         demoplayback; 
-doombool		netdemo; 
-byte*		demobuffer;
-byte*		demo_p;
-byte*		demoend; 
-doombool         singledemo;            	// quit after playing a demo from cmdline 
-
-typedef struct auditsector_s
+extern "C"
 {
-	fixed_t floor;
-	fixed_t ceil;
-	fixed_t light;
-} auditsector_t;
+	gamestate_t     oldgamestate; 
+ 
+	gameaction_t    gameaction; 
+	gamestate_t     gamestate; 
+	skill_t         gameskill; 
+	doombool			respawnmonsters;
+	int32_t			gameflags;
 
-typedef struct auditthing_s
-{
-	fixed_t x;
-	fixed_t y;
-	fixed_t z;
-} auditthing_t;
+	// If non-zero, exit the level after this number of minutes.
 
-doombool		auditrecording = false;
-doombool		auditplaying = false;
-doombool		auditplaybackerror = false;
-char*			auditname = NULL;
-byte*			auditbuffer = NULL;
-byte*			auditbufferend = NULL;
-byte*			auditbufferpos = NULL;
+	int             timelimit;
+
+	doombool         paused;
+	doombool			renderpaused;
+	doombool         sendpause;             	// send a pause event next tic 
+	doombool         sendsave;             	// send a save event next tic 
+	doombool         usergame;               // ok to save / end game 
+ 
+	doombool         timingdemo;             // if true, exit with report on completion 
+	doombool         nodrawers;              // for comparative timing purposes 
+	uint64_t        starttime;          	// for comparative timing purposes  	 
+ 
+	doombool         viewactive; 
+ 
+	int             deathmatch;           	// only if started as net death 
+	doombool         netgame;                // only true if packets are broadcast 
+	doombool			solonetgame;
+	doombool         playeringame[MAXPLAYERS]; 
+	player_t        players[MAXPLAYERS]; 
+
+	doombool         turbodetected[MAXPLAYERS];
+ 
+	int             consoleplayer;          // player taking events and displaying 
+	int             displayplayer;          // view being displayed 
+	int             levelstarttic;          // gametic at level start 
+	int             totalkills, totalitems, totalsecret;    // for intermission 
+ 
+	char           *demoname;
+	doombool         demorecording;
+	doombool         longtics;               // cph's doom 1.91 longtics hack
+	doombool         lowres_turn;            // low resolution turning for longtics
+	doombool         demoplayback; 
+	doombool		netdemo; 
+	byte*		demobuffer;
+	byte*		demo_p;
+	byte*		demoend; 
+	doombool         singledemo;            	// quit after playing a demo from cmdline 
+
+	typedef struct auditsector_s
+	{
+		fixed_t floor;
+		fixed_t ceil;
+		fixed_t light;
+	} auditsector_t;
+
+	typedef struct auditthing_s
+	{
+		fixed_t x;
+		fixed_t y;
+		fixed_t z;
+	} auditthing_t;
+
+	doombool		auditrecording = false;
+	doombool		auditplaying = false;
+	doombool		auditplaybackerror = false;
+	char*			auditname = NULL;
+	byte*			auditbuffer = NULL;
+	byte*			auditbufferend = NULL;
+	byte*			auditbufferpos = NULL;
+}
 
 const uint32_t AUDITIDENTIFIER		= 0xA55E55ED;
 const uint32_t FRAMEIDENTIFIER		= 0xA110CA7E;
@@ -204,7 +206,7 @@ void G_WriteAuditBuffer( byte* data, size_t size )
 	if( endpos >= buffersize )
 	{
 		ptrdiff_t newbuffersize = buffersize + ( buffersize >> 2 );
-		byte* newbuffer = Z_Malloc( newbuffersize, PU_STATIC, NULL );
+		byte* newbuffer = (byte*)Z_Malloc( newbuffersize, PU_STATIC, NULL );
 		memcpy( newbuffer, auditbuffer, buffersize );
 
 		auditbuffer = newbuffer;
@@ -219,7 +221,7 @@ void G_WriteAuditBuffer( byte* data, size_t size )
 void G_InitAuditBufferRecording( size_t size )
 {
 	auditrecording = true;
-	auditbuffer = Z_Malloc( size, PU_STATIC, NULL );
+	auditbuffer = (byte*)Z_Malloc( size, PU_STATIC, NULL );
 	memset( auditbuffer, 0, size );
 	auditbufferend = auditbuffer + size;
 	auditbufferpos = auditbuffer;
@@ -230,7 +232,7 @@ void G_InitAuditBufferRecording( size_t size )
 void G_InitAuditBufferPlaying( const char* filename )
 {
 	size_t auditnamelen = strlen( filename ) + 5;
-	char* auditname = Z_Malloc( auditnamelen, PU_STATIC, NULL );
+	char* auditname = (char*)Z_Malloc( auditnamelen, PU_STATIC, NULL );
 	M_snprintf( auditname, auditnamelen, "%s.aud", filename );
 
 	byte* buffer = NULL;
@@ -318,96 +320,99 @@ void G_AuditFrame()
 	}
 }
 
-doombool         testcontrols = false;    // Invoked by setup to test controls
-int             testcontrols_mousespeed;
- 
-
- 
-wbstartstruct_t wminfo;               	// parms for world map / intermission 
- 
-byte		consistancy[MAXPLAYERS][BACKUPTICS]; 
- 
-#define MAXPLMOVE		(forwardmove[1]) 
- 
-#define TURBOTHRESHOLD	0x32
-
-fixed_t         forwardmove[2] = {0x19, 0x32}; 
-fixed_t         sidemove[2] = {0x18, 0x28}; 
-fixed_t         angleturn[3] = {640, 1280, 320};    // + slow turn 
-
-static int *weapon_keys[] = {
-    &key_weapon1,
-    &key_weapon2,
-    &key_weapon3,
-    &key_weapon4,
-    &key_weapon5,
-    &key_weapon6,
-    &key_weapon7,
-    &key_weapon8
-};
-
-// Set to -1 or +1 to switch to the previous or next weapon.
-
-static int next_weapon = 0;
-
-// Used for prev/next weapon keys.
-
-static const struct
+extern "C"
 {
-    weapontype_t weapon;
-    weapontype_t weapon_num;
-} weapon_order_table[] = {
-    { wp_fist,            wp_fist },
-    { wp_chainsaw,        wp_fist },
-    { wp_pistol,          wp_pistol },
-    { wp_shotgun,         wp_shotgun },
-    { wp_supershotgun,    wp_shotgun },
-    { wp_chaingun,        wp_chaingun },
-    { wp_missile,         wp_missile },
-    { wp_plasma,          wp_plasma },
-    { wp_bfg,             wp_bfg }
-};
-
-#define SLOWTURNTICS	6 
+	doombool         testcontrols = false;    // Invoked by setup to test controls
+	int             testcontrols_mousespeed;
  
-#define NUMKEYS		256 
-#define MAX_JOY_BUTTONS 20
 
-static doombool  gamekeys[NUMKEYS]; 
-doombool* gamekeydown = gamekeys;
-static int      turnheld;		// for accelerative turning 
  
-static doombool  mousearray[MAX_MOUSE_BUTTONS + 1];
-doombool* mousebuttons = &mousearray[1];  // allow [-1]
-
-// mouse values are used once 
-int             mousex;
-int             mousey;         
-
-static int      dclicktime;
-static doombool  dclickstate;
-static int      dclicks; 
-static int      dclicktime2;
-static doombool  dclickstate2;
-static int      dclicks2;
-
-// joystick values are repeated 
-static int      joyxmove;
-static int      joyymove;
-static int      joystrafemove;
-static doombool  joyarray[MAX_JOY_BUTTONS + 1]; 
-doombool* joybuttons = &joyarray[1];		// allow [-1] 
+	wbstartstruct_t wminfo;               	// parms for world map / intermission 
  
-static int      savegameslot; 
-static char     savedescription[32]; 
+	byte		consistancy[MAXPLAYERS][BACKUPTICS]; 
  
-#define	BODYQUESIZE	32
+	#define MAXPLMOVE		(forwardmove[1]) 
+ 
+	#define TURBOTHRESHOLD	0x32
 
-mobj_t*		bodyque[BODYQUESIZE]; 
-int		bodyqueslot; 
+	fixed_t         forwardmove[2] = {0x19, 0x32}; 
+	fixed_t         sidemove[2] = {0x18, 0x28}; 
+	fixed_t         angleturn[3] = {640, 1280, 320};    // + slow turn 
+
+	static int *weapon_keys[] = {
+		&key_weapon1,
+		&key_weapon2,
+		&key_weapon3,
+		&key_weapon4,
+		&key_weapon5,
+		&key_weapon6,
+		&key_weapon7,
+		&key_weapon8
+	};
+
+	// Set to -1 or +1 to switch to the previous or next weapon.
+
+	static int next_weapon = 0;
+
+	// Used for prev/next weapon keys.
+
+	static const struct
+	{
+		weapontype_t weapon;
+		weapontype_t weapon_num;
+	} weapon_order_table[] = {
+		{ wp_fist,            wp_fist },
+		{ wp_chainsaw,        wp_fist },
+		{ wp_pistol,          wp_pistol },
+		{ wp_shotgun,         wp_shotgun },
+		{ wp_supershotgun,    wp_shotgun },
+		{ wp_chaingun,        wp_chaingun },
+		{ wp_missile,         wp_missile },
+		{ wp_plasma,          wp_plasma },
+		{ wp_bfg,             wp_bfg }
+	};
+
+	#define SLOWTURNTICS	6 
  
-int             vanilla_savegame_limit = 1;
-int             vanilla_demo_limit = 1;
+	#define NUMKEYS		256 
+	#define MAX_JOY_BUTTONS 20
+
+	static doombool  gamekeys[NUMKEYS]; 
+	doombool* gamekeydown = gamekeys;
+	static int      turnheld;		// for accelerative turning 
+ 
+	static doombool  mousearray[MAX_MOUSE_BUTTONS + 1];
+	doombool* mousebuttons = &mousearray[1];  // allow [-1]
+
+	// mouse values are used once 
+	int             mousex;
+	int             mousey;         
+
+	static int      dclicktime;
+	static doombool  dclickstate;
+	static int      dclicks; 
+	static int      dclicktime2;
+	static doombool  dclickstate2;
+	static int      dclicks2;
+
+	// joystick values are repeated 
+	static int      joyxmove;
+	static int      joyymove;
+	static int      joystrafemove;
+	static doombool  joyarray[MAX_JOY_BUTTONS + 1]; 
+	doombool* joybuttons = &joyarray[1];		// allow [-1] 
+ 
+	static int      savegameslot; 
+	static char     savedescription[32]; 
+ 
+	#define	BODYQUESIZE	32
+
+	mobj_t*		bodyque[BODYQUESIZE]; 
+	int		bodyqueslot; 
+ 
+	int             vanilla_savegame_limit = 1;
+	int             vanilla_demo_limit = 1;
+}
  
 int G_CmdChecksum (ticcmd_t* cmd) 
 { 
@@ -773,7 +778,7 @@ void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic)
 }
 
 
-void P_CalcHeight (player_t* player);
+DOOM_C_API void P_CalcHeight (player_t* player);
 
 //
 // G_DoLoadLevel 
@@ -801,8 +806,10 @@ void G_DoLoadLevel (void)
 
     levelstarttic = gametic;        // for time calculation
     
-    if (wipegamestate == GS_LEVEL) 
-	wipegamestate = -1;             // force a wipe 
+    if (wipegamestate == GS_LEVEL)
+	{
+		wipegamestate = GS_INVALID;             // force a wipe 
+	}
 
     gamestate = GS_LEVEL; 
 
@@ -1031,7 +1038,10 @@ doombool G_Responder (event_t* ev)
     return false; 
 } 
  
- 
+extern "C"
+{
+    extern char *player_names[4];
+}
  
 //
 // G_Ticker
@@ -1133,7 +1143,6 @@ void G_Ticker (void)
              && turbodetected[i])
             {
                 static char turbomessage[80];
-                extern char *player_names[4];
                 M_snprintf(turbomessage, sizeof(turbomessage),
                            "%s is turbo!", player_names[i]);
                 players[consoleplayer].message = turbomessage;
@@ -1201,26 +1210,29 @@ void G_Ticker (void)
     // do main actions
     switch (gamestate) 
     { 
-    case GS_LEVEL: 
-		P_Ticker (); 
-		ST_Ticker (); 
-		AM_Ticker (); 
+	case GS_LEVEL:
+		P_Ticker ();
+		ST_Ticker ();
+		AM_Ticker ();
 		HU_Ticker ();
 		G_AuditFrame();
 		break; 
 	 
-      case GS_INTERMISSION: 
-	WI_Ticker (); 
-	break; 
-			 
-      case GS_FINALE: 
-	F_Ticker (); 
-	break; 
+	case GS_INTERMISSION:
+		WI_Ticker ();
+		break;
+
+	case GS_FINALE:
+		F_Ticker ();
+		break;
  
-      case GS_DEMOSCREEN: 
-	D_PageTicker (); 
-	break;
-    }        
+	case GS_DEMOSCREEN:
+		D_PageTicker ();
+		break;
+
+	default:
+		break;
+	}
 
 	M_PROFILE_POP( __FUNCTION__ );
 
@@ -1317,7 +1329,7 @@ void G_PlayerReborn (int player)
 	}
 
 	size_t buffersize = sizeof( doombool ) * ( current_episode->highest_map_num + 1 );
-	p->visitedlevels = Z_Malloc( buffersize, PU_STATIC, &p->visitedlevels );
+	p->visitedlevels = (doombool*)Z_Malloc( buffersize, PU_STATIC, &p->visitedlevels );
 	memset( p->visitedlevels, 0, buffersize );
 }
 
@@ -1327,7 +1339,7 @@ void G_PlayerReborn (int player)
 // at the given mapthing_t spot  
 // because something is occupying it 
 //
-void P_SpawnPlayer (mapthing_t* mthing); 
+DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing); 
  
 doombool
 G_CheckSpot
@@ -1629,7 +1641,7 @@ void G_DoCompleted (void)
 
 		if( players[i].visitedlevels )
 		{
-			wminfo.plyr[i].visited = Z_Malloc( buffersize, PU_LEVEL, &wminfo.plyr[ i ].visited );
+			wminfo.plyr[i].visited = (doombool*)Z_Malloc( buffersize, PU_LEVEL, &wminfo.plyr[ i ].visited );
 			memcpy( wminfo.plyr[ i ].visited, players[ i ].visitedlevels, buffersize );
 		}
 	}
@@ -1708,9 +1720,14 @@ void G_DoWorldDone (void)
 // G_InitFromSavegame
 // Can be called by the startup code or the menu task. 
 //
-extern doombool setsizeneeded;
+extern "C"
+{
+	extern doombool setsizeneeded;
+	extern doombool message_dontfuckwithme;
+}
 
 char	savename[256];
+
 
 void G_LoadGame (char* name) 
 { 
@@ -1754,7 +1771,7 @@ void G_DoLoadGame (void)
 	savedleveltime = leveltime;
 
 	// load a base level 
-	G_InitNew (gameskill, current_map, gameflags, 0); 
+	G_InitNew (gameskill, current_map, (gameflags_t)gameflags, 0); 
 
 	leveltime = savedleveltime;
 
@@ -1776,7 +1793,6 @@ void G_DoLoadGame (void)
 
 	if( !sim.extended_saves && type == SaveGame_LimitRemoving )
 	{
-		extern doombool message_dontfuckwithme;
 		players[consoleplayer].message = "Saving will erase limit-removing data.";
 		message_dontfuckwithme = true;
 	}
@@ -2057,7 +2073,7 @@ static void IncreaseDemoBuffer(void)
     // Generate a new buffer twice the size
     new_length = current_length * 2;
     
-    new_demobuffer = Z_Malloc(new_length, PU_STATIC, 0);
+    new_demobuffer = (byte*)Z_Malloc(new_length, PU_STATIC, 0);
     new_demop = new_demobuffer + (demo_p - demobuffer);
 
     // Copy over the old data
@@ -2135,7 +2151,7 @@ void G_RecordDemo (const char *name)
 
     usergame = false;
     demoname_size = strlen(name) + 5;
-    demoname = Z_Malloc(demoname_size, PU_STATIC, NULL);
+    demoname = (char*)Z_Malloc(demoname_size, PU_STATIC, NULL);
     M_snprintf(demoname, demoname_size, "%s.lmp", name);
     maxsize = 0x20000;
 
@@ -2150,14 +2166,14 @@ void G_RecordDemo (const char *name)
     i = M_CheckParmWithArgs("-maxdemo", 1);
     if (i)
 	maxsize = atoi(myargv[i+1])*1024;
-    demobuffer = Z_Malloc (maxsize,PU_STATIC,NULL); 
+    demobuffer = (byte*)Z_Malloc (maxsize,PU_STATIC,NULL); 
     demoend = demobuffer + maxsize;
 	
     demorecording = true; 
 	if( !!M_CheckParmWithArgs( "-recordaudit", 1 ) )
 	{
 		G_InitAuditBufferRecording( AUDITBUFFERDEFAULTSIZE );
-		auditname = Z_Malloc( demoname_size, PU_STATIC, NULL );
+		auditname = (char*)Z_Malloc( demoname_size, PU_STATIC, NULL );
 		M_snprintf( auditname, demoname_size, "%s.aud", name );
 	}
 }
@@ -2284,7 +2300,7 @@ void G_DoPlayDemo (void)
 
     lumpnum = W_GetNumForName(defdemoname);
     gameaction = ga_nothing;
-    demobuffer = W_CacheLumpNum(lumpnum, PU_STATIC);
+    demobuffer = (byte*)W_CacheLumpNum(lumpnum, PU_STATIC);
     demo_p = demobuffer;
 
     demoversion = *demo_p++;
@@ -2341,7 +2357,7 @@ void G_DoPlayDemo (void)
                          DemoVersionDescription(demoversion));
     }
 
-	skill_t skill = *demo_p++;
+	skill_t skill = (skill_t)*demo_p++;
 	int32_t episode = *demo_p++;
 	int32_t map = *demo_p++;
 	int32_t random_seed = 0;
@@ -2422,7 +2438,7 @@ void G_DoPlayDemo (void)
 		{
 			G_InitAuditBufferRecording( AUDITBUFFERDEFAULTSIZE );
 			int32_t demoname_size = strlen(defdemoname) + 5;
-			auditname = Z_Malloc( demoname_size, PU_STATIC, NULL );
+			auditname = (char*)Z_Malloc( demoname_size, PU_STATIC, NULL );
 			M_snprintf( auditname, demoname_size, "%s.aud", defdemoname );
 		}
 	}

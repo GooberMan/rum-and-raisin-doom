@@ -22,12 +22,11 @@
 
 #include "d_gameflow.h"
 
+#include "w_wad.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-	#include "w_wad.h"
-
 	extern lumpinfo_t *maplumpinfo;
 
 #ifdef __cplusplus

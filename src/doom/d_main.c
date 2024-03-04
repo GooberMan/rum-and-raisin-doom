@@ -328,6 +328,9 @@ doombool D_Display( double_t framepercent )
 	case GS_DEMOSCREEN:
 		D_PageDrawer ();
 		break;
+
+	default:
+		break;
 	}
 
 	// draw the view directly

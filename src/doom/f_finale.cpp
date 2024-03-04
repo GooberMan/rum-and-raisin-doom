@@ -39,6 +39,7 @@
 #include "doomstat.h"
 #include "d_gameflow.h"
 #include "d_gamesim.h"
+#include "p_local.h"
 #include "r_state.h"
 #include "m_misc.h"
 
@@ -67,7 +68,11 @@ const char *finaletiletexture;
 
 static vbuffer_t finaletiledata;
 static texturecomposite_t* finaletilecomposite;
-extern vbuffer_t blackedges;
+
+extern "C"
+{
+	extern vbuffer_t blackedges;
+}
 
 static intermission_t* finaleintermission = NULL;
 static endgame_t* finaleendgame = NULL;
@@ -88,7 +93,7 @@ void F_SwitchFinale()
 	{
 		finalecount = 0;
 		finalestage = F_STAGE_ARTSCREEN;
-		wipegamestate = -1;
+		wipegamestate = GS_INVALID;
 		S_ChangeMusicLump( &finaleendgame->music_lump, !!( finaleendgame->type & EndGame_LoopingMusic ) );
 	}
 }
@@ -96,7 +101,7 @@ void F_SwitchFinale()
 //
 // F_StartFinale
 //
-void F_StartIntermission( intermission_t* intermission )
+DOOM_C_API void F_StartIntermission( intermission_t* intermission )
 {
 	finaleendgame = NULL;
 	finaleintermission = intermission;
@@ -122,7 +127,7 @@ void F_StartIntermission( intermission_t* intermission )
 	finaletiledata.magic_value = vbuffer_magic;
 }
 
-void F_StartFinale( endgame_t* endgame )
+DOOM_C_API void F_StartFinale( endgame_t* endgame )
 {
 	if( endgame->intermission )
 	{
@@ -138,7 +143,7 @@ void F_StartFinale( endgame_t* endgame )
 
 
 
-doombool F_Responder (event_t *event)
+DOOM_C_API doombool F_Responder (event_t *event)
 {
     if (finalestage == F_STAGE_CAST)
 	return F_CastResponder (event);
@@ -150,7 +155,7 @@ doombool F_Responder (event_t *event)
 //
 // F_Ticker
 //
-void F_Ticker (void)
+DOOM_C_API void F_Ticker (void)
 {
     size_t		i;
 
@@ -202,7 +207,10 @@ void F_Ticker (void)
 //
 
 #include "hu_stuff.h"
-extern	patch_t *hu_font[HU_FONTSIZE];
+extern "C"
+{
+	extern	patch_t *hu_font[HU_FONTSIZE];
+}
 
 void F_TextWrite (void)
 {
@@ -284,7 +292,7 @@ castinfo_t	castorder[] = {
     {CC_CYBER, MT_CYBORG},
     {CC_HERO, MT_PLAYER},
 
-    {NULL,0}
+    {NULL,MT_PLAYER}
 };
 
 int		castnum;
@@ -301,7 +309,7 @@ doombool		castattacking;
 //
 void F_StartCast (void)
 {
-    wipegamestate = -1;		// force a screen wipe
+    wipegamestate = GS_INVALID;		// force a screen wipe
     castnum = 0;
     caststate = &states[mobjinfo[castorder[castnum].type].seestate];
     casttics = caststate->tics;
@@ -585,7 +593,7 @@ void F_BunnyScroll (void)
     {
         V_DrawPatch((V_VIRTUALWIDTH - 13 * 8) / 2,
                     (V_VIRTUALHEIGHT - 8 * 8) / 2, 
-                    W_CacheLumpName(DEH_String("END0"), PU_CACHE));
+                    (patch_t*)W_CacheLumpName(DEH_String("END0"), PU_CACHE));
 	laststage = 0;
 	return;
     }
@@ -602,7 +610,7 @@ void F_BunnyScroll (void)
     DEH_snprintf(name, 10, "END%i", stage);
     V_DrawPatch((V_VIRTUALWIDTH - 13 * 8) / 2, 
                 (V_VIRTUALHEIGHT - 8 * 8) / 2, 
-                W_CacheLumpName (name,PU_CACHE));
+                (patch_t*)W_CacheLumpName (name,PU_CACHE));
 }
 
 static void F_ArtScreenDrawer(void)
@@ -633,7 +641,7 @@ static void F_ArtScreenDrawer(void)
 //
 // F_Drawer
 //
-void F_Drawer (void)
+DOOM_C_API void F_Drawer (void)
 {
     switch (finalestage)
     {

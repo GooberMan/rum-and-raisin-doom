@@ -61,7 +61,7 @@
 typedef struct deh_mapping_s deh_mapping_t;
 typedef struct deh_mapping_entry_s deh_mapping_entry_t;
 
-struct deh_mapping_entry_s 
+DOOM_C_API struct deh_mapping_entry_s 
 {
     // field name
    
@@ -83,17 +83,17 @@ struct deh_mapping_entry_s
 	GameVersion_t minimum_version;
 };
 
-struct deh_mapping_s
+DOOM_C_API struct deh_mapping_s
 {
     void *base;
     deh_mapping_entry_t entries[MAX_MAPPING_ENTRIES];
 };
 
-doombool DEH_SetMapping(deh_context_t *context, deh_mapping_t *mapping,
+DOOM_C_API doombool DEH_SetMapping(deh_context_t *context, deh_mapping_t *mapping,
                        void *structptr, char *name, int value);
-doombool DEH_SetStringMapping(deh_context_t *context, deh_mapping_t *mapping,
+DOOM_C_API doombool DEH_SetStringMapping(deh_context_t *context, deh_mapping_t *mapping,
                              void *structptr, char *name, char *value);
-void DEH_StructSHA1Sum(sha1_context_t *context, deh_mapping_t *mapping,
+DOOM_C_API void DEH_StructSHA1Sum(sha1_context_t *context, deh_mapping_t *mapping,
                        void *structptr);
 
 #endif /* #ifndef DEH_MAPPING_H */

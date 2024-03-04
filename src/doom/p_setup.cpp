@@ -273,9 +273,7 @@ struct DoomMapLoader
 	mapthing_t			_deathmatchstarts[MAX_DEATHMATCH_STARTS];
 	mapthing_t*			_deathmatch_p;
 	mapthing_t			_playerstarts[MAXPLAYERS];
-	doombool				_playerstartsingame[MAXPLAYERS];
-
-	lumpinfo_t*			_maplumpinfo;
+	doombool			_playerstartsingame[MAXPLAYERS];
 
 	constexpr auto		Vertices() const noexcept		{ return std::span( _vertices,		_numvertices ); }
 	constexpr auto		SegVertices() const noexcept	{ return std::span( _segvertices,	_numsegvertices ); }

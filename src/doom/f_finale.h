@@ -30,17 +30,16 @@
 //
 
 // Called by main loop.
-doombool F_Responder (event_t* ev);
+DOOM_C_API doombool F_Responder (event_t* ev);
 
 // Called by main loop.
-void F_Ticker (void);
+DOOM_C_API void F_Ticker (void);
 
 // Called by main loop.
-void F_Drawer (void);
+DOOM_C_API void F_Drawer (void);
 
-
-void F_StartIntermission( intermission_t* intermission );
-void F_StartFinale( endgame_t* endgame );
+DOOM_C_API void F_StartIntermission( intermission_t* intermission );
+DOOM_C_API void F_StartFinale( endgame_t* endgame );
 
 
 #endif

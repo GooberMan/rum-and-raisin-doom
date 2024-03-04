@@ -343,8 +343,6 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-	extern int32_t remove_limits;
-
 	colcontext_t	column;
 
 	int32_t			widthdiff = ( frame_width - frame_adjusted_width ) >> 1;

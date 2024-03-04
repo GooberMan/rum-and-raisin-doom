@@ -79,7 +79,7 @@ DOOM_C_API int32_t DEH_ParTime( mapinfo_t* map )
 	return map->par_time;
 }
 
-DOOM_C_API deh_section_t deh_section_bexpars =
+deh_section_t deh_section_bexpars =
 {
 	"[PARS]",
 	NULL,

@@ -172,7 +172,7 @@ void P_ActivateInStasisCeilingsGeneric( int32_t tag )
 		if( currceiling->tag == tag && currceiling->direction == sd_none )
 		{
 			currceiling->direction = currceiling->olddirection;
-			currceiling->thinker.function = T_MoveCeilingGeneric;
+			currceiling->thinker.function.Enable();
 		}
 	}
 }
@@ -245,7 +245,7 @@ DOOM_C_API int32_t EV_StopAnyCeilingGeneric( line_t* line, mobj_t* activator )
 	{
 		if( currceil->sector->tag == line->tag && currceil->direction != sd_none )
 		{
-			currceil->thinker.function = nullptr;
+			currceil->thinker.function.Disable();
 			currceil->olddirection = currceil->direction;
 			currceil->direction = sd_none;
 		}
@@ -1220,7 +1220,7 @@ void P_ActivateInStasisPlatsGeneric( int tag )
 		if( currplat->tag == tag && currplat->status == in_stasis )
 		{
 			currplat->status = currplat->oldstatus;
-			currplat->thinker.function = T_RaisePlatGeneric;
+			currplat->thinker.function.Enable();
 		}
 	}
 }
@@ -1442,7 +1442,7 @@ DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator )
 		{
 			currplat->oldstatus = currplat->status;
 			currplat->status = in_stasis;
-			currplat->thinker.function = nullptr;
+			currplat->thinker.function.Disable();
 		}
 	}
 

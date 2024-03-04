@@ -50,6 +50,7 @@
 // the game final animation, or a demo. 
 DOOM_C_API typedef enum
 {
+	GS_INVALID = -1,
     GS_LEVEL,
     GS_INTERMISSION,
     GS_FINALE,

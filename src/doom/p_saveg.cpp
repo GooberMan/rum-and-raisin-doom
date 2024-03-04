@@ -566,7 +566,7 @@ static void saveg_write_mobj_t(mobj_t *str)
     saveg_write32(str->tics);
 
     // state_t* state;
-    saveg_write32(str->state - states);
+    saveg_write32(str->state->statenum);
 
     // int flags;
     saveg_write32(str->flags);
@@ -693,7 +693,7 @@ static void saveg_write_pspdef_t(pspdef_t *str)
     // state_t* state;
     if (str->state)
     {
-        saveg_write32(str->state - states);
+        saveg_write32(str->state->statenum);
     }
     else
     {

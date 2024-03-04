@@ -403,9 +403,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\doom\am_map.c" />
+    <ClCompile Include="..\src\doom\deh_ammo.cpp" />
     <ClCompile Include="..\src\doom\deh_bexpars.cpp" />
     <ClCompile Include="..\src\doom\deh_bexptr.cpp" />
+    <ClCompile Include="..\src\doom\deh_bexstr.cpp" />
     <ClCompile Include="..\src\doom\deh_bexthing.cpp" />
+    <ClCompile Include="..\src\doom\deh_cheat.cpp" />
+    <ClCompile Include="..\src\doom\deh_doom.cpp" />
+    <ClCompile Include="..\src\doom\deh_frame.cpp" />
+    <ClCompile Include="..\src\doom\deh_misc.cpp" />
+    <ClCompile Include="..\src\doom\deh_ptr.cpp" />
+    <ClCompile Include="..\src\doom\deh_sound.cpp" />
+    <ClCompile Include="..\src\doom\deh_thing.cpp" />
+    <ClCompile Include="..\src\doom\deh_weapon.cpp" />
     <ClCompile Include="..\src\doom\d_gameflow_chex.cpp" />
     <ClCompile Include="..\src\doom\d_gameflow_doom.cpp" />
     <ClCompile Include="..\src\doom\d_gameflow_doom2.cpp" />
@@ -413,6 +423,8 @@
     <ClCompile Include="..\src\doom\d_gameflow_plutonia.cpp" />
     <ClCompile Include="..\src\doom\d_gameflow_tnt.cpp" />
     <ClCompile Include="..\src\doom\d_gamesim.cpp" />
+    <ClCompile Include="..\src\doom\f_finale.cpp" />
+    <ClCompile Include="..\src\doom\g_game.cpp" />
     <ClCompile Include="..\src\doom\info.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf.cpp" />
     <ClCompile Include="..\src\doom\p_actionsmbf21.cpp" />
@@ -439,17 +451,7 @@
     <ClCompile Include="..\src\doom\r_sky.cpp" />
     <ClCompile Include="..\src\doom\wi_stuff.cpp" />
     <ClInclude Include="..\src\doom\am_map.h" />
-    <ClCompile Include="..\src\doom\deh_ammo.c" />
-    <ClCompile Include="..\src\doom\deh_bexstr.c" />
-    <ClCompile Include="..\src\doom\deh_cheat.c" />
-    <ClCompile Include="..\src\doom\deh_doom.c" />
-    <ClCompile Include="..\src\doom\deh_frame.c" />
-    <ClCompile Include="..\src\doom\deh_misc.c" />
     <ClInclude Include="..\src\doom\deh_misc.h" />
-    <ClCompile Include="..\src\doom\deh_ptr.c" />
-    <ClCompile Include="..\src\doom\deh_sound.c" />
-    <ClCompile Include="..\src\doom\deh_thing.c" />
-    <ClCompile Include="..\src\doom\deh_weapon.c" />
     <ClInclude Include="..\src\doom\d_englsh.h" />
     <ClCompile Include="..\src\doom\d_items.c" />
     <ClInclude Include="..\src\doom\d_gamesim.h" />
@@ -467,11 +469,9 @@
     <ClInclude Include="..\src\doom\dstrings.h" />
     <ClInclude Include="..\src\doom\d_textur.h" />
     <ClInclude Include="..\src\doom\d_think.h" />
-    <ClCompile Include="..\src\doom\f_finale.c" />
     <ClInclude Include="..\src\doom\f_finale.h" />
     <ClCompile Include="..\src\doom\f_wipe.c" />
     <ClInclude Include="..\src\doom\f_wipe.h" />
-    <ClCompile Include="..\src\doom\g_game.c" />
     <ClInclude Include="..\src\doom\g_game.h" />
     <ClCompile Include="..\src\doom\hu_lib.c" />
     <ClInclude Include="..\src\doom\hu_lib.h" />

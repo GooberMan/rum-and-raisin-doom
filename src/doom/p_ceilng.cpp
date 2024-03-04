@@ -292,7 +292,7 @@ DOOM_C_API void P_ActivateInStasisCeiling(line_t* line)
 	    && (activeceilings[i]->direction == 0))
 	{
 	    activeceilings[i]->direction = activeceilings[i]->olddirection;
-	    activeceilings[i]->thinker.function = T_MoveCeiling;
+	    activeceilings[i]->thinker.function.Enable();
 	}
     }
 }
@@ -316,7 +316,7 @@ DOOM_C_API int	EV_CeilingCrushStop(line_t	*line)
 	    && (activeceilings[i]->direction != 0))
 	{
 	    activeceilings[i]->olddirection = activeceilings[i]->direction;
-	    activeceilings[i]->thinker.function = nullptr;
+	    activeceilings[i]->thinker.function.Disable();
 	    activeceilings[i]->direction = 0;		// in-stasis
 	    rtn = 1;
 	}

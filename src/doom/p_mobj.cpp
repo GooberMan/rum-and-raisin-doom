@@ -233,7 +233,7 @@ DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 			&& player->cmd.sidemove == 0 ) ) )
 	{
 		// if in a walking frame, stop moving
-		if ( player&&(unsigned)((player->mo->state - states)- S_PLAY_RUN1) < 4)
+		if ( player && (unsigned)(player->mo->state->statenum - S_PLAY_RUN1) < 4)
 		{
 			if( !P_SetMobjState (player->mo, S_PLAY) )
 			{
@@ -1050,7 +1050,9 @@ DOOM_C_API void P_CheckMissileSpawn( mobj_t* th )
 {
     th->tics -= P_Random()&3;
     if (th->tics < 1)
-	th->tics = 1;
+	{
+		th->tics = 1;
+	}
     
 	if( fix.missiles_on_blockmap )
 	{
@@ -1058,7 +1060,7 @@ DOOM_C_API void P_CheckMissileSpawn( mobj_t* th )
 		// be computed if it immediately explodes
 		fixed_t newx = th->x + (th->momx>>1);
 		fixed_t newy = th->y + (th->momy>>1);
-		fixed_t newz = th->z + (th->momz>>1);
+		//fixed_t newz = th->z + (th->momz>>1);
 
 		if( !P_TryMove( th, newx, newy ) )
 		{

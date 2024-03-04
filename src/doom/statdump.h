@@ -17,7 +17,7 @@
 #ifndef DOOM_STATDUMP_H
 #define DOOM_STATDUMP_H
 
-void StatCopy(const wbstartstruct_t *stats);
-void StatDump(void);
+DOOM_C_API void StatCopy(const wbstartstruct_t *stats);
+DOOM_C_API void StatDump(void);
 
 #endif /* #ifndef DOOM_STATDUMP_H */
