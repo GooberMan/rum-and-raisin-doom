@@ -29,7 +29,7 @@
 
 static actionf_t codeptrs[NUMSTATES];
 
-static int CodePointerIndex(actionf_t *ptr)
+static int CodePointerIndex(const actionf_t *ptr)
 {
     int i;
 
@@ -69,7 +69,7 @@ static void *DEH_PointerStart(deh_context_t *context, char *line)
 
     if (frame_number < 0 || frame_number >= NUMSTATES )
     {
-        DEH_Warning(context, "Invalid frame number: %i", frame_number);
+        DEH_Error(context, "Invalid frame number: %i", frame_number);
         return NULL;
     }
 
@@ -80,7 +80,8 @@ static void *DEH_PointerStart(deh_context_t *context, char *line)
 							: exe_mbf21;
 	DEH_IncreaseGameVersion( context, version );
 
-    return &states[frame_number];
+	extern std::unordered_map< int32_t, state_t* > statemap;
+    return statemap[ frame_number ];
 }
 
 static void DEH_PointerParseLine(deh_context_t *context, char *line, void *tag)
@@ -115,7 +116,7 @@ static void DEH_PointerParseLine(deh_context_t *context, char *line, void *tag)
     {
         if ( ivalue < 0 || ivalue >= NUMSTATES )
         {
-            DEH_Warning(context, "Invalid state '%i'", ivalue);
+            DEH_Error(context, "Invalid state '%i'", ivalue);
         }
         else
         {        

@@ -1229,7 +1229,7 @@ DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_
     int			bx;
     int			by;
 
-    mobjinfo_t*		info;
+    const mobjinfo_t* info;
     mobj_t*		temp;
 	
     if (actor->movedir != DI_NODIR)

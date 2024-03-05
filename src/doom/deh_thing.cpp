@@ -68,9 +68,8 @@ DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* val
 static void *DEH_ThingStart(deh_context_t *context, char *line)
 {
     int thing_number = 0;
-    mobjinfo_t *mobj;
-    
-    if (sscanf(line, "Thing %i", &thing_number) != 1)
+
+	if (sscanf(line, "Thing %i", &thing_number) != 1)
     {
         DEH_Warning(context, "Parse error on section start");
         return NULL;
@@ -79,15 +78,35 @@ static void *DEH_ThingStart(deh_context_t *context, char *line)
     // dehacked files are indexed from 1
     --thing_number;
 
-    if (thing_number < 0 || thing_number >= NUMMOBJTYPES)
-    {
-        DEH_Warning(context, "Invalid thing number: %i", thing_number);
-        return NULL;
-    }
-    
-    mobj = &mobjinfo[thing_number];
-    
-    return mobj;
+	GameVersion_t version = thing_number < MT_NUMVANILLATYPES ? exe_doom_1_9
+							: thing_number < MT_NUMBOOMTYPES ? exe_boom_2_02
+							: thing_number < MT_NUMMBFTYPES ? exe_mbf
+							: thing_number < MT_NUMPRBOOMTYPES ? exe_mbf_dehextra
+							: exe_mbf21_extended;
+
+	DEH_IncreaseGameVersion( context, version );
+
+	extern std::unordered_map< int32_t, mobjinfo_t* > mobjtypemap;
+	auto foundmobj = mobjtypemap.find( thing_number );
+	if( foundmobj == mobjtypemap.end() )
+	{
+		constexpr auto NewMobj = []() -> mobjinfo_t
+		{
+			mobjinfo_t newmobjinfo = {};
+			newmobjinfo.fastspeed = -1;
+			newmobjinfo.meleerange = IntToFixed( 64 );
+			return newmobjinfo;
+		};
+
+		mobjinfo_t* mobj = Z_MallocAs( mobjinfo_t, PU_STATIC, nullptr );
+		*mobj = NewMobj();
+		mobjtypemap[ thing_number ] = mobj;
+		return mobj;
+	}
+	else
+	{
+		return foundmobj->second;
+	}
 }
 
 static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
@@ -144,6 +163,14 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 		ivalue = atoi(value) + splash_user;
 		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
 	}
+	else if( strcmp( variable_name, "ID #" ) == 0 )
+	{
+		extern std::unordered_map< int32_t, mobjinfo_t* > doomednummap;
+
+		ivalue = atoi(value);
+		doomednummap[ ivalue ] = mobj;
+		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
+	}
 	else if( strcmp( variable_name, "Retro Bits" ) == 0
 		|| strcmp( variable_name, "Name1" ) == 0
 		|| strcmp( variable_name, "Plural1" ) == 0 )
@@ -168,7 +195,7 @@ static void DEH_ThingSHA1Sum(sha1_context_t *context)
 
     for (i=0; i<NUMMOBJTYPES; ++i)
     {
-        DEH_StructSHA1Sum(context, &thing_mapping, &mobjinfo[i]);
+        DEH_StructSHA1Sum(context, &thing_mapping, (void*)&mobjinfo[i]);
     }
 }
 

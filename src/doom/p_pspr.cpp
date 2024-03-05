@@ -41,10 +41,10 @@
 //
 // P_SetPsprite
 //
-DOOM_C_API void P_SetPsprite( player_t* player, int position, statenum_t stnum ) 
+DOOM_C_API void P_SetPsprite( player_t* player, int position, int32_t stnum ) 
 {
     pspdef_t*	psp;
-    state_t*	state;
+    const state_t* state;
 	
     psp = &player->psprites[position];
 
@@ -59,7 +59,7 @@ DOOM_C_API void P_SetPsprite( player_t* player, int position, statenum_t stnum )
 		if (!stnum)
 		{
 			// object removed itself
-			psp->state = NULL;
+			psp->state = nullptr;
 			break;	
 		}
 	
@@ -81,7 +81,9 @@ DOOM_C_API void P_SetPsprite( player_t* player, int position, statenum_t stnum )
 		{
 			state->action(player, psp);
 			if (!psp->state)
-			break;
+			{
+				break;
+			}
 		}
 	
 		stnum = psp->state->nextstate;
@@ -869,30 +871,31 @@ DOOM_C_API void P_SetupPsprites (player_t* player)
 //
 DOOM_C_API void P_MovePsprites (player_t* player) 
 {
-    int		i;
-    pspdef_t*	psp;
-    state_t*	state;
+	int		i;
+	pspdef_t*	psp;
 	
-    psp = &player->psprites[0];
-    for (i=0 ; i<NUMPSPRITES ; i++, psp++)
-    {
-	// a null state means not active
-	if ( (state = psp->state) )	
+	psp = &player->psprites[0];
+	for (i=0 ; i<NUMPSPRITES ; i++, psp++)
 	{
-	    // drop tic count and possibly change state
+		// a null state means not active
+		if ( psp->state != nullptr )	
+		{
+			// drop tic count and possibly change state
 
-	    // a -1 tic count never changes
-	    if (psp->tics != -1)	
-	    {
-		psp->tics--;
-		if (!psp->tics)
-		    P_SetPsprite (player, i, psp->state->nextstate);
-	    }				
+			// a -1 tic count never changes
+			if (psp->tics != -1)	
+			{
+				psp->tics--;
+				if (!psp->tics)
+				{
+					P_SetPsprite (player, i, psp->state->nextstate);
+				}
+			}
+		}
 	}
-    }
-    
-    player->psprites[ps_flash].sx = player->psprites[ps_weapon].sx;
-    player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
+
+	player->psprites[ps_flash].sx = player->psprites[ps_weapon].sx;
+	player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
 }
 
 

@@ -212,7 +212,7 @@ DOOM_C_API void A_RefireTo( player_t* player, pspdef_t* psp );
 DOOM_C_API void A_GunFlashTo( player_t* player, pspdef_t* psp );
 DOOM_C_API void A_WeaponAlert( player_t* player, pspdef_t* psp );
 
-DOOM_C_API state_t	builtinstates[NUMSTATES] =
+state_t builtinstates[NUMSTATES] =
 {
 	{ S_NULL,					SPR_TROO,		0,			-1,		{nullptr},			S_NULL,					},
 	{ S_LIGHTDONE,				SPR_SHTG,		4,			0,		{A_Light0},			S_NULL,					},
@@ -1308,7 +1308,7 @@ DOOM_C_API state_t	builtinstates[NUMSTATES] =
 	{ S_PRBOOM_EASTEREGG12,		SPR_PLAY,		0,			-1,		{nullptr},			S_NULL,					},
 };
 
-DOOM_C_API mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
+mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 {
 	{		// MT_PLAYER
 		-1,		// doomednum
@@ -5066,6 +5066,7 @@ DOOM_C_API mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 	},
 };
 
+
 static std::unordered_map< int32_t, state_t* > BuildStateMap( std::span< state_t > statespan )
 {
 	std::unordered_map< int32_t, state_t* > statemap;
@@ -5103,13 +5104,13 @@ static std::unordered_map< int32_t, mobjinfo_t* > BuildMapobjectNumMap( std::spa
 	return mobjmap;
 }
 
-static std::unordered_map< int32_t, state_t* >		statemap		= BuildStateMap( std::span( builtinstates ) );
-static std::unordered_map< int32_t, mobjinfo_t* >	mobjtypemap		= BuildMobjTypeMap( std::span( builtinmobjinfo ) );
-static std::unordered_map< int32_t, mobjinfo_t* >	doomednummap	= BuildMapobjectNumMap( std::span( builtinmobjinfo ) );
+std::unordered_map< int32_t, state_t* >		statemap		= BuildStateMap( std::span( builtinstates ) );
+std::unordered_map< int32_t, mobjinfo_t* >	mobjtypemap		= BuildMobjTypeMap( std::span( builtinmobjinfo ) );
+std::unordered_map< int32_t, mobjinfo_t* >	doomednummap	= BuildMapobjectNumMap( std::span( builtinmobjinfo ) );
 
-DoomStateLookup			states;
-DoomMobjTypeLookup		mobjinfo;
-DoomMapobjectNumLookup	mapobjects;
+DoomStateLookup								states;
+DoomMobjTypeLookup							mobjinfo;
+DoomMapobjectNumLookup						mapobjects;
 
 state_t& DoomStateLookup::Fetch( int32_t statenum )
 {

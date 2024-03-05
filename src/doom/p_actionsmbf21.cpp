@@ -55,7 +55,7 @@ static INLINE bool ObjectInRange( mobj_t* source, mobj_t* target, fixed_t range 
 
 // External definitions
 DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_t healsound );
-DOOM_C_API void P_SetPsprite( player_t* player, int position, statenum_t stnum ) ;
+DOOM_C_API void P_SetPsprite( player_t* player, int position, int32_t stnum ) ;
 DOOM_C_API doombool P_CheckAmmo( player_t* player );
 
 // MBF21 actions

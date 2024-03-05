@@ -1483,7 +1483,7 @@ DOOM_C_API typedef struct
 	int32_t		frame;
 	int32_t		tics;
 	actionf_t	action;
-	statenum_t	nextstate;
+	int32_t		nextstate;
 
 	statearg_t	misc1;
 	statearg_t	misc2;
@@ -1518,7 +1518,6 @@ DOOM_C_API typedef struct
 #define ARG_STATENUM( mobj, name, index )			STATEARG( mobj, name, index )._ ## statenum
 #define ARG_SOUND( mobj, name, index )				STATEARG( mobj, name, index )._ ## sound
 
-DOOM_C_API extern state_t	builtinstates[NUMSTATES];
 DOOM_C_API extern const char *sprnames[];
 DOOM_C_API extern const char *sprnames_boom[];
 DOOM_C_API extern const char *sprnames_mbf[];
@@ -1573,36 +1572,34 @@ DOOM_C_API typedef struct
 	int32_t		ripsound;
 } mobjinfo_t;
 
-DOOM_C_API extern mobjinfo_t builtinmobjinfo[NUMMOBJTYPES];
-
 #if defined( __cplusplus )
 
 class DoomStateLookup
 {
 public:
-	inline state_t& operator[]( int32_t statenum )			{ return Fetch( statenum ); }
-	inline state_t& operator[]( statenum_t statenum )		{ return Fetch( (int32_t)statenum ); }
+	inline const state_t& operator[]( int32_t statenum )		{ return Fetch( statenum ); }
+	inline const state_t& operator[]( statenum_t statenum )		{ return Fetch( (int32_t)statenum ); }
 
-private:
+protected:
 	state_t& Fetch( int32_t statenum );
 };
 
 class DoomMobjTypeLookup
 {
 public:
-	inline mobjinfo_t& operator[]( int32_t mobjnum )		{ return Fetch( mobjnum ); }
-	inline mobjinfo_t& operator[]( mobjtype_t mobjnum )		{ return Fetch( (int32_t)mobjnum ); }
+	inline const mobjinfo_t& operator[]( int32_t mobjnum )		{ return Fetch( mobjnum ); }
+	inline const mobjinfo_t& operator[]( mobjtype_t mobjnum )	{ return Fetch( (int32_t)mobjnum ); }
 
-private:
+protected:
 	mobjinfo_t& Fetch( int32_t mobjnum );
 };
 
 class DoomMapobjectNumLookup
 {
 public:
-	inline mobjinfo_t* operator[]( int32_t mobjnum )		{ return Fetch( mobjnum ); }
+	inline const mobjinfo_t* operator[]( int32_t mobjnum )		{ return Fetch( mobjnum ); }
 
-private:
+protected:
 	mobjinfo_t* Fetch( int32_t mobjnum );
 };
 

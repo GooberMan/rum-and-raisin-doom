@@ -1971,6 +1971,7 @@ void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags, int32_t ra
 
 	respawnmonsters = (skill == sk_nightmare || respawnparm );
 
+#if 0 // FIX ME FIX ME FIX ME
 	if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare) )
 	{
 		for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
@@ -1991,6 +1992,7 @@ void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags, int32_t ra
 		mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT;
 		mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT;
 	}
+#endif // 0 // FIX ME FIX ME FIX ME
 
 	// force players to be initialized upon first level load
 	for (i=0 ; i<MAXPLAYERS ; i++)

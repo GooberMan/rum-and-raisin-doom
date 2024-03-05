@@ -103,21 +103,21 @@ DOOM_C_API extern int		iquetail;
 
 DOOM_C_API void P_RespawnSpecials (void);
 
-DOOM_C_API mobj_t*		P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, mobjtype_t type );
-DOOM_C_API mobj_t*		P_SpawnMobjEx( mobjtype_t type, angle_t angle,
+DOOM_C_API mobj_t*		P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, int32_t type );
+DOOM_C_API mobj_t*		P_SpawnMobjEx( int32_t type, angle_t angle,
 										fixed_t x, fixed_t y, fixed_t z,
 										fixed_t forwardvel, fixed_t rightvel, fixed_t upvel );
 DOOM_C_API void			P_CheckMissileSpawn( mobj_t* th );
 
 DOOM_C_API void			P_RemoveMobj (mobj_t* th);
 DOOM_C_API mobj_t*		P_SubstNullMobj (mobj_t* th);
-DOOM_C_API doombool		P_SetMobjState (mobj_t* mobj, statenum_t state);
+DOOM_C_API doombool		P_SetMobjState (mobj_t* mobj, int32_t state);
 DOOM_C_API void			P_MobjThinker (mobj_t* mobj);
 
 DOOM_C_API void			P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 DOOM_C_API void			P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage);
-DOOM_C_API mobj_t*		P_SpawnMissile (mobj_t* source, mobj_t* dest, mobjtype_t type);
-DOOM_C_API void			P_SpawnPlayerMissile (mobj_t* source, mobjtype_t type);
+DOOM_C_API mobj_t*		P_SpawnMissile (mobj_t* source, mobj_t* dest, int32_t type);
+DOOM_C_API void			P_SpawnPlayerMissile (mobj_t* source, int32_t type);
 
 
 //

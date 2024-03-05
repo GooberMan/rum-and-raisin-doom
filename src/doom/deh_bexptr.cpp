@@ -315,16 +315,36 @@ static void DEH_BEXPtrParseLine( deh_context_t *context, char* line, void* tag )
 		return;
 	}
 
-	auto found = PointerLookup.find( ToLower( frame_func ) );
-	if( found == PointerLookup.end()  )
+	auto foundfunc = PointerLookup.find( ToLower( frame_func ) );
+	if( foundfunc == PointerLookup.end()  )
 	{
 		DEH_Warning( context, "'%s' is an invalid function", frame_func );
 		return;
 	}
 
-	DEH_IncreaseGameVersion( context, found->second.minimum_version );
+	DEH_IncreaseGameVersion( context, foundfunc->second.minimum_version );
 
-	states[ frame_number ].action = found->second.action;
+	extern std::unordered_map< int32_t, state_t* > statemap;
+	auto foundstate = statemap.find( frame_number );
+	if( foundstate == statemap.end() )
+	{
+		DEH_IncreaseGameVersion( context, exe_mbf21_extended );
+		state_t* newstate = Z_MallocAs( state_t, PU_STATIC, nullptr );
+		*newstate =
+		{
+			frame_number,
+			SPR_TNT1,
+			0,
+			-1,
+			foundfunc->second.action,
+			(statenum_t)frame_number,
+		};
+		statemap[ frame_number ] = newstate;
+	}
+	else
+	{
+		foundstate->second->action = foundfunc->second.action;
+	}
 }
 
 deh_section_t deh_section_bexptr =

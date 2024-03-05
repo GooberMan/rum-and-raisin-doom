@@ -50,7 +50,6 @@ DEH_END_MAPPING
 static void *DEH_FrameStart(deh_context_t *context, char *line)
 {
     int frame_number = 0;
-    state_t *state;
     
     if (sscanf(line, "Frame %i", &frame_number) != 1)
     {
@@ -58,12 +57,6 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
         return NULL;
     }
     
-    if (frame_number < 0 || frame_number >= NUMSTATES )
-    {
-        DEH_Warning(context, "Invalid frame number: %i", frame_number);
-        return NULL;
-    }
-
 	GameVersion_t version = frame_number < ( NUMSTATES_VANILLA - 1 ) ? exe_doom_1_2
 							: frame_number < NUMSTATES_VANILLA ? exe_doom_1_2 // exe_limit_removing
 							: frame_number < NUMSTATES_BOOM ? exe_boom_2_02
@@ -72,9 +65,27 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
 							: exe_mbf21_extended;
 	DEH_IncreaseGameVersion( context, version );
 
-    state = &states[frame_number];
-
-    return state;
+	extern std::unordered_map< int32_t, state_t* > statemap;
+	auto foundstate = statemap.find( frame_number );
+	if( foundstate == statemap.end() )
+	{
+		state_t* newstate = Z_MallocAs( state_t, PU_STATIC, nullptr );
+		*newstate =
+		{
+			frame_number,
+			SPR_TNT1,
+			0,
+			-1,
+			nullptr,
+			(statenum_t)frame_number,
+		};
+		statemap[ frame_number ] = newstate;
+		return newstate;
+	}
+	else
+	{
+		return foundstate->second;
+	}
 }
 
 // Simulate a frame overflow: Doom has 967 frames in the states[] array, but
@@ -158,7 +169,7 @@ static void DEH_FrameSHA1Sum(sha1_context_t *context)
 
     for (i=0; i < NUMSTATES; ++i)
     {
-        DEH_StructSHA1Sum(context, &state_mapping, &states[i]);
+        DEH_StructSHA1Sum(context, &state_mapping, (void*)&states[i]);
     }
 }
 

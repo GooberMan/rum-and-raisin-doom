@@ -61,7 +61,7 @@ DOOM_C_API typedef enum
 
 DOOM_C_API typedef struct pspdef_s
 {
-    state_t*	state;	// a NULL state means not active
+    const state_t* state;	// a NULL state means not active
     int		tics;
     fixed_t	sx;
     fixed_t	sy;

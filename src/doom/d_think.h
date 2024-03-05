@@ -178,7 +178,7 @@ typedef struct actionf_s
 		return *this;
 	}
 
-	void operator()()
+	void operator()() const
 	{
 		if( Type() != at_void )
 		{
@@ -188,7 +188,7 @@ typedef struct actionf_s
 	}
 
 	template< typename _param >
-	void operator()( _param* val )
+	void operator()( _param* val ) const
 	{
 		if( Type() != at_p1 )
 		{
@@ -203,7 +203,7 @@ typedef struct actionf_s
 		_acp1( (thinker_t*)val );
 	}
 
-	void operator()( player_t* player, pspdef_t* pspr )
+	void operator()( player_t* player, pspdef_t* pspr ) const
 	{
 		if( Type() != at_p2 )
 		{
@@ -214,7 +214,7 @@ typedef struct actionf_s
 	}
 
 	template< typename _param >
-	bool operator==( void(*func)(_param*) )
+	bool operator==( void(*func)(_param*) ) const
 	{
 		if constexpr( !std::is_same_v< _param*, decltype( thinker_cast< _param >( (_param*)nullptr ) ) > )
 		{
