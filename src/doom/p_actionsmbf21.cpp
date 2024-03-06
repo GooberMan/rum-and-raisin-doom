@@ -70,7 +70,7 @@ DOOM_C_API void A_SpawnObject( mobj_t* mobj )
 	ARG_FIXED( mobj, y_vel, 7 );
 	ARG_FIXED( mobj, z_vel, 8 );
 
-	mobj_t* spawned = P_SpawnMobjEx( type, DegreesToAngle( angle ),
+	mobj_t* spawned = P_SpawnMobjEx( &mobjinfo[ type - 1 ], DegreesToAngle( angle ),
 									mobj->x + x_ofs, mobj->y + y_ofs, mobj->z + z_ofs,
 									x_vel, y_vel, z_vel );
 	if( mobj->flags & MF_MISSILE )
@@ -105,7 +105,7 @@ DOOM_C_API void A_MonsterProjectile( mobj_t* mobj )
 	fixed_t xoffset = FixedMul( hoffset, finesine[ forwardlookup ] );
 	fixed_t yoffset = FixedMul( hoffset, finecosine[ forwardlookup ] );
 
-	mobj_t* spawned = P_SpawnMobjEx( type, DegreesToAngle( angle ),
+	mobj_t* spawned = P_SpawnMobjEx( &mobjinfo[ type - 1 ], DegreesToAngle( angle ),
 									mobj->x + xoffset, mobj->y + yoffset, mobj->z + voffset,
 									mobjinfo[ type ].speed, 0, finetangent[ vertlookup ] );
 

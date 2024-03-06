@@ -104,7 +104,7 @@ DOOM_C_API extern int		iquetail;
 DOOM_C_API void P_RespawnSpecials (void);
 
 DOOM_C_API mobj_t*		P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, int32_t type );
-DOOM_C_API mobj_t*		P_SpawnMobjEx( int32_t type, angle_t angle,
+DOOM_C_API mobj_t*		P_SpawnMobjEx( const mobjinfo_t* typeinfo, angle_t angle,
 										fixed_t x, fixed_t y, fixed_t z,
 										fixed_t forwardvel, fixed_t rightvel, fixed_t upvel );
 DOOM_C_API void			P_CheckMissileSpawn( mobj_t* th );

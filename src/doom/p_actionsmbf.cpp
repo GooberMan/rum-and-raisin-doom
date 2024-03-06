@@ -73,7 +73,7 @@ DOOM_C_API void A_Spawn( mobj_t* mobj )
 
 	if( type > 0 )
 	{
-		P_SpawnMobjEx( (mobjtype_t)(type - 1), mobj->angle, mobj->x, mobj->y, mobj->z + zoffset, 0, 0, 0 );
+		P_SpawnMobjEx( &mobjinfo[ type - 1 ], mobj->angle, mobj->x, mobj->y, mobj->z + zoffset, 0, 0, 0 );
 	}
 }
 

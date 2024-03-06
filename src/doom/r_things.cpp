@@ -144,33 +144,34 @@ int32_t R_InstallSpriteLump( spriteframe_t* sprtemp, const char* spritename, int
 //  letter/number appended.
 // The rotation character can be 0 to signify no rotations.
 //
-void R_InitSpriteDefs(const char **namelist)
-{ 
-    const char **check;
+void R_InitSprites()
+{
     int		frame;
     int		rotation;
 
-    // count the number of sprite names
-    check = namelist;
-    while (*check != NULL)
-	check++;
-
-    numsprites = (int32_t)( check - namelist );
+    numsprites = sprnames.size();
 	
     if (!numsprites)
-	return;
+	{
+		return;
+	}
 
     spriteframe_t* sprtemp = (spriteframe_t*)Z_Malloc( sizeof(spriteframe_t) * 29, PU_STATIC, NULL );
-		
-    sprites = (spritedef_t*)Z_Malloc(numsprites * sizeof(spritedef_t), PU_STATIC, NULL);
+    sprites = (spritedef_t*)Z_MallocZero(numsprites * sizeof(spritedef_t), PU_STATIC, NULL);
 	
     // scan all the lump names for each of the names,
     //  noting the highest frame letter.
     // Just compare 4 characters as ints
-    const char** currname = namelist;
+	int32_t nameindex = 0;
     for( spritedef_t& currsprite : std::span( sprites, numsprites ) )
     {
-		const char* spritename = DEH_String( *currname++ );
+		const char* currname = sprnames[ nameindex++ ];
+		if( currname == nullptr )
+		{
+			continue;
+		}
+
+		const char* spritename = DEH_String( currname );
 		memset( sprtemp,-1, sizeof(spriteframe_t) * 29);
 		
 		int32_t maxframe = -1;
@@ -244,19 +245,6 @@ void R_InitSpriteDefs(const char **namelist)
 
 	Z_Free( sprtemp );
 }
-
-
-
-
-//
-// R_InitSprites
-// Called at program start.
-//
-void R_InitSprites(const char **namelist)
-{
-    R_InitSpriteDefs (namelist);
-}
-
 
 
 //

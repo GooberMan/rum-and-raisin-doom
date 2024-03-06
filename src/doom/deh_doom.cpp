@@ -42,6 +42,8 @@ extern deh_section_t deh_section_bexstr;
 extern deh_section_t deh_section_bexptr;
 // deh_bexpars.cpp:
 extern deh_section_t deh_section_bexpars;
+// deh_sprites.cpp:
+extern deh_section_t deh_section_sprites;
 
 //
 // List of section types:

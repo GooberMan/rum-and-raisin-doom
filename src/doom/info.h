@@ -1518,10 +1518,6 @@ DOOM_C_API typedef struct
 #define ARG_STATENUM( mobj, name, index )			STATEARG( mobj, name, index )._ ## statenum
 #define ARG_SOUND( mobj, name, index )				STATEARG( mobj, name, index )._ ## sound
 
-DOOM_C_API extern const char *sprnames[];
-DOOM_C_API extern const char *sprnames_boom[];
-DOOM_C_API extern const char *sprnames_mbf[];
-
 DOOM_C_API typedef enum mobjgroups_e
 {
 	infighting_none = 0,
@@ -1538,6 +1534,8 @@ DOOM_C_API typedef enum mobjgroups_e
 
 DOOM_C_API typedef struct
 {
+	int32_t		type;
+	int32_t		minimumversion;
 	int32_t		doomednum;
 	int32_t		spawnstate;
 	int32_t		spawnhealth;
@@ -1603,9 +1601,21 @@ protected:
 	mobjinfo_t* Fetch( int32_t mobjnum );
 };
 
+class DoomSpriteNameLookup
+{
+public:
+	inline const char* operator[]( int32_t spritenum )			{ return Fetch( spritenum ); }
+
+	size_t size();
+
+protected:
+	const char* Fetch( int32_t spritenum );
+};
+
 extern DoomStateLookup			states;
 extern DoomMobjTypeLookup		mobjinfo;
 extern DoomMapobjectNumLookup	mapobjects;
+extern DoomSpriteNameLookup		sprnames;
 
 #endif // defined( __cplusplus )
 

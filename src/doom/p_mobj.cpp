@@ -569,28 +569,26 @@ DOOM_C_API void P_MobjThinker( mobj_t* mobj )
 
 }
 
-DOOM_C_API mobj_t* P_SpawnMobjEx( int32_t type, angle_t angle,
+DOOM_C_API mobj_t* P_SpawnMobjEx( const mobjinfo_t* typeinfo, angle_t angle,
 									fixed_t x, fixed_t y, fixed_t z,
 									fixed_t forwardvel, fixed_t rightvel, fixed_t upvel )
 {
 	mobj_t*	mobj;
 	const state_t* st;
-	const mobjinfo_t* info;
 	
 	mobj = (mobj_t*)Z_Malloc( sizeof(*mobj), PU_LEVEL, NULL );
 	memset (mobj, 0, sizeof (*mobj));
-	info = &mobjinfo[type];
 	
-	mobj->type = type;
-	mobj->info = info;
+	mobj->type = typeinfo->type;
+	mobj->info = typeinfo;
 	mobj->x = x;
 	mobj->y = y;
 	mobj->angle = angle;
-	mobj->radius = info->radius;
-	mobj->height = info->height;
-	mobj->flags = info->flags;
-	mobj->flags2 = info->flags2;
-	mobj->health = info->spawnhealth;
+	mobj->radius = typeinfo->radius;
+	mobj->height = typeinfo->height;
+	mobj->flags = typeinfo->flags;
+	mobj->flags2 = typeinfo->flags2;
+	mobj->health = typeinfo->spawnhealth;
 
 	int32_t forwardlookup = FINEANGLE( angle );
 	int32_t rightlookup = FINEANGLE( angle - ANG90 );
@@ -601,13 +599,13 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( int32_t type, angle_t angle,
 
 	if (gameskill != sk_nightmare)
 	{
-		mobj->reactiontime = info->reactiontime;
+		mobj->reactiontime = typeinfo->reactiontime;
 	}
 
 	mobj->lastlook = P_Random () % MAXPLAYERS;
 	// do not set the state with P_SetMobjState,
 	// because action routines can not be called yet
-	st = &states[info->spawnstate];
+	st = &states[typeinfo->spawnstate];
 
 	mobj->state = st;
 	mobj->tics = st->tics;
@@ -653,7 +651,7 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( int32_t type, angle_t angle,
 //
 DOOM_C_API mobj_t* P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, int32_t type )
 {
-	return P_SpawnMobjEx( type, 0, x, y, z, 0, 0, 0 );
+	return P_SpawnMobjEx( &mobjinfo[ type ], 0, x, y, z, 0, 0, 0 );
 }
 
 
@@ -709,8 +707,6 @@ DOOM_C_API void P_RespawnSpecials (void)
     subsector_t*	ss; 
     mobj_t*		mo;
     mapthing_t*		mthing;
-    
-    int			i;
 
     // only respawn items in deathmatch
     if (deathmatch != 2)
@@ -735,26 +731,24 @@ DOOM_C_API void P_RespawnSpecials (void)
     S_StartSound (mo, sfx_itmbk);
 
     // find which type to spawn
-    for (i=0 ; i< NUMMOBJTYPES ; i++)
-    {
-	if (mthing->type == mobjinfo[i].doomednum)
-	    break;
-    }
-
-    if (i >= NUMMOBJTYPES)
-    {
+	const mobjinfo_t* spawninfo = mapobjects[ mthing->type ];
+	bool unknown = !spawninfo
+				|| ( spawninfo->minimumversion >= exe_boom_2_02 && !sim.boom_things )
+				|| ( spawninfo->minimumversion >= exe_mbf && !sim.mbf_things );
+	if( unknown )
+	{
         I_Error("P_RespawnSpecials: Failed to find mobj type with doomednum "
                 "%d when respawning thing. This would cause a buffer overrun "
                 "in vanilla Doom", mthing->type);
     }
 
     // spawn it
-    if (mobjinfo[i].flags & MF_SPAWNCEILING)
+    if (spawninfo->flags & MF_SPAWNCEILING)
 	z = ONCEILINGZ;
     else
 	z = ONFLOORZ;
 
-    mo = P_SpawnMobj (x,y,z, (mobjtype_t)i);
+    mo = P_SpawnMobjEx( spawninfo, 0, x, y , z, 0, 0, 0 );
     mo->spawnpoint = *mthing;
 	mo->hasspawnpoint = true;
     mo->prev.angle = mo->curr.angle = mo->angle = ANG45 * (mthing->angle/45);
@@ -800,7 +794,7 @@ DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
     x 		= mthing->x << FRACBITS;
     y 		= mthing->y << FRACBITS;
     z		= ONFLOORZ;
-    mobj	= P_SpawnMobj (x,y,z, MT_PLAYER);
+    mobj	= P_SpawnMobj(x,y,z, MT_PLAYER);
 
     // set color translations for player sprites
     if (mthing->type > 1)		
@@ -848,7 +842,6 @@ DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
 //
 DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 {
-    int			i;
     int			bit;
     mobj_t*		mobj;
     fixed_t		x;
@@ -858,12 +851,12 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
     // count deathmatch start positions
     if (mthing->type == 11)
     {
-	if (deathmatch_p < &deathmatchstarts[10])
-	{
-	    memcpy (deathmatch_p, mthing, sizeof(*mthing));
-	    deathmatch_p++;
-	}
-	return nullptr;
+		if (deathmatch_p < &deathmatchstarts[10])
+		{
+			memcpy (deathmatch_p, mthing, sizeof(*mthing));
+			deathmatch_p++;
+		}
+		return nullptr;
     }
 
     if (mthing->type <= 0)
@@ -877,13 +870,13 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
     // check for players specially
     if (mthing->type <= 4)
     {
-	// save spots for respawning in network games
-	playerstarts[mthing->type-1] = *mthing;
-	playerstartsingame[mthing->type-1] = true;
-	if (!deathmatch)
-	    P_SpawnPlayer (mthing);
+		// save spots for respawning in network games
+		playerstarts[mthing->type-1] = *mthing;
+		playerstartsingame[mthing->type-1] = true;
+		if (!deathmatch)
+			P_SpawnPlayer (mthing);
 
-	return nullptr;
+		return nullptr;
     }
 
     // check for apropriate skill level
@@ -895,29 +888,29 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 	}
 
     if (gameskill == sk_baby)
-	bit = 1;
-    else if (gameskill == sk_nightmare)
-	bit = 4;
-    else
-	bit = 1<<(gameskill-1);
-
-    if (!(mthing->options & bit) )
-	return nullptr;
-	
-    // find which type to spawn
-    for (i=0 ; i< NUMMOBJTYPES ; i++)
 	{
-		if (mthing->type == mobjinfo[i].doomednum)
-		{
-			break;
-		}
+		bit = 1;
+	}
+    else if (gameskill == sk_nightmare)
+	{
+		bit = 4;
+	}
+    else
+	{
+		bit = 1<<(gameskill-1);
 	}
 
-	int32_t maxtype = sim.mbf_things ? MT_NUMMBFTYPES
-					: sim.boom_things ? MT_NUMBOOMTYPES
-					: MT_NUMVANILLATYPES;
+    if (!(mthing->options & bit) )
+	{
+		return nullptr;
+	}
 	
-    if( i >= maxtype )
+    // find which type to spawn
+	const mobjinfo_t* spawninfo = mapobjects[ mthing->type ];
+	bool unknown = !spawninfo
+				|| ( spawninfo->minimumversion >= exe_boom_2_02 && !sim.boom_things )
+				|| ( spawninfo->minimumversion >= exe_mbf && !sim.mbf_things );
+	if( unknown )
 	{
 		if( sim.allow_unknown_thing_types )
 		{
@@ -931,29 +924,29 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 			 mthing->type,
 			 mthing->x, mthing->y);
 	}
-		
+
     // don't spawn keycards and players in deathmatch
-    if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH)
+    if (deathmatch && spawninfo->flags & MF_NOTDMATCH)
 	return nullptr;
 		
-    // don't spawn any monsters if -nomonsters
-    if (nomonsters
-	&& ( i == MT_SKULL
-	     || (mobjinfo[i].flags & MF_COUNTKILL)) )
-    {
-	return nullptr;
-    }
+	// don't spawn any monsters if -nomonsters
+	if (nomonsters
+		&& ( spawninfo->type == MT_SKULL
+				|| (spawninfo->flags & MF_COUNTKILL)) )
+	{
+		return nullptr;
+	}
     
     // spawn it
     x = mthing->x << FRACBITS;
     y = mthing->y << FRACBITS;
 
-    if (mobjinfo[i].flags & MF_SPAWNCEILING)
+    if (spawninfo->flags & MF_SPAWNCEILING)
 	z = ONCEILINGZ;
     else
 	z = ONFLOORZ;
     
-    mobj = P_SpawnMobj (x,y,z, (mobjtype_t)i);
+    mobj = P_SpawnMobjEx( spawninfo, 0, x, y , z, 0, 0, 0 );
     mobj->spawnpoint = *mthing;
 	mobj->hasspawnpoint = true;
 

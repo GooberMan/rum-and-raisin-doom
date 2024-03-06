@@ -221,7 +221,15 @@ DOOM_C_API typedef enum
     sfx_skesit,
     sfx_skeatk,
     sfx_radio,
-    NUMSFX
+	sfx_dgsit,
+	sfx_dgatk,
+	sfx_dgact,
+	sfx_dgdth,
+	sfx_dgpain,
+	sfx_secret,
+    NUMSFX,
+
+	SFX_MINDEHACKED = 500,
 } sfxenum_t;
 
 #endif

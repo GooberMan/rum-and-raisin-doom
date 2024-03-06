@@ -921,18 +921,10 @@ void AddLumpRangeToFlats( int32_t begin, int32_t end )
 	for( int32_t currflat = begin; currflat < end; ++currflat )
 	{
 		std::string lumpname = ClampString( lumpinfo[ currflat ]->name );
-		auto found = flatnamelookup.find( lumpname );
-		if( found == flatnamelookup.end() )
-		{
-			int32_t numflats = NumFlats();
-			flatindexlookup.push_back( { currflat, numflats } );
-			flatnamelookup[ lumpname ] = { currflat, numflats };
-		}
-		else
-		{
-			found->second.lumpindex = currflat;
-			flatindexlookup[ found->second.compositeindex ].lumpindex = currflat;
-		}
+
+		int32_t numflats = NumFlats();
+		flatindexlookup.push_back( { currflat, numflats } );
+		flatnamelookup[ lumpname ] = { currflat, numflats };
 	}
 }
 

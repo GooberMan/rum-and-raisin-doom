@@ -100,6 +100,7 @@ static void *DEH_ThingStart(deh_context_t *context, char *line)
 
 		mobjinfo_t* mobj = Z_MallocAs( mobjinfo_t, PU_STATIC, nullptr );
 		*mobj = NewMobj();
+		mobj->type = thing_number;
 		mobjtypemap[ thing_number ] = mobj;
 		return mobj;
 	}

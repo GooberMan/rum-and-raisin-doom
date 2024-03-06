@@ -63,7 +63,7 @@
 #define NORM_PRIORITY 64
 #define NORM_SEP 128
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // sound information (if null, channel avail.)
     sfxinfo_t *sfxinfo;
@@ -78,34 +78,37 @@ typedef struct
 
 } channel_t;
 
-// The set of channels available
+extern "C"
+{
+	// The set of channels available
 
-static channel_t *channels;
+	static channel_t *channels;
 
-// Maximum volume of a sound effect.
-// Internal default is max out of 0-15.
+	// Maximum volume of a sound effect.
+	// Internal default is max out of 0-15.
 
-int sfxVolume = 8;
+	int sfxVolume = 8;
 
-// Maximum volume of music.
+	// Maximum volume of music.
 
-int musicVolume = 8;
+	int musicVolume = 8;
 
-// Internal volume level, ranging from 0-127
+	// Internal volume level, ranging from 0-127
 
-static int snd_SfxVolume;
+	static int snd_SfxVolume;
 
-// Whether songs are mus_paused
+	// Whether songs are mus_paused
 
-static doombool mus_paused;
+	static doombool mus_paused;
 
-// Music currently being played
+	// Music currently being played
 
-static musicinfo_t *mus_playing = NULL;
+	static musicinfo_t *mus_playing = NULL;
 
-// Number of channels to use
+	// Number of channels to use
 
-int snd_channels = 8;
+	int snd_channels = 8;
+}
 
 //
 // Initializes sound stuff, including volume
@@ -113,7 +116,7 @@ int snd_channels = 8;
 //  allocates channel buffer, sets S_sfx lookup.
 //
 
-void S_Init(int sfxVolume, int musicVolume)
+DOOM_C_API void S_Init(int sfxVolume, int musicVolume)
 {
     int i;
 
@@ -141,7 +144,7 @@ void S_Init(int sfxVolume, int musicVolume)
     // Allocating the internal channels for mixing
     // (the maximum numer of sounds rendered
     // simultaneously) within zone memory.
-    channels = Z_Malloc(snd_channels*sizeof(channel_t), PU_STATIC, 0);
+    channels = (channel_t*)Z_Malloc(snd_channels*sizeof(channel_t), PU_STATIC, 0);
 
     // Free all channels for use
     for (i=0 ; i<snd_channels ; i++)
@@ -161,7 +164,7 @@ void S_Init(int sfxVolume, int musicVolume)
     I_AtExit(S_Shutdown, true);
 }
 
-void S_Shutdown(void)
+DOOM_C_API void S_Shutdown(void)
 {
     I_ShutdownSound();
     I_ShutdownMusic();
@@ -207,10 +210,9 @@ static void S_StopChannel(int cnum)
 //  determines music if any, changes music.
 //
 
-void S_Start(void)
+DOOM_C_API void S_Start(void)
 {
     int cnum;
-    int mnum;
 
     // kill all playing sounds at start of level
     //  (trust me - a good idea)
@@ -228,7 +230,7 @@ void S_Start(void)
     S_ChangeMusicLump( &current_map->music_lump, true );
 }
 
-void S_StopSound(mobj_t *origin)
+DOOM_C_API void S_StopSound(mobj_t *origin)
 {
     int cnum;
 
@@ -391,7 +393,7 @@ static int Clamp(int x)
     return x;
 }
 
-void S_StartSound(void *origin_p, int sfx_id)
+DOOM_C_API void S_StartSound(void *origin_p, int sfx_id)
 {
     sfxinfo_t *sfx;
     mobj_t *origin;
@@ -497,7 +499,7 @@ void S_StartSound(void *origin_p, int sfx_id)
 // Stop and resume music, during game PAUSE.
 //
 
-void S_PauseSound(void)
+DOOM_C_API void S_PauseSound(void)
 {
     if (mus_playing && !mus_paused)
     {
@@ -506,7 +508,7 @@ void S_PauseSound(void)
     }
 }
 
-void S_ResumeSound(void)
+DOOM_C_API void S_ResumeSound(void)
 {
     if (mus_playing && mus_paused)
     {
@@ -519,7 +521,7 @@ void S_ResumeSound(void)
 // Updates music & sounds
 //
 
-void S_UpdateSounds(mobj_t *listener)
+DOOM_C_API void S_UpdateSounds(mobj_t *listener)
 {
     int                audible;
     int                cnum;
@@ -586,7 +588,7 @@ void S_UpdateSounds(mobj_t *listener)
     }
 }
 
-void S_SetMusicVolume(int volume)
+DOOM_C_API void S_SetMusicVolume(int volume)
 {
     if (volume < 0 || volume > 127)
     {
@@ -597,7 +599,7 @@ void S_SetMusicVolume(int volume)
     I_SetMusicVolume(volume);
 }
 
-void S_SetSfxVolume(int volume)
+DOOM_C_API void S_SetSfxVolume(int volume)
 {
     if (volume < 0 || volume > 127)
     {
@@ -611,7 +613,7 @@ void S_SetSfxVolume(int volume)
 // Starts some music with the music id found in sounds.h.
 //
 
-void S_MusicPlay( musicinfo_t* music, int32_t looping )
+DOOM_C_API void S_MusicPlay( musicinfo_t* music, int32_t looping )
 {
 	void *handle;
 	music->data = W_CacheLumpNum(music->lumpnum, PU_STATIC);
@@ -623,12 +625,12 @@ void S_MusicPlay( musicinfo_t* music, int32_t looping )
 	mus_playing = music;
 }
 
-void S_StartMusic(int m_id)
+DOOM_C_API void S_StartMusic(int m_id)
 {
     S_ChangeMusic(m_id, false);
 }
 
-void S_ChangeMusic(int musicnum, int looping)
+DOOM_C_API void S_ChangeMusic(int musicnum, int looping)
 {
     musicinfo_t *music = NULL;
     char namebuf[9];
@@ -676,7 +678,7 @@ static musicinfo_t music_from_lump;
 #define stricmp strcasecmp
 #endif
 
-void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
+DOOM_C_API void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
 {
 	doombool wasplaying = mus_playing == &music_from_lump;
 	if( wasplaying && stricmp( music_from_lump.name, lump->val ) == 0 )
@@ -708,12 +710,12 @@ void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
 	S_MusicPlay( &music_from_lump, looping );
 }
 
-doombool S_MusicPlaying(void)
+DOOM_C_API doombool S_MusicPlaying(void)
 {
     return I_MusicIsPlaying();
 }
 
-void S_StopMusic(void)
+DOOM_C_API void S_StopMusic(void)
 {
     if (mus_playing)
     {

@@ -925,7 +925,7 @@ DOOM_C_API void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* sourc
 						|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_DMGIGNORED ) )
 						);
 
-	bool nothreshold = (!target->threshold || target->type == MT_VILE)
+	bool nothreshold = (target && ( !target->threshold || target->type == MT_VILE) )
 						|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
 	if( !infightingimmunity
 		&& nothreshold

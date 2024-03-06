@@ -246,7 +246,7 @@ static void DEH_ParseContext(deh_context_t *context)
             ++line;
 
 		doombool iswhitespace = IsWhitespace(line);
-        if( line != '#'
+        if( *line != '#'
 			&& !iswhitespace )
         {
             sscanf(line, "%19s", section_name);
