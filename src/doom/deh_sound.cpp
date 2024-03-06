@@ -37,6 +37,25 @@ DEH_BEGIN_MAPPING(sound_mapping, sfxinfo_t)
     DEH_MAPPING("Neg. One 2", lumpnum)
 DEH_END_MAPPING
 
+extern std::unordered_map< int32_t, sfxinfo_t* > sfxmap;
+
+enum
+{
+	NumVanillaSounds = 109,
+	NumMBFSounds = 114,
+	MinDehextra = 500,
+	MaxDehextra = 699,
+};
+
+GameVersion_t VersionFromSoundNumber( int32_t num )
+{
+	return num < 0 ? exe_mbf21_extended
+		: num < NumVanillaSounds ? exe_doom_1_2
+		: num < NumMBFSounds ? exe_boom_2_02
+		: num >= MinDehextra && num <= MaxDehextra ? exe_mbf_dehextra
+		: exe_mbf21_extended;
+}
+
 static void *DEH_SoundStart(deh_context_t *context, char *line)
 {
     int sound_number = 0;
@@ -47,19 +66,23 @@ static void *DEH_SoundStart(deh_context_t *context, char *line)
         return NULL;
     }
 
-    if (sound_number < 0 || sound_number >= NUMSFX)
-    {
-        DEH_Warning(context, "Invalid sound number: %i", sound_number);
-        return NULL;
-    }
+	DEH_IncreaseGameVersion( context, VersionFromSoundNumber( sound_number ) );
 
-    if (sound_number >= DEH_VANILLA_NUMSFX)
-    {
-        DEH_Warning(context, "Attempt to modify SFX %i.  This will cause "
-                             "problems in Vanilla dehacked.", sound_number); 
-    }
+	auto found = sfxmap.find( sound_number );
+	{
+		if( found == sfxmap.end() )
+		{
+			sfxinfo_t* sfx = Z_MallocAs( sfxinfo_t, PU_STATIC, nullptr );
+			*sfx = {};
+			sfx->priority = 127;
+			sfx->pitch = -1;
+			sfx->volume = -1;
+			sfxmap[ sound_number ] = sfx;
+			return sfx;
+		}
+	}
 
-    return &S_sfx[sound_number];
+    return found->second;
 }
 
 static void DEH_SoundParseLine(deh_context_t *context, char *line, void *tag)

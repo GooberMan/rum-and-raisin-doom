@@ -22,9 +22,6 @@
 
 #include "i_sound.h"
 
-// the complete set of sound effects
-DOOM_C_API extern sfxinfo_t	S_sfx[];
-
 // the complete set of music
 DOOM_C_API extern musicinfo_t	S_music[];
 
@@ -231,5 +228,22 @@ DOOM_C_API typedef enum
 
 	SFX_MINDEHACKED = 500,
 } sfxenum_t;
+
+
+#if defined( __cplusplus )
+
+class DoomSoundLookup
+{
+public:
+	inline const sfxinfo_t& operator[]( int32_t soudnum )		{ return Fetch( soudnum ); }
+	inline const sfxinfo_t& operator[]( sfxenum_t soudnum )		{ return Fetch( (int32_t)soudnum ); }
+
+protected:
+	sfxinfo_t& Fetch( int32_t soudnum );
+};
+
+extern DoomSoundLookup		sfxinfos;
+
+#endif //defined( __cplusplus )
 
 #endif

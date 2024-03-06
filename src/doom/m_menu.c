@@ -3437,7 +3437,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 				{
 					if( igSelectable_Bool( sound_resample_quality_strings[ index ], index == sound_resample_type, ImGuiSelectableFlags_None, zerosize ) )
 					{
-						I_ChangeSoundQuality( index, S_sfx, NUMSFX );
+						//I_ChangeSoundQuality( index, S_sfx, NUMSFX );
 					}
 				}
 				igEndCombo();

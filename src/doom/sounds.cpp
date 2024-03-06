@@ -24,6 +24,10 @@
 #include "doomtype.h"
 #include "sounds.h"
 
+#include "i_error.h"
+
+#include "m_container.h"
+
 //
 // Information about all the music
 //
@@ -31,7 +35,7 @@
 #define MUSIC(name) \
     { name, 0, NULL, NULL }
 
-musicinfo_t S_music[] =
+DOOM_C_API musicinfo_t S_music[] =
 {
     MUSIC(NULL),
     MUSIC("e1m1"),
@@ -111,9 +115,9 @@ musicinfo_t S_music[] =
 #define SOUND(name, priority) \
   { NULL, name, priority, NULL, -1, -1, 0, 0, -1, NULL }
 #define SOUND_LINK(name, priority, link_id, pitch, volume) \
-  { NULL, name, priority, &S_sfx[link_id], pitch, volume, 0, 0, -1, NULL }
+  { NULL, name, priority, &builtinsfx[link_id], pitch, volume, 0, 0, -1, NULL }
 
-sfxinfo_t S_sfx[] =
+sfxinfo_t builtinsfx[] =
 {
   // S_sfx[0] needs to be a dummy for odd reasons.
   SOUND("none",   0),
@@ -232,4 +236,30 @@ sfxinfo_t S_sfx[] =
   SOUND("dgpain", 96),
   SOUND("secret",  100),
 };
+
+static std::unordered_map< int32_t, sfxinfo_t* > BuildMapobjectNumMap( std::span< sfxinfo_t > soundspan )
+{
+	std::unordered_map< int32_t, sfxinfo_t* > soundmap;
+	int32_t soundindex = 0;
+	for( sfxinfo_t& soundinfo : soundspan )
+	{
+		soundmap[ soundindex++ ] = &soundinfo;
+	}
+
+	return soundmap;
+}
+
+std::unordered_map< int32_t, sfxinfo_t* > sfxmap = BuildMapobjectNumMap( std::span( builtinsfx ) );
+DoomSoundLookup sfxinfos;
+
+sfxinfo_t& DoomSoundLookup::Fetch( int32_t soundnum )
+{
+	auto found = sfxmap.find( soundnum );
+	if( found == sfxmap.end() )
+	{
+		I_Error( "Invalid sound %d", soundnum );
+	}
+
+	return *found->second;
+}
 

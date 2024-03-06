@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "i_terminal.h"
 #include "i_sound.h"
 #include "i_system.h"
 
@@ -115,6 +116,11 @@ extern "C"
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
+extern std::unordered_map< int32_t, sfxinfo_t* > sfxmap;
+
+// Preload all the sound effects - stops nasty ingame freezes
+#define DOTAMOUNT 8
+#define DOTBUFFERSIZE 64
 
 DOOM_C_API void S_Init(int sfxVolume, int musicVolume)
 {
@@ -136,7 +142,40 @@ DOOM_C_API void S_Init(int sfxVolume, int musicVolume)
         I_SetOPLDriverVer(opl_doom_1_9);
     }
 
-    I_PrecacheSounds(S_sfx, NUMSFX);
+    I_TerminalPrintf( Log_Startup, "S_Init: Precaching - " );
+
+	char cachestring[ DOTBUFFERSIZE ];
+	int dotcount = M_MIN( sfxmap.size() / DOTAMOUNT, DOTBUFFERSIZE - 4 );
+	char* currout = cachestring;
+	*currout++ = ' ';
+	*currout++ = '[';
+	for( i = 0; i < dotcount; ++i )
+	{
+		*currout++ = ' ';
+	}
+	*currout++ = ']';
+	*currout = 0;
+	I_TerminalPrintf( Log_None, cachestring );
+
+	currout = cachestring;
+	for( i = 0; i < dotcount + 1; ++i )
+	{
+		*currout++ = '\b';
+	}
+	*currout = 0;
+	I_TerminalPrintf( Log_None, cachestring );
+
+	int soundindex = 0;
+	for( auto& soundpair : sfxmap )
+	{
+		//if ((soundindex++ % DOTAMOUNT) == ( DOTAMOUNT - 1 ))
+		//{
+		//	I_TerminalPrintf( Log_None, "." );
+		//}
+
+		I_PrecacheSounds( soundpair.second, 1 );
+	}
+    //I_PrecacheSounds(S_sfx, NUMSFX);
 
     S_SetSfxVolume(sfxVolume);
     S_SetMusicVolume(musicVolume);
@@ -412,7 +451,7 @@ DOOM_C_API void S_StartSound(void *origin_p, int sfx_id)
         I_Error("Bad sfx #: %d", sfx_id);
     }
 
-    sfx = &S_sfx[sfx_id];
+    sfx = (sfxinfo_t*)&sfxinfos[sfx_id];
 
     // Initialize sound parameters
     pitch = NORM_PITCH;
