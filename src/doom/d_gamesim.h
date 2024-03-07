@@ -69,6 +69,7 @@ DOOM_C_API typedef struct fixoptions_s
 	doombool		spechit_overflow;						// Just keep adding things to a static array, it'll be fine
 	doombool		missiles_on_blockmap;					// Spawning a missile would just assume it cand do whatever it wants to the mobj's x/y/z coordinates
 	doombool		brainspawn_targets;						// Vanilla would just merrily spawn from a null pointer; and would stomp over the stack of an array
+	doombool		findheight_ignores_same_sector;			// Find Lowest/Highest/Nearest floors or ceilings never checked if the line's other sector was the same
 } fixoptions_t;
 
 DOOM_C_API typedef struct simoptions_s

@@ -33,7 +33,6 @@
 
 #include "w_wad.h"
 
-#pragma optimize( "", off )
 // Externs
 extern "C"
 {
@@ -169,6 +168,7 @@ static fixoptions_t GetAllFixed()
 	options.spechit_overflow = true;
 	options.missiles_on_blockmap = true;
 	options.brainspawn_targets = true;
+	options.findheight_ignores_same_sector = true;
 
 	return options;
 }

@@ -204,5 +204,15 @@ INLINE auto ToUpper( const char* str )
 	return ToUpper( _output( str ) );
 }
 
+constexpr bool IsDigit( const char val )
+{
+	return val >= '0' && val <= '9';
+}
+
+constexpr bool IsNumber( const char* val )
+{
+	return IsDigit( val[ 0 ] )
+		|| ( val[ 0 ] == '-' && IsDigit( val[ 1 ] ) );
+}
 
 #endif // __M_CONV_H__

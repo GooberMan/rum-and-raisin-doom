@@ -237,6 +237,8 @@ sfxinfo_t builtinsfx[] =
   SOUND("secret",  100),
 };
 
+static sfxinfo_t dehextrasounds[ 200 ] = {};
+
 static std::unordered_map< int32_t, sfxinfo_t* > BuildMapobjectNumMap( std::span< sfxinfo_t > soundspan )
 {
 	std::unordered_map< int32_t, sfxinfo_t* > soundmap;
@@ -244,6 +246,21 @@ static std::unordered_map< int32_t, sfxinfo_t* > BuildMapobjectNumMap( std::span
 	for( sfxinfo_t& soundinfo : soundspan )
 	{
 		soundmap[ soundindex++ ] = &soundinfo;
+	}
+
+	char name[16] = "fre000";
+
+	for( int32_t dehextrasound : iota( 500, 700 ) )
+	{
+		soundindex = dehextrasound - 500;
+		name[3] = '0' + ( soundindex / 100 );
+		name[4] = '0' + ( ( soundindex / 10 ) % 10 );
+		name[5] = '0' + ( soundindex % 10 );
+		strncpy( dehextrasounds[ soundindex ].name, name, 6 );
+		dehextrasounds[ soundindex ].priority = 127;
+		dehextrasounds[ soundindex ].pitch = -1;
+		dehextrasounds[ soundindex ].volume = -1;
+		soundmap[ dehextrasound ] = &dehextrasounds[ soundindex ];
 	}
 
 	return soundmap;

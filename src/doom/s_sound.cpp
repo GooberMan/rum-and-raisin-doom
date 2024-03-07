@@ -119,7 +119,7 @@ extern "C"
 extern std::unordered_map< int32_t, sfxinfo_t* > sfxmap;
 
 // Preload all the sound effects - stops nasty ingame freezes
-#define DOTAMOUNT 8
+#define DOTAMOUNT 16
 #define DOTBUFFERSIZE 64
 
 DOOM_C_API void S_Init(int sfxVolume, int musicVolume)
@@ -168,14 +168,14 @@ DOOM_C_API void S_Init(int sfxVolume, int musicVolume)
 	int soundindex = 0;
 	for( auto& soundpair : sfxmap )
 	{
-		//if ((soundindex++ % DOTAMOUNT) == ( DOTAMOUNT - 1 ))
-		//{
-		//	I_TerminalPrintf( Log_None, "." );
-		//}
+		if ((soundindex++ % DOTAMOUNT) == ( DOTAMOUNT - 1 ))
+		{
+			I_TerminalPrintf( Log_None, "." );
+		}
 
 		I_PrecacheSounds( soundpair.second, 1 );
 	}
-    //I_PrecacheSounds(S_sfx, NUMSFX);
+    I_TerminalPrintf( Log_None, "\n" );
 
     S_SetSfxVolume(sfxVolume);
     S_SetMusicVolume(musicVolume);
@@ -444,12 +444,6 @@ DOOM_C_API void S_StartSound(void *origin_p, int sfx_id)
 
     origin = (mobj_t *) origin_p;
     volume = snd_SfxVolume;
-
-    // check for bogus sound #
-    if (sfx_id < 1 || sfx_id > NUMSFX)
-    {
-        I_Error("Bad sfx #: %d", sfx_id);
-    }
 
     sfx = (sfxinfo_t*)&sfxinfos[sfx_id];
 

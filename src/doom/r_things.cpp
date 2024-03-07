@@ -208,32 +208,35 @@ void R_InitSprites()
 		
 		maxframe++;
 	
-		for (frame = 0 ; frame < maxframe ; frame++)
+		if( !comp.additive_data_blocks )
 		{
-			switch ((int)sprtemp[frame].rotate)
+			for (frame = 0 ; frame < maxframe ; frame++)
 			{
-			case -1:
-				// no rotations were found for that frame at all
-				I_Error ("R_InitSprites: No patches found "
-					 "for %s frame %c", spritename, frame+'A');
-				break;
-		
-			case 0:
-				// only the first rotation is needed
-				break;
-			
-			case 1:
-				// must have all 8 frames
-				for (rotation=0 ; rotation<8 ; rotation++)
+				switch ((int)sprtemp[frame].rotate)
 				{
-					if ( sprtemp[frame].lump[rotation] == -1 )
+				case -1:
+					// no rotations were found for that frame at all
+					I_Error ("R_InitSprites: No patches found "
+						 "for %s frame %c", spritename, frame+'A');
+					break;
+		
+				case 0:
+					// only the first rotation is needed
+					break;
+			
+				case 1:
+					// must have all 8 frames
+					for (rotation=0 ; rotation<8 ; rotation++)
 					{
-						I_Error ("R_InitSprites: Sprite %s frame %c "
-								"is missing rotations",
-								spritename, frame+'A');
+						if ( sprtemp[frame].lump[rotation] == -1 )
+						{
+							I_Error ("R_InitSprites: Sprite %s frame %c "
+									"is missing rotations",
+									spritename, frame+'A');
+						}
 					}
+					break;
 				}
-				break;
 			}
 		}
 	
@@ -771,6 +774,8 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 		angle &= FINEANGLES/2-1;
 		sy = FixedToRendFixed( WEAPONTOP ) + RendFixedMul( RendFixedMul( viewpoint.weaponbob, renderfinesine[ angle << RENDERQUALITYSHIFT ] ), percent );
 	}
+
+	sy += DoubleToRendFixed( 0.8 );
 
 	// calculate edges of the shape
 	rend_fixed_t tx = sx - IntToRendFixed( V_VIRTUALWIDTH / 2 );

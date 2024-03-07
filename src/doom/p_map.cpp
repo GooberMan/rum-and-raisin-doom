@@ -97,7 +97,7 @@ extern "C"
 
 static void IncreaseSpecHits()
 {
-	if( numspechit >= spechitcount )
+	if( ( numspechit + 1 ) >= spechitcount )
 	{
 		line_t** oldspechit = spechit;
 		size_t oldcount = spechitcount;
@@ -107,7 +107,7 @@ static void IncreaseSpecHits()
 
 		if( oldspechit )
 		{
-			memcpy( spechit, oldspechit, sizeof( intercept_t ) * oldcount );
+			memcpy( spechit, oldspechit, sizeof( line_t* ) * oldcount );
 			Z_Free( oldspechit );
 		}
 	}
@@ -608,18 +608,20 @@ DOOM_C_API doombool P_TryMove( mobj_t* thing, fixed_t x, fixed_t y )
     // if any special lines were hit, do the effect
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) )
     {
-	while (numspechit--)
-	{
-	    // see if the line was crossed
-	    ld = spechit[numspechit];
-	    side = P_PointOnLineSide (thing->x, thing->y, ld);
-	    oldside = P_PointOnLineSide (oldx, oldy, ld);
-	    if (side != oldside)
-	    {
-		if (ld->special)
-		    P_CrossSpecialLine (ld, oldside, thing);
-	    }
-	}
+		while (numspechit--)
+		{
+			// see if the line was crossed
+			ld = spechit[numspechit];
+			side = P_PointOnLineSide (thing->x, thing->y, ld);
+			oldside = P_PointOnLineSide (oldx, oldy, ld);
+			if (side != oldside)
+			{
+				if (ld->special)
+				{
+					P_CrossSpecialLine (ld, oldside, thing);
+				}
+			}
+		}
     }
 
     return true;
@@ -1315,7 +1317,7 @@ DOOM_C_API doombool PIT_RadiusAttack( mobj_t* thing )
 
     // Boss spider and cyborg
     // take no damage from concussion.
-	if( !bombsource->ForceSplashDamage() )
+	if( bombspot && !bombspot->ForceSplashDamage() )
 	{
 		if (thing->type == MT_CYBORG
 			|| thing->type == MT_SPIDER

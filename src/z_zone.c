@@ -25,7 +25,6 @@
 
 #include "z_zone.h"
 
-
 //
 // ZONE MEMORY ALLOCATION
 //
@@ -40,16 +39,18 @@
 // Need things to be 16 by default for SIMD purposes...
 #define MEM_ALIGN 16ull
 #define ZONEID	0x1d4a11
+#define MAGICMARKER 0xDECEA5EDu
 
 typedef struct memblock_s
 {
-	size_t				size;	// including the header and possibly tiny fragments
-	const char*			file;
-	uint32_t			line;
-	uint32_t			datasize;
+	uint32_t			magic;
+	uint32_t			size;	// including the header and possibly tiny fragments
 	void**				user;
-	int					tag;	// PU_FREE if this is free
-	int					id;		// should be ZONEID
+	uint32_t			datasize;
+	int32_t				tag;	// PU_FREE if this is free
+	int32_t				id;		// should be ZONEID
+	uint32_t			line;
+	const char*			file;
 	memdestruct_t		destructor;
 	struct memblock_s*	next;
 	struct memblock_s*	prev;
@@ -119,6 +120,7 @@ void Z_Init (void)
 
     mainzone->blocklist.user = (void *)mainzone;
     mainzone->blocklist.tag = PU_STATIC;
+	mainzone->blocklist.magic = MAGICMARKER;
     mainzone->rover = block;
 
     block->prev = block->next = &mainzone->blocklist;
@@ -185,6 +187,10 @@ static void ScanForBlock(void *start, void *end)
 //
 void Z_Free (void* ptr)
 {
+#if PARANOIA
+	Z_CheckHeap();
+#endif
+
     memblock_t*		block;
     memblock_t*		other;
 
@@ -193,6 +199,11 @@ void Z_Free (void* ptr)
     if (block->id != ZONEID)
 	{
 		I_Error ("Z_Free: freed a pointer without ZONEID");
+	}
+
+	if(block->magic != MAGICMARKER)
+	{
+		I_Error ("Z_Free: something has overwritten this memory's data block!");
 	}
 
     if (block->tag != PU_FREE && block->user != NULL)
@@ -259,8 +270,14 @@ void Z_Free (void* ptr)
 //
 #define MINFRAGMENT		64
 
+#define PARANOIA 0
+
 void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void* user, memdestruct_t destructor )
 {
+#if PARANOIA
+	Z_CheckHeap();
+#endif
+
     size_t		extra;
     memblock_t*	start;
     memblock_t* rover;
@@ -349,6 +366,7 @@ void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, 
 
     base->user = user;
     base->tag = tag;
+	base->magic = MAGICMARKER;
 
 	base->file = file;
 	base->line = line;
@@ -381,6 +399,10 @@ Z_FreeTags
 ( int		lowtag,
   int		hightag )
 {
+#if PARANOIA
+	Z_CheckHeap();
+#endif
+
     memblock_t*	block;
     memblock_t*	next;
 	memblock_t* prev;
@@ -492,6 +514,11 @@ void Z_CheckHeap (void)
 	{
 	    // all blocks have been hit
 	    break;
+	}
+
+	if( block->magic != MAGICMARKER )
+	{
+		I_Error ("Z_CheckHeap: something has overwritten this memory's data block!");
 	}
 	
 	if ( (byte *)block + block->size != (byte *)block->next)

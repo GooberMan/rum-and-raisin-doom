@@ -47,7 +47,7 @@ enum
 	MaxDehextra = 699,
 };
 
-GameVersion_t VersionFromSoundNumber( int32_t num )
+static GameVersion_t VersionFromSoundNumber( int32_t num )
 {
 	return num < 0 ? exe_mbf21_extended
 		: num < NumVanillaSounds ? exe_doom_1_2

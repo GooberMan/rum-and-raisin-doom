@@ -208,11 +208,6 @@ STlib_updateMultIcon
 ( st_multicon_t*	mi,
   doombool		refresh )
 {
-    int			w;
-    int			h;
-    int			x;
-    int			y;
-
 	if (*mi->on
 		&& (mi->oldinum != *mi->inum || refresh)
 		&& (*mi->inum!=-1))

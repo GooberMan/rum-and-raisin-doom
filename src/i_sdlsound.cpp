@@ -796,8 +796,6 @@ static void I_SDL_PrecacheSounds(sfxinfo_t *sounds, int num_sounds)
             CacheSFX(&sounds[i]);
         }
     }
-
-    I_TerminalPrintf( Log_None, "\n" );
 }
 
 static void I_SDL_ChangeSoundQuality( int32_t sound_quality, sfxinfo_t* sounds, int num_sounds )

@@ -1238,6 +1238,10 @@ static lineaction_t* CreateBoomGeneralisedCeilingAction( line_t* line )
 		action->param1 = stt_nextlowestneighborceiling;
 	}
 	action->param3 = targetdistance[ target ];
+	if( direction == sd_down )
+	{
+		action->param3 = -action->param3;
+	}
 	action->param4 = change;
 	action->param5 = ( ( line->special & Ceiling_Model_Mask ) == Ceiling_Model_Numeric ) ? scm_numeric : scm_trigger;
 	action->param6 = ( ( line->special & Ceiling_Crush_Mask ) == Ceiling_Crush_Yes ) ? sc_crush : sc_nocrush;
@@ -1291,6 +1295,10 @@ static lineaction_t* CreateBoomGeneralisedFloorAction( line_t* line )
 		action->param1 = stt_nextlowestneighborfloor;
 	}
 	action->param3 = targetdistance[ target ];
+	if( direction == sd_down )
+	{
+		action->param3 = -action->param3;
+	}
 	action->param4 = change;
 	action->param5 = ( ( line->special & Floor_Model_Mask ) == Floor_Model_Numeric ) ? scm_numeric : scm_trigger;
 	action->param6 = ( ( line->special & Floor_Crush_Mask ) == Floor_Crush_Yes ) ? sc_crush : sc_nocrush;

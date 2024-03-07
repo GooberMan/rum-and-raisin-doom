@@ -42,8 +42,10 @@ extern deh_section_t deh_section_bexstr;
 extern deh_section_t deh_section_bexptr;
 // deh_bexpars.cpp:
 extern deh_section_t deh_section_bexpars;
-// deh_sprites.cpp:
-extern deh_section_t deh_section_sprites;
+// deh_dsdsounds.cpp:
+extern deh_section_t deh_section_dsdsounds;
+// deh_dsdsprites.cpp:
+extern deh_section_t deh_section_dsdsprites;
 
 //
 // List of section types:
@@ -74,6 +76,8 @@ extern "C"
 		&deh_section_bexstr,
 		&deh_section_bexptr,
 		&deh_section_bexpars,
+		&deh_section_dsdsounds,
+		&deh_section_dsdsprites,
 		NULL
 	};
 }

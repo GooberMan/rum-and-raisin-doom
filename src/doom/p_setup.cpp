@@ -167,14 +167,17 @@ struct ReadVal
 	}
 };
 
-template< typename _from, typename _to, typename _functor >
-auto WadDataConvert( byte* rawdata, size_t rawlength, _functor&& func )
+template< typename _to >
+struct waddata_t
 {
-	struct
-	{
-		_to*		output;
-		int32_t		count;
-	} data;
+	_to*		output;
+	int32_t		count;
+};
+
+template< typename _from, typename _to, typename _functor >
+waddata_t< _to > WadDataConvert( byte* rawdata, size_t rawlength, _functor&& func )
+{
+	waddata_t< _to > data;
 
 	data.count = (int32_t)( rawlength / sizeof( _from ) );
 	data.output = (_to*)Z_Malloc( data.count * sizeof( _to ), PU_LEVEL, 0 );
@@ -195,16 +198,22 @@ auto WadDataConvert( byte* rawdata, size_t rawlength, _functor&& func )
 
 
 template< typename _from, typename _to, typename _functor >
-auto WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
+waddata_t< _to > WadDataConvert( int32_t lumpnum, size_t dataoffset, _functor&& func )
 {
-	byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC ) + dataoffset;
-	size_t rawlength = W_LumpLength( lumpnum ) - dataoffset;
+	size_t lumplength = W_LumpLength( lumpnum );
+	if( lumplength > 0 )
+	{
+		byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC ) + dataoffset;
+		size_t rawlength = W_LumpLength( lumpnum ) - dataoffset;
 
-	auto data = WadDataConvert< _from, _to >( rawlump, rawlength, std::move( func ) );
+		waddata_t< _to > data = WadDataConvert< _from, _to >( rawlump, rawlength, std::move( func ) );
 
-	W_ReleaseLumpNum( lumpnum );
+		W_ReleaseLumpNum( lumpnum );
 
-	return data;
+		return data;
+	}
+
+	return {};
 }
 
 typedef enum class NodeFormat : int32_t
@@ -338,19 +347,22 @@ struct DoomMapLoader
 			out = ( val == BLOCKMAP_INVALID_VANILLA ? BLOCKMAP_INVALID : val );
 		} );
 
-		_blockmap			= data.output;
-		_blockmapend		= data.output + data.count;
-		_blockmapbase		= _blockmap;
-		_blockmaplength		= data.count;
+		if( data.count > 0 )
+		{
+			_blockmap			= data.output;
+			_blockmapend		= data.output + data.count;
+			_blockmapbase		= _blockmap;
+			_blockmaplength		= data.count;
 
-		_blockmaporgx		= IntToFixed( *_blockmap++ );
-		_blockmaporgy		= IntToFixed( *_blockmap++ );
-		_blockmapwidth		= *_blockmap++;
-		_blockmapheight		= *_blockmap++;
+			_blockmaporgx		= IntToFixed( *_blockmap++ );
+			_blockmaporgy		= IntToFixed( *_blockmap++ );
+			_blockmapwidth		= *_blockmap++;
+			_blockmapheight		= *_blockmap++;
 
-		int32_t linkssize = sizeof(*_blocklinks) * _blockmapwidth * _blockmapheight;
-		_blocklinks = (mobj_t**)Z_Malloc( linkssize, PU_LEVEL, 0 );
-		memset( _blocklinks, 0, linkssize );
+			int32_t linkssize = sizeof(*_blocklinks) * _blockmapwidth * _blockmapheight;
+			_blocklinks = (mobj_t**)Z_Malloc( linkssize, PU_LEVEL, 0 );
+			memset( _blocklinks, 0, linkssize );
+		}
 	}
 
 	void INLINE LoadExtendedBlockmap( int32_t lumpnum )
@@ -370,6 +382,11 @@ struct DoomMapLoader
 			bool forcerebuild = false;
 
 			// Fixing bad blockmaps that indiscriminately built with integer wraparounds
+			if( _blockmap == nullptr )
+			{
+				I_LogAddEntry( Log_System, "No blockmap detected, proceeding with rebuild" );
+				forcerebuild = true;
+			}
 			if( _blockmapend - _blockmap >= MaxEntries16bit )
 			{
 				I_LogAddEntry( Log_System, "Detected blockmap overflow, attempting correction" );
@@ -405,7 +422,6 @@ struct DoomMapLoader
 
 			if( forcerebuild )
 			{
-				I_LogAddEntry( Log_System, "Rebuilding blockmap" );
 				fixed_t minx = INT_MAX;
 				fixed_t miny = INT_MAX;
 				fixed_t maxx = -INT_MAX;

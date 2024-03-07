@@ -355,6 +355,11 @@ fixed_t	P_FindLowestFloorSurrounding(sector_t* sec)
 		if (!other)
 			continue;
 	
+		if( fix.findheight_ignores_same_sector && other == sec )
+		{
+			continue;
+		}
+
 		if (other->floorheight < floor)
 			floor = other->floorheight;
 	}
@@ -372,6 +377,7 @@ fixed_t	P_FindNextLowestFloorSurrounding( sector_t* sec )
 		sector_t* testsector = getNextSector( testline, sec );
 
 		if( testsector
+			&& ( !fix.findheight_ignores_same_sector || testsector != sec )
 			&& testsector->floorheight < sec->floorheight
 			&& testsector->floorheight > closestheight )
 		{
@@ -394,6 +400,7 @@ fixed_t	P_FindNextHighestCeilingSurrounding( sector_t* sec )
 		sector_t* testsector = getNextSector( testline, sec );
 
 		if( testsector
+			&& ( !fix.findheight_ignores_same_sector || testsector != sec )
 			&& testsector->ceilingheight > sec->ceilingheight
 			&& testsector->ceilingheight < closestheight )
 		{
@@ -416,6 +423,7 @@ fixed_t	P_FindNextLowestCeilingSurrounding( sector_t* sec )
 		sector_t* testsector = getNextSector( testline, sec );
 
 		if( testsector
+			&& ( !fix.findheight_ignores_same_sector || testsector != sec )
 			&& testsector->ceilingheight < sec->ceilingheight
 			&& testsector->ceilingheight > closestheight )
 		{
@@ -438,6 +446,7 @@ fixed_t	P_FindNextHighestFloorSurrounding( sector_t* sec )
 		sector_t* testsector = getNextSector( testline, sec );
 
 		if( testsector
+			&& ( !fix.findheight_ignores_same_sector || testsector != sec )
 			&& testsector->floorheight > sec->floorheight
 			&& testsector->floorheight < closestheight )
 		{
@@ -469,6 +478,11 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 		if (!other)
 			continue;
 	
+		if( fix.findheight_ignores_same_sector && other == sec )
+		{
+			continue;
+		}
+
 		if (other->floorheight > floor)
 			floor = other->floorheight;
 	}
@@ -561,14 +575,19 @@ P_FindLowestCeilingSurrounding(sector_t* sec)
 	
     for (i=0 ;i < sec->linecount ; i++)
     {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+		check = sec->lines[i];
+		other = getNextSector(check,sec);
 
-	if (!other)
-	    continue;
+		if (!other)
+			continue;
 
-	if (other->ceilingheight < height)
-	    height = other->ceilingheight;
+		if( fix.findheight_ignores_same_sector && other == sec )
+		{
+			continue;
+		}
+
+		if (other->ceilingheight < height)
+			height = other->ceilingheight;
     }
     return height;
 }
@@ -586,14 +605,19 @@ fixed_t	P_FindHighestCeilingSurrounding(sector_t* sec)
 	
     for (i=0 ;i < sec->linecount ; i++)
     {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+		check = sec->lines[i];
+		other = getNextSector(check,sec);
 
-	if (!other)
-	    continue;
+		if (!other)
+			continue;
 
-	if (other->ceilingheight > height)
-	    height = other->ceilingheight;
+		if( fix.findheight_ignores_same_sector && other == sec )
+		{
+			continue;
+		}
+
+		if (other->ceilingheight > height)
+			height = other->ceilingheight;
     }
     return height;
 }

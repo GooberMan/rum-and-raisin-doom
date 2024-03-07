@@ -133,11 +133,17 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
     
 //    printf("Set %s to %s for mobj\n", variable_name, value);
 
-	if( strcmp( variable_name, "Bits" ) == 0 && !isdigit( value[ 0 ] ) )
+	if( strcmp( variable_name, "Bits" ) == 0
+		&& !( isdigit( value[ 0 ] ) 
+			|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
+		)
 	{
 		DEH_BexHandleThingBits( context, value, mobj );
 	}
-	else if( strcmp( variable_name, "MBF21 Bits" ) == 0 && !isdigit( value[ 0 ] ) )
+	else if( strcmp( variable_name, "MBF21 Bits" ) == 0
+		&& !( isdigit( value[ 0 ] ) 
+			|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
+		)
 	{
 		DEH_BexHandleThingBits2( context, value, mobj );
 	}
