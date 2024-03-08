@@ -20,34 +20,6 @@
 
 #include "doomtype.h"
 
-DOOM_C_API typedef struct attractoptions_s
-{
-	doombool		demo4;
-} attractoptions_t;
-
-DOOM_C_API typedef struct dehackedoptions_s
-{
-	doombool		frame_966;
-	doombool		lump_from_iwads;
-	doombool		always_load_lump;
-	doombool		bex;
-	doombool		mbf;
-	doombool		mbf21;
-	doombool		dsdhacked;
-} dehackedoptions_t;
-
-DOOM_C_API typedef struct demoopitions_s
-{
-	doombool		large_size;
-	doombool		longtics;
-} demooptions_t;
-
-DOOM_C_API typedef struct finaleoptions_s
-{
-	doombool		always_text_skip;
-	doombool		cast_allows_mouse_presses;
-} finaleoptions_t;
-
 DOOM_C_API typedef struct fixoptions_s
 {
 	doombool		divlineside;							// Checks against X when it should check against Y
@@ -200,36 +172,9 @@ DOOM_C_API typedef struct savesimoptions_s
 	doombool		extended_data;
 } savesimoptions_t;
 
-DOOM_C_API typedef struct renderoptions_s
-{
-	doombool		unlimited_solidsegs;
-	doombool		no_medusa;
-	doombool		texture_any_height;
-	doombool		texture_any_surface;
-	doombool		texture_blank_name;
-	doombool		widescreen_assets;
-	doombool		full_rgb_range;
-	doombool		invalid_thing_frames;
-	doombool		transmaps;
-} renderoptions_t;
-
-DOOM_C_API typedef struct playsimoptions_s
-{
-	attractoptions_t			attract;
-	dehackedoptions_t			dehacked;
-	demooptions_t				demo;
-	finaleoptions_t				finale;
-	setupoptions_t				setup;
-	savesimoptions_t			savegame;
-	wadoptions_t				wad;
-} playsimoptions_t;
-
 DOOM_C_API extern compoptions_t			comp;
 DOOM_C_API extern fixoptions_t			fix;
 DOOM_C_API extern simoptions_t			sim;
-
-DOOM_C_API extern playsimoptions_t		playsim;
-DOOM_C_API extern renderoptions_t		render;
 
 // This is designed to analyse the IWAD and register the base gameflow.
 // It also sets up the current playsim and render options.

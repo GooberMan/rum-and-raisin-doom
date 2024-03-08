@@ -29,6 +29,8 @@
 
 #include "s_sound.h"
 
+#pragma optimize( "", off )
+
 // THIS IS SO INACCURATE HOW DO OTHER PORTS DO IT
 constexpr angle_t DegreesToAngle( fixed_t deg )
 {
@@ -51,6 +53,19 @@ static INLINE bool ObjectInRange( mobj_t* source, mobj_t* target, fixed_t range 
 	fixed_t dy = FixedAbs( source->y - target->y );
 	fixed_t dist = P_AproxDistance( dx, dy );
 	return dist < range;
+}
+
+static INLINE void BulletAttack( mobj_t* source, fixed_t hspread, fixed_t vspread, uint32_t numbullets, uint32_t damagebase, uint32_t damagedice )
+{
+	fixed_t slope = P_AimLineAttack( source, source->angle, MISSILERANGE );
+
+	for( [[maybe_unused]] int32_t bulletnum : iota( 0, numbullets ) )
+	{
+		uint32_t damage = damagebase + (P_Random() % damagedice) + 1;
+		angle_t hangle = source->angle + DegreesToAngle( FixedMul( P_Random() << 8, hspread ) - ( hspread >> 1 ) );
+		fixed_t slopeadd = 0; //FixedMul( P_Random() << 8, vspread ) - ( vspread >> 1 );
+		P_LineAttack( source, hangle, MISSILERANGE, slope + slopeadd, damage );
+	}
 }
 
 // External definitions
@@ -122,7 +137,13 @@ DOOM_C_API void A_MonsterProjectile( mobj_t* mobj )
 
 DOOM_C_API void A_MonsterBulletAttack( mobj_t* mobj )
 {
-	I_LogAddEntry( Log_Error, "A_MonsterBulletAttack unimplemented" );
+	ARG_FIXED( mobj, hspread, 1 );
+	ARG_FIXED( mobj, vspread, 2 );
+	ARG_UINT( mobj, numbullets, 3 );
+	ARG_UINT( mobj, damagebase, 4 );
+	ARG_UINT( mobj, damagedice, 5 );
+
+	BulletAttack( mobj, hspread, vspread, numbullets, damagebase, damagedice );
 }
 
 DOOM_C_API void A_MonsterMeleeAttack( mobj_t* mobj )
@@ -279,7 +300,7 @@ DOOM_C_API void A_WeaponBulletAttack( player_t* player, pspdef_t* psp )
 	PSPARG_UINT( psp, damagebase, 4 );
 	PSPARG_UINT( psp, damagedice, 5 );
 
-	I_LogAddEntry( Log_Error, "A_WeaponBulletAttack unimplemented" );
+	BulletAttack( player->mo, hspread, vspread, numbullets, damagebase, damagedice );
 }
 
 DOOM_C_API void A_WeaponMeleeAttack( player_t* player, pspdef_t* psp )

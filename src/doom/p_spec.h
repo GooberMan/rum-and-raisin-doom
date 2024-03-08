@@ -612,17 +612,16 @@ DOOM_C_API typedef enum scrolltype_e
 	st_floor		= 0x0002,
 	st_wall			= 0x0004,
 
-	st_conveyor		= 0x0010,
-	st_current		= 0x0020,
-	st_wind			= 0x0040,
-	st_point		= 0x0080,
+	st_current		= 0x0010,
+	st_wind			= 0x0020,
+	st_point		= 0x0040,
 
 	st_displacement	= 0x0100,
 	st_accelerative = 0x0200,
 
 	st_scrollmask	= st_ceiling | st_floor | st_wall,
-	st_carrymask	= st_conveyor | st_current | st_wind | st_point,
-	st_nopointcarry	= st_conveyor | st_current | st_wind,
+	st_carrymask	= st_current | st_wind | st_point,
+	st_nopointcarry	= st_current | st_wind,
 	st_speedmask	= st_displacement | st_accelerative,
 } scrolltype_t;
 
@@ -820,7 +819,7 @@ inline bool InfightingImmunity( mobj_t* source, mobj_t* target )
 
 inline bool ProjectileImmunity( mobj_t* source, mobj_t* target )
 {
-	if( !sim.mbf21_thing_extensions )
+	if( true )// !sim.mbf21_thing_extensions )
 	{
 		return source->type == target->type
 			|| (source->type == MT_KNIGHT && target->type == MT_BRUISER)

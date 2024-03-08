@@ -656,10 +656,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 		vis->colormap = rendercontext.viewpoint.colormaps + spritecontext.spritelightoffsets[ index ];
 	}
 
-	if( comp.use_translucency && thing->flags & MF_BOOM_TRANSLUCENT )
-	{
-		vis->tranmap = tranmap;
-	}
+	vis->tranmap = ( comp.use_translucency && thing->flags & MF_BOOM_TRANSLUCENT ) ? tranmap : nullptr;
 }
 
 //

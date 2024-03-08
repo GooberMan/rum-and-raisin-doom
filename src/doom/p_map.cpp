@@ -565,7 +565,9 @@ DOOM_C_API doombool P_TryMove( mobj_t* thing, fixed_t x, fixed_t y )
 
     floatok = false;
     if (!P_CheckPosition (thing, x, y))
-	return false;		// solid wall or thing
+	{
+		return false;		// solid wall or thing
+	}
     
     if ( !(thing->flags & MF_NOCLIP) )
     {

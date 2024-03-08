@@ -1700,7 +1700,7 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 								iota( sector->blockbox[ BOXBOTTOM ], sector->blockbox[ BOXTOP ] + 1 ),
 								[ scroller, sector ]( mobj_t* mobj ) -> bool
 		{
-			if( mobj->flags & ( MF_NOGRAVITY | MF_NOCLIP ) )
+			if( mobj->flags & MF_NOCLIP )
 			{
 				return true;
 			}
@@ -1709,19 +1709,17 @@ INLINE void T_CarryObjects( scroller_t* scroller )
 
 			bool cancarry = false;
 			int32_t carryshift = 0;
-			if( scroller->CarryType() & st_conveyor )
+			if( scroller->CarryType() & st_current )
 			{
-				cancarry |= mobj->z == scrollheight;
+				cancarry |= ( mobj->z == scrollheight
+								&& !( mobj->flags & MF_NOGRAVITY ) )
+							|| mobj->z < scrollheight;
 			}
 			if( ( scroller->CarryType() & st_wind )
 				&& ( sector->special & SectorWind_Mask ) == SectorWind_Yes )
 			{
 				cancarry |= mobj->z >= scrollheight;
 				if( mobj->z > scrollheight ) carryshift = 1;
-			}
-			if( scroller->CarryType() & st_current )
-			{
-				cancarry |= mobj->z <= scrollheight;
 			}
 
 			if( cancarry && P_MobjOverlapsSector( sector, mobj ) )
@@ -1885,13 +1883,11 @@ constexpr scrolltype_t SelectCarryType( int32_t special )
 	case Scroll_FloorTextureObjects_Displace_Always:
 	case Scroll_FloorTextureObjects_Always:
 	case Scroll_FloorTextureObjects_Accelerative_Always:
-		return st_conveyor;
+	case Transfer_CurrentByLength_Always:
+		return st_current;
 
 	case Transfer_WindByLength_Always:
 		return st_wind;
-
-	case Transfer_CurrentByLength_Always:
-		return st_current;
 
 	case Transfer_WindOrCurrentByPoint_Always:
 		return st_point;
