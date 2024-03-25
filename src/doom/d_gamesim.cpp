@@ -902,6 +902,11 @@ static void SetDefaultGameflow()
 		values = GetMBF21Values( gamemode );
 		break;
 
+	case exe_mbf21_rnr:
+		I_TerminalPrintf( Log_Startup, " Applying MBF21 Extended + R&R extensions compatibility\n" );
+		values = GetMBF21Values( gamemode );
+		break;
+
 	default:
 		I_TerminalPrintf( Log_Warning, " Indeterminable version, applying vanilla compatibility\n" );
 		values = GetVanillaValues( version, gamemode );

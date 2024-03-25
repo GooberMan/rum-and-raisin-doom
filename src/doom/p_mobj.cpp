@@ -71,7 +71,7 @@ DOOM_C_API doombool P_SetMobjState( mobj_t* mobj, int32_t state )
 
 		st = &states[state];
 		mobj->state = st;
-		mobj->tics = st->tics;
+		mobj->tics = st->Tics();
 		mobj->sprite = st->sprite;
 		mobj->frame = st->frame;
 
@@ -1120,11 +1120,11 @@ DOOM_C_API mobj_t* P_SpawnMissile( mobj_t* source, mobj_t* dest, int32_t type )
 
     th->angle = an;
     an >>= ANGLETOFINESHIFT;
-    th->momx = FixedMul (th->info->speed, finecosine[an]);
-    th->momy = FixedMul (th->info->speed, finesine[an]);
+    th->momx = FixedMul (th->Speed(), finecosine[an]);
+    th->momy = FixedMul (th->Speed(), finesine[an]);
 	
     dist = P_AproxDistance (dest->x - source->x, dest->y - source->y);
-    dist = dist / th->info->speed;
+    dist = dist / th->Speed();
 
     if (dist < 1)
 	dist = 1;
@@ -1183,11 +1183,11 @@ DOOM_C_API void P_SpawnPlayerMissile( mobj_t* source, int32_t type )
 
     th->target = source;
     th->angle = an;
-    th->momx = FixedMul( th->info->speed,
+    th->momx = FixedMul( th->Speed(),
 			 finecosine[an>>ANGLETOFINESHIFT]);
-    th->momy = FixedMul( th->info->speed,
+    th->momy = FixedMul( th->Speed(),
 			 finesine[an>>ANGLETOFINESHIFT]);
-    th->momz = FixedMul( th->info->speed, slope);
+    th->momz = FixedMul( th->Speed(), slope);
 
     P_CheckMissileSpawn (th);
 }

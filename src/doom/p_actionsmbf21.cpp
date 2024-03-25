@@ -338,7 +338,7 @@ DOOM_C_API void A_ConsumeAmmo( player_t* player, pspdef_t* psp )
 {
 	PSPARG_INT( psp, amount, 1 );
 
-	weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
+	const weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
 
 	if( weapon.ammo != am_noammo )
 	{
@@ -351,7 +351,7 @@ DOOM_C_API void A_CheckAmmo( player_t* player, pspdef_t* psp )
 	PSPARG_STATENUM( psp, state, 1 );
 	PSPARG_UINT( psp, amount, 2 );
 
-	weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
+	const weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
 	int32_t checkamount = amount ? amount : weapon.ammopershot;
 	if( weapon.ammo != am_noammo && player->ammo[ weapon.ammo ] < checkamount )
 	{

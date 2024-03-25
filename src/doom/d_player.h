@@ -109,10 +109,10 @@ DOOM_C_API typedef struct player_s
     
     // Frags, kills of other players.
     int			frags[MAXPLAYERS];
-    weapontype_t	readyweapon;
+    int32_t		readyweapon;
     
     // Is wp_nochange if not changing.
-    weapontype_t	pendingweapon;
+    int32_t		pendingweapon;
 
     int                 weaponowned[NUMWEAPONS];
     int			ammo[NUMAMMO];

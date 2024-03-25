@@ -32,7 +32,7 @@
 #define MAX_CHEAT_LEN 25
 #define MAX_CHEAT_PARAMS 5
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // settings for this cheat
 
@@ -47,13 +47,13 @@ typedef struct
     char parameter_buf[MAX_CHEAT_PARAMS];
 } cheatseq_t;
 
-int
+DOOM_C_API int
 cht_CheckCheat
 ( cheatseq_t*		cht,
   char			key );
 
 
-void
+DOOM_C_API void
 cht_GetParam
 ( cheatseq_t*		cht,
   char*			buffer );

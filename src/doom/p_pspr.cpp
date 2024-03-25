@@ -65,7 +65,7 @@ DOOM_C_API void P_SetPsprite( player_t* player, int position, int32_t stnum )
 	
 		state = &states[stnum];
 		psp->state = state;
-		psp->tics = state->tics;	// could be 0
+		psp->tics = state->Tics();	// could be 0
 		psp->duration = M_MAX( psp->tics, psp->duration );
 
 		if (state->misc1._int)
@@ -149,78 +149,92 @@ void P_BringUpWeapon (player_t* player)
 // Returns true if there is enough ammo to shoot.
 // If not, selects the next weapon to use.
 //
+#pragma optimize( "", off )
 DOOM_C_API doombool P_CheckAmmo (player_t* player)
 {
-    ammotype_t		ammo;
-    int			count;
-
-    ammo = weaponinfo[player->readyweapon].ammo;
-
-    // Minimal amount for one shot varies.
-    if (player->readyweapon == wp_bfg)
-	count = deh_bfg_cells_per_shot;
-    else if (player->readyweapon == wp_supershotgun)
-	count = 2;	// Double barrel.
-    else
-	count = 1;	// Regular.
+	ammotype_t ammo = weaponinfo[player->readyweapon].ammo;
+	int32_t count	= weaponinfo[player->readyweapon].ammopershot;
 
     // Some do not need ammunition anyway.
     // Return if current ammunition sufficient.
     if (ammo == am_noammo || player->ammo[ammo] >= count)
-	return true;
-		
+	{
+		return true;
+	}
+
+	do
+	{
+		for( weaponinfo_t* weapon : weaponinfo.ByPriority() )
+		{
+			if( player->weaponowned[ weapon->index ]
+				&& (weapon->ammo == am_noammo || player->ammo[ weapon->ammo ] > weapon->ammopershot )
+				&& weapon->mingamemode <= gamemode )
+			{
+				player->pendingweapon = weapon->index;
+				break;
+			}
+		}
+
+		if( player->pendingweapon == wp_nochange )
+		{
+			I_Error( "P_CheckAmmo: Weapon select will infinite loop here in vanilla Doom" );
+		}
+	} while( player->pendingweapon == wp_nochange );
+
+#if 0
     // Out of ammo, pick a weapon to change to.
     // Preferences are set here.
     do
     {
-	if (player->weaponowned[wp_plasma]
-	    && player->ammo[am_cell]
-	    && (gamemode != shareware) )
-	{
-	    player->pendingweapon = wp_plasma;
-	}
-	else if (player->weaponowned[wp_supershotgun] 
-		 && player->ammo[am_shell]>2
-		 && (gamemode == commercial) )
-	{
-	    player->pendingweapon = wp_supershotgun;
-	}
-	else if (player->weaponowned[wp_chaingun]
-		 && player->ammo[am_clip])
-	{
-	    player->pendingweapon = wp_chaingun;
-	}
-	else if (player->weaponowned[wp_shotgun]
-		 && player->ammo[am_shell])
-	{
-	    player->pendingweapon = wp_shotgun;
-	}
-	else if (player->ammo[am_clip])
-	{
-	    player->pendingweapon = wp_pistol;
-	}
-	else if (player->weaponowned[wp_chainsaw])
-	{
-	    player->pendingweapon = wp_chainsaw;
-	}
-	else if (player->weaponowned[wp_missile]
-		 && player->ammo[am_misl])
-	{
-	    player->pendingweapon = wp_missile;
-	}
-	else if (player->weaponowned[wp_bfg]
-		 && player->ammo[am_cell]>40
-		 && (gamemode != shareware) )
-	{
-	    player->pendingweapon = wp_bfg;
-	}
-	else
-	{
-	    // If everything fails.
-	    player->pendingweapon = wp_fist;
-	}
+		if (player->weaponowned[wp_plasma]
+			&& player->ammo[am_cell]
+			&& (gamemode != shareware) )
+		{
+			player->pendingweapon = wp_plasma;
+		}
+		else if (player->weaponowned[wp_supershotgun] 
+			 && player->ammo[am_shell]>2
+			 && (gamemode == commercial) )
+		{
+			player->pendingweapon = wp_supershotgun;
+		}
+		else if (player->weaponowned[wp_chaingun]
+			 && player->ammo[am_clip])
+		{
+			player->pendingweapon = wp_chaingun;
+		}
+		else if (player->weaponowned[wp_shotgun]
+			 && player->ammo[am_shell])
+		{
+			player->pendingweapon = wp_shotgun;
+		}
+		else if (player->ammo[am_clip])
+		{
+			player->pendingweapon = wp_pistol;
+		}
+		else if (player->weaponowned[wp_chainsaw])
+		{
+			player->pendingweapon = wp_chainsaw;
+		}
+		else if (player->weaponowned[wp_missile]
+			 && player->ammo[am_misl])
+		{
+			player->pendingweapon = wp_missile;
+		}
+		else if (player->weaponowned[wp_bfg]
+			 && player->ammo[am_cell]>40
+			 && (gamemode != shareware) )
+		{
+			player->pendingweapon = wp_bfg;
+		}
+		else
+		{
+			// If everything fails.
+			player->pendingweapon = wp_fist;
+		}
 	
     } while (player->pendingweapon == wp_nochange);
+#endif
 
     // Now set appropriate weapon overlay.
     P_SetPsprite (player,
@@ -562,7 +576,7 @@ A_FireMissile
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
     P_SpawnPlayerMissile (player->mo, MT_ROCKET);
 }
 
@@ -576,7 +590,7 @@ A_FireBFG
   pspdef_t*	psp ) 
 {
     DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 
-                 deh_bfg_cells_per_shot);
+                 weaponinfo[player->readyweapon].ammopershot);
     P_SpawnPlayerMissile (player->mo, MT_BFG);
 }
 
@@ -590,7 +604,7 @@ A_FirePlasma
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
@@ -665,7 +679,7 @@ A_FirePistol
     S_StartSound (player->mo, sfx_pistol);
 
     P_SetMobjState (player->mo, S_PLAY_ATK2);
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
@@ -689,7 +703,7 @@ A_FireShotgun
     S_StartSound (player->mo, sfx_shotgn);
     P_SetMobjState (player->mo, S_PLAY_ATK2);
 
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
@@ -719,7 +733,7 @@ A_FireShotgun2
     S_StartSound (player->mo, sfx_dshtgn);
     P_SetMobjState (player->mo, S_PLAY_ATK2);
 
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 2);
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
@@ -754,7 +768,7 @@ A_FireCGun
 	return;
 		
     P_SetMobjState (player->mo, S_PLAY_ATK2);
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,

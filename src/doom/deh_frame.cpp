@@ -47,6 +47,8 @@ DEH_BEGIN_MAPPING(state_mapping, state_t)
   DEH_UNSUPPORTED_MAPPING("Codep frame")
 DEH_END_MAPPING
 
+DOOM_C_API void DEH_BexHandleFrameBitsMBF21( deh_context_t* context, const char* value, state_t* state );
+
 static void *DEH_FrameStart(deh_context_t *context, char *line)
 {
     int frame_number = 0;
@@ -156,6 +158,13 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
     //    DEH_FrameOverflow(context, variable_name, ivalue);
     //}
     //else
+	if( strcmp( variable_name, "MBF21 Bits" ) == 0
+		&& !( isdigit( value[ 0 ] ) 
+			|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
+		)
+	{
+		DEH_BexHandleFrameBitsMBF21( context, value, state );
+	}
     {
         // set the appropriate field
 

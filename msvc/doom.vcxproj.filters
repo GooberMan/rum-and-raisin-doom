@@ -4,9 +4,6 @@
     <ClCompile Include="..\src\doom\am_map.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\d_items.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\d_main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,9 +52,6 @@
     <ClCompile Include="..\src\doom\st_lib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\st_stuff.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\r_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -77,9 +71,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\deh_bexptr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\doom\deh_bexthing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\deh_bexpars.cpp">
@@ -224,6 +215,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\deh_dsdsounds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\deh_bexbits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\d_items.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\st_stuff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

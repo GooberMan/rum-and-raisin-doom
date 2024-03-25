@@ -29,7 +29,7 @@
 
 // Number widget
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // upper right-hand corner
     //  of the number (right-justified)
@@ -61,7 +61,7 @@ typedef struct
 
 // Percent widget ("child" of number widget,
 //  or, more precisely, contains a number widget.)
-typedef struct
+DOOM_C_API typedef struct
 {
     // number information
     st_number_t		n;
@@ -74,7 +74,7 @@ typedef struct
 
 
 // Multiple Icon widget
-typedef struct
+DOOM_C_API typedef struct
 {
      // center-justified location of icons
     int			x;
@@ -103,7 +103,7 @@ typedef struct
 
 // Binary Icon widget
 
-typedef struct
+DOOM_C_API typedef struct
 {
     // center-justified location of icon
     int			x;
@@ -135,12 +135,12 @@ typedef struct
 // More precisely, initialize STMINUS,
 //  everything else is done somewhere else.
 //
-void STlib_init(void);
+DOOM_C_API void STlib_init(void);
 
 
 
 // Number widget routines
-void
+DOOM_C_API void
 STlib_initNum
 ( st_number_t*		n,
   int			x,
@@ -150,14 +150,14 @@ STlib_initNum
   doombool*		on,
   int			width );
 
-void
+DOOM_C_API void
 STlib_updateNum
 ( st_number_t*		n,
   doombool		refresh );
 
 
 // Percent widget routines
-void
+DOOM_C_API void
 STlib_initPercent
 ( st_percent_t*		p,
   int			x,
@@ -168,14 +168,14 @@ STlib_initPercent
   patch_t*		percent );
 
 
-void
+DOOM_C_API void
 STlib_updatePercent
 ( st_percent_t*		per,
   int			refresh );
 
 
 // Multiple Icon widget routines
-void
+DOOM_C_API void
 STlib_initMultIcon
 ( st_multicon_t*	mi,
   int			x,
@@ -185,14 +185,14 @@ STlib_initMultIcon
   doombool*		on );
 
 
-void
+DOOM_C_API void
 STlib_updateMultIcon
 ( st_multicon_t*	mi,
   doombool		refresh );
 
 // Binary Icon widget routines
 
-void
+DOOM_C_API void
 STlib_initBinIcon
 ( st_binicon_t*		b,
   int			x,
@@ -201,7 +201,7 @@ STlib_initBinIcon
   doombool*		val,
   doombool*		on );
 
-void
+DOOM_C_API void
 STlib_updateBinIcon
 ( st_binicon_t*		bi,
   doombool		refresh );

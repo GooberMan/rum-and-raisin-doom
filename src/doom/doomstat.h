@@ -121,6 +121,7 @@ DOOM_C_API extern  int             timelimit;
 
 // Nightmare mode flag, single player.
 DOOM_C_API extern  doombool         respawnmonsters;
+DOOM_C_API extern  doombool         fastmonsters;
 
 // Netgame? Only true if >1 player.
 DOOM_C_API extern  doombool	netgame;

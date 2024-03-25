@@ -666,19 +666,19 @@ state_t builtinstates[NUMSTATES] =
 	{ S_TROO_RAISE5,			SPR_TROO,		8,			6,		{nullptr},			S_TROO_RUN1,			},
 	{ S_SARG_STND,				SPR_SARG,		0,			10,		{A_Look},			S_SARG_STND2,			},
 	{ S_SARG_STND2,				SPR_SARG,		1,			10,		{A_Look},			S_SARG_STND,			},
-	{ S_SARG_RUN1,				SPR_SARG,		0,			2,		{A_Chase},			S_SARG_RUN2,			},
-	{ S_SARG_RUN2,				SPR_SARG,		0,			2,		{A_Chase},			S_SARG_RUN3,			},
-	{ S_SARG_RUN3,				SPR_SARG,		1,			2,		{A_Chase},			S_SARG_RUN4,			},
-	{ S_SARG_RUN4,				SPR_SARG,		1,			2,		{A_Chase},			S_SARG_RUN5,			},
-	{ S_SARG_RUN5,				SPR_SARG,		2,			2,		{A_Chase},			S_SARG_RUN6,			},
-	{ S_SARG_RUN6,				SPR_SARG,		2,			2,		{A_Chase},			S_SARG_RUN7,			},
-	{ S_SARG_RUN7,				SPR_SARG,		3,			2,		{A_Chase},			S_SARG_RUN8,			},
-	{ S_SARG_RUN8,				SPR_SARG,		3,			2,		{A_Chase},			S_SARG_RUN1,			},
-	{ S_SARG_ATK1,				SPR_SARG,		4,			8,		{A_FaceTarget},		S_SARG_ATK2,			},
-	{ S_SARG_ATK2,				SPR_SARG,		5,			8,		{A_FaceTarget},		S_SARG_ATK3,			},
-	{ S_SARG_ATK3,				SPR_SARG,		6,			8,		{A_SargAttack},		S_SARG_RUN1,			},
-	{ S_SARG_PAIN,				SPR_SARG,		7,			2,		{nullptr},			S_SARG_PAIN2,			},
-	{ S_SARG_PAIN2,				SPR_SARG,		7,			2,		{A_Pain},			S_SARG_RUN1,			},
+	{ S_SARG_RUN1,				SPR_SARG,		0,			2,		{A_Chase},			S_SARG_RUN2,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_RUN2,				SPR_SARG,		0,			2,		{A_Chase},			S_SARG_RUN3,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_RUN3,				SPR_SARG,		1,			2,		{A_Chase},			S_SARG_RUN4,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_RUN4,				SPR_SARG,		1,			2,		{A_Chase},			S_SARG_RUN5,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_RUN5,				SPR_SARG,		2,			2,		{A_Chase},			S_SARG_RUN6,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_RUN6,				SPR_SARG,		2,			2,		{A_Chase},			S_SARG_RUN7,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_RUN7,				SPR_SARG,		3,			2,		{A_Chase},			S_SARG_RUN8,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_RUN8,				SPR_SARG,		3,			2,		{A_Chase},			S_SARG_RUN1,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_ATK1,				SPR_SARG,		4,			8,		{A_FaceTarget},		S_SARG_ATK2,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_ATK2,				SPR_SARG,		5,			8,		{A_FaceTarget},		S_SARG_ATK3,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_ATK3,				SPR_SARG,		6,			8,		{A_SargAttack},		S_SARG_RUN1,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_PAIN,				SPR_SARG,		7,			2,		{nullptr},			S_SARG_PAIN2,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
+	{ S_SARG_PAIN2,				SPR_SARG,		7,			2,		{A_Pain},			S_SARG_RUN1,			{ 0 },	{ 0 },	FF_MBF21_SKILL5FAST, },
 	{ S_SARG_DIE1,				SPR_SARG,		8,			8,		{nullptr},			S_SARG_DIE2,			},
 	{ S_SARG_DIE2,				SPR_SARG,		9,			8,		{A_Scream},			S_SARG_DIE3,			},
 	{ S_SARG_DIE3,				SPR_SARG,		10,			4,		{nullptr},			S_SARG_DIE4,			},
@@ -1731,7 +1731,9 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		sfx_dmact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
 		S_BOSS_RAISE1,		// raisestate
-		infighting_hellnobles, // infightinggroup
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_hellnobles,	// infightinggroup
 	},
 
 	{		// MT_BRUISERSHOT
@@ -1759,7 +1761,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		8,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,		// raisestate
+		20*FRACUNIT,			// fastspeed
 	},
 
 	{		// MT_KNIGHT
@@ -1788,7 +1791,9 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		sfx_dmact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
 		S_BOS2_RAISE1,		// raisestate
-		infighting_hellnobles, // infightinggroup
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_hellnobles,	// infightinggroup
 	},
 
 	{		// MT_SKULL
@@ -1901,13 +1906,6 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		sfx_dmact,			// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL, // flags
 		S_NULL,				// raisestate
-		infighting_none,	// infightinggroup
-		projectile_none,	// projectilegroup
-		splash_none,		// splashgroup
-							// flags2
-							// fastspeed
-							// meleerange
-							// ripsound
 	},
 
 	{		// MT_PAIN
@@ -2187,7 +2185,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		3,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,		// raisestate
+		20*FRACUNIT,	// fastspeed
 	},
 
 	{		// MT_HEADSHOT
@@ -2215,7 +2214,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		5,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,		// raisestate
+		20*FRACUNIT,	// fastspeed
 	},
 
 	{		// MT_ROCKET

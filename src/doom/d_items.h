@@ -22,9 +22,27 @@
 
 #include "doomdef.h"
 
+DOOM_C_API typedef enum weaponflagsmbf21_e
+{
+	WF_NONE						= 0x00000000,
+	WF_MBF21_NOTHRUST			= 0x00000001,
+	WF_MBF21_SILENT				= 0x00000002,
+	WF_MBF21_NOAUTOFIRE			= 0x00000004,
+	WF_MBF21_FLEEMELEE			= 0x00000008,
+	WF_MBF21_AUTOSWITCHFROM		= 0x00000010,
+	WF_MBF21_NOAUTOSWITCHTO		= 0x00000020,
+} weaponflagsmbf21_t;
+
 // Weapon info: sprite frames, ammunition use.
 DOOM_C_API typedef struct
 {
+	// RNR extensions
+	int32_t			index;
+	int32_t			slot;
+	int32_t			priority;
+	GameMode_t		mingamemode;
+
+	// Vanilla values
 	ammotype_t		ammo;
 	int32_t			upstate;
 	int32_t			downstate;
@@ -33,10 +51,34 @@ DOOM_C_API typedef struct
 	int32_t			flashstate;
 
 	// MBF extensions
-	int32_t			ammopershot;
 	int32_t			mbf21flags;
+	int32_t			ammopershot;
 } weaponinfo_t;
 
-DOOM_C_API extern  weaponinfo_t    weaponinfo[NUMWEAPONS];
+#if defined( __cplusplus )
+struct DoomWeapons
+{
+	weaponinfo_t** _begin;
+	weaponinfo_t** _end;
+
+	constexpr weaponinfo_t** begin()	{ return _begin; }
+	constexpr weaponinfo_t** end()		{ return _end; }
+};
+
+class DoomWeaponLookup
+{
+public:
+	inline const weaponinfo_t& operator[]( int32_t weapon )			{ return Fetch( weapon ); }
+	inline const weaponinfo_t& operator[]( weapontype_t weapon )	{ return Fetch( (int32_t)weapon ); }
+
+	int32_t			size();
+	DoomWeapons		ByPriority();
+
+protected:
+	weaponinfo_t&	Fetch( int32_t weapon );
+};
+
+extern DoomWeaponLookup weaponinfo;
+#endif // defined( __cplusplus )
 
 #endif

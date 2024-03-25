@@ -107,7 +107,8 @@ extern "C"
 	gameaction_t    gameaction; 
 	gamestate_t     gamestate; 
 	skill_t         gameskill; 
-	doombool			respawnmonsters;
+	doombool		respawnmonsters;
+	doombool		fastmonsters;
 	int32_t			gameflags;
 
 	// If non-zero, exit the level after this number of minutes.
@@ -464,7 +465,7 @@ static doombool WeaponSelectable(weapontype_t weapon)
 
 static int G_NextWeapon(int direction)
 {
-    weapontype_t weapon;
+    int32_t weapon;
     int start_i, i;
 
     // Find index in the table.
@@ -1970,6 +1971,7 @@ void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags, int32_t ra
     M_ClearRandom ( randomseed );
 
 	respawnmonsters = (skill == sk_nightmare || respawnparm );
+	fastmonsters = (skill == sk_nightmare || fastparm );
 
 #if 0 // FIX ME FIX ME FIX ME
 	if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare) )

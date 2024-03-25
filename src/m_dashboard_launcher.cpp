@@ -953,7 +953,7 @@ namespace launcher
 		Dehacked,
 	};
 
-	constexpr int32_t DoomFileEntryVersion = 5;
+	constexpr int32_t DoomFileEntryVersion = 6;
 
 	struct LaunchOptions
 	{

@@ -309,8 +309,8 @@ doombool P_Move (mobj_t*	actor)
 	{
 		friction = actor->subsector->sector->MonsterFrictionMultiplier();
 	}
-    tryx = actor->x + FixedMul( actor->info->speed*xspeed[actor->movedir], friction );
-    tryy = actor->y + FixedMul( actor->info->speed*yspeed[actor->movedir], friction );
+    tryx = actor->x + FixedMul( actor->Speed() * xspeed[actor->movedir], friction );
+    tryy = actor->y + FixedMul( actor->Speed() * yspeed[actor->movedir], friction );
 
     try_ok = P_TryMove (actor, tryx, tryy);
 
@@ -751,10 +751,10 @@ DOOM_C_API void A_Chase (mobj_t*	actor)
     // do not attack twice in a row
     if (actor->flags & MF_JUSTATTACKED)
     {
-	actor->flags &= ~MF_JUSTATTACKED;
-	if (gameskill != sk_nightmare && !fastparm)
-	    P_NewChaseDir (actor);
-	return;
+		actor->flags &= ~MF_JUSTATTACKED;
+		if (!fastmonsters)
+			P_NewChaseDir (actor);
+		return;
     }
     
     // check for melee attack
@@ -771,18 +771,17 @@ DOOM_C_API void A_Chase (mobj_t*	actor)
     // check for missile attack
     if (actor->info->missilestate)
     {
-	if (gameskill < sk_nightmare
-	    && !fastparm && actor->movecount)
-	{
-	    goto nomissile;
-	}
+		if (!fastmonsters && actor->movecount)
+		{
+			goto nomissile;
+		}
 	
-	if (!P_CheckMissileRange (actor))
-	    goto nomissile;
+		if (!P_CheckMissileRange (actor))
+			goto nomissile;
 	
-	P_SetMobjState (actor, (statenum_t)actor->info->missilestate);
-	actor->flags |= MF_JUSTATTACKED;
-	return;
+		P_SetMobjState (actor, (statenum_t)actor->info->missilestate);
+		actor->flags |= MF_JUSTATTACKED;
+		return;
     }
 
     // ?
@@ -1114,14 +1113,14 @@ DOOM_C_API void A_Tracer (mobj_t* actor)
     }
 	
     exact = actor->angle>>ANGLETOFINESHIFT;
-    actor->momx = FixedMul (actor->info->speed, finecosine[exact]);
-    actor->momy = FixedMul (actor->info->speed, finesine[exact]);
+    actor->momx = FixedMul (actor->Speed(), finecosine[exact]);
+    actor->momy = FixedMul (actor->Speed(), finesine[exact]);
     
     // change slope
     dist = P_AproxDistance (dest->x - actor->x,
 			    dest->y - actor->y);
     
-    dist = dist / actor->info->speed;
+    dist = dist / actor->Speed();
 
     if (dist < 1)
 	dist = 1;
@@ -1236,9 +1235,9 @@ DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_
     {
 	// check for corpses to raise
 	viletryx =
-	    actor->x + actor->info->speed*xspeed[actor->movedir];
+	    actor->x + actor->Speed()*xspeed[actor->movedir];
 	viletryy =
-	    actor->y + actor->info->speed*yspeed[actor->movedir];
+	    actor->y + actor->Speed()*yspeed[actor->movedir];
 
 	xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
 	xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
@@ -1447,8 +1446,8 @@ DOOM_C_API void A_FatAttack1 (mobj_t* actor)
     mo = P_SpawnMissile (actor, target, MT_FATSHOT);
     mo->angle += FATSPREAD;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->Speed(), finecosine[an]);
+    mo->momy = FixedMul (mo->Speed(), finesine[an]);
 }
 
 DOOM_C_API void A_FatAttack2 (mobj_t* actor)
@@ -1466,8 +1465,8 @@ DOOM_C_API void A_FatAttack2 (mobj_t* actor)
     mo = P_SpawnMissile (actor, target, MT_FATSHOT);
     mo->angle -= FATSPREAD*2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->Speed(), finecosine[an]);
+    mo->momy = FixedMul (mo->Speed(), finesine[an]);
 }
 
 DOOM_C_API void A_FatAttack3 (mobj_t*	actor)
@@ -1483,14 +1482,14 @@ DOOM_C_API void A_FatAttack3 (mobj_t*	actor)
     mo = P_SpawnMissile (actor, target, MT_FATSHOT);
     mo->angle -= FATSPREAD/2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->Speed(), finecosine[an]);
+    mo->momy = FixedMul (mo->Speed(), finesine[an]);
 
     mo = P_SpawnMissile (actor, target, MT_FATSHOT);
     mo->angle += FATSPREAD/2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->Speed(), finecosine[an]);
+    mo->momy = FixedMul (mo->Speed(), finesine[an]);
 }
 
 

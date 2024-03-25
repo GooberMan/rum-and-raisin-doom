@@ -1465,6 +1465,11 @@ DOOM_C_API typedef enum mobjtype_e {
 
 } mobjtype_t;
 
+DOOM_C_API typedef enum frameflags_e
+{
+	FF_MBF21_SKILL5FAST			= 0x00000001,
+} frameflags_t;
+
 DOOM_C_API typedef union statearg_u
 {
 	int32_t		_int;
@@ -1476,7 +1481,9 @@ DOOM_C_API typedef union statearg_u
 	sfxenum_t	_sound;
 } statearg_t;
 
-DOOM_C_API typedef struct
+DOOM_C_API extern doombool fastmonsters;
+
+DOOM_C_API typedef struct state_s
 {
 	int32_t		statenum;
 	spritenum_t sprite;
@@ -1498,6 +1505,15 @@ DOOM_C_API typedef struct
 	statearg_t	arg6;
 	statearg_t	arg7;
 	statearg_t	arg8;
+
+#if defined( __cplusplus )
+	INLINE const int32_t Tics() const
+	{
+		return fastmonsters && ( mbf21flags & FF_MBF21_SKILL5FAST )
+				? tics >> 1
+				: tics;
+	}
+#endif // defined( __cplusplus )
 } state_t;
 
 #define STATEMISC( mobj, name, index )				auto & name = mobj->state->misc ## index
@@ -1561,12 +1577,12 @@ DOOM_C_API typedef struct
 	int32_t		raisestate;
 
 	// MBF21 extensions
+	int32_t		fastspeed;
+	int32_t		meleerange;
 	int32_t		infightinggroup;
 	int32_t		projectilegroup;
 	int32_t		splashgroup;
 	int32_t		flags2;
-	int32_t		fastspeed;
-	int32_t		meleerange;
 	int32_t		ripsound;
 } mobjinfo_t;
 

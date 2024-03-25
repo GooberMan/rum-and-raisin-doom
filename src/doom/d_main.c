@@ -1294,6 +1294,8 @@ static struct
     {"MBF",                  "mbf",        exe_mbf},
 	{"MBF + DEHEXTRA",       "mbfextra",   exe_mbf_dehextra},
     {"MBF21",                "mbf21",      exe_mbf21},
+    {"MBF21 Extended",       "mbf21ex",    exe_mbf21_extended},
+    {"MBF21 Extended + R&R Extensions", "mbf21rnr",    exe_mbf21_rnr},
     { NULL,                  NULL,         0},
 };
 

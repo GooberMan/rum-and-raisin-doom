@@ -47,8 +47,8 @@ DOOM_C_API typedef enum
 {
     shareware,       // Doom/Heretic shareware
     registered,      // Doom/Heretic registered
-    commercial,      // Doom II/Hexen
     retail,          // Ultimate Doom
+    commercial,      // Doom II/Hexen
     indetermined     // Unknown.
 } GameMode_t;
 
@@ -77,6 +77,7 @@ DOOM_C_API typedef enum
 	exe_mbf_dehextra,
 	exe_mbf21,
 	exe_mbf21_extended, // DEHACKED extensions
+	exe_mbf21_rnr,		// DEHACKED and other assorted fruits
 
     exe_heretic_1_3, // Heretic 1.3
 

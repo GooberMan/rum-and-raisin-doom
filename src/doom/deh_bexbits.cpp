@@ -27,19 +27,20 @@
 #include "deh_io.h"
 #include "deh_main.h"
 
+#include "d_items.h"
 #include "d_mode.h"
 
 #include "m_container.h"
 
-struct thingflag_t
+struct flag_t
 {
 	uint32_t		flag;
 	GameVersion_t	minimum_version;
 };
 
-using flagsmap_t = std::map< DoomString, thingflag_t >;
+using flagsmap_t = std::map< std::string, flag_t >;
 
-static  flagsmap_t ThingBitFlags =
+static flagsmap_t ThingBitFlags =
 {
 	{ "SPECIAL",		{ 0x00000001,	exe_doom_1_2	} },
 	{ "SOLID",			{ 0x00000002,	exe_doom_1_2	} },
@@ -103,10 +104,25 @@ static flagsmap_t ThingBitFlags2 =
 	{ "FULLVOLSOUNDS",	{ 0x00040000,	exe_mbf21		} },
 };
 
+static flagsmap_t FrameBitFlagsMBF21 =
+{
+	{ "SKILL5FAST",		{ 0x00000001,	exe_mbf21		} },
+};
+
+static flagsmap_t WeaponBitFlagsMBF21 =
+{
+	{ "NOTHRUST",		{ 0x00000001,	exe_mbf21		} },
+	{ "SILENT",			{ 0x00000002,	exe_mbf21		} },
+	{ "NOAUTOFIRE",		{ 0x00000004,	exe_mbf21		} },
+	{ "FLEEMELEE",		{ 0x00000008,	exe_mbf21		} },
+	{ "AUTOSWITCHFROM",	{ 0x00000010,	exe_mbf21		} },
+	{ "NOAUTOSWITCHTO",	{ 0x00000020,	exe_mbf21		} },
+};
+
 static int32_t GetFlagsFrom( flagsmap_t& flagsmap, deh_context_t* context, const char* value )
 {
-	DoomString test;
-	test.reserve( 16 );
+	std::string test;
+	test.reserve( 32 );
 
 	const char* start = value;
 	const char* end = value;
@@ -166,4 +182,14 @@ DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* valu
 DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj )
 {
 	mobj->flags2 = GetFlagsFrom( ThingBitFlags2, context, value );
+}
+
+DOOM_C_API void DEH_BexHandleFrameBitsMBF21( deh_context_t* context, const char* value, state_t* state )
+{
+	state->mbf21flags = GetFlagsFrom( FrameBitFlagsMBF21, context, value );
+}
+
+DOOM_C_API void DEH_BexHandleWeaponBitsMBF21( deh_context_t* context, const char* value, weaponinfo_t* weapon )
+{
+	weapon->mbf21flags = GetFlagsFrom( WeaponBitFlagsMBF21, context, value );
 }

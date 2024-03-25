@@ -404,10 +404,10 @@
   <ItemGroup>
     <ClCompile Include="..\src\doom\am_map.c" />
     <ClCompile Include="..\src\doom\deh_ammo.cpp" />
+    <ClCompile Include="..\src\doom\deh_bexbits.cpp" />
     <ClCompile Include="..\src\doom\deh_bexpars.cpp" />
     <ClCompile Include="..\src\doom\deh_bexptr.cpp" />
     <ClCompile Include="..\src\doom\deh_bexstr.cpp" />
-    <ClCompile Include="..\src\doom\deh_bexthing.cpp" />
     <ClCompile Include="..\src\doom\deh_cheat.cpp" />
     <ClCompile Include="..\src\doom\deh_doom.cpp" />
     <ClCompile Include="..\src\doom\deh_dsdsounds.cpp" />
@@ -425,6 +425,7 @@
     <ClCompile Include="..\src\doom\d_gameflow_plutonia.cpp" />
     <ClCompile Include="..\src\doom\d_gameflow_tnt.cpp" />
     <ClCompile Include="..\src\doom\d_gamesim.cpp" />
+    <ClCompile Include="..\src\doom\d_items.cpp" />
     <ClCompile Include="..\src\doom\f_finale.cpp" />
     <ClCompile Include="..\src\doom\g_game.cpp" />
     <ClCompile Include="..\src\doom\info.cpp" />
@@ -452,12 +453,12 @@
     <ClCompile Include="..\src\doom\r_bsp.cpp" />
     <ClCompile Include="..\src\doom\r_sky.cpp" />
     <ClCompile Include="..\src\doom\sounds.cpp" />
+    <ClCompile Include="..\src\doom\st_stuff.cpp" />
     <ClCompile Include="..\src\doom\s_sound.cpp" />
     <ClCompile Include="..\src\doom\wi_stuff.cpp" />
     <ClInclude Include="..\src\doom\am_map.h" />
     <ClInclude Include="..\src\doom\deh_misc.h" />
     <ClInclude Include="..\src\doom\d_englsh.h" />
-    <ClCompile Include="..\src\doom\d_items.c" />
     <ClInclude Include="..\src\doom\d_gamesim.h" />
     <ClInclude Include="..\src\doom\d_items.h" />
     <ClCompile Include="..\src\doom\d_main.c" />
@@ -523,7 +524,6 @@
     <ClInclude Include="..\src\doom\statdump.h" />
     <ClCompile Include="..\src\doom\st_lib.c" />
     <ClInclude Include="..\src\doom\st_lib.h" />
-    <ClCompile Include="..\src\doom\st_stuff.c" />
     <ClInclude Include="..\src\doom\st_stuff.h" />
     <ClInclude Include="..\src\doom\wi_stuff.h" />
   </ItemGroup>

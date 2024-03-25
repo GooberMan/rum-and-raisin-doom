@@ -31,6 +31,7 @@
 #include "z_zone.h"
 #include "m_misc.h"
 #include "m_random.h"
+#include "m_container.h"
 #include "w_wad.h"
 
 #include "deh_main.h"
@@ -40,6 +41,7 @@
 
 #include "g_game.h"
 
+#include "p_local.h"
 #include "st_stuff.h"
 #include "st_lib.h"
 #include "r_local.h"
@@ -393,38 +395,40 @@ static int	keyboxes[3];
 // a random number per tick
 static int	st_randomnumber;  
 
-int32_t		st_border_tile_style = STB_Flat5_4;
-const char*	st_border_tile_custom = NULL;
-
-cheatseq_t cheat_mus = CHEAT("idmus", 2);
-cheatseq_t cheat_god = CHEAT("iddqd", 0);
-cheatseq_t cheat_ammo = CHEAT("idkfa", 0);
-cheatseq_t cheat_ammonokey = CHEAT("idfa", 0);
-cheatseq_t cheat_noclip = CHEAT("idspispopd", 0);
-cheatseq_t cheat_commercial_noclip = CHEAT("idclip", 0);
-
-cheatseq_t	cheat_powerup[7] =
+extern "C"
 {
-    CHEAT("idbeholdv", 0),
-    CHEAT("idbeholds", 0),
-    CHEAT("idbeholdi", 0),
-    CHEAT("idbeholdr", 0),
-    CHEAT("idbeholda", 0),
-    CHEAT("idbeholdl", 0),
-    CHEAT("idbehold", 0),
-};
+	int32_t		st_border_tile_style = STB_Flat5_4;
+	const char*	st_border_tile_custom = NULL;
 
-cheatseq_t cheat_choppers = CHEAT("idchoppers", 0);
-cheatseq_t cheat_clev = CHEAT("idclev", 2);
-cheatseq_t cheat_mypos = CHEAT("idmypos", 0);
+	cheatseq_t cheat_mus = CHEAT("idmus", 2);
+	cheatseq_t cheat_god = CHEAT("iddqd", 0);
+	cheatseq_t cheat_ammo = CHEAT("idkfa", 0);
+	cheatseq_t cheat_ammonokey = CHEAT("idfa", 0);
+	cheatseq_t cheat_noclip = CHEAT("idspispopd", 0);
+	cheatseq_t cheat_commercial_noclip = CHEAT("idclip", 0);
 
+	cheatseq_t	cheat_powerup[7] =
+	{
+		CHEAT("idbeholdv", 0),
+		CHEAT("idbeholds", 0),
+		CHEAT("idbeholdi", 0),
+		CHEAT("idbeholdr", 0),
+		CHEAT("idbeholda", 0),
+		CHEAT("idbeholdl", 0),
+		CHEAT("idbehold", 0),
+	};
+
+	cheatseq_t cheat_choppers = CHEAT("idchoppers", 0);
+	cheatseq_t cheat_clev = CHEAT("idclev", 2);
+	cheatseq_t cheat_mypos = CHEAT("idmypos", 0);
+}
 
 //
 // STATUS BAR CODE
 //
-void ST_Stop(void);
+DOOM_C_API void ST_Stop(void);
 
-void ST_refreshBackground(void)
+DOOM_C_API void ST_refreshBackground(void)
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -450,8 +454,7 @@ void ST_refreshBackground(void)
 
 // Respond to keyboard input events,
 //  intercept cheats.
-doombool
-ST_Responder (event_t* ev)
+DOOM_C_API doombool ST_Responder (event_t* ev)
 {
   int		i;
     
@@ -653,7 +656,7 @@ ST_Responder (event_t* ev)
 
 
 
-int ST_calcPainOffset(void)
+DOOM_C_API int ST_calcPainOffset(void)
 {
     int		health;
     static int	lastcalc;
@@ -676,7 +679,7 @@ int ST_calcPainOffset(void)
 // the precedence of expressions is:
 //  dead > evil grin > turned head > straight ahead
 //
-void ST_updateFaceWidget(void)
+DOOM_C_API void ST_updateFaceWidget(void)
 {
     int		i;
     angle_t	badguyangle;
@@ -848,7 +851,7 @@ void ST_updateFaceWidget(void)
 
 }
 
-void ST_updateWidgets(void)
+DOOM_C_API void ST_updateWidgets(void)
 {
     static int	largeammo = 1994; // means "n/a"
     int		i;
@@ -914,7 +917,7 @@ void ST_updateWidgets(void)
 
 }
 
-void ST_Ticker (void)
+DOOM_C_API void ST_Ticker (void)
 {
 
     st_clock++;
@@ -926,7 +929,7 @@ void ST_Ticker (void)
 
 static int st_palette = 0;
 
-void ST_doPaletteStuff(void)
+DOOM_C_API void ST_doPaletteStuff(void)
 {
 
     int		palette;
@@ -991,7 +994,7 @@ void ST_doPaletteStuff(void)
 
 }
 
-void ST_drawWidgets(doombool refresh)
+DOOM_C_API void ST_drawWidgets(doombool refresh)
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -1030,7 +1033,7 @@ void ST_drawWidgets(doombool refresh)
 
 }
 
-void ST_doRefresh(void)
+DOOM_C_API void ST_doRefresh(void)
 {
 
     st_firsttime = false;
@@ -1043,13 +1046,13 @@ void ST_doRefresh(void)
 
 }
 
-void ST_diffDraw(void)
+DOOM_C_API void ST_diffDraw(void)
 {
     // update all widgets
     ST_drawWidgets(false);
 }
 
-void ST_Drawer (doombool fullscreen, doombool refresh)
+DOOM_C_API void ST_Drawer (doombool fullscreen, doombool refresh)
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -1181,20 +1184,20 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
 
 static void ST_loadCallback(const char *lumpname, patch_t **variable)
 {
-    *variable = W_CacheLumpName(lumpname, PU_STATIC);
+    *variable = (patch_t*)W_CacheLumpName(lumpname, PU_STATIC);
 }
 
-void ST_loadGraphics(void)
+DOOM_C_API void ST_loadGraphics(void)
 {
     ST_loadUnloadGraphics(ST_loadCallback);
 }
 
-st_bordertile_t ST_GetBorderTileStyle()
+DOOM_C_API st_bordertile_t ST_GetBorderTileStyle()
 {
-	return st_border_tile_style;
+	return (st_bordertile_t)st_border_tile_style;
 }
 
-void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname )
+DOOM_C_API void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname )
 {
 	st_border_tile_style = mode;
 	st_border_tile_custom = flatname;
@@ -1215,14 +1218,14 @@ void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname )
 	}
 }
 
-void ST_loadData(void)
+DOOM_C_API void ST_loadData(void)
 {
     lu_palette = W_GetNumForName (DEH_String("PLAYPAL"));
     ST_loadGraphics();
 
 	memset( &tileflat, 0, sizeof( vbuffer_t ) );
 
-	ST_SetBorderTileStyle( st_border_tile_style, st_border_tile_custom );
+	ST_SetBorderTileStyle( (st_bordertile_t)st_border_tile_style, st_border_tile_custom );
 }
 
 static void ST_unloadCallback(const char *lumpname, patch_t **variable)
@@ -1231,17 +1234,17 @@ static void ST_unloadCallback(const char *lumpname, patch_t **variable)
     *variable = NULL;
 }
 
-void ST_unloadGraphics(void)
+DOOM_C_API void ST_unloadGraphics(void)
 {
     ST_loadUnloadGraphics(ST_unloadCallback);
 }
 
-void ST_unloadData(void)
+DOOM_C_API void ST_unloadData(void)
 {
     ST_unloadGraphics();
 }
 
-void ST_initData(void)
+DOOM_C_API void ST_initData(void)
 {
 
     int		i;
@@ -1274,7 +1277,7 @@ void ST_initData(void)
 
 
 
-void ST_createWidgets(void)
+DOOM_C_API void ST_createWidgets(void)
 {
 
     int i;
@@ -1437,7 +1440,7 @@ void ST_createWidgets(void)
 static doombool	st_stopped = true;
 
 
-void ST_Start (void)
+DOOM_C_API void ST_Start (void)
 {
 
     if (!st_stopped)
@@ -1449,17 +1452,17 @@ void ST_Start (void)
 
 }
 
-void ST_Stop (void)
+DOOM_C_API void ST_Stop (void)
 {
     if (st_stopped)
 	return;
 
-    I_SetPalette (W_CacheLumpNum (lu_palette, PU_CACHE));
+    I_SetPalette( (byte*)W_CacheLumpNum(lu_palette, PU_CACHE));
 
     st_stopped = true;
 }
 
-void ST_Init (void)
+DOOM_C_API void ST_Init (void)
 {
     ST_loadData();
 }

@@ -49,7 +49,6 @@ DOOM_C_API extern int deh_idfa_armor;
 DOOM_C_API extern int deh_idfa_armor_class;
 DOOM_C_API extern int deh_idkfa_armor;
 DOOM_C_API extern int deh_idkfa_armor_class;
-DOOM_C_API extern int deh_bfg_cells_per_shot;
 DOOM_C_API extern int deh_species_infighting;
 
 #if 0

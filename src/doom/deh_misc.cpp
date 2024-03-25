@@ -117,12 +117,6 @@ int deh_idkfa_armor = DEH_DEFAULT_IDKFA_ARMOR;
 
 int deh_idkfa_armor_class = DEH_DEFAULT_IDKFA_ARMOR_CLASS;
 
-// Dehacked: "BFG Cells/Shot"
-// This is the number of CELLs firing the BFG uses up.
-// See P_CheckAmmo and A_FireBFG in p_pspr.c
-
-int deh_bfg_cells_per_shot = DEH_DEFAULT_BFG_CELLS_PER_SHOT;
-
 // Dehacked: "Monsters infight"
 // This controls whether monsters can harm other monsters of the same 
 // species.  For example, whether an imp fireball will damage other
@@ -152,10 +146,7 @@ static struct
     {"IDFA Armor Class",    &deh_idfa_armor_class},
     {"IDKFA Armor",         &deh_idkfa_armor},
     {"IDKFA Armor Class",   &deh_idkfa_armor_class},
-    {"BFG Cells/Shot",      &deh_bfg_cells_per_shot},
 };
-
-#define MISC_BFGCELLS 14
 
 static void *DEH_MiscStart(deh_context_t *context, char *line)
 {
@@ -198,16 +189,17 @@ static void DEH_MiscParseLine(deh_context_t *context, char *line, void *tag)
         
         return;
     }
+	else if( !strcasecmp(variable_name, "BFG Cells/Shot") )
+	{
+		((weaponinfo_t&)weaponinfo[ wp_bfg ]).ammopershot = ivalue;
+		return;
+	}
 
     for (i=0; i<arrlen(misc_settings); ++i)
     {
         if (!strcasecmp(variable_name, misc_settings[i].deh_name))
         {
             *misc_settings[i].value = ivalue;
-			if( i == MISC_BFGCELLS && DEH_GameVersion( context ) >= exe_mbf21 )
-			{
-				weaponinfo[ wp_bfg ].ammopershot = ivalue;
-			}
             return;
         }
     }

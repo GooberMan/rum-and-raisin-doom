@@ -115,6 +115,9 @@ DOOM_C_API typedef enum
 //  user has not changed weapon.
 DOOM_C_API typedef enum
 {
+    // No pending weapon change.
+    wp_nochange = -1,
+
     wp_fist,
     wp_pistol,
     wp_shotgun,
@@ -126,23 +129,20 @@ DOOM_C_API typedef enum
     wp_supershotgun,
 
     NUMWEAPONS,
-    
-    // No pending weapon change.
-    wp_nochange
-
 } weapontype_t;
 
 
 // Ammunition types defined.
 DOOM_C_API typedef enum
 {
+    am_noammo = -1,	// Unlimited for chainsaw / fist.
+
     am_clip,	// Pistol / chaingun ammo.
     am_shell,	// Shotgun / double barreled shotgun.
     am_cell,	// Plasma rifle, BFG.
     am_misl,	// Missile launcher.
-    NUMAMMO,
-    am_noammo	// Unlimited for chainsaw / fist.	
 
+    NUMAMMO,
 } ammotype_t;
 
 
