@@ -42,7 +42,8 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   MBF21_MAPPING("Ammo per shot",  ammopershot)
   MBF21_MAPPING("MBF21 Bits",     mbf21flags)
   RNR_MAPPING("Slot",             slot)
-  RNR_MAPPING("Priority",         priority)
+  RNR_MAPPING("Slot Priority",    slotpriority)
+  RNR_MAPPING("Switch Priority",  switchpriority)
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleWeaponBitsMBF21( deh_context_t* context, const char* value, weaponinfo_t* weapon );
@@ -64,7 +65,7 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
     }
 
 	extern std::unordered_map< int32_t, weaponinfo_t* >	weaponmap;
-	extern std::vector< weaponinfo_t* >					weaponpriority;
+	extern std::vector< weaponinfo_t* >					weaponswitchpriority;
 
 	auto foundweapon = weaponmap.find( weapon_number );
 	if( foundweapon == weaponmap.end() )
@@ -76,7 +77,8 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 		{
 			weapon_number,	// index
 			-1,				// slot
-			-1,				// priority
+			-1,				// slotpriority
+			-1,				// switchpriority
 			registered,		// mingamemode
 			am_noammo,		// ammo
 			S_NULL,			// upstate
@@ -89,7 +91,7 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 		};
 
 		weaponmap[ weapon_number ] = newweapon;
-		weaponpriority.push_back( newweapon );
+		weaponswitchpriority.push_back( newweapon );
 		return newweapon;
 	}
 	else
@@ -135,9 +137,13 @@ static void DEH_WeaponParseLine(deh_context_t *context, char *line, void *tag)
 static void DEH_WeaponEnd(deh_context_t* context, void* tag)
 {
 	weaponinfo_t* weapon = (weaponinfo_t*)tag;
-	if( weapon->priority < 0 )
+	if( weapon->slotpriority < 0 )
 	{
-		DEH_Warning(context, "Weapon %d priority less than zero", weapon->index );
+		DEH_Warning(context, "Weapon %d slot priority less than zero", weapon->index );
+	}
+	else if( weapon->switchpriority < 0 )
+	{
+		DEH_Warning(context, "Weapon %d switch priority less than zero", weapon->index );
 	}
 	else if( weapon->slot < 0 || weapon->slot > 9 )
 	{
@@ -148,10 +154,11 @@ static void DEH_WeaponEnd(deh_context_t* context, void* tag)
 		DEH_Warning(context, "Weapon %d ammopershot %d invalid for ammo type", weapon->index, weapon->ammopershot );
 	}
 
-	extern std::vector< weaponinfo_t* >					weaponpriority;
-	std::sort( weaponpriority.begin(), weaponpriority.end(), []( const weaponinfo_t* lhs, const weaponinfo_t* rhs ) -> bool
+	extern std::vector< weaponinfo_t* >					weaponswitchpriority;
+	extern std::vector< std::vector< weaponinfo_t* > >	weaponslotpriority;
+	std::sort( weaponswitchpriority.begin(), weaponswitchpriority.end(), []( const weaponinfo_t* lhs, const weaponinfo_t* rhs ) -> bool
 		{
-			return lhs->priority > rhs->priority;
+			return lhs->switchpriority > rhs->switchpriority;
 		} );
 }
 

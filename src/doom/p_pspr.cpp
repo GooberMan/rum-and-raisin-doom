@@ -164,7 +164,7 @@ DOOM_C_API doombool P_CheckAmmo (player_t* player)
 
 	do
 	{
-		for( weaponinfo_t* weapon : weaponinfo.ByPriority() )
+		for( weaponinfo_t* weapon : weaponinfo.BySwitchPriority() )
 		{
 			if( player->weaponowned[ weapon->index ]
 				&& (weapon->ammo == am_noammo || player->ammo[ weapon->ammo ] > weapon->ammopershot )

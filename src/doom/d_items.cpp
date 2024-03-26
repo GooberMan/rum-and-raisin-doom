@@ -42,7 +42,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// fist
 		wp_fist,			// index
 		1,					// slot
-		0,					// priority
+		0,					// slotpriority
+		0,					// switchpriority
 		shareware,			// mingamemode
 		am_noammo,
 		S_PUNCHUP,
@@ -57,7 +58,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// pistol
 		wp_pistol,			// index
 		2,					// slot
-		4,					// priority
+		0,					// slotpriority
+		4,					// switchpriority
 		shareware,			// mingamemode
 		am_clip,
 		S_PISTOLUP,
@@ -72,7 +74,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// shotgun
 		wp_shotgun,			// index
 		3,					// slot
-		5,					// priority
+		0,					// slotpriority
+		5,					// switchpriority
 		shareware,			// mingamemode
 		am_shell,
 		S_SGUNUP,
@@ -87,7 +90,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// chaingun
 		wp_chaingun,		// index
 		4,					// slot
-		6,					// priority
+		0,					// slotpriority
+		6,					// switchpriority
 		shareware,			// mingamemode
 		am_clip,
 		S_CHAINUP,
@@ -102,7 +106,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// missile launcher
 		wp_missile,			// index
 		5,					// slot
-		2,					// priority
+		0,					// slotpriority
+		2,					// switchpriority
 		shareware,			// mingamemode
 		am_misl,
 		S_MISSILEUP,
@@ -117,7 +122,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// plasma rifle
 		wp_plasma,			// index
 		6,					// slot
-		8,					// priority
+		0,					// slotpriority
+		8,					// switchpriority
 		registered,			// mingamemode
 		am_cell,
 		S_PLASMAUP,
@@ -132,7 +138,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// bfg 9000
 		wp_bfg,				// index
 		7,					// slot
-		1,					// priority
+		0,					// slotpriority
+		1,					// switchpriority
 		registered,			// mingamemode
 		am_cell,
 		S_BFGUP,
@@ -147,7 +154,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// chainsaw
 		wp_chainsaw,		// index
 		1,					// slot
-		3,					// priority
+		1,					// slotpriority
+		3,					// switchpriority
 		shareware,			// mingamemode
 		am_noammo,
 		S_SAWUP,
@@ -162,7 +170,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		// super shotgun
 		wp_supershotgun,	// index
 		3,					// slot
-		7,					// priority
+		1,					// slotpriority
+		7,					// switchpriority
 		commercial,			// mingamemode
 		am_shell,
 		S_DSGUNUP,
@@ -186,24 +195,52 @@ static std::unordered_map< int32_t, weaponinfo_t* > BuildWeaponMap( std::span< w
 	return weaponmap;
 }
 
-static std::vector< weaponinfo_t* > BuildWeaponPrioritys( std::span< weaponinfo_t > weaponspan )
+static std::vector< weaponinfo_t* > BuildWeaponSwitchPrioritys( std::span< weaponinfo_t > weaponspan )
 {
-	std::vector< weaponinfo_t* > weaponpriority;
-	weaponpriority.reserve( weaponspan.size() );
+	std::vector< weaponinfo_t* > weaponswitchpriority;
+	weaponswitchpriority.reserve( weaponspan.size() );
 	for( weaponinfo_t& weapon : weaponspan )
 	{
-		weaponpriority.push_back( &weapon );
+		weaponswitchpriority.push_back( &weapon );
 	}
 
-	std::sort( weaponpriority.begin(), weaponpriority.end(), []( const weaponinfo_t* lhs, const weaponinfo_t* rhs ) -> bool
+	std::sort( weaponswitchpriority.begin(), weaponswitchpriority.end(), []( const weaponinfo_t* lhs, const weaponinfo_t* rhs ) -> bool
 		{
-			return lhs->priority > rhs->priority;
+			return lhs->switchpriority > rhs->switchpriority;
 		} );
-	return weaponpriority;
+	return weaponswitchpriority;
+}
+
+static std::vector< std::vector< weaponinfo_t* > > BuildWeaponSlotPrioritys( std::span< weaponinfo_t > weaponspan )
+{
+	std::vector< std::vector< weaponinfo_t* > > weaponslotpriority;
+	weaponslotpriority.resize( 10 );
+
+	for( auto& slot : weaponslotpriority )
+	{
+		slot.reserve( 4 );
+	}
+
+	weaponslotpriority.reserve( weaponspan.size() );
+	for( weaponinfo_t& weapon : weaponspan )
+	{
+		weaponslotpriority[ weapon.slot ].push_back( &weapon );
+	}
+
+	for( auto& slot : weaponslotpriority )
+	{
+		std::sort( slot.begin(), slot.end(), []( const weaponinfo_t* lhs, const weaponinfo_t* rhs ) -> bool
+			{
+				return lhs->slotpriority > rhs->slotpriority;
+			} );
+	}
+
+	return weaponslotpriority;
 }
 
 std::unordered_map< int32_t, weaponinfo_t* >	weaponmap = BuildWeaponMap( std::span( builtinweaponinfo ) );
-std::vector< weaponinfo_t* >					weaponpriority = BuildWeaponPrioritys( std::span( builtinweaponinfo ) );
+std::vector< weaponinfo_t* >					weaponswitchpriority = BuildWeaponSwitchPrioritys( std::span( builtinweaponinfo ) );
+std::vector< std::vector< weaponinfo_t* > >		weaponslotpriority = BuildWeaponSlotPrioritys( std::span( builtinweaponinfo ) );
 DoomWeaponLookup								weaponinfo;
 
 int32_t DoomWeaponLookup::size()
@@ -211,9 +248,51 @@ int32_t DoomWeaponLookup::size()
 	return weaponmap.size();
 }
 
-DoomWeapons DoomWeaponLookup::ByPriority()
+DoomWeapons DoomWeaponLookup::BySwitchPriority()
 {
-	return { weaponpriority.data(), weaponpriority.data() + weaponpriority.size() };
+	return { weaponswitchpriority.data(), weaponswitchpriority.data() + weaponswitchpriority.size() };
+}
+
+const weaponinfo_t* DoomWeaponLookup::NextInSlot( int32_t slot )
+{
+	if( slot < 0
+		|| slot > 9
+		|| weaponslotpriority[ slot ].empty() )
+	{
+		return nullptr;
+	}
+
+	return weaponslotpriority[ slot ][ 0 ];
+}
+
+const weaponinfo_t* DoomWeaponLookup::NextInSlot( const weaponinfo_t* info )
+{
+	if( info->slot < 0 || info->slot > 9 )
+	{
+		// Not in a slot to begin with, should this error?
+		return info;
+	}
+
+	auto& slot = weaponslotpriority[ info->slot ];
+	if( slot.empty() )
+	{
+		// Not in a slot to begin with, should this error?
+		return info;
+	}
+
+	auto found = std::find( slot.begin(), slot.end(), info );
+	if( found == slot.end() )
+	{
+		// Not in a slot to begin with, should this error?
+		return info;
+	}
+
+	if( ++found == slot.end() )
+	{
+		found = slot.begin();
+	}
+
+	return *found;
 }
 
 weaponinfo_t& DoomWeaponLookup::Fetch( int32_t weapon )

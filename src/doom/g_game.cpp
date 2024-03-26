@@ -428,22 +428,10 @@ int G_CmdChecksum (ticcmd_t* cmd)
 
 static doombool WeaponSelectable(weapontype_t weapon)
 {
-    // Can't select the super shotgun in Doom 1.
-
-    if (weapon == wp_supershotgun && logical_gamemission == doom)
-    {
-        return false;
-    }
-
-    // These weapons aren't available in shareware.
-
-    if ((weapon == wp_plasma || weapon == wp_bfg)
-     && gamemission == doom && gamemode == shareware)
-    {
-        return false;
-    }
-
-    // Can't select a weapon if we don't own it.
+	if( weaponinfo[ weapon ].mingamemode > gamemode )
+	{
+		return false;
+	}
 
     if (!players[consoleplayer].weaponowned[weapon])
     {

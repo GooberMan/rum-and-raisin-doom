@@ -39,7 +39,8 @@ DOOM_C_API typedef struct
 	// RNR extensions
 	int32_t			index;
 	int32_t			slot;
-	int32_t			priority;
+	int32_t			slotpriority;
+	int32_t			switchpriority;
 	GameMode_t		mingamemode;
 
 	// Vanilla values
@@ -71,8 +72,10 @@ public:
 	inline const weaponinfo_t& operator[]( int32_t weapon )			{ return Fetch( weapon ); }
 	inline const weaponinfo_t& operator[]( weapontype_t weapon )	{ return Fetch( (int32_t)weapon ); }
 
-	int32_t			size();
-	DoomWeapons		ByPriority();
+	int32_t					size();
+	DoomWeapons				BySwitchPriority();
+	const weaponinfo_t*		NextInSlot( int32_t slot );
+	const weaponinfo_t*		NextInSlot( const weaponinfo_t* info );
 
 protected:
 	weaponinfo_t&	Fetch( int32_t weapon );
