@@ -39,6 +39,8 @@
 
 #include "net_defs.h"
 
+#include "z_zone.h"
+
 
 
 
@@ -71,6 +73,45 @@ DOOM_C_API typedef enum
 
 } cheat_t;
 
+DOOM_C_API typedef struct owneditem_s
+{
+	int32_t			index;
+	int32_t			amount;
+} owneditem_t;
+
+DOOM_C_API typedef struct owneddata_s
+{
+	owneditem_t*	data;
+
+#if defined( __cplusplus )
+	INLINE int32_t& operator[]( int32_t index )
+	{
+		owneditem_t* end = data + weaponinfo.size();
+		auto found = std::find_if( data, end, [&index]( const owneditem_t& owned ) { return owned.index == index; } );
+		if( found == end )
+		{
+			I_Error( "owneditem: invalid index %d", index );
+		}
+		return found->amount;
+	}
+
+	INLINE void Reset()
+	{
+		size_t size = sizeof( owneditem_t ) * weaponinfo.size();
+		if( !data )
+		{
+			data = (owneditem_t*)Z_MallocZero( size, PU_STATIC, nullptr );
+		}
+
+		owneditem_t* curr = data;
+		for( weaponinfo_t* weapon : weaponinfo.All() )
+		{
+			*curr = { weapon->index, 0 };
+			++curr;
+		}
+	}
+#endif // defined( __cplusplus )
+} owneddata_t;
 
 //
 // Extended player object info: player_t
@@ -104,8 +145,8 @@ DOOM_C_API typedef struct player_s
 
     // Power ups. invinc and invis are tic counters.
     int			powers[NUMPOWERS];
-    doombool		cards[NUMCARDS];
-    doombool		backpack;
+    doombool	cards[NUMCARDS];
+    doombool	backpack;
     
     // Frags, kills of other players.
     int			frags[MAXPLAYERS];
@@ -114,9 +155,9 @@ DOOM_C_API typedef struct player_s
     // Is wp_nochange if not changing.
     int32_t		pendingweapon;
 
-    int                 weaponowned[NUMWEAPONS];
-    int			ammo[NUMAMMO];
-    int			maxammo[NUMAMMO];
+    owneddata_t	weaponowned;
+    int32_t		ammo[NUMAMMO];
+    int32_t		maxammo[NUMAMMO];
 
     // True if button down last tic.
     int			attackdown;

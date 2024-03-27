@@ -149,7 +149,6 @@ void P_BringUpWeapon (player_t* player)
 // Returns true if there is enough ammo to shoot.
 // If not, selects the next weapon to use.
 //
-#pragma optimize( "", off )
 DOOM_C_API doombool P_CheckAmmo (player_t* player)
 {
 	ammotype_t ammo = weaponinfo[player->readyweapon].ammo;
@@ -295,41 +294,42 @@ A_WeaponReady
     if (player->mo->state == &states[S_PLAY_ATK1]
 	|| player->mo->state == &states[S_PLAY_ATK2] )
     {
-	P_SetMobjState (player->mo, S_PLAY);
+		P_SetMobjState (player->mo, S_PLAY);
     }
     
     if (player->readyweapon == wp_chainsaw
-	&& psp->state == &states[S_SAW])
+		&& psp->state == &states[S_SAW])
     {
-	S_StartSound (player->mo, sfx_sawidl);
+		S_StartSound (player->mo, sfx_sawidl);
     }
     
     // check for change
     //  if player is dead, put the weapon away
     if (player->pendingweapon != wp_nochange || !player->health)
     {
-	// change weapon
-	//  (pending weapon should allready be validated)
-	newstate = (statenum_t)weaponinfo[player->readyweapon].downstate;
-	P_SetPsprite (player, ps_weapon, newstate);
-	return;	
+		// change weapon
+		//  (pending weapon should allready be validated)
+		newstate = (statenum_t)weaponinfo[player->readyweapon].downstate;
+		P_SetPsprite (player, ps_weapon, newstate);
+		return;
     }
     
     // check for fire
     //  the missile launcher and bfg do not auto fire
     if (player->cmd.buttons & BT_ATTACK)
     {
-	if ( !player->attackdown
-	     || (player->readyweapon != wp_missile
-		 && player->readyweapon != wp_bfg) )
-	{
-	    player->attackdown = true;
-	    P_FireWeapon (player);		
-	    return;
-	}
+		if ( !player->attackdown
+			|| !weaponinfo[ player->readyweapon ].NoAutofire() )
+		{
+			player->attackdown = true;
+			P_FireWeapon (player);		
+			return;
+		}
     }
     else
-	player->attackdown = false;
+	{
+		player->attackdown = false;
+	}
     
     // bob the weapon based on movement speed
     angle = (128*leveltime)&FINEMASK;

@@ -46,9 +46,6 @@
     <ClCompile Include="..\src\doom\r_things.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\statdump.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\st_lib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -349,9 +346,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\doom\sounds.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\doom\statdump.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\doom\st_lib.h">

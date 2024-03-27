@@ -29,8 +29,6 @@
 
 #include "s_sound.h"
 
-#pragma optimize( "", off )
-
 // THIS IS SO INACCURATE HOW DO OTHER PORTS DO IT
 constexpr angle_t DegreesToAngle( fixed_t deg )
 {

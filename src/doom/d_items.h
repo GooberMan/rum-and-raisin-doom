@@ -34,7 +34,7 @@ DOOM_C_API typedef enum weaponflagsmbf21_e
 } weaponflagsmbf21_t;
 
 // Weapon info: sprite frames, ammunition use.
-DOOM_C_API typedef struct
+DOOM_C_API typedef struct weaponinfo_s
 {
 	// RNR extensions
 	int32_t			index;
@@ -54,6 +54,13 @@ DOOM_C_API typedef struct
 	// MBF extensions
 	int32_t			mbf21flags;
 	int32_t			ammopershot;
+
+#if defined( __cplusplus )
+	constexpr bool SwitchFromOnAmmoPickup() const		{ return mbf21flags & WF_MBF21_AUTOSWITCHFROM; }
+	constexpr bool DontSwitchToOnAmmoPickup() const		{ return mbf21flags & WF_MBF21_NOAUTOSWITCHTO; }
+	constexpr bool NoAutofire() const					{ return mbf21flags & WF_MBF21_NOAUTOFIRE; }
+	constexpr bool NoThrusting() const					{ return mbf21flags & WF_MBF21_NOTHRUST; }
+#endif // defined( __cplusplus )
 } weaponinfo_t;
 
 #if defined( __cplusplus )
@@ -73,6 +80,7 @@ public:
 	inline const weaponinfo_t& operator[]( weapontype_t weapon )	{ return Fetch( (int32_t)weapon ); }
 
 	int32_t					size();
+	DoomWeapons				All();
 	DoomWeapons				BySwitchPriority();
 	const weaponinfo_t*		NextInSlot( int32_t slot );
 	const weaponinfo_t*		NextInSlot( const weaponinfo_t* info );

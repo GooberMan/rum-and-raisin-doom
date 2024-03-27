@@ -253,6 +253,11 @@ DoomWeapons DoomWeaponLookup::BySwitchPriority()
 	return { weaponswitchpriority.data(), weaponswitchpriority.data() + weaponswitchpriority.size() };
 }
 
+DoomWeapons DoomWeaponLookup::All()
+{
+	return BySwitchPriority();
+}
+
 const weaponinfo_t* DoomWeaponLookup::NextInSlot( int32_t slot )
 {
 	if( slot < 0
