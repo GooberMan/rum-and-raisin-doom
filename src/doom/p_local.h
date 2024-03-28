@@ -224,7 +224,13 @@ DOOM_C_API extern	line_t** spechit;
 DOOM_C_API extern	int32_t	numspechit;
 DOOM_C_API extern	size_t	spechitcount;
 
-DOOM_C_API doombool			P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y);
+DOOM_C_API typedef enum checkposflags_e
+{
+	CP_None						= 0x00000000,
+	CP_CorpseChecksAlways		= 0x00000001,
+} checkposflags_t;
+
+DOOM_C_API doombool			P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y, checkposflags_t flags = CP_None);
 DOOM_C_API mobj_t*			P_XYMovement (mobj_t* mo); // Returns the mobj if it still exists after movement
 DOOM_C_API doombool			P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
 DOOM_C_API doombool			P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);

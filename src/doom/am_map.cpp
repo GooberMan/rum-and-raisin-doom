@@ -103,7 +103,7 @@ typedef enum mapmode_e
 int32_t	map_style					= MapStyle_Original;
 int32_t	map_fill					= MapFill_None;
 
-mapstyledata_t	map_styledatacustomdefault =
+DOOM_C_API mapstyledata_t	map_styledatacustomdefault =
 {
 	{ BACKGROUND,					0 }, // background
 	{ GRIDCOLORS,					0 }, // grid
@@ -396,7 +396,7 @@ static int32_t lightlevelscnt = 0;
 static int32_t linewidth = 1;
 static int32_t lineheight = 1;
 
-void AM_BindAutomapVariables( void )
+DOOM_C_API void AM_BindAutomapVariables( void )
 {
 	M_BindIntVariable( "map_style",										&map_style );
 	M_BindIntVariable( "map_fill",										&map_fill );
@@ -446,7 +446,7 @@ void AM_BindAutomapVariables( void )
 // segment in map coordinates (with the upright y-axis n' all) so
 // that it can be used with the brain-dead drawing stuff.
 
-void
+static void
 AM_getIslope
 ( mline_t*	ml,
   islope_t*	is )
@@ -465,7 +465,7 @@ AM_getIslope
 //
 //
 //
-void AM_activateNewScale(void)
+static void AM_activateNewScale(void)
 {
     m_x += m_w/2;
     m_y += m_h/2;
@@ -480,7 +480,7 @@ void AM_activateNewScale(void)
 //
 //
 //
-void AM_saveScaleAndLoc(void)
+static void AM_saveScaleAndLoc(void)
 {
     old_m_x = m_x;
     old_m_y = m_y;
@@ -491,7 +491,7 @@ void AM_saveScaleAndLoc(void)
 //
 //
 //
-void AM_restoreScaleAndLoc(void)
+static void AM_restoreScaleAndLoc(void)
 {
 
     m_w = old_m_w;
@@ -517,7 +517,7 @@ void AM_restoreScaleAndLoc(void)
 //
 #define MARK_BROKEN 1
 
-void AM_addMark(void)
+static void AM_addMark(void)
 {
 #if !MARK_BROKEN
     markpoints[markpointnum].x = m_x + m_w/2;
@@ -532,7 +532,7 @@ void AM_addMark(void)
 // Determines bounding box of all vertices,
 // sets global variables controlling zoom range.
 //
-void AM_findMinMaxBoundaries(void)
+static void AM_findMinMaxBoundaries(void)
 {
     int i;
     rend_fixed_t a;
@@ -572,7 +572,7 @@ void AM_findMinMaxBoundaries(void)
 //
 //
 //
-void AM_changeWindowLoc(void)
+static void AM_changeWindowLoc(void)
 {
     if (m_paninc.x || m_paninc.y)
     {
@@ -600,7 +600,7 @@ void AM_changeWindowLoc(void)
 //
 //
 //
-void AM_initVariables(void)
+static void AM_initVariables(void)
 {
     int pnum;
     static event_t st_notify = { ev_keyup, AM_MSGENTERED, 0, 0 };
@@ -658,7 +658,7 @@ void AM_initVariables(void)
 //
 // 
 //
-void AM_loadPics(void)
+static void AM_loadPics(void)
 {
     int i;
     char namebuf[9];
@@ -666,12 +666,12 @@ void AM_loadPics(void)
     for (i=0;i<10;i++)
     {
 	DEH_snprintf(namebuf, 9, "AMMNUM%d", i);
-	marknums[i] = W_CacheLumpName(namebuf, PU_STATIC);
+	marknums[i] = (patch_t*)W_CacheLumpName(namebuf, PU_STATIC);
     }
 
 }
 
-void AM_unloadPics(void)
+static void AM_unloadPics(void)
 {
     int i;
     char namebuf[9];
@@ -683,7 +683,7 @@ void AM_unloadPics(void)
     }
 }
 
-void AM_clearMarks(void)
+static void AM_clearMarks(void)
 {
     int i;
 
@@ -696,7 +696,7 @@ void AM_clearMarks(void)
 // should be called at the start of every level
 // right now, i figure it out myself
 //
-void AM_LevelInit(void)
+static void AM_LevelInit(void)
 {
     f_x = f_y = 0;
 
@@ -715,9 +715,9 @@ void AM_LevelInit(void)
 //
 //
 //
-void AM_Stop (void)
+DOOM_C_API void AM_Stop (void)
 {
-    static event_t st_notify = { 0, ev_keyup, AM_MSGEXITED, 0 };
+    static event_t st_notify = { ev_keyup, AM_MSGEXITED, 0 };
 
     AM_unloadPics();
     automapactive = false;
@@ -728,7 +728,7 @@ void AM_Stop (void)
 //
 //
 //
-void AM_Start (void)
+DOOM_C_API void AM_Start (void)
 {
     static mapinfo_t* lastmap = NULL;
 
@@ -746,7 +746,7 @@ void AM_Start (void)
 //
 // set the window scale to the maximum size
 //
-void AM_minOutWindowScale(void)
+static void AM_minOutWindowScale(void)
 {
     scale_mtof = min_scale_mtof;
     scale_ftom = RendFixedDiv(RENDFRACUNIT, scale_mtof);
@@ -756,7 +756,7 @@ void AM_minOutWindowScale(void)
 //
 // set the window scale to the minimum size
 //
-void AM_maxOutWindowScale(void)
+static void AM_maxOutWindowScale(void)
 {
     scale_mtof = max_scale_mtof;
     scale_ftom = RendFixedDiv(RENDFRACUNIT, scale_mtof);
@@ -767,11 +767,8 @@ void AM_maxOutWindowScale(void)
 //
 // Handle events (user inputs) in automap mode
 //
-doombool
-AM_Responder
-( event_t*	ev )
+DOOM_C_API doombool AM_Responder( event_t*	ev )
 {
-
     int rc;
     static int bigstate=0;
     static char buffer[20];
@@ -936,7 +933,7 @@ AM_Responder
 //
 // Zooming
 //
-void AM_changeWindowScale(void)
+DOOM_C_API void AM_changeWindowScale(void)
 {
 
     // Change the scaling multipliers
@@ -955,7 +952,7 @@ void AM_changeWindowScale(void)
 //
 //
 //
-void AM_doFollowPlayer(void)
+DOOM_C_API void AM_doFollowPlayer(void)
 {
 
     if (f_oldloc.x != FixedToRendFixed( plr->mo->x ) || f_oldloc.y != FixedToRendFixed( plr->mo->y ) )
@@ -979,7 +976,7 @@ void AM_doFollowPlayer(void)
 //
 //
 //
-void AM_updateLightLev(void)
+DOOM_C_API void AM_updateLightLev(void)
 {
    
 	// Change light level
@@ -999,7 +996,7 @@ void AM_updateLightLev(void)
 //
 // Updates on Game Tick
 //
-void AM_Ticker (void)
+DOOM_C_API void AM_Ticker (void)
 {
 
 	if (!automapactive)
@@ -1041,7 +1038,7 @@ void AM_Ticker (void)
 //
 
 #define render_pitch render_height
-void AM_clearFB(int color)
+static void AM_clearFB(int color)
 {
 	// TODO: THIS IS BROKEN THIS IS BROKEN THIS IS BROKEN
     memset(fb, color, f_w*render_pitch*sizeof(*fb));
@@ -1055,7 +1052,7 @@ void AM_clearFB(int color)
 // faster reject and precalculated slopes.  If the speed is needed,
 // use a hash algorithm to handle  the common cases.
 //
-doombool AM_clipMline( mline_t* ml, fline_t* fl )
+static doombool AM_clipMline( mline_t* ml, fline_t* fl )
 {
 	enum
 	{
@@ -1065,13 +1062,13 @@ doombool AM_clipMline( mline_t* ml, fline_t* fl )
 		TOP		= 8,
 	};
     
-    register int	outcode1 = 0;
-    register int	outcode2 = 0;
-    register int	outside;
+    int32_t	outcode1 = 0;
+    int32_t	outcode2 = 0;
+    int32_t	outside;
     
     fpoint_t	tmp;
-    int		dx;
-    int		dy;
+    int32_t		dx;
+    int32_t		dy;
 
     
 #define DOOUTCODE(oc, mx, my) \
@@ -1188,21 +1185,19 @@ doombool AM_clipMline( mline_t* ml, fline_t* fl )
 //
 // Classic Bresenham w/ whatever optimizations needed for speed
 //
-void
-AM_drawFline
-( fline_t*	fl,
-  int		color )
+static void AM_drawFline( fline_t* fl, int color )
 {
-	register int x;
-	register int y;
-	register int dx;
-	register int dy;
-	register int sx;
-	register int sy;
-	register int ax;
-	register int ay;
-	register int d;
-    
+	int32_t x;
+	int32_t y;
+	int32_t dx;
+	int32_t dy;
+	int32_t sx;
+	int32_t sy;
+	int32_t ax;
+	int32_t ay;
+	int32_t d;
+
+#if 0
 	static int fuck = 0;
 
 	// For debugging only
@@ -1214,6 +1209,7 @@ AM_drawFline
 		DEH_fprintf(stderr, "fuck %d \r", fuck++);
 		return;
 	}
+#endif
 
 	#define PUTDOT(xx,yy,cc) fb[(xx)*render_pitch+(yy)]=(cc)
 
@@ -1266,9 +1262,9 @@ AM_drawFline
 //
 // Clip lines, draw visible part sof lines.
 //
-void AM_drawMline( mline_t* ml, int color )
+static void AM_drawMline( mline_t* ml, int color )
 {
-	static fline_t fl;
+	fline_t fl;
 
 	int32_t ax = 0;
 	int32_t ay = 0;
@@ -1303,7 +1299,7 @@ void AM_drawMline( mline_t* ml, int color )
 //
 // Draws flat (floor/ceiling tile) aligned grid lines.
 //
-void AM_drawGrid(int color)
+static void AM_drawGrid(int color)
 {
 	rend_fixed_t x, y;
 	rend_fixed_t start, end;
@@ -1357,7 +1353,7 @@ int32_t AM_lookupColour( int32_t paletteindex, doombool blinking )
 
 #define AM_CanDraw( type ) ( type.val >= 0 )
 
-void AM_DrawLine( line_t* line, mapstyledata_t* style )
+static void AM_DrawLine( line_t* line, mapstyledata_t* style )
 {
 	mline_t l;
 
@@ -1448,7 +1444,7 @@ mapstyledata_t	map_stylenotblockmap =
 	{ XHAIRCOLORS,				0, }, // crosshair
 };
 
-void AM_drawWalls( mapstyledata_t* style )
+static void AM_drawWalls( mapstyledata_t* style )
 {
 	for ( int32_t index = 0 ; index < numlines; ++index )
 	{
@@ -1486,11 +1482,7 @@ void AM_drawWalls( mapstyledata_t* style )
 // Rotation in 2D.
 // Used to rotate player arrow line character.
 //
-void
-AM_rotate
-( rend_fixed_t*	x,
-  rend_fixed_t*	y,
-  angle_t	a )
+static void AM_rotate( rend_fixed_t* x, rend_fixed_t* y, angle_t a )
 {
     rend_fixed_t tmpx;
 
@@ -1505,15 +1497,9 @@ AM_rotate
     *x = tmpx;
 }
 
-void
-AM_drawLineCharacter
-( mline_t*	lineguy,
-  int		lineguylines,
-  rend_fixed_t	scale,
-  angle_t	angle,
-  int		color,
-  rend_fixed_t	x,
-  rend_fixed_t	y )
+static void AM_drawLineCharacter( mline_t* lineguy, int lineguylines
+								, rend_fixed_t scale, angle_t angle, int color
+								, rend_fixed_t x, rend_fixed_t y )
 {
     int		i;
     mline_t	l;
@@ -1554,7 +1540,7 @@ AM_drawLineCharacter
     }
 }
 
-void AM_drawPlayers( mapstyledata_t* style )
+static void AM_drawPlayers( mapstyledata_t* style )
 {
     int		i;
     player_t*	p;
@@ -1606,7 +1592,7 @@ void AM_drawPlayers( mapstyledata_t* style )
 
 }
 
-void AM_drawThings( mapstyledata_t* style )
+static void AM_drawThings( mapstyledata_t* style )
 {
     int		i;
     mobj_t*	t;
@@ -1653,7 +1639,7 @@ void AM_drawThings( mapstyledata_t* style )
 	}
 }
 
-void AM_drawMarks(void)
+static void AM_drawMarks(void)
 {
     int i, fx, fy, w, h;
 
@@ -1674,7 +1660,7 @@ void AM_drawMarks(void)
 
 }
 
-void AM_drawCrosshair(int color)
+static void AM_drawCrosshair(int color)
 {
 	// HACK to give us a dot at proper scale
 
@@ -1693,7 +1679,7 @@ void AM_drawCrosshair(int color)
 
 }
 
-void AM_Drawer (void)
+DOOM_C_API void AM_Drawer (void)
 {
 	mapstyledata_t* style = &map_styledata[ map_style ];
 

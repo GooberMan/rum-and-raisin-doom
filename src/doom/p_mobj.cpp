@@ -452,8 +452,10 @@ DOOM_C_API void P_NightmareRespawn( mobj_t* mobj )
 	}
 
     // somthing is occupying it's position?
-    if (!P_CheckPosition (mobj, x, y) ) 
-	return;	// no respwan
+    if (!P_CheckPosition (mobj, x, y, CP_CorpseChecksAlways) )
+	{
+		return;	// no respwan
+	}
 
     // spawn a teleport fog at old spot
     // because of removal of the body?

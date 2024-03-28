@@ -470,7 +470,7 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 //  speciallines[]
 //  numspeciallines
 //
-DOOM_C_API doombool P_CheckPosition( mobj_t* thing, fixed_t x, fixed_t y )
+DOOM_C_API doombool P_CheckPosition( mobj_t* thing, fixed_t x, fixed_t y, checkposflags_t flags )
 {
     int			xl;
     int			xh;
@@ -510,7 +510,8 @@ DOOM_C_API doombool P_CheckPosition( mobj_t* thing, fixed_t x, fixed_t y )
 	}
 
 	bool checkthings = !sim.corpse_ignores_mobjs
-					|| ( tmthing->flags & MF_CORPSE ) != MF_CORPSE;
+					|| ( tmthing->flags & MF_CORPSE ) != MF_CORPSE
+					|| ( flags & CP_CorpseChecksAlways ) == CP_CorpseChecksAlways;
 	if( checkthings )
 	{
 		// Check things first, possibly picking things up.

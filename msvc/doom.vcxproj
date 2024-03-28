@@ -402,7 +402,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\doom\am_map.c" />
+    <ClCompile Include="..\src\doom\am_map.cpp" />
     <ClCompile Include="..\src\doom\deh_ammo.cpp" />
     <ClCompile Include="..\src\doom\deh_bexbits.cpp" />
     <ClCompile Include="..\src\doom\deh_bexpars.cpp" />
@@ -445,6 +445,7 @@
     <ClCompile Include="..\src\doom\p_plats.cpp" />
     <ClCompile Include="..\src\doom\p_pspr.cpp" />
     <ClCompile Include="..\src\doom\p_saveg.cpp" />
+    <ClCompile Include="..\src\doom\p_sight.cpp" />
     <ClCompile Include="..\src\doom\p_spec.cpp" />
     <ClCompile Include="..\src\doom\p_switch.cpp" />
     <ClCompile Include="..\src\doom\p_telept.cpp" />
@@ -496,7 +497,6 @@
     <ClInclude Include="..\src\doom\p_sectoraction.h" />
     <ClInclude Include="..\src\doom\p_setup.h" />
     <ClCompile Include="..\src\doom\p_setup.cpp" />
-    <ClCompile Include="..\src\doom\p_sight.c" />
     <ClInclude Include="..\src\doom\p_spec.h" />
     <ClInclude Include="..\src\doom\p_tick.h" />
     <ClInclude Include="..\src\doom\r_bsp.h" />

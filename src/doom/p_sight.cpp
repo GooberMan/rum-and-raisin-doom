@@ -31,17 +31,20 @@
 //
 // P_CheckSight
 //
-fixed_t		sightzstart;		// eye z of looker
-fixed_t		topslope;
-fixed_t		bottomslope;		// slopes to top and bottom of target
+extern "C"
+{
+	fixed_t		sightzstart;		// eye z of looker
+	fixed_t		topslope;
+	fixed_t		bottomslope;		// slopes to top and bottom of target
 
-divline_t	strace;			// from t1 to t2
-fixed_t		t2x;
-fixed_t		t2y;
+	divline_t	strace;			// from t1 to t2
+	fixed_t		t2x;
+	fixed_t		t2y;
+}
 
 // PTR_SightTraverse() for Doom 1.2 sight calculations
 // taken from prboom-plus/src/p_sight.c:69-102
-doombool PTR_SightTraverse(intercept_t *in)
+static doombool PTR_SightTraverse(intercept_t *in)
 {
     line_t *li;
     fixed_t slope;
@@ -81,7 +84,7 @@ doombool PTR_SightTraverse(intercept_t *in)
 // P_DivlineSide
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
-int
+static int
 P_DivlineSide
 ( fixed_t	x,
   fixed_t	y,
@@ -138,7 +141,7 @@ P_DivlineSide
 // along the first divline.
 // This is only called by the addthings and addlines traversers.
 //
-fixed_t
+static fixed_t
 P_InterceptVector2
 ( divline_t*	v2,
   divline_t*	v1 )
@@ -165,7 +168,7 @@ P_InterceptVector2
 // Returns true
 //  if strace crosses the given subsector successfully.
 //
-doombool P_CrossSubsector (int num)
+static doombool P_CrossSubsector (int num)
 {
     seg_t*		seg;
     line_t*		line;
@@ -295,7 +298,7 @@ doombool P_CrossSubsector (int num)
 // Returns true
 //  if strace crosses the given node successfully.
 //
-doombool P_CrossBSPNode (int bspnum)
+static doombool P_CrossBSPNode (int bspnum)
 {
     node_t*	bsp;
     int		side;
@@ -340,7 +343,7 @@ doombool P_CrossBSPNode (int bspnum)
 //  if a straight line between t1 and t2 is unobstructed.
 // Uses REJECT.
 //
-doombool
+DOOM_C_API doombool
 P_CheckSight
 ( mobj_t*	t1,
   mobj_t*	t2 )
