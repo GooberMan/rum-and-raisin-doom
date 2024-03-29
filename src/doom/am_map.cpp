@@ -442,26 +442,6 @@ DOOM_C_API void AM_BindAutomapVariables( void )
 	M_BindIntVariable( "mapcolor_crosshair_flags",						&map_styledata[ MapStyle_Custom ].crosshair.flags );
 }
 
-// Calculates the slope and slope according to the x-axis of a line
-// segment in map coordinates (with the upright y-axis n' all) so
-// that it can be used with the brain-dead drawing stuff.
-
-static void
-AM_getIslope
-( mline_t*	ml,
-  islope_t*	is )
-{
-    rend_fixed_t dx, dy;
-
-    dy = ml->a.y - ml->b.y;
-    dx = ml->b.x - ml->a.x;
-    if (!dy) is->islp = (dx<0?-LLONG_MAX:LLONG_MAX);
-    else is->islp = RendFixedDiv(dx, dy);
-    if (!dx) is->slp = (dy<0?-LLONG_MAX:LLONG_MAX);
-    else is->slp = RendFixedDiv(dy, dx);
-
-}
-
 //
 //
 //

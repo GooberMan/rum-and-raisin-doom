@@ -922,11 +922,12 @@ DOOM_C_API void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* sourc
 
 	bool ignorevile = source
 					&& ( source->type == MT_VILE
-						|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_DMGIGNORED ) )
+						|| source->MonstersIgnoreDamage()
 						);
 
-	bool nothreshold = (target && ( !target->threshold || target->type == MT_VILE) )
-						|| ( sim.mbf21_thing_extensions && ( source->flags2 & MF2_MBF21_NOTHRESHOLD ) );
+	bool nothreshold = ( target && ( !target->threshold || target->type == MT_VILE) )
+						|| ( source && source->NoTargetingThreshold() );
+
 	if( !infightingimmunity
 		&& nothreshold
 		&& source && (source != target || gameversion <= exe_doom_1_2)

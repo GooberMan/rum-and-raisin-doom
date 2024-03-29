@@ -392,7 +392,7 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 		if (tmthing->z+tmthing->height < thing->z)
 			return true;		// underneath
 		
-		if (tmthing->target
+d		if (tmthing->target
 			&& ProjectileImmunity( tmthing->target, thing ) )
 		{
 			// Don't hit same species as originator.

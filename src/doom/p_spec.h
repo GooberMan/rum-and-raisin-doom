@@ -787,12 +787,8 @@ DOOM_C_API void		P_MobjInSectorGeneric( mobj_t* mobj );
 
 inline bool BasicImmunity( mobj_t* source, mobj_t* target )
 {
-	if( !source )
-	{
-		return false;
-	}
-
-	if( sim.mbf_mobj_flags )
+	if( sim.mbf_mobj_flags
+		&& source )
 	{
 		if( ( source->player && target->IsFriendly() )
 			|| ( target->player && source->IsFriendly() )
@@ -808,7 +804,9 @@ inline bool BasicImmunity( mobj_t* source, mobj_t* target )
 
 inline bool InfightingImmunity( mobj_t* source, mobj_t* target )
 {
-	if( !BasicImmunity( source, target ) && source && sim.mbf21_thing_extensions )
+	if( !BasicImmunity( source, target )
+		&& sim.mbf21_thing_extensions
+		&& source )
 	{
 		return source->info->infightinggroup > 0
 			&& source->info->infightinggroup == target->info->infightinggroup;
@@ -819,24 +817,26 @@ inline bool InfightingImmunity( mobj_t* source, mobj_t* target )
 
 inline bool ProjectileImmunity( mobj_t* source, mobj_t* target )
 {
-	if( true )// !sim.mbf21_thing_extensions )
+	if( sim.mbf21_thing_extensions && target->info->projectilegroup == projectile_noimmunity )
 	{
-		return source->type == target->type
-			|| (source->type == MT_KNIGHT && target->type == MT_BRUISER)
+		return false;
+	}
+
+	if( source == target
+		|| source->type == target->type
+		|| BasicImmunity( source, target ) )
+	{
+		return true;
+	}
+
+	if( !sim.mbf21_thing_extensions )
+	{
+		return (source->type == MT_KNIGHT && target->type == MT_BRUISER)
 			|| (source->type == MT_BRUISER && target->type == MT_KNIGHT);
 	}
 
-	if( !BasicImmunity( source, target ) && sim.mbf21_thing_extensions )
-	{
-		if( target->info->projectilegroup == projectile_noimmunity )
-		{
-			return false;
-		}
-		return source->info->infightinggroup > 0
-			&& source->info->infightinggroup == target->info->infightinggroup;
-	}
-
-	return false;
+	return source->info->projectilegroup > 0
+		&& source->info->projectilegroup == target->info->projectilegroup;
 }
 
 MakeThinkFuncLookup( vldoor_t,		T_VerticalDoorGeneric,	T_VerticalDoor );
