@@ -1369,32 +1369,39 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		S_SPOS_RAISE1		// raisestate
 	},
 
-	{		// MT_VILE
-		MT_VILE,		// type
-		exe_doom_1_2,	// minimumversion
-		64,		// doomednum
-		S_VILE_STND,		// spawnstate
-		700,		// spawnhealth
-		S_VILE_RUN1,		// seestate
-		sfx_vilsit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
-		S_VILE_PAIN,		// painstate
-		10,		// painchance
-		sfx_vipain,		// painsound
-		0,		// meleestate
-		S_VILE_ATK1,		// missilestate
-		S_VILE_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_vildth,		// deathsound
-		15,		// speed
-		20*FRACUNIT,		// radius
-		56*FRACUNIT,		// height
-		500,		// mass
-		0,		// damage
-		sfx_vilact,		// activesound
-		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_NULL		// raisestate
+	{							// MT_VILE
+		MT_VILE,				// type
+		exe_doom_1_2,			// minimumversion
+		64,						// doomednum
+		S_VILE_STND,			// spawnstate
+		700,					// spawnhealth
+		S_VILE_RUN1,			// seestate
+		sfx_vilsit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_VILE_PAIN,			// painstate
+		10,						// painchance
+		sfx_vipain,				// painsound
+		0,						// meleestate
+		S_VILE_ATK1,			// missilestate
+		S_VILE_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_vildth,				// deathsound
+		15,						// speed
+		20*FRACUNIT,			// radius
+		56*FRACUNIT,			// height
+		500,					// mass
+		0,						// damage
+		sfx_vilact,				// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,	// flags
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_SHORTMRANGE | MF2_MBF21_DMGIGNORED | MF2_MBF21_NOTHRESHOLD,	// flags2
+		0,						// ripsound
 	},
 
 	{		// MT_FIRE
@@ -1425,32 +1432,39 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		S_NULL		// raisestate
 	},
 
-	{		// MT_UNDEAD
-		MT_UNDEAD,		// type
-		exe_doom_1_2,	// minimumversion
-		66,		// doomednum
-		S_SKEL_STND,		// spawnstate
-		300,		// spawnhealth
-		S_SKEL_RUN1,		// seestate
-		sfx_skesit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
-		S_SKEL_PAIN,		// painstate
-		100,		// painchance
-		sfx_popain,		// painsound
-		S_SKEL_FIST1,		// meleestate
-		S_SKEL_MISS1,		// missilestate
-		S_SKEL_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_skedth,		// deathsound
-		10,		// speed
-		20*FRACUNIT,		// radius
-		56*FRACUNIT,		// height
-		500,		// mass
-		0,		// damage
-		sfx_skeact,		// activesound
+	{							// MT_UNDEAD
+		MT_UNDEAD,				// type
+		exe_doom_1_2,			// minimumversion
+		66,						// doomednum
+		S_SKEL_STND,			// spawnstate
+		300,					// spawnhealth
+		S_SKEL_RUN1,			// seestate
+		sfx_skesit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_SKEL_PAIN,			// painstate
+		100,					// painchance
+		sfx_popain,				// painsound
+		S_SKEL_FIST1,			// meleestate
+		S_SKEL_MISS1,			// missilestate
+		S_SKEL_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_skedth,				// deathsound
+		10,						// speed
+		20*FRACUNIT,			// radius
+		56*FRACUNIT,			// height
+		500,					// mass
+		0,						// damage
+		sfx_skeact,				// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_SKEL_RAISE1		// raisestate
+		S_SKEL_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_RANGEHALF | MF2_MBF21_LONGMELEE,	// flags2
+		0,						// ripsound
 	},
 
 	{		// MT_TRACER
@@ -1509,32 +1523,39 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		S_NULL		// raisestate
 	},
 
-	{		// MT_FATSO
-		MT_FATSO,		// type
-		exe_doom_1_2,	// minimumversion
-		67,		// doomednum
-		S_FATT_STND,		// spawnstate
-		600,		// spawnhealth
-		S_FATT_RUN1,		// seestate
-		sfx_mansit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
-		S_FATT_PAIN,		// painstate
-		80,		// painchance
-		sfx_mnpain,		// painsound
-		0,		// meleestate
-		S_FATT_ATK1,		// missilestate
-		S_FATT_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_mandth,		// deathsound
-		8,		// speed
-		48*FRACUNIT,		// radius
-		64*FRACUNIT,		// height
-		1000,		// mass
-		0,		// damage
-		sfx_posact,		// activesound
-		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_FATT_RAISE1		// raisestate
+	{							// MT_FATSO
+		MT_FATSO,				// type
+		exe_doom_1_2,			// minimumversion
+		67,						// doomednum
+		S_FATT_STND,			// spawnstate
+		600,					// spawnhealth
+		S_FATT_RUN1,			// seestate
+		sfx_mansit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_FATT_PAIN,			// painstate
+		80,						// painchance
+		sfx_mnpain,				// painsound
+		0,						// meleestate
+		S_FATT_ATK1,			// missilestate
+		S_FATT_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_mandth,				// deathsound
+		8,						// speed
+		48*FRACUNIT,			// radius
+		64*FRACUNIT,			// height
+		1000,					// mass
+		0,						// damage
+		sfx_posact,				// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,	// flags
+		S_FATT_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_MAP07BOSS1,	// flags2
+		0,						// ripsound
 	},
 
 	{		// MT_FATSHOT
@@ -1561,7 +1582,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		100,		// mass
 		8,		// damage
 		sfx_None,		// activesound
-		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
+		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,	// flags
 		S_NULL		// raisestate
 	},
 
@@ -1705,35 +1726,39 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		S_HEAD_RAISE1		// raisestate
 	},
 
-	{		// MT_BRUISER
-		MT_BRUISER,		// type
-		exe_doom_1_2,	// minimumversion
-		3003,		// doomednum
-		S_BOSS_STND,		// spawnstate
-		1000,		// spawnhealth
-		S_BOSS_RUN1,		// seestate
-		sfx_brssit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
-		S_BOSS_PAIN,		// painstate
-		50,		// painchance
-		sfx_dmpain,		// painsound
-		S_BOSS_ATK1,		// meleestate
-		S_BOSS_ATK1,		// missilestate
-		S_BOSS_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_brsdth,		// deathsound
-		8,		// speed
-		24*FRACUNIT,		// radius
-		64*FRACUNIT,		// height
-		1000,		// mass
-		0,		// damage
-		sfx_dmact,		// activesound
+	{							// MT_BRUISER
+		MT_BRUISER,				// type
+		exe_doom_1_2,			// minimumversion
+		3003,					// doomednum
+		S_BOSS_STND,			// spawnstate
+		1000,					// spawnhealth
+		S_BOSS_RUN1,			// seestate
+		sfx_brssit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_BOSS_PAIN,			// painstate
+		50,						// painchance
+		sfx_dmpain,				// painsound
+		S_BOSS_ATK1,			// meleestate
+		S_BOSS_ATK1,			// missilestate
+		S_BOSS_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_brsdth,				// deathsound
+		8,						// speed
+		24*FRACUNIT,			// radius
+		64*FRACUNIT,			// height
+		1000,					// mass
+		0,						// damage
+		sfx_dmact,				// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_BOSS_RAISE1,		// raisestate
+		S_BOSS_RAISE1,			// raisestate
 		0,						// fastspeed
 		0,						// meleerange
 		infighting_hellnobles,	// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_E1M8BOSS,		// flags2
+		0,						// ripsound
 	},
 
 	{		// MT_BRUISERSHOT
@@ -1765,147 +1790,181 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		20*FRACUNIT,			// fastspeed
 	},
 
-	{		// MT_KNIGHT
-		MT_KNIGHT,		// type
-		exe_doom_1_2,	// minimumversion
-		69,		// doomednum
-		S_BOS2_STND,		// spawnstate
-		500,		// spawnhealth
-		S_BOS2_RUN1,		// seestate
-		sfx_kntsit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
-		S_BOS2_PAIN,		// painstate
-		50,		// painchance
-		sfx_dmpain,		// painsound
-		S_BOS2_ATK1,		// meleestate
-		S_BOS2_ATK1,		// missilestate
-		S_BOS2_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_kntdth,		// deathsound
-		8,		// speed
-		24*FRACUNIT,		// radius
-		64*FRACUNIT,		// height
-		1000,		// mass
-		0,		// damage
-		sfx_dmact,		// activesound
-		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_BOS2_RAISE1,		// raisestate
+	{							// MT_KNIGHT
+		MT_KNIGHT,				// type
+		exe_doom_1_2,			// minimumversion
+		69,						// doomednum
+		S_BOS2_STND,			// spawnstate
+		500,					// spawnhealth
+		S_BOS2_RUN1,			// seestate
+		sfx_kntsit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_BOS2_PAIN,			// painstate
+		50,						// painchance
+		sfx_dmpain,				// painsound
+		S_BOS2_ATK1,			// meleestate
+		S_BOS2_ATK1,			// missilestate
+		S_BOS2_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_kntdth,				// deathsound
+		8,						// speed
+		24*FRACUNIT,			// radius
+		64*FRACUNIT,			// height
+		1000,					// mass
+		0,						// damage
+		sfx_dmact,				// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,	// flags
+		S_BOS2_RAISE1,			// raisestate
 		0,						// fastspeed
 		0,						// meleerange
 		infighting_hellnobles,	// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
 	},
 
-	{		// MT_SKULL
-		MT_SKULL,		// type
-		exe_doom_1_2,	// minimumversion
-		3006,		// doomednum
-		S_SKULL_STND,		// spawnstate
-		100,		// spawnhealth
-		S_SKULL_RUN1,		// seestate
-		0,		// seesound
-		8,		// reactiontime
-		sfx_sklatk,		// attacksound
-		S_SKULL_PAIN,		// painstate
-		256,		// painchance
-		sfx_dmpain,		// painsound
-		0,		// meleestate
-		S_SKULL_ATK1,		// missilestate
-		S_SKULL_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_firxpl,		// deathsound
-		8,		// speed
-		16*FRACUNIT,		// radius
-		56*FRACUNIT,		// height
-		50,		// mass
-		3,		// damage
-		sfx_dmact,		// activesound
-		MF_SOLID|MF_SHOOTABLE|MF_FLOAT|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+	{							// MT_SKULL
+		MT_SKULL,				// type
+		exe_doom_1_2,			// minimumversion
+		3006,					// doomednum
+		S_SKULL_STND,			// spawnstate
+		100,					// spawnhealth
+		S_SKULL_RUN1,			// seestate
+		0,						// seesound
+		8,						// reactiontime
+		sfx_sklatk,				// attacksound
+		S_SKULL_PAIN,			// painstate
+		256,					// painchance
+		sfx_dmpain,				// painsound
+		0,						// meleestate
+		S_SKULL_ATK1,			// missilestate
+		S_SKULL_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_firxpl,				// deathsound
+		8,						// speed
+		16*FRACUNIT,			// radius
+		56*FRACUNIT,			// height
+		50,						// mass
+		3,						// damage
+		sfx_dmact,				// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_FLOAT|MF_NOGRAVITY,	// flags
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_RANGEHALF,	// flags2
+		0,						// ripsound
 	},
 
-	{		// MT_SPIDER
-		MT_SPIDER,		// type
-		exe_doom_1_2,	// minimumversion
-		7,		// doomednum
-		S_SPID_STND,		// spawnstate
-		3000,		// spawnhealth
-		S_SPID_RUN1,		// seestate
-		sfx_spisit,		// seesound
-		8,		// reactiontime
-		sfx_shotgn,		// attacksound
-		S_SPID_PAIN,		// painstate
-		40,		// painchance
-		sfx_dmpain,		// painsound
-		0,		// meleestate
-		S_SPID_ATK1,		// missilestate
-		S_SPID_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_spidth,		// deathsound
-		12,		// speed
-		128*FRACUNIT,		// radius
-		100*FRACUNIT,		// height
-		1000,		// mass
-		0,		// damage
-		sfx_dmact,		// activesound
-		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_NULL		// raisestate
+	{							// MT_SPIDER
+		MT_SPIDER,				// type
+		exe_doom_1_2,			// minimumversion
+		7,						// doomednum
+		S_SPID_STND,			// spawnstate
+		3000,					// spawnhealth
+		S_SPID_RUN1,			// seestate
+		sfx_spisit,				// seesound
+		8,						// reactiontime
+		sfx_shotgn,				// attacksound
+		S_SPID_PAIN,			// painstate
+		40,						// painchance
+		sfx_dmpain,				// painsound
+		0,						// meleestate
+		S_SPID_ATK1,			// missilestate
+		S_SPID_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_spidth,				// deathsound
+		12,						// speed
+		128*FRACUNIT,			// radius
+		100*FRACUNIT,			// height
+		1000,					// mass
+		0,						// damage
+		sfx_dmact,				// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,	// flags
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_BOSS | MF2_MBF21_E3M8BOSS | MF2_MBF21_E4M8BOSS
+			| MF2_MBF21_NORADIUSDMG | MF2_MBF21_FULLVOLSOUNDS | MF2_MBF21_RANGEHALF, // flags2
+		0,						// ripsound
 	},
 
-	{		// MT_BABY
-		MT_BABY,		// type
-		exe_doom_1_2,	// minimumversion
-		68,		// doomednum
-		S_BSPI_STND,		// spawnstate
-		500,		// spawnhealth
-		S_BSPI_SIGHT,		// seestate
-		sfx_bspsit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
-		S_BSPI_PAIN,		// painstate
-		128,		// painchance
-		sfx_dmpain,		// painsound
-		0,		// meleestate
-		S_BSPI_ATK1,		// missilestate
-		S_BSPI_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_bspdth,		// deathsound
-		12,		// speed
-		64*FRACUNIT,		// radius
-		64*FRACUNIT,		// height
-		600,		// mass
-		0,		// damage
-		sfx_bspact,		// activesound
-		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_BSPI_RAISE1		// raisestate
+	{							// MT_BABY
+		MT_BABY,				// type
+		exe_doom_1_2,			// minimumversion
+		68,						// doomednum
+		S_BSPI_STND,			// spawnstate
+		500,					// spawnhealth
+		S_BSPI_SIGHT,			// seestate
+		sfx_bspsit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_BSPI_PAIN,			// painstate
+		128,					// painchance
+		sfx_dmpain,				// painsound
+		0,						// meleestate
+		S_BSPI_ATK1,			// missilestate
+		S_BSPI_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_bspdth,				// deathsound
+		12,						// speed
+		64*FRACUNIT,			// radius
+		64*FRACUNIT,			// height
+		600,					// mass
+		0,						// damage
+		sfx_bspact,				// activesound
+		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,	// flags
+		S_BSPI_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_MAP07BOSS2,	// flags2
+		0,						// ripsound
 	},
 
-	{						// MT_CYBORG
-		MT_CYBORG,		// type
-		exe_doom_1_2,	// minimumversion
-		16,					// doomednum
-		S_CYBER_STND,		// spawnstate
-		4000,				// spawnhealth
-		S_CYBER_RUN1,		// seestate
-		sfx_cybsit,			// seesound
-		8,					// reactiontime
-		0,					// attacksound
-		S_CYBER_PAIN,		// painstate
-		20,					// painchance
-		sfx_dmpain,			// painsound
-		0,					// meleestate
-		S_CYBER_ATK1,		// missilestate
-		S_CYBER_DIE1,		// deathstate
-		S_NULL,				// xdeathstate
-		sfx_cybdth,			// deathsound
-		16,					// speed
-		40*FRACUNIT,		// radius
-		110*FRACUNIT,		// height
-		1000,				// mass
-		0,					// damage
-		sfx_dmact,			// activesound
+	{							// MT_CYBORG
+		MT_CYBORG,				// type
+		exe_doom_1_2,			// minimumversion
+		16,						// doomednum
+		S_CYBER_STND,			// spawnstate
+		4000,					// spawnhealth
+		S_CYBER_RUN1,			// seestate
+		sfx_cybsit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_CYBER_PAIN,			// painstate
+		20,						// painchance
+		sfx_dmpain,				// painsound
+		0,						// meleestate
+		S_CYBER_ATK1,			// missilestate
+		S_CYBER_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_cybdth,				// deathsound
+		16,						// speed
+		40*FRACUNIT,			// radius
+		110*FRACUNIT,			// height
+		1000,					// mass
+		0,						// damage
+		sfx_dmact,				// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL, // flags
-		S_NULL,				// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		MF2_MBF21_BOSS | MF2_MBF21_E2M8BOSS | MF2_MBF21_E4M6BOSS | MF2_MBF21_NORADIUSDMG
+			| MF2_MBF21_FULLVOLSOUNDS | MF2_MBF21_HIGHERMPROB | MF2_MBF21_RANGEHALF, // flags2
+		0,						// ripsound
 	},
 
 	{		// MT_PAIN

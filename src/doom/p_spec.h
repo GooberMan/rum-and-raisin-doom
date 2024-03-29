@@ -839,6 +839,33 @@ inline bool ProjectileImmunity( mobj_t* source, mobj_t* target )
 		&& source->info->projectilegroup == target->info->projectilegroup;
 }
 
+inline bool SplashImmunity( mobj_t* source, mobj_t* spot, mobj_t* target )
+{
+	if( !sim.mbf21_thing_extensions )
+	{
+		if( target->type == MT_CYBORG
+			|| target->type == MT_SPIDER )
+		{
+			return true;
+		}
+	}
+
+	if( spot )
+	{
+		if( spot->ForceSplashDamage() )
+		{
+			return true;
+		}
+
+		return BasicImmunity( source, target )
+			|| target->NoSplashDamage()
+			|| ( spot->info->splashgroup > 0
+				&& spot->info->splashgroup == target->info->splashgroup );
+	}
+
+	return false;
+}
+
 MakeThinkFuncLookup( vldoor_t,		T_VerticalDoorGeneric,	T_VerticalDoor );
 MakeThinkFuncLookup( plat_t,		T_RaisePlatGeneric,		T_PlatRaise );
 MakeThinkFuncLookup( floormove_t,	T_MoveFloorGeneric,		T_MoveFloor );

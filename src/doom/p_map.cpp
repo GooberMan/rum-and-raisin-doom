@@ -392,7 +392,7 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 		if (tmthing->z+tmthing->height < thing->z)
 			return true;		// underneath
 		
-d		if (tmthing->target
+		if (tmthing->target
 			&& ProjectileImmunity( tmthing->target, thing ) )
 		{
 			// Don't hit same species as originator.
@@ -1320,14 +1320,9 @@ DOOM_C_API doombool PIT_RadiusAttack( mobj_t* thing )
 
     // Boss spider and cyborg
     // take no damage from concussion.
-	if( bombspot && !bombspot->ForceSplashDamage() )
+	if( SplashImmunity( bombsource, bombspot, thing ) )
 	{
-		if (thing->type == MT_CYBORG
-			|| thing->type == MT_SPIDER
-			|| thing->NoSplashDamage() )
-		{
-			return true;
-		}
+		return true;
 	}
 
     dx = abs(thing->x - bombspot->x);
