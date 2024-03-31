@@ -2432,14 +2432,14 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 			case DSS_5Damage:
 				if( candamage )
 				{
-					P_DamageMobj( mobj, NULL, NULL, 5 );
+					P_DamageMobj( mobj, NULL, NULL, 5, damage_none );
 				}
 				break;
 
 			case DSS_10Damage:
 				if( candamage )
 				{
-					P_DamageMobj( mobj, NULL, NULL, 10 );
+					P_DamageMobj( mobj, NULL, NULL, 10, damage_none );
 				}
 				break;
 
@@ -2447,7 +2447,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 			case DSS_20DamageAndLightBlink:
 				if( candamage )
 				{
-					P_DamageMobj( mobj, NULL, NULL, 20 );
+					P_DamageMobj( mobj, NULL, NULL, 20, damage_none );
 				}
 				break;
 
@@ -2459,7 +2459,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 
 				if( candamage )
 				{
-					P_DamageMobj( mobj, NULL, NULL, 20 );
+					P_DamageMobj( mobj, NULL, NULL, 20, damage_none );
 				}
 
 				if( player->health <= 10 )
@@ -2493,13 +2493,13 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 			switch( special & SectorDamage_Mask )
 			{
 			case SectorDamage_5:
-				P_DamageMobj( mobj, NULL, NULL, 5 );
+				P_DamageMobj( mobj, NULL, NULL, 5, damage_none );
 				break;
 			case SectorDamage_10:
-				P_DamageMobj( mobj, NULL, NULL, 10 );
+				P_DamageMobj( mobj, NULL, NULL, 10, damage_none );
 				break;
 			case SectorDamage_20:
-				P_DamageMobj( mobj, NULL, NULL, 20 );
+				P_DamageMobj( mobj, NULL, NULL, 20, damage_none );
 				break;
 			default:
 				break;
@@ -2518,18 +2518,18 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 			case SectorAltDamage_KillPlayerWithoutRadsuit:
 				if( ( !player->powers[pw_ironfeet] || !player->powers[pw_invulnerability] ) )
 				{
-					P_DamageMobj( mobj, nullptr, nullptr, 10000 );
+					P_DamageMobj( mobj, nullptr, nullptr, 10000, damage_theworks );
 				}
 				break;
 
 			case SectorAltDamage_KillPlayer:
-				P_DamageMobj( mobj, nullptr, nullptr, 10000 );
+				P_DamageMobj( mobj, nullptr, nullptr, 10000, damage_theworks );
 				break;
 
 			case SectorAltDamage_KillPlayersAndExit:
 				for( player_t& currplayer : std::span( players ) )
 				{
-					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000 );
+					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000, damage_theworks );
 				}
 				G_ExitLevel();
 				break;
@@ -2537,7 +2537,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 			case SectorAltDamage_KillPlayersAndSecretExit:
 				for( player_t& currplayer : std::span( players ) )
 				{
-					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000 );
+					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000, damage_theworks );
 				}
 				G_SecretExitLevel();
 				break;
@@ -2552,7 +2552,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 			&& ( special & SectorKillGroundEnemies_Mask ) == SectorKillGroundEnemies_Yes
 			&& !( mobj->flags & MF_NOGRAVITY ) )
 		{
-			P_DamageMobj( mobj, nullptr, nullptr, 10000 );
+			P_DamageMobj( mobj, nullptr, nullptr, 10000, damage_theworks );
 		}
 	}
 }

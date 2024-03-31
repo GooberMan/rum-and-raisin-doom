@@ -182,9 +182,13 @@ doombool P_CheckMeleeRange (mobj_t*	actor)
     dist = P_AproxDistance (pl->x-actor->x, pl->y-actor->y);
 
     if (gameversion <= exe_doom_1_2)
+	{
         range = MELEERANGE;
+	}
     else
-        range = MELEERANGE-20*FRACUNIT+pl->info->radius;
+	{
+        range = actor->MeleeRange() - 20*FRACUNIT + pl->info->radius;
+	}
 
     if (dist >= range)
         return false;
@@ -221,7 +225,7 @@ doombool P_CheckMissileRange (mobj_t* actor)
 		
 	// OPTIMIZE: get this from a global checksight
 	fixed_t physicaldist = P_AproxDistance( actor->x-actor->target->x,
-											actor->y-actor->target->y) - 64*FRACUNIT;
+											actor->y-actor->target->y) - actor->MeleeRange();
 
 	if (!actor->info->meleestate)
 	{
@@ -538,47 +542,49 @@ P_LookForPlayers
 
     c = 0;
     stop = (actor->lastlook-1)&3;
+
+	const fixed_t meleerange = actor->MeleeRange();
 	
     for ( ; ; actor->lastlook = (actor->lastlook+1)&3 )
     {
-	if (!playeringame[actor->lastlook])
-	    continue;
+		if (!playeringame[actor->lastlook])
+			continue;
 			
-	if (c++ == 2
-	    || actor->lastlook == stop)
-	{
-	    // done looking
-	    return false;	
-	}
+		if (c++ == 2
+			|| actor->lastlook == stop)
+		{
+			// done looking
+			return false;	
+		}
 	
-	player = &players[actor->lastlook];
+		player = &players[actor->lastlook];
 
-	if (player->health <= 0)
-	    continue;		// dead
+		if (player->health <= 0)
+			continue;		// dead
 
-	if (!P_CheckSight (actor, player->mo))
-	    continue;		// out of sight
+		if (!P_CheckSight (actor, player->mo))
+			continue;		// out of sight
 			
-	if (!allaround)
-	{
-	    an = BSP_PointToAngle (actor->x,
-				  actor->y, 
-				  player->mo->x,
-				  player->mo->y)
-		- actor->angle;
+		if (!allaround)
+		{
+			an = BSP_PointToAngle (actor->x,
+					  actor->y, 
+					  player->mo->x,
+					  player->mo->y)
+			- actor->angle;
 	    
-	    if (an > ANG90 && an < ANG270)
-	    {
-		dist = P_AproxDistance (player->mo->x - actor->x,
-					player->mo->y - actor->y);
-		// if real close, react anyway
-		if (dist > MELEERANGE)
-		    continue;	// behind back
-	    }
-	}
+			if (an > ANG90 && an < ANG270)
+			{
+			dist = P_AproxDistance (player->mo->x - actor->x,
+						player->mo->y - actor->y);
+			// if real close, react anyway
+			if (dist > meleerange)
+				continue;	// behind back
+			}
+		}
 		
-	actor->target = player->mo;
-	return true;
+		actor->target = player->mo;
+		return true;
     }
 
     return false;
@@ -955,10 +961,10 @@ DOOM_C_API void A_TroopAttack (mobj_t* actor)
     A_FaceTarget (actor);
     if (P_CheckMeleeRange (actor))
     {
-	S_StartSound (actor, sfx_claw);
-	damage = (P_Random()%8+1)*3;
-	P_DamageMobj (actor->target, actor, actor, damage);
-	return;
+		S_StartSound (actor, sfx_claw);
+		damage = (P_Random()%8+1)*3;
+		P_DamageMobj (actor->target, actor, actor, damage, damage_melee);
+		return;
     }
 
     
@@ -985,9 +991,9 @@ DOOM_C_API void A_SargAttack (mobj_t* actor)
     damage = ((P_Random()%10)+1)*4;
 
     if (gameversion <= exe_doom_1_2)
-        P_LineAttack(actor, actor->angle, MELEERANGE, 0, damage);
+        P_LineAttack(actor, actor->angle, MELEERANGE, 0, damage, damage_melee);
     else
-        P_DamageMobj (actor->target, actor, actor, damage);
+        P_DamageMobj (actor->target, actor, actor, damage, damage_melee);
 }
 
 DOOM_C_API void A_HeadAttack (mobj_t* actor)
@@ -1000,9 +1006,9 @@ DOOM_C_API void A_HeadAttack (mobj_t* actor)
     A_FaceTarget (actor);
     if (P_CheckMeleeRange (actor))
     {
-	damage = (P_Random()%6+1)*10;
-	P_DamageMobj (actor->target, actor, actor, damage);
-	return;
+		damage = (P_Random()%6+1)*10;
+		P_DamageMobj (actor->target, actor, actor, damage, damage_melee);
+		return;
     }
     
     // launch a missile
@@ -1028,10 +1034,10 @@ DOOM_C_API void A_BruisAttack (mobj_t* actor)
 		
     if (P_CheckMeleeRange (actor))
     {
-	S_StartSound (actor, sfx_claw);
-	damage = (P_Random()%8+1)*10;
-	P_DamageMobj (actor->target, actor, actor, damage);
-	return;
+		S_StartSound (actor, sfx_claw);
+		damage = (P_Random()%8+1)*10;
+		P_DamageMobj (actor->target, actor, actor, damage, damage_melee);
+		return;
     }
     
     // launch a missile
@@ -1152,9 +1158,9 @@ DOOM_C_API void A_SkelFist (mobj_t*	actor)
 	
     if (P_CheckMeleeRange (actor))
     {
-	damage = ((P_Random()%10)+1)*6;
-	S_StartSound (actor, sfx_skepch);
-	P_DamageMobj (actor->target, actor, actor, damage);
+		damage = ((P_Random()%10)+1)*6;
+		S_StartSound (actor, sfx_skepch);
+		P_DamageMobj (actor->target, actor, actor, damage, damage_melee);
     }
 }
 
@@ -1396,7 +1402,7 @@ DOOM_C_API void A_VileAttack (mobj_t* actor)
 	return;
 
     S_StartSound (actor, sfx_barexp);
-    P_DamageMobj (actor->target, actor, actor, 20);
+    P_DamageMobj (actor->target, actor, actor, 20, damage_none);
     actor->target->momz = 1000*FRACUNIT/actor->target->info->mass;
 	
     an = actor->angle >> ANGLETOFINESHIFT;
@@ -1581,9 +1587,9 @@ A_PainShootSkull
     // Check for movements.
     if (!P_TryMove (newmobj, newmobj->x, newmobj->y))
     {
-	// kill it immediately
-	P_DamageMobj (newmobj,actor,actor,10000);	
-	return;
+		// kill it immediately
+		P_DamageMobj (newmobj,actor,actor,10000,damage_theworks);	
+		return;
     }
 		
     newmobj->target = actor->target;

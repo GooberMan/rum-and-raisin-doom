@@ -1270,7 +1270,7 @@ DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 		// HELLSLIME DAMAGE
 		if( !player->powers[pw_ironfeet] && !(leveltime&0x1f) )
 		{
-			P_DamageMobj( player->mo, NULL, NULL, 10 );
+			P_DamageMobj( player->mo, NULL, NULL, 10, damage_none );
 		}
 		break;
 	
@@ -1278,7 +1278,7 @@ DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 		// NUKAGE DAMAGE
 		if( !player->powers[pw_ironfeet] && !(leveltime&0x1f) )
 		{
-			P_DamageMobj (player->mo, NULL, NULL, 5);
+			P_DamageMobj (player->mo, NULL, NULL, 5, damage_none);
 		}
 		break;
 	
@@ -1289,7 +1289,7 @@ DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 		if( ( !player->powers[pw_ironfeet] || (P_Random()<5) )
 			&& !(leveltime&0x1f) )
 		{
-			P_DamageMobj (player->mo, NULL, NULL, 20);
+			P_DamageMobj (player->mo, NULL, NULL, 20, damage_none);
 		}
 		break;
 
@@ -1314,7 +1314,7 @@ DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 
 		if( !(leveltime&0x1f) )
 		{
-			P_DamageMobj( player->mo, NULL, NULL, 20 );
+			P_DamageMobj( player->mo, NULL, NULL, 20, damage_none );
 		}
 
 		if (player->health <= 10)

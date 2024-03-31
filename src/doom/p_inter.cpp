@@ -814,10 +814,7 @@ DOOM_C_API void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* sourc
 	// thus kick away unless using the chainsaw.
 	if ( !( flags & damage_nothrust )
 		&& inflictor
-		&& !(target->flags & MF_NOCLIP)
-		&& (!source
-			|| !source->player
-			|| source->player->readyweapon != wp_chainsaw))
+		&& !(target->flags & MF_NOCLIP))
 	{
 		ang = BSP_PointToAngle ( inflictor->x,
 					inflictor->y,
@@ -943,7 +940,7 @@ DOOM_C_API void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* sourc
 	}
 }
 
-DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t damage )
+DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int32_t damage, damage_t flags )
 {
-	P_DamageMobjEx( target, inflictor, source, damage, damage_none );
+	P_DamageMobjEx( target, inflictor, source, damage, flags );
 }

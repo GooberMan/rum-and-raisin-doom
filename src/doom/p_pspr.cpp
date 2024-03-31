@@ -476,6 +476,9 @@ A_Punch
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
+	const weaponinfo_t& weapon = weaponinfo[player->readyweapon];
+	damage_t damageflags = (damage_t)( ( weapon.NoThrusting() ? damage_nothrust : damage_none ) | damage_melee );
+
     angle_t	angle;
     int		damage;
     int		slope;
@@ -487,17 +490,17 @@ A_Punch
 
     angle = player->mo->angle;
     angle += P_SubRandom() << 18;
-    slope = P_AimLineAttack (player->mo, angle, MELEERANGE);
-    P_LineAttack (player->mo, angle, MELEERANGE, slope, damage);
+    slope = P_AimLineAttack (player->mo, angle, player->mo->MeleeRange());
+    P_LineAttack (player->mo, angle, player->mo->MeleeRange(), slope, damage, damageflags);
 
     // turn to face target
     if (linetarget)
     {
-	S_StartSound (player->mo, sfx_punch);
-	player->mo->angle = BSP_PointToAngle (player->mo->x,
-					     player->mo->y,
-					     linetarget->x,
-					     linetarget->y);
+		S_StartSound (player->mo, sfx_punch);
+		player->mo->angle = BSP_PointToAngle (player->mo->x,
+							 player->mo->y,
+							 linetarget->x,
+							 linetarget->y);
     }
 }
 
@@ -510,6 +513,9 @@ A_Saw
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
+	const weaponinfo_t& weapon = weaponinfo[player->readyweapon];
+	damage_t damageflags = (damage_t)( ( weapon.NoThrusting() ? damage_nothrust : damage_none ) | damage_melee );
+
     angle_t	angle;
     int		damage;
     int		slope;
@@ -519,13 +525,13 @@ A_Saw
     angle += P_SubRandom() << 18;
     
     // use meleerange + 1 se the puff doesn't skip the flash
-    slope = P_AimLineAttack (player->mo, angle, MELEERANGE+1);
-    P_LineAttack (player->mo, angle, MELEERANGE+1, slope, damage);
+    slope = P_AimLineAttack (player->mo, angle, player->mo->MeleeRange() + 1 );
+    P_LineAttack (player->mo, angle, player->mo->MeleeRange() + 1, slope, damage, damageflags);
 
     if (!linetarget)
     {
-	S_StartSound (player->mo, sfx_sawful);
-	return;
+		S_StartSound (player->mo, sfx_sawful);
+		return;
     }
     S_StartSound (player->mo, sfx_sawhit);
 	
@@ -650,10 +656,7 @@ void P_BulletSlope (mobj_t*	mo)
 //
 // P_GunShot
 //
-void
-P_GunShot
-( mobj_t*	mo,
-  doombool	accurate )
+void P_GunShot( mobj_t* mo, doombool accurate, damage_t damageflags )
 {
     angle_t	angle;
     int		damage;
@@ -662,9 +665,11 @@ P_GunShot
     angle = mo->angle;
 
     if (!accurate)
-	angle += P_SubRandom() << 18;
+	{
+		angle += P_SubRandom() << 18;
+	}
 
-    P_LineAttack (mo, angle, MISSILERANGE, bulletslope, damage);
+    P_LineAttack(mo, angle, MISSILERANGE, bulletslope, damage, damageflags);
 }
 
 
@@ -676,17 +681,18 @@ A_FirePistol
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
+	const weaponinfo_t& weapon = weaponinfo[player->readyweapon];
     S_StartSound (player->mo, sfx_pistol);
 
     P_SetMobjState (player->mo, S_PLAY_ATK2);
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
+    DecreaseAmmo(player, weapon.ammo, weapon.ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
-		  (statenum_t)weaponinfo[player->readyweapon].flashstate);
+		  (statenum_t)weapon.flashstate);
 
     P_BulletSlope (player->mo);
-    P_GunShot (player->mo, !player->refire);
+    P_GunShot(player->mo, !player->refire, weapon.NoThrusting() ? damage_nothrust : damage_none );
 }
 
 
@@ -698,21 +704,24 @@ A_FireShotgun
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    int		i;
-	
+	const weaponinfo_t& weapon = weaponinfo[player->readyweapon];
+
     S_StartSound (player->mo, sfx_shotgn);
     P_SetMobjState (player->mo, S_PLAY_ATK2);
 
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
+    DecreaseAmmo(player, weapon.ammo, weapon.ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
-		  (statenum_t)weaponinfo[player->readyweapon].flashstate);
+		  (statenum_t)weapon.flashstate);
 
     P_BulletSlope (player->mo);
 	
-    for (i=0 ; i<7 ; i++)
-	P_GunShot (player->mo, false);
+	damage_t damageflags = weapon.NoThrusting() ? damage_nothrust : damage_none;
+    for( int32_t i = 0; i < 7; ++i)
+	{
+		P_GunShot(player->mo, false, damageflags);
+	}
 }
 
 
@@ -725,6 +734,9 @@ A_FireShotgun2
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
+	const weaponinfo_t& weapon = weaponinfo[player->readyweapon];
+	damage_t damageflags = weapon.NoThrusting() ? damage_nothrust : damage_none;
+
     int		i;
     angle_t	angle;
     int		damage;
@@ -733,23 +745,23 @@ A_FireShotgun2
     S_StartSound (player->mo, sfx_dshtgn);
     P_SetMobjState (player->mo, S_PLAY_ATK2);
 
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
+    DecreaseAmmo(player, weapon.ammo, weapon.ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
-		  (statenum_t)weaponinfo[player->readyweapon].flashstate);
+		  (statenum_t)weapon.flashstate);
 
     P_BulletSlope (player->mo);
 	
     for (i=0 ; i<20 ; i++)
     {
-	damage = 5*(P_Random ()%3+1);
-	angle = player->mo->angle;
-	angle += P_SubRandom() << ANGLETOFINESHIFT;
-	P_LineAttack (player->mo,
-		      angle,
-		      MISSILERANGE,
-		      bulletslope + (P_SubRandom() << 5), damage);
+		damage = 5*(P_Random ()%3+1);
+		angle = player->mo->angle;
+		angle += P_SubRandom() << ANGLETOFINESHIFT;
+		P_LineAttack (player->mo,
+				  angle,
+				  MISSILERANGE,
+				  bulletslope + (P_SubRandom() << 5), damage, damageflags);
     }
 }
 
@@ -762,23 +774,25 @@ A_FireCGun
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
+	const weaponinfo_t& weapon = weaponinfo[player->readyweapon];
+
     S_StartSound (player->mo, sfx_pistol);
 
-    if (!player->ammo[weaponinfo[player->readyweapon].ammo])
+    if (!player->ammo[weapon.ammo])
 	return;
 		
     P_SetMobjState (player->mo, S_PLAY_ATK2);
-    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, weaponinfo[player->readyweapon].ammopershot);
+    DecreaseAmmo(player, weapon.ammo, weapon.ammopershot);
 
     P_SetPsprite (player,
 		  ps_flash,
-		  (statenum_t)(weaponinfo[player->readyweapon].flashstate
+		  (statenum_t)(weapon.flashstate
 		  + psp->state
 		  - &states[S_CHAIN1]) );
 
     P_BulletSlope (player->mo);
 	
-    P_GunShot (player->mo, !player->refire);
+    P_GunShot(player->mo, !player->refire, weapon.NoThrusting() ? damage_nothrust : damage_none);
 }
 
 
@@ -816,25 +830,25 @@ DOOM_C_API void A_BFGSpray (mobj_t* mo)
     // offset angles from its attack angle
     for (i=0 ; i<40 ; i++)
     {
-	an = mo->angle - ANG90/2 + ANG90/40*i;
+		an = mo->angle - ANG90/2 + ANG90/40*i;
 
-	// mo->target is the originator (player)
-	//  of the missile
-	P_AimLineAttack (mo->target, an, 16*64*FRACUNIT);
+		// mo->target is the originator (player)
+		//  of the missile
+		P_AimLineAttack (mo->target, an, 16*64*FRACUNIT);
 
-	if (!linetarget)
-	    continue;
+		if (!linetarget)
+			continue;
 
-	P_SpawnMobj (linetarget->x,
-		     linetarget->y,
-		     linetarget->z + (linetarget->height>>2),
-		     MT_EXTRABFG);
+		P_SpawnMobj (linetarget->x,
+				 linetarget->y,
+				 linetarget->z + (linetarget->height>>2),
+				 MT_EXTRABFG);
 	
-	damage = 0;
-	for (j=0;j<15;j++)
-	    damage += (P_Random()&7) + 1;
+		damage = 0;
+		for (j=0;j<15;j++)
+			damage += (P_Random()&7) + 1;
 
-	P_DamageMobj (linetarget, mo->target,mo->target, damage);
+		P_DamageMobj (linetarget, mo->target,mo->target, damage, damage_none);
     }
 }
 

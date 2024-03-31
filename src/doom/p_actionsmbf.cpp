@@ -106,7 +106,7 @@ DOOM_C_API void A_Scratch( mobj_t* mobj )
 	{
 		S_StartSound( mobj, sound );
 		// [MBF] Is damage randomised???
-		P_DamageMobj( mobj->target, mobj, mobj, damage );
+		P_DamageMobj( mobj->target, mobj, mobj, damage, damage_melee );
 		return;
 	}
 }

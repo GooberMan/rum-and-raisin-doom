@@ -353,6 +353,7 @@ DOOM_C_API typedef struct mobj_s
 	INLINE const bool LowGravity() const					{ return sim.mbf21_thing_extensions && ( flags2 & MF2_MBF21_LOGRAV ); }
 
 	INLINE const fixed_t Speed() const						{ return fastmonsters && info->fastspeed ? info->fastspeed : info->speed; }
+	INLINE const fixed_t MeleeRange() const					{ return info->meleerange ? info->meleerange : IntToFixed( 64 ); }
 #endif
 } mobj_t;
 

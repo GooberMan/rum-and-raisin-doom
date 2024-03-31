@@ -53,7 +53,8 @@ static INLINE bool ObjectInRange( mobj_t* source, mobj_t* target, fixed_t range 
 	return dist < range;
 }
 
-static INLINE void BulletAttack( mobj_t* source, fixed_t hspread, fixed_t vspread, uint32_t numbullets, uint32_t damagebase, uint32_t damagedice )
+static INLINE void BulletAttack( mobj_t* source, fixed_t hspread, fixed_t vspread, uint32_t numbullets
+								, uint32_t damagebase, uint32_t damagedice, damage_t damageflags )
 {
 	fixed_t slope = P_AimLineAttack( source, source->angle, MISSILERANGE );
 
@@ -62,7 +63,7 @@ static INLINE void BulletAttack( mobj_t* source, fixed_t hspread, fixed_t vsprea
 		uint32_t damage = damagebase + (P_Random() % damagedice) + 1;
 		angle_t hangle = source->angle + DegreesToAngle( FixedMul( P_Random() << 8, hspread ) - ( hspread >> 1 ) );
 		fixed_t slopeadd = 0; //FixedMul( P_Random() << 8, vspread ) - ( vspread >> 1 );
-		P_LineAttack( source, hangle, MISSILERANGE, slope + slopeadd, damage );
+		P_LineAttack( source, hangle, MISSILERANGE, slope + slopeadd, damage, damageflags );
 	}
 }
 
@@ -141,7 +142,7 @@ DOOM_C_API void A_MonsterBulletAttack( mobj_t* mobj )
 	ARG_UINT( mobj, damagebase, 4 );
 	ARG_UINT( mobj, damagedice, 5 );
 
-	BulletAttack( mobj, hspread, vspread, numbullets, damagebase, damagedice );
+	BulletAttack( mobj, hspread, vspread, numbullets, damagebase, damagedice, damage_none );
 }
 
 DOOM_C_API void A_MonsterMeleeAttack( mobj_t* mobj )
@@ -298,7 +299,10 @@ DOOM_C_API void A_WeaponBulletAttack( player_t* player, pspdef_t* psp )
 	PSPARG_UINT( psp, damagebase, 4 );
 	PSPARG_UINT( psp, damagedice, 5 );
 
-	BulletAttack( player->mo, hspread, vspread, numbullets, damagebase, damagedice );
+	const weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
+	damage_t damageflags = weapon.NoThrusting() ? damage_nothrust : damage_none;
+
+	BulletAttack( player->mo, hspread, vspread, numbullets, damagebase, damagedice, damageflags );
 }
 
 DOOM_C_API void A_WeaponMeleeAttack( player_t* player, pspdef_t* psp )

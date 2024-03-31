@@ -144,7 +144,7 @@ DOOM_C_API doombool PIT_StompThing( mobj_t* thing )
     if ( !tmthing->player && current_map->map_num != 30)
 	return false;	
 		
-    P_DamageMobj (thing, tmthing, tmthing, 10000);
+    P_DamageMobj (thing, tmthing, tmthing, 10000, damage_theworks);
 	
     return true;
 }
@@ -368,7 +368,7 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 	{
 		damage = ((P_Random()%8)+1)*tmthing->info->damage;
 	
-		P_DamageMobj (thing, tmthing, tmthing, damage);
+		P_DamageMobj (thing, tmthing, tmthing, damage, damage_melee);
 	
 		tmthing->flags &= ~MF_SKULLFLY;
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
@@ -420,7 +420,7 @@ DOOM_C_API doombool PIT_CheckThing( mobj_t* thing )
 	
 		// damage / explode
 		damage = ( (P_Random()%8 ) + 1 ) * tmthing->info->damage;
-		P_DamageMobj( thing, tmthing, tmthing->target, damage );
+		P_DamageMobj( thing, tmthing, tmthing->target, damage, damage_none );
 
 		// don't traverse any more
 		return false;
@@ -914,7 +914,8 @@ extern "C"
 	// ???: use slope for monsters?
 	fixed_t		shootz;	
 
-	int		la_damage;
+	int32_t		la_damage;
+	damage_t	la_damageflags;
 	fixed_t		attackrange;
 
 	fixed_t		aimslope;
@@ -1031,88 +1032,87 @@ DOOM_C_API doombool PTR_ShootTraverse( intercept_t* in )
 		
     if (in->isaline)
     {
-	li = in->d.line;
+		li = in->d.line;
 	
-	if (li->special)
-	    P_ShootSpecialLine (shootthing, li);
+		if (li->special)
+			P_ShootSpecialLine (shootthing, li);
 
-	if ( !(li->flags & ML_TWOSIDED) )
-	    goto hitline;
+		if ( !(li->flags & ML_TWOSIDED) )
+			goto hitline;
 	
-	// crosses a two sided line
-	P_LineOpening (li);
+		// crosses a two sided line
+		P_LineOpening (li);
 		
-	dist = FixedMul (attackrange, in->frac);
+		dist = FixedMul (attackrange, in->frac);
 
-        // e6y: emulation of missed back side on two-sided lines.
-        // backsector can be NULL when emulating missing back side.
+		// e6y: emulation of missed back side on two-sided lines.
+		// backsector can be NULL when emulating missing back side.
 
-        if (li->backsector == NULL)
-        {
-            slope = FixedDiv (openbottom - shootz , dist);
-            if (slope > aimslope)
-                goto hitline;
-
-            slope = FixedDiv (opentop - shootz , dist);
-            if (slope < aimslope)
-                goto hitline;
-        }
-        else
-        {
-            if (li->frontsector->floorheight != li->backsector->floorheight)
-            {
-                slope = FixedDiv (openbottom - shootz , dist);
-                if (slope > aimslope)
-                    goto hitline;
-            }
-
-            if (li->frontsector->ceilingheight != li->backsector->ceilingheight)
-            {
-                slope = FixedDiv (opentop - shootz , dist);
-                if (slope < aimslope)
-                    goto hitline;
-            }
-        }
-
-	// shot continues
-	return true;
-	
-	
-	// hit line
-      hitline:
-	// position a bit closer
-	frac = in->frac - FixedDiv (4*FRACUNIT,attackrange);
-	x = trace.x + FixedMul (trace.dx, frac);
-	y = trace.y + FixedMul (trace.dy, frac);
-	z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
-
-	if (li->frontsector->ceilingpic == skyflatnum)
-	{
-	    // don't shoot the sky!
-	    if (z > li->frontsector->ceilingheight)
-		return false;
-	    
-	    // it's a sky hack wall
-	    if	(li->backsector && li->backsector->ceilingpic == skyflatnum)
+		if (li->backsector == NULL)
 		{
-			doombool impact = false;
-			if( fix.sky_wall_projectiles )
+			slope = FixedDiv (openbottom - shootz , dist);
+			if (slope > aimslope)
+				goto hitline;
+
+			slope = FixedDiv (opentop - shootz , dist);
+			if (slope < aimslope)
+				goto hitline;
+		}
+		else
+		{
+			if (li->frontsector->floorheight != li->backsector->floorheight)
 			{
-				impact = z <= li->backsector->ceilingheight;
+				slope = FixedDiv (openbottom - shootz , dist);
+				if (slope > aimslope)
+					goto hitline;
 			}
 
-			if( !impact )
+			if (li->frontsector->ceilingheight != li->backsector->ceilingheight)
 			{
-				return false;
+				slope = FixedDiv (opentop - shootz , dist);
+				if (slope < aimslope)
+					goto hitline;
 			}
 		}
-	}
 
-	// Spawn bullet puffs.
-	P_SpawnPuff (x,y,z);
+		// shot continues
+		return true;
 	
-	// don't go any farther
-	return false;	
+		// hit line
+	hitline:
+		// position a bit closer
+		frac = in->frac - FixedDiv (4*FRACUNIT,attackrange);
+		x = trace.x + FixedMul (trace.dx, frac);
+		y = trace.y + FixedMul (trace.dy, frac);
+		z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
+
+		if (li->frontsector->ceilingpic == skyflatnum)
+		{
+			// don't shoot the sky!
+			if (z > li->frontsector->ceilingheight)
+			return false;
+
+			// it's a sky hack wall
+			if	(li->backsector && li->backsector->ceilingpic == skyflatnum)
+			{
+				doombool impact = false;
+				if( fix.sky_wall_projectiles )
+				{
+					impact = z <= li->backsector->ceilingheight;
+				}
+
+				if( !impact )
+				{
+					return false;
+				}
+			}
+		}
+
+		// Spawn bullet puffs.
+		P_SpawnPuff (x,y,z);
+	
+		// don't go any farther
+		return false;	
     }
     
     // shoot a thing
@@ -1147,12 +1147,14 @@ DOOM_C_API doombool PTR_ShootTraverse( intercept_t* in )
     // Spawn bullet puffs or blod spots,
     // depending on target type.
     if (in->d.thing->flags & MF_NOBLOOD)
-	P_SpawnPuff (x,y,z);
+		P_SpawnPuff (x,y,z);
     else
-	P_SpawnBlood (x,y,z, la_damage);
+		P_SpawnBlood (x,y,z, la_damage);
 
     if (la_damage)
-	P_DamageMobj (th, shootthing, shootthing, la_damage);
+	{
+		P_DamageMobj (th, shootthing, shootthing, la_damage, la_damageflags);
+	}
 
     // don't go any farther
     return false;
@@ -1207,7 +1209,7 @@ DOOM_C_API fixed_t P_AimLineAttack( mobj_t* t1, angle_t angle, fixed_t distance 
 // If damage == 0, it is just a test trace
 // that will leave linetarget set.
 //
-DOOM_C_API void P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage )
+DOOM_C_API void P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage, damage_t damageflags )
 {
     fixed_t	x2;
     fixed_t	y2;
@@ -1215,16 +1217,17 @@ DOOM_C_API void P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed
     angle >>= ANGLETOFINESHIFT;
     shootthing = t1;
     la_damage = damage;
+	la_damageflags = damageflags;
     x2 = t1->x + (distance>>FRACBITS)*finecosine[angle];
     y2 = t1->y + (distance>>FRACBITS)*finesine[angle];
     shootz = t1->z + (t1->height>>1) + 8*FRACUNIT;
     attackrange = distance;
     aimslope = slope;
 		
-    P_PathTraverse ( t1->x, t1->y,
-		     x2, y2,
-		     PT_ADDLINES|PT_ADDTHINGS,
-		     PTR_ShootTraverse );
+    P_PathTraverse( t1->x, t1->y,
+					x2, y2,
+					PT_ADDLINES|PT_ADDTHINGS,
+					PTR_ShootTraverse );
 }
  
 
@@ -1299,7 +1302,8 @@ DOOM_C_API void P_UseLines( player_t* player )
 //
 mobj_t*		bombsource;
 mobj_t*		bombspot;
-int		bombdamage;
+int32_t		bombdamage;
+damage_t	bombdamageflags;
 
 
 //
@@ -1339,8 +1343,8 @@ DOOM_C_API doombool PIT_RadiusAttack( mobj_t* thing )
 
     if ( P_CheckSight (thing, bombspot) )
     {
-	// must be in direct path
-	P_DamageMobj (thing, bombspot, bombsource, bombdamage - dist);
+		// must be in direct path
+		P_DamageMobj (thing, bombspot, bombsource, bombdamage - dist, bombdamageflags);
     }
     
     return true;
@@ -1372,6 +1376,7 @@ DOOM_C_API void P_RadiusAttack( mobj_t* spot, mobj_t* source, int32_t damage )
     bombspot = spot;
     bombsource = source;
     bombdamage = damage;
+	bombdamageflags = damage_none;
 	
     for (y=yl ; y<=yh ; y++)
 	for (x=xl ; x<=xh ; x++)
@@ -1404,7 +1409,7 @@ DOOM_C_API void P_RadiusAttackDistance( mobj_t* spot, mobj_t* source, int32_t da
 			if( dist < distance && P_CheckSight( mobj, spot ))
 			{
 				// must be in direct path
-				P_DamageMobj( mobj, spot, source, FixedMul( damage, FixedDiv( dist, distance ) ) );
+				P_DamageMobj( mobj, spot, source, FixedMul( damage, FixedDiv( dist, distance ) ), damage_none );
 			}
 		}
 
@@ -1526,7 +1531,7 @@ DOOM_C_API doombool P_ChangeSectorFixed( sector_t* sector, doombool crunch )
 
 		if( crunch && !( leveltime & 3 ) )
 		{
-			P_DamageMobj( mobj, NULL, NULL, 10 );
+			P_DamageMobj( mobj, NULL, NULL, 10, damage_none );
 
 			// spray blood in a random direction
 			mobj_t* blood = P_SpawnMobj( mobj->x, mobj->y, mobj->z + (mobj->height >> 1), MT_BLOOD );
@@ -1605,7 +1610,7 @@ DOOM_C_API doombool PIT_ChangeSector( mobj_t* thing )
 
     if (crushchange && !(leveltime&3) )
     {
-	P_DamageMobj(thing,NULL,NULL,10);
+	P_DamageMobj(thing,NULL,NULL,10,damage_none);
 
 	// spray blood in a random direction
 	mo = P_SpawnMobj (thing->x,

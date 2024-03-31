@@ -59,6 +59,18 @@
 
 #include "r_local.h"
 
+DOOM_C_API typedef enum damage_e
+{
+	damage_none					= 0x00000000,
+	damage_totalkill			= 0x00000001,
+	damage_alsononshootables	= 0x00000002,
+	damage_nothrust				= 0x00000004,
+	damage_ignorearmor			= 0x00000008,
+	damage_melee				= 0x00000010,
+
+	damage_theworks				= damage_totalkill | damage_alsononshootables | damage_ignorearmor | damage_nothrust,
+} damage_t;
+
 //
 // P_TICK
 //
@@ -244,7 +256,7 @@ DOOM_C_API extern mobj_t*	linetarget;	// who got hit (or NULL)
 
 DOOM_C_API fixed_t			P_AimLineAttack( mobj_t* t1, angle_t angle, fixed_t distance );
 
-DOOM_C_API void				P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage );
+DOOM_C_API void				P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage, damage_t damageflags = damage_none );
 
 DOOM_C_API void				P_RadiusAttack( mobj_t* spot, mobj_t* source, int32_t damage );
 DOOM_C_API void				P_RadiusAttackDistance( mobj_t* spot, mobj_t* source, int32_t damage, fixed_t distance );
@@ -253,7 +265,7 @@ DOOM_C_API mobj_t*			P_FindTracerTarget( mobj_t* source, fixed_t distance, angle
 //
 // P_SETUP
 //
-DOOM_C_API extern byte*			rejectmatrix;	// for fast sight rejection
+DOOM_C_API extern byte*				rejectmatrix;	// for fast sight rejection
 DOOM_C_API extern blockmap_t*		blockmap;
 DOOM_C_API extern blockmap_t*		blockmapbase;
 DOOM_C_API extern int32_t			bmapwidth;
@@ -270,20 +282,9 @@ DOOM_C_API extern mobj_t**			blocklinks;	// for thing chains
 DOOM_C_API extern int		maxammo[NUMAMMO];
 DOOM_C_API extern int		clipammo[NUMAMMO];
 
-DOOM_C_API typedef enum damage_e
-{
-	damage_none					= 0x00000000,
-	damage_totalkill			= 0x00000001,
-	damage_alsononshootables	= 0x00000002,
-	damage_nothrust				= 0x00000004,
-	damage_ignorearmor			= 0x00000008,
-
-	damage_theworks				= damage_totalkill | damage_alsononshootables | damage_ignorearmor | damage_nothrust,
-} damage_t;
-
 DOOM_C_API void P_TouchSpecialThing( mobj_t* special,  mobj_t* toucher );
 
-DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int damage );
+DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int damage, damage_t flags );
 DOOM_C_API void P_DamageMobjEx( mobj_t* target, mobj_t* inflictor, mobj_t* source, int damage, damage_t flags );
 DOOM_C_API void P_KillMobj( mobj_t* source, mobj_t* target );
 
