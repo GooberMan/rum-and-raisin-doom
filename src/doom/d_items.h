@@ -60,6 +60,7 @@ DOOM_C_API typedef struct weaponinfo_s
 	constexpr bool DontSwitchToOnAmmoPickup() const		{ return mbf21flags & WF_MBF21_NOAUTOSWITCHTO; }
 	constexpr bool NoAutofire() const					{ return mbf21flags & WF_MBF21_NOAUTOFIRE; }
 	constexpr bool NoThrusting() const					{ return mbf21flags & WF_MBF21_NOTHRUST; }
+	constexpr bool Silent() const						{ return mbf21flags & WF_MBF21_SILENT; }
 #endif // defined( __cplusplus )
 } weaponinfo_t;
 

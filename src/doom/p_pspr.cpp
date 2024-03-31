@@ -257,7 +257,11 @@ DOOM_C_API void P_FireWeapon (player_t* player)
     P_SetMobjState (player->mo, S_PLAY_ATK1);
     newstate = (statenum_t)weaponinfo[player->readyweapon].atkstate;
     P_SetPsprite (player, ps_weapon, newstate);
-    P_NoiseAlert (player->mo, player->mo);
+
+	if( !player->Weapon().Silent() )
+	{
+		P_NoiseAlert (player->mo, player->mo);
+	}
 }
 
 

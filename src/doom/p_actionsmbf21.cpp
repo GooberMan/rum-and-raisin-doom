@@ -322,12 +322,13 @@ DOOM_C_API void A_WeaponSound( player_t* player, pspdef_t* psp )
 	PSPARG_INT( psp, fullvol, 2 );
 
 	S_StartSound( fullvol ? nullptr : player->mo, sound );
+
 	P_NoiseAlert( player->mo, player->mo );
 }
 
 DOOM_C_API void A_WeaponJump( player_t* player, pspdef_t* psp )
 {
-	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_INT( psp, state, 1 );
 	PSPARG_INT( psp, chance, 2 );
 
 	if( P_Random() < chance )
@@ -350,7 +351,7 @@ DOOM_C_API void A_ConsumeAmmo( player_t* player, pspdef_t* psp )
 
 DOOM_C_API void A_CheckAmmo( player_t* player, pspdef_t* psp )
 {
-	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_INT( psp, state, 1 );
 	PSPARG_UINT( psp, amount, 2 );
 
 	const weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
@@ -363,7 +364,7 @@ DOOM_C_API void A_CheckAmmo( player_t* player, pspdef_t* psp )
 
 DOOM_C_API void A_RefireTo( player_t* player, pspdef_t* psp )
 {
-	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_INT( psp, state, 1 );
 	PSPARG_INT( psp, noammocheck, 2 );
 
 	if ( ( player->cmd.buttons & BT_ATTACK )
@@ -381,7 +382,7 @@ DOOM_C_API void A_RefireTo( player_t* player, pspdef_t* psp )
 
 DOOM_C_API void A_GunFlashTo( player_t* player, pspdef_t* psp )
 {
-	PSPARG_STATENUM( psp, state, 1 );
+	PSPARG_INT( psp, state, 1 );
 	PSPARG_INT( psp, nothirdperson, 2 );
 
 	P_SetPsprite( player, ps_flash, state );

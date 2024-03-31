@@ -205,6 +205,10 @@ DOOM_C_API typedef struct player_s
 	size_t		anymomentumframes;
 
 	doombool*	visitedlevels;
+
+#if defined(__cplusplus)
+	INLINE const weaponinfo_t& Weapon() const { return weaponinfo[ readyweapon ]; }
+#endif // defined(__cplusplus)
 } player_t;
 
 
