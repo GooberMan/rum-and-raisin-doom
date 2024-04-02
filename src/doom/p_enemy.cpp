@@ -169,35 +169,34 @@ P_NoiseAlert
 //
 // P_CheckMeleeRange
 //
-doombool P_CheckMeleeRange (mobj_t*	actor)
+doombool P_CheckMeleeRangeEx( mobj_t* actor, fixed_t range )
 {
-    mobj_t*	pl;
-    fixed_t	dist;
-    fixed_t range;
-	
-    if (!actor->target)
-	return false;
+	if( !actor->target )
+	{
+		return false;
+	}
 		
-    pl = actor->target;
-    dist = P_AproxDistance (pl->x-actor->x, pl->y-actor->y);
+	range = range - IntToFixed( 20 ) + actor->target->info->radius;
 
-    if (gameversion <= exe_doom_1_2)
-	{
-        range = MELEERANGE;
-	}
-    else
-	{
-        range = actor->MeleeRange() - 20*FRACUNIT + pl->info->radius;
-	}
+	mobj_t* pl = actor->target;
+	fixed_t dist = P_AproxDistance (pl->x-actor->x, pl->y-actor->y);
 
-    if (dist >= range)
-        return false;
+	if( dist >= range )
+	{
+		return false;
+	}
 
 	
-    if (! P_CheckSight (actor, actor->target) )
-	return false;
-							
-    return true;		
+	return P_CheckSight( actor, actor->target );
+}
+
+doombool P_CheckMeleeRange( mobj_t* actor )
+{
+	fixed_t range = ( gameversion <= exe_doom_1_2 )
+					? MELEERANGE
+					: actor->MeleeRange();
+
+	return P_CheckMeleeRangeEx( actor, range );
 }
 
 //

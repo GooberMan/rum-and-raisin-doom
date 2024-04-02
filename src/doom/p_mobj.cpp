@@ -1142,55 +1142,60 @@ DOOM_C_API mobj_t* P_SpawnMissile( mobj_t* source, mobj_t* dest, int32_t type )
 // P_SpawnPlayerMissile
 // Tries to aim at a nearby monster
 //
-DOOM_C_API void P_SpawnPlayerMissile( mobj_t* source, int32_t type )
+DOOM_C_API mobj_t* P_SpawnPlayerMissileEx( mobj_t* source, int32_t type, angle_t angle, angle_t pitch
+										, fixed_t xoffset, fixed_t yoffset, fixed_t zoffset, doombool settracer )
 {
-    mobj_t*	th;
-    angle_t	an;
-    
-    fixed_t	x;
-    fixed_t	y;
-    fixed_t	z;
-    fixed_t	slope;
-    
-    // see which target is to be aimed at
-    an = source->angle;
-    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
-    
-    if (!linetarget)
-    {
-	an += 1<<26;
-	slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
+	constexpr fixed_t AimDistance = IntToFixed( 1024 );
+
+	// see which target is to be aimed at
+	angle_t an = angle;
+	fixed_t slope = P_AimLineAttack( source, an, AimDistance );
 
 	if (!linetarget)
 	{
-	    an -= 2<<26;
-	    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
+		an += 1<<26;
+		slope = P_AimLineAttack( source, an, AimDistance );
+
+		if (!linetarget)
+		{
+			an -= 2<<26;
+			slope = P_AimLineAttack( source, an, AimDistance );
+		}
+
+		if (!linetarget)
+		{
+			an = source->angle;
+			slope = finetangent[ FINEANGLE( pitch ) ];
+		}
 	}
 
-	if (!linetarget)
-	{
-	    an = source->angle;
-	    slope = 0;
-	}
-    }
-		
-    x = source->x;
-    y = source->y;
-    z = source->z + 4*8*FRACUNIT;
+	fixed_t x = xoffset + source->x;
+	fixed_t y = yoffset + source->y;
+	fixed_t z = zoffset + source->z + IntToFixed( 32 );
 	
-    th = P_SpawnMobj (x,y,z, type);
+	mobj_t* th = P_SpawnMobj( x,y,z, type );
 
-    if (th->info->seesound)
-	S_StartSound (th, th->info->seesound);
+	if( th->info->seesound )
+	{
+		S_StartSound( th, th->info->seesound );
+	}
 
-    th->target = source;
-    th->angle = an;
-    th->momx = FixedMul( th->Speed(),
-			 finecosine[an>>ANGLETOFINESHIFT]);
-    th->momy = FixedMul( th->Speed(),
-			 finesine[an>>ANGLETOFINESHIFT]);
-    th->momz = FixedMul( th->Speed(), slope);
+	th->target = source;
+	if( settracer )
+	{
+		th->tracer = linetarget;
+	}
 
-    P_CheckMissileSpawn (th);
+	th->angle = an;
+	th->momx = FixedMul( th->Speed(), finecosine[ FINEANGLE( an ) ] );
+	th->momy = FixedMul( th->Speed(), finesine[ FINEANGLE( an ) ] );
+	th->momz = FixedMul( th->Speed(), slope );
+
+	P_CheckMissileSpawn( th );
+	return th;
 }
 
+DOOM_C_API mobj_t* P_SpawnPlayerMissile( mobj_t* source, int32_t type )
+{
+	return P_SpawnPlayerMissileEx( source, type, source->angle, 0, 0, 0, 0, false );
+}

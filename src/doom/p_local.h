@@ -129,7 +129,9 @@ DOOM_C_API void			P_MobjThinker (mobj_t* mobj);
 DOOM_C_API void			P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 DOOM_C_API void			P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage);
 DOOM_C_API mobj_t*		P_SpawnMissile (mobj_t* source, mobj_t* dest, int32_t type);
-DOOM_C_API void			P_SpawnPlayerMissile (mobj_t* source, int32_t type);
+DOOM_C_API mobj_t*		P_SpawnPlayerMissile(mobj_t* source, int32_t type);
+DOOM_C_API mobj_t*		P_SpawnPlayerMissileEx( mobj_t* source, int32_t type, angle_t angle, angle_t pitch
+												, fixed_t xoffset, fixed_t yoffset, fixed_t zoffset, doombool settracer );
 
 
 //
@@ -137,6 +139,7 @@ DOOM_C_API void			P_SpawnPlayerMissile (mobj_t* source, int32_t type);
 //
 DOOM_C_API void			P_NoiseAlert (mobj_t* target, mobj_t* emmiter);
 DOOM_C_API doombool		P_CheckMeleeRange( mobj_t* actor );
+DOOM_C_API doombool		P_CheckMeleeRangeEx( mobj_t* actor, fixed_t range );
 
 //
 // P_MAPUTL
@@ -256,7 +259,8 @@ DOOM_C_API extern mobj_t*	linetarget;	// who got hit (or NULL)
 
 DOOM_C_API fixed_t			P_AimLineAttack( mobj_t* t1, angle_t angle, fixed_t distance );
 
-DOOM_C_API void				P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage, damage_t damageflags = damage_none );
+// Returns the mobj that was attacked
+DOOM_C_API mobj_t*			P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage, damage_t damageflags = damage_none );
 
 DOOM_C_API void				P_RadiusAttack( mobj_t* spot, mobj_t* source, int32_t damage );
 DOOM_C_API void				P_RadiusAttackDistance( mobj_t* spot, mobj_t* source, int32_t damage, fixed_t distance );

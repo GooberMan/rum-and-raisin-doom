@@ -1209,7 +1209,7 @@ DOOM_C_API fixed_t P_AimLineAttack( mobj_t* t1, angle_t angle, fixed_t distance 
 // If damage == 0, it is just a test trace
 // that will leave linetarget set.
 //
-DOOM_C_API void P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage, damage_t damageflags )
+DOOM_C_API mobj_t* P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage, damage_t damageflags )
 {
     fixed_t	x2;
     fixed_t	y2;
@@ -1228,6 +1228,8 @@ DOOM_C_API void P_LineAttack( mobj_t* t1, angle_t angle, fixed_t distance, fixed
 					x2, y2,
 					PT_ADDLINES|PT_ADDTHINGS,
 					PTR_ShootTraverse );
+
+	return linetarget;
 }
  
 

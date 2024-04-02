@@ -1516,7 +1516,7 @@ DOOM_C_API typedef struct state_s
 #endif // defined( __cplusplus )
 } state_t;
 
-#define STATEMISC( mobj, name, index )				auto & name = mobj->state->misc ## index
+#define STATEMISC( mobj, name, index )				const auto& name = mobj->state->misc ## index
 #define MISC_INT( mobj, name, index )				STATEMISC( mobj, name, index )._ ## int
 #define MISC_UINT( mobj, name, index )				STATEMISC( mobj, name, index )._ ## uint
 #define MISC_FIXED( mobj, name, index )				STATEMISC( mobj, name, index )._ ## fixed
@@ -1525,7 +1525,7 @@ DOOM_C_API typedef struct state_s
 #define MISC_STATENUM( mobj, name, index )			STATEMISC( mobj, name, index )._ ## statenum
 #define MISC_SOUND( mobj, name, index )				STATEMISC( mobj, name, index )._ ## sound
 
-#define STATEARG( mobj, name, index )				auto & name = mobj->state->arg ## index
+#define STATEARG( mobj, name, index )				const auto& name = mobj->state->arg ## index
 #define ARG_INT( mobj, name, index )				STATEARG( mobj, name, index )._ ## int
 #define ARG_UINT( mobj, name, index )				STATEARG( mobj, name, index )._ ## uint
 #define ARG_FIXED( mobj, name, index )				STATEARG( mobj, name, index )._ ## fixed

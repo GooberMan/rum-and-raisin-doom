@@ -57,17 +57,19 @@ static INLINE void BulletAttack( mobj_t* source, fixed_t hspread, fixed_t vsprea
 								, uint32_t damagebase, uint32_t damagedice, damage_t damageflags )
 {
 	fixed_t slope = P_AimLineAttack( source, source->angle, MISSILERANGE );
+	fixed_t slopespread = finetangent[ FINEANGLE( DegreesToAngle( vspread ) ) ];
 
 	for( [[maybe_unused]] int32_t bulletnum : iota( 0, numbullets ) )
 	{
 		uint32_t damage = damagebase + (P_Random() % damagedice) + 1;
 		angle_t hangle = source->angle + DegreesToAngle( FixedMul( P_Random() << 8, hspread ) - ( hspread >> 1 ) );
-		fixed_t slopeadd = 0; //FixedMul( P_Random() << 8, vspread ) - ( vspread >> 1 );
+		fixed_t slopeadd = FixedMul( P_Random() << 8, slopespread ) - ( slopespread >> 1 );
 		P_LineAttack( source, hangle, MISSILERANGE, slope + slopeadd, damage, damageflags );
 	}
 }
 
 // External definitions
+DOOM_C_API void A_FaceTarget( mobj_t* mobj );
 DOOM_C_API void A_VileChaseParams( mobj_t* actor, statenum_t healstate, sfxenum_t healsound );
 DOOM_C_API void P_SetPsprite( player_t* player, int position, int32_t stnum ) ;
 DOOM_C_API doombool P_CheckAmmo( player_t* player );
@@ -147,7 +149,24 @@ DOOM_C_API void A_MonsterBulletAttack( mobj_t* mobj )
 
 DOOM_C_API void A_MonsterMeleeAttack( mobj_t* mobj )
 {
-	I_LogAddEntry( Log_Error, "A_MonsterMeleeAttack unimplemented" );
+	ARG_UINT( mobj, damagebase, 1 );
+	ARG_UINT( mobj, damagedice, 2 );
+	ARG_SOUND( mobj, sound, 3 );
+	ARG_FIXED( mobj, range, 4 );
+
+	if( !mobj->target )
+	{
+		return;
+	}
+
+	A_FaceTarget( mobj );
+
+	if( P_CheckMeleeRangeEx( mobj, range ? range : mobj->MeleeRange() ) )
+	{
+		S_StartSound( mobj, sound );
+		int32_t damage = damagebase * ( ( P_Random() % damagedice ) + 1 );
+		P_DamageMobjEx( mobj->target, mobj, mobj, damage, damage_melee );
+	}
 }
 
 DOOM_C_API void A_RadiusDamage( mobj_t* mobj )
@@ -288,7 +307,15 @@ DOOM_C_API void A_WeaponProjectile( player_t* player, pspdef_t* psp )
 	PSPARG_FIXED( psp, hoffset, 4 );
 	PSPARG_FIXED( psp, voffset, 5 );
 
-	I_LogAddEntry( Log_Error, "A_WeaponProjectile unimplemented" );
+	angle_t hangle = player->mo->angle + DegreesToAngle( angle );
+	angle_t vangle = DegreesToAngle( pitch );
+
+	int32_t forwardlookup = FINEANGLE( hangle );
+
+	fixed_t xoffset = FixedMul( hoffset, finesine[ forwardlookup ] );
+	fixed_t yoffset = FixedMul( hoffset, finecosine[ forwardlookup ] );
+
+	mobj_t* projectile = P_SpawnPlayerMissileEx( player->mo, type, hangle, vangle, xoffset, yoffset, voffset, true );
 }
 
 DOOM_C_API void A_WeaponBulletAttack( player_t* player, pspdef_t* psp )
@@ -313,7 +340,30 @@ DOOM_C_API void A_WeaponMeleeAttack( player_t* player, pspdef_t* psp )
 	PSPARG_SOUND( psp, sound, 4 );
 	PSPARG_FIXED( psp, range, 5 );
 
-	I_LogAddEntry( Log_Error, "A_WeaponMeleeAttack unimplemented" );
+	const weaponinfo_t& weapon = weaponinfo[ player->readyweapon ];
+	damage_t damageflags = (damage_t)( ( weapon.NoThrusting() ? damage_nothrust : damage_none ) | damage_melee );
+
+	int32_t damage = damagebase * ( ( P_Random () % damagedice ) + 1 );
+	if( player->powers[ pw_strength ] )
+	{
+		damage *= ( zerkfactor ? zerkfactor : IntToFixed( 1 ) );
+	}
+
+	angle_t angle = player->mo->angle + ( P_SubRandom() << 18 );
+	fixed_t attackrange = range ? range : player->mo->MeleeRange();
+	fixed_t slope = P_AimLineAttack( player->mo, angle, attackrange );
+	mobj_t* target = P_LineAttack( player->mo, angle, attackrange, slope, damage, damageflags );
+
+	if( target )
+	{
+		S_StartSound( player->mo, sound );
+		P_NoiseAlert( player->mo, player->mo );
+
+		player->mo->angle = BSP_PointToAngle( player->mo->x,
+												player->mo->y,
+												target->x,
+												target->y );
+	}
 }
 
 DOOM_C_API void A_WeaponSound( player_t* player, pspdef_t* psp )
@@ -322,7 +372,6 @@ DOOM_C_API void A_WeaponSound( player_t* player, pspdef_t* psp )
 	PSPARG_INT( psp, fullvol, 2 );
 
 	S_StartSound( fullvol ? nullptr : player->mo, sound );
-
 	P_NoiseAlert( player->mo, player->mo );
 }
 
