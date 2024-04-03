@@ -473,7 +473,6 @@
     <ClInclude Include="..\src\doom\d_player.h" />
     <ClCompile Include="..\src\doom\dstrings.c" />
     <ClInclude Include="..\src\doom\dstrings.h" />
-    <ClInclude Include="..\src\doom\d_textur.h" />
     <ClInclude Include="..\src\doom\d_think.h" />
     <ClInclude Include="..\src\doom\f_finale.h" />
     <ClCompile Include="..\src\doom\f_wipe.c" />

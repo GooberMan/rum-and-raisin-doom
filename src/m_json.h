@@ -178,6 +178,7 @@ public:
 	auto& Children() const	{ return children; }
 	auto& Key() const		{ return key; }
 	auto& Value() const		{ return value; }
+	bool Valid() const		{ return type != JSONElementType::Invalid; }
 
 	template< typename _ty >
 	requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >

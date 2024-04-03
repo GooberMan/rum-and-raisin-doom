@@ -244,6 +244,9 @@
     <ClCompile Include="..\src\w_wad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\m_jsonlump.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\i_system.h">
@@ -472,6 +475,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\i_error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\m_jsonlump.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

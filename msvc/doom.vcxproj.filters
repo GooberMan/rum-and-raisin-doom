@@ -255,9 +255,6 @@
     <ClInclude Include="..\src\doom\dstrings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\doom\d_textur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\doom\d_think.h">
       <Filter>Header Files</Filter>
     </ClInclude>
