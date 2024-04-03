@@ -83,10 +83,10 @@ DOOM_C_API typedef struct compoptions_s
 {
 	doombool		telefrag_map_30;						// comp_telefrag			- Any monster can telefrag on MAP30
 	doombool		dropoff_ledges;							// comp_dropoff				- Some objects never hang over tall ledges
-	doombool		falloff;								// comp_falloff				- Objects don't fall under their own weight
+	doombool		objects_falloff;						// comp_falloff				- Objects don't fall under their own weight
 	doombool		stay_on_lifts;							// comp_staylift			- Monsters randomly walk off of moving lifts
 	doombool		stick_on_doors;							// comp_doorstuck			- Monsters get stuck on doortracks
-	doombool		pursuit;								// comp_pursuit				- Monsters don't give up pursuit of targets
+	doombool		dont_give_up_pursuit;					// comp_pursuit				- Monsters don't give up pursuit of targets
 	doombool		ghost_monsters;							// comp_vile				- Arch-Vile resurrects invincible ghosts
 	doombool		lost_soul_limit;						// comp_pain				- Pain Elementals limited to 21 lost souls
 	doombool		lost_souls_behind_walls;				// comp_skull				- Lost souls get stuck behind walls

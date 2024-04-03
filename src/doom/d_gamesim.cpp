@@ -29,9 +29,12 @@
 #include "p_sectoraction.h"
 
 #include "m_argv.h"
+#include "m_container.h"
 #include "m_fixed.h"
 
 #include "w_wad.h"
+
+#include <functional>
 
 // Externs
 extern "C"
@@ -54,10 +57,10 @@ static simvalues_t GetVanillaValues( GameVersion_t version, GameMode_t mode )
 
 	values.comp.telefrag_map_30 = true;						// comp_telefrag
 	values.comp.dropoff_ledges = true;						// comp_dropoff
-	values.comp.falloff = true;								// comp_falloff
+	values.comp.objects_falloff = true;						// comp_falloff
 	values.comp.stay_on_lifts = true;						// comp_staylift
 	values.comp.stick_on_doors = true;						// comp_doorstuck
-	values.comp.pursuit = true;								// comp_pursuit
+	values.comp.dont_give_up_pursuit = true;				// comp_pursuit
 	values.comp.ghost_monsters = true;						// comp_vile
 	values.comp.lost_soul_limit = true;						// comp_pain
 	values.comp.lost_souls_behind_walls = true;				// comp_skull
@@ -186,10 +189,10 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 
 	values.comp.telefrag_map_30 = true;						// comp_telefrag
 	values.comp.dropoff_ledges = true;						// comp_dropoff
-	values.comp.falloff = true;								// comp_falloff
+	values.comp.objects_falloff = true;						// comp_falloff
 	values.comp.stay_on_lifts = true;						// comp_staylift
 	values.comp.stick_on_doors = false;						// comp_doorstuck
-	values.comp.pursuit = true;								// comp_pursuit
+	values.comp.dont_give_up_pursuit = true;				// comp_pursuit
 	values.comp.ghost_monsters = false;						// comp_vile
 	values.comp.lost_soul_limit = false;					// comp_pain
 	values.comp.lost_souls_behind_walls = false;			// comp_skull
@@ -297,16 +300,96 @@ static simvalues_t GetComplevel9Values( GameMode_t mode )
 	return values;
 }
 
+constexpr void SetBoolOptionExact( doombool& option, int32_t val )
+{
+	option = !!val;
+}
+
+constexpr void SetBoolOptionOpposite( doombool& option, int32_t val )
+{
+	option = !val;
+}
+
+static std::unordered_map< std::string, std::function< void( compoptions_t&, int32_t ) > > MBFOptions =
+{
+	{ "weapon_recoil",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.weapon_recoil, val ); } },
+	{ "monsters_remember",		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_remember_prev_target, val ); } },
+	{ "monster_infighting",		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monster_infighting, val ); } },
+	{ "monster_backing",		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_back_out, val ); } },
+	{ "monster_avoid_hazards",	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_avoid_hazards, val ); } },
+	{ "monkeys",				[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_climb_steep_stairs, val ); } },
+	{ "monster_friction",		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_affected_by_friction, val ); } },
+	{ "help_friends",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_help_friends, val ); } },
+	{ "player_helpers",			[]( compoptions_t& c, int32_t val ) { c.num_helper_dogs = val; } },
+	{ "friend_distance",		[]( compoptions_t& c, int32_t val ) { c.friend_minimum_distance = IntToFixed( val ); } },
+	{ "dog_jumping",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dogs_can_jump_down, val ); } },
+	{ "comp_telefrag",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.telefrag_map_30, val ); } },
+	{ "comp_dropoff",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dropoff_ledges, val ); } },
+	{ "comp_vile",				[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.ghost_monsters, val ); } },
+	{ "comp_pain",				[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_soul_limit, val ); } },
+	{ "comp_skull",				[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_behind_walls, val ); } },
+	{ "comp_blazing",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.blazing_door_double_sounds, val ); } },
+	{ "comp_doorlight",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.door_tagged_light_is_abrupt, val ); } },
+	{ "comp_model",				[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_linedef_trigger_method, val ); } },
+	{ "comp_god",				[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.god_mode_absolute, val ); } },
+	{ "comp_falloff",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.objects_falloff, val ); } },
+	{ "comp_floors",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_floor_movement_method, val ); } },
+	{ "comp_skymap",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.sky_always_renders_normally, val ); } },
+	{ "comp_pursuit",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dont_give_up_pursuit, val ); } },
+	{ "comp_doorstuck",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.stick_on_doors, val ); } },
+	{ "comp_staylift",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.stay_on_lifts, val ); } },
+	{ "comp_zombie",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dead_players_exit_levels, val ); } },
+	{ "comp_stairs",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_stairbuilding_method, val ); } },
+	{ "comp_infcheat",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.powerup_cheats_infinite, val ); } },
+	{ "comp_zerotags",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.zero_tags, val ); } },
+	{ "comp_respawn",			[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.respawn_non_map_things_at_origin, val ); } },
+	{ "comp_soul",				[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_bounce, val ); } },
+	{ "comp_ledgeblock",		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_blocked_by_ledges, val ); } },
+	{ "comp_friendlyspawn",		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.friendly_inherits_source_attribs, val ); } },
+	{ "comp_voodooscroller",	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.voodoo_scrollers_move_slowly, val ); } },
+	{ "comp_reservedlineflag",	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.mbf_reserved_flag_disables_flags, val ); } },
+};
+
+static void UpdateFromOptionsLump( simvalues_t& values )
+{
+	lumpindex_t optionslump = W_CheckNumForNameExcluding( "OPTIONS", wt_system );
+	if( optionslump >= 0 )
+	{
+		const char* options = (const char*)W_CacheLumpNum( optionslump, PU_STATIC );
+		const char* endoptions = options + W_LumpLength( optionslump );
+
+		while( options < endoptions )
+		{
+			if( *options != ';'
+				&& *options != '[' )
+			{
+				char param[ 128 ] = {};
+				int32_t value = 0;
+				if( sscanf( options, "%127s %d", param, &value ) == 2 )
+				{
+					auto found = MBFOptions.find( param );
+					if( found != MBFOptions.end() )
+					{
+						found->second( values.comp, value );
+					}
+				}
+			}
+
+			while( options < endoptions && *options++ != '\n' ) {};
+		}
+	}
+}
+
 static simvalues_t GetMBFValues( GameMode_t mode )
 {
 	simvalues_t values = {};
 
 	values.comp.telefrag_map_30 = false;					// comp_telefrag
 	values.comp.dropoff_ledges = true;						// comp_dropoff
-	values.comp.falloff = true;								// comp_falloff
+	values.comp.objects_falloff = true;						// comp_falloff
 	values.comp.stay_on_lifts = true;						// comp_staylift
 	values.comp.stick_on_doors = false;						// comp_doorstuck
-	values.comp.pursuit = false;							// comp_pursuit
+	values.comp.dont_give_up_pursuit = false;			// comp_pursuit
 	values.comp.ghost_monsters = false;						// comp_vile
 	values.comp.lost_soul_limit = false;					// comp_pain
 	values.comp.lost_souls_behind_walls = false;			// comp_skull
@@ -338,7 +421,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.monsters_affected_by_friction = true;		// monster_friction
 	values.comp.monsters_help_friends = false;				// help_friends
 	values.comp.num_helper_dogs = 0;						// player_helpers
-	values.comp.friend_minimum_distance = 128;				// friend_distance
+	values.comp.friend_minimum_distance = IntToFixed( 128 ); // friend_distance
 	values.comp.dogs_can_jump_down = true;					// dog_jumping
 
 	values.comp.finale_use_secondary_lump = ( mode == retail );	// CREDIT instead of HELP2
@@ -402,6 +485,8 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 
+	UpdateFromOptionsLump( values );
+
 	return values;
 }
 
@@ -411,10 +496,10 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 
 	values.comp.telefrag_map_30 = true;						// comp_telefrag
 	values.comp.dropoff_ledges = true;						// comp_dropoff
-	values.comp.falloff = true;								// comp_falloff
+	values.comp.objects_falloff = true;						// comp_falloff
 	values.comp.stay_on_lifts = true;						// comp_staylift
 	values.comp.stick_on_doors = false;						// comp_doorstuck
-	values.comp.pursuit = true;								// comp_pursuit
+	values.comp.dont_give_up_pursuit = true;				// comp_pursuit
 	values.comp.ghost_monsters = true;						// comp_vile
 	values.comp.lost_soul_limit = true;						// comp_pain
 	values.comp.lost_souls_behind_walls = true;				// comp_skull
@@ -446,7 +531,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.monsters_affected_by_friction = true;		// monster_friction
 	values.comp.monsters_help_friends = false;				// help_friends
 	values.comp.num_helper_dogs = 0;						// player_helpers
-	values.comp.friend_minimum_distance = 0;				// friend_distance
+	values.comp.friend_minimum_distance = IntToFixed( 128 ); // friend_distance
 	values.comp.dogs_can_jump_down = false;					// dog_jumping
 
 	values.comp.finale_use_secondary_lump = ( mode == retail );	// CREDIT instead of HELP2
@@ -509,6 +594,8 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.mbf21_sector_specials = true;				// Insta-deaths
 	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
+
+	UpdateFromOptionsLump( values );
 
 	return values;
 }
