@@ -204,7 +204,7 @@ DOOM_C_API typedef struct mapinfo_s
 	int32_t					map_num;
 	mapflags_t				map_flags;
 
-	flowstring_t			music_lump;
+	flowstring_t			music_lump[ 65 ];
 	flowstring_t			sky_texture;
 	int32_t					sky_scroll_speed;
 	int32_t					par_time;

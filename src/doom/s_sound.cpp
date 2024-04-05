@@ -266,7 +266,7 @@ DOOM_C_API void S_Start(void)
     // start new music for the level
     mus_paused = 0;
 
-    S_ChangeMusicLump( &current_map->music_lump, true );
+    S_ChangeMusicLump( &current_map->music_lump[ 0 ], true );
 }
 
 DOOM_C_API void S_StopSound(mobj_t *origin)

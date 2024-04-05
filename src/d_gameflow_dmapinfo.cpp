@@ -339,7 +339,7 @@ static void BuildNewGameInfo()
 		targetmap.episode				= &targetepisode;
 		targetmap.map_num				= sourcemap.map_number;
 		 // targetmap.map_flags;
-		if( !sourcemap.music_lump.empty() )		targetmap.music_lump	= FlowString( sourcemap.music_lump );
+		if( !sourcemap.music_lump.empty() )		targetmap.music_lump[ 0 ]	= FlowString( sourcemap.music_lump );
 		if( !sourcemap.sky_lump.empty() )		targetmap.sky_texture	= FlowString( sourcemap.sky_lump );
 		targetmap.sky_scroll_speed		= sourcemap.sky_scroll_speed;
 		targetmap.par_time				= sourcemap.par_time;

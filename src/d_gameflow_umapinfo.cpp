@@ -729,7 +729,7 @@ static void BuildNewGameInfo()
 		newmap.episode = &mapepisode;
 		newmap.map_num = map.map_num;
 		// newmap.map_flags
-		if( !map.music.empty() ) newmap.music_lump = FlowString( map.music );
+		if( !map.music.empty() ) newmap.music_lump[ 0 ] = FlowString( map.music );
 		if( !map.skytexture.empty() ) newmap.sky_texture = FlowString( map.skytexture );
 		if( map.partime ) newmap.par_time = map.partime;
 		if( !map.next.empty() ) newmap.next_map = &umapinfogame.maps[ map.next ];

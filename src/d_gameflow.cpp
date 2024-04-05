@@ -23,6 +23,22 @@ gameflow_t*		current_game		= nullptr;
 episodeinfo_t*	current_episode		= nullptr;
 mapinfo_t*		current_map			= nullptr;
 
+static std::map< DoomString, mapinfo_t* > allmaps;
+static std::vector< DoomString > musinfostorage;
+
+inline auto Episodes()
+{
+	return std::span( current_game->episodes, current_game->num_episodes );
+}
+
+inline auto Maps( episodeinfo_t* episode )
+{
+	return std::span( episode->all_maps, episode->num_maps );
+}
+
+void D_GameflowParseUMAPINFO( int32_t lumpnum );
+void D_GameflowParseDMAPINFO( int32_t lumpnum );
+
 episodeinfo_t* D_GameflowGetEpisode( int32_t episodenum )
 {
 	for( auto& episode : D_GetEpisodes() )
@@ -64,12 +80,59 @@ void D_GameflowSetCurrentMap( mapinfo_t* map )
 	current_map = map;
 }
 
-void D_GameflowParseUMAPINFO( int32_t lumpnum );
-void D_GameflowParseDMAPINFO( int32_t lumpnum );
+constexpr auto PlainFlowString( const char* name )
+{
+	flowstring_t lump = { name, FlowString_None };
+	return lump;
+}
+
+static void Sanitize( DoomString& currline )
+{
+	std::replace( currline.begin(), currline.end(), '\t', ' ' );
+	currline.erase( std::remove( currline.begin(), currline.end(), '\r' ), currline.end() );
+	size_t startpos = currline.find_first_not_of( " " );
+	if( startpos != DoomString::npos && startpos > 0 )
+	{
+		currline = currline.substr( startpos );
+	}
+}
+
+void D_GameflowParseMUSINFO( lumpindex_t lumpnum )
+{
+	DoomString lumptext( (size_t)W_LumpLength( lumpnum ) + 1, 0 );
+	W_ReadLump( lumpnum, (void*)lumptext.c_str() );
+
+	DoomStringStream lumpstream( lumptext );
+	DoomString currline;
+
+	mapinfo_t* currmap = nullptr;
+
+	while( std::getline( lumpstream, currline ) )
+	{
+		Sanitize( currline );
+		auto found = allmaps.find( currline );
+		if( found != allmaps.end() )
+		{
+			currmap = found->second;
+		}
+		else if( currmap )
+		{
+			int32_t index = -1;
+			char lumpname[ 16 ] = {};
+			if( sscanf( currline.c_str(), "%d %8s", &index, lumpname ) == 2
+				&& index > 0
+				&& index <= 64 )
+			{
+				auto inserted = musinfostorage.insert( musinfostorage.end(), lumpname );
+				currmap->music_lump[ index ] = PlainFlowString( inserted->c_str() );
+			}
+		}
+	}
+}
 
 void D_GameflowCheckAndParseMapinfos( void )
 {
-	int32_t lumpnum = -1;
+	lumpindex_t lumpnum = -1;
 	if( ( lumpnum = W_CheckNumForName( "UMAPINFO" ) ) >= 0 )
 	{
 		D_GameflowParseUMAPINFO( lumpnum );
@@ -89,5 +152,19 @@ void D_GameflowCheckAndParseMapinfos( void )
 	{
 		//D_GameflowParseMAPINFO( lumpnum );
 		I_TerminalPrintf( Log_Error, " MAPINFO gameflow unimplemented, retaining vanilla gameflow\n" );
+	}
+
+	for( episodeinfo_t* episode : Episodes() )
+	{
+		for( mapinfo_t* map : Maps( episode ) )
+		{
+			DoomString maplump = AsDoomString( map->data_lump, map->episode->episode_num, map->map_num );
+			allmaps[ maplump ] = map;
+		}
+	}
+
+	if( ( lumpnum = W_CheckNumForName( "MUSINFO" ) ) >= 0 )
+	{
+		D_GameflowParseMUSINFO( lumpnum );
 	}
 }

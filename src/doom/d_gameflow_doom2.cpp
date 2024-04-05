@@ -214,7 +214,7 @@ mapinfo_t doom2_map_map01 =
 	&doom2_episode_hellonearth,						// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "runnin" ),					// music_lump
+	{ RuntimeFlowString( "runnin" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -238,7 +238,7 @@ mapinfo_t doom2_map_map02 =
 	&doom2_episode_hellonearth,						// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "stalks" ),					// music_lump
+	{ RuntimeFlowString( "stalks" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -262,7 +262,7 @@ mapinfo_t doom2_map_map02_bfg =
 	&doom2_episode_hellonearth,						// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "stalks" ),					// music_lump
+	{ RuntimeFlowString( "stalks" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -286,7 +286,7 @@ mapinfo_t doom2_map_map03 =
 	&doom2_episode_hellonearth,						// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "countd" ),					// music_lump
+	{ RuntimeFlowString( "countd" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -310,7 +310,7 @@ mapinfo_t doom2_map_map04 =
 	&doom2_episode_hellonearth,						// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "betwee" ),					// music_lump
+	{ RuntimeFlowString( "betwee" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -334,7 +334,7 @@ mapinfo_t doom2_map_map05 =
 	&doom2_episode_hellonearth,						// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "doom" ),					// music_lump
+	{ RuntimeFlowString( "doom" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -358,7 +358,7 @@ mapinfo_t doom2_map_map06 =
 	&doom2_episode_hellonearth,						// episode
 	6,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "the_da" ),					// music_lump
+	{ RuntimeFlowString( "the_da" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -388,7 +388,7 @@ mapinfo_t doom2_map_map07 =
 	&doom2_episode_hellonearth,						// episode
 	7,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "shawn" ),					// music_lump
+	{ RuntimeFlowString( "shawn" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -412,7 +412,7 @@ mapinfo_t doom2_map_map08 =
 	&doom2_episode_hellonearth,						// episode
 	8,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ddtblu" ),					// music_lump
+	{ RuntimeFlowString( "ddtblu" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -436,7 +436,7 @@ mapinfo_t doom2_map_map09 =
 	&doom2_episode_hellonearth,						// episode
 	9,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "in_cit" ),					// music_lump
+	{ RuntimeFlowString( "in_cit" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	270,											// par_time
@@ -460,7 +460,7 @@ mapinfo_t doom2_map_map10 =
 	&doom2_episode_hellonearth,						// episode
 	10,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "dead" ),					// music_lump
+	{ RuntimeFlowString( "dead" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -484,7 +484,7 @@ mapinfo_t doom2_map_map11 =
 	&doom2_episode_hellonearth,						// episode
 	11,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "stlks2" ),					// music_lump
+	{ RuntimeFlowString( "stlks2" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -512,7 +512,7 @@ mapinfo_t doom2_map_map12 =
 	&doom2_episode_hellonearth,						// episode
 	12,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "theda2" ),					// music_lump
+	{ RuntimeFlowString( "theda2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -536,7 +536,7 @@ mapinfo_t doom2_map_map13 =
 	&doom2_episode_hellonearth,						// episode
 	13,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "doom2" ),					// music_lump
+	{ RuntimeFlowString( "doom2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -560,7 +560,7 @@ mapinfo_t doom2_map_map14 =
 	&doom2_episode_hellonearth,						// episode
 	14,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ddtbl2" ),					// music_lump
+	{ RuntimeFlowString( "ddtbl2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -584,7 +584,7 @@ mapinfo_t doom2_map_map15 =
 	&doom2_episode_hellonearth,						// episode
 	15,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "runni2" ),					// music_lump
+	{ RuntimeFlowString( "runni2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -608,7 +608,7 @@ mapinfo_t doom2_map_map16 =
 	&doom2_episode_hellonearth,						// episode
 	16,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "dead2" ),					// music_lump
+	{ RuntimeFlowString( "dead2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -632,7 +632,7 @@ mapinfo_t doom2_map_map17 =
 	&doom2_episode_hellonearth,						// episode
 	17,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "stlks3" ),					// music_lump
+	{ RuntimeFlowString( "stlks3" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	420,											// par_time
@@ -656,7 +656,7 @@ mapinfo_t doom2_map_map18 =
 	&doom2_episode_hellonearth,						// episode
 	18,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "romero" ),					// music_lump
+	{ RuntimeFlowString( "romero" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -680,7 +680,7 @@ mapinfo_t doom2_map_map19 =
 	&doom2_episode_hellonearth,						// episode
 	19,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "shawn2" ),					// music_lump
+	{ RuntimeFlowString( "shawn2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	200,											// par_time
@@ -704,7 +704,7 @@ mapinfo_t doom2_map_map20 =
 	&doom2_episode_hellonearth,						// episode
 	20,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "messag" ),					// music_lump
+	{ RuntimeFlowString( "messag" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -732,7 +732,7 @@ mapinfo_t doom2_map_map21 =
 	&doom2_episode_hellonearth,						// episode
 	21,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "count2" ),					// music_lump
+	{ RuntimeFlowString( "count2" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	240,											// par_time
@@ -756,7 +756,7 @@ mapinfo_t doom2_map_map22 =
 	&doom2_episode_hellonearth,						// episode
 	22,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ddtbl3" ),					// music_lump
+	{ RuntimeFlowString( "ddtbl3" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -780,7 +780,7 @@ mapinfo_t doom2_map_map23 =
 	&doom2_episode_hellonearth,						// episode
 	23,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ampie" ),					// music_lump
+	{ RuntimeFlowString( "ampie" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -804,7 +804,7 @@ mapinfo_t doom2_map_map24 =
 	&doom2_episode_hellonearth,						// episode
 	24,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "theda3" ),					// music_lump
+	{ RuntimeFlowString( "theda3" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -828,7 +828,7 @@ mapinfo_t doom2_map_map25 =
 	&doom2_episode_hellonearth,						// episode
 	25,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "adrian" ),					// music_lump
+	{ RuntimeFlowString( "adrian" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -852,7 +852,7 @@ mapinfo_t doom2_map_map26 =
 	&doom2_episode_hellonearth,						// episode
 	26,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "messg2" ),					// music_lump
+	{ RuntimeFlowString( "messg2" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	300,											// par_time
@@ -876,7 +876,7 @@ mapinfo_t doom2_map_map27 =
 	&doom2_episode_hellonearth,						// episode
 	27,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "romer2" ),					// music_lump
+	{ RuntimeFlowString( "romer2" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	330,											// par_time
@@ -900,7 +900,7 @@ mapinfo_t doom2_map_map28 =
 	&doom2_episode_hellonearth,						// episode
 	28,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "tense" ),					// music_lump
+	{ RuntimeFlowString( "tense" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	420,											// par_time
@@ -924,7 +924,7 @@ mapinfo_t doom2_map_map29 =
 	&doom2_episode_hellonearth,						// episode
 	29,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "shawn3" ),					// music_lump
+	{ RuntimeFlowString( "shawn3" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	300,											// par_time
@@ -948,7 +948,7 @@ mapinfo_t doom2_map_map30 =
 	&doom2_episode_hellonearth,						// episode
 	30,												// map_num
 	Map_Doom2EndOfGame,								// map_flags
-	RuntimeFlowString( "openin" ),					// music_lump
+	{ RuntimeFlowString( "openin" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -976,7 +976,7 @@ mapinfo_t doom2_map_map31 =
 	&doom2_episode_hellonearth,						// episode
 	31,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "evil" ),					// music_lump
+	{ RuntimeFlowString( "evil" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -1000,7 +1000,7 @@ mapinfo_t doom2_map_map32 =
 	&doom2_episode_hellonearth,						// episode
 	32,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "ultima" ),					// music_lump
+	{ RuntimeFlowString( "ultima" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -1024,7 +1024,7 @@ mapinfo_t doom2_map_map33 =
 	&doom2_episode_hellonearth,						// episode
 	33,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "read_m" ),					// music_lump
+	{ RuntimeFlowString( "read_m" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	0,												// par_time

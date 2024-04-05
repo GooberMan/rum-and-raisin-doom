@@ -177,7 +177,7 @@ mapinfo_t tnt_map_map01 =
 	&tnt_episode,									// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "runnin" ),					// music_lump
+	{ RuntimeFlowString( "runnin" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -201,7 +201,7 @@ mapinfo_t tnt_map_map02 =
 	&tnt_episode,									// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "stalks" ),					// music_lump
+	{ RuntimeFlowString( "stalks" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -225,7 +225,7 @@ mapinfo_t tnt_map_map03 =
 	&tnt_episode,									// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "countd" ),					// music_lump
+	{ RuntimeFlowString( "countd" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -249,7 +249,7 @@ mapinfo_t tnt_map_map04 =
 	&tnt_episode,									// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "betwee" ),					// music_lump
+	{ RuntimeFlowString( "betwee" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -273,7 +273,7 @@ mapinfo_t tnt_map_map05 =
 	&tnt_episode,									// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "doom" ),					// music_lump
+	{ RuntimeFlowString( "doom" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -297,7 +297,7 @@ mapinfo_t tnt_map_map06 =
 	&tnt_episode,									// episode
 	6,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "the_da" ),					// music_lump
+	{ RuntimeFlowString( "the_da" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -327,7 +327,7 @@ mapinfo_t tnt_map_map07 =
 	&tnt_episode,									// episode
 	7,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "shawn" ),					// music_lump
+	{ RuntimeFlowString( "shawn" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -351,7 +351,7 @@ mapinfo_t tnt_map_map08 =
 	&tnt_episode,									// episode
 	8,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ddtblu" ),					// music_lump
+	{ RuntimeFlowString( "ddtblu" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -375,7 +375,7 @@ mapinfo_t tnt_map_map09 =
 	&tnt_episode,									// episode
 	9,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "in_cit" ),					// music_lump
+	{ RuntimeFlowString( "in_cit" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	270,											// par_time
@@ -399,7 +399,7 @@ mapinfo_t tnt_map_map10 =
 	&tnt_episode,									// episode
 	10,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "dead" ),					// music_lump
+	{ RuntimeFlowString( "dead" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -423,7 +423,7 @@ mapinfo_t tnt_map_map11 =
 	&tnt_episode,									// episode
 	11,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "stlks2" ),					// music_lump
+	{ RuntimeFlowString( "stlks2" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -451,7 +451,7 @@ mapinfo_t tnt_map_map12 =
 	&tnt_episode,									// episode
 	12,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "theda2" ),					// music_lump
+	{ RuntimeFlowString( "theda2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -475,7 +475,7 @@ mapinfo_t tnt_map_map13 =
 	&tnt_episode,									// episode
 	13,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "doom2" ),					// music_lump
+	{ RuntimeFlowString( "doom2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -499,7 +499,7 @@ mapinfo_t tnt_map_map14 =
 	&tnt_episode,									// episode
 	14,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ddtbl2" ),					// music_lump
+	{ RuntimeFlowString( "ddtbl2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -523,7 +523,7 @@ mapinfo_t tnt_map_map15 =
 	&tnt_episode,									// episode
 	15,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "runni2" ),					// music_lump
+	{ RuntimeFlowString( "runni2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	210,											// par_time
@@ -547,7 +547,7 @@ mapinfo_t tnt_map_map16 =
 	&tnt_episode,									// episode
 	16,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "dead2" ),					// music_lump
+	{ RuntimeFlowString( "dead2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -571,7 +571,7 @@ mapinfo_t tnt_map_map17 =
 	&tnt_episode,									// episode
 	17,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "stlks3" ),					// music_lump
+	{ RuntimeFlowString( "stlks3" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	420,											// par_time
@@ -595,7 +595,7 @@ mapinfo_t tnt_map_map18 =
 	&tnt_episode,									// episode
 	18,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "romero" ),					// music_lump
+	{ RuntimeFlowString( "romero" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -619,7 +619,7 @@ mapinfo_t tnt_map_map19 =
 	&tnt_episode,									// episode
 	19,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "shawn2" ),					// music_lump
+	{ RuntimeFlowString( "shawn2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	200,											// par_time
@@ -643,7 +643,7 @@ mapinfo_t tnt_map_map20 =
 	&tnt_episode,									// episode
 	20,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "messag" ),					// music_lump
+	{ RuntimeFlowString( "messag" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -671,7 +671,7 @@ mapinfo_t tnt_map_map21 =
 	&tnt_episode,									// episode
 	21,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "count2" ),					// music_lump
+	{ RuntimeFlowString( "count2" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	240,											// par_time
@@ -695,7 +695,7 @@ mapinfo_t tnt_map_map22 =
 	&tnt_episode,									// episode
 	22,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ddtbl3" ),					// music_lump
+	{ RuntimeFlowString( "ddtbl3" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -719,7 +719,7 @@ mapinfo_t tnt_map_map23 =
 	&tnt_episode,									// episode
 	23,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "ampie" ),					// music_lump
+	{ RuntimeFlowString( "ampie" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -743,7 +743,7 @@ mapinfo_t tnt_map_map24 =
 	&tnt_episode,									// episode
 	24,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "theda3" ),					// music_lump
+	{ RuntimeFlowString( "theda3" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -767,7 +767,7 @@ mapinfo_t tnt_map_map25 =
 	&tnt_episode,									// episode
 	25,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "adrian" ),					// music_lump
+	{ RuntimeFlowString( "adrian" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -791,7 +791,7 @@ mapinfo_t tnt_map_map26 =
 	&tnt_episode,									// episode
 	26,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "messg2" ),					// music_lump
+	{ RuntimeFlowString( "messg2" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	300,											// par_time
@@ -815,7 +815,7 @@ mapinfo_t tnt_map_map27 =
 	&tnt_episode,									// episode
 	27,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "romer2" ),					// music_lump
+	{ RuntimeFlowString( "romer2" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	330,											// par_time
@@ -839,7 +839,7 @@ mapinfo_t tnt_map_map28 =
 	&tnt_episode,									// episode
 	28,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "tense" ),					// music_lump
+	{ RuntimeFlowString( "tense" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	420,											// par_time
@@ -863,7 +863,7 @@ mapinfo_t tnt_map_map29 =
 	&tnt_episode,									// episode
 	29,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "shawn3" ),					// music_lump
+	{ RuntimeFlowString( "shawn3" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	300,											// par_time
@@ -887,7 +887,7 @@ mapinfo_t tnt_map_map30 =
 	&tnt_episode,									// episode
 	30,												// map_num
 	Map_Doom2EndOfGame,								// map_flags
-	RuntimeFlowString( "openin" ),					// music_lump
+	{ RuntimeFlowString( "openin" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -915,7 +915,7 @@ mapinfo_t tnt_map_map31 =
 	&tnt_episode,									// episode
 	31,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "evil" ),					// music_lump
+	{ RuntimeFlowString( "evil" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -939,7 +939,7 @@ mapinfo_t tnt_map_map32 =
 	&tnt_episode,									// episode
 	32,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "ultima" ),					// music_lump
+	{ RuntimeFlowString( "ultima" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time

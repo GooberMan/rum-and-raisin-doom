@@ -255,7 +255,7 @@ mapinfo_t chex_map_e1m1 =
 	&chex_episode_one,								// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m1" ),					// music_lump
+	{ RuntimeFlowString( "e1m1" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -279,7 +279,7 @@ mapinfo_t chex_map_e1m2 =
 	&chex_episode_one,								// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m2" ),					// music_lump
+	{ RuntimeFlowString( "e1m2" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	75,												// par_time
@@ -303,7 +303,7 @@ mapinfo_t chex_map_e1m3 =
 	&chex_episode_one,								// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m3" ),					// music_lump
+	{ RuntimeFlowString( "e1m3" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -327,7 +327,7 @@ mapinfo_t chex_map_e1m4 =
 	&chex_episode_one,								// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m4" ),					// music_lump
+	{ RuntimeFlowString( "e1m4" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -351,7 +351,7 @@ mapinfo_t chex_map_e1m5 =
 	&chex_episode_one,								// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m5" ),					// music_lump
+	{ RuntimeFlowString( "e1m5" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	165,											// par_time

@@ -585,7 +585,7 @@ mapinfo_t doom_map_e1m1 =
 	&doom_episode_one,								// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m1" ),					// music_lump
+	{ RuntimeFlowString( "e1m1" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -609,7 +609,7 @@ mapinfo_t doom_map_e1m2 =
 	&doom_episode_one,								// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m2" ),					// music_lump
+	{ RuntimeFlowString( "e1m2" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	75,												// par_time
@@ -633,7 +633,7 @@ mapinfo_t doom_map_e1m3 =
 	&doom_episode_one,								// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m3" ),					// music_lump
+	{ RuntimeFlowString( "e1m3" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -657,7 +657,7 @@ mapinfo_t doom_map_e1m4 =
 	&doom_episode_one,								// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m4" ),					// music_lump
+	{ RuntimeFlowString( "e1m4" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -681,7 +681,7 @@ mapinfo_t doom_map_e1m5 =
 	&doom_episode_one,								// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m5" ),					// music_lump
+	{ RuntimeFlowString( "e1m5" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	165,											// par_time
@@ -705,7 +705,7 @@ mapinfo_t doom_map_e1m6 =
 	&doom_episode_one,								// episode
 	6,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m6" ),					// music_lump
+	{ RuntimeFlowString( "e1m6" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -729,7 +729,7 @@ mapinfo_t doom_map_e1m7 =
 	&doom_episode_one,								// episode
 	7,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e1m7" ),					// music_lump
+	{ RuntimeFlowString( "e1m7" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	180,											// par_time
@@ -758,7 +758,7 @@ mapinfo_t doom_map_e1m8 =
 	&doom_episode_one,								// episode
 	8,												// map_num
 	Map_Doom1EndOfEpisode,							// map_flags
-	RuntimeFlowString( "e1m8" ),					// music_lump
+	{ RuntimeFlowString( "e1m8" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -782,7 +782,7 @@ mapinfo_t doom_map_e1m9 =
 	&doom_episode_one,								// episode
 	9,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "e1m9" ),					// music_lump
+	{ RuntimeFlowString( "e1m9" ) },				// music_lump
 	FlowString( "SKY1" ),							// sky_texture
 	0,												// sky_scroll_speed
 	165,											// par_time
@@ -810,7 +810,7 @@ mapinfo_t doom_map_e2m1 =
 	&doom_episode_two,								// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e2m1" ),					// music_lump
+	{ RuntimeFlowString( "e2m1" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -834,7 +834,7 @@ mapinfo_t doom_map_e2m2 =
 	&doom_episode_two,								// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e2m2" ),					// music_lump
+	{ RuntimeFlowString( "e2m2" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -858,7 +858,7 @@ mapinfo_t doom_map_e2m3 =
 	&doom_episode_two,								// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e2m3" ),					// music_lump
+	{ RuntimeFlowString( "e2m3" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -882,7 +882,7 @@ mapinfo_t doom_map_e2m4 =
 	&doom_episode_two,								// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e2m4" ),					// music_lump
+	{ RuntimeFlowString( "e2m4" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -906,7 +906,7 @@ mapinfo_t doom_map_e2m5 =
 	&doom_episode_two,								// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e2m5" ),					// music_lump
+	{ RuntimeFlowString( "e2m5" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -930,7 +930,7 @@ mapinfo_t doom_map_e2m6 =
 	&doom_episode_two,								// episode
 	6,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e2m6" ),					// music_lump
+	{ RuntimeFlowString( "e2m6" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	360,											// par_time
@@ -954,7 +954,7 @@ mapinfo_t doom_map_e2m7 =
 	&doom_episode_two,								// episode
 	7,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e2m7" ),					// music_lump
+	{ RuntimeFlowString( "e2m7" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	240,											// par_time
@@ -988,7 +988,7 @@ mapinfo_t doom_map_e2m8 =
 	&doom_episode_two,								// episode
 	8,												// map_num
 	Map_Doom1EndOfEpisode,							// map_flags
-	RuntimeFlowString( "e2m8" ),					// music_lump
+	{ RuntimeFlowString( "e2m8" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -1012,7 +1012,7 @@ mapinfo_t doom_map_e2m8_pre_v1_9 =
 	&doom_episode_two,								// episode
 	8,												// map_num
 	Map_Doom1EndOfEpisode,							// map_flags
-	RuntimeFlowString( "e2m8" ),					// music_lump
+	{ RuntimeFlowString( "e2m8" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -1036,7 +1036,7 @@ mapinfo_t doom_map_e2m9 =
 	&doom_episode_two,								// episode
 	9,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "e2m9" ),					// music_lump
+	{ RuntimeFlowString( "e2m9" ) },				// music_lump
 	FlowString( "SKY2" ),							// sky_texture
 	0,												// sky_scroll_speed
 	170,											// par_time
@@ -1064,7 +1064,7 @@ mapinfo_t doom_map_e3m1 =
 	&doom_episode_three,							// episode
 	1,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e3m1" ),					// music_lump
+	{ RuntimeFlowString( "e3m1" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -1088,7 +1088,7 @@ mapinfo_t doom_map_e3m2 =
 	&doom_episode_three,							// episode
 	2,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e3m2" ),					// music_lump
+	{ RuntimeFlowString( "e3m2" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	45,												// par_time
@@ -1112,7 +1112,7 @@ mapinfo_t doom_map_e3m3 =
 	&doom_episode_three,							// episode
 	3,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e3m3" ),					// music_lump
+	{ RuntimeFlowString( "e3m3" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -1136,7 +1136,7 @@ mapinfo_t doom_map_e3m4 =
 	&doom_episode_three,							// episode
 	4,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e3m4" ),					// music_lump
+	{ RuntimeFlowString( "e3m4" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -1160,7 +1160,7 @@ mapinfo_t doom_map_e3m5 =
 	&doom_episode_three,							// episode
 	5,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e3m5" ),					// music_lump
+	{ RuntimeFlowString( "e3m5" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -1184,7 +1184,7 @@ mapinfo_t doom_map_e3m6 =
 	&doom_episode_three,							// episode
 	6,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e3m6" ),					// music_lump
+	{ RuntimeFlowString( "e3m6" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -1208,7 +1208,7 @@ mapinfo_t doom_map_e3m7 =
 	&doom_episode_three,							// episode
 	7,												// map_num
 	Map_None,										// map_flags
-	RuntimeFlowString( "e3m7" ),					// music_lump
+	{ RuntimeFlowString( "e3m7" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	165,											// par_time
@@ -1237,7 +1237,7 @@ mapinfo_t doom_map_e3m8 =
 	&doom_episode_three,							// episode
 	8,												// map_num
 	Map_Doom1EndOfEpisode,							// map_flags
-	RuntimeFlowString( "e3m8" ),					// music_lump
+	{ RuntimeFlowString( "e3m8" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -1261,7 +1261,7 @@ mapinfo_t doom_map_e3m8_pre_v1_9
 	&doom_episode_three,							// episode
 	8,												// map_num
 	Map_Doom1EndOfEpisode,							// map_flags
-	RuntimeFlowString( "e3m8" ),					// music_lump
+	{ RuntimeFlowString( "e3m8" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -1285,7 +1285,7 @@ mapinfo_t doom_map_e3m9 =
 	&doom_episode_three,							// episode
 	9,												// map_num
 	Map_Secret,										// map_flags
-	RuntimeFlowString( "e3m9" ),					// music_lump
+	{ RuntimeFlowString( "e3m9" ) },				// music_lump
 	FlowString( "SKY3" ),							// sky_texture
 	0,												// sky_scroll_speed
 	135,											// par_time
@@ -1313,7 +1313,7 @@ mapinfo_t doom_map_e4m1 =
 	&doom_episode_four,								// episode
 	1,												// map_num
 	Map_NoParTime,									// map_flags
-	RuntimeFlowString( "e3m4" ),					// music_lump
+	{ RuntimeFlowString( "e3m4" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	30,												// par_time
@@ -1337,7 +1337,7 @@ mapinfo_t doom_map_e4m2 =
 	&doom_episode_four,								// episode
 	2,												// map_num
 	Map_NoParTime,									// map_flags
-	RuntimeFlowString( "e3m2" ),					// music_lump
+	{ RuntimeFlowString( "e3m2" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -1361,7 +1361,7 @@ mapinfo_t doom_map_e4m3 =
 	&doom_episode_four,								// episode
 	3,												// map_num
 	Map_NoParTime,									// map_flags
-	RuntimeFlowString( "e3m3" ),					// music_lump
+	{ RuntimeFlowString( "e3m3" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -1385,7 +1385,7 @@ mapinfo_t doom_map_e4m4 =
 	&doom_episode_four,								// episode
 	4,												// map_num
 	Map_NoParTime,									// map_flags
-	RuntimeFlowString( "e1m5" ),					// music_lump
+	{ RuntimeFlowString( "e1m5" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -1409,7 +1409,7 @@ mapinfo_t doom_map_e4m5 =
 	&doom_episode_four,								// episode
 	5,												// map_num
 	Map_NoParTime,									// map_flags
-	RuntimeFlowString( "e2m7" ),					// music_lump
+	{ RuntimeFlowString( "e2m7" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	90,												// par_time
@@ -1438,7 +1438,7 @@ mapinfo_t doom_map_e4m6 =
 	&doom_episode_four,								// episode
 	6,												// map_num
 	Map_NoParTime,									// map_flags
-	RuntimeFlowString( "e2m4" ),					// music_lump
+	{ RuntimeFlowString( "e2m4" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	150,											// par_time
@@ -1462,7 +1462,7 @@ mapinfo_t doom_map_e4m7 =
 	&doom_episode_four,								// episode
 	7,												// map_num
 	Map_NoParTime,									// map_flags
-	RuntimeFlowString( "e2m6" ),					// music_lump
+	{ RuntimeFlowString( "e2m6" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -1492,7 +1492,7 @@ mapinfo_t doom_map_e4m8 =
 	&doom_episode_four,								// episode
 	8,												// map_num
 	Map_Doom1EndOfEpisode | Map_NoParTime,			// map_flags
-	RuntimeFlowString( "e2m5" ),					// music_lump
+	{ RuntimeFlowString( "e2m5" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	120,											// par_time
@@ -1516,7 +1516,7 @@ mapinfo_t doom_map_e4m9 =
 	&doom_episode_four,								// episode
 	9,												// map_num
 	Map_Secret | Map_NoParTime,						// map_flags
-	RuntimeFlowString( "e1m9" ),					// music_lump
+	{ RuntimeFlowString( "e1m9" ) },				// music_lump
 	FlowString( "SKY4" ),							// sky_texture
 	0,												// sky_scroll_speed
 	270,											// par_time
