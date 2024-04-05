@@ -49,6 +49,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		std::string iwadfile;
 		std::vector< std::string > pwadfiles;
 		std::vector< std::string > dehfiles;
+		std::string options;
 		GameVersion_t executable;
 		GameMission_t mission;
 	} info;
@@ -75,6 +76,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		const JSONElement& pwadfiles = elem[ "pwads" ];
 		const JSONElement& dehfiles = elem[ "dehfiles" ];
 		const JSONElement& executable = elem[ "executable" ];
+		const JSONElement& options = elem[ "options" ];
 
 		if( title.Valid() )
 		{
@@ -111,7 +113,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 					info.pwadfiles.push_back( ValidateFile( to< std::string >( file ).c_str() ) );
 				}
 			}
-			else
+			else if( !pwadfiles.IsNull() )
 			{
 				I_Error( "D_BuildGameConf: pwadfiles is not an array." );
 				return jl_parseerror;
@@ -127,7 +129,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 					info.dehfiles.push_back( ValidateFile( to< std::string >( file ).c_str() ) );
 				}
 			}
-			else
+			else if( !dehfiles.IsNull() )
 			{
 				I_Error( "D_BuildGameConf: dehfiles is not an array." );
 				return jl_parseerror;
@@ -147,6 +149,12 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 				return jl_parseerror;
 			}
 		}
+
+		if( options.Valid() )
+		{
+			info.options = to< std::string >( options );
+		}
+
 
 		return jl_success;
 	};

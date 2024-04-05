@@ -184,6 +184,7 @@ public:
 	constexpr auto& Value() const		{ return value; }
 	constexpr bool Valid() const		{ return type != JSONElementType::Invalid; }
 	constexpr bool IsArray() const		{ return type == JSONElementType::ElementArray; }
+	constexpr bool IsNull() const		{ return type == JSONElementType::Null; }
 
 	template< typename _ty >
 	requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >
