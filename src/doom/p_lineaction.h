@@ -362,10 +362,46 @@ enum ZokumBSPActions : uint32_t
 	Zokum_DoNotRenderAnySeg = 1086,		// Do not render segs on any side of a linedef.
 };
 
+enum RNR24Actions : uint32_t
+{
+	Offset_FloorTexture_Always = 2048,
+	Offset_CeilingTexture_Always,
+	Offset_FloorCeilingTexture_Always,
+	Rotate_FloorTexture_Always,
+	Rotate_CeilingTexture_Always,
+	Rotate_FloorCeilingTexture_Always,
+	OffsetRotate_FloorTexture_Always,
+	OffsetRotate_CeilingTexture_Always,
+	OffsetRotate_FloorCeilingTexture_Always,
+
+	Music_Change_W1_Player,
+	Music_Change_WR_Player,
+	Music_Change_S1_Player,
+	Music_Change_SR_Player,
+	Music_Change_G1_Player,
+	Music_Change_GR_Player,
+
+	Exit_ResetNormal_W1_Player,
+	Exit_ResetNormal_S1_Player,
+	Exit_ResetNormal_G1_Player,
+	Exit_ResetSecret_W1_Player,
+	Exit_ResetSecret_S1_Player,
+	Exit_ResetSecret_G1_Player,
+
+	Tint_SetTo_Always,
+	Tint_SetTo_W1_Player,
+	Tint_SetTo_WR_Player,
+	Tint_SetTo_S1_Player,
+	Tint_SetTo_SR_Player,
+	Tint_SetTo_G1_Player,
+	Tint_SetTo_GR_Player,
+};
+
 enum ActionArrayValues : uint32_t
 {
 	Actions_BuiltIn_Count	= (uint32_t)MBFActions_Max - (uint32_t)DoomActions_Min + 1,
 	Actions_MBF21_Count		= (uint32_t)MBF21Actions_Max - (uint32_t)MBF21Actions_Min,
+	Actions_RNR24_Count		= 0,
 };
 
 enum BoomFloorActions : uint32_t
