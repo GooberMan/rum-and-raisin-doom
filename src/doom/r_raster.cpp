@@ -378,12 +378,13 @@ void RasteriseRegion( rendercontext_t* rendercontext, rasterregion_t* firstregio
 		break;
 
 	case Span_PolyRaster_Log2_16:
+	case Span_PolyRaster_Log2_32:
 		PrepareRender< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2, Sampler >( rendercontext, firstregion, tetxuresize );
 		break;
 
-	case Span_PolyRaster_Log2_32:
-		PrepareRender< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2, Sampler >( rendercontext, firstregion, tetxuresize );
-		break;
+	//case Span_PolyRaster_Log2_32:
+	//	PrepareRender< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2, Sampler >( rendercontext, firstregion, tetxuresize );
+	//	break;
 	}
 }
 
