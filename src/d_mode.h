@@ -76,8 +76,8 @@ DOOM_C_API typedef enum
 	exe_mbf,
 	exe_mbf_dehextra,
 	exe_mbf21,
-	exe_mbf21_extended, // DEHACKED extensions
-	exe_mbf21_rnr,		// DEHACKED and other assorted fruits
+	exe_mbf21_extended,	// DEHACKED extensions
+	exe_rnr24,			// DEHACKED and other assorted fruits
 
     exe_heretic_1_3, // Heretic 1.3
 

@@ -20,11 +20,11 @@
 
 #include "d_mode.h"
 
-doombool W_ParseCommandLine(void);
-void W_CheckCorrectIWAD(GameMission_t mission);
+DOOM_C_API doombool W_ParseCommandLine(void);
+DOOM_C_API void W_CheckCorrectIWAD(GameMission_t mission);
 
 // Autoload all .wad files from the given directory:
-void W_AutoLoadWADs(const char *path);
+DOOM_C_API void W_AutoLoadWADs(const char *path);
 
 #endif /* #ifndef W_MAIN_H */
 

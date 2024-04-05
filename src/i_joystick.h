@@ -60,11 +60,11 @@
 #define HAT_AXIS_HORIZONTAL 1
 #define HAT_AXIS_VERTICAL   2
 
-void I_InitJoystick(void);
-void I_ShutdownJoystick(void);
-void I_UpdateJoystick(void);
+DOOM_C_API void I_InitJoystick(void);
+DOOM_C_API void I_ShutdownJoystick(void);
+DOOM_C_API void I_UpdateJoystick(void);
 
-void I_BindJoystickVariables(void);
+DOOM_C_API void I_BindJoystickVariables(void);
 
 #endif /* #ifndef __I_JOYSTICK__ */
 

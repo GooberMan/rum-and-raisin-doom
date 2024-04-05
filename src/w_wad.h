@@ -75,6 +75,7 @@ DOOM_C_API doombool W_HasAnyLumps();
 DOOM_C_API wad_file_t *W_AddFile(const char *filename);
 DOOM_C_API wad_file_t *W_AddFileWithType(const char *filename, wadtype_t type);
 DOOM_C_API void W_Reload(void);
+DOOM_C_API void W_RemoveFile( wad_file_t* file );
 
 DOOM_C_API lumpindex_t W_CheckNumForName(const char *name);
 DOOM_C_API lumpindex_t W_CheckNumForNameExcluding(const char *name, wadtype_t exclude);

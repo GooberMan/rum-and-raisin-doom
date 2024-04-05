@@ -35,6 +35,7 @@
 #include "sounds.h"
 
 #include "d_iwad.h"
+#include "d_gameconf.h"
 #include "d_gamesim.h"
 
 #include "z_zone.h"
@@ -59,6 +60,7 @@
 #include "m_url.h"
 
 #include "p_saveg.h"
+#include "p_local.h"
 
 #include "i_endoom.h"
 #include "i_input.h"
@@ -97,90 +99,123 @@
 //
 void D_DoomLoop (void);
 
-static char *gamedescription;
-
-// Location where savegames are stored
-
-char *          savegamedir;
-
-// location of IWAD and WAD files
-
-char *          iwadfile;
-
-
-doombool		devparm;	// started game with -devparm
-doombool         nomonsters;	// checkparm of -nomonsters
-doombool         respawnparm;	// checkparm of -respawn
-doombool         fastparm;	// checkparm of -fast
-
-//extern int soundVolume;
-//extern  int	sfxVolume;
-//extern  int	musicVolume;
-
-extern  doombool	inhelpscreens;
-
-skill_t		startskill;
-int             startepisode;
-int		startmap;
-doombool		autostart;
-int             startloadgame;
-
-doombool		advancedemo;
-
-// Store demo, do not accept any inputs
-doombool         storedemo;
-
-// If true, the main game loop has started.
-doombool         main_loop_started = false;
-
-char		wadfile[1024];		// primary wad file
-char		mapdir[1024];           // directory of development maps
-
-int32_t				show_endoom = 1;
-int32_t				show_text_startup = 1;
-int32_t				show_diskicon = Disk_ByCommandLine;
-int32_t				remove_limits = 1;
-int32_t				window_close_behavior = WindowClose_Ask;
-
-extern int32_t		enable_frame_interpolation;
-extern int32_t		maxrendercontexts;
-extern int32_t		num_render_contexts;
-extern int32_t		num_software_backbuffers;
-extern int32_t		additional_light_boost;
-extern int32_t		vertical_fov_degrees;
-extern int32_t		stats_style;
-extern doombool		rendersplitvisualise;
-
-doombool refreshstatusbar = true;
-
-vbuffer_t blackedges;
-#define BLACKEDGE_VAL 0x00
-byte blackedgesdata[ 128 ] =
+extern "C"
 {
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-	BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
-};
+	static char *gamedescription;
+
+	// Location where savegames are stored
+
+	char *          savegamedir;
+
+	// location of IWAD and WAD files
+
+	gameconf_t*		gameconf;
+
+
+	doombool		devparm;	// started game with -devparm
+	doombool         nomonsters;	// checkparm of -nomonsters
+	doombool         respawnparm;	// checkparm of -respawn
+	doombool         fastparm;	// checkparm of -fast
+
+	//extern int soundVolume;
+	//extern  int	sfxVolume;
+	//extern  int	musicVolume;
+
+	extern  doombool	inhelpscreens;
+
+	skill_t		startskill;
+	int             startepisode;
+	int		startmap;
+	doombool		autostart;
+	int             startloadgame;
+
+	doombool		advancedemo;
+
+	// Store demo, do not accept any inputs
+	doombool         storedemo;
+
+	// If true, the main game loop has started.
+	doombool         main_loop_started = false;
+
+	char		wadfile[1024];		// primary wad file
+	char		mapdir[1024];           // directory of development maps
+
+	int32_t				show_endoom = 1;
+	int32_t				show_text_startup = 1;
+	int32_t				show_diskicon = Disk_ByCommandLine;
+	int32_t				remove_limits = 1;
+	int32_t				window_close_behavior = WindowClose_Ask;
+
+	extern int32_t		enable_frame_interpolation;
+	extern int32_t		maxrendercontexts;
+	extern int32_t		num_render_contexts;
+	extern int32_t		num_software_backbuffers;
+	extern int32_t		additional_light_boost;
+	extern int32_t		vertical_fov_degrees;
+	extern int32_t		stats_style;
+	extern doombool		rendersplitvisualise;
+
+	doombool refreshstatusbar = true;
+
+	vbuffer_t blackedges;
+	#define BLACKEDGE_VAL 0x00
+	byte blackedgesdata[ 128 ] =
+	{
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+		BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL, BLACKEDGE_VAL,
+	};
+
+	gamestate_t     wipegamestate = GS_DEMOSCREEN;
+	extern  doombool setsizeneeded;
+	extern  int             showMessages;
+
+	const char* reasons[] =
+	{
+		"level",
+		"intermission",
+		"finale",
+		"demo",
+	};
+
+	extern int32_t voidcleartype;
+
+	extern doombool		auditplaybackerror;
+
+	uint64_t frametime = 0;
+	uint64_t frametime_withoutpresent = 0;
+
+	int32_t wipe_style = wipe_Melt;
+
+	extern uint64_t synctime;
+
+	int             demosequence;
+	int             pagetic;
+	const char                    *pagename;
+
+	extern int forwardmove[2];
+	extern int sidemove[2];
+}
 
 const char* IWADFilename()
 {
-	if( !iwadfile ) return "unknown.wad";
+	if( !gameconf || !gameconf->iwad ) return "unknown.wad";
 
-	const char* name = iwadfile + strlen( iwadfile );
-	while( --name != iwadfile )
+	const char* name = gameconf->iwad + strlen( gameconf->iwad );
+	while( --name != gameconf->iwad )
 	{
 		if( *name == DIR_SEPARATOR )
 		{
@@ -192,8 +227,8 @@ const char* IWADFilename()
 	return name;
 }
 
-void D_ConnectNetGame(void);
-void D_CheckNetGame(void);
+DOOM_C_API void D_ConnectNetGame(void);
+DOOM_C_API void D_CheckNetGame(void);
 
 
 //
@@ -225,26 +260,11 @@ void D_ProcessEvents (void)
 //
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
-gamestate_t     wipegamestate = GS_DEMOSCREEN;
-extern  doombool setsizeneeded;
-extern  int             showMessages;
-
-const char* reasons[] =
-{
-    "level",
-    "intermission",
-    "finale",
-    "demo",
-};
-
-extern int32_t voidcleartype;
 
 void D_TestControls( const char* itemname, void* data )
 {
 	V_DrawMouseSpeedBox( testcontrols_mousespeed );
 }
-
-extern doombool		auditplaybackerror;
 
 doombool D_Display( double_t framepercent )
 {
@@ -252,7 +272,7 @@ doombool D_Display( double_t framepercent )
     static  doombool		menuactivestate = false;
     static  doombool		inhelpscreensstate = false;
     static  doombool		fullscreen = false;
-    static  gamestate_t		oldgamestate = -1;
+    static  gamestate_t		oldgamestate = GS_INVALID;
     static  int			borderdrawcount;
     int				y;
     doombool			wipe;
@@ -273,7 +293,7 @@ doombool D_Display( double_t framepercent )
 	if (setsizeneeded)
 	{
 		R_ExecuteSetViewSize( );
-		oldgamestate = -1; // force background redraw
+		oldgamestate = GS_INVALID; // force background redraw
 		borderdrawcount = 3;
 	}
 	else
@@ -346,7 +366,7 @@ doombool D_Display( double_t framepercent )
 	// clean up border stuff
 	if (gamestate != oldgamestate && gamestate != GS_LEVEL)
 	{
-		I_SetPalette (W_CacheLumpName (DEH_String("PLAYPAL"),PU_CACHE));
+		I_SetPalette( (byte*)W_CacheLumpName(DEH_String("PLAYPAL"),PU_CACHE));
 	}
 
 	// see if the border needs to be initially drawn
@@ -550,13 +570,6 @@ doombool D_GrabMouseCallback(void)
 //  D_RunFrame
 //
 
-uint64_t frametime = 0;
-uint64_t frametime_withoutpresent = 0;
-
-int32_t wipe_style = wipe_Melt;
-
-extern uint64_t synctime;
-
 double_t CalculatePercentage()
 {
 	// There's a bug here. Because calculating the next tick still gets latest,
@@ -698,10 +711,6 @@ void D_DoomLoop (void)
 //
 //  DEMO LOOP
 //
-int             demosequence;
-int             pagetic;
-const char                    *pagename;
-
 
 //
 // D_PageTicker
@@ -721,7 +730,7 @@ void D_PageTicker (void)
 void D_PageDrawer (void)
 {
 	lumpindex_t pagenum = W_GetNumForNameExcluding( pagename, comp.widescreen_assets ? wt_none : wt_widepix );
-	patch_t* patch = W_CacheLumpNum( pagenum, PU_CACHE );
+	patch_t* patch = (patch_t*)W_CacheLumpNum( pagenum, PU_CACHE );
 	// WIDESCREEN HACK
 	int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
 
@@ -938,7 +947,7 @@ static char *GetGameName(const char *gamename)
             // We also need to cut off spaces to get the basic name
 
             gamename_size = strlen(deh_sub) + 10;
-            deh_gamename = malloc(gamename_size);
+            deh_gamename = (char*)malloc(gamename_size);
             if (deh_gamename == NULL)
             {
                 I_Error("GetGameName: Failed to allocate new string");
@@ -970,7 +979,7 @@ static void SetMissionForPackName(const char *pack_name)
     static const struct
     {
         const char *name;
-        int mission;
+        GameMission_t mission;
     } packs[] = {
         { "doom2",    doom2 },
         { "tnt",      pack_tnt },
@@ -1127,7 +1136,7 @@ static void D_AddWidescreenPacks()
 		if( widescreenfilename )
 		{
 			I_TerminalPrintf( Log_Startup, " Adding %s\n", widescreenfilename );
-			W_AddFileWithType( widescreenfilename, wt_system | wt_widepix );
+			W_AddFileWithType( widescreenfilename, (wadtype_t)( wt_system | wt_widepix ) );
 			free( (void*)widescreenfilename );
 
 			M_DashboardSetLicenceInUse( Licence_WidePix, true );
@@ -1141,7 +1150,7 @@ static void D_AddExtendedAssets()
 	if( boomres )
 	{
 		I_TerminalPrintf( Log_Startup, " Adding boomres.wad\n" );
-		W_AddFileWithType( boomres, wt_system | wt_boomassets );
+		W_AddFileWithType( boomres, (wadtype_t)( wt_system | wt_boomassets ) );
 		free( (void*)boomres );
 	}
 }
@@ -1281,6 +1290,7 @@ static struct
     {"Doom 1.7/1.7a",        "1.7",        exe_doom_1_7},
     {"Doom 1.8",             "1.8",        exe_doom_1_8},
     {"Doom 1.9",             "1.9",        exe_doom_1_9},
+    {"Doom 1.9",             "doom1.9",    exe_doom_1_9},
     {"Hacx",                 "hacx",       exe_hacx},
     {"Ultimate Doom",        "ultimate",   exe_ultimate},
     {"Final Doom",           "final",      exe_final},
@@ -1294,8 +1304,8 @@ static struct
 	{"MBF + DEHEXTRA",       "mbfextra",   exe_mbf_dehextra},
     {"MBF21",                "mbf21",      exe_mbf21},
     {"MBF21 Extended",       "mbf21ex",    exe_mbf21_extended},
-    {"MBF21 Extended + R&R Extensions", "mbf21rnr",    exe_mbf21_rnr},
-    { NULL,                  NULL,         0},
+    {"R&R24",                "rnr24",      exe_rnr24},
+    { NULL,                  NULL,         exe_invalid},
 };
 
 // Initialize the game version
@@ -1483,7 +1493,7 @@ static void D_Endoom(void)
         return;
     }
 
-    endoom = W_CacheLumpName(DEH_String("ENDOOM"), PU_STATIC);
+    endoom = (byte*)W_CacheLumpName(DEH_String("ENDOOM"), PU_STATIC);
 
     I_Endoom(endoom);
 }
@@ -1523,7 +1533,7 @@ static void LoadIwadDeh(void)
         char *dirname;
 
         // Look for chex.deh in the same directory as the IWAD file.
-        dirname = M_DirName(iwadfile);
+        dirname = M_DirName( gameconf->iwad );
         chex_deh = M_StringJoin(dirname, DIR_SEPARATOR_S, "chex.deh", NULL);
         free(dirname);
 
@@ -1561,7 +1571,7 @@ static void G_CheckDemoStatusAtExit (void)
 // D_DoomMain
 //
 
-void D_DoomMain (void)
+DOOM_C_API void D_DoomMain (void)
 {
     int32_t p;
     char file[256];
@@ -1610,14 +1620,23 @@ void D_DoomMain (void)
 	M_URLInit();
 	M_InitDashboard();
 
-	if( M_CheckParm( "-iwad" ) == 0 )
+	// This needs to come way early now since we need to parse WADs to build a game configuration...
+	Z_Init();
+
+	gameconf = D_BuildGameConf();
+
+	if( !gameconf || !gameconf->iwad )
 	{
 		M_ScheduleLauncher();
 	}
 
 	// Before we go in to terminal mode, we want to allow the user to configure all options
 	M_DashboardFirstLaunch();
-	M_PerformLauncher();
+	if( M_PerformLauncher() )
+	{
+		D_DestroyGameConf( gameconf );
+		gameconf = D_BuildGameConf();
+	}
 
 	if( show_text_startup )
 	{
@@ -1631,8 +1650,10 @@ void D_DoomMain (void)
 
     I_AtExit(D_Endoom, false);
 
-    DEH_printf("Z_Init: Init zone memory allocation daemon. \n");
-    Z_Init ();
+	DEH_printf( "Z_Init: Init zone memory allocation daemon. \n" );
+	I_TerminalPrintf( Log_Startup, "zone memory: %p, %zx allocated for zone\n", 
+									Z_ZoneBase(), Z_ZoneSize());
+
 
     //!
     // @category net
@@ -1766,8 +1787,6 @@ void D_DoomMain (void)
     if ( (p=M_CheckParm ("-turbo")) )
     {
 	int     scale = 200;
-	extern int forwardmove[2];
-	extern int sidemove[2];
 	
 	if (p<myargc-1)
 	    scale = atoi (myargv[p+1]);
@@ -1786,12 +1805,9 @@ void D_DoomMain (void)
     DEH_printf("V_Init: allocate screens.\n");
     V_Init ();
 
-    // Find main IWAD file and load it.
-    iwadfile = D_FindIWAD(IWAD_MASK_DOOM, &gamemission);
-
     // None found?
 
-    if (iwadfile == NULL)
+    if(gameconf->iwad == NULL)
     {
         I_Error("Game mode indeterminate.  No IWAD file was found.  Try\n"
                 "specifying one with the '-iwad' command line parameter.\n");
@@ -1800,7 +1816,8 @@ void D_DoomMain (void)
     modifiedgame = false;
 
     DEH_printf("W_Init: Init WADfiles.\n");
-    D_AddFile(iwadfile);
+    D_AddFile((char*)gameconf->iwad);
+	gamemission = gameconf->mission;
     numiwadlumps = numlumps;
 
     W_CheckCorrectIWAD(doom);
@@ -1844,19 +1861,6 @@ void D_DoomMain (void)
 
 	D_AddWidescreenPacks();
 	D_AddExtendedAssets();
-
-    //!
-    // @category mod
-    //
-    // Disable automatic loading of Dehacked patches for certain
-    // IWAD files.
-    //
-    if (!M_ParmExists("-nodeh"))
-    {
-        // Some IWADs have dehacked patches that need to be loaded for
-        // them to be played properly.
-        LoadIwadDeh();
-    }
 
     // Doom 3: BFG Edition includes modified versions of the classic
     // IWADs which can be identified by an additional DMENUPIC lump.
@@ -1931,16 +1935,20 @@ void D_DoomMain (void)
         free(autoload_dir);
     }
 
-    // Load Dehacked patches specified on the command line with -deh.
-    // Note that there's a very careful and deliberate ordering to how
-    // Dehacked patches are loaded. The order we use is:
-    //  1. IWAD dehacked patches.
-    //  2. Command line dehacked patches specified with -deh.
-    //  3. PWAD dehacked patches in DEHACKED lumps.
-    DEH_ParseCommandLine();
+	for( const char* dehfile : gameconf->DEHFiles() )
+	{
+		DEH_LoadFile( dehfile );
+	}
 
-    // Load PWAD files.
-    modifiedgame = W_ParseCommandLine();
+	// Load PWAD files.
+	modifiedgame = gameconf->pwadscount != 0;
+	for( const char* pwad : gameconf->PWADs() )
+	{
+		I_TerminalPrintf( Log_Startup, " Adding %s\n", pwad );
+		W_AddFile( pwad );
+	}
+
+    LoadIwadDeh();
 
     // Debug:
 //    W_PrintDirectory();
@@ -2078,7 +2086,7 @@ void D_DoomMain (void)
     {
 	// These are the lumps that will be checked in IWAD,
 	// if any one is not present, execution will be aborted.
-	char name[23][8]=
+	char name[23][9]=
 	{
 	    "e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
 	    "e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
@@ -2142,7 +2150,7 @@ void D_DoomMain (void)
 
     if (p)
     {
-	startskill = myargv[p+1][0]-'1';
+	startskill = (skill_t)( myargv[p+1][0]-'1' );
 	autostart = true;
     }
 

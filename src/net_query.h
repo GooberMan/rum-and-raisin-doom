@@ -25,21 +25,21 @@ typedef void (*net_query_callback_t)(net_addr_t *addr,
                                      unsigned int ping_time,
                                      void *user_data);
 
-extern int NET_StartLANQuery(void);
-extern int NET_StartMasterQuery(void);
+DOOM_C_API int NET_StartLANQuery(void);
+DOOM_C_API int NET_StartMasterQuery(void);
 
-extern void NET_LANQuery(void);
-extern void NET_MasterQuery(void);
-extern void NET_QueryAddress(const char *addr);
-extern net_addr_t *NET_FindLANServer(void);
+DOOM_C_API void NET_LANQuery(void);
+DOOM_C_API void NET_MasterQuery(void);
+DOOM_C_API void NET_QueryAddress(const char *addr);
+DOOM_C_API net_addr_t *NET_FindLANServer(void);
 
-extern int NET_Query_Poll(net_query_callback_t callback, void *user_data);
+DOOM_C_API int NET_Query_Poll(net_query_callback_t callback, void *user_data);
 
-extern net_addr_t *NET_Query_ResolveMaster(net_context_t *context);
-extern void NET_Query_AddToMaster(net_addr_t *master_addr);
-extern doombool NET_Query_CheckAddedToMaster(doombool *result);
-extern void NET_Query_AddResponse(net_packet_t *packet);
-extern void NET_RequestHolePunch(net_context_t *context, net_addr_t *addr);
+DOOM_C_API net_addr_t *NET_Query_ResolveMaster(net_context_t *context);
+DOOM_C_API void NET_Query_AddToMaster(net_addr_t *master_addr);
+DOOM_C_API doombool NET_Query_CheckAddedToMaster(doombool *result);
+DOOM_C_API void NET_Query_AddResponse(net_packet_t *packet);
+DOOM_C_API void NET_RequestHolePunch(net_context_t *context, net_addr_t *addr);
 
 #endif /* #ifndef NET_QUERY_H */
 

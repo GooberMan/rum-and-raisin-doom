@@ -30,13 +30,28 @@ struct JSONLumpVersion
 	int32_t revision;
 };
 
-using JSONLumpFunc = std::function< bool( const JSONElement& elem, const JSONLumpVersion& version ) >;
-
-bool M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, JSONLumpFunc&& parsefunc );
-
-INLINE bool M_ParseJSONLump( const char* lumpname, const char* lumptype, JSONLumpFunc&& parsefunc )
+typedef enum jsonlumpresult_e
 {
-	return M_ParseJSONLump( W_CheckNumForName( lumpname ), lumptype, std::forward< JSONLumpFunc&& >( parsefunc ) );
+	jl_success,
+	jl_notfound,
+	jl_malformedroot,
+	jl_typemismatch,
+	jl_badversion,
+	jl_parseerror,
+} jsonlumpresult_t;
+
+using JSONLumpFunc = std::function< jsonlumpresult_t( const JSONElement& elem, const JSONLumpVersion& version ) >;
+
+jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, const JSONLumpFunc& parsefunc );
+
+INLINE jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, JSONLumpFunc&& parsefunc )
+{
+	return M_ParseJSONLump( lumpindex, lumptype, parsefunc );
+}
+
+INLINE jsonlumpresult_t M_ParseJSONLump( const char* lumpname, const char* lumptype, JSONLumpFunc&& parsefunc )
+{
+	return M_ParseJSONLump( W_CheckNumForName( lumpname ), lumptype, parsefunc );
 }
 
 #endif //defined( __cplusplus )

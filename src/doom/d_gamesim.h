@@ -180,4 +180,10 @@ DOOM_C_API extern simoptions_t			sim;
 // It also sets up the current playsim and render options.
 DOOM_C_API void D_RegisterGamesim();
 
+#if defined( __cplusplus )
+#include "d_mode.h"
+
+GameVersion_t D_UpdateFromOptionsString( compoptions_t& values, const char* options, size_t optionslen );
+#endif // defined( __cplusplus )
+
 #endif // __D_PLAYSIM_H__

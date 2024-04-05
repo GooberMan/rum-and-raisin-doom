@@ -109,7 +109,7 @@ doombool M_IsLauncherScheduled()
 	return schedule_launcher;
 }
 
-void M_PerformLauncher()
+doombool M_PerformLauncher()
 {
 	int32_t launcher_arg = M_CheckParm( "-launcher" );
 
@@ -171,5 +171,9 @@ void M_PerformLauncher()
 		{
 			M_ReplaceFileParameters( params );
 		}
+
+		return true;
 	}
+
+	return false;
 }

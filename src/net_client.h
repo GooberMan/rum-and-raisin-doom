@@ -22,32 +22,32 @@
 #include "sha1.h"
 #include "net_defs.h"
 
-doombool NET_CL_Connect(net_addr_t *addr, net_connect_data_t *data);
-void NET_CL_Disconnect(void);
-void NET_CL_Run(void);
-void NET_CL_Init(void);
-void NET_CL_LaunchGame(void);
-void NET_CL_StartGame(net_gamesettings_t *settings);
-void NET_CL_SendTiccmd(ticcmd_t *ticcmd, uint64_t maketic);
-doombool NET_CL_GetSettings(net_gamesettings_t *_settings);
-void NET_Init(void);
+DOOM_C_API doombool NET_CL_Connect(net_addr_t *addr, net_connect_data_t *data);
+DOOM_C_API void NET_CL_Disconnect(void);
+DOOM_C_API void NET_CL_Run(void);
+DOOM_C_API void NET_CL_Init(void);
+DOOM_C_API void NET_CL_LaunchGame(void);
+DOOM_C_API void NET_CL_StartGame(net_gamesettings_t *settings);
+DOOM_C_API void NET_CL_SendTiccmd(ticcmd_t *ticcmd, uint64_t maketic);
+DOOM_C_API doombool NET_CL_GetSettings(net_gamesettings_t *_settings);
+DOOM_C_API void NET_Init(void);
 
-void NET_BindVariables(void);
+DOOM_C_API void NET_BindVariables(void);
 
-extern doombool net_client_connected;
-extern doombool net_client_received_wait_data;
-extern net_waitdata_t net_client_wait_data;
-extern char *net_client_reject_reason;
-extern doombool net_waiting_for_launch;
-extern char *net_player_name;
+DOOM_C_API extern doombool net_client_connected;
+DOOM_C_API extern doombool net_client_received_wait_data;
+DOOM_C_API extern net_waitdata_t net_client_wait_data;
+DOOM_C_API extern char *net_client_reject_reason;
+DOOM_C_API extern doombool net_waiting_for_launch;
+DOOM_C_API extern char *net_player_name;
 
-extern sha1_digest_t net_server_wad_sha1sum;
-extern sha1_digest_t net_server_deh_sha1sum;
-extern unsigned int net_server_is_freedoom;
-extern sha1_digest_t net_local_wad_sha1sum;
-extern sha1_digest_t net_local_deh_sha1sum;
-extern unsigned int net_local_is_freedoom;
+DOOM_C_API extern sha1_digest_t net_server_wad_sha1sum;
+DOOM_C_API extern sha1_digest_t net_server_deh_sha1sum;
+DOOM_C_API extern unsigned int net_server_is_freedoom;
+DOOM_C_API extern sha1_digest_t net_local_wad_sha1sum;
+DOOM_C_API extern sha1_digest_t net_local_deh_sha1sum;
+DOOM_C_API extern unsigned int net_local_is_freedoom;
 
-extern doombool drone;
+DOOM_C_API extern doombool drone;
 
 #endif /* #ifndef NET_CLIENT_H */

@@ -63,6 +63,7 @@ DOOM_C_API void		Z_CheckHeap (void);
 DOOM_C_API doombool	Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
 DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
 DOOM_C_API size_t	Z_FreeMemory (void);
+DOOM_C_API byte*	Z_ZoneBase(void);
 DOOM_C_API size_t	Z_ZoneSize(void);
 
 #define Z_Malloc( size, tag, ptr ) Z_MallocTracked( __FILE__, __LINE__, size, tag, ptr, NULL )

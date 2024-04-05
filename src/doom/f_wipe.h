@@ -35,30 +35,8 @@ enum
     wipe_NUMWIPES
 };
 
-int
-wipe_StartScreen
-( int		x,
-  int		y,
-  int		width,
-  int		height );
-
-
-int
-wipe_EndScreen
-( int		x,
-  int		y,
-  int		width,
-  int		height );
-
-
-int
-wipe_ScreenWipe
-( int		wipeno,
-  int		x,
-  int		y,
-  int		width,
-  int		height,
-  uint64_t		ticks,
-  rend_fixed_t framepercent );
+DOOM_C_API int wipe_StartScreen( int x, int y, int width, int height );
+DOOM_C_API int wipe_EndScreen( int x, int y, int width, int height );
+DOOM_C_API int wipe_ScreenWipe( int wipeno, int x, int y, int width, int height, uint64_t ticks, rend_fixed_t framepercent );
 
 #endif

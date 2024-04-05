@@ -91,6 +91,10 @@ public:
 			output.value = val;
 			element_indices[ key ] = children.size() - 1;
 		}
+		else if( type == JSONElementType::ElementArray )
+		{
+			output.value = val;
+		}
 
 		return output;
 	}
@@ -174,11 +178,12 @@ public:
 		return empty;
 	}
 
-	bool HasChildren() const { return type == JSONElementType::ElementArray && !children.empty(); }
-	auto& Children() const	{ return children; }
-	auto& Key() const		{ return key; }
-	auto& Value() const		{ return value; }
-	bool Valid() const		{ return type != JSONElementType::Invalid; }
+	constexpr bool HasChildren() const	{ return type == JSONElementType::ElementArray && !children.empty(); }
+	constexpr auto& Children() const	{ return children; }
+	constexpr auto& Key() const			{ return key; }
+	constexpr auto& Value() const		{ return value; }
+	constexpr bool Valid() const		{ return type != JSONElementType::Invalid; }
+	constexpr bool IsArray() const		{ return type == JSONElementType::ElementArray; }
 
 	template< typename _ty >
 	requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >

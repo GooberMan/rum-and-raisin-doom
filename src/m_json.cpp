@@ -123,29 +123,54 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 	std::string key;
 	std::string value;
 
-	do
+	if( type == JSONElementType::ElementArray )
 	{
-		Extract( jsonstream, key );
-		if( type == JSONElementType::ElementArray )
+		do
 		{
-			if( key == "{" )
+			Extract( jsonstream, value );
+			if( value == "," )
+			{
+				continue;
+			}
+			else if( value == "]" )
+			{
+				break;
+			}
+			else if( value == "{" )
 			{
 				JSONElement& newelem = AddElement( "" );
 				newelem.DeserialiseElement( jsonstream );
-				Extract( jsonstream, token );
-				continue;
 			}
-			else if( key == "]" )
+			else if( value == "null" )
 			{
-				Extract( jsonstream, token );
-				continue;
+				AddNull( "" );
 			}
-		}
-		else if( key == "}"  )
+			else if( IsAnyNumber( value ) )
+			{
+				AddNumber( "", value );
+			}
+			else
+			{
+				AddString( "", value );
+			}
+
+		} while( true );
+
+		return key;
+	}
+
+	do
+	{
+		Extract( jsonstream, key );
+		if( key == "}" || key == "]" )
 		{
-			Extract( jsonstream, token );
+			break;
+		}
+		else if( key == "," )
+		{
 			continue;
 		}
+
 		Extract( jsonstream, token );
 		Extract( jsonstream, value );
 
@@ -153,13 +178,11 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 		{
 			JSONElement& newelem = AddElement( key );
 			newelem.DeserialiseElement( jsonstream );
-			Extract( jsonstream, token );
 		}
 		else if( value == "[" )
 		{
 			JSONElement& newelem = AddArray( key );
 			newelem.DeserialiseElement( jsonstream );
-			Extract( jsonstream, token );
 		}
 		else if( value == "null" )
 		{

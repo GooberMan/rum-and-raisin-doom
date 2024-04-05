@@ -70,7 +70,7 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 	auto foundweapon = weaponmap.find( weapon_number );
 	if( foundweapon == weaponmap.end() )
 	{
-		DEH_IncreaseGameVersion( context, exe_mbf21_rnr );
+		DEH_IncreaseGameVersion( context, exe_rnr24 );
 
 		weaponinfo_t* newweapon = Z_MallocAs( weaponinfo_t, PU_STATIC, nullptr );
 		*newweapon =

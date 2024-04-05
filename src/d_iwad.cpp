@@ -545,7 +545,7 @@ static const char *SearchDirectoryForIWAD(const char *dir, int mask, GameMission
 // When given an IWAD with the '-iwad' parameter,
 // attempt to identify it by its name.
 
-static GameMission_t IdentifyIWADByName(const char *name, int mask)
+GameMission_t D_IdentifyIWADByName(const char *name, int mask)
 {
     size_t i;
     GameMission_t mission;
@@ -878,7 +878,7 @@ char *D_FindIWAD(int mask, GameMission_t *mission)
             I_Error("IWAD file '%s' not found!", iwadfile);
         }
         
-        *mission = IdentifyIWADByName(result, mask);
+        *mission = D_IdentifyIWADByName(result, mask);
     }
     else
     {

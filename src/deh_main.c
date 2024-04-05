@@ -310,7 +310,7 @@ int DEH_LoadFile(const char *filename)
         DEH_Init();
     }
 
-    I_TerminalPrintf( Log_Startup, " loading %s\n", filename);
+    I_TerminalPrintf( Log_Startup, " Applying %s\n", filename);
 
     context = DEH_OpenFile(filename);
 

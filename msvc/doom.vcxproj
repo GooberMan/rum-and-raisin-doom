@@ -426,6 +426,7 @@
     <ClCompile Include="..\src\doom\d_gameflow_tnt.cpp" />
     <ClCompile Include="..\src\doom\d_gamesim.cpp" />
     <ClCompile Include="..\src\doom\d_items.cpp" />
+    <ClCompile Include="..\src\doom\d_main.cpp" />
     <ClCompile Include="..\src\doom\f_finale.cpp" />
     <ClCompile Include="..\src\doom\g_game.cpp" />
     <ClCompile Include="..\src\doom\info.cpp" />
@@ -462,7 +463,6 @@
     <ClInclude Include="..\src\doom\d_englsh.h" />
     <ClInclude Include="..\src\doom\d_gamesim.h" />
     <ClInclude Include="..\src\doom\d_items.h" />
-    <ClCompile Include="..\src\doom\d_main.c" />
     <ClInclude Include="..\src\doom\d_main.h" />
     <ClCompile Include="..\src\doom\d_net.c" />
     <ClInclude Include="..\src\doom\doomdata.h" />

@@ -154,9 +154,6 @@ byte *I_ZoneBase (size_t *size)
 
     zonemem = AutoAllocMemory(size, default_ram, min_ram);
 
-	I_TerminalPrintf( Log_Startup,	"zone memory: %p, %zx allocated for zone\n", 
-									zonemem, *size);
-
     return zonemem;
 }
 

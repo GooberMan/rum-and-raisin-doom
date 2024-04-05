@@ -22,17 +22,17 @@ static std::regex TypeMatchRegex = std::regex( TypeMatchRegexString );
 constexpr const char* VersionMatchRegexString = "^(\\d+)\\.(\\d+)\\.(\\d+)$";
 static std::regex VersionMatchRegex = std::regex( VersionMatchRegexString );
 
-bool M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, JSONLumpFunc&& parsefunc )
+jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, const JSONLumpFunc& parsefunc )
 {
 	if( lumpindex < 0
 		|| W_LumpLength( lumpindex ) <= 0 )
 	{
-		return false;
+		return jl_notfound;
 	}
 
 	const char* jsondata = (const char*)W_CacheLumpNum( lumpindex, PU_STATIC );
 
-	JSONElement root = JSONElement::Deserialise( jsondata );
+	JSONElement root = JSONElement::Deserialise( std::string( jsondata, W_LumpLength( lumpindex ) ) );
 
 	const JSONElement& type			= root[ "type" ];
 	const JSONElement& version		= root[ "version" ];
@@ -46,20 +46,27 @@ bool M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, JSONLumpFunc&
 		|| !type.Valid()
 		|| !version.Valid()
 		|| !metadata.Valid()
-		|| !data.Valid()
-		|| !std::regex_match( lumptype, TypeMatchRegex )
-		|| to< std::string >( type ) != lumptype
-		|| !std::regex_search( versionstr, versionmatch, VersionMatchRegex )
-		)
+		|| !data.Valid() )
 	{
-		return false;
+		return jl_malformedroot;
+	}
+
+	if( !std::regex_match( lumptype, TypeMatchRegex )
+		|| to< std::string >( type ) != lumptype )
+	{
+		return jl_typemismatch;
+	}
+
+	if( !std::regex_search( versionstr, versionmatch, VersionMatchRegex ) )
+	{
+		return jl_badversion;
 	}
 
 	JSONLumpVersion versiondata =
 	{
-		to< int32_t >( versionmatch[ 0 ].str() ),
 		to< int32_t >( versionmatch[ 1 ].str() ),
 		to< int32_t >( versionmatch[ 2 ].str() ),
+		to< int32_t >( versionmatch[ 3 ].str() ),
 	};
 
 	return parsefunc( data, versiondata );

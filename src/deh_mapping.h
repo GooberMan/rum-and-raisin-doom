@@ -44,7 +44,7 @@
 #define RNR_MAPPING(deh_name, fieldname)                    \
              {deh_name, &deh_mapping_base.fieldname,          \
                  sizeof(deh_mapping_base.fieldname),          \
-                 false, exe_mbf21_rnr},
+                 false, exe_rnr24},
 
 #define DEH_MAPPING_STRING(deh_name, fieldname)               \
              {deh_name, &deh_mapping_base.fieldname,          \

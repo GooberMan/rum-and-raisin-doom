@@ -67,6 +67,9 @@ DOOM_C_API struct _wad_file_s
 
     // File's location on disk.
     const char *path;
+
+	lumpindex_t		minlump;
+	lumpindex_t		maxlump;
 };
 
 // Open the specified file. Returns a pointer to a new wad_file_t 

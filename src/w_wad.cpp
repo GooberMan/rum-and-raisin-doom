@@ -236,6 +236,8 @@ wad_file_t *W_AddFileWithType(const char *filename, wadtype_t type)
 
     startlump = numlumps;
     numlumps += numfilelumps;
+	wad_file->minlump = startlump;
+	wad_file->maxlump = numlumps;
     lumpinfo = (lumpinfo_t**)I_Realloc(lumpinfo, numlumps * sizeof(lumpinfo_t *));
     filerover = fileinfo;
 
@@ -603,6 +605,7 @@ void W_GenerateHashTable(void)
     if (lumphash != NULL)
     {
         Z_Free(lumphash);
+		lumphash = nullptr;
     }
 
     // Generate hash table
@@ -674,6 +677,33 @@ void W_Reload(void)
     // The WAD directory has changed, so we have to regenerate the
     // fast lookup hashtable:
     W_GenerateHashTable();
+}
+
+void W_RemoveFile( wad_file_t* file )
+{
+	if( file->maxlump != numlumps )
+	{
+		I_Error( "W_RemoveFile: Only supports removing files in reverse order they were added." );
+	}
+
+	auto found = std::find( wadfiles.begin(), wadfiles.end(), file );
+	if( found == wadfiles.end() )
+	{
+		I_Error( "W_RemoveFile: File is not loaded." );
+	}
+	wadfiles.erase( found );
+
+	for( int32_t lump : iota( file->minlump, file->maxlump ) )
+	{
+		if( lumpinfo[ lump ]->cache != nullptr )
+		{
+			Z_Free( lumpinfo[ lump ]->cache );
+		}
+	}
+
+	numlumps = file->minlump;
+	W_CloseFile( file );
+	W_GenerateHashTable();
 }
 
 const char *W_WadNameForLump(const lumpinfo_t *lump)
