@@ -221,19 +221,19 @@ DOOM_C_API typedef uint8_t byte;
 DOOM_C_API typedef uint8_t pixel_t;
 DOOM_C_API typedef int16_t dpixel_t;
 
-DOOM_C_API typedef struct rgb_s
+DOOM_C_API typedef PACKED_STRUCT( rgb_s
 {
 	pixel_t r;
 	pixel_t g;
 	pixel_t b;
-} rgb_t;
+} rgb_t );
 
-DOOM_C_API typedef struct bgr_s
+DOOM_C_API typedef PACKED_STRUCT( bgr_s
 {
 	pixel_t b;
 	pixel_t g;
 	pixel_t r;
-} bgr_t;
+} bgr_t );
 
 DOOM_C_API typedef struct rgba_s
 {

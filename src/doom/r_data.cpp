@@ -1022,6 +1022,69 @@ void R_InitSpriteLumps (void)
 //
 // R_InitColormaps
 //
+
+constexpr double_t DefaultTranmapPercent = 0.65625;
+
+constexpr pixel_t LerpPixel( pixel_t from, pixel_t to, double_t percent )
+{
+	return (pixel_t)( (int32_t)from + (int32_t)( (int32_t)to - (int32_t)from ) * percent );
+}
+
+byte* GenerateTranmapLinear( double_t percent, zonetag_t tag )
+{
+	byte* output = (byte*)Z_MallocZero( 256 * 256, tag, nullptr );
+
+	rgb_t* playpal = (rgb_t*)W_CacheLumpName( "PLAYPAL", PU_CACHE );
+
+	byte* dest = output;
+	rgb_t* from = playpal;
+
+	for( [[maybe_unused]] int32_t fromindex : iota( 0, 256 ) )
+	{
+		rgb_t* to = playpal;
+		for( [[maybe_unused]] int32_t toindex : iota( 0, 256 ) )
+		{
+			rgb_t mixed =
+			{
+				LerpPixel( from->r, to->r, percent ),
+				LerpPixel( from->g, to->g, percent ),
+				LerpPixel( from->b, to->b, percent )
+			};
+
+			int32_t bestdist = INT_MAX;
+			byte bestmatch = 0;
+
+			rgb_t* palentry = playpal;
+			for( int32_t palindex : iota( 0, 256 ) )
+			{
+				int32_t rdist = (int32_t)mixed.r - palentry->r;
+				int32_t gdist = (int32_t)mixed.g - palentry->g;
+				int32_t bdist = (int32_t)mixed.b - palentry->b;
+
+				int32_t dist = (rdist * rdist) + (gdist * gdist) + (bdist * bdist);
+				if( dist < bestdist )
+				{
+					bestdist = dist;
+					bestmatch = palindex;
+				}
+				if( dist == 0 )
+				{
+					break;
+				}
+
+				++palentry;
+			}
+
+			*dest++ = bestmatch;
+			++to;
+		}
+
+		++from;
+	}
+
+	return output;
+}
+
 void R_InitColormaps (void)
 {
     int	lump;
@@ -1037,8 +1100,7 @@ void R_InitColormaps (void)
 		lastcolormap = W_CheckNumForName( "C_END" ) - 1;
 		numcolormaps = M_MAX( 0, lastcolormap - firstcolormap + 1 );
 
-		lumpindex_t tranmaplump = W_CheckNumForName( "TRANMAP" );
-		tranmap = tranmaplump >= 0 ? (byte*)W_CacheLumpNum( tranmaplump, PU_LEVEL ) : nullptr;
+		tranmap = GenerateTranmapLinear( DefaultTranmapPercent, PU_STATIC );
 	}
 }
 

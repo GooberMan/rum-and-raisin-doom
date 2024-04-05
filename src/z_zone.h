@@ -32,7 +32,7 @@
 // ZONE MEMORY
 // PU - purge tags.
 
-DOOM_C_API enum
+DOOM_C_API typedef enum zonetag_e
 {
     PU_STATIC = 1,                  // static entire execution time
     PU_SOUND,                       // static while playing
@@ -49,7 +49,7 @@ DOOM_C_API enum
     // Total number of different tag types
 
     PU_NUM_TAGS
-};
+} zonetag_t;
 
 DOOM_C_API typedef void( *memdestruct_t )( void*, size_t );
 

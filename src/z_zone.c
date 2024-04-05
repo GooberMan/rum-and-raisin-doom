@@ -599,7 +599,7 @@ size_t Z_FreeMemory(void)
 
 byte* Z_ZoneBase(void)
 {
-	return mainzone;
+	return (byte*)mainzone;
 }
 
 size_t Z_ZoneSize(void)

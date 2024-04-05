@@ -90,7 +90,7 @@ DOOM_C_API void *W_CacheLumpNumTracked(const char* file, size_t line, lumpindex_
 DOOM_C_API void *W_CacheLumpNameTracked(const char* file, size_t line, const char *name, int tag);
 
 #define W_CacheLumpNum(lump, tag) W_CacheLumpNumTracked( __FILE__, __LINE__, lump, tag )
-#define W_CacheLumpName(lump, name) W_CacheLumpNameTracked( __FILE__, __LINE__, lump, name )
+#define W_CacheLumpName(lump, tag) W_CacheLumpNameTracked( __FILE__, __LINE__, lump, tag )
 
 DOOM_C_API void W_GenerateHashTable(void);
 
