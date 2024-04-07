@@ -1249,7 +1249,7 @@ void G_InitPlayer (int player)
 // G_PlayerFinishLevel
 // Can when a player completes a level.
 //
-void G_PlayerFinishLevel (int player) 
+void G_PlayerFinishLevel(int player, doombool fullreset)
 { 
     player_t*	p; 
 	 
@@ -1262,6 +1262,10 @@ void G_PlayerFinishLevel (int player)
     p->fixedcolormap = 0;		// cancel ir gogles 
     p->damagecount = 0;			// no palette changes 
     p->bonuscount = 0; 
+	if( fullreset )
+	{
+		p->playerstate = PST_REBORN;
+	}
 } 
  
 
@@ -1540,16 +1544,18 @@ int cpars[32] =
 // G_DoCompleted 
 //
 doombool		secretexit; 
+doombool		rebornexit;
 extern char*	pagename; 
  
-void G_ExitLevel (void) 
+void G_ExitLevel( doombool resetplayers ) 
 { 
-    secretexit = false; 
+    secretexit = false;
+	rebornexit = resetplayers || ( gameflags & GF_PistolStarts ) == GF_PistolStarts;
     gameaction = ga_completed; 
 } 
 
 // Here's for the german edition.
-void G_SecretExitLevel (void) 
+void G_SecretExitLevel( doombool resetplayers ) 
 { 
 #if 0
     // IF NO WOLF3D LEVELS, NO SECRET EXIT!
@@ -1559,6 +1565,7 @@ void G_SecretExitLevel (void)
     else
 #endif
 	secretexit = true; 
+	rebornexit = resetplayers || ( gameflags & GF_PistolStarts ) == GF_PistolStarts;
     gameaction = ga_completed; 
 } 
  
@@ -1572,7 +1579,7 @@ void G_DoCompleted (void)
 	{
 		if (playeringame[i]) 
 		{
-			G_PlayerFinishLevel (i);        // take away cards and stuff 
+			G_PlayerFinishLevel(i, rebornexit);        // take away cards and stuff 
 		}
 	}
 	 
@@ -1687,14 +1694,6 @@ void G_DoWorldDone (void)
 	}
 
 	D_GameflowSetCurrentMap( mapinfo );
-
-	if( gameflags & GF_PistolStarts )
-	{
-		for ( curr=0; curr < MAXPLAYERS; ++curr )
-		{
-			players[curr].playerstate = PST_REBORN;
-		}
-	}
 
 	G_DoLoadLevel ();
 	gameaction = ga_nothing;

@@ -1898,7 +1898,7 @@ DOOM_C_API void A_BrainExplode (mobj_t* mo)
 
 DOOM_C_API void A_BrainDie (mobj_t*	mo)
 {
-    G_ExitLevel ();
+    G_ExitLevel( false );
 }
 
 DOOM_C_API void A_BrainSpit (mobj_t*	mo)

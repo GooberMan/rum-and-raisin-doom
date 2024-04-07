@@ -425,6 +425,7 @@ MakeGenericFunc( Teleport, EV_DoTeleportGeneric );
 MakeGenericFunc( Exit, EV_DoExitGeneric );
 MakeGenericFunc( LightSet, EV_DoLightSetGeneric );
 MakeGenericFunc( LightStrobe, EV_DoLightStrobeGeneric );
+MakeGenericFunc( Music, EV_DoMusicSwitchGeneric );
 
 template< typename func >
 static void DoGeneric( line_t* line, mobj_t* activator )
@@ -1090,30 +1091,42 @@ constexpr lineaction_t builtinrnr24lineactions[ Actions_RNR24_Count ] =
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// OffsetRotate_FloorCeilingTexture_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
-	// Music_Change_W1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
-	// Music_Change_WR_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
-	// Music_Change_S1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
-	// Music_Change_SR_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
-	// Music_Change_G1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
-	// Music_Change_GR_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_ChangeLooping_W1_Player
+	{ &precon::IsPlayer, &DoGenericOnce< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk | mt_loop },
+	// Music_ChangeLooping_WR_Player
+	{ &precon::IsPlayer, &DoGeneric< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk | mt_loop },
+	// Music_ChangeLooping_S1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch | mt_loop },
+	// Music_ChangeLooping_SR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch | mt_loop },
+	// Music_ChangeLooping_G1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_GunFront, LL_None, 0, 0, mt_switch | mt_loop },
+	// Music_ChangeLooping_GR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_GunFront, LL_None, 0, 0, mt_switch | mt_loop },
+	// Music_ChangeOnce_W1_Player
+	{ &precon::IsPlayer, &DoGenericOnce< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk },
+	// Music_ChangeOnce_WR_Player
+	{ &precon::IsPlayer, &DoGeneric< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk },
+	// Music_ChangeOnce_S1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch },
+	// Music_ChangeOnce_SR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch },
+	// Music_ChangeOnce_G1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_GunFront, LL_None, 0, 0, mt_switch },
+	// Music_ChangeOnce_GR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_GunFront, LL_None, 0, 0, mt_switch },
 	// Exit_ResetNormal_W1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericOnce< Exit >, LT_WalkBoth, LL_None, 0, 0, exit_normal | exit_resetinventory },
 	// Exit_ResetNormal_S1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_SwitchFront, LL_None, 0, 0, exit_normal | exit_resetinventory },
 	// Exit_ResetNormal_G1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_GunFront, LL_None, 0, 0, exit_normal | exit_resetinventory },
 	// Exit_ResetSecret_W1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericOnce< Exit >, LT_WalkBoth, LL_None, 0, 0, exit_secret | exit_resetinventory },
 	// Exit_ResetSecret_S1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_SwitchFront, LL_None, 0, 0, exit_secret | exit_resetinventory },
 	// Exit_ResetSecret_G1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Exit >, LT_GunFront, LL_None, 0, 0, exit_secret | exit_resetinventory },
 	// Tint_SetTo_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Tint_SetTo_W1_Player

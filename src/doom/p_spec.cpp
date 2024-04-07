@@ -910,7 +910,7 @@ P_CrossSpecialLine
 	
       case 52:
 	// EXIT!
-	G_ExitLevel ();
+	G_ExitLevel ( false );
 	break;
 	
       case 53:
@@ -993,7 +993,7 @@ P_CrossSpecialLine
 	
       case 124:
 	// Secret EXIT
-	G_SecretExitLevel ();
+	G_SecretExitLevel ( false );
 	break;
 		
       case 125:
@@ -1319,7 +1319,7 @@ DOOM_C_API void P_PlayerInSpecialSector (player_t* player)
 
 		if (player->health <= 10)
 		{
-			G_ExitLevel();
+			G_ExitLevel( false );
 		}
 		break;
 			
@@ -1354,7 +1354,7 @@ void P_UpdateSpecials (void)
 		levelTimeCount--;
 		if (!levelTimeCount)
 		{
-			G_ExitLevel();
+			G_ExitLevel( false );
 		}
 	}
 

@@ -743,6 +743,30 @@ DOOM_C_API void S_ChangeMusicLump( flowstring_t* lump, int32_t looping )
 	S_MusicPlay( &music_from_lump, looping );
 }
 
+DOOM_C_API void S_ChangeMusicLumpIndex( lumpindex_t lump, int32_t looping )
+{
+	bool wasplaying = mus_playing == &music_from_lump;
+	if( wasplaying && music_from_lump.lumpnum == lump )
+	{
+		return;
+	}
+
+	S_StopMusic();
+
+	if( wasplaying )
+	{
+		W_ReleaseLumpNum( music_from_lump.lumpnum );
+	}
+
+	music_from_lump.name = W_GetNameForNum( lump );
+	music_from_lump.lumpnum = lump;
+	music_from_lump.data = nullptr;
+	music_from_lump.handle = nullptr;
+
+	S_MusicPlay( &music_from_lump, looping );
+}
+
+
 DOOM_C_API doombool S_MusicPlaying(void)
 {
     return I_MusicIsPlaying();

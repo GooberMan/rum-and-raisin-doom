@@ -1630,6 +1630,28 @@ DOOM_C_API void T_MusInfo( musinfo_t* info )
 	}
 }
 
+int32_t	EV_DoMusicSwitchGeneric( line_t* line, mobj_t* activator )
+{
+	int32_t side = P_PointOnLineSide( activator->x, activator->y, line );
+	if( ( line->action->param1 & mt_walk ) == mt_walk )
+	{
+		side = side ? 0 : 1;
+	}
+
+	int32_t looping = !!( line->action->param1 & mt_loop );
+
+	if( side == 0 ) // Activating from front side
+	{
+		S_ChangeMusicLumpIndex( line->frontside->toptextureindex, looping );
+	}
+	else
+	{
+		S_ChangeMusicLumpIndex( line->frontside->bottomtextureindex, looping );
+	}
+
+	return 1;
+}
+
 // =================
 //  EVERYTHING ELSE
 // =================
@@ -1654,7 +1676,8 @@ DOOM_C_API int32_t EV_DoBoomFloorCeilingGeneric( line_t* line, mobj_t* activator
 
 DOOM_C_API int32_t EV_DoExitGeneric( line_t* line, mobj_t* activator )
 {
-	line->action->param1 ? G_SecretExitLevel() : G_ExitLevel();
+	bool reset = ( line->action->param1 & exit_resetinventory ) == exit_resetinventory;
+	( line->action->param1 & exit_secret ) ? G_SecretExitLevel( reset ) : G_ExitLevel( reset );
 
 	return 1;
 }
@@ -2617,7 +2640,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 
 				if( player->health <= 10 )
 				{
-					G_ExitLevel();
+					G_ExitLevel( false );
 				}
 			default:
 				break;
@@ -2684,7 +2707,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 				{
 					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000, damage_theworks );
 				}
-				G_ExitLevel();
+				G_ExitLevel( false );
 				break;
 
 			case SectorAltDamage_KillPlayersAndSecretExit:
@@ -2692,7 +2715,7 @@ DOOM_C_API void P_MobjInSectorGeneric( mobj_t* mobj )
 				{
 					P_DamageMobj( currplayer.mo, nullptr, nullptr, 10000, damage_theworks );
 				}
-				G_SecretExitLevel();
+				G_SecretExitLevel( false );
 				break;
 
 			default:

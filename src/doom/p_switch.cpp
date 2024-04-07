@@ -391,7 +391,7 @@ doombool P_UseSpecialLine( mobj_t* thing, line_t* line, int side )
       case 11:
 	// Exit level
 	P_ChangeSwitchTexture(line,0);
-	G_ExitLevel ();
+	G_ExitLevel ( false );
 	break;
 	
       case 14:
@@ -463,7 +463,7 @@ doombool P_UseSpecialLine( mobj_t* thing, line_t* line, int side )
       case 51:
 	// Secret EXIT
 	P_ChangeSwitchTexture(line,0);
-	G_SecretExitLevel ();
+	G_SecretExitLevel ( false );
 	break;
 	
       case 55:

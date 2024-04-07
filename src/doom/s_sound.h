@@ -66,6 +66,7 @@ DOOM_C_API void S_StartMusic(int music_id);
 DOOM_C_API void S_ChangeMusic(int music_id, int looping);
 
 DOOM_C_API void S_ChangeMusicLump( flowstring_t* lump, int32_t looping );
+DOOM_C_API void S_ChangeMusicLumpIndex( lumpindex_t lump, int32_t looping );
 
 // query if music is playing
 DOOM_C_API doombool S_MusicPlaying(void);

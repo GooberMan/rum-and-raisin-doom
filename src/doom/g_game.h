@@ -57,8 +57,8 @@ DOOM_C_API void G_PlayDemo (char* name);
 DOOM_C_API void G_TimeDemo (char* name);
 DOOM_C_API doombool G_CheckDemoStatus (void);
 
-DOOM_C_API void G_ExitLevel (void);
-DOOM_C_API void G_SecretExitLevel (void);
+DOOM_C_API void G_ExitLevel( doombool resetplayers );
+DOOM_C_API void G_SecretExitLevel( doombool resetplayers );
 
 DOOM_C_API void G_WorldDone (void);
 

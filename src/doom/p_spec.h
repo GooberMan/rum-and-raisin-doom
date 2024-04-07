@@ -726,8 +726,9 @@ DOOM_C_API typedef enum ceilingsound_e
 
 DOOM_C_API typedef enum exittype_e
 {
-	exit_normal,
-	exit_secret,
+	exit_normal				= 0x01,
+	exit_secret				= 0x02,
+	exit_resetinventory		= 0x04,
 } exittype_t;
 
 DOOM_C_API typedef enum lightset_e
@@ -772,6 +773,13 @@ DOOM_C_API typedef struct musinfo_s
 #endif defined( __cplusplus )
 } musinfo_t;
 
+DOOM_C_API typedef enum musictrigger_e
+{
+	mt_walk		= 0x01,
+	mt_switch	= 0x02,
+	mt_loop		= 0x04,
+} musictrigger_t;
+
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
 DOOM_C_API void		T_RaisePlatGeneric( plat_t* plat );
 DOOM_C_API void		T_MoveFloorGeneric( floormove_t* floor );
@@ -797,6 +805,7 @@ DOOM_C_API int32_t	EV_DoElevatorGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoBoomFloorCeilingGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoStairsGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoMusicSwitchGeneric( line_t* line, mobj_t* activator );
 
 DOOM_C_API int32_t	P_SpawnSectorScroller( line_t* line );
 DOOM_C_API doombool	P_SpawnSectorSpecialsGeneric();
