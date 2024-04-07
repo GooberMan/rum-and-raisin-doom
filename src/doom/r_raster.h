@@ -21,11 +21,6 @@
 
 #if defined(__cplusplus)
 
-#define RASTER_ALLOW_SELECTOR 0
-#if RASTER_ALLOW_SELECTOR
-void R_RasteriseRegion( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture );
-#endif // RASTER_ALLOW_SELECTOR
-
 void R_RasteriseRegion16x16( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture );
 void R_RasteriseRegion16x32( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture );
 void R_RasteriseRegion16x64( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture );

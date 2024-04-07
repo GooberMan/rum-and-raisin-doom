@@ -761,8 +761,8 @@ struct rasterregion_s
 	rend_fixed_t		xoffset;
 	rend_fixed_t		yoffset;
 
+	angle_t				rotation;
 	int32_t				lightlevel;
-	int32_t				padding;
 
 	int16_t				minx;
 	int16_t				maxx;

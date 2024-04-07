@@ -592,6 +592,8 @@ struct DoomMapLoader
 			thisprev->flooroffsety		= thiscurr->flooroffsety		= FixedToRendFixed( thissec->flooroffsety );
 			thisprev->ceiloffsetx		= thiscurr->ceiloffsetx			= FixedToRendFixed( thissec->ceiloffsetx );
 			thisprev->ceiloffsety		= thiscurr->ceiloffsety			= FixedToRendFixed( thissec->ceiloffsety );
+			thisprev->floorrotation		= thiscurr->floorrotation		= thissec->floorrotation;
+			thisprev->ceilrotation		= thiscurr->ceilrotation		= thissec->ceilrotation;
 			thisprev->clipfloor			= thiscurr->clipfloor			= false;
 			thisprev->clipceiling		= thiscurr->clipceiling			= false;
 			thisprev->activethisframe	= thiscurr->activethisframe		= false;

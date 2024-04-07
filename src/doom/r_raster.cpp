@@ -27,6 +27,18 @@
 #include "r_state.h"
 #include "m_misc.h"
 
+INLINE void Rotate( rend_fixed_t& x, rend_fixed_t& y, uint32_t finerot )
+{
+	rend_fixed_t cos = renderfinecosine[ finerot ];
+	rend_fixed_t sin = renderfinesine[ finerot ];
+
+	rend_fixed_t ogx = x;
+	rend_fixed_t ogy = y;
+
+	x = RendFixedMul( cos, ogx ) - RendFixedMul( sin, ogy );
+	y = RendFixedMul( sin, ogx ) + RendFixedMul( cos, ogy );
+}
+
 template< int64_t Width, int64_t Height >
 struct PreSizedSample
 {
@@ -82,16 +94,16 @@ struct PreSizedSampleUntranslated
 // Used http://www.lysator.liu.se/~mikaelk/doc/perspectivetexture/ as reference for how to implement an efficient rasteriser
 // Implemented for several Log2( N ) values, select based on backbuffer width
 
-template< int32_t Leap, int32_t LeapLog2, typename Sampler >
+template< int32_t Leap, int32_t LeapLog2, typename Sampler, bool DoRotation >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void R_RasteriseColumnImpl( rendercontext_t* rendercontext, int32_t x, int32_t top, int32_t count )
+INLINE void R_RasteriseColumnImpl( rendercontext_t* rendercontext, int32_t x, int32_t top, int32_t count, uint32_t finerot )
 {
 	pixel_t*			dest			= rendercontext->planecontext.output.data + x * rendercontext->planecontext.output.pitch + top;
 	pixel_t*			source			= rendercontext->planecontext.source;
 
 	int32_t				nexty			= top;
 
-	angle_t				angle			= (rendercontext->planecontext.viewangle + drs_current->xtoviewangle[ x ] ) >> RENDERANGLETOFINESHIFT;
+	angle_t				angle			= RENDFINEANGLE( rendercontext->planecontext.viewangle + drs_current->xtoviewangle[ x ] );
 	rend_fixed_t		anglecos		= renderfinecosine[ angle ];
 	rend_fixed_t		anglesin		= renderfinesine[ angle ];
 
@@ -100,6 +112,10 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t* rendercontext, int32_t x, in
 
 	rend_fixed_t		xfrac			= rendercontext->planecontext.viewx + RendFixedMul( anglecos, currlength );
 	rend_fixed_t		yfrac			= -rendercontext->planecontext.viewy - RendFixedMul( anglesin, currlength );
+	if constexpr( DoRotation )
+	{
+		Rotate( xfrac, yfrac, finerot );
+	}
 	rend_fixed_t		nextxfrac;
 	rend_fixed_t		nextyfrac;
 
@@ -118,6 +134,10 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t* rendercontext, int32_t x, in
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 		nextxfrac		= rendercontext->planecontext.viewx + RendFixedMul( anglecos, currlength );
 		nextyfrac		= -rendercontext->planecontext.viewy - RendFixedMul( anglesin, currlength );
+		if constexpr( DoRotation )
+		{
+			Rotate( nextxfrac, nextyfrac, finerot );
+		}
 
 		xstep =	( nextxfrac - xfrac ) >> LeapLog2;
 		ystep =	( nextyfrac - yfrac ) >> LeapLog2;
@@ -180,6 +200,10 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t* rendercontext, int32_t x, in
 		currlength		= RendFixedMul( currdistance, drs_current->distscale[ x ] );
 		nextxfrac		= rendercontext->planecontext.viewx + RendFixedMul( anglecos, currlength );
 		nextyfrac		= -rendercontext->planecontext.viewy - RendFixedMul( anglesin, currlength );
+		if constexpr( DoRotation )
+		{
+			Rotate( nextxfrac, nextyfrac, finerot );
+		}
 
 		++count;
 
@@ -224,17 +248,18 @@ constexpr auto Lines( rasterregion_t* region )
 	return std::span( region->lines, region->maxx - region->minx + 1 );
 }
 
-template< int32_t Leap, int32_t LeapLog2, typename Sampler >
+template< int32_t Leap, int32_t LeapLog2, typename Sampler, bool DoRotation >
 requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
 INLINE void RenderRasterLines( rendercontext_t* rendercontext, rasterregion_t* region )
 {
 	int32_t x = region->minx;
+	uint32_t finerot = RENDFINEANGLE( region->rotation );
 
 	for( rasterline_t& line : Lines( region ) )
 	{
 		if( line.top <= line.bottom )
 		{
-			R_RasteriseColumnImpl< Leap, LeapLog2, Sampler >( rendercontext, x, line.top, line.bottom - line.top );
+			R_RasteriseColumnImpl< Leap, LeapLog2, Sampler, DoRotation >( rendercontext, x, line.top, line.bottom - line.top, finerot );
 		}
 		++x;
 	}
@@ -262,105 +287,15 @@ INLINE void PrepareRender( rendercontext_t* rendercontext, rasterregion_t* thisr
 		PrepareRow( y++, rendercontext, texturesize );
 	};
 
-	RenderRasterLines< Leap, LeapLog2, Sampler >( rendercontext, thisregion );
-}
-
-#if RASTER_ALLOW_SELECTOR
-template< int32_t Leap, int32_t LeapLog2, int64_t Width >
-requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionWidthRasteriser( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
-{
-	switch( texture->height )
+	if( thisregion->rotation != 0 )
 	{
-	case 16:
-		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 16 > >( rendercontext, firstregion, Width * 16 );
-		break;
-	case 32:
-		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 32 > >( rendercontext, firstregion, Width * 32 );
-		break;
-	case 64:
-		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 64 > >( rendercontext, firstregion, Width * 64 );
-		break;
-	case 128:
-		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 128 > >( rendercontext, firstregion, Width * 128 );
-		break;
-	case 256:
-		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 256 > >( rendercontext, firstregion, Width * 256 );
-		break;
-	default:
-		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< Width, 64 > >( rendercontext, firstregion, Width * 64 );
-		break;
-	}
-}
-
-template< int32_t Leap, int32_t LeapLog2 >
-requires ( LeapLog2 >= 2 && LeapLog2 <= 5 )
-INLINE void ChooseRegionRasteriser( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
-{
-	if( !comp.any_texture_any_surface )
-	{
-		PrepareRender< Leap, LeapLog2, PreSizedSampleUntranslated< 64, 64 > >( rendercontext, firstregion, 64 * 64 );
+		RenderRasterLines< Leap, LeapLog2, Sampler, true >( rendercontext, thisregion );
 	}
 	else
 	{
-		switch( texture->width )
-		{
-		case 8:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 8 >( rendercontext, firstregion, texture );
-			break;
-		case 16:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 16 >( rendercontext, firstregion, texture );
-			break;
-		case 32:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 32 >( rendercontext, firstregion, texture );
-			break;
-		case 64:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( rendercontext, firstregion, texture );
-			break;
-		case 128:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 128 >( rendercontext, firstregion, texture );
-			break;
-		case 256:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 256 >( rendercontext, firstregion, texture );
-			break;
-		case 512:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 512 >( rendercontext, firstregion, texture );
-			break;
-		case 1024:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 1024 >( rendercontext, firstregion, texture );
-			break;
-		default:
-			ChooseRegionWidthRasteriser< Leap, LeapLog2, 64 >( rendercontext, firstregion, texture );
-			break;
-		}
+		RenderRasterLines< Leap, LeapLog2, Sampler, false >( rendercontext, thisregion );
 	}
 }
-
-void R_RasteriseRegion( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )
-{
-	M_PROFILE_FUNC();
-	rendercontext->planecontext.source = texture->data;
-
-	switch( rendercontext->planecontext.spantype )
-	{
-	case Span_PolyRaster_Log2_4:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_4, PLANE_PIXELLEAP_4_LOG2 >( rendercontext, firstregion, texture );
-		break;
-
-	case Span_PolyRaster_Log2_8:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_8, PLANE_PIXELLEAP_8_LOG2 >( rendercontext, firstregion, texture );
-		break;
-
-	case Span_PolyRaster_Log2_16:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_16, PLANE_PIXELLEAP_16_LOG2 >( rendercontext, firstregion, texture );
-		break;
-
-	case Span_PolyRaster_Log2_32:
-		ChooseRegionRasteriser< PLANE_PIXELLEAP_32, PLANE_PIXELLEAP_32_LOG2 >( rendercontext, firstregion, texture );
-		break;
-	}
-}
-#endif
 
 template< typename Sampler, size_t tetxuresize >
 void RasteriseRegion( rendercontext_t* rendercontext, rasterregion_t* firstregion, texturecomposite_t* texture )

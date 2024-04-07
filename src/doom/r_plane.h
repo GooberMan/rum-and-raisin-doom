@@ -29,7 +29,7 @@
 void R_ClearPlanes( planecontext_t* context, int32_t width, int32_t height );
 void R_IncreaseOpenings( planecontext_t& context );
 
-rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, rend_fixed_t height, rend_fixed_t xoffset, rend_fixed_t yoffset, int32_t lightlevel, int32_t start, int32_t stop );
+rasterregion_t* R_AddNewRasterRegion( planecontext_t& context, rend_fixed_t height, rend_fixed_t xoffset, rend_fixed_t yoffset, angle_t rotation, int32_t lightlevel, int32_t start, int32_t stop );
 
 #endif // defined(__cplusplus)
 
