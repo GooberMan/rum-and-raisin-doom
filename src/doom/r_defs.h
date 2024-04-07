@@ -142,6 +142,8 @@ typedef struct sectorinstance_s
 	rend_fixed_t			flooroffsety;
 	rend_fixed_t			ceiloffsetx;
 	rend_fixed_t			ceiloffsety;
+	angle_t					floorrotation;
+	angle_t					ceilrotation;
 
 	// These are ignored for BSP rejection purposes
 	rend_fixed_t			floorheight;
@@ -359,6 +361,10 @@ struct sector_s
 	fixed_t				flooroffsety;
 	fixed_t				ceiloffsetx;
 	fixed_t				ceiloffsety;
+
+	// R&R24 additions
+	angle_t				floorrotation;
+	angle_t				ceilrotation;
 
 #if defined( __cplusplus )
 	INLINE void*& Special()				{ return specialdata; }

@@ -2015,7 +2015,7 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 				size_t size = sizeof( mobj_t* ) * points.size();
 				scroller->controlpoints = (mobj_t**)Z_Malloc( size, PU_LEVSPEC, nullptr );
 				memcpy( scroller->controlpoints, points.data(), size );
-				scroller->pointcount = points.size();
+				scroller->pointcount = (int32_t)points.size();
 			}
 
 		}
@@ -2130,6 +2130,116 @@ DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t right, int32_t of
 	}
 
 	return 1;
+}
+
+void SetupSectorOffset( line_t& line )
+{
+	auto ScrollFloor = []( line_t& line, sector_t& sector )
+	{
+		sector.flooroffsetx += line.dx;
+		sector.flooroffsety += line.dy;
+	};
+
+	auto ScrollCeiling = []( line_t& line, sector_t& sector )
+	{
+		sector.ceiloffsetx += line.dx;
+		sector.ceiloffsety += line.dy;
+	};
+
+	auto ScrollBoth = [&ScrollFloor, &ScrollCeiling]( line_t& line, sector_t& sector )
+	{
+		ScrollFloor( line, sector );
+		ScrollCeiling( line, sector );
+	};
+
+	auto RotateFloor = []( line_t& line, sector_t& sector )
+	{
+		sector.floorrotation += line.angle;
+	};
+
+	auto RotateCeiling = []( line_t& line, sector_t& sector )
+	{
+		sector.ceilrotation += line.angle;
+	};
+
+	auto RotateBoth = [&RotateFloor, &RotateCeiling]( line_t& line, sector_t& sector )
+	{
+		RotateFloor( line, sector );
+		RotateCeiling( line, sector );
+	};
+
+	auto EmptyFunctor = []( line_t& line, sector_t& sector ) { };
+ 
+	using functor_t = std::function< void( line_t&, sector_t& ) >;
+
+	functor_t offsetfunctor;
+	functor_t rotatefunctor;
+
+	switch( line.special )
+	{
+	case Offset_FloorTexture_Always:
+		offsetfunctor = ScrollFloor;
+		rotatefunctor = EmptyFunctor;
+		break;
+
+	case Offset_CeilingTexture_Always:
+		offsetfunctor = ScrollCeiling;
+		rotatefunctor = EmptyFunctor;
+		break;
+
+	case Offset_FloorCeilingTexture_Always:
+		offsetfunctor = ScrollBoth;
+		rotatefunctor = EmptyFunctor;
+		break;
+
+	case Rotate_FloorTexture_Always:
+		offsetfunctor = EmptyFunctor;
+		rotatefunctor = RotateFloor;
+		break;
+
+	case Rotate_CeilingTexture_Always:
+		offsetfunctor = EmptyFunctor;
+		rotatefunctor = RotateCeiling;
+		break;
+
+	case Rotate_FloorCeilingTexture_Always:
+		offsetfunctor = EmptyFunctor;
+		rotatefunctor = RotateBoth;
+		break;
+
+	case OffsetRotate_FloorTexture_Always:
+		offsetfunctor = ScrollFloor;
+		rotatefunctor = RotateFloor;
+		break;
+
+	case OffsetRotate_CeilingTexture_Always:
+		offsetfunctor = ScrollCeiling;
+		rotatefunctor = RotateCeiling;
+		break;
+
+	case OffsetRotate_FloorCeilingTexture_Always:
+		offsetfunctor = ScrollBoth;
+		rotatefunctor = RotateBoth;
+		break;
+
+	default:
+		break;
+	}
+
+	for( sector_t& sector : Sectors() )
+	{
+		if( sector.tag == line.tag )
+		{
+			offsetfunctor( line, sector );
+			rotatefunctor( line, sector );
+			prevsectors[ sector.index ].flooroffsetx	= currsectors[ sector.index ].flooroffsetx		= FixedToRendFixed( sector.flooroffsetx );
+			prevsectors[ sector.index ].flooroffsety	= currsectors[ sector.index ].flooroffsety		= FixedToRendFixed( sector.flooroffsety );
+			prevsectors[ sector.index ].ceiloffsetx		= currsectors[ sector.index ].ceiloffsetx		= FixedToRendFixed( sector.ceiloffsetx );
+			prevsectors[ sector.index ].ceiloffsety		= currsectors[ sector.index ].ceiloffsety		= FixedToRendFixed( sector.ceiloffsety );
+			prevsectors[ sector.index ].floorrotation	= currsectors[ sector.index ].floorrotation		= sector.floorrotation;
+			prevsectors[ sector.index ].ceilrotation	= currsectors[ sector.index ].ceilrotation		= sector.ceilrotation;
+		}
+	}
 }
 
 DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
@@ -2406,6 +2516,31 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 						}
 					}
 				}
+				break;
+			}
+		}
+
+		if( sim.mbf21_line_specials )
+		{
+		}
+
+		if( sim.rnr24_line_specials )
+		{
+			switch( line.special )
+			{
+			case Offset_FloorTexture_Always:
+			case Offset_CeilingTexture_Always:
+			case Offset_FloorCeilingTexture_Always:
+			case Rotate_FloorTexture_Always:
+			case Rotate_CeilingTexture_Always:
+			case Rotate_FloorCeilingTexture_Always:
+			case OffsetRotate_FloorTexture_Always:
+			case OffsetRotate_CeilingTexture_Always:
+			case OffsetRotate_FloorCeilingTexture_Always:
+				SetupSectorOffset( line );
+				break;
+
+			case Tint_SetTo_Always:
 				break;
 			}
 		}

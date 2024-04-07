@@ -1070,6 +1070,66 @@ constexpr lineaction_t builtinmbf21lineactions[ Actions_MBF21_Count ] =
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 };
 
+constexpr lineaction_t builtinrnr24lineactions[ Actions_RNR24_Count ] =
+{
+	// Offset_FloorTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Offset_CeilingTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Offset_FloorCeilingTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Rotate_FloorTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Rotate_CeilingTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Rotate_FloorCeilingTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// OffsetRotate_FloorTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// OffsetRotate_CeilingTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// OffsetRotate_FloorCeilingTexture_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_Change_W1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_Change_WR_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_Change_S1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_Change_SR_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_Change_G1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_Change_GR_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Exit_ResetNormal_W1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Exit_ResetNormal_S1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Exit_ResetNormal_G1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Exit_ResetSecret_W1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Exit_ResetSecret_S1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Exit_ResetSecret_G1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Tint_SetTo_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Tint_SetTo_W1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Tint_SetTo_WR_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Tint_SetTo_S1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Tint_SetTo_SR_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Tint_SetTo_G1_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Tint_SetTo_GR_Player
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+};
+
 // Another ugly table
 constexpr const char* doorlockreason[] =
 {
@@ -1119,6 +1179,11 @@ static lineaction_t* GetBuiltInAction( int32_t special )
 static lineaction_t* GetBuiltInMBF21Action( int32_t special )
 {
 	return (lineaction_t*)&builtinmbf21lineactions[ special - MBF21Actions_Min ];
+}
+
+static lineaction_t* GetBuiltInRNR24Action( int32_t special )
+{
+	return (lineaction_t*)&builtinrnr24lineactions[ special - RNR24Actions_Min ];
 }
 
 template< typename _ty >
@@ -1486,6 +1551,13 @@ DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 	{
 		// Look up the special MBF21 line table
 		return GetBuiltInMBF21Action( line->special );
+	}
+	else if( sim.rnr24_line_specials
+		&& line->special >= RNR24Actions_Min
+		&& line->special < RNR24Actions_Max )
+	{
+		// Look up the special RNR24 line table
+		return GetBuiltInRNR24Action( line->special );
 	}
 	else if( sim.boom_line_specials
 		&& line->special >= Generic_Min

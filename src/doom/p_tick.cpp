@@ -144,6 +144,8 @@ DOOM_C_API void P_UpdateInstanceData( void )
 		thissecinst->flooroffsety		= FixedToRendFixed( thissec->flooroffsety );
 		thissecinst->ceiloffsetx		= FixedToRendFixed( thissec->ceiloffsetx );
 		thissecinst->ceiloffsety		= FixedToRendFixed( thissec->ceiloffsety );
+		thissecinst->floorrotation		= thissec->floorrotation;
+		thissecinst->ceilrotation		= thissec->ceilrotation;
 		thissecinst->snapfloor			= thissec->snapfloor;
 		thissecinst->snapceiling		= thissec->snapceiling;
 		thissecinst->activethisframe	= thissec->lastactivetic == gametic

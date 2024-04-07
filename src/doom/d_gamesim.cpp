@@ -110,9 +110,10 @@ static std::unordered_map< std::string, optionfunc_t > MBFOptions =
 	{ "comp_musinfo",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.support_musinfo, val ); } } },
 };
 
-GameVersion_t D_UpdateFromOptionsString( compoptions_t& values, const char* options, size_t optionslen, GameVersion_t maxversion = exe_doommax )
+GameVersion_t D_UpdateFromOptionsString( compoptions_t& values, const char* options, size_t optionslen, GameVersion_t maxversion = exe_invalid )
 {
 	GameVersion_t minversion = exe_invalid;
+	if( maxversion == exe_invalid ) maxversion = exe_doommax;
 
 	const char* endoptions = options + optionslen;
 	while( options < endoptions )
@@ -748,7 +749,7 @@ static simvalues_t GetRNR24Values( GameMode_t mode )
 	values.sim.mbf21_sector_specials = true;				// Insta-deaths
 	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
-	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
+	values.sim.rnr24_line_specials = true;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -1152,7 +1153,7 @@ static void SetDefaultGameflow()
 
 	case exe_rnr24:
 		I_TerminalPrintf( Log_Startup, " Applying R&R24 compatibility\n" );
-		values = GetMBF21Values( gamemode );
+		values = GetRNR24Values( gamemode );
 		break;
 
 	default:

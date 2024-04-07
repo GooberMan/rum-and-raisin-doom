@@ -141,7 +141,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 			}
 		}
 
-		if( executable.Valid() )
+		if( executable.IsString() )
 		{
 			auto found = executableversions.find( to< std::string >( executable ) );
 			if( found != executableversions.end() )
@@ -153,6 +153,14 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 				I_Error( "D_BuildGameConf: executable '%s' is not valid.", executable );
 				return jl_parseerror;
 			}
+		}
+		else if( executable.IsNull() )
+		{
+			info.executable = exe_invalid;
+		}
+		else
+		{
+			I_Error( "D_BuildGameConf: executable field is not valid.", executable );
 		}
 
 		if( options.Valid() )

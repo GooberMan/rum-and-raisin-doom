@@ -1697,6 +1697,28 @@ void R_RenderLoadBalance()
 	R_ResetContext( renderdatas[ num_render_contexts - 1 ].context, M_MAX( currstart, 0 ), drs_current->viewwidth );
 }
 
+constexpr angle_t AngleLerp( angle_t from, angle_t to, rend_fixed_t percent )
+{
+	int64_t start	= from;
+	int64_t end		= to;
+	int64_t path	= end - start;
+	if( RendFixedAbs( path ) > ANG180 )
+	{
+		constexpr int64_t ANG360 = (int64_t)ANG_MAX + 1ll;
+		if( end > start )
+		{
+			start += ANG360;
+		}
+		else
+		{
+			end += ANG360;
+		}
+	}
+
+	rend_fixed_t result = RendFixedLerp( start, end, percent );
+	return (angle_t)( result & ANG_MAX );
+}
+
 void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsoleplayer ) //__attribute__ ((optnone))
 {
 	M_PROFILE_FUNC();
@@ -1809,6 +1831,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 					rendsectors[ index ].flooroffsety		= RendFixedLerp( prevsectors[ index ].flooroffsety, currsectors[ index ].flooroffsety, viewpoint.lerp );
 					rendsectors[ index ].ceiloffsetx		= RendFixedLerp( prevsectors[ index ].ceiloffsetx, currsectors[ index ].ceiloffsetx, viewpoint.lerp );
 					rendsectors[ index ].ceiloffsety		= RendFixedLerp( prevsectors[ index ].ceiloffsety, currsectors[ index ].ceiloffsety, viewpoint.lerp );
+					rendsectors[ index ].floorrotation		= AngleLerp( prevsectors[ index ].floorrotation, currsectors[ index ].floorrotation, viewpoint.lerp );
+					rendsectors[ index ].ceilrotation		= AngleLerp( prevsectors[ index ].ceilrotation, currsectors[ index ].ceilrotation, viewpoint.lerp );
 					rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
 					rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
 					rendsectors[ index ].skyline			= currsectors[ index ].skyline;
