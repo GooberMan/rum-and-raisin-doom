@@ -401,6 +401,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.mbf21_sector_specials = false;				// Insta-deaths
 	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
+	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 
@@ -521,6 +522,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.mbf21_sector_specials = false;				// Insta-deaths
 	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
+	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -633,6 +635,120 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.mbf21_sector_specials = true;				// Insta-deaths
 	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
+	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
+
+	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
+	UpdateFromOptionsLump( values.comp );
+
+	return values;
+}
+
+static simvalues_t GetRNR24Values( GameMode_t mode )
+{
+	simvalues_t values = {};
+
+	values.comp.telefrag_map_30 = true;						// comp_telefrag
+	values.comp.dropoff_ledges = true;						// comp_dropoff
+	values.comp.objects_falloff = true;						// comp_falloff
+	values.comp.stay_on_lifts = true;						// comp_staylift
+	values.comp.stick_on_doors = false;						// comp_doorstuck
+	values.comp.dont_give_up_pursuit = true;				// comp_pursuit
+	values.comp.ghost_monsters = true;						// comp_vile
+	values.comp.lost_soul_limit = true;						// comp_pain
+	values.comp.lost_souls_behind_walls = true;				// comp_skull
+	values.comp.blazing_door_double_sounds = true;			// comp_blazing
+	values.comp.door_tagged_light_is_abrupt = false;		// comp_doorlight
+	values.comp.god_mode_absolute = false;					// comp_god
+	values.comp.powerup_cheats_infinite = false;			// comp_infcheat
+	values.comp.dead_players_exit_levels = true;			// comp_zombie
+	values.comp.sky_always_renders_normally = true;			// comp_skymap
+	values.comp.doom_stairbuilding_method = true;			// comp_stairs
+	values.comp.doom_floor_movement_method = true;			// comp_floors
+	values.comp.doom_movement_clipping_method = true;		// comp_moveblock
+	values.comp.doom_linedef_trigger_method = true;			// comp_model
+	values.comp.zero_tags = true;							// comp_zerotags
+	values.comp.pre_ultimate_boss_behavior = false;			// comp_666
+	values.comp.lost_souls_bounce = true;					// comp_soul
+	values.comp.two_sided_texture_anims = true;				// comp_maskedanim
+	values.comp.doom_sound_propagation_method = true;		// comp_sound
+	values.comp.doom_ouch_face_method = true;				// comp_ouchface
+	values.comp.deh_max_health_for_potions = false;			// comp_maxhealth
+	values.comp.translucency_enabled = true;				// comp_translucency
+	values.comp.weapon_recoil = false;						// weapon_recoil
+	values.comp.player_bobbing = true;						// player_bobbing
+	values.comp.monster_infighting = true;					// monster_infighting
+	values.comp.monsters_remember_prev_target = false;		// monsters_remember
+	values.comp.monsters_back_out = false;					// monster_backing
+	values.comp.monsters_climb_steep_stairs = false;		// monkeys
+	values.comp.monsters_avoid_hazards = false;				// monster_avoid_hazards
+	values.comp.monsters_affected_by_friction = true;		// monster_friction
+	values.comp.monsters_help_friends = false;				// help_friends
+	values.comp.num_helper_dogs = 0;						// player_helpers
+	values.comp.friend_minimum_distance = IntToFixed( 128 ); // friend_distance
+	values.comp.dogs_can_jump_down = false;					// dog_jumping
+
+	values.comp.finale_use_secondary_lump = ( mode == retail );	// CREDIT instead of HELP2
+	values.comp.finale_allow_mouse_to_skip = true;			// Because everyone has their hands on mouse at all times
+	values.comp.finale_always_allow_skip_text = true;		// Doom 1 didn't
+	values.comp.finaldoom_teleport_z = false;				// Final Doom would not set teleported object's Z to the floor
+	values.comp.reset_player_visited_secret = false;		// Start a new game, still thinks you've visited secret levels on intermission screen
+	values.comp.noclip_cheats_work_everywhere = false;		// idspispopd and idclip everywhere
+	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
+	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;	// Always attempt to play demo4 if it exists
+	values.comp.support_musinfo = true;						// comp_musinfo
+
+	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
+	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
+	values.comp.arbitrary_wall_sizes = true;				// Removes the 128-high requirement for textures to tile
+	values.comp.any_texture_any_surface = true;				// Textures and flats work on any surface
+	values.comp.zero_length_texture_names = true;			// Allow zero-length names to act like "-"
+	values.comp.use_translucency = true;					// Sprites and 2S lines can use translucency maps
+	values.comp.use_colormaps = true;						// Colormaps can be used to translate sectors
+	values.comp.multi_patch_2S_linedefs = true;				// Now 2S linedefs can render properly. Also handles columns without data
+	values.comp.widescreen_assets = true;					// Replace assets with widescreen equivalents if they exist
+	values.comp.tall_skies = true;							// Sky bigger than 128 high? We've got you covered
+	values.comp.tall_patches = true;						// Additive deltas
+	values.comp.drawpatch_unbounded = true;					// V_DrawPatch calls will get properly clipped with negative x/y values etc
+
+	values.comp.respawn_non_map_things_at_origin = true;	// comp_respawn
+	values.comp.monsters_blocked_by_ledges = true;			// comp_ledgeblock
+	values.comp.friendly_inherits_source_attribs = true;	// comp_friendlyspawn
+	values.comp.voodoo_scrollers_move_slowly = false;		// comp_voodooscroller
+	values.comp.mbf_reserved_flag_disables_flags = true;	// comp_reservedlineflag
+
+	values.fix = GetAllFixed();
+
+	values.sim.extended_saves = true;						// Generic save format for the new features
+	values.sim.extended_demos = true;						// Decide on the fly if we support a demo or not
+	values.sim.extended_map_formats = true;					// Different node types etc
+	values.sim.animated_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.switches_lump = true;						// Boom feature, replaces internal table with data
+	values.sim.allow_unknown_thing_types = true;			// Replace unknown things with warning objects
+	values.sim.weapon_recoil = true;						// Boom "feature"
+	values.sim.line_passthrough = true;						// Boom feature, don't stop using lines when one succeeds if linedef flag is set
+	values.sim.hud_combined_keys = true;					// Boom feature, dependent on if resources exist in WAD
+	values.sim.mobjs_slide_off_edge = true;					// Boom feature, trust me you'll miss it if it's not there
+	values.sim.corpse_ignores_mobjs = true;					// Corpses with velocity still collided as if solid with other things
+	values.sim.unlimited_scrollers = true;					// Vanilla limit
+	values.sim.unlimited_platforms = true;					// Vanilla limit
+	values.sim.unlimited_ceilings = true;					// Vanilla limit
+	values.sim.generic_specials_handling = true;			// Rewritten specials, based on Boom standards but considered limit removing
+	values.sim.separate_floor_ceiling_lights = true;		// Boom sector specials are allowed to work independently of each other
+	values.sim.sector_movement_modifiers = true;			// Boom sectors can have variable friction, wind, currents
+	values.sim.door_tagged_light = true;					// Dx with tags does the Boom lighting thing
+	values.sim.boom_sector_targets = true;					// All sector targets consider their current sector
+	values.sim.boom_line_specials = true;					// Comes with Boom fixes for specials by default
+	values.sim.boom_sector_specials = true;					// Comes with Boom fixes for specials by default
+	values.sim.boom_things = true;							// Pushers, pullers, TNT1
+	values.sim.mbf_line_specials = true;					// Sky transfers, that's it
+	values.sim.mbf_mobj_flags = true;						// Bouncy! Friendly! TOUCHY!
+	values.sim.mbf_code_pointers = true;					// Dehacked additions
+	values.sim.mbf_things = true;							// DOGS
+	values.sim.mbf21_line_specials = true;					// New texture scrollers, new flags
+	values.sim.mbf21_sector_specials = true;				// Insta-deaths
+	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
+	values.sim.mbf21_code_pointers = true;					// Dehacked additions
+	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -774,6 +890,11 @@ static GameVersion_t DetermineFromLinedef( maplinedef_t& line )
 	if( line.special >= MBF21Actions_Min && line.special < MBF21Actions_Max )
 	{
 		return exe_mbf21;
+	}
+
+	if( line.special >= RNR24Actions_Min && line.special < RNR24Actions_Max )
+	{
+		return exe_rnr24;
 	}
 
 	if( line.special >= Generic_Min && line.special < Generic_Max )
@@ -1030,7 +1151,7 @@ static void SetDefaultGameflow()
 		break;
 
 	case exe_rnr24:
-		I_TerminalPrintf( Log_Startup, " Applying MBF21 Extended + R&R extensions compatibility\n" );
+		I_TerminalPrintf( Log_Startup, " Applying R&R24 compatibility\n" );
 		values = GetMBF21Values( gamemode );
 		break;
 

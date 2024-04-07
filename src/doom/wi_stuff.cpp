@@ -596,6 +596,11 @@ public:
 				frames_curr = frames_begin;
 			}
 			duration_left = frames_curr->Duration();
+			if( frames_curr->Is< Frame_RandomDuration >() && frames_curr->MaxDuration() > frames_curr->Duration() )
+			{
+				int32_t maxrandom = frames_curr->MaxDuration() - frames_curr->Duration();
+				duration_left += M_MIN( M_Random() % ( maxrandom + 1 ) , maxrandom );
+			}
 		}
 	}
 

@@ -270,6 +270,8 @@ DOOM_C_API mapinfo_t* D_GameflowGetMap( episodeinfo_t* episode, int32_t mapnum )
 DOOM_C_API void D_GameflowSetCurrentEpisode( episodeinfo_t* episode );
 DOOM_C_API void D_GameflowSetCurrentMap( mapinfo_t* map );
 
+DOOM_C_API interlevel_t* D_GameflowGetInterlevel( const char* lumpname );
+
 DOOM_C_API void D_GameflowCheckAndParseMapinfos( void );
 
 #if defined( __cplusplus )
@@ -288,8 +290,8 @@ INLINE auto D_GetMapsFor( episodeinfo_t* episode )
 	return std::span( episode->all_maps, episode->num_maps );
 }
 
-template< typename _param1, typename... _params >
-INLINE DoomString AsDoomString( const flowstring_t& str, _param1 p1, _params... params )
+template< typename _strtype, typename _param1, typename... _params >
+INLINE _strtype AsString( const flowstring_t& str, _param1 p1, _params... params )
 {
 	const char* base = str.Resolve();
 	if( str.flags & FlowString_RuntimeGenerated )
@@ -297,17 +299,30 @@ INLINE DoomString AsDoomString( const flowstring_t& str, _param1 p1, _params... 
 		if( str.flags & FlowString_IgnoreEpisodeParam )
 		{
 			size_t len = M_snprintf( nullptr, 0, base, params... );
-			DoomString formatted( len, '\0' );
+			_strtype formatted( len, '\0' );
 			M_snprintf( formatted.data(), len + 1, base, params... );
 			return formatted;
 		}
 		size_t len = M_snprintf( nullptr, 0, base, p1, params... );
-		DoomString formatted( len, '\0' );
+		_strtype formatted( len, '\0' );
 		M_snprintf( formatted.data(), len + 1, base, p1, params... );
 		return formatted;
 	}
-	return DoomString( base ? base : "" );
+	return _strtype( base ? base : "" );
 }
+
+template< typename _param1, typename... _params >
+INLINE DoomString AsDoomString( const flowstring_t& str, _param1 p1, _params... params )
+{
+	return AsString< DoomString >( str, p1, params... );
+}
+
+template< typename _param1, typename... _params >
+INLINE std::string AsStdString( const flowstring_t& str, _param1 p1, _params... params )
+{
+	return AsString< std::string >( str, p1, params... );
+}
+
 
 #endif // defined( __cplusplus )
 

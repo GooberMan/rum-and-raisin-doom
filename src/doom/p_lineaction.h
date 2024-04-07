@@ -395,13 +395,16 @@ enum RNR24Actions : uint32_t
 	Tint_SetTo_SR_Player,
 	Tint_SetTo_G1_Player,
 	Tint_SetTo_GR_Player,
+
+	RNR24Actions_Max,
+	RNR24Actions_Min = Offset_FloorTexture_Always,
 };
 
 enum ActionArrayValues : uint32_t
 {
 	Actions_BuiltIn_Count	= (uint32_t)MBFActions_Max - (uint32_t)DoomActions_Min + 1,
 	Actions_MBF21_Count		= (uint32_t)MBF21Actions_Max - (uint32_t)MBF21Actions_Min,
-	Actions_RNR24_Count		= 0,
+	Actions_RNR24_Count		= (uint32_t)RNR24Actions_Max - (uint32_t)RNR24Actions_Min,
 };
 
 enum BoomFloorActions : uint32_t

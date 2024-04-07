@@ -310,7 +310,9 @@ namespace umapinfo
 		DoomString			skytexture;
 		DoomString			music;
 		DoomString			exitpic;
+		DoomString			exitanim;
 		DoomString			enterpic;
+		DoomString			enteranim;
 		int32_t				partime;
 		setboolean_t		endgame;
 		DoomString			endpic;
@@ -500,9 +502,17 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 		{
 			newmap.exitpic = rhs;
 		}
+		else if( lhs == "exitanim" )
+		{
+			newmap.exitanim = rhs;
+		}
 		else if( lhs == "enterpic" )
 		{
 			newmap.enterpic = rhs;
+		}
+		else if( lhs == "enteranim" )
+		{
+			newmap.enteranim = rhs;
 		}
 		else if( lhs == "partime" )
 		{
@@ -598,22 +608,22 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 
 typedef struct umapinfo_gameinfo_s
 {
-	std::map< int32_t, episodeinfo_t >				episodes;
-	std::map< DoomString, mapinfo_t >					maps;
-	std::map< DoomString, interlevel_t >				interlevels;
-	std::map< DoomString, intermission_t >			intermission_normal;
-	std::map< DoomString, intermission_t >			intermission_secret;
+	std::map< int32_t, episodeinfo_t >						episodes;
+	std::map< DoomString, mapinfo_t >						maps;
+	std::map< DoomString, interlevel_t >					interlevels;
+	std::map< DoomString, intermission_t >					intermission_normal;
+	std::map< DoomString, intermission_t >					intermission_secret;
 
-	std::map< int32_t, std::vector< mapinfo_t* > >	episodemaps;
-	std::map< DoomString, std::vector< bossaction_t > > mapbossactions;
+	std::map< int32_t, std::vector< mapinfo_t* > >			episodemaps;
+	std::map< DoomString, std::vector< bossaction_t > >		mapbossactions;
 
-	std::map< DoomString, endgame_t >					endgames;
-	std::map< DoomString, intermission_t >			intermissions;
-	std::map< DoomString, intermission_t >			secretintermissions;
+	std::map< DoomString, endgame_t >						endgames;
+	std::map< DoomString, intermission_t >					intermissions;
+	std::map< DoomString, intermission_t >					secretintermissions;
 
-	std::vector< episodeinfo_t* >								episodelist;
+	std::vector< episodeinfo_t* >							episodelist;
 
-	gameflow_t													game;
+	gameflow_t												game;
 } umapinfo_gameinfo_t;
 
 static umapinfo_gameinfo_t umapinfogame;
@@ -811,20 +821,32 @@ static void BuildNewGameInfo()
 			newmap.interlevel_finished = newmap.interlevel_entering = nullptr;
 		}
 
-		if( !map.exitpic.empty() )
+		if( !map.exitanim.empty() )
+		{
+			interlevel_t* newinter = newmap.interlevel_finished = D_GameflowGetInterlevel( map.exitanim.c_str() );
+			if( map.enterpic.empty() && map.enteranim.empty() )
+			{
+				newmap.interlevel_entering = newinter;
+			}
+		}
+		else if( !map.exitpic.empty() )
 		{
 			interlevel_t* newinter = newmap.interlevel_finished = &umapinfogame.interlevels[ map.exitpic ];
 			newinter->type = Interlevel_None;
 			newinter->music_lump = RuntimeFlowString( ( gamemode == commercial ) ? "dm2int" : "inter" );
 			newinter->background_lump = FlowString( map.exitpic );
 
-			if( map.enterpic.empty() )
+			if( map.enterpic.empty() && map.enteranim.empty() )
 			{
 				newmap.interlevel_entering = newinter;
 			}
 		}
 
-		if( !map.enterpic.empty() )
+		if( !map.enteranim.empty() )
+		{
+			newmap.interlevel_entering = D_GameflowGetInterlevel( map.exitanim.c_str() );
+		}
+		else if( !map.enterpic.empty() )
 		{
 			interlevel_t* newinter = newmap.interlevel_entering= &umapinfogame.interlevels[ map.enterpic ];
 			newinter->type = Interlevel_None;

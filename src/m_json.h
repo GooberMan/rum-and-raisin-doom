@@ -182,9 +182,13 @@ public:
 	constexpr auto& Children() const	{ return children; }
 	constexpr auto& Key() const			{ return key; }
 	constexpr auto& Value() const		{ return value; }
+
 	constexpr bool Valid() const		{ return type != JSONElementType::Invalid; }
 	constexpr bool IsArray() const		{ return type == JSONElementType::ElementArray; }
+	constexpr bool IsElement() const	{ return type == JSONElementType::Element; }
 	constexpr bool IsNull() const		{ return type == JSONElementType::Null; }
+	constexpr bool IsNumber() const		{ return type == JSONElementType::Number; }
+	constexpr bool IsString() const		{ return type == JSONElementType::String; }
 
 	template< typename _ty >
 	requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >
@@ -240,6 +244,13 @@ INLINE _ty to( const JSONElement& source )
 	{
 		return _ty();
 	}
+}
+
+template< typename _ty >
+requires std::is_enum_v< _ty >
+INLINE _ty to( const JSONElement& source )
+{
+	return (_ty)to< std::underlying_type_t< _ty > >( source );
 }
 
 template< typename _ty >
