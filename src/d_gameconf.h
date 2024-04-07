@@ -31,6 +31,7 @@ DOOM_C_API typedef struct gameconf_s
 	size_t			dehfilescount;
 	GameVersion_t	executable;
 	GameMission_t	mission;
+	const char*		options;
 
 #if defined( __cplusplus )
 	constexpr auto PWADs()			{ return std::span( pwads, pwadscount ); }
@@ -40,5 +41,7 @@ DOOM_C_API typedef struct gameconf_s
 
 DOOM_C_API gameconf_t* D_BuildGameConf();
 DOOM_C_API void D_DestroyGameConf( gameconf_t* conf );
+
+DOOM_C_API extern gameconf_t* gameconf;
 
 #endif // !defined( __D_GAMECONF_H__ )

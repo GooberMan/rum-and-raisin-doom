@@ -1298,6 +1298,8 @@ extern "C"
 
 	// pointer to the current map lump info struct
 	lumpinfo_t *maplumpinfo;
+
+	musinfo_t* musinfo;
 }
 
 //
@@ -1318,43 +1320,46 @@ static void P_LoadThings (int lump)
     mt = (mapthing_t *)data;
     for (i=0 ; i<numthings ; i++, mt++)
     {
-	spawn = true;
+		spawn = true;
 
-	// Do not spawn cool, new monsters if !commercial
-	if (gamemode != commercial)
-	{
-	    switch (SHORT(mt->type))
-	    {
-	      case 68:	// Arachnotron
-	      case 64:	// Archvile
-	      case 88:	// Boss Brain
-	      case 89:	// Boss Shooter
-	      case 69:	// Hell Knight
-	      case 67:	// Mancubus
-	      case 71:	// Pain Elemental
-	      case 65:	// Former Human Commando
-	      case 66:	// Revenant
-	      case 84:	// Wolf SS
-		spawn = false;
-		break;
-	    }
-	}
-	if (spawn == false)
-	    break;
+		// Do not spawn cool, new monsters if !commercial
+		if (gamemode != commercial)
+		{
+			switch (SHORT(mt->type))
+			{
+			  case 68:	// Arachnotron
+			  case 64:	// Archvile
+			  case 88:	// Boss Brain
+			  case 89:	// Boss Shooter
+			  case 69:	// Hell Knight
+			  case 67:	// Mancubus
+			  case 71:	// Pain Elemental
+			  case 65:	// Former Human Commando
+			  case 66:	// Revenant
+			  case 84:	// Wolf SS
+			spawn = false;
+			break;
+			}
+		}
+		if (spawn == false)
+			break;
 
-	// Do spawn all other stuff. 
-	spawnthing.x = SHORT(mt->x);
-	spawnthing.y = SHORT(mt->y);
-	spawnthing.angle = SHORT(mt->angle);
-	spawnthing.type = SHORT(mt->type);
-	spawnthing.options = SHORT(mt->options);
+		// Do spawn all other stuff. 
+		spawnthing.x = SHORT(mt->x);
+		spawnthing.y = SHORT(mt->y);
+		spawnthing.angle = SHORT(mt->angle);
+		spawnthing.type = SHORT(mt->type);
+		spawnthing.options = SHORT(mt->options);
 	
-	mobj_t* spawned = P_SpawnMapThing(&spawnthing);
-	if( spawned )
-	{
-		spawned->lumpindex = i;
-	}
+		mobj_t* spawned = P_SpawnMapThing(&spawnthing);
+		if( spawned )
+		{
+			spawned->lumpindex = i;
 
+			if( comp.support_musinfo && spawned->info->type == MT_MUSICSOURCE )
+			{
+			}
+		}
     }
 
     if (!deathmatch)
@@ -1513,6 +1518,18 @@ P_SetupLevel
 	segs			= loader._segs;
 
 	rejectmatrix	= loader._rejectmatrix;
+
+	if( comp.support_musinfo )
+	{
+		musinfo = (musinfo_t*)Z_MallocZero( sizeof( musinfo_t ), PU_LEVEL, &musinfo );
+		P_AddThinker( &musinfo->thinker );
+		musinfo->thinker.function = T_MusInfo;
+		musinfo->thinker.Disable();
+	}
+	else
+	{
+		musinfo = nullptr;
+	}
 
     bodyqueslot = 0;
     deathmatch_p = deathmatchstarts;

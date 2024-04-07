@@ -1588,6 +1588,9 @@ DOOM_C_API typedef struct
 
 #if defined( __cplusplus )
 
+constexpr int32_t MusInfoDoomedNum = 14100;
+constexpr int32_t MusInfoDoomedNumCount = 65;
+
 class DoomStateLookup
 {
 public:

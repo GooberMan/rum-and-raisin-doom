@@ -24,7 +24,7 @@ episodeinfo_t*	current_episode		= nullptr;
 mapinfo_t*		current_map			= nullptr;
 
 static std::map< DoomString, mapinfo_t* > allmaps;
-static std::vector< DoomString > musinfostorage;
+static std::vector< const char* > musinfostorage;
 
 inline auto Episodes()
 {
@@ -123,8 +123,10 @@ void D_GameflowParseMUSINFO( lumpindex_t lumpnum )
 				&& index > 0
 				&& index <= 64 )
 			{
-				auto inserted = musinfostorage.insert( musinfostorage.end(), lumpname );
-				currmap->music_lump[ index ] = PlainFlowString( inserted->c_str() );
+				char* copy = (char*)Z_MallocZero( 16, PU_STATIC, nullptr );
+				M_StringCopy( copy, lumpname, 16 );
+				auto inserted = musinfostorage.insert( musinfostorage.end(), copy );
+				currmap->music_lump[ index ] = PlainFlowString( copy );
 			}
 		}
 	}

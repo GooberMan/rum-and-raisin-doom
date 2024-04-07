@@ -79,6 +79,8 @@ DOOM_C_API typedef enum
 	exe_mbf21_extended,	// DEHACKED extensions
 	exe_rnr24,			// DEHACKED and other assorted fruits
 
+	exe_doommax,
+
     exe_heretic_1_3, // Heretic 1.3
 
     exe_hexen_1_1,   // Hexen 1.1

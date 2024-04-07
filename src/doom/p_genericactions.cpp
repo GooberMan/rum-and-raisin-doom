@@ -1574,7 +1574,8 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 
 	if( teleported )
 	{
-		if( gameversion != exe_final )
+		if( gameversion != exe_final
+			&& !comp.finaldoom_teleport_z )
 		{
 			activator->z = activator->floorz;
 		}
@@ -1610,6 +1611,23 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 	}
 
 	return teleported ? 1 : 0;
+}
+
+// =================
+// MUSINFO and music lines
+// =================
+
+DOOM_C_API void T_MusInfo( musinfo_t* info )
+{
+	if( info->ticsleft > 0 && --info->ticsleft == 0 )
+	{
+		if( current_map->music_lump[ info->nexttrack ].val
+			&& *current_map->music_lump[ info->nexttrack ].val != 0 )
+		{
+			S_ChangeMusicLump( &current_map->music_lump[ info->nexttrack ], true );
+		}
+		info->thinker.Disable();
+	}
 }
 
 // =================

@@ -109,9 +109,6 @@ extern "C"
 
 	// location of IWAD and WAD files
 
-	gameconf_t*		gameconf;
-
-
 	doombool		devparm;	// started game with -devparm
 	doombool         nomonsters;	// checkparm of -nomonsters
 	doombool         respawnparm;	// checkparm of -respawn

@@ -262,6 +262,23 @@ private:
 // Doubly linked list of actors.
 DOOM_C_API struct thinker_s
 {
+#if defined(__cplusplus)
+	inline bool Enabled() const
+	{
+		return function.Enabled();
+	}
+
+	inline void Disable()
+	{
+		function.Disable();
+	}
+
+	inline void Enable()
+	{
+		function.Enable();
+	}
+#endif // defined(__cplusplus)
+
 	// Changing the order from vanilla for better type punning
 	actionf_t			function;
 	struct thinker_s*	prev;

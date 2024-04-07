@@ -278,8 +278,6 @@ DOOM_C_API extern fixed_t			bmaporgx;
 DOOM_C_API extern fixed_t			bmaporgy;	// origin of block map
 DOOM_C_API extern mobj_t**			blocklinks;	// for thing chains
 
-
-
 //
 // P_INTER
 //

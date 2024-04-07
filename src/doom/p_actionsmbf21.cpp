@@ -121,9 +121,11 @@ DOOM_C_API void A_MonsterProjectile( mobj_t* mobj )
 	fixed_t xoffset = FixedMul( hoffset, finesine[ forwardlookup ] );
 	fixed_t yoffset = FixedMul( hoffset, finecosine[ forwardlookup ] );
 
-	mobj_t* spawned = P_SpawnMobjEx( &mobjinfo[ type - 1 ], DegreesToAngle( angle ),
+	const mobjinfo_t& info = mobjinfo[ type - 1 ];
+
+	mobj_t* spawned = P_SpawnMobjEx( &info, DegreesToAngle( angle ),
 									mobj->x + xoffset, mobj->y + yoffset, mobj->z + voffset,
-									mobjinfo[ type ].speed, 0, finetangent[ vertlookup ] );
+									info.speed, 0, finetangent[ vertlookup ] );
 
 	if( spawned->info->seesound )
 	{

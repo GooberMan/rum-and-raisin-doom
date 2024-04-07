@@ -125,11 +125,12 @@ DOOM_C_API typedef struct compoptions_s
 	doombool		finale_use_secondary_lump;				// CREDIT instead of HELP2
 	doombool		finale_allow_mouse_to_skip;				// Because everyone has their hands on mouse at all times
 	doombool		finale_always_allow_skip_text;			// Doom 1 didn't
-	doombool		finaldoom_teleport_z;					// Final Doom would not set teleported object's Z to the floor
+	doombool		finaldoom_teleport_z;					// comp_finaldoomteleport	- Final Doom would not set teleported object's Z to the floor
 	doombool		reset_player_visited_secret;			// Start a new game, still thinks you've visited secret levels on intermission screen
 	doombool		noclip_cheats_work_everywhere;			// idspispopd and idclip everywhere
 	doombool		bfg_map02_secret_exit_to_map33;			// Find that one unmarked line in MAP02 in BFG edition
 	doombool		demo4;									// Always attempt to play demo4 if it exists
+	doombool		support_musinfo;						// comp_musinfo				- The ever-persistent musinfo lump can be selectively turned on
 
 	// R&R render additions
 	doombool		additive_data_blocks;					// PP_START, SS_START, FF_START, etc
@@ -179,11 +180,5 @@ DOOM_C_API extern simoptions_t			sim;
 // This is designed to analyse the IWAD and register the base gameflow.
 // It also sets up the current playsim and render options.
 DOOM_C_API void D_RegisterGamesim();
-
-#if defined( __cplusplus )
-#include "d_mode.h"
-
-GameVersion_t D_UpdateFromOptionsString( compoptions_t& values, const char* options, size_t optionslen );
-#endif // defined( __cplusplus )
 
 #endif // __D_PLAYSIM_H__

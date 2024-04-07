@@ -24,6 +24,11 @@
 
 #include "w_wad.h"
 
+extern "C"
+{
+	gameconf_t*		gameconf;
+}
+
 static std::map< std::string, GameVersion_t > executableversions =
 {
 	{ "doom1.9",		exe_doom_1_9				},
@@ -214,6 +219,19 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		return nullptr;
 	};
 
+	auto ReplaceNewlines = []( const std::string& str ) -> std::string
+	{
+		std::string output = str;
+		size_t foundpos = 0;
+		while( ( foundpos = output.find( "\\n", foundpos ) ) != std::string::npos )
+		{
+			output.replace( foundpos, 2, "\n" );
+			foundpos += 1;
+		}
+
+		return output;
+	};
+
 	gameconf_t* output = (gameconf_t*)Z_MallocZero( sizeof( gameconf_t ), PU_STATIC, nullptr );
 	output->title = CopyString( info.title );
 	output->description = CopyString( info.description );
@@ -236,6 +254,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 	}
 	output->executable = info.executable;
 	output->mission = info.mission;
+	output->options = CopyString( ReplaceNewlines( info.options ) );
 
 	return output;
 }
@@ -244,6 +263,8 @@ void D_DestroyGameConf( gameconf_t* conf )
 {
 	if( conf )
 	{
+		if( conf->options ) Z_Free( (void*)conf->options );
+
 		if( conf->dehfiles )
 		{
 			for( int32_t deh : iota( 0, conf->dehfilescount ) )

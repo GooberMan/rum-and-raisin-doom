@@ -32,6 +32,42 @@
 
 #include "p_mobj.h"
 
+#define MUSINFO( num ) \
+	{							\
+		MT_MUSICSOURCE,			\
+		exe_mbf,				\
+		num,					\
+		S_TNT1,					\
+		1000,					\
+		S_NULL,					\
+		sfx_None,				\
+		8,						\
+		sfx_None,				\
+		S_NULL,					\
+		0,						\
+		sfx_None,				\
+		S_NULL,					\
+		S_NULL,					\
+		S_NULL,					\
+		S_NULL,					\
+		sfx_None,				\
+		0,						\
+		10*FRACUNIT,			\
+		16*FRACUNIT,			\
+		100,					\
+		0,						\
+		sfx_None,				\
+		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, \
+		S_NULL,					\
+		0,						\
+		0,						\
+		infighting_none,		\
+		projectile_none,		\
+		splash_none,			\
+		0,						\
+		0,						\
+	}
+
 // You can use std::enable_if in earlier C++ versions if required...
 template< typename _type >
 requires std::is_enum_v< _type >
@@ -5386,6 +5422,77 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		MF_SPECIAL|MF_COUNTITEM, // flags
 		S_NULL			// raisestate
 	},
+
+	MUSINFO( 14100 ),
+};
+
+// THIS IS SO AWFUL
+mobjinfo_t musinfomobjinfo[] =
+{
+	MUSINFO( 14101 ),
+	MUSINFO( 14102 ),
+	MUSINFO( 14103 ),
+	MUSINFO( 14104 ),
+	MUSINFO( 14105 ),
+	MUSINFO( 14106 ),
+	MUSINFO( 14107 ),
+	MUSINFO( 14108 ),
+	MUSINFO( 14109 ),
+	MUSINFO( 14110 ),
+	MUSINFO( 14111 ),
+	MUSINFO( 14112 ),
+	MUSINFO( 14113 ),
+	MUSINFO( 14114 ),
+	MUSINFO( 14115 ),
+	MUSINFO( 14116 ),
+	MUSINFO( 14117 ),
+	MUSINFO( 14118 ),
+	MUSINFO( 14119 ),
+	MUSINFO( 14120 ),
+	MUSINFO( 14121 ),
+	MUSINFO( 14122 ),
+	MUSINFO( 14123 ),
+	MUSINFO( 14124 ),
+	MUSINFO( 14125 ),
+	MUSINFO( 14126 ),
+	MUSINFO( 14127 ),
+	MUSINFO( 14128 ),
+	MUSINFO( 14129 ),
+	MUSINFO( 14130 ),
+	MUSINFO( 14131 ),
+	MUSINFO( 14132 ),
+	MUSINFO( 14133 ),
+	MUSINFO( 14134 ),
+	MUSINFO( 14135 ),
+	MUSINFO( 14136 ),
+	MUSINFO( 14137 ),
+	MUSINFO( 14138 ),
+	MUSINFO( 14139 ),
+	MUSINFO( 14140 ),
+	MUSINFO( 14141 ),
+	MUSINFO( 14142 ),
+	MUSINFO( 14143 ),
+	MUSINFO( 14144 ),
+	MUSINFO( 14145 ),
+	MUSINFO( 14146 ),
+	MUSINFO( 14147 ),
+	MUSINFO( 14148 ),
+	MUSINFO( 14149 ),
+	MUSINFO( 14150 ),
+	MUSINFO( 14151 ),
+	MUSINFO( 14152 ),
+	MUSINFO( 14153 ),
+	MUSINFO( 14154 ),
+	MUSINFO( 14155 ),
+	MUSINFO( 14156 ),
+	MUSINFO( 14157 ),
+	MUSINFO( 14158 ),
+	MUSINFO( 14159 ),
+	MUSINFO( 14160 ),
+	MUSINFO( 14161 ),
+	MUSINFO( 14162 ),
+	MUSINFO( 14163 ),
+	MUSINFO( 14164 ),
 };
 
 
@@ -5412,7 +5519,7 @@ static std::unordered_map< int32_t, mobjinfo_t* > BuildMobjTypeMap( std::span< m
 	return mobjmap;
 }
 
-static std::unordered_map< int32_t, mobjinfo_t* > BuildMapobjectNumMap( std::span< mobjinfo_t > mobjspan )
+static std::unordered_map< int32_t, mobjinfo_t* > BuildMapobjectNumMap( std::span< mobjinfo_t > mobjspan, std::span< mobjinfo_t > musinfospan )
 {
 	std::unordered_map< int32_t, mobjinfo_t* > mobjmap;
 	for( mobjinfo_t& mobjinfo : mobjspan )
@@ -5421,6 +5528,11 @@ static std::unordered_map< int32_t, mobjinfo_t* > BuildMapobjectNumMap( std::spa
 		{
 			mobjmap[ mobjinfo.doomednum ] = &mobjinfo;
 		}
+	}
+
+	for( mobjinfo_t& mobjinfo : musinfospan )
+	{
+		mobjmap[ mobjinfo.doomednum ] = &mobjinfo;
 	}
 
 	return mobjmap;
@@ -5441,7 +5553,7 @@ static std::vector< const char* > BuildSpriteNameMap( std::span< const char* > n
 
 std::unordered_map< int32_t, state_t* >		statemap		= BuildStateMap( std::span( builtinstates ) );
 std::unordered_map< int32_t, mobjinfo_t* >	mobjtypemap		= BuildMobjTypeMap( std::span( builtinmobjinfo ) );
-std::unordered_map< int32_t, mobjinfo_t* >	doomednummap	= BuildMapobjectNumMap( std::span( builtinmobjinfo ) );
+std::unordered_map< int32_t, mobjinfo_t* >	doomednummap	= BuildMapobjectNumMap( std::span( builtinmobjinfo ), std::span( musinfomobjinfo ) );
 std::vector< const char* >					spritenamemap	= BuildSpriteNameMap( std::span( builtinsprites ) );
 
 DoomStateLookup								states;

@@ -754,12 +754,31 @@ DOOM_C_API typedef enum teleporttype_e
 	tt_silent			= 0x08,
 } teleporttype_t;
 
+DOOM_C_API typedef struct musinfo_s
+{
+	thinker_t			thinker;
+	int32_t				nexttrack;
+	int32_t				ticsleft;
+
+#if defined( __cplusplus )
+	inline void QueueTrack( int32_t track )
+	{
+		constexpr int32_t countdowntics = 30;
+
+		nexttrack = track;
+		ticsleft = countdowntics;
+		thinker.Enable();
+	}
+#endif defined( __cplusplus )
+} musinfo_t;
+
 DOOM_C_API void		T_VerticalDoorGeneric( vldoor_t* door );
 DOOM_C_API void		T_RaisePlatGeneric( plat_t* plat );
 DOOM_C_API void		T_MoveFloorGeneric( floormove_t* floor );
 DOOM_C_API void		T_MoveCeilingGeneric( ceiling_t* ceiling );
 DOOM_C_API void		T_MoveElevatorGeneric( elevator_t* elevator );
 DOOM_C_API void		T_ScrollerGeneric( scroller_t* scroller );
+DOOM_C_API void		T_MusInfo( musinfo_t* info );
 
 DOOM_C_API int32_t	EV_DoVanillaPlatformRaiseGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoPerpetualLiftGeneric( line_t* line, mobj_t* activator );
@@ -876,6 +895,8 @@ MakeThinkFuncLookup( lightflash_t,	T_LightFlash );
 MakeThinkFuncLookup( strobe_t,		T_StrobeFlash );
 MakeThinkFuncLookup( glow_t,		T_Glow );
 MakeThinkFuncLookup( fireflicker_t,	T_FireFlicker );
+MakeThinkFuncLookup( musinfo_t,		T_MusInfo );
+
 
 #endif // defined( __cplusplus )
 

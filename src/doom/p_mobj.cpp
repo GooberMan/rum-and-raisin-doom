@@ -40,6 +40,8 @@
 
 #include "z_zone.h"
 
+DOOM_C_API extern musinfo_t*		musinfo;
+
 DOOM_C_API void G_PlayerReborn (int player);
 DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t*	mthing);
 
@@ -99,7 +101,7 @@ DOOM_C_API void P_ExplodeMissile (mobj_t* mo)
 {
     mo->momx = mo->momy = mo->momz = 0;
 
-    P_SetMobjState(mo, (statenum_t)mobjinfo[mo->type].deathstate);
+    P_SetMobjState(mo, (statenum_t)mo->info->deathstate);
 
     mo->tics -= P_Random()&3;
 
@@ -135,6 +137,7 @@ DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 	}
 	
 	player_t* player = mo->player;
+	sector_t* prevsector = player ? player->mo->subsector->sector : nullptr;
 
 	mo->momx = M_CLAMP( mo->momx, -MAXMOVE, MAXMOVE );
 	mo->momy = M_CLAMP( mo->momy, -MAXMOVE, MAXMOVE );
@@ -252,6 +255,19 @@ DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 							: FRICTION;
 		mo->momx = FixedMul( mo->momx, friction );
 		mo->momy = FixedMul( mo->momy, friction );
+	}
+
+	if( comp.support_musinfo
+		&& player
+		&& player->mo->subsector->sector != prevsector )
+	{
+		for( mobj_t* check = player->mo->subsector->sector->nosectorthinglist; check != nullptr; check = check->nosectornext )
+		{
+			if( check->info->type == MT_MUSICSOURCE )
+			{
+				musinfo->QueueTrack( check->info->doomednum - MusInfoDoomedNum );
+			}
+		}
 	}
 
 	return mo;
@@ -1165,7 +1181,7 @@ DOOM_C_API mobj_t* P_SpawnPlayerMissileEx( mobj_t* source, int32_t type, angle_t
 		if (!linetarget)
 		{
 			an = source->angle;
-			slope = finetangent[ FINEANGLE( pitch ) ];
+			slope = pitch ? finetangent[ FINEANGLE( pitch + ANG90 ) ] : 0;
 		}
 	}
 

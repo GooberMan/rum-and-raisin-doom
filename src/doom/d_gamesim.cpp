@@ -18,6 +18,7 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
+#include "d_gameconf.h"
 #include "d_gameflow.h"
 
 #include "deh_main.h"
@@ -50,6 +51,115 @@ struct simvalues_t
 	fixoptions_t	fix;
 	simoptions_t	sim;
 };
+
+constexpr void SetBoolOptionExact( doombool& option, int32_t val )
+{
+	option = !!val;
+}
+
+constexpr void SetBoolOptionOpposite( doombool& option, int32_t val )
+{
+	option = !val;
+}
+
+struct optionfunc_t
+{
+	GameVersion_t										gameversion;
+	std::function< void( compoptions_t&, int32_t ) >	apply;
+};
+
+static std::unordered_map< std::string, optionfunc_t > MBFOptions =
+{
+	{ "weapon_recoil",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.weapon_recoil, val ); } } },
+	{ "monsters_remember",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_remember_prev_target, val ); } } },
+	{ "monster_infighting",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monster_infighting, val ); } } },
+	{ "monster_backing",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_back_out, val ); } } },
+	{ "monster_avoid_hazards",	{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_avoid_hazards, val ); } } },
+	{ "monkeys",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_climb_steep_stairs, val ); } } },
+	{ "monster_friction",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_affected_by_friction, val ); } } },
+	{ "help_friends",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_help_friends, val ); } } },
+	{ "player_helpers",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { c.num_helper_dogs = val; } } },
+	{ "friend_distance",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { c.friend_minimum_distance = IntToFixed( val ); } } },
+	{ "dog_jumping",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dogs_can_jump_down, val ); } } },
+	{ "comp_telefrag",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.telefrag_map_30, val ); } } },
+	{ "comp_dropoff",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dropoff_ledges, val ); } } },
+	{ "comp_vile",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.ghost_monsters, val ); } } },
+	{ "comp_pain",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_soul_limit, val ); } } },
+	{ "comp_skull",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_behind_walls, val ); } } },
+	{ "comp_blazing",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.blazing_door_double_sounds, val ); } } },
+	{ "comp_doorlight",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.door_tagged_light_is_abrupt, val ); } } },
+	{ "comp_model",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_linedef_trigger_method, val ); } } },
+	{ "comp_god",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.god_mode_absolute, val ); } } },
+	{ "comp_falloff",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.objects_falloff, val ); } } },
+	{ "comp_floors",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_floor_movement_method, val ); } } },
+	{ "comp_skymap",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.sky_always_renders_normally, val ); } } },
+	{ "comp_pursuit",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dont_give_up_pursuit, val ); } } },
+	{ "comp_doorstuck",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.stick_on_doors, val ); } } },
+	{ "comp_staylift",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.stay_on_lifts, val ); } } },
+	{ "comp_zombie",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dead_players_exit_levels, val ); } } },
+	{ "comp_stairs",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_stairbuilding_method, val ); } } },
+	{ "comp_infcheat",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.powerup_cheats_infinite, val ); } } },
+	{ "comp_zerotags",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.zero_tags, val ); } } },
+	{ "comp_soul",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_bounce, val ); } } },
+	{ "comp_respawn",			{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.respawn_non_map_things_at_origin, val ); } } },
+	{ "comp_ledgeblock",		{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_blocked_by_ledges, val ); } } },
+	{ "comp_friendlyspawn",		{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.friendly_inherits_source_attribs, val ); } } },
+	{ "comp_voodooscroller",	{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.voodoo_scrollers_move_slowly, val ); } } },
+	{ "comp_reservedlineflag",	{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.mbf_reserved_flag_disables_flags, val ); } } },
+	{ "comp_finaldoomteleport",	{ exe_doom_1_9,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.finaldoom_teleport_z, val ); } } },
+	{ "comp_musinfo",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.support_musinfo, val ); } } },
+};
+
+GameVersion_t D_UpdateFromOptionsString( compoptions_t& values, const char* options, size_t optionslen, GameVersion_t maxversion = exe_doommax )
+{
+	GameVersion_t minversion = exe_invalid;
+
+	const char* endoptions = options + optionslen;
+	while( options < endoptions )
+	{
+		if( *options != '\n'
+			&& *options != ';'
+			&& *options != '[' )
+		{
+			char param[ 128 ] = {};
+			int32_t value = 0;
+			if( sscanf( options, "%127s %d", param, &value ) == 2 )
+			{
+				auto found = MBFOptions.find( param );
+				if( found != MBFOptions.end() && found->second.gameversion < maxversion )
+				{
+					minversion = M_MAX( minversion, found->second.gameversion );
+					found->second.apply( values, value );
+				}
+			}
+		}
+
+		while( options < endoptions && *options++ != '\n' ) {};
+	}
+
+	return minversion;
+}
+
+static void UpdateFromGameconf( compoptions_t& values, gameconf_t* conf )
+{
+	if( conf->options && *conf->options != 0 )
+	{
+		size_t len = strlen( conf->options );
+		D_UpdateFromOptionsString( values, conf->options, len, conf->executable );
+	}
+}
+
+static GameVersion_t UpdateFromOptionsLump( compoptions_t& values )
+{
+	lumpindex_t optionslump = W_CheckNumForNameExcluding( "OPTIONS", wt_system );
+	if( optionslump >= 0 )
+	{
+		const char* options = (const char*)W_CacheLumpNum( optionslump, PU_STATIC );
+		return D_UpdateFromOptionsString( values, options, W_LumpLength( optionslump ) );
+	}
+
+	return exe_invalid;
+}
 
 static simvalues_t GetVanillaValues( GameVersion_t version, GameMode_t mode )
 {
@@ -109,6 +219,8 @@ static simvalues_t GetVanillaValues( GameVersion_t version, GameMode_t mode )
 	values.comp.voodoo_scrollers_move_slowly = false;		// comp_voodooscroller
 	values.comp.mbf_reserved_flag_disables_flags = true;	// comp_reservedlineflag
 
+	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
+
 	return values;
 }
 
@@ -144,6 +256,8 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.fix.same_sky_texture = true;
 	values.fix.intercepts_overflow = true;
 	values.fix.spechit_overflow = true;
+
+	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 
 	return values;
 }
@@ -288,6 +402,8 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 
+	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
+
 	return values;
 }
 
@@ -298,104 +414,6 @@ static simvalues_t GetComplevel9Values( GameMode_t mode )
 	values.sim.mbf_line_specials = true;
 
 	return values;
-}
-
-constexpr void SetBoolOptionExact( doombool& option, int32_t val )
-{
-	option = !!val;
-}
-
-constexpr void SetBoolOptionOpposite( doombool& option, int32_t val )
-{
-	option = !val;
-}
-
-struct optionfunc_t
-{
-	GameVersion_t										gameversion;
-	std::function< void( compoptions_t&, int32_t ) >	apply;
-};
-
-static std::unordered_map< std::string, optionfunc_t > MBFOptions =
-{
-	{ "weapon_recoil",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.weapon_recoil, val ); } } },
-	{ "monsters_remember",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_remember_prev_target, val ); } } },
-	{ "monster_infighting",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monster_infighting, val ); } } },
-	{ "monster_backing",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_back_out, val ); } } },
-	{ "monster_avoid_hazards",	{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_avoid_hazards, val ); } } },
-	{ "monkeys",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_climb_steep_stairs, val ); } } },
-	{ "monster_friction",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_affected_by_friction, val ); } } },
-	{ "help_friends",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_help_friends, val ); } } },
-	{ "player_helpers",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { c.num_helper_dogs = val; } } },
-	{ "friend_distance",		{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { c.friend_minimum_distance = IntToFixed( val ); } } },
-	{ "dog_jumping",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dogs_can_jump_down, val ); } } },
-	{ "comp_telefrag",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.telefrag_map_30, val ); } } },
-	{ "comp_dropoff",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dropoff_ledges, val ); } } },
-	{ "comp_vile",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.ghost_monsters, val ); } } },
-	{ "comp_pain",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_soul_limit, val ); } } },
-	{ "comp_skull",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_behind_walls, val ); } } },
-	{ "comp_blazing",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.blazing_door_double_sounds, val ); } } },
-	{ "comp_doorlight",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.door_tagged_light_is_abrupt, val ); } } },
-	{ "comp_model",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_linedef_trigger_method, val ); } } },
-	{ "comp_god",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.god_mode_absolute, val ); } } },
-	{ "comp_falloff",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.objects_falloff, val ); } } },
-	{ "comp_floors",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_floor_movement_method, val ); } } },
-	{ "comp_skymap",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionOpposite( c.sky_always_renders_normally, val ); } } },
-	{ "comp_pursuit",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dont_give_up_pursuit, val ); } } },
-	{ "comp_doorstuck",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.stick_on_doors, val ); } } },
-	{ "comp_staylift",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.stay_on_lifts, val ); } } },
-	{ "comp_zombie",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.dead_players_exit_levels, val ); } } },
-	{ "comp_stairs",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_stairbuilding_method, val ); } } },
-	{ "comp_infcheat",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.powerup_cheats_infinite, val ); } } },
-	{ "comp_zerotags",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.zero_tags, val ); } } },
-	{ "comp_soul",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_bounce, val ); } } },
-	{ "comp_respawn",			{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.respawn_non_map_things_at_origin, val ); } } },
-	{ "comp_ledgeblock",		{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_blocked_by_ledges, val ); } } },
-	{ "comp_friendlyspawn",		{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.friendly_inherits_source_attribs, val ); } } },
-	{ "comp_voodooscroller",	{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.voodoo_scrollers_move_slowly, val ); } } },
-	{ "comp_reservedlineflag",	{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.mbf_reserved_flag_disables_flags, val ); } } },
-	{ "comp_finaldoomteleport",	{ exe_doom_1_9,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.finaldoom_teleport_z, val ); } } },
-};
-
-GameVersion_t D_UpdateFromOptionsString( compoptions_t& values, const char* options, size_t optionslen )
-{
-	GameVersion_t minversion = exe_invalid;
-
-	const char* endoptions = options + optionslen;
-	while( options < endoptions )
-	{
-		if( *options != ';'
-			&& *options != '[' )
-		{
-			char param[ 128 ] = {};
-			int32_t value = 0;
-			if( sscanf( options, "%127s %d", param, &value ) == 2 )
-			{
-				auto found = MBFOptions.find( param );
-				if( found != MBFOptions.end() )
-				{
-					minversion = M_MAX( minversion, found->second.gameversion );
-					found->second.apply( values, value );
-				}
-			}
-		}
-
-		while( options < endoptions && *options++ != '\n' ) {};
-	}
-
-	return minversion;
-}
-
-static GameVersion_t UpdateFromOptionsLump( compoptions_t& values )
-{
-	lumpindex_t optionslump = W_CheckNumForNameExcluding( "OPTIONS", wt_system );
-	if( optionslump >= 0 )
-	{
-		const char* options = (const char*)W_CacheLumpNum( optionslump, PU_STATIC );
-		return D_UpdateFromOptionsString( values, options, W_LumpLength( optionslump ) );
-	}
-
-	return exe_invalid;
 }
 
 static simvalues_t GetMBFValues( GameMode_t mode )
@@ -449,7 +467,8 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.comp.reset_player_visited_secret = true;			// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = true;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
-	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
+	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;	// Always attempt to play demo4 if it exists
+	values.comp.support_musinfo = true;						// comp_musinfo
 
 	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
 	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
@@ -503,6 +522,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 
+	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
 
 	return values;
@@ -559,7 +579,8 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.reset_player_visited_secret = false;		// Start a new game, still thinks you've visited secret levels on intermission screen
 	values.comp.noclip_cheats_work_everywhere = false;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
-	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;		// Always attempt to play demo4 if it exists
+	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;	// Always attempt to play demo4 if it exists
+	values.comp.support_musinfo = true;						// comp_musinfo
 
 	values.comp.additive_data_blocks = true;				// PP_START, SS_START, FF_START, etc
 	values.comp.no_medusa = true;							// Composites are cleared before rendering patches
@@ -613,6 +634,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 
+	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
 
 	return values;
