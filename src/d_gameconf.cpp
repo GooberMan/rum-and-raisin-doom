@@ -190,11 +190,11 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		}
 	}
 
-	std::string iwadpath = D_FindIWAD( IWAD_MASK_DOOM, &info.mission );
-	if( !iwadpath.empty() )
+	const char* foundiwad = D_FindIWAD( IWAD_MASK_DOOM, &info.mission );
+	if( foundiwad != nullptr )
 	{
-		info.iwadfile = iwadpath;
-		if( !CheckWad( iwadpath ) )
+		info.iwadfile = foundiwad;
+		if( !CheckWad( info.iwadfile ) )
 		{
 			return nullptr;
 		}
