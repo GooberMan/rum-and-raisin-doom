@@ -789,7 +789,7 @@ void G_DoLoadLevel (void)
 		|| ( gamemode == commercial && ( gameversion == exe_final2 || gameversion == exe_chex ) ) )
     {
 		const char* skytexturename = DEH_String( current_map->sky_texture.val );
-		R_SetSkyTexture( R_TextureNumForName( skytexturename ) );
+		R_SetSky( skytexturename );
     }
 
     levelstarttic = gametic;        // for time calculation
@@ -2008,7 +2008,7 @@ void G_InitNew( skill_t skill, mapinfo_t* mapinfo, gameflags_t flags, int32_t ra
     // source release, but this IS the way Vanilla DOS Doom behaves.
 
 	skytexturename = DEH_String( current_map->sky_texture.val );
-	R_SetSkyTexture( R_TextureNumForName( skytexturename ) );
+	R_SetSky( skytexturename );
 
 	G_DoLoadLevel();
 }

@@ -715,7 +715,7 @@ struct DoomMapLoader
 
 			if( out.sidenum[ 0 ] != -1 )
 			{
-				out.frontside = &Sides()[ out.sidenum[ 0 ] ];
+				out.frontside = &_sides[ out.sidenum[ 0 ] ];
 				out.frontsector = out.frontside->sector;
 			}
 			else
@@ -726,7 +726,7 @@ struct DoomMapLoader
 
 			if( out.sidenum[ 1 ] != -1 )
 			{
-				out.backside = &Sides()[ out.sidenum[ 1 ] ];
+				out.backside = &_sides[ out.sidenum[ 1 ] ];
 				out.backsector = out.backside->sector;
 			}
 			else

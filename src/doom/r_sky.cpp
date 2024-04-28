@@ -49,7 +49,7 @@
 // sky mapping
 //
 int						skyflatnum;
-int						skytexture;
+sky_t*					skydef;
 sideinstance_t			skyfakeline = {};
 
 constexpr auto Lines( rasterregion_t* region )
@@ -57,10 +57,11 @@ constexpr auto Lines( rasterregion_t* region )
 	return std::span( region->lines, region->maxx - region->minx + 1 );
 }
 
-DOOM_C_API void R_SetSkyTexture( int32_t texnum )
+DOOM_C_API void R_SetSky( const char* sky )
 {
-	skytexture = texnum;
-	skyfakeline.toptex = texturelookup[ skytexture ];
+	skydef = R_GetSky( sky );
+	skyfakeline.toptex = skydef->texture;
+	skyfakeline.sky = skydef;
 }
 
 void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sideinstance_t* skytextureline )
@@ -74,7 +75,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 	{
 		skytextureline = &skyfakeline;
 	}
-	texturecomposite_t* sky = skytextureline->toptex;
+	sky_t* sky = skytextureline->sky;
 
 	constexpr rend_fixed_t skyoneunit = RendFixedDiv( IntToRendFixed( 1 ), IntToRendFixed( 256 ) );
 	constexpr rend_fixed_t ninetydegree = IntToRendFixed( ANG90 );
@@ -87,21 +88,14 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
 	skycontext.iscale = drs_current->skyiscaley;
-	if( comp.tall_skies )
-	{
-		skycontext.texturemid = sky->renderheight - constants::skytexturemidoffset;
-		skycontext.colfunc = sky->height == 128 ? & R_DrawColumn_128 : &R_LimitRemovingDrawColumn;
-	}
-	else
-	{
-		skycontext.texturemid = constants::skytexturemid;
-		skycontext.colfunc = &R_DrawColumn_128;
-	}
+	skycontext.colfunc = sky->texture->wallrender;
+	skycontext.colormap = rendercontext.viewpoint.colormaps;
+	skycontext.texturemid = sky->texturemid;
 	skycontext.texturemid +=  + skytextureline->rowoffset;
 
 	// This isn't a constant though...
 	skycontext.output = dest;
-	skycontext.sourceheight = sky->renderheight;
+	skycontext.sourceheight = sky->texture->renderheight;
 
 	int32_t x = thisregion->minx;
 
@@ -118,7 +112,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
-			skycontext.source = R_GetColumnComposite( sky, angle );
+			skycontext.source = R_GetColumnComposite( sky->texture, angle );
 			skycontext.colfunc( &skycontext );
 		}
 		++x;

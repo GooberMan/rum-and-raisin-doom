@@ -104,6 +104,7 @@ typedef struct texturecomposite_s texturecomposite_t;
 typedef struct side_s side_t;
 typedef struct line_s line_t;
 typedef struct sector_s sector_t;
+typedef struct sky_s sky_t;
 
 typedef void (*colfunc_t)( colcontext_t* );
 typedef void (*rasterfunc_t)( rendercontext_t*, rasterregion_t* firstregion, texturecomposite_t* texture );
@@ -163,6 +164,7 @@ typedef struct sideinstance_s
 	texturecomposite_t*		toptex;
 	texturecomposite_t*		midtex;
 	texturecomposite_t*		bottomtex;
+	sky_t*					sky;
 
 	rend_fixed_t			coloffset;
 	rend_fixed_t			rowoffset;
@@ -429,6 +431,8 @@ struct side_s
 	lumpindex_t			bottomtextureindex;
 	lumpindex_t			midtextureindex;
 
+	sky_t*				toptexturesky;
+
 	// Sector the SideDef is facing.
 	sector_t*			sector;
 
@@ -671,6 +675,26 @@ typedef	struct cliprange_s
 	int32_t				first;
 	int32_t				last;
 } cliprange_t;
+
+typedef enum skytype_e
+{
+	st_texture,
+	st_fire,
+
+	st_max,
+} skytype_t;
+
+#define NumFirePaletteEntries 32
+
+struct sky_s
+{
+	texturecomposite_t*		texture;
+	rend_fixed_t			texturemid;
+	int32_t					texnum;
+	skytype_t				type;
+	byte					firepalette[NumFirePaletteEntries];
+};
+
 
 typedef struct wallcontext_s
 {

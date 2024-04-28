@@ -923,7 +923,7 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 
 		if( comp.tall_skies )
 		{
-			skycontext.texturemid = texturelookup[ skytexture ]->renderheight - constants::skytexturemidoffset;
+			skycontext.texturemid = texturelookup[ skydef->texture->index ]->renderheight - constants::skytexturemidoffset;
 			skycontext.colfunc = &R_LimitRemovingDrawColumn;
 		}
 		else
@@ -937,14 +937,14 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 		skycontext.output.data += skycontext.output.pitch * drs_current->viewwindowx + drs_current->viewwindowy;
 		skycontext.yl = 0;
 		skycontext.yh = drs_current->viewheight;
-		skycontext.sourceheight = texturelookup[ skytexture ]->renderheight;
+		skycontext.sourceheight = texturelookup[ skydef->texture->index ]->renderheight;
 
 		for ( int32_t x = rendercontext.begincolumn; x < rendercontext.endcolumn; ++x )
 		{
 			int32_t angle = ( rendercontext.viewpoint.angle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
 
 			skycontext.x = x;
-			skycontext.source = R_GetColumn( skytexture, angle );
+			skycontext.source = R_GetColumn( skydef->texture->index, angle );
 			skycontext.colfunc( &skycontext );
 		}
 	}

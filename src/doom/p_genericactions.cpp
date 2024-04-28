@@ -2523,8 +2523,10 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 			{
 			case Transfer_Sky_Always:
 			case Transfer_SkyReversed_Always:
-				if( line.sidenum[ 0 ] >= 0 )
+				if( line.frontside != nullptr )
 				{
+					prevsides[ line.frontside->index ].sky = currsides[ line.frontside->index ].sky =
+						line.frontside->toptexturesky = R_GetSky( R_TextureNameForNum( line.frontside->toptexture ) );
 					fixed_t scale = IntToFixed( line.special == Transfer_Sky_Always ? -1 : 1 );
 					for( sector_t& sector : Sectors() )
 					{

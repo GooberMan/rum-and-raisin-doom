@@ -61,6 +61,8 @@ DOOM_C_API const char* R_TextureNameForNum( int32_t tex );
 
 DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum );
 
+DOOM_C_API sky_t* R_GetSky(const char* name);
+
 #if defined( __cplusplus )
 #include "m_container.h"
 
