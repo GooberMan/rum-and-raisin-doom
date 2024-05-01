@@ -301,8 +301,9 @@ typedef struct wipe_s
 
 static wipe_t wipes[] =
 {
-	{ wipe_initColorXForm,	wipe_doColorXForm,	NULL,				wipe_exitColorXForm		},
+	{ NULL,					NULL,				NULL,				NULL					},
 	{ wipe_initMelt,		wipe_doMelt,		wipe_renderMelt,	wipe_exitMelt			},
+	{ wipe_initColorXForm,	wipe_doColorXForm,	NULL,				wipe_exitColorXForm		},
 };
 
 int

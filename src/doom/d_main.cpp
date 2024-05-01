@@ -34,9 +34,10 @@
 #include "dstrings.h"
 #include "sounds.h"
 
-#include "d_iwad.h"
+#include "d_demoloop.h"
 #include "d_gameconf.h"
 #include "d_gamesim.h"
+#include "d_iwad.h"
 
 #include "z_zone.h"
 #include "w_main.h"
@@ -205,6 +206,8 @@ extern "C"
 
 	extern int forwardmove[2];
 	extern int sidemove[2];
+
+	demoloop_t*		demoloop;
 }
 
 const char* IWADFilename()
@@ -758,6 +761,30 @@ void D_DoAdvanceDemo (void)
     paused = false;
     gameaction = ga_nothing;
 
+	demoloop->Advance();
+	switch( demoloop->current->type )
+	{
+	case dlt_artscreen:
+		gamestate = GS_DEMOSCREEN;
+		pagename = DEH_String( demoloop->current->primarylumpname );
+		pagetic = demoloop->current->tics;
+		if( demoloop->current->secondarylumpname[0] != 0 )
+		{
+			lumpindex_t music = W_GetNumForName( DEH_String( demoloop->current->secondarylumpname ) );
+			S_ChangeMusicLumpIndex( music, false );
+		}
+		break;
+
+	case dlt_demo:
+		G_DeferedPlayDemo( DEH_String( demoloop->current->primarylumpname ) );
+		break;
+
+	default:
+		I_Error( "D_DoAdvanceDemo: Demo loop has a bad entry" );
+		break;
+	}
+
+#if 0
     // The Ultimate Doom executable changed the demo sequence to add
     // a DEMO4 demo.  Final Doom was based on Ultimate, so also
     // includes this change; however, the Final Doom IWADs do not
@@ -858,6 +885,7 @@ void D_DoAdvanceDemo (void)
 			pagename = "DMENUPIC";
 		}
     }
+#endif
 }
 
 
@@ -2291,6 +2319,8 @@ DOOM_C_API void D_DoomMain (void)
 
     DEH_printf("ST_Init: Init status bar.\n");
     ST_Init ();
+
+	demoloop = D_CreateDemoLoop();
 
     // If Doom II without a MAP01 lump, this is a store demo.
     // Moved this here so that MAP01 isn't constantly looked up

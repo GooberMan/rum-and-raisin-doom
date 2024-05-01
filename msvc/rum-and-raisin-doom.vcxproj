@@ -541,6 +541,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\d_demoloop.cpp" />
     <ClCompile Include="..\src\d_gameconf.cpp" />
     <ClCompile Include="..\src\d_gameflow.cpp" />
     <ClCompile Include="..\src\d_gameflow_umapinfo.cpp" />
@@ -553,6 +554,7 @@
     <ClCompile Include="..\src\i_thread.cpp" />
     <ClCompile Include="..\src\i_main.c" />
     <ClCompile Include="..\src\i_system.c" />
+    <ClInclude Include="..\src\d_demoloop.h" />
     <ClInclude Include="..\src\d_gameconf.h" />
     <ClInclude Include="..\src\d_gameflow.h" />
     <ClInclude Include="..\src\i_error.h" />
