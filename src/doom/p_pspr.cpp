@@ -783,16 +783,14 @@ A_FireCGun
     S_StartSound (player->mo, sfx_pistol);
 
     if (!player->ammo[weapon.ammo])
-	return;
+	{
+		return;
+	}
 		
     P_SetMobjState (player->mo, S_PLAY_ATK2);
     DecreaseAmmo(player, weapon.ammo, weapon.ammopershot);
 
-    P_SetPsprite (player,
-		  ps_flash,
-		  (statenum_t)(weapon.flashstate
-		  + psp->state
-		  - &states[S_CHAIN1]) );
+    P_SetPsprite( player, ps_flash, weapon.flashstate + psp->state->statenum - S_CHAIN1 );
 
     P_BulletSlope (player->mo);
 	
