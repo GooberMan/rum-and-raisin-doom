@@ -1584,6 +1584,11 @@ DOOM_C_API typedef struct
 	int32_t		splashgroup;
 	int32_t		flags2;
 	int32_t		ripsound;
+
+	// R&R24 extensions
+	int32_t		rnr24flags;
+	int32_t		minrespawntics;
+	int32_t		respawndice;
 } mobjinfo_t;
 
 #if defined( __cplusplus )

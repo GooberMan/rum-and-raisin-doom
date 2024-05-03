@@ -231,6 +231,11 @@ DOOM_C_API typedef enum mobjflag2_e
 	MF2_MBF21_FULLVOLSOUNDS		= 0x40000,	// Full volume see / death sounds (cyberdemon, mastermind)
 } mobjflag2_t;
 
+DOOM_C_API typedef enum mobjrnr24flag_e
+{
+	MF_RNR24_NORESPAWN			= 0x00000001,	// Disables nightmare respawns
+} mobjrnr24flag_t;
+
 DOOM_C_API typedef struct mobjinstance_s
 {
 	rend_fixed_t			x;
@@ -250,9 +255,9 @@ DOOM_C_API typedef struct mobj_s
     thinker_t		thinker;
 
     // Info for drawing: position.
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
+    fixed_t			x;
+    fixed_t			y;
+    fixed_t			z;
 
     // More list: links in sector (if needed)
     struct mobj_s*	snext;
@@ -262,9 +267,9 @@ DOOM_C_API typedef struct mobj_s
 	struct mobj_s*	nosectorprev;
 
     //More drawing info: to determine current sprite.
-    angle_t		angle;	// orientation
+    angle_t			angle;	// orientation
     spritenum_t		sprite;	// used to find patch_t and flip value
-    int			frame;	// might be ORed with FF_FULLBRIGHT
+    int				frame;	// might be ORed with FF_FULLBRIGHT
 
 	mobjinstance_t curr;
 	mobjinstance_t prev;
@@ -277,32 +282,32 @@ DOOM_C_API typedef struct mobj_s
     struct subsector_s*	subsector;
 
     // The closest interval over all contacted Sectors.
-    fixed_t		floorz;
-    fixed_t		ceilingz;
+    fixed_t			floorz;
+    fixed_t			ceilingz;
 
     // For movement checking.
-    fixed_t		radius;
-    fixed_t		height;	
+    fixed_t			radius;
+    fixed_t			height;	
 
     // Momentums, used to update position.
-    fixed_t		momx;
-    fixed_t		momy;
-    fixed_t		momz;
+    fixed_t			momx;
+    fixed_t			momy;
+    fixed_t			momz;
 
     // If == validcount, already checked.
-    int			validcount;
+    int				validcount;
 
-    int32_t		type;
+    int32_t			type;
     const mobjinfo_t* info;	// &mobjinfo[mobj->type]
     
-    int			tics;	// state tic counter
+    int				tics;	// state tic counter
     const state_t* state;
-    int			flags;
-    int			health;
+    int				flags;
+    int				health;
 
     // Movement direction, movement generation (zig-zagging).
-    int			movedir;	// 0-7
-    int			movecount;	// when 0, select a new dir
+    int				movedir;	// 0-7
+    int				movecount;	// when 0, select a new dir
 
     // Thing being chased/attacked (or NULL),
     // also the originator for missiles.
@@ -310,18 +315,18 @@ DOOM_C_API typedef struct mobj_s
 
     // Reaction time: if non 0, don't attack yet.
     // Used by player to freeze a bit after teleporting.
-    int			reactiontime;   
+    int				reactiontime;
 
     // If >0, the target will be chased
     // no matter what (even if shot)
-    int			threshold;
+    int				threshold;
 
     // Additional info record for player avatars only.
     // Only valid if type == MT_PLAYER
     struct player_s*	player;
 
     // Player number last looked for.
-    int			lastlook;	
+    int				lastlook;
 
     // For nightmare respawn.
     mapthing_t		spawnpoint;
@@ -331,12 +336,13 @@ DOOM_C_API typedef struct mobj_s
     // Thing being chased/attacked for tracers.
     struct mobj_s*	tracer;	
 
-	int32_t flags2;
+	int32_t			flags2;
+	int32_t			rnr24flags;
 
-	uint64_t teleporttic;
+	uint64_t		teleporttic;
 
-	int32_t resurrection_count;
-	int32_t successfullineeffect;
+	int32_t			resurrection_count;
+	int32_t			successfullineeffect;
 
 #if defined( __cplusplus )
 	INLINE const bool IsFriendly() const					{ return sim.mbf_mobj_flags && ( flags & MF_MBF_FRIEND ); }
@@ -354,6 +360,13 @@ DOOM_C_API typedef struct mobj_s
 
 	INLINE const fixed_t Speed() const						{ return fastmonsters && info->fastspeed ? info->fastspeed : info->speed; }
 	INLINE const fixed_t MeleeRange() const					{ return info->meleerange ? info->meleerange : IntToFixed( 64 ); }
+	INLINE const int32_t MinRespawnTics() const				{ return !sim.rnr24_thing_extensions ? 12 * TICRATE
+																		: info->minrespawntics < 0 ? INT_MAX
+																		: info->minrespawntics > 0 ? info->minrespawntics
+																		: 12 * TICRATE; }
+	INLINE const bool NoRespawn() const						{ return sim.rnr24_thing_extensions && ( rnr24flags & MF_RNR24_NORESPAWN ); }
+	INLINE const int32_t RespawnDice() const				{ return sim.rnr24_thing_extensions && info->respawndice ? info->respawndice
+																		: 4; }
 #endif
 } mobj_t;
 

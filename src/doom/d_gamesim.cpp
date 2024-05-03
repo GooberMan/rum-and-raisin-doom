@@ -403,6 +403,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
+	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 
@@ -524,6 +525,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = false;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
+	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -637,6 +639,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
+	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -750,6 +753,7 @@ static simvalues_t GetRNR24Values( GameMode_t mode )
 	values.sim.mbf21_thing_extensions = true;				// infighting, flags2, etc
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 	values.sim.rnr24_line_specials = true;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
+	values.sim.rnr24_thing_extensions = true;				// New flags, nightmare respawn times
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );

@@ -104,6 +104,11 @@ static flagsmap_t ThingBitFlags2 =
 	{ "FULLVOLSOUNDS",	{ 0x00040000,	exe_mbf21		} },
 };
 
+static flagsmap_t ThingBitFlagsRNR24 =
+{
+	{ "NORESPAWN",		{ 0x00000001,	exe_rnr24		} },
+};
+
 static flagsmap_t FrameBitFlagsMBF21 =
 {
 	{ "SKILL5FAST",		{ 0x00000001,	exe_mbf21		} },
@@ -182,6 +187,11 @@ DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* valu
 DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj )
 {
 	mobj->flags2 = GetFlagsFrom( ThingBitFlags2, context, value );
+}
+
+DOOM_C_API void DEH_BexHandleThingBitsRNR24( deh_context_t* context, const char* value, mobjinfo_t* mobj )
+{
+	mobj->rnr24flags = GetFlagsFrom( ThingBitFlagsRNR24, context, value );
 }
 
 DOOM_C_API void DEH_BexHandleFrameBitsMBF21( deh_context_t* context, const char* value, state_t* state )

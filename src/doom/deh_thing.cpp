@@ -60,10 +60,14 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   MBF21_MAPPING("Fast speed",        fastspeed)
   MBF21_MAPPING("Melee range",       meleerange)
   MBF21_MAPPING("Rip sound",         ripsound)
+  RNR_MAPPING("RNR24 Bits",          rnr24flags)
+  RNR_MAPPING("Min respawn tics",    minrespawntics)
+  RNR_MAPPING("Respawn dice",        respawndice)
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj );
+DOOM_C_API void DEH_BexHandleThingBitsRNR24( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 
 static void *DEH_ThingStart(deh_context_t *context, char *line)
 {
@@ -146,6 +150,13 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 		)
 	{
 		DEH_BexHandleThingBits2( context, value, mobj );
+	}
+	else if( strcmp( variable_name, "RNR24 Bits" ) == 0
+		&& !( isdigit( value[ 0 ] ) 
+			|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
+		)
+	{
+		DEH_BexHandleThingBitsRNR24( context, value, mobj );
 	}
 	else if( strcmp( variable_name, "Infighting group" ) == 0 )
 	{

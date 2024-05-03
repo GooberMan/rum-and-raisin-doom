@@ -518,31 +518,31 @@ DOOM_C_API void P_NightmareRespawn( mobj_t* mobj )
 //
 DOOM_C_API void P_MobjThinker( mobj_t* mobj )
 {
-    // momentum movement
-    if (mobj->momx
-	|| mobj->momy
-	|| (mobj->flags&MF_SKULLFLY) )
-    {
+	// momentum movement
+	if (mobj->momx
+		|| mobj->momy
+		|| (mobj->flags&MF_SKULLFLY) )
+	{
 		P_XYMovement (mobj);
 
 		if (!mobj->thinker.function.Valid())
 		{
 			return;
 		}
-    }
-    if ( (mobj->z != mobj->floorz)
-	 || mobj->momz )
-    {
+	}
+	if ( (mobj->z != mobj->floorz)
+		|| mobj->momz )
+	{
 		P_ZMovement (mobj);
 	
 		if (!mobj->thinker.function.Valid())
 		{
 			return;
 		}
-    }
+	}
 
 	// Player handles special sectors in its own thinker
-    if( sim.generic_specials_handling && !mobj->player )
+	if( sim.generic_specials_handling && !mobj->player )
 	{
 		P_MobjInSectorGeneric( mobj );
 		if (!mobj->thinker.function.Valid())
@@ -551,39 +551,44 @@ DOOM_C_API void P_MobjThinker( mobj_t* mobj )
 		}
 	}
 
-    // cycle through states,
-    // calling action functions at transitions
-    if (mobj->tics != -1)
-    {
-	mobj->tics--;
+	// cycle through states,
+	// calling action functions at transitions
+	if (mobj->tics != -1)
+	{
+		mobj->tics--;
 		
-	// you can cycle through multiple states in a tic
-	if (!mobj->tics)
-	    if (!P_SetMobjState (mobj, mobj->state->nextstate) )
-		return;		// freed itself
-    }
-    else
-    {
-	// check for nightmare respawn
-	if (! (mobj->flags & MF_COUNTKILL) )
-	    return;
+		// you can cycle through multiple states in a tic
+		if (!mobj->tics)
+		{
+			if (!P_SetMobjState (mobj, mobj->state->nextstate) )
+			{
+				return;		// freed itself
+			}
+		}
+	}
+	else
+	{
+		// check for nightmare respawn
+		if ( !(mobj->flags & MF_COUNTKILL)
+			|| mobj->NoRespawn() )
+			return;
 
-	if (!respawnmonsters)
-	    return;
+		if (!respawnmonsters)
+			return;
 
-	mobj->movecount++;
+		mobj->movecount++;
 
-	if (mobj->movecount < 12*TICRATE)
-	    return;
+		if (mobj->movecount < mobj->MinRespawnTics())
+			return;
 
-	if ( leveltime&31 )
-	    return;
+		if ( leveltime&31 )
+			return;
 
-	if (P_Random () > 4)
-	    return;
+		if (P_Random () > mobj->RespawnDice())
+			return;
 
-	P_NightmareRespawn (mobj);
-    }
+		P_NightmareRespawn (mobj);
+	}
 
 }
 
@@ -606,6 +611,7 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( const mobjinfo_t* typeinfo, angle_t angle,
 	mobj->height = typeinfo->height;
 	mobj->flags = typeinfo->flags;
 	mobj->flags2 = typeinfo->flags2;
+	mobj->rnr24flags = typeinfo->rnr24flags;
 	mobj->health = typeinfo->spawnhealth;
 
 	int32_t forwardlookup = FINEANGLE( angle );
