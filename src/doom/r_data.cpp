@@ -1114,30 +1114,30 @@ void R_InitSkyDefs()
 
 		for( const JSONElement& skyelem : skyarray.Children() )
 		{
-			sky_t sky;
 
 			const JSONElement& skytex = skyelem[ "texturename" ];
 			const JSONElement& mid = skyelem[ "texturemid" ];
 			const JSONElement& type = skyelem[ "type" ];
-			const JSONElement& palette = skyelem[ "firepalete" ];
+			const JSONElement& palette = skyelem[ "firepalette" ];
 
 			std::string skytexname = to< std::string >( skytex );
 			int32_t tex = R_TextureNumForName( skytexname.c_str() );
 			if( tex < 0 ) return jl_parseerror;
 
+			sky_t& sky = skylookup[ skytexname ];
 			sky.texture = texturelookup[ tex ];
+			sky.texnum = tex;
 			sky.texturemid = DoubleToRendFixed( to< double_t >( mid ) );
 			sky.type = to< skytype_t >( type );
 			if( sky.type == st_fire )
 			{
-				if( palette.Children().size() != NumFirePaletteEntries ) return jl_parseerror;
+				if( !palette.IsArray() || palette.Children().size() != NumFirePaletteEntries ) return jl_parseerror;
 				byte* output = sky.firepalette;
 				for( const JSONElement& palentry : palette.Children() )
 				{
 					*output++ = to< byte >( palentry );
 				}
 			}
-			skylookup[ skytexname ] = sky;
 		}
 		return jl_success;
 	};
