@@ -22,7 +22,7 @@ static std::regex TypeMatchRegex = std::regex( TypeMatchRegexString );
 constexpr const char* VersionMatchRegexString = "^(\\d+)\\.(\\d+)\\.(\\d+)$";
 static std::regex VersionMatchRegex = std::regex( VersionMatchRegexString );
 
-jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, const JSONLumpFunc& parsefunc )
+jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, const JSONLumpVersion& maxversion, const JSONLumpFunc& parsefunc )
 {
 	if( lumpindex < 0
 		|| W_LumpLength( lumpindex ) <= 0 )
@@ -59,7 +59,7 @@ jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, c
 
 	if( !std::regex_search( versionstr, versionmatch, VersionMatchRegex ) )
 	{
-		return jl_badversion;
+		return jl_badversionformatting;
 	}
 
 	JSONLumpVersion versiondata =
@@ -68,6 +68,11 @@ jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, c
 		to< int32_t >( versionmatch[ 2 ].str() ),
 		to< int32_t >( versionmatch[ 3 ].str() ),
 	};
+
+	if( versiondata > maxversion )
+	{
+		return jl_versionmismatch;
+	}
 
 	return parsefunc( data, versiondata );
 }

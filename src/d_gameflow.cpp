@@ -245,7 +245,7 @@ interlevel_t* D_GameflowGetInterlevel( const char* lumpname )
 		return jl_success;
 	};
 
-	if( M_ParseJSONLump( lumpname, "interlevel", ParseInterlevel ) == jl_success )
+	if( M_ParseJSONLump( lumpname, "interlevel", { 1, 0, 0 }, ParseInterlevel ) == jl_success )
 	{
 		interlevelstorage[ lumpname ] = output;
 		return output;

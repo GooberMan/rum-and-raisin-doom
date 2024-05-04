@@ -1142,7 +1142,7 @@ void R_InitSkyDefs()
 		return jl_success;
 	};
 
-	M_ParseJSONLump( "SKYDEFS", "skydefs", ParseSkydef );
+	M_ParseJSONLump( "SKYDEFS", "skydefs", { 1, 0, 0 }, ParseSkydef );
 }
 
 //

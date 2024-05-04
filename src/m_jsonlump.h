@@ -27,7 +27,14 @@ struct JSONLumpVersion
 {
 	int32_t major;
 	int32_t minor;
-	int32_t revision;
+	int64_t revision;
+
+	constexpr bool operator > ( const JSONLumpVersion& rhs ) const
+	{
+		return major > rhs.major
+			|| minor > rhs.minor
+			|| revision > rhs.revision;
+	}
 };
 
 typedef enum jsonlumpresult_e
@@ -36,22 +43,23 @@ typedef enum jsonlumpresult_e
 	jl_notfound,
 	jl_malformedroot,
 	jl_typemismatch,
-	jl_badversion,
+	jl_badversionformatting,
+	jl_versionmismatch,
 	jl_parseerror,
 } jsonlumpresult_t;
 
 using JSONLumpFunc = std::function< jsonlumpresult_t( const JSONElement& elem, const JSONLumpVersion& version ) >;
 
-jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, const JSONLumpFunc& parsefunc );
+jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, const JSONLumpVersion& maxversion, const JSONLumpFunc& parsefunc );
 
-INLINE jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, JSONLumpFunc&& parsefunc )
+INLINE jsonlumpresult_t M_ParseJSONLump( lumpindex_t lumpindex, const char* lumptype, const JSONLumpVersion& maxversion, JSONLumpFunc&& parsefunc )
 {
-	return M_ParseJSONLump( lumpindex, lumptype, parsefunc );
+	return M_ParseJSONLump( lumpindex, lumptype, maxversion, parsefunc );
 }
 
-INLINE jsonlumpresult_t M_ParseJSONLump( const char* lumpname, const char* lumptype, JSONLumpFunc&& parsefunc )
+INLINE jsonlumpresult_t M_ParseJSONLump( const char* lumpname, const char* lumptype, const JSONLumpVersion& maxversion, JSONLumpFunc&& parsefunc )
 {
-	return M_ParseJSONLump( W_CheckNumForName( lumpname ), lumptype, parsefunc );
+	return M_ParseJSONLump( W_CheckNumForName( lumpname ), lumptype, maxversion, parsefunc );
 }
 
 #endif //defined( __cplusplus )

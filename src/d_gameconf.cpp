@@ -175,7 +175,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 	auto CheckWad = [ &CheckGameconf ]( const std::string& wad ) -> bool
 	{
 		wad_file_t* wadfile = W_AddFile( wad.c_str() );
-		jsonlumpresult_t result = M_ParseJSONLump( "GAMECONF", "gameconf", CheckGameconf );
+		jsonlumpresult_t result = M_ParseJSONLump( "GAMECONF", "gameconf", { 1, 0, 0 }, CheckGameconf );
 		W_RemoveFile( wadfile );
 		return result == jl_success || result == jl_notfound;
 	};

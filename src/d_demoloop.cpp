@@ -240,7 +240,7 @@ demoloop_t* D_CreateDemoLoop()
 		return jl_success;
 	};
 
-	if( M_ParseJSONLump( "DEMOLOOP", "demoloop", LoadFromLump ) != jl_success )
+	if( M_ParseJSONLump( "DEMOLOOP", "demoloop", { 1, 0, 0 }, LoadFromLump ) != jl_success )
 	{
 		switch( gamemode )
 		{
