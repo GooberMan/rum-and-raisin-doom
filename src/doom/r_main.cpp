@@ -1850,6 +1850,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 				rendsides[ index ].toptex			= selectcurr ? currsides[ index ].toptex : prevsides[ index ].toptex;
 				rendsides[ index ].midtex			= selectcurr ? currsides[ index ].midtex : prevsides[ index ].midtex;
 				rendsides[ index ].bottomtex		= selectcurr ? currsides[ index ].bottomtex : prevsides[ index ].bottomtex;
+				rendsides[ index ].sky				= selectcurr ? currsides[ index ].sky : prevsides[ index ].sky;
 			}
 		}
 		else

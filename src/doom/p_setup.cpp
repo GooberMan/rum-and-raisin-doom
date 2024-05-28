@@ -639,6 +639,7 @@ struct DoomMapLoader
 			thisprev->bottomtex		= thiscurr->bottomtex		= thisside->bottomtexture ? texturelookup[ thisside->bottomtexture ] : NULL;
 			thisprev->coloffset		= thiscurr->coloffset		= FixedToRendFixed( thisside->textureoffset );
 			thisprev->rowoffset		= thiscurr->rowoffset		= FixedToRendFixed( thisside->rowoffset );
+			thisprev->sky			= thiscurr->sky				= nullptr;
 
 			++thisprev;
 			++thiscurr;

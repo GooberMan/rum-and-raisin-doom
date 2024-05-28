@@ -48,8 +48,8 @@
 //
 // sky mapping
 //
-int						skyflatnum;
-sky_t*					skydef;
+int						skyflatnum = 0;
+sky_t*					skydef = nullptr;
 sideinstance_t			skyfakeline = {};
 
 constexpr auto Lines( rasterregion_t* region )
