@@ -343,6 +343,7 @@ DOOM_C_API typedef struct mobj_s
 
 	int32_t			resurrection_count;
 	int32_t			successfullineeffect;
+	uint8_t*		tested_sector;
 
 #if defined( __cplusplus )
 	INLINE const bool IsFriendly() const					{ return sim.mbf_mobj_flags && ( flags & MF_MBF_FRIEND ); }

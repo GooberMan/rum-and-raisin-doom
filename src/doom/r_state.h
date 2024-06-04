@@ -109,6 +109,9 @@ extern doombool		renderlightlevels;
 #if defined( __cplusplus )
 }
 
+extern AtomicScratchpad*	prevsecthings;
+extern AtomicScratchpad*	currsecthings;
+
 #include <span>
 
 INLINE auto Segs()

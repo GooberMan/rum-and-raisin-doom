@@ -190,10 +190,21 @@ DOOM_C_API doombool			P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj );
 #include "m_container.h"
 
 using iteratemobjfunc_t = std::function< doombool(mobj_t*) >;
+using iteratelinefunc_t = std::function< doombool(line_t*) >;
 
+doombool P_BlockLinesIterator( int32_t x, int32_t y, iteratelinefunc_t&& func );
 doombool P_BlockThingsIterator( int32_t x, int32_t y, iteratemobjfunc_t&& func );
 
+// The "Const" variants are thread safe, at the expense of considering duplicate lines.
+// The iteration function is expected to keep track of such things itself.
+doombool P_BlockLinesIteratorConst( int32_t x, int32_t y, iteratelinefunc_t&& func );
+
 // Ranged iterators with directional bias, will travel all the way in one direction before moving to the next line
+doombool P_BlockLinesIteratorConstHorizontal( iota&& xrange, iota&& yrange, iteratelinefunc_t&& func );
+doombool P_BlockLinesIteratorConstVertical( iota&& xrange, iota&& yrange, iteratelinefunc_t&& func );
+doombool P_BlockLinesIteratorConstHorizontal( fixed_t x, fixed_t y, fixed_t radius, iteratelinefunc_t&& func );
+doombool P_BlockLinesIteratorConstVertical( fixed_t x, fixed_t y, fixed_t radius, iteratelinefunc_t&& func );
+
 doombool P_BlockThingsIteratorHorizontal( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
 doombool P_BlockThingsIteratorVertical( iota&& xrange, iota&& yrange, iteratemobjfunc_t&& func );
 doombool P_BlockThingsIteratorHorizontal( fixed_t x, fixed_t y, fixed_t radius, iteratemobjfunc_t&& func );

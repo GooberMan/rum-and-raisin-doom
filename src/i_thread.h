@@ -57,6 +57,7 @@ DOOM_C_API atomicval_t I_AtomicDecrement( atomicptr_t atomic, atomicval_t val );
 
 #if defined( __cplusplus )
 #include "m_container.h"
+#include "m_profile.h"
 #include <functional>
 #include <atomic>
 #include <thread>
@@ -113,8 +114,9 @@ public:
 
 	JobThread()
 		: jobs( queue_size )
+		, thread_index( num_threads_created.fetch_add( 1 ) )
 		, terminate( false )
-		, worker_thread( std::thread( [ this ]() { this->Run(); } ) )
+		, worker_thread( std::thread( [ this ](){ this->Run(); } ) )
  	{
 	}
 
@@ -160,6 +162,10 @@ public:
 private:
 	void Run()
 	{
+		char threadname[ 256 ] = { 0 };
+		sprintf( threadname, "Job thread %d", (int32_t)thread_index );
+		M_ProfileThreadInit( threadname );
+
 		uint64_t waitcount = 0;
 		while( !terminate.load() )
 		{
@@ -195,8 +201,11 @@ private:
 	}
 
 	AtomicCircularQueue< func_type >	jobs;
+	size_t								thread_index;
 	std::atomic< bool >					terminate;
 	std::thread							worker_thread;
+
+	static std::atomic< size_t >		num_threads_created;
 };
 
 class JobSystem
@@ -242,6 +251,18 @@ public:
 	{
 		for( JobThread& currthread : jobpool )
 		{
+			currthread.Flush();
+		}
+	}
+
+	void NewProfileFrame()
+	{
+		for( JobThread& currthread : jobpool )
+		{
+			currthread.AddJob( []()
+			{
+				M_ProfileNewFrame();
+			} );
 			currthread.Flush();
 		}
 	}

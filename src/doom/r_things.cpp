@@ -663,7 +663,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 // R_AddSprites
 // During BSP traversal, this adds sprites by sector.
 //
-void R_AddSprites( rendercontext_t& rendercontext, sector_t* sec )
+void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_t secindex )
 {
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
 
@@ -674,25 +674,24 @@ void R_AddSprites( rendercontext_t& rendercontext, sector_t* sec )
 	// A sector might have been split into several
 	//  subsectors during BSP building.
 	// Thus we check whether its already added.
-	if ( spritecontext.sectorvisited[ sec->index ] )
+	if ( spritecontext.sectorvisited[ secindex ] )
 	{
 		return;
 	}
 
 	// Well, now it will be done.
-	spritecontext.sectorvisited[ sec->index ] = true;
+	spritecontext.sectorvisited[ secindex ] = true;
 	
 	lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
 	lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
 	spritecontext.spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
 	// Handle all things in sector.
-	for (thing = sec->thinglist ; thing ; thing = thing->snext)
+	for( sectormobj_t* curr = (sectormobj_t*)sec->sectormobjs; curr != nullptr; curr = curr->next )
 	{
-		R_ProjectSprite( rendercontext, thing );
+		R_ProjectSprite( rendercontext, curr->mobj );
 	}
 }
-
 
 //
 // R_DrawPSprite

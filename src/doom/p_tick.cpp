@@ -79,6 +79,38 @@ DOOM_C_API void P_RemoveThinker (thinker_t* thinker)
 	thinker->function = nullptr;
 }
 
+static void P_AddIfOverlaps( sector_t* thissector, mobj_t* thismobj )
+{
+	if( P_MobjOverlapsSector( thissector, thismobj ) )
+	{
+		sectormobj_t* newsecmobj = currsecthings->Allocate< sectormobj_t >();
+		sectormobj_t* prevhead = (sectormobj_t*)I_AtomicExchange( &currsectors[ thissector->index ].sectormobjs, (atomicval_t)newsecmobj );
+		*newsecmobj = { thismobj, prevhead };
+	}
+}
+
+static void P_SortMobj( mobj_t* mobj )
+{
+	memset( mobj->tested_sector, 0, sizeof(uint8_t) * numsectors );
+
+	P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, mobj->radius, [mobj]( line_t* line ) -> bool
+	{
+		if( line->frontsector && !mobj->tested_sector[ line->frontsector->index ] )
+		{
+			P_AddIfOverlaps( line->frontsector, mobj );
+			mobj->tested_sector[ line->frontsector->index ] = true;
+		}
+
+		if( line->backsector && !mobj->tested_sector[ line->backsector->index ] )
+		{
+			P_AddIfOverlaps( line->backsector, mobj );
+			mobj->tested_sector[ line->backsector->index ] = true;
+		}
+
+		return true;
+	} );
+}
+
 //
 // P_RunThinkers
 //
@@ -97,19 +129,33 @@ void P_RunThinkers (void)
 			currentthinker->prev->next = currentthinker->next;
 			Z_Free(currentthinker);
 		}
-		else if( currentthinker->function.Enabled() )
+		else
 		{
-			currentthinker->function(currentthinker);
+			if( currentthinker->function.Enabled() )
+			{
+				currentthinker->function(currentthinker);
+			}
+
+			if( mobj_t* mobj = thinker_cast< mobj_t >( currentthinker ) )
+			{
+				jobs->AddJob( [mobj]() { P_SortMobj( mobj ); } );
+			}
 		}
+
 		currentthinker = nextthinker;
     }
 }
 
 void P_FlipInstanceData( void )
 {
-	sectorinstance_t* tempsec = currsectors;
-	currsectors = prevsectors;
-	prevsectors = tempsec;
+	std::swap( currsectors, prevsectors );
+	std::swap( currsecthings, prevsecthings );
+
+	for( sectorinstance_t& sec : std::span( currsectors, numsectors ) )
+	{
+		I_AtomicExchange( &sec.sectormobjs, 0ll );
+	}
+	currsecthings->Reset();
 
 	sideinstance_t* tempside = currsides;
 	currsides = prevsides;
@@ -239,6 +285,7 @@ DOOM_C_API void P_Ticker (void)
     P_RespawnSpecials ();
 
 	P_UpdateInstanceData();
+	jobs->Flush();
 
     // for par times
     leveltime++;

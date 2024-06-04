@@ -483,7 +483,7 @@ struct DoomMapLoader
 				{
 					blockoffsets.push_back( offset );
 					thisblockindex.push_back( BLOCKMAP_INVALID );
-					offset += thisblockindex.size();
+					offset += (blockmap_t)thisblockindex.size();
 				}
 
 				_blockmap = (blockmap_t*)Z_Malloc( sizeof( blockmap_t ) * offset, PU_LEVEL, nullptr );
@@ -594,6 +594,7 @@ struct DoomMapLoader
 			thisprev->ceiloffsety		= thiscurr->ceiloffsety			= FixedToRendFixed( thissec->ceiloffsety );
 			thisprev->floorrotation		= thiscurr->floorrotation		= thissec->floorrotation;
 			thisprev->ceilrotation		= thiscurr->ceilrotation		= thissec->ceilrotation;
+			thisprev->sectormobjs		= thiscurr->sectormobjs			= 0;
 			thisprev->clipfloor			= thiscurr->clipfloor			= false;
 			thisprev->clipceiling		= thiscurr->clipceiling			= false;
 			thisprev->activethisframe	= thiscurr->activethisframe		= false;
@@ -1305,6 +1306,9 @@ extern "C"
 	musinfo_t* musinfo;
 }
 
+AtomicScratchpad*	prevsecthings = nullptr;
+AtomicScratchpad*	currsecthings = nullptr;
+
 //
 // P_LoadThings
 //
@@ -1319,6 +1323,12 @@ static void P_LoadThings (int lump)
 
     data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
     numthings = W_LumpLength (lump) / sizeof(mapthing_t);
+
+	// If you get enough mobjs in your level to overflow these scratchpads, well, you must be NUTS!
+	constexpr size_t scratchpadsize	= sizeof( sectormobj_t ) * 524288;
+
+	prevsecthings			= Z_MallocAsArgs( AtomicScratchpad, PU_LEVEL, nullptr, scratchpadsize, PU_LEVEL );
+	currsecthings			= Z_MallocAsArgs( AtomicScratchpad, PU_LEVEL, nullptr, scratchpadsize, PU_LEVEL );
 	
     mt = (mapthing_t *)data;
     for (i=0 ; i<numthings ; i++, mt++)

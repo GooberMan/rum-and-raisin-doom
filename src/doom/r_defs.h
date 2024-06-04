@@ -40,6 +40,7 @@
 // SECTORS do store MObjs anyway.
 #include "p_sectoraction.h"
 
+#include "i_thread.h"
 #include "i_video.h"
 
 #include "v_patch.h"
@@ -104,6 +105,7 @@ typedef struct texturecomposite_s texturecomposite_t;
 typedef struct side_s side_t;
 typedef struct line_s line_t;
 typedef struct sector_s sector_t;
+typedef struct sectormobj_s sectormobj_t;
 typedef struct sky_s sky_t;
 
 typedef void (*colfunc_t)( colcontext_t* );
@@ -131,6 +133,12 @@ typedef struct texturecomposite_s
 	int32_t					index;
 } texturecomposite_t;
 
+struct sectormobj_s
+{
+	mobj_t*				mobj;
+	sectormobj_t*		next;
+};
+
 typedef struct sectorinstance_s
 {
 	// Need to compare these for BSP rejection
@@ -147,6 +155,7 @@ typedef struct sectorinstance_s
 	angle_t					ceilrotation;
 
 	// These are ignored for BSP rejection purposes
+	atomicval_t				sectormobjs;
 	rend_fixed_t			floorheight;
 	rend_fixed_t			ceilheight;
 	rend_fixed_t			midtexfloor;

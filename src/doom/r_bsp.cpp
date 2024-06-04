@@ -555,7 +555,8 @@ void R_Subsector( rendercontext_t& rendercontext, int32_t num )
 	uint64_t		startaddsprites = I_GetTimeUS();
 #endif // RENDER_PERF_GRAPHING
 		
-	R_AddSprites( rendercontext, sub->sector );
+	//R_AddSprites( rendercontext, sub->sector );
+	R_AddSprites( rendercontext, &rendsectors[ sub->sector->index ], sub->sector->index );
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		endaddsprites = I_GetTimeUS();

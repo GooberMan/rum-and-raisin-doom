@@ -83,12 +83,13 @@ DOOM_C_API size_t	Z_ZoneSize(void);
 #define Z_MallocZero( size, tag, ptr ) Z_MallocTrackedZero( __FILE__, __LINE__, size, tag, ptr )
 
 #define Z_MallocAs( type, tag, ptr ) Z_MallocTracked< type >( __FILE__, __LINE__, tag, ptr )
+#define Z_MallocAsArgs( type, tag, ptr, ... ) Z_MallocTracked< type >( __FILE__, __LINE__, tag, ptr, __VA_ARGS__ )
 #define Z_MallocArrayAs( type, count, tag, ptr ) Z_MallocArrayTracked< type >( __FILE__, __LINE__, count, tag, ptr )
 
-template< typename _ty >
-INLINE void Z_MallocConstructEntry( _ty*& val )
+template< typename _ty, typename... _args >
+INLINE void Z_MallocConstructEntry( _ty*& val, _args&&... args )
 {
-	new( val ) _ty;
+	new( val ) _ty( args... );
 }
 
 template< typename _ty >
@@ -147,11 +148,11 @@ constexpr memdestruct_t Z_DestructorForArray()
 }
 
 
-template< typename _ty >
-INLINE _ty* Z_MallocTracked( const char* file, size_t line, int32_t tag, void* ptr )
+template< typename _ty, typename... _args >
+INLINE _ty* Z_MallocTracked( const char* file, size_t line, int32_t tag, void* ptr, _args&&... args )
 {
 	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ), tag, ptr, Z_DestructorFor< _ty >() );
-	Z_MallocConstructEntry( val );
+	Z_MallocConstructEntry( val, std::forward< _args >( args )... );
 	//*val = Z_MallocDefaultFor< _ty >();
 	return val;
 }

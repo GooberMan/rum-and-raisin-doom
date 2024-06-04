@@ -667,6 +667,8 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( const mobjinfo_t* typeinfo, angle_t angle,
 	mobj->curr.sprite = mobj->sprite;
 
 	mobj->thinker.function = P_MobjThinker;
+
+	mobj->tested_sector = (uint8_t*)Z_MallocZero( sizeof( uint8_t ) * numsectors, PU_LEVEL, nullptr );
 	
 	P_AddThinker( &mobj->thinker );
 

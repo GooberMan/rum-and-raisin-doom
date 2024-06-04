@@ -434,44 +434,133 @@ DOOM_C_API void P_SetThingPosition( mobj_t* thing )
 // to P_BlockLinesIterator, then make one or more calls
 // to it.
 //
-DOOM_C_API doombool P_BlockLinesIterator( int x, int y, doombool(*func)(line_t*) )
+doombool P_BlockLinesIterator( int x, int y, iteratelinefunc_t&& func )
 {
-    int32_t			offset;
-    blockmap_t*		list;
-    line_t*			ld;
+	int32_t			offset;
+	blockmap_t*		list;
+	line_t*			ld;
 	
-    if (x<0
-	|| y<0
-	|| x>=bmapwidth
-	|| y>=bmapheight)
-    {
-	return true;
-    }
-    
-    offset = y*bmapwidth+x;
-	
-    offset = *(blockmap + offset);
-
-    for ( list = blockmapbase+offset ; *list != BLOCKMAP_INVALID ; ++list)
-    {
-	blockmap_t val = *list;
-#if RANGECHECK
-	if( val != BLOCKMAP_INVALID && val >= numlines )
+	if (x<0
+		|| y<0
+		|| x>=bmapwidth
+		|| y>=bmapheight)
 	{
-		I_Error( "P_BlockLinesIterator: %d out of range", (int32_t)*list );
+		return true;
 	}
+
+	offset = y*bmapwidth+x;
+	
+	offset = *(blockmap + offset);
+
+	for ( list = blockmapbase+offset ; *list != BLOCKMAP_INVALID ; ++list)
+	{
+		blockmap_t val = *list;
+#if RANGECHECK
+		if( val != BLOCKMAP_INVALID && val >= numlines )
+		{
+			I_Error( "P_BlockLinesIterator: %d out of range", (int32_t)*list );
+		}
 #endif
-	ld = &lines[*list];
+		ld = &lines[*list];
 
-	if (ld->validcount == validcount)
-	    continue; 	// line has already been checked
+		if (ld->validcount == validcount)
+			continue; 	// line has already been checked
 
-	ld->validcount = validcount;
+		ld->validcount = validcount;
 		
-	if ( !func(ld) )
-	    return false;
-    }
-    return true;	// everything was checked
+		if ( !func(ld) )
+			return false;
+	}
+	return true;	// everything was checked
+}
+
+DOOM_C_API doombool P_BlockLinesIterator( int32_t x, int32_t y, doombool(*func)(line_t*) )
+{
+	 return P_BlockLinesIterator( x, y, iteratelinefunc_t( func ) );
+}
+
+doombool P_BlockLinesIteratorConst( int x, int y, iteratelinefunc_t&& func )
+{
+	if (x<0
+		|| y<0
+		|| x>=bmapwidth
+		|| y>=bmapheight)
+	{
+		return true;
+	}
+
+	int32_t offset = y * bmapwidth + x;
+	
+	offset = *(blockmap + offset);
+
+	for( blockmap_t* list = blockmapbase + offset; *list != BLOCKMAP_INVALID ; ++list )
+	{
+		blockmap_t val = *list;
+#if RANGECHECK
+		if( val != BLOCKMAP_INVALID && val >= numlines )
+		{
+			I_Error( "P_BlockLinesIterator: %d out of range", (int32_t)*list );
+		}
+#endif
+		line_t& ld = lines[ val ];
+
+		if ( !func( &ld ) )
+			return false;
+	}
+
+	return true;	// everything was checked
+}
+
+doombool P_BlockLinesIteratorConstHorizontal( iota&& xrange, iota&& yrange, iteratelinefunc_t&& func )
+{
+	for( int32_t y : yrange )
+	{
+		for( int32_t x : xrange )
+		{
+			if( !P_BlockLinesIteratorConst( x, y, std::forward< iteratelinefunc_t >( func ) ) )
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+doombool P_BlockLinesIteratorConstVertical( iota&& xrange, iota&& yrange, iteratelinefunc_t&& func )
+{
+	for( int32_t x : xrange )
+	{
+		for( int32_t y : yrange )
+		{
+			if( !P_BlockLinesIteratorConst( x, y, std::forward< iteratelinefunc_t >( func ) ) )
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+doombool P_BlockLinesIteratorConstHorizontal( fixed_t x, fixed_t y, fixed_t radius, iteratelinefunc_t&& func )
+{
+	int32_t xl = ( x - radius - bmaporgx ) >> MAPBLOCKSHIFT;
+	int32_t xh = ( ( x + radius - bmaporgx ) >> MAPBLOCKSHIFT ) + 1;
+	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
+	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
+
+	return P_BlockLinesIteratorConstHorizontal( iota( xl, xh ), iota( yl, yh ), std::forward< iteratelinefunc_t >( func ) );
+}
+
+doombool P_BlockLinesIteratorConstVertical( fixed_t x, fixed_t y, fixed_t radius, iteratelinefunc_t&& func )
+{
+	int32_t xl = ( x - radius - bmaporgx ) >> MAPBLOCKSHIFT;
+	int32_t xh = ( ( x + radius - bmaporgx ) >> MAPBLOCKSHIFT ) + 1;
+	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
+	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
+
+	return P_BlockLinesIteratorConstVertical( iota( xl, xh ), iota( yl, yh ), std::forward< iteratelinefunc_t >( func ) );
 }
 
 

@@ -23,6 +23,8 @@
 #include <semaphore>
 #include <thread>
 
+std::atomic< size_t > JobThread::num_threads_created = 0;
+
 threadhandle_t I_ThreadCreate( threadfunc_t runfunc, void* userdata )
 {
 	void* data = Z_Malloc( sizeof( std::thread ), PU_STATIC, NULL );

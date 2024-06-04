@@ -19,6 +19,7 @@
 #define __M_CONTAINER__
 
 #include "doomtype.h"
+#include "i_error.h"
 #include "z_zone.h"
 
 #ifdef __cplusplus
@@ -449,6 +450,42 @@ private:
 	std::atomic< size_t >			current;
 	std::atomic< size_t >			end;
 	std::atomic< size_t >			reserved;
+};
+
+class AtomicScratchpad
+{
+public:
+	AtomicScratchpad( size_t size, int32_t tag )
+		: scratchpos( 0 )
+		, scratchsize( size )
+		, scratch( (byte*)Z_Malloc( size, tag, nullptr ) )
+	{
+	}
+
+	template< typename _ty >
+	_ty* Allocate()
+	{
+		constexpr size_t numbytes = AlignTo< 16 >( sizeof( _ty ) );
+
+		size_t pos = scratchpos.fetch_add( numbytes );
+		if( pos + numbytes > scratchsize )
+		{
+			I_Error( "AtomicScratchpad::Allocate: No more scratchpad memory available" );
+		}
+
+		_ty* output = (_ty*)( scratch + pos );
+		return output;
+	}
+
+	void Reset()
+	{
+		scratchpos = 0;
+	}
+
+private:
+	std::atomic< size_t >	scratchpos;
+	size_t					scratchsize;
+	byte*					scratch;
 };
 
 #endif // __cplusplus

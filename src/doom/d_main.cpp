@@ -615,6 +615,7 @@ void D_RunFrame()
 	I_StartTic();
 
 	jobs->SetMaxJobs( num_render_contexts - 1 );
+	jobs->NewProfileFrame();
 
 	if (wipe)
 	{
