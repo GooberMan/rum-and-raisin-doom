@@ -305,4 +305,11 @@ DOOM_C_API extern  ticcmd_t       *netcmds;
 
 DOOM_C_API extern int32_t remove_limits;
 
+#if defined(__cplusplus)
+#include "i_thread.h"
+
+extern std::unique_ptr< JobSystem > jobs;
+
+#endif defined(__cplusplus)
+
 #endif

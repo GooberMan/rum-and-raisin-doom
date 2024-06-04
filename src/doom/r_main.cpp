@@ -1026,23 +1026,13 @@ int32_t R_ContextThreadFunc( void* userdata )
 
 void R_InitContexts( void )
 {
-	int32_t currcontext;
-	int32_t currstart;
-	int32_t incrementby;
-
-	maxrendercontexts = (int32_t)I_ThreadGetHardwareCount();
-	if( num_render_contexts <= 0 )
-	{
-		num_render_contexts = maxrendercontexts;
-	}
-
-	currstart = 0;
-	incrementby = drs_current->frame_width / maxrendercontexts;
+	int32_t currstart = 0;
+	int32_t incrementby = drs_current->frame_width / maxrendercontexts;
 
 	renderdatas = (renderdata_t*)Z_Malloc( sizeof( renderdata_t ) * maxrendercontexts, PU_STATIC, NULL );
 	memset( renderdatas, 0, sizeof( renderdata_t ) * maxrendercontexts );
 
-	for( currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
+	for( int32_t currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
 	{
 		renderdatas[ currcontext ].index = currcontext;
 		renderdatas[ currcontext ].context.bufferindex = 0;
@@ -1101,6 +1091,7 @@ void R_RefreshContexts( void )
 void R_RebalanceContexts( void )
 {
 	renderrebalancecontexts = true;
+	jobs->SetMaxJobs( num_render_contexts - 1 );
 }
 
 //
@@ -2015,6 +2006,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 // R_RenderView
 //
 
+bool usejobs = true;
+
 void R_RenderPlayerView(player_t* player, double_t framepercent, doombool isconsoleplayer)
 {
 	M_PROFILE_FUNC();
@@ -2032,34 +2025,46 @@ void R_RenderPlayerView(player_t* player, double_t framepercent, doombool iscons
 
 	wadrenderlock = true;
 
-	atomicval_t finishedcontexts = 0;
-
-	for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
+	if( usejobs )
 	{
-		if( num_render_contexts > 1 && currcontext < num_render_contexts - 1 )
+		for( currcontext = 1; currcontext < num_render_contexts; ++currcontext )
 		{
-			I_AtomicExchange( &renderdatas[ currcontext ].framewaiting, 1 );
-			I_SemaphoreRelease( renderdatas[ currcontext ].shouldrun );
+			jobs->AddJob( [currcontext]() { R_RenderViewContext( renderdatas[ currcontext ].context ); } );
 		}
-		else
-		{
-			R_RenderViewContext( renderdatas[ currcontext ].context );
-			++finishedcontexts;
-		}
+		R_RenderViewContext( renderdatas[ 0 ].context );
+		jobs->Flush();
 	}
-
+	else
 	{
-		M_PROFILE_NAMED( "Wait on threads" );
+		atomicval_t finishedcontexts = 0;
 
-		while( num_render_contexts > 1 && finishedcontexts != num_render_contexts )
+		for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 		{
-			I_ErrorUpdate();
-
-			for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
+			if( num_render_contexts > 1 && currcontext < num_render_contexts - 1 )
 			{
-				finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
+				I_AtomicExchange( &renderdatas[ currcontext ].framewaiting, 1 );
+				I_SemaphoreRelease( renderdatas[ currcontext ].shouldrun );
 			}
-			//I_Sleep( 0 );
+			else
+			{
+				R_RenderViewContext( renderdatas[ currcontext ].context );
+				++finishedcontexts;
+			}
+		}
+
+		{
+			M_PROFILE_NAMED( "Wait on threads" );
+
+			while( num_render_contexts > 1 && finishedcontexts != num_render_contexts )
+			{
+				I_ErrorUpdate();
+
+				for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
+				{
+					finishedcontexts += I_AtomicExchange( &renderdatas[ currcontext ].framefinished, 0 );
+				}
+				//I_Sleep( 0 );
+			}
 		}
 	}
 

@@ -100,6 +100,8 @@
 //
 void D_DoomLoop (void);
 
+std::unique_ptr< JobSystem > jobs;
+
 extern "C"
 {
 	static char *gamedescription;
@@ -611,6 +613,8 @@ void D_RunFrame()
 	// frame syncronous IO operations
 	I_StartFrame();
 	I_StartTic();
+
+	jobs->SetMaxJobs( num_render_contexts - 1 );
 
 	if (wipe)
 	{
@@ -1960,11 +1964,6 @@ DOOM_C_API void D_DoomMain (void)
         free(autoload_dir);
     }
 
-	for( const char* dehfile : gameconf->DEHFiles() )
-	{
-		DEH_LoadFile( dehfile );
-	}
-
 	// Load PWAD files.
 	modifiedgame = gameconf->pwadscount != 0;
 	for( const char* pwad : gameconf->PWADs() )
@@ -1974,6 +1973,11 @@ DOOM_C_API void D_DoomMain (void)
 	}
 
     LoadIwadDeh();
+
+	for( const char* dehfile : gameconf->DEHFiles() )
+	{
+		DEH_LoadFile( dehfile );
+	}
 
     // Debug:
 //    W_PrintDirectory();
@@ -2087,18 +2091,21 @@ DOOM_C_API void D_DoomMain (void)
 
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
 
+	maxrendercontexts = (int32_t)I_ThreadGetHardwareCount();
 	p = M_CheckParmWithArgs( "-numrendercontexts", 1 );
 	if( p )
 	{
 		M_StrToInt( myargv[p + 1], &num_render_contexts );
 	}
 
-	p = M_CheckParmWithArgs( "-maxrendercontexts", 1 );
-	if( p )
+	if( num_render_contexts <= 0 )
 	{
-		M_StrToInt( myargv[p + 1], &maxrendercontexts );
+		num_render_contexts = maxrendercontexts;
 	}
-
+	else
+	{
+		num_render_contexts = M_CLAMP( num_render_contexts, 1, maxrendercontexts );
+	}
 
     // Set the gamedescription string. This is only possible now that
     // we've finished loading Dehacked patches.
@@ -2149,6 +2156,9 @@ DOOM_C_API void D_DoomMain (void)
     I_InitJoystick();
     I_InitSound(true);
     I_InitMusic();
+
+	size_t maxnumjobs = (int32_t)I_ThreadGetHardwareCount();
+	jobs.reset( new JobSystem( maxnumjobs - 1 ) );
 
     I_TerminalPrintf( Log_Startup, "NET_Init: Init network subsystem.\n" );
     NET_Init ();

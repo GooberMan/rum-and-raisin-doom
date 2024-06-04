@@ -61,6 +61,50 @@ DOOM_C_API atomicval_t I_AtomicDecrement( atomicptr_t atomic, atomicval_t val );
 #include <atomic>
 #include <thread>
 
+class Spinlock
+{
+public:
+	INLINE Spinlock()
+		: locked( false )
+	{
+	}
+
+	INLINE bool Acquire()
+	{
+		uint64_t waitcount = 0;
+		bool expected = false;
+		while( !locked.compare_exchange_weak(expected, true) )
+		{
+			if( ( waitcount & 1023 ) == 1023 )
+			{
+				std::this_thread::sleep_for( std::chrono::milliseconds( 0 ) );
+			}
+			else if( ( waitcount & 127 ) == 127 )
+			{
+				std::this_thread::yield();
+			}
+			else if( ( waitcount & 15 ) == 15 )
+			{
+				if constexpr( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
+				{
+					_mm_pause();
+				}
+			}
+
+			expected = false;
+			++waitcount;
+		}
+	}
+
+	INLINE bool Release()
+	{
+		locked.store( false );
+	}
+
+private:
+	std::atomic<bool>		locked;
+};
+
 class JobThread
 {
 public:
@@ -85,20 +129,38 @@ public:
 
 	void AddJob( func_type&& func )
 	{
-		jobs.push( func );
+		jobs.push( std::forward< func_type >( func ) );
 	}
 
 	void Flush()
 	{
+		uint64_t waitcount = 0;
 		while( !jobs.empty() )
 		{
-			std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+			if( ( waitcount & 1023 ) == 1023 )
+			{
+				std::this_thread::sleep_for( std::chrono::milliseconds( 0 ) );
+			}
+			else if( ( waitcount & 127 ) == 127 )
+			{
+				std::this_thread::yield();
+			}
+			else if( ( waitcount & 15 ) == 15 )
+			{
+				if constexpr( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
+				{
+					_mm_pause();
+				}
+			}
+
+			++waitcount;
 		}
 	}
 
 private:
 	void Run()
 	{
+		uint64_t waitcount = 0;
 		while( !terminate.load() )
 		{
 			if( jobs.valid() )
@@ -106,10 +168,28 @@ private:
 				func_type& func = jobs.access();
 				func();
 				jobs.pop();
+				waitcount = 0;
 			}
 			else
 			{
-				std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+				if( ( waitcount & 1023 ) == 1023 )
+				{
+					std::this_thread::sleep_for( std::chrono::milliseconds( 0 ) );
+				}
+				else if( ( waitcount & 127 ) == 127 )
+				{
+					std::this_thread::yield();
+				}
+				else if( ( waitcount & 15 ) == 15 )
+				{
+#if ( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
+					_mm_pause();
+#elif ( ARCH_CHECK( ARM32 ) || ARCH_CHECK( ARM64 ) )
+					__yield();
+#endif // ARCH_CHECK
+				}
+
+				++waitcount;
 			}
 		}
 	}
@@ -117,6 +197,60 @@ private:
 	AtomicCircularQueue< func_type >	jobs;
 	std::atomic< bool >					terminate;
 	std::thread							worker_thread;
+};
+
+class JobSystem
+{
+public:
+	using func_type = JobThread::func_type;
+
+	JobSystem( size_t maxnumjobs )
+		: jobpool( maxnumjobs )
+		, maxjobs( maxnumjobs )
+	{
+		nextjobthread = jobpool.begin();
+		endjobthread = nextjobthread + maxnumjobs;
+	}
+
+	void AddJob( func_type&& func )
+	{
+		if( maxjobs == 0 )
+		{
+			func();
+		}
+		else
+		{
+			nextjobthread->AddJob( std::forward< func_type >( func ) );
+			if( ++nextjobthread == endjobthread )
+			{
+				nextjobthread = jobpool.begin();
+			}
+		}
+	}
+
+	void SetMaxJobs( size_t maxnumjobs )
+	{
+		maxnumjobs = std::min( maxnumjobs, maxjobs );
+		endjobthread = jobpool.begin() + maxnumjobs;
+		if( nextjobthread - endjobthread >= 0 )
+		{
+			nextjobthread = jobpool.begin();
+		}
+	}
+
+	void Flush()
+	{
+		for( JobThread& currthread : jobpool )
+		{
+			currthread.Flush();
+		}
+	}
+
+private:
+	std::vector< JobThread >			jobpool;
+	std::vector< JobThread >::iterator	nextjobthread;
+	std::vector< JobThread >::iterator	endjobthread;
+	size_t								maxjobs;
 };
 
 #endif //defined( __cplusplus )
