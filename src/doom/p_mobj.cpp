@@ -147,7 +147,10 @@ DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 
 	do
 	{
-		if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2)
+		fixed_t xtest = comp.doom_movement_clipping_method ? xmove : FixedAbs(xmove);
+		fixed_t ytest = comp.doom_movement_clipping_method ? ymove : FixedAbs(ymove);
+
+		if (xtest > MAXMOVE/2 || ytest > MAXMOVE/2)
 		{
 			ptryx = mo->x + xmove/2;
 			ptryy = mo->y + ymove/2;
