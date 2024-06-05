@@ -86,9 +86,9 @@ static void P_AddToSector( sector_t* thissector, mobj_t* thismobj )
 	*newsecmobj = { thismobj, prevhead };
 }
 
-static void P_AddIfOverlaps( sector_t* thissector, mobj_t* thismobj )
+static void P_AddIfOverlaps( sector_t* thissector, mobj_t* thismobj, fixed_t radius )
 {
-	if( P_MobjOverlapsSector( thissector, thismobj ) )
+	if( P_MobjOverlapsSector( thissector, thismobj, radius ) )
 	{
 		P_AddToSector( thissector, thismobj );
 	}
@@ -104,17 +104,17 @@ static void P_SortMobj( mobj_t* mobj )
 	fixed_t radius = mobj->curr.sprite != -1 ? M_MAX( mobj->radius, sprites[ mobj->curr.sprite ].maxradius )
 											: mobj->radius;
 
-	P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, radius, [mobj]( line_t* line ) -> bool
+	P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, radius, [ mobj, radius ]( line_t* line ) -> bool
 	{
 		if( line->frontsector && !mobj->tested_sector[ line->frontsector->index ] )
 		{
-			P_AddIfOverlaps( line->frontsector, mobj );
+			P_AddIfOverlaps( line->frontsector, mobj, radius );
 			mobj->tested_sector[ line->frontsector->index ] = true;
 		}
 
 		if( line->backsector && !mobj->tested_sector[ line->backsector->index ] )
 		{
-			P_AddIfOverlaps( line->backsector, mobj );
+			P_AddIfOverlaps( line->backsector, mobj, radius );
 			mobj->tested_sector[ line->backsector->index ] = true;
 		}
 

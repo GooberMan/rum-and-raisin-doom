@@ -1175,19 +1175,21 @@ DOOM_C_API doombool P_BBoxOverlapsSector( sector_t* sector, fixed_t* bbox )
 	return false;
 }
 
-DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj )
+DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj, fixed_t radius )
 {
 	if( mobj->subsector->sector == sector )
 	{
 		return true;
 	}
 
+	radius = !radius ? mobj->radius : radius;
+
 	fixed_t bbox[ 4 ] =
 	{
-		mobj->y + mobj->radius,	// BOXTOP
-		mobj->y - mobj->radius,	// BOXBOTTOM
-		mobj->x - mobj->radius,	// BOXLEFT
-		mobj->x + mobj->radius,	// BOXRIGHT
+		mobj->y + radius,	// BOXTOP
+		mobj->y - radius,	// BOXBOTTOM
+		mobj->x - radius,	// BOXLEFT
+		mobj->x + radius,	// BOXRIGHT
 	};
 
 	return P_BBoxOverlapsSector( sector, bbox );

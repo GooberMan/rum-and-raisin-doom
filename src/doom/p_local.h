@@ -183,7 +183,7 @@ DOOM_C_API doombool			P_BlockLinesIterator (int x, int y, doombool(*func)(line_t
 DOOM_C_API doombool			P_BlockThingsIterator (int x, int y, doombool(*func)(mobj_t*) );
 
 DOOM_C_API doombool			P_BBoxOverlapsSector( sector_t* sector, fixed_t* bbox );
-DOOM_C_API doombool			P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj );
+DOOM_C_API doombool			P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj, fixed_t radius = 0 );
 
 #if defined( __cplusplus )
 #include <functional>
