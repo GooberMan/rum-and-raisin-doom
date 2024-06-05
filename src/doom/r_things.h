@@ -36,6 +36,7 @@ void R_DrawMaskedColumn( spritecontext_t& spritecontext, colcontext_t& context, 
 
 void R_SortVisSprites( spritecontext_t& spritecontext );
 
+void R_AddSprites( rendercontext_t& rendercontext, sector_t* sec );
 void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_t secindex );
 void R_InitSprites();
 void R_ClearSprites( spritecontext_t& spritecontext );

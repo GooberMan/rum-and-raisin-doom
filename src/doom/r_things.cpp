@@ -175,6 +175,7 @@ void R_InitSprites()
 		memset( sprtemp,-1, sizeof(spriteframe_t) * 29);
 		
 		int32_t maxframe = -1;
+		rend_fixed_t maxradius = 0;
 	
 		// scan the lumps,
 		//  filling in the frames for whatever is found
@@ -187,6 +188,7 @@ void R_InitSprites()
 				rotation = lump->name[5] - '0';
 
 				int32_t patch = lookup.compositeindex;
+				maxradius = M_MAX( maxradius, spritewidth[ patch ] );
 
 				maxframe = R_InstallSpriteLump( sprtemp, spritename, maxframe, patch, frame, rotation, false );
 
@@ -198,6 +200,8 @@ void R_InitSprites()
 				}
 			}
 		}
+
+		currsprite.maxradius = RendFixedToFixed( maxradius ) / 2;
 	
 		// check the frames that were found for completeness
 		if (maxframe == -1)
@@ -456,7 +460,7 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 //  if it might be visible.
 //
 
-void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
+void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinstance_t* sector )
 {
 	viewpoint_t&		viewpoint		= rendercontext.viewpoint;
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
@@ -595,6 +599,8 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 		return;
 	}
 
+	thing->rendered[ rendercontext.index ] = true;
+
 	// store information in a vissprite
 	vis = R_NewVisSprite( spritecontext );
 	vis->mobjflags = thing->flags;
@@ -605,7 +611,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 	vis->gy = thingy;
 	vis->gz = thingz;
 	vis->gzt = thingz + spritetopoffset[ lump ];
-	vis->sector = &rendsectors[ thing->subsector->sector->index ];
+	vis->sector = &rendsectors[ thing->subsector->sector->index ]; //sector;
 	vis->texturemid = vis->gzt - viewpoint.z;
 	vis->x1 = x1 < spritecontext.leftclip ? spritecontext.leftclip : x1;
 	vis->x2 = x2 >= spritecontext.rightclip ? spritecontext.rightclip-1 : x2;	
@@ -653,7 +659,11 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 		if (index >= MAXLIGHTSCALE)
 			index = MAXLIGHTSCALE-1;
 
-		vis->colormap = rendercontext.viewpoint.colormaps + spritecontext.spritelightoffsets[ index ];
+		int32_t lightnum = ( vis->sector->lightlevel >> LIGHTSEGSHIFT ) + extralight;
+		lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
+		int32_t* spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
+
+		vis->colormap = rendercontext.viewpoint.colormaps + spritelightoffsets[ index ];
 	}
 
 	vis->tranmap = ( comp.use_translucency && thing->flags & MF_BOOM_TRANSLUCENT ) ? tranmap : nullptr;
@@ -663,7 +673,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing)
 // R_AddSprites
 // During BSP traversal, this adds sprites by sector.
 //
-void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_t secindex )
+void R_AddSprites( rendercontext_t& rendercontext, sector_t* sec )
 {
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
 
@@ -674,22 +684,32 @@ void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_
 	// A sector might have been split into several
 	//  subsectors during BSP building.
 	// Thus we check whether its already added.
-	if ( spritecontext.sectorvisited[ secindex ] )
+	if ( spritecontext.sectorvisited[ sec->index ] )
 	{
 		return;
 	}
 
 	// Well, now it will be done.
-	spritecontext.sectorvisited[ secindex ] = true;
+	spritecontext.sectorvisited[ sec->index ] = true;
 	
-	lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
-	lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
-	spritecontext.spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
+	// Handle all things in sector.
+	for (thing = sec->thinglist ; thing ; thing = thing->snext)
+	{
+		R_ProjectSprite( rendercontext, thing, &rendsectors[ thing->subsector->sector->index ] );
+	}
+}
+
+void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_t secindex )
+{
+	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
 
 	// Handle all things in sector.
 	for( sectormobj_t* curr = (sectormobj_t*)sec->sectormobjs; curr != nullptr; curr = curr->next )
 	{
-		R_ProjectSprite( rendercontext, curr->mobj );
+		if( !curr->mobj->rendered[ rendercontext.index ] )
+		{
+			R_ProjectSprite( rendercontext, curr->mobj, sec );
+		}
 	}
 }
 
@@ -843,7 +863,11 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	else
 	{
 		// local light
-		vis->colormap = rendercontext.viewpoint.colormaps + spritecontext.spritelightoffsets[MAXLIGHTSCALE-1];
+		int32_t lightnum = (viewpoint.player->mo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) + extralight;
+		lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
+		int32_t* spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
+
+		vis->colormap = rendercontext.viewpoint.colormaps + spritelightoffsets[ MAXLIGHTSCALE - 1 ];
 	}
 	
 	R_DrawVisSprite( rendercontext, vis, vis->x1, vis->x2 );
@@ -864,11 +888,6 @@ void R_DrawPlayerSprites( rendercontext_t& rendercontext )
 	int32_t		i;
 	int32_t		lightnum;
 	pspdef_t*	psp;
-
-	// get light level
-	lightnum = (viewpoint.player->mo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) + extralight;
-	lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
-	spritecontext.spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
 	// clip to screen bounds
 	spritecontext.mfloorclip = drs_current->screenheightarray;

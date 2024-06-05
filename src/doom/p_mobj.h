@@ -271,8 +271,9 @@ DOOM_C_API typedef struct mobj_s
     spritenum_t		sprite;	// used to find patch_t and flip value
     int				frame;	// might be ORed with FF_FULLBRIGHT
 
-	mobjinstance_t curr;
-	mobjinstance_t prev;
+	mobjinstance_t	curr;
+	mobjinstance_t	prev;
+	int16_t			rendered[ JOBSYSTEM_MAXJOBS ];
 
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).

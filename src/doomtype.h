@@ -79,6 +79,8 @@
 #define PLATFORM_OSNAME				PLATFORM_OSNAME_MACOS
 #endif
 
+#define JOBSYSTEM_MAXJOBS			32
+
 #ifdef __cplusplus
 #define DOOM_C_API extern "C"
 #else

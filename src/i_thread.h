@@ -20,6 +20,7 @@
 #define __I_THREAD__
 
 #include "doomtype.h"
+#include "m_misc.h"
 
 DOOM_C_API typedef int32_t (*threadfunc_t)( void* );
 DOOM_C_API typedef void* threadhandle_t;
@@ -109,7 +110,7 @@ private:
 class JobThread
 {
 public:
-	enum : size_t { queue_size = 128 };
+	enum : size_t { queue_size = 16384 };
 	using func_type = std::function< void() >;
 
 	JobThread()
@@ -129,9 +130,9 @@ public:
 		}
 	}
 
-	void AddJob( func_type&& func )
+	void AddJob( const func_type& func )
 	{
-		jobs.push( std::forward< func_type >( func ) );
+		jobs.push( func );
 	}
 
 	void Flush()
@@ -160,11 +161,11 @@ public:
 	}
 
 private:
+	void SetupThreadName();
+
 	void Run()
 	{
-		char threadname[ 256 ] = { 0 };
-		sprintf( threadname, "Job thread %d", (int32_t)thread_index );
-		M_ProfileThreadInit( threadname );
+		SetupThreadName();
 
 		uint64_t waitcount = 0;
 		while( !terminate.load() )
@@ -211,6 +212,8 @@ private:
 class JobSystem
 {
 public:
+	static constexpr int32_t MaxJobs = JOBSYSTEM_MAXJOBS;
+
 	using func_type = JobThread::func_type;
 
 	JobSystem( size_t maxnumjobs )
@@ -221,15 +224,15 @@ public:
 		endjobthread = nextjobthread + maxnumjobs;
 	}
 
-	void AddJob( func_type&& func )
+	void AddJob( const func_type& func )
 	{
-		if( maxjobs == 0 )
+		if( endjobthread == jobpool.begin() )
 		{
 			func();
 		}
 		else
 		{
-			nextjobthread->AddJob( std::forward< func_type >( func ) );
+			nextjobthread->AddJob( func );
 			if( ++nextjobthread == endjobthread )
 			{
 				nextjobthread = jobpool.begin();
@@ -239,7 +242,7 @@ public:
 
 	void SetMaxJobs( size_t maxnumjobs )
 	{
-		maxnumjobs = std::min( maxnumjobs, maxjobs );
+		maxnumjobs = M_MIN( maxnumjobs, maxjobs );
 		endjobthread = jobpool.begin() + maxnumjobs;
 		if( nextjobthread - endjobthread >= 0 )
 		{

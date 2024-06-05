@@ -2092,7 +2092,7 @@ DOOM_C_API void D_DoomMain (void)
 
 	rendersplitvisualise  = M_ParmExists( "-rendersplitvisualise" );
 
-	maxrendercontexts = (int32_t)I_ThreadGetHardwareCount();
+	maxrendercontexts = M_MIN( (int32_t)I_ThreadGetHardwareCount(), JobSystem::MaxJobs );
 	p = M_CheckParmWithArgs( "-numrendercontexts", 1 );
 	if( p )
 	{

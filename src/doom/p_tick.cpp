@@ -79,13 +79,18 @@ DOOM_C_API void P_RemoveThinker (thinker_t* thinker)
 	thinker->function = nullptr;
 }
 
+static void P_AddToSector( sector_t* thissector, mobj_t* thismobj )
+{
+	sectormobj_t* newsecmobj = currsecthings->Allocate< sectormobj_t >();
+	sectormobj_t* prevhead = (sectormobj_t*)I_AtomicExchange( &currsectors[ thissector->index ].sectormobjs, (atomicval_t)newsecmobj );
+	*newsecmobj = { thismobj, prevhead };
+}
+
 static void P_AddIfOverlaps( sector_t* thissector, mobj_t* thismobj )
 {
 	if( P_MobjOverlapsSector( thissector, thismobj ) )
 	{
-		sectormobj_t* newsecmobj = currsecthings->Allocate< sectormobj_t >();
-		sectormobj_t* prevhead = (sectormobj_t*)I_AtomicExchange( &currsectors[ thissector->index ].sectormobjs, (atomicval_t)newsecmobj );
-		*newsecmobj = { thismobj, prevhead };
+		P_AddToSector( thissector, thismobj );
 	}
 }
 
@@ -93,7 +98,13 @@ static void P_SortMobj( mobj_t* mobj )
 {
 	memset( mobj->tested_sector, 0, sizeof(uint8_t) * numsectors );
 
-	P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, mobj->radius, [mobj]( line_t* line ) -> bool
+	P_AddToSector( mobj->subsector->sector, mobj );
+	mobj->tested_sector[ mobj->subsector->sector->index ] = true;
+
+	fixed_t radius = mobj->curr.sprite != -1 ? M_MAX( mobj->radius, sprites[ mobj->curr.sprite ].maxradius )
+											: mobj->radius;
+
+	P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, radius, [mobj]( line_t* line ) -> bool
 	{
 		if( line->frontsector && !mobj->tested_sector[ line->frontsector->index ] )
 		{
@@ -138,7 +149,10 @@ void P_RunThinkers (void)
 
 			if( mobj_t* mobj = thinker_cast< mobj_t >( currentthinker ) )
 			{
-				jobs->AddJob( [mobj]() { P_SortMobj( mobj ); } );
+				if( !( mobj->flags & MF_NOSECTOR ) )
+				{
+					jobs->AddJob( [mobj]() { P_SortMobj( mobj ); } );
+				}
 			}
 		}
 

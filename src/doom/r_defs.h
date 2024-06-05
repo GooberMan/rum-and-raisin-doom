@@ -671,7 +671,7 @@ typedef struct spritedef_s
 {
 	int32_t				numframes;
 	spriteframe_t*		spriteframes;
-
+	fixed_t				maxradius;
 } spritedef_t;
 
 //
@@ -919,10 +919,13 @@ typedef struct viewpoint_s
 typedef struct rendercontext_s
 {
 	// Setup
+	int32_t				index;
+
 	viewpoint_t			viewpoint;
 	vbuffer_t			buffer;
 	vbuffer_t			viewbuffer;
 	int32_t				bufferindex;
+
 
 	int32_t				begincolumn;
 	int32_t				endcolumn;

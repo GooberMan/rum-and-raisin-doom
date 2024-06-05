@@ -23,6 +23,18 @@
 #include <semaphore>
 #include <thread>
 
+#if OS_CHECK( WINDOWS )
+#ifndef WIN32_LEAN_AND_MEAN
+	#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+	#define NOMINMAX
+#endif
+#include <windows.h>
+#include <processthreadsapi.h>
+#include <stringapiset.h>
+#endif // OS_CHECK
+
 std::atomic< size_t > JobThread::num_threads_created = 0;
 
 threadhandle_t I_ThreadCreate( threadfunc_t runfunc, void* userdata )
@@ -96,3 +108,16 @@ atomicval_t I_AtomicDecrement( atomicptr_t atomic, atomicval_t val )
 	return ( (std::atomic< atomicval_t >*)atomic )->fetch_sub( val );
 }
 
+void JobThread::SetupThreadName()
+{
+	constexpr size_t BufferSize = 256;
+	char threadname[ BufferSize ] = { 0 };
+	sprintf( threadname, "Job thread %d", (int32_t)thread_index );
+
+#if OS_CHECK( WINDOWS )
+	wchar_t wthreadname[ BufferSize ] = { 0 };
+	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, threadname, -1, wthreadname, BufferSize );
+	SetThreadDescription( worker_thread.native_handle(), wthreadname );
+#endif // OS_CHECK
+	M_ProfileThreadInit( threadname );
+}

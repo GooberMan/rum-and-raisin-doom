@@ -1003,6 +1003,7 @@ void R_InitContexts( void )
 	for( int32_t currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
 	{
 		renderdatas[ currcontext ].index = currcontext;
+		renderdatas[ currcontext ].context.index = currcontext;
 		renderdatas[ currcontext ].context.bufferindex = 0;
 		renderdatas[ currcontext ].context.buffer = renderdatas[ currcontext ].context.viewbuffer = *I_GetRenderBuffer( 0 );
 
@@ -1692,6 +1693,18 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	viewpoint.weaponbob = FixedToRendFixed( player->bob );
 	extralight = player->extralight + additional_light_boost;
 
+	jobs->AddJob( []()
+	{
+		for( thinker_t* th = thinkercap.next; th != &thinkercap; th = th->next )
+		{
+			if( mobj_t* mobj = thinker_cast< mobj_t >( th ) )
+			{
+				constexpr size_t renderedsize = sizeof( mobj->rendered );
+				memset( mobj->rendered, 0, renderedsize );
+			}
+		}
+	} );
+
 	{
 		M_PROFILE_NAMED( "Interpolation" );
 		interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
@@ -1762,7 +1775,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 				viewpoint.angle = (angle_t)( result & ANG_MAX );
 			}
 
-			auto DoSectorHeights = []( const rend_fixed_t& prev, const rend_fixed_t& curr, const rend_fixed_t& percent, const int32_t& snap, const bool& select )
+			constexpr auto DoSectorHeights = []( const rend_fixed_t& prev, const rend_fixed_t& curr, const rend_fixed_t& percent, const int32_t& snap, const bool& select )
 			{
 				if( snap )
 				{
@@ -1963,6 +1976,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	}
 
 	framecount++;
+
+	jobs->Flush();
 }
 
 //
