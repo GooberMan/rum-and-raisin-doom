@@ -1368,6 +1368,10 @@ static void P_LoadThings (int lump)
 		if( spawned )
 		{
 			spawned->lumpindex = i;
+			if( !( spawned->flags & MF_NOSECTOR ) )
+			{
+				P_SortMobj( spawned );
+			}
 
 			if( comp.support_musinfo && spawned->info->type == MT_MUSICSOURCE )
 			{

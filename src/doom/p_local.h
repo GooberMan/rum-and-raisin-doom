@@ -221,7 +221,7 @@ DOOM_C_API doombool			P_PathTraverse( fixed_t x1, fixed_t y1, fixed_t x2, fixed_
 
 DOOM_C_API void				P_UnsetThingPosition (mobj_t* thing);
 DOOM_C_API void				P_SetThingPosition (mobj_t* thing);
-
+DOOM_C_API void				P_SortMobj( mobj_t* mobj );
 
 //
 // P_MAP

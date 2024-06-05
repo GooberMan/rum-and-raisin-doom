@@ -87,10 +87,11 @@ public:
 			}
 			else if( ( waitcount & 15 ) == 15 )
 			{
-				if constexpr( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
-				{
-					_mm_pause();
-				}
+#if ( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
+				_mm_pause();
+#elif ( ARCH_CHECK( ARM32 ) || ARCH_CHECK( ARM64 ) )
+				__yield();
+#endif // ARCH_CHECK
 			}
 
 			expected = false;
@@ -140,28 +141,38 @@ public:
 		uint64_t waitcount = 0;
 		while( !jobs.empty() )
 		{
-			if( ( waitcount & 1023 ) == 1023 )
-			{
-				std::this_thread::sleep_for( std::chrono::milliseconds( 0 ) );
-			}
-			else if( ( waitcount & 127 ) == 127 )
-			{
-				std::this_thread::yield();
-			}
-			else if( ( waitcount & 15 ) == 15 )
-			{
-				if constexpr( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
-				{
-					_mm_pause();
-				}
-			}
-
-			++waitcount;
+			waitcount = Wait( waitcount );
 		}
 	}
 
 private:
+	static constexpr uint64_t SleepMask = 0x00000000000003FFull;
+	static constexpr uint64_t YieldMask = 0x000000000000007Full;
+	static constexpr uint64_t PauseMask = 0x000000000000000Full;
+
 	void SetupThreadName();
+
+	uint64_t Wait( uint64_t waitcount )
+	{
+		if( ( waitcount & SleepMask ) == SleepMask )
+		{
+			std::this_thread::sleep_for( std::chrono::milliseconds( 0 ) );
+		}
+		else if( ( waitcount & YieldMask ) == YieldMask )
+		{
+			std::this_thread::yield();
+		}
+		else if( ( waitcount & PauseMask ) == PauseMask )
+		{
+#if ( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
+			_mm_pause();
+#elif ( ARCH_CHECK( ARM32 ) || ARCH_CHECK( ARM64 ) )
+			__yield();
+#endif // ARCH_CHECK
+		}
+
+		return ++waitcount;
+	}
 
 	void Run()
 	{
@@ -179,24 +190,7 @@ private:
 			}
 			else
 			{
-				if( ( waitcount & 1023 ) == 1023 )
-				{
-					std::this_thread::sleep_for( std::chrono::milliseconds( 0 ) );
-				}
-				else if( ( waitcount & 127 ) == 127 )
-				{
-					std::this_thread::yield();
-				}
-				else if( ( waitcount & 15 ) == 15 )
-				{
-#if ( ARCH_CHECK( x86 ) || ARCH_CHECK( x64 ) )
-					_mm_pause();
-#elif ( ARCH_CHECK( ARM32 ) || ARCH_CHECK( ARM64 ) )
-					__yield();
-#endif // ARCH_CHECK
-				}
-
-				++waitcount;
+				waitcount = Wait( waitcount );
 			}
 		}
 	}

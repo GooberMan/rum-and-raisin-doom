@@ -247,6 +247,7 @@ DOOM_C_API typedef struct mobjinstance_s
 	int32_t					teleported;
 } mobjinstance_t;
 
+#define MAX_SECTOR_OVERLAPS 32
 
 // Map Object definition.
 DOOM_C_API typedef struct mobj_s
@@ -270,10 +271,6 @@ DOOM_C_API typedef struct mobj_s
     angle_t			angle;	// orientation
     spritenum_t		sprite;	// used to find patch_t and flip value
     int				frame;	// might be ORed with FF_FULLBRIGHT
-
-	mobjinstance_t	curr;
-	mobjinstance_t	prev;
-	int16_t			rendered[ JOBSYSTEM_MAXJOBS ];
 
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).
@@ -344,7 +341,14 @@ DOOM_C_API typedef struct mobj_s
 
 	int32_t			resurrection_count;
 	int32_t			successfullineeffect;
-	uint8_t*		tested_sector;
+
+	// For rendering purposes
+	mobjinstance_t		curr;
+	mobjinstance_t		prev;
+	uint8_t*			tested_sector;
+	uint8_t				rendered[ JOBSYSTEM_MAXJOBS ];
+	struct sector_s*	overlaps[ MAX_SECTOR_OVERLAPS ];
+	int32_t				numoverlaps;
 
 #if defined( __cplusplus )
 	INLINE const bool IsFriendly() const					{ return sim.mbf_mobj_flags && ( flags & MF_MBF_FRIEND ); }

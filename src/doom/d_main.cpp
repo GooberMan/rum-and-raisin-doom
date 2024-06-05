@@ -703,7 +703,7 @@ void D_DoomLoop (void)
         wipegamestate = gamestate;
     }
 
-	I_TerminalSetMode( TM_StandardRender );
+	I_TerminalSetMode( TM_None );
 
     while (1)
     {

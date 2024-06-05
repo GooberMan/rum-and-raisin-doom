@@ -79,49 +79,6 @@ DOOM_C_API void P_RemoveThinker (thinker_t* thinker)
 	thinker->function = nullptr;
 }
 
-static void P_AddToSector( sector_t* thissector, mobj_t* thismobj )
-{
-	sectormobj_t* newsecmobj = currsecthings->Allocate< sectormobj_t >();
-	sectormobj_t* prevhead = (sectormobj_t*)I_AtomicExchange( &currsectors[ thissector->index ].sectormobjs, (atomicval_t)newsecmobj );
-	*newsecmobj = { thismobj, prevhead };
-}
-
-static void P_AddIfOverlaps( sector_t* thissector, mobj_t* thismobj, fixed_t radius )
-{
-	if( P_MobjOverlapsSector( thissector, thismobj, radius ) )
-	{
-		P_AddToSector( thissector, thismobj );
-	}
-}
-
-static void P_SortMobj( mobj_t* mobj )
-{
-	memset( mobj->tested_sector, 0, sizeof(uint8_t) * numsectors );
-
-	P_AddToSector( mobj->subsector->sector, mobj );
-	mobj->tested_sector[ mobj->subsector->sector->index ] = true;
-
-	fixed_t radius = mobj->curr.sprite != -1 ? M_MAX( mobj->radius, sprites[ mobj->curr.sprite ].maxradius )
-											: mobj->radius;
-
-	P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, radius, [ mobj, radius ]( line_t* line ) -> bool
-	{
-		if( line->frontsector && !mobj->tested_sector[ line->frontsector->index ] )
-		{
-			P_AddIfOverlaps( line->frontsector, mobj, radius );
-			mobj->tested_sector[ line->frontsector->index ] = true;
-		}
-
-		if( line->backsector && !mobj->tested_sector[ line->backsector->index ] )
-		{
-			P_AddIfOverlaps( line->backsector, mobj, radius );
-			mobj->tested_sector[ line->backsector->index ] = true;
-		}
-
-		return true;
-	} );
-}
-
 //
 // P_RunThinkers
 //
@@ -135,6 +92,7 @@ void P_RunThinkers (void)
 		nextthinker = currentthinker->next;
 		if ( !currentthinker->function.Valid() )
 		{
+			M_PROFILE_NAMED( "Remove thinker" );
 			// time to remove it
 			currentthinker->next->prev = currentthinker->prev;
 			currentthinker->prev->next = currentthinker->next;
@@ -142,6 +100,7 @@ void P_RunThinkers (void)
 		}
 		else
 		{
+			M_PROFILE_NAMED( "Run thinker" );
 			if( currentthinker->function.Enabled() )
 			{
 				currentthinker->function(currentthinker);
@@ -186,6 +145,8 @@ void P_FlipInstanceData( void )
 
 DOOM_C_API void P_UpdateInstanceData( void )
 {
+	M_PROFILE_FUNC();
+
 	int32_t index = 0;
 
 	sector_t* thissec = sectors;
@@ -254,44 +215,40 @@ DOOM_C_API void P_Ticker (void)
 {
     int		i;
 
-	P_FlipInstanceData();
-    
 	doombool ispaused = paused
 		|| 	( !demoplayback && dashboardactive && dashboardpausesplaysim && ( solonetgame || !netgame ) );
 
-    // run the tic
-    if (ispaused)
-	{
-		P_UpdateInstanceData();
-		return;
-	}
-		
     // pause if in menu and at least one tic has been run
-    if ( !netgame
-	 && menuactive
-	 && !demoplayback
-	 && players[consoleplayer].viewz != 1)
+    if (ispaused
+		|| ( !netgame
+			&& menuactive
+			&& !demoplayback
+			&& players[consoleplayer].viewz != 1)
+		)
 	{
 		P_UpdateInstanceData();
 		return;
 	}
-    
 		
+	P_FlipInstanceData();
+
     for (i=0 ; i<MAXPLAYERS ; i++)
-	if (playeringame[i])
 	{
-		players[ i ].prevviewz = players[ i ].currviewz;
-		players[ i ].mo->prev = players[ i ].mo->curr;
+		if (playeringame[i])
+		{
+			players[ i ].prevviewz = players[ i ].currviewz;
+			players[ i ].mo->prev = players[ i ].mo->curr;
 
-		P_PlayerThink (&players[i]);
+			P_PlayerThink (&players[i]);
 
-		players[ i ].currviewz = FixedToRendFixed( players[ i ].viewz );
-		players[ i ].mo->curr.x = FixedToRendFixed( players[ i ].mo->x );
-		players[ i ].mo->curr.y = FixedToRendFixed( players[ i ].mo->y );
-		players[ i ].mo->curr.z = FixedToRendFixed( players[ i ].mo->z );
-		players[ i ].mo->curr.angle = players[ i ].mo->angle;
-		players[ i ].mo->curr.sprite = players[ i ].mo->sprite;
-		players[ i ].mo->curr.frame = players[ i ].mo->frame;
+			players[ i ].currviewz = FixedToRendFixed( players[ i ].viewz );
+			//players[ i ].mo->curr.x = FixedToRendFixed( players[ i ].mo->x );
+			//players[ i ].mo->curr.y = FixedToRendFixed( players[ i ].mo->y );
+			//players[ i ].mo->curr.z = FixedToRendFixed( players[ i ].mo->z );
+			//players[ i ].mo->curr.angle = players[ i ].mo->angle;
+			//players[ i ].mo->curr.sprite = players[ i ].mo->sprite;
+			//players[ i ].mo->curr.frame = players[ i ].mo->frame;
+		}
 	}
 
     P_RunThinkers ();
@@ -299,7 +256,11 @@ DOOM_C_API void P_Ticker (void)
     P_RespawnSpecials ();
 
 	P_UpdateInstanceData();
-	jobs->Flush();
+
+	{
+		M_PROFILE_NAMED( "Wait on sorting" );
+		jobs->Flush();
+	}
 
     // for par times
     leveltime++;

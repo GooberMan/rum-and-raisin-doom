@@ -1194,3 +1194,121 @@ DOOM_C_API doombool P_MobjOverlapsSector( sector_t* sector, mobj_t* mobj, fixed_
 
 	return P_BBoxOverlapsSector( sector, bbox );
 }
+
+#define METHOD 1
+
+#if !METHOD
+static void P_AddToSector( sector_t* thissector, mobj_t* thismobj )
+{
+	sectormobj_t* newsecmobj = currsecthings->Allocate< sectormobj_t >();
+	sectormobj_t* prevhead = (sectormobj_t*)I_AtomicExchange( &currsectors[ thissector->index ].sectormobjs, (atomicval_t)newsecmobj );
+	*newsecmobj = { thismobj, prevhead };
+}
+
+static void P_AddIfOverlaps( sector_t* thissector, mobj_t* thismobj, fixed_t radius )
+{
+	if( P_MobjOverlapsSector( thissector, thismobj, radius ) )
+	{
+		P_AddToSector( thissector, thismobj );
+	}
+}
+
+DOOM_C_API void P_SortMobj( mobj_t* mobj )
+{
+	M_PROFILE_FUNC();
+
+	memset( mobj->tested_sector, 0, sizeof(uint8_t) * numsectors );
+
+	P_AddToSector( mobj->subsector->sector, mobj );
+	mobj->tested_sector[ mobj->subsector->sector->index ] = true;
+
+	fixed_t radius = mobj->curr.sprite != -1 ? M_MAX( mobj->radius, sprites[ mobj->curr.sprite ].maxradius )
+											: mobj->radius;
+
+	P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, radius, [ mobj, radius ]( line_t* line ) -> bool
+	{
+		if( line->frontsector && !mobj->tested_sector[ line->frontsector->index ] )
+		{
+			P_AddIfOverlaps( line->frontsector, mobj, radius );
+			mobj->tested_sector[ line->frontsector->index ] = true;
+		}
+
+		if( line->backsector && !mobj->tested_sector[ line->backsector->index ] )
+		{
+			P_AddIfOverlaps( line->backsector, mobj, radius );
+			mobj->tested_sector[ line->backsector->index ] = true;
+		}
+
+		return true;
+	} );
+}
+
+#else
+
+static void P_AddToSector( sector_t* thissector, mobj_t* thismobj )
+{
+	sectormobj_t* newsecmobj = currsecthings->Allocate< sectormobj_t >();
+	sectormobj_t* prevhead = (sectormobj_t*)I_AtomicExchange( &currsectors[ thissector->index ].sectormobjs, (atomicval_t)newsecmobj );
+	*newsecmobj = { thismobj, prevhead };
+}
+
+static void P_AddOverlap( mobj_t* thismobj, sector_t* thissector )
+{
+	if( thismobj->numoverlaps < MAX_SECTOR_OVERLAPS )
+	{
+		thismobj->overlaps[ thismobj->numoverlaps++ ] = thissector;
+	}
+}
+
+static void P_AddIfOverlaps( mobj_t* thismobj, sector_t* thissector, fixed_t radius )
+{
+	if( P_MobjOverlapsSector( thissector, thismobj, radius ) )
+	{
+		P_AddOverlap( thismobj, thissector );
+	}
+}
+
+DOOM_C_API void P_SortMobj( mobj_t* mobj )
+{
+	M_PROFILE_FUNC();
+
+	if( !mobj->numoverlaps
+		|| FixedToRendFixed( mobj->x ) != mobj->prev.x
+		|| FixedToRendFixed( mobj->y ) != mobj->prev.y
+		|| mobj->sprite != mobj->prev.sprite
+		|| mobj->frame != mobj->prev.frame )
+	{
+		mobj->numoverlaps = 0;
+		memset( mobj->tested_sector, 0, sizeof(uint8_t) * numsectors );
+
+		P_AddOverlap( mobj, mobj->subsector->sector );
+		mobj->tested_sector[ mobj->subsector->sector->index ] = true;
+
+		fixed_t radius = mobj->curr.sprite != -1 ? M_MAX( mobj->radius, sprites[ mobj->curr.sprite ].maxradius )
+												: mobj->radius;
+
+		P_BlockLinesIteratorConstHorizontal( mobj->x, mobj->y, radius, [ mobj, radius ]( line_t* line ) -> bool
+		{
+			if( line->frontsector && !mobj->tested_sector[ line->frontsector->index ] )
+			{
+				P_AddIfOverlaps( mobj, line->frontsector, radius );
+				mobj->tested_sector[ line->frontsector->index ] = true;
+			}
+
+			if( line->backsector && !mobj->tested_sector[ line->backsector->index ] )
+			{
+				P_AddIfOverlaps( mobj, line->backsector, radius );
+				mobj->tested_sector[ line->backsector->index ] = true;
+			}
+
+			return true;
+		} );
+	}
+
+	for( sector_t* sector : std::span( mobj->overlaps, mobj->numoverlaps ) )
+	{
+		P_AddToSector( sector, mobj );
+	}
+}
+
+#endif // METHOD

@@ -134,6 +134,11 @@ DOOM_C_API void I_TerminalPrintf( int32_t logtype, const char* format, ... )
 
 DOOM_C_API void I_TerminalRender( void )
 {
+	if( terminalmode == TM_None )
+	{
+		return;
+	}
+
 	TXT_UpdateScreenForBuffer( &terminalbuffer );
 	if( terminalmode == TM_ImmediateRender )
 	{
