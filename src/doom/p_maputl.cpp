@@ -550,6 +550,8 @@ doombool P_BlockLinesIteratorConstHorizontal( fixed_t x, fixed_t y, fixed_t radi
 	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
 	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
 
+	if( xh < xl || yh < yl ) return true;
+
 	return P_BlockLinesIteratorConstHorizontal( iota( xl, xh ), iota( yl, yh ), std::forward< iteratelinefunc_t >( func ) );
 }
 
@@ -559,6 +561,8 @@ doombool P_BlockLinesIteratorConstVertical( fixed_t x, fixed_t y, fixed_t radius
 	int32_t xh = ( ( x + radius - bmaporgx ) >> MAPBLOCKSHIFT ) + 1;
 	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
 	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
+
+	if( xh < xl || yh < yl ) return true;
 
 	return P_BlockLinesIteratorConstVertical( iota( xl, xh ), iota( yl, yh ), std::forward< iteratelinefunc_t >( func ) );
 }
@@ -1117,6 +1121,8 @@ doombool P_BlockThingsIteratorHorizontal( fixed_t x, fixed_t y, fixed_t radius, 
 	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
 	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
 
+	if( xh < xl || yh < yl ) return true;
+
 	return P_BlockThingsIteratorHorizontal( iota( xl, xh ), iota( yl, yh ), std::forward< iteratemobjfunc_t >( func ) );
 }
 
@@ -1126,6 +1132,8 @@ doombool P_BlockThingsIteratorVertical( fixed_t x, fixed_t y, fixed_t radius, it
 	int32_t xh = ( ( x + radius - bmaporgx ) >> MAPBLOCKSHIFT ) + 1;
 	int32_t yl = ( y - radius - bmaporgy ) >> MAPBLOCKSHIFT;
 	int32_t yh = ( ( y + radius - bmaporgy ) >> MAPBLOCKSHIFT ) + 1;
+
+	if( xh < xl || yh < yl ) return true;
 
 	return P_BlockThingsIteratorVertical( iota( xl, xh ), iota( yl, yh ), std::forward< iteratemobjfunc_t >( func ) );
 }
