@@ -1025,9 +1025,7 @@ interlevel_t plutonia_interlevel =
 	Interlevel_Static,								// type
 	RuntimeFlowString( "dm2int" ),					// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
-	nullptr,										// background_anims
-	0,												// num_background_anims
-	nullptr,										// foreground_anims
-	0,												// num_foreground_anims
+	nullptr,										// layers
+	0,												// num_layers
 };
 

@@ -377,7 +377,7 @@ public:
 	constexpr auto ConditionsMet()		{ return conditionsmet; }
 	constexpr auto FitsInFrameGroup()	{ return fitsinframegroup; }
 
-	void Setup( mapinfo_t* map, interlevelanim_t& interanim, anim_container& anims )
+	void Setup( mapinfo_t* map, interlevelanim_t& interanim, anim_container& anims, bool enteringcondition )
 	{
 		source = &interanim;
 
@@ -461,6 +461,14 @@ public:
 					}
 					break;
 
+				case AnimCondition_IsExiting:
+					conditionsmet &= !enteringcondition;
+					break;
+
+				case AnimCondition_IsEntering:
+					conditionsmet &= enteringcondition;
+					break;
+
 				default:
 					break;
 				}
@@ -476,6 +484,84 @@ private:
 
 } interanimcache_t;
 
+typedef class interanimlayercache_s
+{
+public:
+	interanimlayercache_s()
+		: source( nullptr )
+	{
+	}
+
+	constexpr auto& AllAnims()					{ return anims; }
+
+	void Setup( mapinfo_t* map, interlevellayer_t* layer, bool enteringcondition )
+	{
+		source = layer;
+
+		bool conditionsmet = layer->num_anims > 0;
+		if( layer->num_conditions > 0 )
+		{
+			for( auto& cond : std::span( layer->conditions, layer->num_conditions ) )
+			{
+				switch( cond.condition )
+				{
+				case AnimCondition_MapNumGreater:
+					conditionsmet &= ( map->map_num > cond.param );
+					break;
+
+				case AnimCondition_MapNumEqual:
+					conditionsmet &= ( map->map_num == cond.param );
+					break;
+
+				case AnimCondition_MapVisited:
+					conditionsmet &= !!wbs->plyr[ consoleplayer ].visited[ cond.param ];
+					break;
+
+				case AnimCondition_MapNotSecret:
+					conditionsmet &= ( map->map_flags & Map_Secret ) == Map_None;
+					break;
+
+				case AnimCondition_SecretVisited:
+					conditionsmet &= !!wbs->didsecret;
+					break;
+
+				case AnimCondition_FitsInFrame:
+					I_Error( "Fits in frame condition not allowed on layer!" );
+					break;
+
+				case AnimCondition_IsExiting:
+					conditionsmet &= !enteringcondition;
+					break;
+
+				case AnimCondition_IsEntering:
+					conditionsmet &= enteringcondition;
+					break;
+
+				default:
+					break;
+				}
+			}
+		}
+
+		if( conditionsmet )
+		{
+			anims.resize( layer->num_anims );
+
+			auto og_anims = std::span( source->anims, source->num_anims );
+
+			for( auto curr : MultiRangeView( anims, og_anims ) )
+			{
+				SetupCache( map, curr, anims, enteringcondition );
+			}
+		}
+	}
+
+private:
+	interlevellayer_t*								source;
+	DoomVector< interanimcache_t, PU_LEVEL >		anims;
+
+} interanimlayercache_t;
+
 typedef class interlevelcache_s
 {
 public:
@@ -483,37 +569,31 @@ public:
 		: source( nullptr )
 		, fake_backgroundframe( { } )
 		, fake_backgroundanim( { } )
-		, fake_background_span( std::span( &fake_background, 1 ) )
+		, fake_backgroundlayer( { } )
 	{
 	}
 
-	constexpr auto& Background()			{ return fake_background_span; }
-	constexpr auto& BackgroundAnims()		{ return background_anims; }
-	constexpr auto& ForegroundAnims()		{ return foreground_anims; }
+	constexpr auto& AllLayers()					{ return anim_layers; }
 
-	INLINE auto AllAnims()					{ return Concat( fake_background_span, background_anims, foreground_anims ); }
-	INLINE size_t AllAnimsCount()			{ return background_anims.size() + foreground_anims.size() + 1; }
-
-	void Setup( mapinfo_t* map, interlevel_t* interlevel )
+	void Setup( mapinfo_t* map, interlevel_t* interlevel, bool enteringcondition )
 	{
 		source = interlevel;
 
+		anim_layers.resize( source->num_anim_layers + 1 );
+
 		PrimeFakeBackgroundAnim( map );
 
-		background_anims.resize( source->num_background_anims );
-		foreground_anims.resize( source->num_foreground_anims );
-
-		auto og_background = std::span( source->background_anims, source->num_background_anims );
-		auto og_foreground = std::span( source->foreground_anims, source->num_foreground_anims );
-
-		for( auto curr : MultiRangeView( background_anims, og_background ) )
+		if( source->num_anim_layers )
 		{
-			SetupCache( map, curr, background_anims );
-		}
+			auto og_layers = std::span( interlevel->anim_layers, interlevel->num_anim_layers );
+			auto layercache = ++anim_layers.begin();
+			for( interlevellayer_t& layer : og_layers )
+			{
+				layercache->Setup( map, &layer, enteringcondition );
+				++layercache;
+			}
 
-		for( auto curr : MultiRangeView( foreground_anims, og_foreground ) )
-		{
-			SetupCache( map, curr, foreground_anims );
+			I_ErrorIf( layercache != anim_layers.end(), "Layers mismatch, that shouldn't happen" );
 		}
 	}
 
@@ -531,18 +611,21 @@ private:
 		fake_backgroundanim.conditions = NULL;
 		fake_backgroundanim.num_conditions = 0;
 
-		fake_background.Setup( map, fake_backgroundanim, background_anims );
+		fake_backgroundlayer.anims = &fake_backgroundanim;
+		fake_backgroundlayer.num_anims = 1;
+		fake_backgroundlayer.conditions = nullptr;
+		fake_backgroundlayer.num_conditions = 0;
+
+		anim_layers[ 0 ].Setup( map, &fake_backgroundlayer, false );
 	}
 
 	interlevel_t*									source;
 
 	interlevelframe_t								fake_backgroundframe;
 	interlevelanim_t								fake_backgroundanim;
-	interanimcache_t								fake_background;
+	interlevellayer_t								fake_backgroundlayer;
 
-	DoomVector< interanimcache_t, PU_LEVEL >		background_anims;
-	DoomVector< interanimcache_t, PU_LEVEL >		foreground_anims;
-	std::span< interanimcache_t, 1 >				fake_background_span;
+	DoomVector< interanimlayercache_t, PU_LEVEL >	anim_layers;
 
 } interlevelcache_t;
 
@@ -639,14 +722,14 @@ public:
 
 		if( currmap->interlevel_finished )
 		{
-			finished.Setup( currmap, currmap->interlevel_finished );
+			finished.Setup( currmap, currmap->interlevel_finished, false );
 
 			SetupAnims( finished, finished_anims );
 		}
 
 		if( nextmap && currmap->interlevel_entering )
 		{
-			entering.Setup( nextmap, currmap->interlevel_entering );
+			entering.Setup( nextmap, currmap->interlevel_entering, true );
 
 			SetupAnims( entering, entering_anims );
 		}
@@ -674,18 +757,22 @@ private:
 
 	static void SetupAnims( interlevelcache_t& cache, DoomVector< wi_animationstate_t >& anims )
 	{
-		auto animcache = cache.AllAnims();
 		size_t validanims = 0;
 		[[maybe_unused]] size_t invalidanims = 0;
-		for( auto& anim : animcache )
+
+		for( auto& layer : cache.AllLayers() )
 		{
-			if( anim.ConditionsMet() )
+			auto& animcache = layer.AllAnims();
+			for( auto& anim : animcache )
 			{
-				++validanims;
-			}
-			else
-			{
-				++invalidanims;
+				if( anim.ConditionsMet() )
+				{
+					++validanims;
+				}
+				else
+				{
+					++invalidanims;
+				}
 			}
 		}
 
@@ -693,21 +780,25 @@ private:
 
 		auto outputanim = anims.begin();
 
-		for( auto& anim : animcache )
+		for( auto& layer : cache.AllLayers() )
 		{
-			if( anim.ConditionsMet() )
+			auto& animcache = layer.AllAnims();
+			for( auto& anim : animcache )
 			{
-				outputanim->Setup( anim );
-				++outputanim;
+				if( anim.ConditionsMet() )
+				{
+					outputanim->Setup( anim );
+					++outputanim;
+				}
 			}
 		}
 	}
 
-	mapinfo_t*				currmap;
-	mapinfo_t*				nextmap;
+	mapinfo_t*							currmap;
+	mapinfo_t*							nextmap;
 
-	interlevelcache_t		finished;
-	interlevelcache_t		entering;
+	interlevelcache_t					finished;
+	interlevelcache_t					entering;
 
 	DoomVector< wi_animationstate_t >	finished_anims;
 	DoomVector< wi_animationstate_t >	entering_anims;

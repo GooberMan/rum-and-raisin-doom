@@ -237,6 +237,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.sim.unlimited_scrollers = true;
 	values.sim.unlimited_platforms = true;
 	values.sim.unlimited_ceilings = true;
+	values.sim.allow_skydefs = true;
 
 	values.comp.finale_allow_mouse_to_skip = true;
 	values.comp.finale_always_allow_skip_text = true;
@@ -405,6 +406,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
+	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 
@@ -527,6 +529,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
+	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -583,7 +586,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.comp.finale_always_allow_skip_text = true;		// Doom 1 didn't
 	values.comp.finaldoom_teleport_z = false;				// Final Doom would not set teleported object's Z to the floor
 	values.comp.reset_player_visited_secret = false;		// Start a new game, still thinks you've visited secret levels on intermission screen
-	values.comp.noclip_cheats_work_everywhere = false;		// idspispopd and idclip everywhere
+	values.comp.noclip_cheats_work_everywhere = true;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
 	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;	// Always attempt to play demo4 if it exists
 	values.comp.support_musinfo = true;						// comp_musinfo
@@ -641,6 +644,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
+	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -697,7 +701,7 @@ static simvalues_t GetRNR24Values( GameMode_t mode )
 	values.comp.finale_always_allow_skip_text = true;		// Doom 1 didn't
 	values.comp.finaldoom_teleport_z = false;				// Final Doom would not set teleported object's Z to the floor
 	values.comp.reset_player_visited_secret = false;		// Start a new game, still thinks you've visited secret levels on intermission screen
-	values.comp.noclip_cheats_work_everywhere = false;		// idspispopd and idclip everywhere
+	values.comp.noclip_cheats_work_everywhere = true;		// idspispopd and idclip everywhere
 	values.comp.bfg_map02_secret_exit_to_map33 = false;		// Find that one unmarked line in MAP02 in BFG edition
 	values.comp.demo4 = W_CheckNumForName("DEMO4") >= 0;	// Always attempt to play demo4 if it exists
 	values.comp.support_musinfo = true;						// comp_musinfo
@@ -755,6 +759,7 @@ static simvalues_t GetRNR24Values( GameMode_t mode )
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 	values.sim.rnr24_line_specials = true;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = true;				// New flags, nightmare respawn times
+	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );

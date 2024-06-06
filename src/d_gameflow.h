@@ -86,6 +86,12 @@ DOOM_C_API typedef enum animcondition_s
 
 	AnimCondition_FitsInFrame,		// Checks: Patch dimensions.
 									// Parameter: group number, allowing only one condition of this type to succeed per group
+
+	AnimCondition_IsExiting,		// Checks: Victory screen type
+									// Parameter: none
+
+	AnimCondition_IsEntering,		// Checks: Victory screen type
+									// Parameter: none
 } animcondition_t;
 
 DOOM_C_API typedef enum flowstringflags_s
@@ -168,6 +174,14 @@ DOOM_C_API typedef struct interlevelanim_s
 	int32_t					num_conditions;
 } interlevelanim_t;
 
+DOOM_C_API typedef struct interlevellayer_s
+{
+	interlevelanim_t*		anims;
+	int32_t					num_anims;
+	interlevelcond_t*		conditions;
+	int32_t					num_conditions;
+} interlevellayer_t;
+
 DOOM_C_API typedef struct interlevel_s
 {
 	interleveltype_t		type;
@@ -176,12 +190,8 @@ DOOM_C_API typedef struct interlevel_s
 
 	flowstring_t			background_lump;
 
-	interlevelanim_t*		background_anims;
-	int32_t					num_background_anims;
-
-	interlevelanim_t*		foreground_anims;
-	int32_t					num_foreground_anims;
-
+	interlevellayer_t*		anim_layers;
+	int32_t					num_anim_layers;
 } interlevel_t;
 
 DOOM_C_API typedef struct endgame_s

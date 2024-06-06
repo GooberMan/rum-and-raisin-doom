@@ -848,7 +848,7 @@ static void BuildNewGameInfo()
 		}
 		else if( !map.enterpic.empty() )
 		{
-			interlevel_t* newinter = newmap.interlevel_entering= &umapinfogame.interlevels[ map.enterpic ];
+			interlevel_t* newinter = newmap.interlevel_entering = &umapinfogame.interlevels[ map.enterpic ];
 			newinter->type = Interlevel_None;
 			newinter->music_lump = RuntimeFlowString( ( gamemode == commercial ) ? "dm2int" : "inter" );
 			newinter->background_lump = FlowString( map.enterpic );

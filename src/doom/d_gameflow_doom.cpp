@@ -75,15 +75,9 @@ extern mapinfo_t		doom_map_e4m7;
 extern mapinfo_t		doom_map_e4m8;
 extern mapinfo_t		doom_map_e4m9;
 
-extern interlevel_t		doom_interlevel_e1finished;
-extern interlevel_t		doom_interlevel_e1entering;
-
-extern interlevel_t		doom_interlevel_e2finished;
-extern interlevel_t		doom_interlevel_e2entering;
-
-extern interlevel_t		doom_interlevel_e3finished;
-extern interlevel_t		doom_interlevel_e3entering;
-
+extern interlevel_t		doom_interlevel_e1;
+extern interlevel_t		doom_interlevel_e2;
+extern interlevel_t		doom_interlevel_e3;
 extern interlevel_t		doom_interlevel_e4;
 
 extern intermission_t	doom_intermission_e1;
@@ -591,8 +585,8 @@ mapinfo_t doom_map_e1m1 =
 	30,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m2,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -615,8 +609,8 @@ mapinfo_t doom_map_e1m2 =
 	75,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m3,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -639,8 +633,8 @@ mapinfo_t doom_map_e1m3 =
 	120,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m4,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -663,8 +657,8 @@ mapinfo_t doom_map_e1m4 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m5,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -687,8 +681,8 @@ mapinfo_t doom_map_e1m5 =
 	165,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m6,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -711,8 +705,8 @@ mapinfo_t doom_map_e1m6 =
 	180,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m7,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -735,8 +729,8 @@ mapinfo_t doom_map_e1m7 =
 	180,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m8,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -764,8 +758,8 @@ mapinfo_t doom_map_e1m8 =
 	30,												// par_time
 	doom_e1m8special,								// boss_actions
 	arrlen( doom_e1m8special ),						// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	nullptr,										// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -788,8 +782,8 @@ mapinfo_t doom_map_e1m9 =
 	165,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e1finished,					// interlevel_finished
-	&doom_interlevel_e1entering,					// interlevel_entering
+	&doom_interlevel_e1,							// interlevel_finished
+	&doom_interlevel_e1,							// interlevel_entering
 	&doom_map_e1m4,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e1m9,									// secret_map
@@ -816,8 +810,8 @@ mapinfo_t doom_map_e2m1 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m2,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -840,8 +834,8 @@ mapinfo_t doom_map_e2m2 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m3,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -864,8 +858,8 @@ mapinfo_t doom_map_e2m3 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m4,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -888,8 +882,8 @@ mapinfo_t doom_map_e2m4 =
 	120,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m5,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -912,8 +906,8 @@ mapinfo_t doom_map_e2m5 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m6,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -936,8 +930,8 @@ mapinfo_t doom_map_e2m6 =
 	360,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m7,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -960,8 +954,8 @@ mapinfo_t doom_map_e2m7 =
 	240,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m8,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -994,8 +988,8 @@ mapinfo_t doom_map_e2m8 =
 	30,												// par_time
 	doom_e2m8special,								// boss_actions
 	arrlen( doom_e2m8special ),						// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	nullptr,										// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -1018,8 +1012,8 @@ mapinfo_t doom_map_e2m8_pre_v1_9 =
 	30,												// par_time
 	doom_bossspecial_pre_v1_9,						// boss_actions
 	arrlen( doom_bossspecial_pre_v1_9 ),			// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	nullptr,										// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -1042,8 +1036,8 @@ mapinfo_t doom_map_e2m9 =
 	170,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e2finished,					// interlevel_finished
-	&doom_interlevel_e2entering,					// interlevel_entering
+	&doom_interlevel_e2,							// interlevel_finished
+	&doom_interlevel_e2,							// interlevel_entering
 	&doom_map_e2m6,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e2m9,									// secret_map
@@ -1070,8 +1064,8 @@ mapinfo_t doom_map_e3m1 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m2,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1094,8 +1088,8 @@ mapinfo_t doom_map_e3m2 =
 	45,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m3,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1118,8 +1112,8 @@ mapinfo_t doom_map_e3m3 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m4,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1142,8 +1136,8 @@ mapinfo_t doom_map_e3m4 =
 	150,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m5,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1166,8 +1160,8 @@ mapinfo_t doom_map_e3m5 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m6,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1190,8 +1184,8 @@ mapinfo_t doom_map_e3m6 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m7,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1214,8 +1208,8 @@ mapinfo_t doom_map_e3m7 =
 	165,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m8,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1243,8 +1237,8 @@ mapinfo_t doom_map_e3m8 =
 	30,												// par_time
 	doom_e3m8special,								// boss_actions
 	arrlen( doom_e3m8special ),						// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	nullptr,										// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -1267,8 +1261,8 @@ mapinfo_t doom_map_e3m8_pre_v1_9
 	30,												// par_time
 	doom_bossspecial_pre_v1_9,						// boss_actions
 	arrlen( doom_bossspecial_pre_v1_9 ),			// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	nullptr,										// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -1291,8 +1285,8 @@ mapinfo_t doom_map_e3m9 =
 	135,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&doom_interlevel_e3finished,					// interlevel_finished
-	&doom_interlevel_e3entering,					// interlevel_entering
+	&doom_interlevel_e3,							// interlevel_finished
+	&doom_interlevel_e3,							// interlevel_entering
 	&doom_map_e3m7,									// next_map
 	nullptr,										// next_map_intermission
 	&doom_map_e3m9,									// secret_map
@@ -1535,6 +1529,16 @@ mapinfo_t doom_map_e4m9 =
 // Intermissions, endgames, and interlevels
 //============================================================================
 
+interlevelcond_t doom_cond_exiting[] =
+{
+	{ AnimCondition_IsExiting, 0 }
+};
+
+interlevelcond_t doom_cond_entering[] =
+{
+	{ AnimCondition_IsEntering, 0 }
+};
+
 //============================================================================
 // Knee-deep In The Dead
 //============================================================================
@@ -1583,28 +1587,30 @@ static interlevelanim_t doom_anim_e1_fore[] =
 	generatelocationanims( E1M9, 71, 24 ),
 };
 
-interlevel_t doom_interlevel_e1finished =
+static interlevellayer_t doom_layers_e1[] =
+{
+	{
+		doom_anim_e1_back,								// anims
+		arrlen( doom_anim_e1_back ),					// num_anims
+		nullptr,										// conditions
+		0,												// num_conditions
+	},
+	{
+		doom_anim_e1_fore,								// anims
+		arrlen( doom_anim_e1_fore ),					// num_anims
+		doom_cond_entering,								// conditions
+		arrlen( doom_cond_entering ),					// num_conditions
+	},
+};
+
+interlevel_t doom_interlevel_e1 =
 {
 	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
-	doom_anim_e1_back,								// background_anims
-	arrlen( doom_anim_e1_back ),					// num_background_anims
-	nullptr,										// foreground_anims
-	0,												// num_foreground_anims
+	doom_layers_e1,									// layers
+	arrlen( doom_layers_e1 ),						// num_layers
 };
-
-interlevel_t doom_interlevel_e1entering =
-{
-	Interlevel_Animated,							// type
-	RuntimeFlowString( "inter" ),					// music_lump
-	RuntimeFlowString( background_format_text ),	// background_lump
-	doom_anim_e1_back,								// background_anims
-	arrlen( doom_anim_e1_back ),					// num_background_anims
-	doom_anim_e1_fore,								// foreground_anims
-	arrlen( doom_anim_e1_fore ),					// num_foreground_anims
-};
-
 
 //============================================================================
 // The Shores Of Hell
@@ -1663,26 +1669,29 @@ static interlevelanim_t doom_anim_e2_entering[] =
 	generatelocationanims( E2M9, 235, 158 ),
 };
 
-interlevel_t doom_interlevel_e2finished =
+static interlevellayer_t doom_layers_e2[] =
 {
-	Interlevel_Animated,							// type
-	RuntimeFlowString( "inter" ),					// music_lump
-	RuntimeFlowString( background_format_text ),	// background_lump
-	doom_anim_e2_finished,							// background_anims
-	arrlen( doom_anim_e2_finished ),				// num_background_anims
-	nullptr,										// foreground_anims
-	0,												// num_foreground_anims
+	{
+		doom_anim_e2_finished,							// anims
+		arrlen( doom_anim_e2_finished ),				// num_anims
+		doom_cond_exiting,								// conditions
+		arrlen( doom_cond_exiting ),					// num_conditions
+	},
+	{
+		doom_anim_e2_entering,							// anims
+		arrlen( doom_anim_e2_entering ),				// num_anims
+		doom_cond_entering,								// conditions
+		arrlen( doom_cond_entering ),					// num_conditions
+	},
 };
 
-interlevel_t doom_interlevel_e2entering =
+interlevel_t doom_interlevel_e2 =
 {
 	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
-	doom_anim_e2_entering,							// background_anims
-	arrlen( doom_anim_e2_entering ),				// num_background_anims
-	nullptr,										// foreground_anims
-	0,												// num_foreground_anims
+	doom_layers_e2,									// layers
+	arrlen( doom_layers_e2 ),						// num_layers
 };
 
 //============================================================================
@@ -1729,26 +1738,29 @@ static interlevelanim_t doom_anim_e3_fore[] =
 	generatelocationanims( E3M9, 281, 136 ),
 };
 
-interlevel_t doom_interlevel_e3finished =
+static interlevellayer_t doom_layers_e3[] =
 {
-	Interlevel_Animated,							// type
-	RuntimeFlowString( "inter" ),					// music_lump
-	RuntimeFlowString( background_format_text ),	// background_lump
-	doom_anim_e3_back,								// background_anims
-	arrlen( doom_anim_e3_back ),					// num_background_anims
-	nullptr,										// foreground_anims
-	0,												// num_foreground_anims
+	{
+		doom_anim_e3_back,								// anims
+		arrlen( doom_anim_e3_back ),					// num_anims
+		nullptr,										// conditions
+		0,												// num_conditions
+	},
+	{
+		doom_anim_e3_fore,								// anims
+		arrlen( doom_anim_e3_fore ),					// num_anims
+		doom_cond_entering,								// conditions
+		arrlen( doom_cond_entering ),					// num_conditions
+	},
 };
 
-interlevel_t doom_interlevel_e3entering =
+interlevel_t doom_interlevel_e3 =
 {
 	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
-	doom_anim_e3_back,								// background_anims
-	arrlen( doom_anim_e3_back ),					// num_background_anims
-	doom_anim_e3_fore,								// foreground_anims
-	arrlen( doom_anim_e3_fore ),					// num_foreground_anims
+	doom_layers_e3,									// layers
+	arrlen( doom_layers_e3 ),						// num_layers
 };
 
 //============================================================================
@@ -1777,9 +1789,7 @@ interlevel_t doom_interlevel_e4 =
 	Interlevel_Static,								// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
-	nullptr,										// background_anims
-	0,												// num_background_anims
-	nullptr,										// foreground_anims
-	0,												// num_foreground_anims
+	nullptr,										// layers
+	0,												// num_layers
 };
 

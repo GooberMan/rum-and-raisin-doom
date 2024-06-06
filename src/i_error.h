@@ -23,4 +23,6 @@ DOOM_C_API void I_ErrorInit( void );
 DOOM_C_API void I_ErrorUpdate( void );
 DOOM_C_API void I_Error(const char *error, ...) NORETURN PRINTF_ATTR(1, 2);
 
+#define I_ErrorIf( cond, ... ) if( cond ) { I_Error( __VA_ARGS__ ); }
+
 #endif //!defined( __M_ERROR_H__ )

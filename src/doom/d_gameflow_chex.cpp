@@ -32,8 +32,7 @@ extern mapinfo_t		chex_map_e1m3;
 extern mapinfo_t		chex_map_e1m4;
 extern mapinfo_t		chex_map_e1m5;
 
-extern interlevel_t		chex_interlevel_e1finished;
-extern interlevel_t		chex_interlevel_e1entering;
+extern interlevel_t		chex_interlevel_e1;
 
 extern intermission_t	chex_intermission_e1;
 
@@ -261,8 +260,8 @@ mapinfo_t chex_map_e1m1 =
 	30,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&chex_interlevel_e1finished,					// interlevel_finished
-	&chex_interlevel_e1entering,					// interlevel_entering
+	&chex_interlevel_e1,							// interlevel_finished
+	&chex_interlevel_e1,							// interlevel_entering
 	&chex_map_e1m2,									// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -285,8 +284,8 @@ mapinfo_t chex_map_e1m2 =
 	75,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&chex_interlevel_e1finished,					// interlevel_finished
-	&chex_interlevel_e1entering,					// interlevel_entering
+	&chex_interlevel_e1,							// interlevel_finished
+	&chex_interlevel_e1,							// interlevel_entering
 	&chex_map_e1m3,									// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -309,8 +308,8 @@ mapinfo_t chex_map_e1m3 =
 	120,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&chex_interlevel_e1finished,					// interlevel_finished
-	&chex_interlevel_e1entering,					// interlevel_entering
+	&chex_interlevel_e1,							// interlevel_finished
+	&chex_interlevel_e1,							// interlevel_entering
 	&chex_map_e1m4,									// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -333,8 +332,8 @@ mapinfo_t chex_map_e1m4 =
 	90,												// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&chex_interlevel_e1finished,					// interlevel_finished
-	&chex_interlevel_e1entering,					// interlevel_entering
+	&chex_interlevel_e1,							// interlevel_finished
+	&chex_interlevel_e1,							// interlevel_entering
 	&chex_map_e1m5,									// next_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -357,8 +356,8 @@ mapinfo_t chex_map_e1m5 =
 	165,											// par_time
 	nullptr,										// boss_actions
 	0,												// num_boss_actions
-	&chex_interlevel_e1finished,					// interlevel_finished
-	&chex_interlevel_e1entering,					// interlevel_entering
+	&chex_interlevel_e1,							// interlevel_finished
+	&chex_interlevel_e1,							// interlevel_entering
 	nullptr,										// secret_map
 	nullptr,										// next_map_intermission
 	nullptr,										// secret_map
@@ -369,6 +368,11 @@ mapinfo_t chex_map_e1m5 =
 //============================================================================
 // Intermissions, endgames, and interlevels
 //============================================================================
+
+interlevelcond_t chex_cond_entering[] =
+{
+	{ AnimCondition_IsEntering, 0 }
+};
 
 intermission_t chex_intermission_e1 =
 {
@@ -410,24 +414,27 @@ static interlevelanim_t chex_anim_e1_fore[] =
 	generatelocationanims( E1M5, 116, 89 ),
 };
 
-interlevel_t chex_interlevel_e1finished =
+static interlevellayer_t chex_layers_e1[] =
 {
-	Interlevel_Animated,							// type
-	RuntimeFlowString( "inter" ),					// music_lump
-	RuntimeFlowString( background_format_text ),	// background_lump
-	chex_anim_e1_back,								// background_anims
-	arrlen( chex_anim_e1_back ),					// num_background_anims
-	nullptr,										// foreground_anims
-	0,												// num_foreground_anims
+	{
+		chex_anim_e1_back,								// anims
+		arrlen( chex_anim_e1_back ),					// num_anims
+		nullptr,										// conditions
+		0,												// num_conditions
+	},
+	{
+		chex_anim_e1_fore,								// anims
+		arrlen( chex_anim_e1_fore ),					// num_anims
+		chex_cond_entering,								// conditions
+		arrlen( chex_cond_entering ),					// num_conditions
+	},
 };
 
-interlevel_t chex_interlevel_e1entering =
+interlevel_t chex_interlevel_e1 =
 {
 	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
-	chex_anim_e1_back,								// background_anims
-	arrlen( chex_anim_e1_back ),					// num_background_anims
-	chex_anim_e1_fore,								// foreground_anims
-	arrlen( chex_anim_e1_fore ),					// num_foreground_anims
+	chex_layers_e1,									// layers
+	arrlen( chex_layers_e1 ),						// num_layers
 };

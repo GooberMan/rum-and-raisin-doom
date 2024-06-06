@@ -151,6 +151,8 @@ jsonlumpresult_t D_GameflowParseInterlevelFrame( const JSONElement& frame, inter
 	output.maxduration = to< int32_t >( maxduration );
 	output.lumpname_animindex = 0;
 	output.lumpname_animframe = 0;
+
+	return jl_success;
 }
 
 jsonlumpresult_t D_GameflowParseInterlevelCondition( const JSONElement& condition, interlevelcond_t& output )
@@ -166,6 +168,7 @@ jsonlumpresult_t D_GameflowParseInterlevelCondition( const JSONElement& conditio
 
 	output.condition = to< animcondition_t >( animcondition );
 	output.param = to< int32_t >( param );
+
 	return jl_success;
 }
 
@@ -202,6 +205,28 @@ jsonlumpresult_t D_GameflowParseInterlevelAnim( const JSONElement& anim, interle
 	return jl_success;
 }
 
+jsonlumpresult_t D_GameflowParseInterlevelLayer( const JSONElement& anim, interlevellayer_t& output )
+{
+	const JSONElement& anims = anim[ "anims" ];
+	const JSONElement& conditions = anim[ "conditions" ];
+
+	jsonlumpresult_t res = D_GameflowParseInterlevelArray< interlevelanim_t >( anims, output.anims, output.num_anims, D_GameflowParseInterlevelAnim );
+	if( res != jl_success ) return res;
+
+	if( conditions.IsNull() )
+	{
+		output.conditions = nullptr;
+		output.num_conditions = 0;
+	}
+	else
+	{
+		res = D_GameflowParseInterlevelArray< interlevelcond_t >( conditions, output.conditions, output.num_conditions, D_GameflowParseInterlevelCondition );
+		if( res != jl_success ) return res;
+	}
+
+	return jl_success;
+}
+
 interlevel_t* D_GameflowGetInterlevel( const char* lumpname )
 {
 	auto found = interlevelstorage.find( lumpname );
@@ -216,8 +241,7 @@ interlevel_t* D_GameflowGetInterlevel( const char* lumpname )
 		const JSONElement& type = elem[ "type" ];
 		const JSONElement& music = elem[ "music" ];
 		const JSONElement& backgroundimage = elem[ "backgroundimage" ];
-		const JSONElement& backgroundanims = elem[ "backgroundanims" ];
-		const JSONElement& foregroundanims = elem[ "foregroundanims" ];
+		const JSONElement& layers = elem[ "layers" ];
 
 		if( !type.IsNumber()
 			|| !music.IsString()
@@ -231,14 +255,9 @@ interlevel_t* D_GameflowGetInterlevel( const char* lumpname )
 		output->music_lump = CopyToPlainFlowString( to< std::string >( music ) );
 		output->background_lump = CopyToPlainFlowString( to< std::string >( backgroundimage ) );
 		jsonlumpresult_t res = jl_parseerror;
-		if( !backgroundanims.IsNull() )
+		if( !layers.IsNull() )
 		{
-			res = D_GameflowParseInterlevelArray< interlevelanim_t >( backgroundanims, output->background_anims, output->num_background_anims, D_GameflowParseInterlevelAnim );
-			if( res != jl_success ) return res;
-		}
-		if( !foregroundanims.IsNull() )
-		{
-			res = D_GameflowParseInterlevelArray< interlevelanim_t >( foregroundanims, output->foreground_anims, output->num_foreground_anims, D_GameflowParseInterlevelAnim );
+			res = D_GameflowParseInterlevelArray< interlevellayer_t >( layers, output->anim_layers, output->num_anim_layers, D_GameflowParseInterlevelLayer );
 			if( res != jl_success ) return res;
 		}
 

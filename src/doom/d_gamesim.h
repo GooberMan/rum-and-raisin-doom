@@ -78,6 +78,7 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		mbf21_code_pointers;					// Dehacked additions
 	doombool		rnr24_line_specials;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	doombool		rnr24_thing_extensions;					// New flags, nightmare respawn times
+	doombool		allow_skydefs;							// Generic skies
 } simoptions_t;
 
 // Descriptions pulled from https://www.doomworld.com/forum/topic/72033-boom-mbf-demo-header-format/?tab=comments#comment-1350909
