@@ -580,12 +580,12 @@ void R_InitTextureAndFlatComposites( void )
 {
 	size_t totallookup = numtextures + NumFlats();
 
-	texturecomposite = (texturecomposite_t*)Z_Malloc( numtextures * sizeof( *texturecomposite ), PU_STATIC, 0 );
+	texturecomposite = (texturecomposite_t*)Z_MallocZero( numtextures * sizeof( *texturecomposite ), PU_STATIC, 0 );
 
-	texturelookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *texturelookup ), PU_STATIC, 0 );
-	flatlookup = (texturecomposite_t**)Z_Malloc( totallookup * sizeof( *flatlookup ), PU_STATIC, 0 );
+	texturelookup = (texturecomposite_t**)Z_MallocZero( totallookup * sizeof( *texturelookup ), PU_STATIC, 0 );
+	flatlookup = (texturecomposite_t**)Z_MallocZero( totallookup * sizeof( *flatlookup ), PU_STATIC, 0 );
 
-	flatcomposite = (texturecomposite_t*)Z_Malloc( NumFlats() * sizeof(texturecomposite_t), PU_STATIC, NULL );
+	flatcomposite = (texturecomposite_t*)Z_MallocZero( NumFlats() * sizeof(texturecomposite_t), PU_STATIC, NULL );
 	int32_t index = 0;
 	texturecomposite_t** texturedest = texturelookup;
 	texturecomposite_t** flatdest = flatlookup + NumFlats();
@@ -675,9 +675,11 @@ void R_InitTextureAndFlatComposites( void )
 		lumpinfo_t* lumpentry = lumpinfo[ entrydetails.lumpindex ];
 
 		composite.data = NULL;
-		composite.wallrender = &R_DrawColumn_Colormap_64;
-		composite.transparentwallrender = &R_DrawColumn_Transparent_64;
-		composite.floorrender = &R_RasteriseRegion64x64;
+		composite.wallrender				= &R_DrawColumn_Colormap_64;
+		composite.transparentwallrender		= &R_DrawColumn_Transparent_64;
+		composite.midtexrender				= &R_DrawColumn_Colormap_64;
+		composite.transparentmidtexrender	= &R_DrawColumn_Transparent_64;
+		composite.floorrender				= &R_RasteriseRegion64x64;
 		strncpy( composite.name, lumpentry->name, 8 );
 		composite.namepadding = 0;
 		composite.size = 64 * 64;
@@ -1159,6 +1161,11 @@ DOOM_C_API int32_t R_GetNumFlats()
 	return NumFlats();
 }
 
+DOOM_C_API int32_t R_GetNumTextures()
+{
+	return numtextures;
+}
+
 DOOM_C_API int R_SpriteNumForName( const char* name )
 {
 	std::string lookup = ClampString( name );
@@ -1275,7 +1282,7 @@ void R_PrecacheLevel (void)
 	memset (texturepresent,0, numtextures);
 
 	// Check flats and textures for presence, jamming in to appropriate array as necessary
-	auto MarkFlatPresence = [ &texturepresent, &flatpresent ]( int16_t flatnum )
+	auto MarkFlatPresence = [ &texturepresent, &flatpresent ]( int32_t flatnum )
 	{
 		if( flatnum < NumFlats() )
 		{
@@ -1312,11 +1319,12 @@ void R_PrecacheLevel (void)
 		MarkFlatPresence( sectors[ i ].ceilingpic );
 	}
 
-	auto MarkTexturePresence = [ &texturepresent, &flatpresent ]( int16_t texnum )
+	auto MarkTexturePresence = [ &texturepresent, &flatpresent ]( int32_t texnum )
 	{
 		if( texnum < numtextures )
 		{
 			texturepresent[ texnum ] = 1;
+
 			int32_t animstart = P_GetPicAnimStart( true, texnum );
 			if( animstart >= 0 )
 			{
@@ -1356,7 +1364,14 @@ void R_PrecacheLevel (void)
 	{
 		if( flatpresent[ skyflatpair.second->flatcomposite->index ] )
 		{
-			MarkTexturePresence( skyflatpair.second->sky->texnum );
+			MarkTexturePresence( skyflatpair.second->sky->background.texnum );
+			R_ActivateSkyAndAnims( skyflatpair.second->sky->background.texnum );
+
+			if( skyflatpair.second->sky->type == sky_backandforeground )
+			{
+				MarkTexturePresence( skyflatpair.second->sky->foreground.texnum );
+				R_ActivateSkyAndAnims( skyflatpair.second->sky->foreground.texnum );
+			}
 		}
 	}
 	

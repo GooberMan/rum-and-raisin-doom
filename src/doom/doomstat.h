@@ -287,17 +287,7 @@ DOOM_C_API extern  int             mouseSensitivity;
 
 DOOM_C_API extern  int             bodyqueslot;
 
-
-
-// Needed to store the number of the dummy sky flat.
-// Used for rendering,
-//  as well as tracking projectiles etc.
-DOOM_C_API extern int		skyflatnum;
-
-
-
 // Netgame stuff (buffers and pointers, i.e. indices).
-
 
 DOOM_C_API extern	int		rndindex;
 

@@ -707,23 +707,40 @@ typedef	struct cliprange_s
 
 typedef enum skytype_e
 {
-	st_texture,
-	st_fire,
+	sky_texture,
+	sky_fire,
+	sky_backandforeground,
 
-	st_max,
+	sky_max,
 } skytype_t;
 
-#define NumFirePaletteEntries 32
+typedef struct skytex_s
+{
+	texturecomposite_t*	texture;
+	rend_fixed_t		mid;
+	rend_fixed_t		scrollx;
+	rend_fixed_t		scrolly;
+	rend_fixed_t		currx;
+	rend_fixed_t		curry;
+	int32_t				texnum;
+} skytex_t;
 
 struct sky_s
 {
-	texturecomposite_t*		texture;
-	rend_fixed_t			texturemid;
-	int32_t					texnum;
-	skytype_t				type;
-	byte					firepalette[NumFirePaletteEntries];
-};
+	skytype_t			type;
+	doombool			active;
 
+	// Common functionality for all types
+	skytex_t			background;
+
+	// Fire functionality
+	byte*				firepalette;
+	int32_t				numfireentries;
+	int32_t				fireticrate;
+
+	// With foreground
+	skytex_t			foreground;
+};
 
 typedef struct wallcontext_s
 {

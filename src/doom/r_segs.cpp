@@ -522,10 +522,12 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 
 	rasterregion_t* ceil = nullptr;
 	texturecomposite_t* ceilpic = nullptr;
-	bool ceilsky = false;
+	sky_t* ceilsky = nullptr;
+	sideinstance_t* ceilskyline = nullptr;
 	rasterregion_t* floor = nullptr;
 	texturecomposite_t* floorpic = nullptr;
-	bool floorsky = false;
+	sky_t* floorsky = nullptr;
+	sideinstance_t* floorskyline = nullptr;
 
 	if ( bspcontext.thisdrawseg == ( bspcontext.drawsegs + bspcontext.maxdrawsegs ) )
 	{
@@ -664,8 +666,8 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 			worldlow = bspcontext.backsectorinst->floorheight - viewpoint.z;
 		
 			// hack to allow height changes in outdoor areas
-			if (bspcontext.frontsectorinst->ceiltex == flatlookup[ skyflatnum ]
-				&& bspcontext.backsectorinst->ceiltex == flatlookup[ skyflatnum ])
+			if( bspcontext.frontsectorinst->ceiltex->IsSky()
+				&& bspcontext.backsectorinst->ceiltex->IsSky() )
 			{
 				worldtop = worldhigh;
 			}
@@ -823,7 +825,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		}
 
 		if (bspcontext.frontsectorinst->ceilheight <= viewpoint.z
-			&& bspcontext.frontsectorinst->ceiltex != flatlookup[ skyflatnum ]
+			&& !bspcontext.frontsectorinst->ceiltex->IsSky()
 			&& !bspcontext.frontsectorinst->clipceiling )
 		{
 			// below view plane
@@ -868,14 +870,16 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		{
 			ceil = planecontext.ceilingregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsectorinst->ceilheight, bspcontext.frontsectorinst->ceiloffsetx, bspcontext.frontsectorinst->ceiloffsety, bspcontext.frontsectorinst->ceilrotation, bspcontext.frontsectorinst->ceillightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 			ceilpic = bspcontext.frontsectorinst->ceiltex;
-			ceilsky = ceilpic->index == skyflatnum;
+			ceilsky = ceilpic->skyflat ? ceilpic->skyflat->sky : nullptr;
+			ceilskyline = bspcontext.frontsectorinst->skyline ? &rendsides[ bspcontext.frontsectorinst->skyline->index ] : nullptr;
 		}
 
 		if (loopcontext.markfloor)
 		{
 			floor = planecontext.floorregion = R_AddNewRasterRegion( planecontext, bspcontext.frontsectorinst->floorheight, bspcontext.frontsectorinst->flooroffsetx, bspcontext.frontsectorinst->flooroffsety, bspcontext.frontsectorinst->floorrotation, bspcontext.frontsectorinst->floorlightlevel, loopcontext.startx, loopcontext.stopx - 1 );
 			floorpic = bspcontext.frontsectorinst->floortex;
-			floorsky = floorpic->index == skyflatnum;
+			floorsky = floorpic->skyflat ? floorpic->skyflat->sky : nullptr;
+			floorskyline = bspcontext.frontsectorinst->skyline ? &rendsides[ bspcontext.frontsectorinst->skyline->index ] : nullptr;
 		}
 
 #if RENDER_PERF_GRAPHING
@@ -897,7 +901,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		}
 		else
 		{
-			R_DrawSky( rendercontext, ceil, bspcontext.frontsectorinst->skyline ? &rendsides[ bspcontext.frontsectorinst->skyline->index ] : nullptr );
+			R_DrawSky( rendercontext, ceil, ceilsky, ceilskyline );
 		}
 	}
 
@@ -909,7 +913,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		}
 		else
 		{
-			R_DrawSky( rendercontext, floor, bspcontext.frontsectorinst->skyline ? &rendsides[ bspcontext.frontsectorinst->skyline->index ] : nullptr );
+			R_DrawSky( rendercontext, floor, floorsky, floorskyline );
 		}
 	}
 

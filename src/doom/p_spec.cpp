@@ -1418,6 +1418,8 @@ void P_UpdateSpecials (void)
 		memset(&buttonlist[i],0,sizeof(button_t));
 	    }
 	}
+
+	R_UpdateSky();
 }
 
 

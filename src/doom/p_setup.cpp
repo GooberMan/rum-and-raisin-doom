@@ -581,6 +581,10 @@ struct DoomMapLoader
 
 		for( [[maybe_unused]] int32_t index : iota( 0, _numsectors ) )
 		{
+			if( thissec->CeilingTexture()->IsSky() )
+			{
+				
+			}
 			thisprev->floortex			= thiscurr->floortex			= flatlookup[ thissec->floorpic ];
 			thisprev->ceiltex			= thiscurr->ceiltex				= flatlookup[ thissec->ceilingpic ];
 			thisprev->floorheight		= thiscurr->floorheight			= FixedToRendFixed( thissec->floorheight );
@@ -1434,6 +1438,7 @@ P_SetupLevel
     Z_FreeTags (PU_LEVEL, PU_PURGELEVEL-1);
 
     // UNUSED W_Profile ();
+	R_InitSkiesForLevel();
     P_InitThinkers ();
 
     // if working with a devlopment map, reload it

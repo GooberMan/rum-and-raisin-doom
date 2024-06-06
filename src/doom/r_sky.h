@@ -39,11 +39,15 @@ namespace constants
 DOOM_C_API extern int				skyflatnum;
 
 DOOM_C_API void R_InitSkyDefs();
-DOOM_C_API sky_t* R_GetSky(const char* name);
-DOOM_C_API void R_SetSky( const char* sky );
+DOOM_C_API void R_InitSkiesForLevel();
+DOOM_C_API sky_t* R_GetSky( const char* name, doombool create );
+DOOM_C_API void R_SetDefaultSky( const char* sky );
+DOOM_C_API void R_ActivateSky( sky_t* sky );
+DOOM_C_API void R_ActivateSkyAndAnims( int32_t texnum );
+DOOM_C_API void R_UpdateSky();
 
 #if defined(__cplusplus)
-void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sideinstance_t* skytexture );
+void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sky_t* basesky, sideinstance_t* skytexture );
 #endif // defined(__cplusplus)
 
 #endif

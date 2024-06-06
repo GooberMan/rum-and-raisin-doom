@@ -187,12 +187,12 @@ struct iota
 	struct iterator
 	{
 		int32_t val;
-		constexpr int32_t operator*() noexcept			{ return val; }
-		bool INLINE operator!=( const iterator& rhs ) 	{ return val != rhs.val; }
-		INLINE iterator& operator++()					{ ++val; return *this; }
+		constexpr int32_t operator*() noexcept				{ return val; }
+		bool constexpr operator!=( const iterator& rhs )	{ return val != rhs.val; }
+		constexpr iterator& operator++()					{ ++val; return *this; }
 	};
 
-	iota( int32_t b, int32_t e )
+	constexpr iota( int32_t b, int32_t e )
 	{
 		_begin = { b };
 		_end = { e };
