@@ -237,17 +237,10 @@ DOOM_C_API void P_Ticker (void)
 		if (playeringame[i])
 		{
 			players[ i ].prevviewz = players[ i ].currviewz;
-			players[ i ].mo->prev = players[ i ].mo->curr;
 
 			P_PlayerThink (&players[i]);
 
 			players[ i ].currviewz = FixedToRendFixed( players[ i ].viewz );
-			//players[ i ].mo->curr.x = FixedToRendFixed( players[ i ].mo->x );
-			//players[ i ].mo->curr.y = FixedToRendFixed( players[ i ].mo->y );
-			//players[ i ].mo->curr.z = FixedToRendFixed( players[ i ].mo->z );
-			//players[ i ].mo->curr.angle = players[ i ].mo->angle;
-			//players[ i ].mo->curr.sprite = players[ i ].mo->sprite;
-			//players[ i ].mo->curr.frame = players[ i ].mo->frame;
 		}
 	}
 

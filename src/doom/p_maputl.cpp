@@ -889,7 +889,7 @@ static void InterceptsOverrun(int num_intercepts, intercept_t *intercept)
 {
     int location;
 
-    if (fix.spechit_overflow || num_intercepts <= MAXINTERCEPTS)
+    if (fix.intercepts_overflow || num_intercepts <= MAXINTERCEPTS)
     {
         // No overrun
 

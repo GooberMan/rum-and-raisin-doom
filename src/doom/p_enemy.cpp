@@ -1831,7 +1831,12 @@ DOOM_C_API void A_BrainAwake (mobj_t* mo)
 
 		if( m->type == MT_BOSSTARGET )
 		{
-			if( fix.brainspawn_targets && numbraintargets < arrlen( braintargets ) )
+			if( !fix.brainspawn_targets && numbraintargets >= arrlen( braintargets ) )
+			{
+				I_Error( "A_BrainAwake: More than %d spawn targets found in map (memory overwrite in vanilla).", (int32_t)arrlen( braintargets ) );
+			}
+
+			if( numbraintargets < arrlen( braintargets ) )
 			{
 				braintargets[numbraintargets] = m;
 				numbraintargets++;
