@@ -176,7 +176,7 @@ DOOM_C_API mobj_t* P_XYMovement( mobj_t* mo )
 				// explode a missile
 				if (ceilingline &&
 					ceilingline->backsector &&
-					ceilingline->backsector->ceilingpic == skyflatnum)
+					ceilingline->backsector->CeilingTexture()->IsSky())
 				{
 					doombool remove = true;
 					if( fix.sky_wall_projectiles )

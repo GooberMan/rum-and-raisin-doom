@@ -912,6 +912,7 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 	{
 		memset( output, whacky_void_indices[ ( rendercontext.starttime % whacky_void_microseconds ) / ( whacky_void_microseconds / num_whacky_void_indices ) ], outputsize );
 	}
+#if 0
 	else if( voidcleartype == Void_Sky )
 	{
 		colcontext_t skycontext = {};
@@ -943,6 +944,7 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 			skycontext.colfunc( &skycontext );
 		}
 	}
+#endif
 		
 	memset( rendercontext.spritecontext.sectorvisited, 0, sizeof( doombool ) * numsectors );
 

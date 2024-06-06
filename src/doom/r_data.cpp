@@ -33,7 +33,6 @@
 
 #include "m_conv.h"
 #include "m_fixed.h"
-#include "m_jsonlump.h"
 #include "m_misc.h"
 
 #include "p_local.h"
@@ -180,8 +179,6 @@ std::vector< lookup_t >							flatindexlookup;
 
 std::unordered_map< std::string, lookup_t >		spritenamelookup;
 std::vector< lookup_t >							spriteindexlookup;
-
-std::unordered_map< std::string, sky_t >		skylookup;
 
 constexpr size_t DoomStrLen( const char* val )
 {
@@ -1105,46 +1102,6 @@ void R_InitColormaps (void)
 	}
 }
 
-void R_InitSkyDefs()
-{
-	auto ParseSkydef = []( const JSONElement& elem, const JSONLumpVersion& version ) -> jsonlumpresult_t
-	{
-		const JSONElement& skyarray = elem[ "skies" ];
-		if( !skyarray.IsArray() ) return jl_parseerror;
-
-		for( const JSONElement& skyelem : skyarray.Children() )
-		{
-
-			const JSONElement& skytex = skyelem[ "texturename" ];
-			const JSONElement& mid = skyelem[ "texturemid" ];
-			const JSONElement& type = skyelem[ "type" ];
-			const JSONElement& palette = skyelem[ "firepalette" ];
-
-			std::string skytexname = to< std::string >( skytex );
-			int32_t tex = R_TextureNumForName( skytexname.c_str() );
-			if( tex < 0 ) return jl_parseerror;
-
-			sky_t& sky = skylookup[ skytexname ];
-			sky.texture = texturelookup[ tex ];
-			sky.texnum = tex;
-			sky.texturemid = DoubleToRendFixed( to< double_t >( mid ) );
-			sky.type = to< skytype_t >( type );
-			if( sky.type == st_fire )
-			{
-				if( !palette.IsArray() || palette.Children().size() != NumFirePaletteEntries ) return jl_parseerror;
-				byte* output = sky.firepalette;
-				for( const JSONElement& palentry : palette.Children() )
-				{
-					*output++ = to< byte >( palentry );
-				}
-			}
-		}
-		return jl_success;
-	};
-
-	M_ParseJSONLump( "SKYDEFS", "skydefs", { 1, 0, 0 }, ParseSkydef );
-}
-
 //
 // R_InitData
 // Locates all the lumps
@@ -1295,36 +1252,6 @@ DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum )
 	return nullptr;
 }
 
-sky_t* R_GetSky(const char* name)
-{
-	std::string skytexname = name;
-	auto found = skylookup.find( name );
-	if( found != skylookup.end() )
-	{
-		return &found->second;
-	}
-
-	int32_t tex = R_TextureNumForName( skytexname.c_str() );
-	if( tex < 0 ) return nullptr;
-
-	sky_t sky;
-	sky.texture = texturelookup[ tex ];
-	sky.texnum = tex;
-	if( comp.tall_skies )
-	{
-		sky.texturemid = sky.texture->renderheight - constants::skytexturemidoffset;
-	}
-	else
-	{
-		sky.texturemid = constants::skytexturemid;
-	}
-	sky.type = st_texture;
-
-	skylookup[ name ] = sky;
-	return &skylookup[ name ];
-}
-
-
 //
 // R_PrecacheLevel
 // Preloads all relevant graphics for the level.
@@ -1423,13 +1350,15 @@ void R_PrecacheLevel (void)
 		MarkTexturePresence( sides[ i ].bottomtexture );
 	}
 
-	// Sky texture is always present.
-	// Note that F_SKY1 is the name used to
-	//  indicate a sky floor/ceiling as a flat,
-	//  while the sky texture is stored like
-	//  a wall texture, with an episode dependend
-	//  name.
-	MarkTexturePresence( skydef->texnum );
+	extern std::unordered_map< int32_t, skyflat_t* > skyflatlookup;
+
+	for( auto& skyflatpair : skyflatlookup )
+	{
+		if( flatpresent[ skyflatpair.second->flatcomposite->index ] )
+		{
+			MarkTexturePresence( skyflatpair.second->sky->texnum );
+		}
+	}
 	
 	// Precache flats.
 	for( i=0 ; i< NumFlats() ; i++ )

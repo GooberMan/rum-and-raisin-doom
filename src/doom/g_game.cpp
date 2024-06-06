@@ -781,8 +781,6 @@ void G_DoLoadLevel (void)
     //  we look for an actual index, instead of simply
     //  setting one.
 
-    skyflatnum = R_FlatNumForName(DEH_String(SKYFLATNAME));
-
     // The "Sky never changes in Doom II" bug was fixed in
     // the id Anthology version of doom2.exe for Final Doom.
     if( fix.same_sky_texture

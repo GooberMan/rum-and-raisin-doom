@@ -37,8 +37,9 @@ namespace constants
 #define ANGLETOSKYSHIFT		22
 
 DOOM_C_API extern int				skyflatnum;
-DOOM_C_API extern sky_t*			skydef;
 
+DOOM_C_API void R_InitSkyDefs();
+DOOM_C_API sky_t* R_GetSky(const char* name);
 DOOM_C_API void R_SetSky( const char* sky );
 
 #if defined(__cplusplus)

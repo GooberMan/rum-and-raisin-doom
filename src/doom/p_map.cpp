@@ -1086,14 +1086,14 @@ DOOM_C_API doombool PTR_ShootTraverse( intercept_t* in )
 		y = trace.y + FixedMul (trace.dy, frac);
 		z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
 
-		if (li->frontsector->ceilingpic == skyflatnum)
+		if (li->frontsector->CeilingTexture()->IsSky())
 		{
 			// don't shoot the sky!
 			if (z > li->frontsector->ceilingheight)
 			return false;
 
 			// it's a sky hack wall
-			if	(li->backsector && li->backsector->ceilingpic == skyflatnum)
+			if	(li->backsector && li->backsector->CeilingTexture()->IsSky())
 			{
 				doombool impact = false;
 				if( fix.sky_wall_projectiles )

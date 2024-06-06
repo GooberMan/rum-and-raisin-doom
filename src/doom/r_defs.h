@@ -101,6 +101,7 @@ typedef enum dynamicresolution_e
 typedef struct colcontext_s colcontext_t;
 typedef struct rendercontext_s rendercontext_t;
 typedef struct rasterregion_s rasterregion_t;
+typedef struct skyflat_s skyflat_t;
 typedef struct texturecomposite_s texturecomposite_t;
 typedef struct side_s side_t;
 typedef struct line_s line_t;
@@ -110,6 +111,10 @@ typedef struct sky_s sky_t;
 
 typedef void (*colfunc_t)( colcontext_t* );
 typedef void (*rasterfunc_t)( rendercontext_t*, rasterregion_t* firstregion, texturecomposite_t* texture );
+
+// Need these for inline functionality
+extern texturecomposite_t**	texturelookup;
+extern texturecomposite_t**	flatlookup;
 
 typedef struct texturecomposite_s
 {
@@ -130,13 +135,25 @@ typedef struct texturecomposite_s
 	colfunc_t				transparentmidtexrender;
 	rasterfunc_t			floorrender;
 
+	skyflat_t*				skyflat;
+
 	int32_t					index;
+
+#if defined( __cplusplus )
+	constexpr bool IsSky() const { return skyflat != nullptr; }
+#endif //defined( __cplusplus )
 } texturecomposite_t;
+
+struct skyflat_s
+{
+	texturecomposite_t*		flatcomposite;
+	sky_t*					sky;
+};
 
 struct sectormobj_s
 {
-	mobj_t*				mobj;
-	sectormobj_t*		next;
+	mobj_t*					mobj;
+	sectormobj_t*			next;
 };
 
 typedef struct sectorinstance_s
@@ -378,17 +395,20 @@ struct sector_s
 	angle_t				ceilrotation;
 
 #if defined( __cplusplus )
-	INLINE void*& Special()				{ return specialdata; }
-	INLINE void*& FloorSpecial()		{ return sim.separate_floor_ceiling_lights ? floorspecialdata : specialdata; }
-	INLINE void*& CeilingSpecial()		{ return sim.separate_floor_ceiling_lights ? ceilingspecialdata : specialdata; }
+	INLINE void*& Special()						{ return specialdata; }
+	INLINE void*& FloorSpecial()				{ return sim.separate_floor_ceiling_lights ? floorspecialdata : specialdata; }
+	INLINE void*& CeilingSpecial()				{ return sim.separate_floor_ceiling_lights ? ceilingspecialdata : specialdata; }
 
-	INLINE fixed_t Friction()			{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
-	INLINE fixed_t FrictionPercent()	{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
+	INLINE fixed_t Friction()					{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? friction : FRICTION; }
+	INLINE fixed_t FrictionPercent()			{ return sim.sector_movement_modifiers && ( special & SectorFriction_Mask ) == SectorFriction_Yes ? frictionpercent : IntToFixed( 1 ); }
 
-	constexpr fixed_t FloorEffectHeight() { return transferline ? M_MAX( transferline->frontsector->floorheight, floorheight ) : floorheight; }
+	constexpr fixed_t FloorEffectHeight()		{ return transferline ? M_MAX( transferline->frontsector->floorheight, floorheight ) : floorheight; }
 
 	INLINE int32_t FrictionMultiplier()			{ return frictionmultipliers[ FrictionPercent() >> 13 ]; }
 	INLINE int32_t MonsterFrictionMultiplier()	{ return frictionmultipliers[ FrictionPercent() >> 13 ] << 5; }
+
+	INLINE texturecomposite_t* CeilingTexture()	{ return flatlookup[ ceilingpic ]; }
+	INLINE texturecomposite_t* FloorTexture()	{ return flatlookup[ floorpic ]; }
 
 private:
 	static constexpr int32_t frictionmultipliers[] =

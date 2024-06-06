@@ -26,6 +26,8 @@
 
 #include "p_local.h"
 
+#include "deh_str.h"
+
 #include "r_sky.h"
 
 // Needed for FRACUNIT.
@@ -36,7 +38,10 @@
 #include "r_local.h"
 
 #include "m_container.h"
+#include "m_jsonlump.h"
 #include "m_profile.h"
+
+#include "z_zone.h"
 
 // Used to do SCREENHEIGHT/2 to get the mid point for sky rendering
 // Turns out 100 is the magic number for any screen resolution
@@ -48,18 +53,124 @@
 //
 // sky mapping
 //
-int						skyflatnum = 0;
-sky_t*					skydef = nullptr;
-sideinstance_t			skyfakeline = {};
+int											skyflatnum = 0;
+skyflat_t*									skyflat = nullptr;
+
+sideinstance_t								skyfakeline = {};
+std::unordered_map< std::string, sky_t* >	skylookup;
+std::unordered_map< int32_t, skyflat_t* >	skyflatlookup;
 
 constexpr auto Lines( rasterregion_t* region )
 {
 	return std::span( region->lines, region->maxx - region->minx + 1 );
 }
 
+DOOM_C_API void R_InitSkyDefs()
+{
+	skyflatnum = R_FlatNumForName( DEH_String( SKYFLATNAME ) );
+	texturecomposite_t* skyflatcomposite = flatlookup[ skyflatnum ];
+
+	skyflat = (skyflat_t*)Z_Malloc( sizeof( skyflat_t ), PU_STATIC, nullptr );
+	*skyflat = { skyflatcomposite, nullptr };
+
+	skyflatlookup[ skyflatnum ] = skyflat;
+	skyflatcomposite->skyflat = skyflat;
+
+	auto ParseSkydef = []( const JSONElement& elem, const JSONLumpVersion& version ) -> jsonlumpresult_t
+	{
+		const JSONElement& skyarray = elem[ "skies" ];
+		const JSONElement& flatmappings = elem[ "flatmapping" ];
+		if( !skyarray.IsArray() ) return jl_parseerror;
+		if( !( flatmappings.IsArray() || flatmappings.IsNull() ) ) return jl_parseerror;
+
+		for( const JSONElement& skyelem : skyarray.Children() )
+		{
+			const JSONElement& skytex = skyelem[ "texturename" ];
+			const JSONElement& mid = skyelem[ "texturemid" ];
+			const JSONElement& type = skyelem[ "type" ];
+			const JSONElement& palette = skyelem[ "firepalette" ];
+
+			std::string skytexname = to< std::string >( skytex );
+			int32_t tex = R_TextureNumForName( skytexname.c_str() );
+			if( tex < 0 ) return jl_parseerror;
+
+			sky_t* sky = (sky_t*)Z_Malloc( sizeof( sky_t ), PU_STATIC, nullptr );
+			sky->texture = texturelookup[ tex ];
+			sky->texnum = tex;
+			sky->texturemid = DoubleToRendFixed( to< double_t >( mid ) );
+			sky->type = to< skytype_t >( type );
+			if( sky->type == st_fire )
+			{
+				if( !palette.IsArray() || palette.Children().size() != NumFirePaletteEntries ) return jl_parseerror;
+				byte* output = sky->firepalette;
+				for( const JSONElement& palentry : palette.Children() )
+				{
+					*output++ = to< byte >( palentry );
+				}
+			}
+
+			skylookup[ skytexname ] = sky;
+		}
+		
+		for( const JSONElement& flatentry : flatmappings.Children() )
+		{
+			const JSONElement& flatelem = flatentry[ "flat" ];
+			const JSONElement& skyelem = flatentry[ "sky" ];
+
+			std::string flatname = to< std::string >( flatelem );
+			int32_t flatnum = R_FlatNumForName( flatname.c_str() );
+			if( flatnum < 0 || flatnum >= R_GetNumFlats() ) return jl_parseerror;
+
+			std::string skyname = to< std::string >( skyelem );
+			sky_t* sky = R_GetSky( skyname.c_str() );
+
+			texturecomposite_t* flatcomposite = flatlookup[ flatnum ];
+			skyflat_t* flatentry = (skyflat_t*)Z_Malloc( sizeof( skyflat_t ), PU_STATIC, nullptr );
+			*flatentry = { flatcomposite, sky };
+
+			skyflatlookup[ flatnum ] = flatentry;
+			flatcomposite->skyflat = flatentry;
+		}
+
+		return jl_success;
+	};
+
+	M_ParseJSONLump( "SKYDEFS", "skydefs", { 1, 0, 0 }, ParseSkydef );
+}
+
+DOOM_C_API sky_t* R_GetSky(const char* name)
+{
+	std::string skytexname = name;
+	auto found = skylookup.find( name );
+	if( found != skylookup.end() )
+	{
+		return found->second;
+	}
+
+	int32_t tex = R_TextureNumForName( skytexname.c_str() );
+	if( tex < 0 ) return nullptr;
+
+	sky_t* sky = (sky_t*)Z_Malloc( sizeof( sky_t ), PU_STATIC, nullptr );
+	sky->texture = texturelookup[ texturetranslation[ tex ] ];
+	sky->texnum = tex;
+	if( comp.tall_skies )
+	{
+		sky->texturemid = sky->texture->renderheight - constants::skytexturemidoffset;
+	}
+	else
+	{
+		sky->texturemid = constants::skytexturemid;
+	}
+	sky->type = st_texture;
+
+	skylookup[ name ] = sky;
+	return sky;
+}
+
 DOOM_C_API void R_SetSky( const char* sky )
 {
-	skydef = R_GetSky( sky );
+	sky_t* skydef = R_GetSky( sky );
+	skyflat->sky = skydef;
 	skyfakeline.toptex = skydef->texture;
 	skyfakeline.sky = skydef;
 }
@@ -76,6 +187,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 		skytextureline = &skyfakeline;
 	}
 	sky_t* sky = skytextureline->sky;
+	texturecomposite_t* texture = texturelookup[ texturetranslation[ sky->texnum ] ];
 
 	constexpr rend_fixed_t skyoneunit = RendFixedDiv( IntToRendFixed( 1 ), IntToRendFixed( 256 ) );
 	constexpr rend_fixed_t ninetydegree = IntToRendFixed( ANG90 );
@@ -88,14 +200,14 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 	// But we have our own context for it now. These are constants too, so you could cook
 	// this once and forget all about it.
 	skycontext.iscale = drs_current->skyiscaley;
-	skycontext.colfunc = sky->texture->wallrender;
+	skycontext.colfunc = texture->wallrender;
 	skycontext.colormap = rendercontext.viewpoint.colormaps;
 	skycontext.texturemid = sky->texturemid;
 	skycontext.texturemid +=  + skytextureline->rowoffset;
 
 	// This isn't a constant though...
 	skycontext.output = dest;
-	skycontext.sourceheight = sky->texture->renderheight;
+	skycontext.sourceheight = texture->renderheight;
 
 	int32_t x = thisregion->minx;
 
@@ -112,7 +224,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, side
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
-			skycontext.source = R_GetColumnComposite( sky->texture, angle );
+			skycontext.source = R_GetColumnComposite( texture, angle );
 			skycontext.colfunc( &skycontext );
 		}
 		++x;
