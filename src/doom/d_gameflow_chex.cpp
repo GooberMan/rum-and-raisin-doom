@@ -430,7 +430,6 @@ static interlevellayer_t chex_layers_e1[] =
 
 interlevel_t chex_interlevel_e1 =
 {
-	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	chex_layers_e1,									// layers

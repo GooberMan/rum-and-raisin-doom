@@ -1102,7 +1102,6 @@ endgame_t doom2_endgame =
 
 interlevel_t doom2_interlevel =
 {
-	Interlevel_Static,								// type
 	RuntimeFlowString( "dm2int" ),					// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
 	nullptr,										// layers

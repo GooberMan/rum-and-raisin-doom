@@ -46,15 +46,6 @@ DOOM_C_API typedef enum endgametype_e
 	EndGame_AnyArtScreen		= EndGame_Pic | EndGame_Bunny
 } endgametype_t;
 
-DOOM_C_API typedef enum interleveltype_e
-{
-	Interlevel_None,
-	Interlevel_Static,
-	Interlevel_Animated,
-
-	Interlevel_Max,
-} interleveltype_t;
-
 DOOM_C_API typedef enum frametype_s
 {
 	Frame_None						= 0x0000,
@@ -194,8 +185,6 @@ DOOM_C_API typedef struct interlevellayer_s
 
 DOOM_C_API typedef struct interlevel_s
 {
-	interleveltype_t		type;
-
 	flowstring_t			music_lump;
 
 	flowstring_t			background_lump;

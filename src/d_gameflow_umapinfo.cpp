@@ -824,6 +824,8 @@ static void BuildNewGameInfo()
 		if( !map.exitanim.empty() )
 		{
 			interlevel_t* newinter = newmap.interlevel_finished = D_GameflowGetInterlevel( map.exitanim.c_str() );
+			I_ErrorIf( newinter == nullptr, "Victory lump '%s' is malformed", map.exitanim.c_str() );
+
 			if( map.enterpic.empty() && map.enteranim.empty() )
 			{
 				newmap.interlevel_entering = newinter;
@@ -832,7 +834,6 @@ static void BuildNewGameInfo()
 		else if( !map.exitpic.empty() )
 		{
 			interlevel_t* newinter = newmap.interlevel_finished = &umapinfogame.interlevels[ map.exitpic ];
-			newinter->type = Interlevel_None;
 			newinter->music_lump = RuntimeFlowString( ( gamemode == commercial ) ? "dm2int" : "inter" );
 			newinter->background_lump = FlowString( map.exitpic );
 
@@ -844,12 +845,13 @@ static void BuildNewGameInfo()
 
 		if( !map.enteranim.empty() )
 		{
-			newmap.interlevel_entering = D_GameflowGetInterlevel( map.exitanim.c_str() );
+			interlevel_t* newinter = newmap.interlevel_entering = D_GameflowGetInterlevel( map.enteranim.c_str() );
+			I_ErrorIf( newinter == nullptr, "Victory lump '%s' is malformed", map.enteranim.c_str() );
 		}
 		else if( !map.enterpic.empty() )
 		{
 			interlevel_t* newinter = newmap.interlevel_entering = &umapinfogame.interlevels[ map.enterpic ];
-			newinter->type = Interlevel_None;
+
 			newinter->music_lump = RuntimeFlowString( ( gamemode == commercial ) ? "dm2int" : "inter" );
 			newinter->background_lump = FlowString( map.enterpic );
 		}

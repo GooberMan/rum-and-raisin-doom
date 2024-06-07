@@ -16,6 +16,7 @@
 #include "d_gameflow.h"
 
 #include "i_terminal.h"
+#include "i_timer.h"
 
 #include "m_container.h"
 #include "m_jsonlump.h"
@@ -147,8 +148,8 @@ jsonlumpresult_t D_GameflowParseInterlevelFrame( const JSONElement& frame, inter
 
 	output.image_lump = CopyToPlainFlowString( to< std::string >( image ) );
 	output.type = to< frametype_t >( type );
-	output.duration = to< int32_t >( duration );
-	output.maxduration = to< int32_t >( maxduration );
+	output.duration = (int32_t)( to< double_t >( duration ) * TICRATE );
+	output.maxduration = (int32_t)( to< double_t >( maxduration ) * TICRATE );
 	output.lumpname_animindex = 0;
 	output.lumpname_animframe = 0;
 
@@ -248,27 +249,17 @@ interlevel_t* D_GameflowGetInterlevel( const char* lumpname )
 	interlevel_t* output = nullptr;
 	auto ParseInterlevel = [&output]( const JSONElement& elem, const JSONLumpVersion& version ) -> jsonlumpresult_t
 	{
-		const JSONElement& type = elem[ "type" ];
 		const JSONElement& music = elem[ "music" ];
 		const JSONElement& backgroundimage = elem[ "backgroundimage" ];
 		const JSONElement& layers = elem[ "layers" ];
 
-		if( !type.IsNumber()
-			|| !music.IsString()
+		if( !music.IsString()
 			|| !backgroundimage.IsString() )
 		{
 			return jl_parseerror;
 		}
 
-		interleveltype_t ilt = to< interleveltype_t >( type );
-
-		if( ilt <= Interlevel_None || ilt >= Interlevel_Max )
-		{
-			return jl_parseerror;
-		}
-
 		output = (interlevel_t*)Z_MallocZero( sizeof( interlevel_t ), PU_STATIC, nullptr );
-		output->type = ilt;
 		output->music_lump = CopyToPlainFlowString( to< std::string >( music ) );
 		output->background_lump = CopyToPlainFlowString( to< std::string >( backgroundimage ) );
 		jsonlumpresult_t res = jl_success;
