@@ -156,8 +156,6 @@ gameflow_t doom_plutonia =
 	PlainFlowString( "DOOM 2: Plutonia Experiment" ),	// name
 	plutonia_episodes,								// episodes
 	arrlen( plutonia_episodes ),					// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 //============================================================================

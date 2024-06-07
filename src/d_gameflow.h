@@ -51,19 +51,25 @@ DOOM_C_API typedef enum interleveltype_e
 	Interlevel_None,
 	Interlevel_Static,
 	Interlevel_Animated,
+
+	Interlevel_Max,
 } interleveltype_t;
 
 DOOM_C_API typedef enum frametype_s
 {
-	Frame_None					= 0x0000,
-	Frame_Infinite				= 0x0001,
-	Frame_FixedDuration			= 0x0002,
-	Frame_RandomDuration		= 0x0004,
+	Frame_None						= 0x0000,
+	Frame_Infinite					= 0x0001,
+	Frame_FixedDuration				= 0x0002,
+	Frame_RandomDuration			= 0x0004,
 
-	Frame_RandomStart			= 0x1000,
-	Frame_AdjustForWidescreen	= 0x2000,
+	Frame_RandomStart				= 0x1000,
 
-	Frame_Background			= Frame_Infinite | Frame_AdjustForWidescreen
+	Frame_Valid						= 0x100F,
+
+	// Non-standard flags
+	Frame_AdjustForWidescreen		= 0x8000000,
+
+	Frame_Background				= Frame_Infinite | Frame_AdjustForWidescreen
 } frametype_t;
 
 DOOM_C_API typedef enum animcondition_s
@@ -84,14 +90,18 @@ DOOM_C_API typedef enum animcondition_s
 	AnimCondition_SecretVisited,	// Checks: Any secret map visited.
 									// Parameter: none
 
-	AnimCondition_FitsInFrame,		// Checks: Patch dimensions.
-									// Parameter: group number, allowing only one condition of this type to succeed per group
-
 	AnimCondition_IsExiting,		// Checks: Victory screen type
 									// Parameter: none
 
 	AnimCondition_IsEntering,		// Checks: Victory screen type
 									// Parameter: none
+
+	AnimCondition_Max,
+
+	// Here be dragons. Non-standard conditions.
+	AnimCondition_FitsInFrame,		// Checks: Patch dimensions.
+									// Parameter: group number, allowing only one condition of this type to succeed per group
+
 } animcondition_t;
 
 DOOM_C_API typedef enum flowstringflags_s
@@ -104,18 +114,18 @@ DOOM_C_API typedef enum flowstringflags_s
 
 DOOM_C_API typedef enum mapflags_s
 {
-	Map_None					= 0x0000,
-	Map_Secret					= 0x0001,
-	Map_EndOfEpisode			= 0x0002,
-	Map_NoInterlevel			= 0x0004,
-	Map_NoParTime				= 0x0008,
-	Map_NoEnterBanner			= 0x0010,
+	Map_None						= 0x0000,
+	Map_Secret						= 0x0001,
+	Map_EndOfEpisode				= 0x0002,
+	Map_NoInterlevel				= 0x0004,
+	Map_NoParTime					= 0x0008,
+	Map_NoEnterBanner				= 0x0010,
 	
-	Map_MonstersTelefrag		= 0x1000,
+	Map_MonstersTelefrag			= 0x1000,
 
-	Map_Doom1EndOfEpisode		= Map_EndOfEpisode | Map_NoInterlevel,
-	Map_Doom2EndOfGame			= Map_EndOfEpisode | Map_NoEnterBanner | Map_MonstersTelefrag,
-	Map_GenericEndOfGame		= Map_EndOfEpisode | Map_NoEnterBanner,
+	Map_Doom1EndOfEpisode			= Map_EndOfEpisode | Map_NoInterlevel,
+	Map_Doom2EndOfGame				= Map_EndOfEpisode | Map_NoEnterBanner | Map_MonstersTelefrag,
+	Map_GenericEndOfGame			= Map_EndOfEpisode | Map_NoEnterBanner,
 } mapflags_t;
 
 DOOM_C_API typedef struct flowstring_s
@@ -247,27 +257,11 @@ DOOM_C_API typedef struct episodeinfo_s
 	mapinfo_t*				first_map;
 } episodeinfo_t;
 
-// Still working out the details, but playsim_base can equal:
-// * vanilla
-// * limitremoving
-// * boom
-// * mbf21
-//
-// Options will define subversion, for example
-// * vanilla
-//   * version=1.9
-//   * version=final
-// * boom
-//   * version=2.02
-
 DOOM_C_API typedef struct gameflow_s
 {
 	flowstring_t			name;
 	episodeinfo_t**			episodes;
 	int32_t					num_episodes;
-
-	flowstring_t			playsim_base;
-	flowstring_t			playsim_options;
 } gameflow_t;
 
 DOOM_C_API extern gameflow_t*			current_game;

@@ -396,6 +396,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 					{
 						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->toptexture,texturecolumn) : lightlevelmaps[ colormapindex ];
 						wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->toptexture ]->renderheight : IntToRendFixed(256);
+						wallcolcontext.colfunc = &R_DrawColumn_Colormap_32;
 					}
 					else
 					{
@@ -440,6 +441,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 					{
 						wallcolcontext.source = colormapindex >= 32 ? R_GetColumn(segcontext->bottomtexture,texturecolumn) : lightlevelmaps[ colormapindex ];
 						wallcolcontext.sourceheight = colormapindex >= 32 ? texturelookup[ segcontext->bottomtexture ]->renderheight : IntToRendFixed(256);
+						wallcolcontext.colfunc = &R_DrawColumn_Colormap_32;
 					}
 					else
 					{

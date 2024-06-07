@@ -237,8 +237,6 @@ gameflow_t doom_chex =
 	PlainFlowString( "Chex Quest" ),				// name
 	chex_episodes,									// episodes
 	arrlen( chex_episodes ),						// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 //============================================================================

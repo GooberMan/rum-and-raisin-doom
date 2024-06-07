@@ -506,29 +506,28 @@ void Z_FileDumpHeap (FILE* f)
 //
 void Z_CheckHeap (void)
 {
-    memblock_t*	block;
-	
-    for (block = mainzone->blocklist.next ; ; block = block->next)
+	memblock_t* prev = NULL;
+    for (memblock_t* block = mainzone->blocklist.next; ; prev = block, block = block->next)
     {
-	if (block->next == &mainzone->blocklist)
-	{
-	    // all blocks have been hit
-	    break;
-	}
+		if (block->next == &mainzone->blocklist)
+		{
+			// all blocks have been hit
+			break;
+		}
 
-	if( block->magic != MAGICMARKER )
-	{
-		I_Error ("Z_CheckHeap: something has overwritten this memory's data block!");
-	}
+		if( block->magic != MAGICMARKER )
+		{
+			I_Error ("Z_CheckHeap: something has overwritten this memory's data block!");
+		}
 	
-	if ( (byte *)block + block->size != (byte *)block->next)
-	    I_Error ("Z_CheckHeap: block size does not touch the next block\n");
+		if ( (byte *)block + block->size != (byte *)block->next)
+			I_Error ("Z_CheckHeap: block size does not touch the next block\n");
 
-	if ( block->next->prev != block)
-	    I_Error ("Z_CheckHeap: next block doesn't have proper back link\n");
+		if ( block->next->prev != block)
+			I_Error ("Z_CheckHeap: next block doesn't have proper back link\n");
 
-	if (block->tag == PU_FREE && block->next->tag == PU_FREE)
-	    I_Error ("Z_CheckHeap: two consecutive free blocks\n");
+		if (block->tag == PU_FREE && block->next->tag == PU_FREE)
+			I_Error ("Z_CheckHeap: two consecutive free blocks\n");
     }
 }
 

@@ -156,8 +156,6 @@ gameflow_t doom_tnt =
 	PlainFlowString( "DOOM 2: TNT - Evilution" ),	// name
 	tnt_episodes,									// episodes
 	arrlen( tnt_episodes ),							// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 //============================================================================

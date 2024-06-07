@@ -155,8 +155,6 @@ gameflow_t doom_2 =
 	PlainFlowString( "DOOM 2: Hell on Earth" ),		// name
 	doom2_episodes,									// episodes
 	arrlen( doom2_episodes ),						// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 mapinfo_t* doom2_maps_hellonearth_bfg[] =
@@ -193,8 +191,6 @@ gameflow_t doom_2_bfg =
 	PlainFlowString( "DOOM 2: Hell on Earth" ),		// name
 	doom2_episodes_bfg,								// episodes
 	arrlen( doom2_episodes_bfg ),					// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 //============================================================================

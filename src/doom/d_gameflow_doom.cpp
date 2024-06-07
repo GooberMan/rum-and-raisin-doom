@@ -531,8 +531,6 @@ gameflow_t doom_shareware =
 	PlainFlowString( "DOOM Shareware" ),			// name
 	doom_episodes_shareware,						// episodes
 	arrlen( doom_episodes_shareware ),				// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 gameflow_t doom_registered =
@@ -540,8 +538,6 @@ gameflow_t doom_registered =
 	PlainFlowString( "DOOM Registered" ),			// name
 	doom_episodes_registered,						// episodes
 	arrlen( doom_episodes_registered ),				// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 gameflow_t doom_registered_pre_v1_9 =
@@ -549,8 +545,6 @@ gameflow_t doom_registered_pre_v1_9 =
 	PlainFlowString( "DOOM Registered" ),			// name
 	doom_episodes_registered_pre_v1_9,				// episodes
 	arrlen( doom_episodes_registered_pre_v1_9 ),	// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 gameflow_t doom_ultimate =
@@ -558,8 +552,6 @@ gameflow_t doom_ultimate =
 	PlainFlowString( "The Ultimate DOOM" ),			// name
 	doom_episodes_ultimate,							// episodes
 	arrlen( doom_episodes_ultimate ),				// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 //============================================================================

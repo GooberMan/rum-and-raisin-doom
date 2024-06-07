@@ -136,18 +136,20 @@ DOOM_C_API void R_InitSkyDefs()
 
 			sky->type = skytype;
 
+			constexpr double_t ticratescale = 1.0 / TICRATE;
+
 			sky->background.texture = texturelookup[ tex ];
 			sky->background.texnum = tex;
 			sky->background.mid = DoubleToRendFixed( to< double_t >( mid ) );
-			sky->background.scrollx = DoubleToRendFixed( to< double_t >( scrollx ) );
-			sky->background.scrolly = DoubleToRendFixed( to< double_t >( scrolly ) );
+			sky->background.scrollx = DoubleToRendFixed( to< double_t >( scrollx ) * ticratescale );
+			sky->background.scrolly = DoubleToRendFixed( to< double_t >( scrolly ) * ticratescale );
 
 			if( sky->type == sky_fire )
 			{
 				if( !fireelem.IsElement() ) return jl_parseerror;
 
-				const JSONElement& firepalette	= fireelem[ "palette" ];
-				const JSONElement& fireticrate	= fireelem[ "ticrate" ];
+				const JSONElement& firepalette		= fireelem[ "palette" ];
+				const JSONElement& fireupdatetime	= fireelem[ "updatetime" ];
 
 				if( !firepalette.IsArray() ) return jl_parseerror;
 				sky->numfireentries = (int32_t)firepalette.Children().size();
@@ -156,6 +158,7 @@ DOOM_C_API void R_InitSkyDefs()
 				{
 					*output++ = to< byte >( palentry );
 				}
+				sky->fireticrate = (int32_t)( to< double_t >( fireupdatetime ) * TICRATE );
 			}
 			else if( sky->type = sky_backandforeground )
 			{
@@ -173,8 +176,8 @@ DOOM_C_API void R_InitSkyDefs()
 				sky->foreground.texture = texturelookup[ foretex ];
 				sky->foreground.texnum = foretex;
 				sky->foreground.mid = DoubleToRendFixed( to< double_t >( foremid ) );
-				sky->foreground.scrollx = DoubleToRendFixed( to< double_t >( forescrollx ) );
-				sky->foreground.scrolly = DoubleToRendFixed( to< double_t >( forescrolly ) );
+				sky->foreground.scrollx = DoubleToRendFixed( to< double_t >( forescrollx ) * ticratescale );
+				sky->foreground.scrolly = DoubleToRendFixed( to< double_t >( forescrolly ) * ticratescale );
 			}
 			else
 			{

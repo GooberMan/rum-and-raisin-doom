@@ -138,8 +138,6 @@ gameflow_t doom_hacx =
 	PlainFlowString( "HACX: Twitch 'n Kill" ),		// name
 	hacx_episodes,									// episodes
 	arrlen( hacx_episodes ),						// num_episodes
-	PlainFlowString( "vanilla" ),					// playsim_base
-	PlainFlowString( "" )							// playsim_options
 };
 
 //============================================================================
