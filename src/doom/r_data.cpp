@@ -296,7 +296,7 @@ void R_DrawColumnInCache( column_t* patch, byte* cache, int originy, int cachehe
 }
 
 //
-// R_GenerateComposite
+// R_GenerateCompositeTexture
 // Using the texture definition,
 //  the composite texture is created from the patches,
 //  and each column is cached.
@@ -304,7 +304,7 @@ void R_DrawColumnInCache( column_t* patch, byte* cache, int originy, int cachehe
 
 #define COMPOSITE_ZONE ( PU_LEVEL )
 
-void R_GenerateComposite (int texnum)
+void R_GenerateCompositeTexture(int texnum)
 {
 	column_t*			patchcol;
 	int32_t				patchy = 0;
@@ -396,36 +396,6 @@ void R_GenerateLookup (int texnum)
 	Z_Free( patchcount );
 }
 
-
-void R_CacheCompositeTexture( int32_t tex )
-{
-	int32_t animstart;
-	int32_t animend;
-
-	if ( !texturecomposite[ tex ].data )
-	{
-		animstart = P_GetPicAnimStart( true, tex );
-		if( animstart >= 0 )
-		{
-			animend = animstart + P_GetPicAnimLength( true, animstart );
-			for( ; animstart < animend; ++animstart )
-			{
-				R_GenerateComposite( animstart );
-			}
-		}
-		else
-		{
-			R_GenerateComposite( tex );
-
-			animstart = P_GetPicSwitchOpposite( tex );
-			if( animstart != -1 )
-			{
-				R_GenerateComposite( animstart );
-			}
-		}
-	}
-}
-
 void R_CacheCompositeFlat( int32_t flat )
 {
 	auto& info = flatindexlookup[ flat ];
@@ -461,7 +431,7 @@ texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat )
 
 	if( index >= NumFlats() )
 	{
-		R_CacheCompositeTexture( index );
+		R_GenerateCompositeTexture( index - NumFlats() );
 	}
 	else
 	{
@@ -1319,7 +1289,7 @@ void R_PrecacheLevel (void)
 		MarkFlatPresence( sectors[ i ].ceilingpic );
 	}
 
-	auto MarkTexturePresence = [ &texturepresent, &flatpresent ]( int32_t texnum )
+	auto MarkTexturePresenceWithAnims = [ &texturepresent, &flatpresent ]( int32_t texnum )
 	{
 		if( texnum < numtextures )
 		{
@@ -1349,6 +1319,19 @@ void R_PrecacheLevel (void)
 				}
 			}
 		}
+	};
+
+	auto MarkTexturePresence = [ &MarkTexturePresenceWithAnims ]( int32_t texnum )
+	{
+		if( texnum < numtextures )
+		{
+			int32_t opposite = P_GetPicSwitchOpposite( texnum );
+			if( opposite >= 0 )
+			{
+				MarkTexturePresenceWithAnims( opposite );
+			}
+		}
+		MarkTexturePresenceWithAnims( texnum );
 	};
 
 	for (i=0 ; i<numsides ; i++)
@@ -1400,7 +1383,7 @@ void R_PrecacheLevel (void)
 			W_CacheLumpNum( lump , PU_LEVEL );
 		}
 
-		R_CacheCompositeTexture( i );
+		R_GenerateCompositeTexture( i );
 	}
 
 	Z_Free(flatpresent);

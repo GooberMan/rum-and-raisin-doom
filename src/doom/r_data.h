@@ -1,7 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2024 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -25,9 +25,7 @@
 #include "r_defs.h"
 #include "r_state.h"
 
-DOOM_C_API void R_CacheCompositeTexture( int32_t tex );
-DOOM_C_API void R_CacheCompositeFlat( int32_t flat );
-
+// Used by the finale. That's it.
 DOOM_C_API texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat );
 
 // Retrieve column data for span blitting.
