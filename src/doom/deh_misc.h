@@ -36,7 +36,6 @@
 #define DEH_DEFAULT_SPECIES_INFIGHTING 0
 
 DOOM_C_API extern int deh_initial_health;
-DOOM_C_API extern int deh_initial_bullets;
 DOOM_C_API extern int deh_max_health;
 DOOM_C_API extern int deh_max_armor;
 DOOM_C_API extern int deh_green_armor_class;
@@ -56,7 +55,6 @@ DOOM_C_API extern int deh_species_infighting;
 // To compile without dehacked, it's possible to use these:
 
 #define deh_initial_health      DEH_DEFAULT_INITIAL_HEALTH
-#define deh_initial_bullets     DEH_DEFAULT_INITIAL_BULLETS
 #define deh_max_health          DEH_DEFAULT_MAX_HEALTH
 #define deh_max_armor           DEH_DEFAULT_MAX_ARMOR
 #define deh_green_armor_class   DEH_DEFAULT_GREEN_ARMOR_CLASS

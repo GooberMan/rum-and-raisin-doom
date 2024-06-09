@@ -42,15 +42,6 @@
 
 #define BONUSADD	6
 
-
-
-
-// a weapon is found with two clip loads,
-// a big item has five clip loads
-int	maxammo[NUMAMMO] = {200, 50, 300, 50};
-int	clipammo[NUMAMMO] = {10, 4, 20, 1};
-
-
 //
 // GET STUFF
 //
@@ -62,149 +53,173 @@ int	clipammo[NUMAMMO] = {10, 4, 20, 1};
 // Returns false if the ammo can't be picked up at all
 //
 
-DOOM_C_API doombool P_GiveAmmo( player_t* player, ammotype_t ammo, int num )
+bool P_GiveAmmo( player_t* player, const ammoinfo_t* ammoinfo, ammocategory_t category )
 {
-    int		oldammo;
-	
-    if (ammo == am_noammo)
-	return false;
-		
-    if (ammo > NUMAMMO)
-	I_Error ("P_GiveAmmo: bad type %i", ammo);
-		
-    if ( player->ammo[ammo] == player->maxammo[ammo]  )
-	return false;
-		
-    if (num)
-	num *= clipammo[ammo];
-    else
-	num = clipammo[ammo]/2;
-    
-    if (gameskill == sk_baby
-	|| gameskill == sk_nightmare)
-    {
-	// give double ammo in trainer mode,
-	// you'll need in nightmare
-	num <<= 1;
-    }
-    
-		
-    oldammo = player->ammo[ammo];
-    player->ammo[ammo] += num;
+	if( player->ammo[ ammoinfo->index ] == player->maxammo[ ammoinfo->index ] )
+	{
+		return false;
+	}
 
-    if (player->ammo[ammo] > player->maxammo[ammo])
-	player->ammo[ammo] = player->maxammo[ammo];
+	int32_t giveamount = 0;
+	switch( category )
+	{
+	case ac_clip:
+		giveamount = ammoinfo->clipammo;
+		break;
+	case ac_box:
+		giveamount = ammoinfo->boxammo;
+		break;
+	case ac_backpack:
+		giveamount = ammoinfo->backpackammo;
+		break;
+	case ac_weapon:
+		giveamount = ammoinfo->weaponammo;
+		break;
+	case ac_droppedclip:
+		giveamount = ammoinfo->droppedclipammo;
+		break;
+	case ac_droppedweapon:
+		giveamount = ammoinfo->droppedweaponammo;
+		break;
+	case ac_deathmatchweapon:
+		giveamount = ammoinfo->deathmatchweaponammo;
+		break;
+	}
 
-    // If non zero ammo, 
-    // don't change up weapons,
-    // player was lower on purpose.
-    if (oldammo)
-	return true;	
+	giveamount = FixedToInt( FixedMul( IntToFixed( giveamount ), ammoinfo->skillmul[ gameskill ] ) );
 
-    // We were down to zero,
-    // so select a new weapon.
-    // Preferences are not user selectable.
-    switch (ammo)
-    {
-    case am_clip:
-		if (player->readyweapon == wp_fist)
+	int32_t oldammo = player->ammo[ ammoinfo->index ];
+	int32_t newamount = M_MIN( oldammo + giveamount, player->maxammo[ ammoinfo->index ] );
+	player->ammo[ ammoinfo->index ] = newamount;
+
+	// If non zero ammo, 
+	// don't change up weapons,
+	// player was lower on purpose.
+	if (oldammo)
+	{
+		return true;
+	}
+
+	if( sim.mbf21_code_pointers )
+	{
+		const weaponinfo_t& weapon = player->Weapon();
+		if( !weapon.SwitchFromOnAmmoPickup() )
 		{
-			if (player->weaponowned[wp_chaingun])
+			return true;
+		}
+
+		for( weaponinfo_t* switchtoweapon : weaponinfo.BySwitchPriority() )
+		{
+			if( !switchtoweapon->DontSwitchToOnAmmoPickup()
+				&& switchtoweapon->ammo == ammoinfo->index )
 			{
-				player->pendingweapon = wp_chaingun;
-			}
-			else if (player->weaponowned[wp_pistol])
-			{
-				player->pendingweapon = wp_pistol;
+				player->pendingweapon = switchtoweapon->index;
+				break;
 			}
 		}
-		break;
-	
-    case am_shell:
-	if (player->readyweapon == wp_fist
-	    || player->readyweapon == wp_pistol)
-	{
-	    if (player->weaponowned[wp_shotgun])
-		player->pendingweapon = wp_shotgun;
 	}
-	break;
-	
-      case am_cell:
-	if (player->readyweapon == wp_fist
-	    || player->readyweapon == wp_pistol)
+	else
 	{
-	    if (player->weaponowned[wp_plasma])
-		player->pendingweapon = wp_plasma;
-	}
-	break;
-	
-      case am_misl:
-	if (player->readyweapon == wp_fist)
-	{
-	    if (player->weaponowned[wp_missile])
-		player->pendingweapon = wp_missile;
-	}
-      default:
-	break;
-    }
-	
-    return true;
-}
+		switch( ammoinfo->index )
+		{
+		case am_clip:
+			if (player->readyweapon == wp_fist)
+			{
+				if (player->weaponowned[wp_chaingun])
+				{
+					player->pendingweapon = wp_chaingun;
+				}
+				else if (player->weaponowned[wp_pistol])
+				{
+					player->pendingweapon = wp_pistol;
+				}
+			}
+			break;
 
+		case am_shell:
+			if (player->readyweapon == wp_fist
+				|| player->readyweapon == wp_pistol)
+			{
+				if (player->weaponowned[wp_shotgun])
+				player->pendingweapon = wp_shotgun;
+			}
+			break;
+
+		case am_cell:
+			if (player->readyweapon == wp_fist
+				|| player->readyweapon == wp_pistol)
+			{
+				if (player->weaponowned[wp_plasma])
+				player->pendingweapon = wp_plasma;
+			}
+			break;
+
+		case am_misl:
+			if (player->readyweapon == wp_fist)
+			{
+				if (player->weaponowned[wp_missile])
+				player->pendingweapon = wp_missile;
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return true;
+}
 
 //
 // P_GiveWeapon
 // The weapon name may have a MF_DROPPED flag ored in.
 //
-DOOM_C_API doombool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
+bool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
 {
-    doombool	gaveammo;
-    doombool	gaveweapon;
+	const weaponinfo_t& thisweapon = weaponinfo[ weapon ];
+	const ammoinfo_t& thisammo = ammoinfo[ thisweapon.ammo ];
 	
-    if (netgame
-	&& (deathmatch!=2)
-	 && !dropped )
-    {
-	// leave placed weapons forever on net games
-	if (player->weaponowned[weapon])
-	    return false;
+	if (netgame
+		&& deathmatch != 2
+		&& !dropped )
+	{
+		// leave placed weapons forever on net games
+		if ( player->weaponowned[ weapon ] )
+		{
+			return false;
+		}
 
-	player->bonuscount += BONUSADD;
-	player->weaponowned[weapon] = true;
+		player->bonuscount += BONUSADD;
+		player->weaponowned[ weapon ] = true;
 
-	if (deathmatch)
-	    P_GiveAmmo (player, weaponinfo[weapon].ammo, 5);
-	else
-	    P_GiveAmmo (player, weaponinfo[weapon].ammo, 2);
-	player->pendingweapon = weapon;
+		P_GiveAmmo( player, &thisammo, deathmatch ? ac_deathmatchweapon : ac_weapon );
 
-	if (player == &players[consoleplayer])
-	    S_StartSound (NULL, sfx_wpnup);
-	return false;
-    }
+		player->pendingweapon = weapon;
+
+		if( player == &players[ consoleplayer ] )
+		{
+			S_StartSound( NULL, sfx_wpnup );
+		}
+
+		return false;
+	}
 	
-    if (weaponinfo[weapon].ammo != am_noammo)
-    {
-	// give one clip with a dropped weapon,
-	// two clips with a found weapon
-	if (dropped)
-	    gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 1);
-	else
-	    gaveammo = P_GiveAmmo (player, weaponinfo[weapon].ammo, 2);
-    }
-    else
-	gaveammo = false;
+	bool gaveammo = false;
+	bool gaveweapon = false;
+
+	if( weaponinfo[weapon].ammo != am_noammo )
+	{
+		gaveammo = P_GiveAmmo( player, &thisammo, dropped ? ac_droppedweapon : ac_weapon );
+	}
 	
-    if (player->weaponowned[weapon])
-	gaveweapon = false;
-    else
-    {
-	gaveweapon = true;
-	player->weaponowned[weapon] = true;
-	player->pendingweapon = weapon;
-    }
+	if( !player->weaponowned[ weapon ] )
+	{
+		gaveweapon = true;
+		player->weaponowned[ weapon ] = true;
+		player->pendingweapon = weapon;
+	}
 	
-    return (gaveweapon || gaveammo);
+	return ( gaveweapon || gaveammo );
 }
 
  
@@ -307,6 +322,317 @@ DOOM_C_API doombool P_GivePower( player_t* player, int /*powertype_t*/ power )
 }
 
 
+bool P_HandleTouch( const mobjinfo_t* info, player_t* player, int32_t& outsound )
+{
+	return false;
+}
+
+bool P_HandleTouchVanilla( int32_t sprite, player_t* player, bool dropped, int32_t& outsound )
+{
+    // Identify by sprite.
+    switch( sprite )
+    {
+	// armor
+    case SPR_ARM1:
+		if (!P_GiveArmor (player, deh_green_armor_class))
+			return false;
+		player->message = DEH_String(GOTARMOR);
+		break;
+		
+    case SPR_ARM2:
+		if (!P_GiveArmor (player, deh_blue_armor_class))
+			return false;
+		player->message = DEH_String(GOTMEGA);
+		break;
+	
+	// bonus items
+    case SPR_BON1:
+		player->health++;		// can go over 100%
+		if (player->health > deh_max_health)
+			player->health = deh_max_health;
+		player->mo->health = player->health;
+		player->message = DEH_String(GOTHTHBONUS);
+		break;
+	
+    case SPR_BON2:
+		player->armorpoints++;		// can go over 100%
+		if (player->armorpoints > deh_max_armor && gameversion > exe_doom_1_2)
+			player->armorpoints = deh_max_armor;
+			// deh_green_armor_class only applies to the green armor shirt;
+			// for the armor helmets, armortype 1 is always used.
+		if (!player->armortype)
+			player->armortype = 1;
+		player->message = DEH_String(GOTARMBONUS);
+		break;
+	
+    case SPR_SOUL:
+		player->health += deh_soulsphere_health;
+		if (player->health > deh_max_soulsphere)
+			player->health = deh_max_soulsphere;
+		player->mo->health = player->health;
+		player->message = DEH_String(GOTSUPER);
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+    case SPR_MEGA:
+		if (gamemode != commercial)
+			return false;
+		player->health = deh_megasphere_health;
+		player->mo->health = player->health;
+			// We always give armor type 2 for the megasphere; dehacked only 
+			// affects the MegaArmor.
+		P_GiveArmor (player, 2);
+		player->message = DEH_String(GOTMSPHERE);
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+	// cards
+	// leave cards for everyone
+    case SPR_BKEY:
+		if (!player->cards[it_bluecard])
+			player->message = DEH_String(GOTBLUECARD);
+		P_GiveCard (player, it_bluecard);
+		if (!netgame)
+			break;
+		return false;
+	
+    case SPR_YKEY:
+		if (!player->cards[it_yellowcard])
+			player->message = DEH_String(GOTYELWCARD);
+		P_GiveCard (player, it_yellowcard);
+		if (!netgame)
+			break;
+		return false;
+	
+    case SPR_RKEY:
+		if (!player->cards[it_redcard])
+			player->message = DEH_String(GOTREDCARD);
+		P_GiveCard (player, it_redcard);
+		if (!netgame)
+			break;
+		return false;
+	
+    case SPR_BSKU:
+		if (!player->cards[it_blueskull])
+			player->message = DEH_String(GOTBLUESKUL);
+		P_GiveCard (player, it_blueskull);
+		if (!netgame)
+			break;
+		return false;
+	
+    case SPR_YSKU:
+		if (!player->cards[it_yellowskull])
+			player->message = DEH_String(GOTYELWSKUL);
+		P_GiveCard (player, it_yellowskull);
+		if (!netgame)
+			break;
+		return false;
+	
+    case SPR_RSKU:
+		if (!player->cards[it_redskull])
+			player->message = DEH_String(GOTREDSKULL);
+		P_GiveCard (player, it_redskull);
+		if (!netgame)
+			break;
+		return false;
+	
+	// medikits, heals
+    case SPR_STIM:
+		if (!P_GiveBody (player, 10))
+			return false;
+		player->message = DEH_String(GOTSTIM);
+		break;
+	
+    case SPR_MEDI:
+		if (!P_GiveBody (player, 25))
+			return false;
+
+		if (player->health < 25)
+			player->message = DEH_String(GOTMEDINEED);
+		else
+			player->message = DEH_String(GOTMEDIKIT);
+		break;
+
+	
+	// power ups
+    case SPR_PINV:
+		if (!P_GivePower (player, pw_invulnerability))
+			return false;
+		player->message = DEH_String(GOTINVUL);
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+    case SPR_PSTR:
+		if (!P_GivePower (player, pw_strength))
+			return false;
+		player->message = DEH_String(GOTBERSERK);
+		if (player->readyweapon != wp_fist)
+			player->pendingweapon = wp_fist;
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+    case SPR_PINS:
+		if (!P_GivePower (player, pw_invisibility))
+			return false;
+		player->message = DEH_String(GOTINVIS);
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+    case SPR_SUIT:
+		if (!P_GivePower (player, pw_ironfeet))
+			return false;
+		player->message = DEH_String(GOTSUIT);
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+    case SPR_PMAP:
+		if (!P_GivePower (player, pw_allmap))
+			return false;
+		player->message = DEH_String(GOTMAP);
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+    case SPR_PVIS:
+		if (!P_GivePower (player, pw_infrared))
+			return false;
+		player->message = DEH_String(GOTVISOR);
+		if (gameversion > exe_doom_1_2)
+			outsound = sfx_getpow;
+		break;
+	
+	// ammo
+    case SPR_CLIP:
+		if (dropped)
+		{
+			if (!P_GiveAmmo (player, &ammoinfo[ am_clip ], ac_droppedclip ))
+			return false;
+		}
+		else
+		{
+			if (!P_GiveAmmo (player, &ammoinfo[ am_clip ], ac_clip ))
+			return false;
+		}
+		player->message = DEH_String(GOTCLIP);
+		break;
+	
+    case SPR_AMMO:
+		if (!P_GiveAmmo (player, &ammoinfo[ am_clip ], ac_box ))
+			return false;
+		player->message = DEH_String(GOTCLIPBOX);
+		break;
+	
+    case SPR_ROCK:
+		if (!P_GiveAmmo (player, &ammoinfo[ am_misl ], ac_clip ))
+			return false;
+		player->message = DEH_String(GOTROCKET);
+		break;
+	
+    case SPR_BROK:
+		if (!P_GiveAmmo (player, &ammoinfo[ am_misl ], ac_box ))
+			return false;
+		player->message = DEH_String(GOTROCKBOX);
+		break;
+	
+    case SPR_CELL:
+		if (!P_GiveAmmo (player, &ammoinfo[ am_cell ], ac_clip ))
+			return false;
+		player->message = DEH_String(GOTCELL);
+		break;
+	
+    case SPR_CELP:
+		if (!P_GiveAmmo (player, &ammoinfo[ am_cell ], ac_box ))
+			return false;
+		player->message = DEH_String(GOTCELLBOX);
+		break;
+	
+    case SPR_SHEL:
+		if (!P_GiveAmmo (player, &ammoinfo[ am_shell ], ac_clip ))
+			return false;
+		player->message = DEH_String(GOTSHELLS);
+		break;
+	
+    case SPR_SBOX:
+		if (!P_GiveAmmo (player, &ammoinfo[ am_shell ], ac_box ))
+			return false;
+		player->message = DEH_String(GOTSHELLBOX);
+		break;
+	
+    case SPR_BPAK:
+		if (!player->backpack)
+		{
+			for (int32_t i=0 ; i<NUMAMMO ; i++)
+			player->maxammo[i] *= 2;
+			player->backpack = true;
+		}
+		for (int32_t i=0 ; i<NUMAMMO ; i++)
+			P_GiveAmmo (player, &ammoinfo[ i ], ac_clip );
+		player->message = DEH_String(GOTBACKPACK);
+		break;
+	
+	// weapons
+    case SPR_BFUG:
+		if (!P_GiveWeapon (player, wp_bfg, false) )
+			return false;
+		player->message = DEH_String(GOTBFG9000);
+		outsound = sfx_wpnup;	
+		break;
+	
+    case SPR_MGUN:
+		if (!P_GiveWeapon(player, wp_chaingun, dropped))
+			return false;
+		player->message = DEH_String(GOTCHAINGUN);
+		outsound = sfx_wpnup;	
+		break;
+	
+    case SPR_CSAW:
+		if (!P_GiveWeapon (player, wp_chainsaw, false) )
+			return false;
+		player->message = DEH_String(GOTCHAINSAW);
+		outsound = sfx_wpnup;	
+		break;
+	
+    case SPR_LAUN:
+		if (!P_GiveWeapon (player, wp_missile, false) )
+			return false;
+		player->message = DEH_String(GOTLAUNCHER);
+		outsound = sfx_wpnup;	
+		break;
+	
+    case SPR_PLAS:
+		if (!P_GiveWeapon (player, wp_plasma, false) )
+			return false;
+		player->message = DEH_String(GOTPLASMA);
+		outsound = sfx_wpnup;	
+		break;
+	
+    case SPR_SHOT:
+		if (!P_GiveWeapon(player, wp_shotgun, dropped))
+			return false;
+		player->message = DEH_String(GOTSHOTGUN);
+		outsound = sfx_wpnup;	
+		break;
+		
+    case SPR_SGN2:
+		if (!P_GiveWeapon(player, wp_supershotgun, dropped))
+			return false;
+		player->message = DEH_String(GOTSHOTGUN2);
+		outsound = sfx_wpnup;	
+		break;
+		
+    default:
+		I_Error ("P_SpecialThing: Unknown gettable thing");
+		break;
+	}
+
+	return true;
+}
 
 //
 // P_TouchSpecialThing
@@ -314,7 +640,6 @@ DOOM_C_API doombool P_GivePower( player_t* player, int /*powertype_t*/ power )
 DOOM_C_API void P_TouchSpecialThing( mobj_t* special, mobj_t* toucher )
 {
     player_t*	player;
-    int		i;
     fixed_t	delta;
     int		sound;
 		
@@ -336,320 +661,31 @@ DOOM_C_API void P_TouchSpecialThing( mobj_t* special, mobj_t* toucher )
     if (toucher->health <= 0)
 	return;
 
-    // Identify by sprite.
-    switch (special->sprite)
-    {
-	// armor
-      case SPR_ARM1:
-	if (!P_GiveArmor (player, deh_green_armor_class))
-	    return;
-	player->message = DEH_String(GOTARMOR);
-	break;
-		
-      case SPR_ARM2:
-	if (!P_GiveArmor (player, deh_blue_armor_class))
-	    return;
-	player->message = DEH_String(GOTMEGA);
-	break;
-	
-	// bonus items
-      case SPR_BON1:
-	player->health++;		// can go over 100%
-	if (player->health > deh_max_health)
-	    player->health = deh_max_health;
-	player->mo->health = player->health;
-	player->message = DEH_String(GOTHTHBONUS);
-	break;
-	
-      case SPR_BON2:
-	player->armorpoints++;		// can go over 100%
-	if (player->armorpoints > deh_max_armor && gameversion > exe_doom_1_2)
-	    player->armorpoints = deh_max_armor;
-        // deh_green_armor_class only applies to the green armor shirt;
-        // for the armor helmets, armortype 1 is always used.
-	if (!player->armortype)
-	    player->armortype = 1;
-	player->message = DEH_String(GOTARMBONUS);
-	break;
-	
-      case SPR_SOUL:
-	player->health += deh_soulsphere_health;
-	if (player->health > deh_max_soulsphere)
-	    player->health = deh_max_soulsphere;
-	player->mo->health = player->health;
-	player->message = DEH_String(GOTSUPER);
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-      case SPR_MEGA:
-	if (gamemode != commercial)
-	    return;
-	player->health = deh_megasphere_health;
-	player->mo->health = player->health;
-        // We always give armor type 2 for the megasphere; dehacked only 
-        // affects the MegaArmor.
-	P_GiveArmor (player, 2);
-	player->message = DEH_String(GOTMSPHERE);
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-	// cards
-	// leave cards for everyone
-      case SPR_BKEY:
-	if (!player->cards[it_bluecard])
-	    player->message = DEH_String(GOTBLUECARD);
-	P_GiveCard (player, it_bluecard);
-	if (!netgame)
-	    break;
-	return;
-	
-      case SPR_YKEY:
-	if (!player->cards[it_yellowcard])
-	    player->message = DEH_String(GOTYELWCARD);
-	P_GiveCard (player, it_yellowcard);
-	if (!netgame)
-	    break;
-	return;
-	
-      case SPR_RKEY:
-	if (!player->cards[it_redcard])
-	    player->message = DEH_String(GOTREDCARD);
-	P_GiveCard (player, it_redcard);
-	if (!netgame)
-	    break;
-	return;
-	
-      case SPR_BSKU:
-	if (!player->cards[it_blueskull])
-	    player->message = DEH_String(GOTBLUESKUL);
-	P_GiveCard (player, it_blueskull);
-	if (!netgame)
-	    break;
-	return;
-	
-      case SPR_YSKU:
-	if (!player->cards[it_yellowskull])
-	    player->message = DEH_String(GOTYELWSKUL);
-	P_GiveCard (player, it_yellowskull);
-	if (!netgame)
-	    break;
-	return;
-	
-      case SPR_RSKU:
-	if (!player->cards[it_redskull])
-	    player->message = DEH_String(GOTREDSKULL);
-	P_GiveCard (player, it_redskull);
-	if (!netgame)
-	    break;
-	return;
-	
-	// medikits, heals
-      case SPR_STIM:
-	if (!P_GiveBody (player, 10))
-	    return;
-	player->message = DEH_String(GOTSTIM);
-	break;
-	
-      case SPR_MEDI:
-	if (!P_GiveBody (player, 25))
-	    return;
-
-	if (player->health < 25)
-	    player->message = DEH_String(GOTMEDINEED);
-	else
-	    player->message = DEH_String(GOTMEDIKIT);
-	break;
-
-	
-	// power ups
-      case SPR_PINV:
-	if (!P_GivePower (player, pw_invulnerability))
-	    return;
-	player->message = DEH_String(GOTINVUL);
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-      case SPR_PSTR:
-	if (!P_GivePower (player, pw_strength))
-	    return;
-	player->message = DEH_String(GOTBERSERK);
-	if (player->readyweapon != wp_fist)
-	    player->pendingweapon = wp_fist;
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-      case SPR_PINS:
-	if (!P_GivePower (player, pw_invisibility))
-	    return;
-	player->message = DEH_String(GOTINVIS);
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-      case SPR_SUIT:
-	if (!P_GivePower (player, pw_ironfeet))
-	    return;
-	player->message = DEH_String(GOTSUIT);
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-      case SPR_PMAP:
-	if (!P_GivePower (player, pw_allmap))
-	    return;
-	player->message = DEH_String(GOTMAP);
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-      case SPR_PVIS:
-	if (!P_GivePower (player, pw_infrared))
-	    return;
-	player->message = DEH_String(GOTVISOR);
-	if (gameversion > exe_doom_1_2)
-	    sound = sfx_getpow;
-	break;
-	
-	// ammo
-      case SPR_CLIP:
-	if (special->flags & MF_DROPPED)
+	bool handled = false;
+	if( false ) //sim.rnr24_code_pointers )
 	{
-	    if (!P_GiveAmmo (player,am_clip,0))
-		return;
+		handled = P_HandleTouch( special->info, player, sound );
 	}
 	else
 	{
-	    if (!P_GiveAmmo (player,am_clip,1))
-		return;
+		handled = P_HandleTouchVanilla( special->sprite, player, (special->flags & MF_DROPPED) != 0, sound );
 	}
-	player->message = DEH_String(GOTCLIP);
-	break;
-	
-      case SPR_AMMO:
-	if (!P_GiveAmmo (player, am_clip,5))
-	    return;
-	player->message = DEH_String(GOTCLIPBOX);
-	break;
-	
-      case SPR_ROCK:
-	if (!P_GiveAmmo (player, am_misl,1))
-	    return;
-	player->message = DEH_String(GOTROCKET);
-	break;
-	
-      case SPR_BROK:
-	if (!P_GiveAmmo (player, am_misl,5))
-	    return;
-	player->message = DEH_String(GOTROCKBOX);
-	break;
-	
-      case SPR_CELL:
-	if (!P_GiveAmmo (player, am_cell,1))
-	    return;
-	player->message = DEH_String(GOTCELL);
-	break;
-	
-      case SPR_CELP:
-	if (!P_GiveAmmo (player, am_cell,5))
-	    return;
-	player->message = DEH_String(GOTCELLBOX);
-	break;
-	
-      case SPR_SHEL:
-	if (!P_GiveAmmo (player, am_shell,1))
-	    return;
-	player->message = DEH_String(GOTSHELLS);
-	break;
-	
-      case SPR_SBOX:
-	if (!P_GiveAmmo (player, am_shell,5))
-	    return;
-	player->message = DEH_String(GOTSHELLBOX);
-	break;
-	
-      case SPR_BPAK:
-	if (!player->backpack)
+
+	if( handled )
 	{
-	    for (i=0 ; i<NUMAMMO ; i++)
-		player->maxammo[i] *= 2;
-	    player->backpack = true;
+		if (special->flags & MF_COUNTITEM)
+		{
+			player->itemcount++;
+			++session.total_found_items_global;
+			++session.total_found_items[ player - players ];
+		}
+		P_RemoveMobj (special);
+		player->bonuscount += BONUSADD;
+		if (player == &players[consoleplayer])
+		{
+			S_StartSound (NULL, sound);
+		}
 	}
-	for (i=0 ; i<NUMAMMO ; i++)
-	    P_GiveAmmo (player, (ammotype_t)i, 1);
-	player->message = DEH_String(GOTBACKPACK);
-	break;
-	
-	// weapons
-      case SPR_BFUG:
-	if (!P_GiveWeapon (player, wp_bfg, false) )
-	    return;
-	player->message = DEH_String(GOTBFG9000);
-	sound = sfx_wpnup;	
-	break;
-	
-      case SPR_MGUN:
-        if (!P_GiveWeapon(player, wp_chaingun,
-                          (special->flags & MF_DROPPED) != 0))
-            return;
-	player->message = DEH_String(GOTCHAINGUN);
-	sound = sfx_wpnup;	
-	break;
-	
-      case SPR_CSAW:
-	if (!P_GiveWeapon (player, wp_chainsaw, false) )
-	    return;
-	player->message = DEH_String(GOTCHAINSAW);
-	sound = sfx_wpnup;	
-	break;
-	
-      case SPR_LAUN:
-	if (!P_GiveWeapon (player, wp_missile, false) )
-	    return;
-	player->message = DEH_String(GOTLAUNCHER);
-	sound = sfx_wpnup;	
-	break;
-	
-      case SPR_PLAS:
-	if (!P_GiveWeapon (player, wp_plasma, false) )
-	    return;
-	player->message = DEH_String(GOTPLASMA);
-	sound = sfx_wpnup;	
-	break;
-	
-      case SPR_SHOT:
-        if (!P_GiveWeapon(player, wp_shotgun,
-                          (special->flags & MF_DROPPED) != 0))
-            return;
-	player->message = DEH_String(GOTSHOTGUN);
-	sound = sfx_wpnup;	
-	break;
-		
-      case SPR_SGN2:
-        if (!P_GiveWeapon(player, wp_supershotgun,
-                          (special->flags & MF_DROPPED) != 0))
-            return;
-	player->message = DEH_String(GOTSHOTGUN2);
-	sound = sfx_wpnup;	
-	break;
-		
-      default:
-	I_Error ("P_SpecialThing: Unknown gettable thing");
-    }
-	
-    if (special->flags & MF_COUNTITEM)
-	{
-		player->itemcount++;
-		++session.total_found_items_global;
-		++session.total_found_items[ player - players ];
-	}
-    P_RemoveMobj (special);
-    player->bonuscount += BONUSADD;
-    if (player == &players[consoleplayer])
-	S_StartSound (NULL, sound);
 }
 
 
@@ -658,7 +694,7 @@ DOOM_C_API void P_TouchSpecialThing( mobj_t* special, mobj_t* toucher )
 //
 DOOM_C_API void P_KillMobj( mobj_t* source, mobj_t* target )
 {
-	mobjtype_t	item;
+	int32_t	item;
 	mobj_t*	mo;
 	
 	target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
@@ -742,27 +778,13 @@ DOOM_C_API void P_KillMobj( mobj_t* source, mobj_t* target )
     // Drop stuff.
     // This determines the kind of object spawned
     // during the death frame of a thing.
-    switch (target->type)
-    {
-      case MT_WOLFSS:
-      case MT_POSSESSED:
-	item = MT_CLIP;
-	break;
-	
-      case MT_SHOTGUY:
-	item = MT_SHOTGUN;
-	break;
-	
-      case MT_CHAINGUY:
-	item = MT_CHAINGUN;
-	break;
-	
-      default:
-	return;
-    }
+	item = target->info->dropitem;
 
-    mo = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
-    mo->flags |= MF_DROPPED;	// special versions of items
+	if( item >= 0 )
+	{
+		mo = P_SpawnMobj(target->x, target->y, ONFLOORZ, item);
+		mo->flags |= MF_DROPPED;	// special versions of items
+	}
 }
 
 

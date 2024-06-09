@@ -23,6 +23,74 @@
 
 #include "m_container.h"
 
+static ammoinfo_t builtinammoinfo[] =
+{
+	{
+		am_clip,	// index
+		10,			// clipammo
+		200,		// maxammo
+		50,			// initialammo
+		400,		// maxupgradedammo
+		50,			// boxammo
+		10,			// backpackammo
+		20,			// weaponammo
+		5,			// droppedclipammo
+		25,			// droppedboxammo
+		5,			// droppedbackpackammo
+		10,			// droppedweaponammo
+		50,			// deathmatchweaponammo
+		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
+	},
+	{
+		am_shell,	// index
+		4,			// clipammo
+		50,			// maxammo
+		0,			// initialammo
+		100,		// maxupgradedammo
+		20,			// boxammo
+		4,			// backpackammo
+		8,			// weaponammo
+		2,			// droppedclipammo
+		10,			// droppedboxammo
+		2,			// droppedbackpackammo
+		4,			// droppedweaponammo
+		20,			// deathmatchweaponammo
+		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
+	},
+	{
+		am_cell,	// index
+		20,			// clipammo
+		300,		// maxammo
+		0,			// initialammo
+		600,		// maxupgradedammo
+		100,		// boxammo
+		20,			// backpackammo
+		40,			// weaponammo
+		10,			// droppedclipammo
+		50,			// droppedboxammo
+		10,			// droppedbackpackammo
+		20,			// droppedweaponammo
+		100,		// deathmatchweaponammo
+		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
+	},
+	{
+		am_misl,	// index
+		1,			// clipammo
+		50,			// maxammo
+		0,			// initialammo
+		100,		// maxupgradedammo
+		5,			// boxammo
+		1,			// backpackammo
+		2,			// weaponammo
+		1,			// droppedclipammo
+		1,			// droppedweaponammo
+		1,			// droppedbackpackammo
+		2,			// droppedboxammo
+		5,			// deathmatchweaponammo
+		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
+	},
+};
+
 //
 // PSPRITE ACTIONS for waepons.
 // This struct controls the weapon animations.
@@ -45,6 +113,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		0,					// slotpriority
 		0,					// switchpriority
 		shareware,			// mingamemode
+		true,				// initialowned
+		false,				// initialraised
 		am_noammo,
 		S_PUNCHUP,
 		S_PUNCHDOWN,
@@ -61,6 +131,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		0,					// slotpriority
 		4,					// switchpriority
 		shareware,			// mingamemode
+		true,				// initialowned
+		true,				// initialraised
 		am_clip,
 		S_PISTOLUP,
 		S_PISTOLDOWN,
@@ -77,6 +149,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		0,					// slotpriority
 		5,					// switchpriority
 		shareware,			// mingamemode
+		false,				// initialowned
+		false,				// initialraised
 		am_shell,
 		S_SGUNUP,
 		S_SGUNDOWN,
@@ -93,6 +167,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		0,					// slotpriority
 		6,					// switchpriority
 		shareware,			// mingamemode
+		false,				// initialowned
+		false,				// initialraised
 		am_clip,
 		S_CHAINUP,
 		S_CHAINDOWN,
@@ -109,6 +185,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		0,					// slotpriority
 		2,					// switchpriority
 		shareware,			// mingamemode
+		false,				// initialowned
+		false,				// initialraised
 		am_misl,
 		S_MISSILEUP,
 		S_MISSILEDOWN,
@@ -125,6 +203,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		0,					// slotpriority
 		8,					// switchpriority
 		registered,			// mingamemode
+		false,				// initialowned
+		false,				// initialraised
 		am_cell,
 		S_PLASMAUP,
 		S_PLASMADOWN,
@@ -141,13 +221,15 @@ static weaponinfo_t	builtinweaponinfo[] =
 		0,					// slotpriority
 		1,					// switchpriority
 		registered,			// mingamemode
+		false,				// initialowned
+		false,				// initialraised
 		am_cell,
 		S_BFGUP,
 		S_BFGDOWN,
 		S_BFG,
 		S_BFG1,
 		S_BFGFLASH1,
-		WF_MBF21_NOAUTOFIRE,
+		WF_MBF21_NOAUTOFIRE | WF_MBF21_NOAUTOSWITCHTO,
 		40,
 	},
 	{
@@ -157,6 +239,8 @@ static weaponinfo_t	builtinweaponinfo[] =
 		1,					// slotpriority
 		3,					// switchpriority
 		shareware,			// mingamemode
+		false,				// initialowned
+		false,				// initialraised
 		am_noammo,
 		S_SAWUP,
 		S_SAWDOWN,
@@ -173,13 +257,15 @@ static weaponinfo_t	builtinweaponinfo[] =
 		1,					// slotpriority
 		7,					// switchpriority
 		commercial,			// mingamemode
+		false,				// initialowned
+		false,				// initialraised
 		am_shell,
 		S_DSGUNUP,
 		S_DSGUNDOWN,
 		S_DSGUN,
 		S_DSGUN1,
 		S_DSGUNFLASH1,
-		WF_NONE,
+		WF_MBF21_NOAUTOSWITCHTO,
 		2,
 	},
 };
@@ -245,7 +331,7 @@ DoomWeaponLookup								weaponinfo;
 
 int32_t DoomWeaponLookup::size()
 {
-	return weaponmap.size();
+	return (int32_t)weaponmap.size();
 }
 
 DoomWeapons DoomWeaponLookup::BySwitchPriority()
@@ -310,4 +396,45 @@ weaponinfo_t& DoomWeaponLookup::Fetch( int32_t weapon )
 
 	return *found->second;
 	
+}
+
+std::unordered_map< int32_t, ammoinfo_t* > BuildAmmoMap( std::span< ammoinfo_t > ammospan )
+{
+	std::unordered_map< int32_t, ammoinfo_t* > map;
+	for( ammoinfo_t& ammo : ammospan )
+	{
+		map[ ammo.index ] = &ammo;
+	}
+
+	return map;
+}
+
+std::vector< ammoinfo_t* > BuildAmmoStorage( std::span< ammoinfo_t > ammospan )
+{
+	std::vector< ammoinfo_t* > vector;
+	vector.reserve( ammospan.size() );
+	for( ammoinfo_t& ammo : ammospan )
+	{
+		vector.push_back( &ammo );
+	}
+	return vector;
+}
+
+std::unordered_map< int32_t, ammoinfo_t* >	ammomap = BuildAmmoMap( std::span( builtinammoinfo ) );
+std::vector< ammoinfo_t* > ammomapstorage = BuildAmmoStorage( std::span( builtinammoinfo ) );
+DoomAmmoLookup ammoinfo;
+
+int32_t DoomAmmoLookup::size()
+{
+	return (int32_t)ammomap.size();
+}
+
+DoomAmmos DoomAmmoLookup::All()
+{
+	return { ammomapstorage.data(), ammomapstorage.data() + ammomapstorage.size() };
+}
+
+ammoinfo_t&	DoomAmmoLookup::Fetch( int32_t weapon )
+{
+	return *ammomap[ weapon ];
 }

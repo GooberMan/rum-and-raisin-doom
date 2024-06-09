@@ -145,10 +145,28 @@ DOOM_C_API typedef enum
     NUMAMMO,
 } ammotype_t;
 
+DOOM_C_API typedef enum ammocategory_e
+{
+	ac_nocategory			= -1,
+	ac_clip					= 0x0000,
+	ac_box					= 0x0001,
+	ac_weapon				= 0x0002,
+	ac_backpack				= 0x0003,
+	ac_dropped				= 0x0004,
+	ac_deathmatch			= 0x0008,
+
+	ac_droppedclip			= ac_dropped | ac_clip,
+	ac_droppedbox			= ac_dropped | ac_box,
+	ac_droppedweapon		= ac_dropped | ac_weapon,
+	ac_droppedbackpack		= ac_dropped | ac_backpack,
+
+	ac_deathmatchweapon		= ac_deathmatch | ac_weapon,
+} ammocategory_t;
 
 // Power up artifacts.
 DOOM_C_API typedef enum
 {
+	pw_nopower = -1,
     pw_invulnerability,
     pw_strength,
     pw_invisibility,
@@ -159,7 +177,31 @@ DOOM_C_API typedef enum
     
 } powertype_t;
 
-
+DOOM_C_API typedef enum itemtype_e
+{
+	item_noitem = -1,
+	item_bluecard,
+	item_yellowcard,
+	item_redcard,
+	item_blueskull,
+	item_yellowskull,
+	item_redskull,
+	item_backpack,
+	item_healthbonus,
+	item_stimpack,
+	item_medikit,
+	item_soulsphere,
+	item_megasphere,
+	item_armorbonus,
+	item_greenarmor,
+	item_bluearmor,
+	item_areamap,
+	item_lightamp,
+	item_berserk,
+	item_invisibility,
+	item_radsuit,
+	item_invulnerability,
+} itemtype_t;
 
 //
 // Power up durations,

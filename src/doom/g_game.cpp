@@ -1299,16 +1299,22 @@ void G_PlayerReborn (int player)
     p->health = deh_initial_health;     // Use dehacked value
 
 	p->weaponowned.Reset();
-	p->readyweapon = p->pendingweapon = wp_pistol; 
-	p->weaponowned[wp_fist] = true; 
-	p->weaponowned[wp_pistol] = true; 
-	p->ammo[am_clip] = deh_initial_bullets; 
-	 
-	for (i=0 ; i<NUMAMMO ; i++)
+
+	for( weaponinfo_t* weapon : weaponinfo.All() )
 	{
-		p->maxammo[i] = maxammo[i];
+		p->weaponowned[ weapon->index ] = weapon->initialowned;
+		if( weapon->initialraised )
+		{
+			p->readyweapon = p->pendingweapon = weapon->index;
+		}
 	}
-		 
+
+	for( ammoinfo_t* ammo : ammoinfo.All() )
+	{
+		p->ammo[ ammo->index ] = ammo->initialammo;
+		p->maxammo[ ammo->index ] = ammo->maxammo;
+	}
+
 	if( player == displayplayer )
 	{
 		R_RebalanceContexts();

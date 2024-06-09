@@ -1069,8 +1069,21 @@ void R_InitColormaps (void)
 		firstcolormap = W_CheckNumForName( "C_START" ) + 1;
 		lastcolormap = W_CheckNumForName( "C_END" ) - 1;
 		numcolormaps = M_MAX( 0, lastcolormap - firstcolormap + 1 );
+	}
 
+	if( comp.use_translucency )
+	{
 		tranmap = GenerateTranmapLinear( DefaultTranmapPercent, PU_STATIC );
+
+		extern std::unordered_map< int32_t, state_t* > statemap;
+		for( auto& statepair : statemap )
+		{
+			state_t* state = statepair.second;
+			if( state->tranmaplump[ 0 ] )
+			{
+				state->tranmap = (byte*)W_CacheLumpName( state->tranmaplump, PU_STATIC );
+			}
+		}
 	}
 }
 

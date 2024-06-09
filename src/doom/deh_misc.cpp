@@ -33,12 +33,6 @@
 
 int deh_initial_health = DEH_DEFAULT_INITIAL_HEALTH;
 
-// Dehacked: "Initial bullets"
-// This is the number of bullets the player has when starting anew.
-// See G_PlayerReborn in g_game.c
-
-int deh_initial_bullets = DEH_DEFAULT_INITIAL_BULLETS;
-
 // Dehacked: "Max Health"
 // This is the maximum health that can be reached using health
 // potions. See P_TouchSpecialThing in p_inter.c
@@ -133,7 +127,6 @@ static struct
     int *value;
 } misc_settings[] = {
     {"Initial Health",      &deh_initial_health},
-    {"Initial Bullets",     &deh_initial_bullets},
     {"Max Health",          &deh_max_health},
     {"Max Armor",           &deh_max_armor},
     {"Green Armor Class",   &deh_green_armor_class},
@@ -192,6 +185,11 @@ static void DEH_MiscParseLine(deh_context_t *context, char *line, void *tag)
 	else if( !strcasecmp(variable_name, "BFG Cells/Shot") )
 	{
 		((weaponinfo_t&)weaponinfo[ wp_bfg ]).ammopershot = ivalue;
+		return;
+	}
+	else if( !strcasecmp(variable_name, "Initial Bullets") )
+	{
+		((ammoinfo_t&)ammoinfo[ am_clip ]).initialammo = ivalue;
 		return;
 	}
 

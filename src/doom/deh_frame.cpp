@@ -44,6 +44,7 @@ DEH_BEGIN_MAPPING(state_mapping, state_t)
   MBF21_MAPPING("Args6",          arg6._int)
   MBF21_MAPPING("Args7",          arg7._int)
   MBF21_MAPPING("Args8",          arg8._int)
+  RNR_MAPPING("Tranmap",          tranmaplump[0])
   DEH_UNSUPPORTED_MAPPING("Codep frame")
 DEH_END_MAPPING
 
@@ -60,7 +61,7 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
     }
     
 	GameVersion_t version = frame_number < ( NUMSTATES_VANILLA - 1 ) ? exe_doom_1_2
-							: frame_number < NUMSTATES_VANILLA ? exe_doom_1_2 // exe_limit_removing
+							: frame_number < NUMSTATES_VANILLA ? exe_limit_removing
 							: frame_number < NUMSTATES_BOOM ? exe_boom_2_02
 							: frame_number < NUMSTATES_MBF ? exe_mbf
 							: frame_number < NUMSTATES_PRBOOMPLUS ? exe_mbf_dehextra
@@ -148,28 +149,37 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
         return;
     }
     
-    // all values are integers
-
-    ivalue = atoi(value);
-    
-	// TODO: Work out how to retain overflow behavior
-    //if (state == &states[NUMSTATES_VANILLA - 1])
-    //{
-    //    DEH_FrameOverflow(context, variable_name, ivalue);
-    //}
-    //else
-	if( strcmp( variable_name, "MBF21 Bits" ) == 0
-		&& !( isdigit( value[ 0 ] ) 
-			|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
-		)
+	if( strcmp( variable_name, "Tranmap" ) == 0 )
 	{
-		DEH_BexHandleFrameBitsMBF21( context, value, state );
+		DEH_IncreaseGameVersion( context, exe_rnr24 );
+		M_StringCopy( state->tranmaplump, value, 9 );
+		M_ForceUppercase( state->tranmaplump );
 	}
-    {
-        // set the appropriate field
+	else
+	{
+		// all other values are integers
 
-        DEH_SetMapping(context, &state_mapping, state, variable_name, ivalue);
-    }
+		ivalue = atoi(value);
+    
+		// TODO: Work out how to retain overflow behavior
+		//if (state == &states[NUMSTATES_VANILLA - 1])
+		//{
+		//    DEH_FrameOverflow(context, variable_name, ivalue);
+		//}
+		//else
+		if( strcmp( variable_name, "MBF21 Bits" ) == 0
+			&& !( isdigit( value[ 0 ] ) 
+				|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
+			)
+		{
+			DEH_BexHandleFrameBitsMBF21( context, value, state );
+		}
+		{
+			// set the appropriate field
+
+			DEH_SetMapping(context, &state_mapping, state, variable_name, ivalue);
+		}
+	}
 }
 
 static void DEH_FrameSHA1Sum(sha1_context_t *context)

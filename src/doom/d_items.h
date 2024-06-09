@@ -21,6 +21,28 @@
 #define __D_ITEMS__
 
 #include "doomdef.h"
+#include "m_fixed.h"
+
+DOOM_C_API typedef struct ammoinfo_s
+{
+	int32_t	index;
+
+	int32_t clipammo;
+	int32_t maxammo;
+
+	// R&R24 additions
+	int32_t initialammo;
+	int32_t maxupgradedammo;
+	int32_t boxammo;
+	int32_t backpackammo;
+	int32_t weaponammo;
+	int32_t droppedclipammo;
+	int32_t droppedboxammo;
+	int32_t droppedbackpackammo;
+	int32_t droppedweaponammo;
+	int32_t deathmatchweaponammo;
+	fixed_t skillmul[ sk_max ];
+} ammoinfo_t;
 
 DOOM_C_API typedef enum weaponflagsmbf21_e
 {
@@ -42,16 +64,18 @@ DOOM_C_API typedef struct weaponinfo_s
 	int32_t			slotpriority;
 	int32_t			switchpriority;
 	GameMode_t		mingamemode;
+	doombool		initialowned;
+	doombool		initialraised;
 
 	// Vanilla values
-	ammotype_t		ammo;
+	int32_t			ammo;
 	int32_t			upstate;
 	int32_t			downstate;
 	int32_t			readystate;
 	int32_t			atkstate;
 	int32_t			flashstate;
 
-	// MBF extensions
+	// MBF21 extensions
 	int32_t			mbf21flags;
 	int32_t			ammopershot;
 
@@ -61,6 +85,8 @@ DOOM_C_API typedef struct weaponinfo_s
 	constexpr bool NoAutofire() const					{ return mbf21flags & WF_MBF21_NOAUTOFIRE; }
 	constexpr bool NoThrusting() const					{ return mbf21flags & WF_MBF21_NOTHRUST; }
 	constexpr bool Silent() const						{ return mbf21flags & WF_MBF21_SILENT; }
+
+	INLINE const ammoinfo_t& AmmoInfo() const;
 #endif // defined( __cplusplus )
 } weaponinfo_t;
 
@@ -70,8 +96,8 @@ struct DoomWeapons
 	weaponinfo_t** _begin;
 	weaponinfo_t** _end;
 
-	constexpr weaponinfo_t** begin()	{ return _begin; }
-	constexpr weaponinfo_t** end()		{ return _end; }
+	constexpr weaponinfo_t** begin()								{ return _begin; }
+	constexpr weaponinfo_t** end()									{ return _end; }
 };
 
 class DoomWeaponLookup
@@ -90,7 +116,36 @@ protected:
 	weaponinfo_t&	Fetch( int32_t weapon );
 };
 
+struct DoomAmmos
+{
+	ammoinfo_t** _begin;
+	ammoinfo_t** _end;
+
+	constexpr ammoinfo_t** begin()									{ return _begin; }
+	constexpr ammoinfo_t** end()									{ return _end; }
+};
+
+class DoomAmmoLookup
+{
+public:
+	INLINE const ammoinfo_t& operator[]( int32_t ammo )				{ return Fetch( ammo ); }
+	INLINE const ammoinfo_t& operator[]( ammotype_t ammo )			{ return Fetch( (int32_t)ammo ); }
+
+	int32_t					size();
+	DoomAmmos				All();
+
+protected:
+	ammoinfo_t&	Fetch( int32_t ammo );
+};
+
 extern DoomWeaponLookup weaponinfo;
+extern DoomAmmoLookup ammoinfo;
+
+const ammoinfo_t& weaponinfo_t::AmmoInfo() const
+{
+	return ammoinfo[ ammo ];
+}
+
 #endif // defined( __cplusplus )
 
 #endif

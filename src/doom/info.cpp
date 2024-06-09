@@ -66,6 +66,11 @@
 		splash_none,			\
 		0,						\
 		0,						\
+		0,						\
+		0,						\
+		0,						\
+		-1,						\
+		-1,						\
 	}
 
 // You can use std::enable_if in earlier C++ versions if required...
@@ -1346,7 +1351,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_DROPOFF|MF_PICKUP|MF_NOTDMATCH,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_POSSESSED
@@ -1374,7 +1394,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_posact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_POSS_RAISE1		// raisestate
+		S_POSS_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		MT_CLIP,				// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SHOTGUY
@@ -1402,7 +1437,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_posact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_SPOS_RAISE1		// raisestate
+		S_SPOS_RAISE1,		// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		MT_SHOTGUN,				// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_VILE
@@ -1438,6 +1488,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		splash_none,			// splashgroup
 		MF2_MBF21_SHORTMRANGE | MF2_MBF21_DMGIGNORED | MF2_MBF21_NOTHRESHOLD,	// flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_FIRE
@@ -1465,7 +1523,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_UNDEAD
@@ -1501,6 +1574,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		splash_none,			// splashgroup
 		MF2_MBF21_RANGEHALF | MF2_MBF21_LONGMELEE,	// flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_TRACER
@@ -1528,7 +1609,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		10,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SMOKE
@@ -1556,7 +1652,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_FATSO
@@ -1592,6 +1703,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		splash_none,			// splashgroup
 		MF2_MBF21_MAP07BOSS1,	// flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_FATSHOT
@@ -1619,7 +1738,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		8,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,	// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_CHAINGUY
@@ -1647,7 +1781,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_posact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_CPOS_RAISE1		// raisestate
+		S_CPOS_RAISE1,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		MT_CHAINGUN,			// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_TROOP
@@ -1675,7 +1824,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_bgact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_TROO_RAISE1		// raisestate
+		S_TROO_RAISE1,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SERGEANT
@@ -1703,7 +1867,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_dmact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_SARG_RAISE1		// raisestate
+		S_SARG_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SHADOWS
@@ -1731,35 +1910,65 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_dmact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_SHADOW|MF_COUNTKILL,		// flags
-		S_SARG_RAISE1		// raisestate
+		S_SARG_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_HEAD
-		MT_HEAD,		// type
-		exe_doom_1_2,	// minimumversion
-		3005,		// doomednum
-		S_HEAD_STND,		// spawnstate
-		400,		// spawnhealth
-		S_HEAD_RUN1,		// seestate
-		sfx_cacsit,		// seesound
-		8,		// reactiontime
-		0,		// attacksound
-		S_HEAD_PAIN,		// painstate
-		128,		// painchance
-		sfx_dmpain,		// painsound
-		0,		// meleestate
-		S_HEAD_ATK1,		// missilestate
-		S_HEAD_DIE1,		// deathstate
-		S_NULL,		// xdeathstate
-		sfx_cacdth,		// deathsound
-		8,		// speed
-		31*FRACUNIT,		// radius
-		56*FRACUNIT,		// height
-		400,		// mass
-		0,		// damage
-		sfx_dmact,		// activesound
+		MT_HEAD,				// type
+		exe_doom_1_2,			// minimumversion
+		3005,					// doomednum
+		S_HEAD_STND,			// spawnstate
+		400,					// spawnhealth
+		S_HEAD_RUN1,			// seestate
+		sfx_cacsit,				// seesound
+		8,						// reactiontime
+		0,						// attacksound
+		S_HEAD_PAIN,			// painstate
+		128,					// painchance
+		sfx_dmpain,				// painsound
+		0,						// meleestate
+		S_HEAD_ATK1,			// missilestate
+		S_HEAD_DIE1,			// deathstate
+		S_NULL,					// xdeathstate
+		sfx_cacdth,				// deathsound
+		8,						// speed
+		31*FRACUNIT,			// radius
+		56*FRACUNIT,			// height
+		400,					// mass
+		0,						// damage
+		sfx_dmact,				// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_FLOAT|MF_NOGRAVITY|MF_COUNTKILL,		// flags
-		S_HEAD_RAISE1		// raisestate
+		S_HEAD_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_BRUISER
@@ -1795,6 +2004,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		splash_none,			// splashgroup
 		MF2_MBF21_E1M8BOSS,		// flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_BRUISERSHOT
@@ -1824,6 +2041,20 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
 		S_NULL,		// raisestate
 		20*FRACUNIT,			// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_KNIGHT
@@ -1859,6 +2090,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		splash_none,			// splashgroup
 		0,						// flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_SKULL
@@ -1894,6 +2133,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		splash_none,			// splashgroup
 		MF2_MBF21_RANGEHALF,	// flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_SPIDER
@@ -1930,6 +2177,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		MF2_MBF21_BOSS | MF2_MBF21_E3M8BOSS | MF2_MBF21_E4M8BOSS
 			| MF2_MBF21_NORADIUSDMG | MF2_MBF21_FULLVOLSOUNDS | MF2_MBF21_RANGEHALF, // flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_BABY
@@ -1965,6 +2220,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		splash_none,			// splashgroup
 		MF2_MBF21_MAP07BOSS2,	// flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{							// MT_CYBORG
@@ -2001,6 +2264,14 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		MF2_MBF21_BOSS | MF2_MBF21_E2M8BOSS | MF2_MBF21_E4M6BOSS | MF2_MBF21_NORADIUSDMG
 			| MF2_MBF21_FULLVOLSOUNDS | MF2_MBF21_HIGHERMPROB | MF2_MBF21_RANGEHALF, // flags2
 		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_PAIN
@@ -2028,7 +2299,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_dmact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_FLOAT|MF_NOGRAVITY|MF_COUNTKILL,		// flags
-		S_PAIN_RAISE1		// raisestate
+		S_PAIN_RAISE1,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_WOLFSS
@@ -2056,7 +2342,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_posact,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_SSWV_RAISE1		// raisestate
+		S_SSWV_RAISE1,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		MT_CLIP,				// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_KEEN
@@ -2084,7 +2385,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_BOSSBRAIN
@@ -2112,7 +2428,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SHOOTABLE,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_BOSSSPIT
@@ -2140,7 +2471,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOSECTOR,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_BOSSTARGET
@@ -2168,7 +2514,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOSECTOR,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SPAWNSHOT
@@ -2196,7 +2557,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		3,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY|MF_NOCLIP,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SPAWNFIRE
@@ -2224,7 +2600,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_BARREL
@@ -2252,7 +2643,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SHOOTABLE|MF_NOBLOOD,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_TROOPSHOT
@@ -2280,8 +2686,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		3,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL,		// raisestate
-		20*FRACUNIT,	// fastspeed
+		S_NULL,					// raisestate
+		20*FRACUNIT,			// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_HEADSHOT
@@ -2309,8 +2729,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		5,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL,		// raisestate
-		20*FRACUNIT,	// fastspeed
+		S_NULL,					// raisestate
+		20*FRACUNIT,			// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_ROCKET
@@ -2338,7 +2772,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		20,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_PLASMA
@@ -2366,7 +2815,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		5,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_BFG
@@ -2394,7 +2858,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		100,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_ARACHPLAZ
@@ -2422,7 +2901,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		5,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_PUFF
@@ -2450,7 +2944,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_BLOOD
@@ -2478,7 +2987,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_TFOG
@@ -2506,7 +3030,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_IFOG
@@ -2534,7 +3073,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_TELEPORTMAN
@@ -2562,7 +3116,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOSECTOR,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_EXTRABFG
@@ -2590,7 +3159,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC0
@@ -2618,7 +3202,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_greenarmor,		// pickupitemtype
 	},
 
 	{		// MT_MISC1
@@ -2646,7 +3245,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_bluearmor,			// pickupitemtype
 	},
 
 	{		// MT_MISC2
@@ -2674,7 +3288,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_healthbonus,		// pickupitemtype
 	},
 
 	{		// MT_MISC3
@@ -2702,7 +3331,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_armorbonus,		// pickupitemtype
 	},
 
 	{		// MT_MISC4
@@ -2730,7 +3374,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_NOTDMATCH,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_bluecard,			// pickupitemtype
 	},
 
 	{		// MT_MISC5
@@ -2758,7 +3417,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_NOTDMATCH,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_redcard,			// pickupitemtype
 	},
 
 	{		// MT_MISC6
@@ -2786,7 +3460,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_NOTDMATCH,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_yellowcard,		// pickupitemtype
 	},
 
 	{		// MT_MISC7
@@ -2814,7 +3503,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_NOTDMATCH,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_yellowskull,		// pickupitemtype
 	},
 
 	{		// MT_MISC8
@@ -2842,7 +3546,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_NOTDMATCH,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_redskull,			// pickupitemtype
 	},
 
 	{		// MT_MISC9
@@ -2870,7 +3589,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_NOTDMATCH,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_blueskull,			// pickupitemtype
 	},
 
 	{		// MT_MISC10
@@ -2898,7 +3632,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_stimpack,			// pickupitemtype
 	},
 
 	{		// MT_MISC11
@@ -2926,7 +3675,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_medikit,			// pickupitemtype
 	},
 
 	{		// MT_MISC12
@@ -2954,7 +3718,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_soulsphere,		// pickupitemtype
 	},
 
 	{		// MT_INV
@@ -2982,7 +3761,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_invulnerability,	// pickupitemtype
 	},
 
 	{		// MT_MISC13
@@ -3010,7 +3804,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_berserk,			// pickupitemtype
 	},
 
 	{		// MT_INS
@@ -3038,7 +3847,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_invisibility,		// pickupitemtype
 	},
 
 	{		// MT_MISC14
@@ -3066,7 +3890,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_radsuit,			// pickupitemtype
 	},
 
 	{		// MT_MISC15
@@ -3094,7 +3933,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_areamap,			// pickupitemtype
 	},
 
 	{		// MT_MISC16
@@ -3122,7 +3976,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_lightamp,			// pickupitemtype
 	},
 
 	{		// MT_MEGA
@@ -3150,7 +4019,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_megasphere,		// pickupitemtype
 	},
 
 	{		// MT_CLIP
@@ -3178,7 +4062,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_clip,				// pickupammotype
+		ac_clip,				// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC17
@@ -3206,7 +4105,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_clip,				// pickupammotype
+		ac_box,					// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC18
@@ -3234,7 +4148,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_misl,				// pickupammotype
+		ac_clip,				// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC19
@@ -3262,7 +4191,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_misl,				// pickupammotype
+		ac_box,					// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC20
@@ -3290,7 +4234,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_cell,				// pickupammotype
+		ac_clip,				// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC21
@@ -3318,7 +4277,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_cell,				// pickupammotype
+		ac_box,					// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC22
@@ -3346,7 +4320,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_shell,				// pickupammotype
+		ac_clip,				// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC23
@@ -3374,7 +4363,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		am_shell,				// pickupammotype
+		ac_box,					// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC24
@@ -3402,7 +4406,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		item_backpack,			// pickupitemtype
 	},
 
 	{		// MT_MISC25
@@ -3430,7 +4449,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		wp_bfg,					// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_CHAINGUN
@@ -3458,7 +4492,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		wp_chaingun,			// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC26
@@ -3486,7 +4535,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		wp_chainsaw,			// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC27
@@ -3514,7 +4578,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		wp_missile,				// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC28
@@ -3542,7 +4621,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		wp_plasma,				// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SHOTGUN
@@ -3570,7 +4664,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		wp_shotgun,				// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_SUPERSHOTGUN
@@ -3598,7 +4707,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPECIAL,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		wp_supershotgun,		// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC29
@@ -3626,7 +4750,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC30
@@ -3654,7 +4793,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC31
@@ -3682,7 +4836,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC32
@@ -3710,7 +4879,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC33
@@ -3738,7 +4922,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC34
@@ -3766,7 +4965,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC35
@@ -3794,7 +5008,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC36
@@ -3822,7 +5051,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC37
@@ -3850,7 +5094,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC38
@@ -3878,7 +5137,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC39
@@ -3906,7 +5180,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC40
@@ -3934,7 +5223,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC41
@@ -3962,7 +5266,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC42
@@ -3990,7 +5309,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC43
@@ -4018,7 +5352,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC44
@@ -4046,7 +5395,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC45
@@ -4074,7 +5438,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC46
@@ -4102,7 +5481,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC47
@@ -4130,7 +5524,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC48
@@ -4158,7 +5567,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC49
@@ -4186,7 +5610,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC50
@@ -4214,7 +5653,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC51
@@ -4242,7 +5696,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC52
@@ -4270,7 +5739,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC53
@@ -4298,7 +5782,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC54
@@ -4326,7 +5825,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC55
@@ -4354,7 +5868,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC56
@@ -4382,7 +5911,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC57
@@ -4410,7 +5954,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC58
@@ -4438,7 +5997,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC59
@@ -4466,7 +6040,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC60
@@ -4494,7 +6083,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC61
@@ -4522,7 +6126,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC62
@@ -4550,7 +6169,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC63
@@ -4578,7 +6212,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC64
@@ -4606,7 +6255,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC65
@@ -4634,7 +6298,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC66
@@ -4662,7 +6341,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC67
@@ -4690,7 +6384,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC68
@@ -4718,7 +6427,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC69
@@ -4746,7 +6470,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC70
@@ -4774,7 +6513,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC71
@@ -4802,7 +6556,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		0,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC72
@@ -4830,7 +6599,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC73
@@ -4858,7 +6642,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC74
@@ -4886,7 +6685,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC75
@@ -4914,7 +6728,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC76
@@ -4942,7 +6771,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC77
@@ -4970,7 +6814,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC78
@@ -4998,7 +6857,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC79
@@ -5026,7 +6900,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC80
@@ -5054,7 +6943,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC81
@@ -5082,7 +6986,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC82
@@ -5110,7 +7029,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC83
@@ -5138,7 +7072,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC84
@@ -5166,7 +7115,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC85
@@ -5194,7 +7158,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{		// MT_MISC86
@@ -5222,7 +7201,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,		// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP,		// flags
-		S_NULL		// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	// Boom things
@@ -5251,7 +7245,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,				// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
-		S_NULL			// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{					// MT_PULL
@@ -5279,7 +7288,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,				// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP | MF_NOSECTOR | MF_NOGRAVITY, // flags
-		S_NULL			// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	// MBF things
@@ -5308,7 +7332,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,				// damage
 		sfx_dgact,		// activesound
 		MF_SOLID | MF_SHOOTABLE | MF_COUNTKILL, // flags
-		S_DOGS_RAISE1	// raisestate
+		S_DOGS_RAISE1,			// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{					// MT_PLASMA1
@@ -5336,7 +7375,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		4,				// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_DROPOFF|MF_MISSILE|MF_MBF_BOUNCES, // flags
-		S_NULL			// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{					// MT_PLASMA2
@@ -5364,7 +7418,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		4,				// damage
 		sfx_None,		// activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_DROPOFF|MF_MISSILE|MF_MBF_BOUNCES, // flags
-		S_NULL			// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{					// MT_SCEPTRE
@@ -5392,7 +7461,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,				// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM, // flags
-		S_NULL			// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	{					// MT_BIBLE
@@ -5420,7 +7504,22 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		0,				// damage
 		sfx_None,		// activesound
 		MF_SPECIAL|MF_COUNTITEM, // flags
-		S_NULL			// raisestate
+		S_NULL,					// raisestate
+		0,						// fastspeed
+		0,						// meleerange
+		infighting_none,		// infightinggroup
+		projectile_none,		// projectilegroup
+		splash_none,			// splashgroup
+		0,						// flags2
+		0,						// ripsound
+		0,						// rnr24flags
+		0,						// minrespawntics
+		0,						// respawndice
+		-1,						// dropitem
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
+		-1,						// pickupweapontype
+		-1,						// pickupitemtype
 	},
 
 	MUSINFO( 14100 ),

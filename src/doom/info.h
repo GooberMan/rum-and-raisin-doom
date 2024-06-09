@@ -1495,7 +1495,7 @@ DOOM_C_API typedef struct state_s
 	statearg_t	misc1;
 	statearg_t	misc2;
 	
-	// MBF extensions
+	// MBF21 extensions
 	int32_t		mbf21flags;
 	statearg_t	arg1;
 	statearg_t	arg2;
@@ -1505,6 +1505,12 @@ DOOM_C_API typedef struct state_s
 	statearg_t	arg6;
 	statearg_t	arg7;
 	statearg_t	arg8;
+
+	// R&R24 extensions
+	char		tranmaplump[ 12 ]; // Only 8 characters used of course
+
+	// Runtime data, any further extentions go above these values
+	byte*		tranmap;
 
 #if defined( __cplusplus )
 	INLINE const int32_t Tics() const
@@ -1589,6 +1595,11 @@ DOOM_C_API typedef struct
 	int32_t		rnr24flags;
 	int32_t		minrespawntics;
 	int32_t		respawndice;
+	int32_t		dropitem;
+	int32_t		pickupammotype;
+	int32_t		pickupammocategory;
+	int32_t		pickupweapontype;
+	int32_t		pickupitemtype;
 } mobjinfo_t;
 
 #if defined( __cplusplus )

@@ -78,6 +78,7 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		mbf21_code_pointers;					// Dehacked additions
 	doombool		rnr24_line_specials;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	doombool		rnr24_thing_extensions;					// New flags, nightmare respawn times
+	doombool		rnr24_code_pointers;					// Dehacked extensions (unlimited weapons and ammo types)
 	doombool		allow_skydefs;							// Generic skies
 } simoptions_t;
 

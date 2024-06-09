@@ -666,7 +666,12 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 		vis->colormap = rendercontext.viewpoint.colormaps + spritelightoffsets[ index ];
 	}
 
-	vis->tranmap = ( comp.use_translucency && thing->flags & MF_BOOM_TRANSLUCENT ) ? tranmap : nullptr;
+	vis->tranmap = comp.use_translucency ? thing->state && thing->state->tranmap
+											? thing->state->tranmap
+											: ( thing->flags & MF_BOOM_TRANSLUCENT )
+												? tranmap
+												: nullptr
+										: nullptr;
 }
 
 //
@@ -842,7 +847,9 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	}
 
 	vis->patch = lump;
-	vis->tranmap = nullptr;
+	vis->tranmap = comp.use_translucency && psp->state->tranmap
+					? psp->state->tranmap
+					: nullptr;
 
 	if (viewpoint.player->powers[pw_invisibility] > 4*32
 		|| viewpoint.player->powers[pw_invisibility] & 8)

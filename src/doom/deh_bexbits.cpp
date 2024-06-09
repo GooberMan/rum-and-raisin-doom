@@ -107,6 +107,7 @@ static flagsmap_t ThingBitFlags2 =
 static flagsmap_t ThingBitFlagsRNR24 =
 {
 	{ "NORESPAWN",		{ 0x00000001,	exe_rnr24		} },
+	{ "SPECIALSTAYS",	{ 0x00000002,	exe_rnr24		} },
 };
 
 static flagsmap_t FrameBitFlagsMBF21 =

@@ -292,9 +292,6 @@ DOOM_C_API extern mobj_t**			blocklinks;	// for thing chains
 //
 // P_INTER
 //
-DOOM_C_API extern int		maxammo[NUMAMMO];
-DOOM_C_API extern int		clipammo[NUMAMMO];
-
 DOOM_C_API void P_TouchSpecialThing( mobj_t* special,  mobj_t* toucher );
 
 DOOM_C_API void P_DamageMobj( mobj_t* target, mobj_t* inflictor, mobj_t* source, int damage, damage_t flags );

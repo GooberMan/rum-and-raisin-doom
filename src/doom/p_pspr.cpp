@@ -151,7 +151,7 @@ void P_BringUpWeapon (player_t* player)
 //
 DOOM_C_API doombool P_CheckAmmo (player_t* player)
 {
-	ammotype_t ammo = weaponinfo[player->readyweapon].ammo;
+	int32_t ammo	= weaponinfo[player->readyweapon].ammo;
 	int32_t count	= weaponinfo[player->readyweapon].ammopershot;
 
     // Some do not need ammunition anyway.
@@ -179,61 +179,6 @@ DOOM_C_API doombool P_CheckAmmo (player_t* player)
 			I_Error( "P_CheckAmmo: Weapon select will infinite loop here in vanilla Doom" );
 		}
 	} while( player->pendingweapon == wp_nochange );
-
-#if 0
-    // Out of ammo, pick a weapon to change to.
-    // Preferences are set here.
-    do
-    {
-		if (player->weaponowned[wp_plasma]
-			&& player->ammo[am_cell]
-			&& (gamemode != shareware) )
-		{
-			player->pendingweapon = wp_plasma;
-		}
-		else if (player->weaponowned[wp_supershotgun] 
-			 && player->ammo[am_shell]>2
-			 && (gamemode == commercial) )
-		{
-			player->pendingweapon = wp_supershotgun;
-		}
-		else if (player->weaponowned[wp_chaingun]
-			 && player->ammo[am_clip])
-		{
-			player->pendingweapon = wp_chaingun;
-		}
-		else if (player->weaponowned[wp_shotgun]
-			 && player->ammo[am_shell])
-		{
-			player->pendingweapon = wp_shotgun;
-		}
-		else if (player->ammo[am_clip])
-		{
-			player->pendingweapon = wp_pistol;
-		}
-		else if (player->weaponowned[wp_chainsaw])
-		{
-			player->pendingweapon = wp_chainsaw;
-		}
-		else if (player->weaponowned[wp_missile]
-			 && player->ammo[am_misl])
-		{
-			player->pendingweapon = wp_missile;
-		}
-		else if (player->weaponowned[wp_bfg]
-			 && player->ammo[am_cell]>40
-			 && (gamemode != shareware) )
-		{
-			player->pendingweapon = wp_bfg;
-		}
-		else
-		{
-			// If everything fails.
-			player->pendingweapon = wp_fist;
-		}
-	
-    } while (player->pendingweapon == wp_nochange);
-#endif
 
     // Now set appropriate weapon overlay.
     P_SetPsprite (player,

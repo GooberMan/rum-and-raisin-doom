@@ -234,6 +234,7 @@ DOOM_C_API typedef enum mobjflag2_e
 DOOM_C_API typedef enum mobjrnr24flag_e
 {
 	MF_RNR24_NORESPAWN			= 0x00000001,	// Disables nightmare respawns
+	MF_RNR24_SPECIALSTAYS		= 0x00000002,	// Collectible items remain in place
 } mobjrnr24flag_t;
 
 DOOM_C_API typedef struct mobjinstance_s

@@ -44,6 +44,8 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   RNR_MAPPING("Slot",             slot)
   RNR_MAPPING("Slot Priority",    slotpriority)
   RNR_MAPPING("Switch Priority",  switchpriority)
+  RNR_MAPPING("Initial Owned",    initialowned)
+  RNR_MAPPING("Initial Raised",   initialraised)
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleWeaponBitsMBF21( deh_context_t* context, const char* value, weaponinfo_t* weapon );
@@ -80,6 +82,8 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 			-1,				// slotpriority
 			-1,				// switchpriority
 			registered,		// mingamemode
+			false,			// initialowned
+			false,			// initialraised
 			am_noammo,		// ammo
 			S_NULL,			// upstate
 			S_NULL,			// downstate

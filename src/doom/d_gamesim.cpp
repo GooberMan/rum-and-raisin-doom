@@ -406,6 +406,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
+	values.sim.rnr24_code_pointers = false;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
@@ -529,6 +530,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.mbf21_code_pointers = false;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
+	values.sim.rnr24_code_pointers = false;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
@@ -644,6 +646,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 	values.sim.rnr24_line_specials = false;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
+	values.sim.rnr24_code_pointers = false;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
@@ -759,6 +762,7 @@ static simvalues_t GetRNR24Values( GameMode_t mode )
 	values.sim.mbf21_code_pointers = true;					// Dehacked additions
 	values.sim.rnr24_line_specials = true;					// Floor/ceiling offsets, music changing, resetting exits, coloured lighting
 	values.sim.rnr24_thing_extensions = true;				// New flags, nightmare respawn times
+	values.sim.rnr24_code_pointers = true;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
