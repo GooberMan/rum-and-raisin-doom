@@ -1597,7 +1597,6 @@ static interlevellayer_t doom_layers_e1[] =
 
 interlevel_t doom_interlevel_e1 =
 {
-	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_layers_e1,									// layers
@@ -1679,7 +1678,6 @@ static interlevellayer_t doom_layers_e2[] =
 
 interlevel_t doom_interlevel_e2 =
 {
-	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_layers_e2,									// layers
@@ -1748,7 +1746,6 @@ static interlevellayer_t doom_layers_e3[] =
 
 interlevel_t doom_interlevel_e3 =
 {
-	Interlevel_Animated,							// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	RuntimeFlowString( background_format_text ),	// background_lump
 	doom_layers_e3,									// layers
@@ -1778,7 +1775,6 @@ endgame_t doom_endgame_e4 =
 
 interlevel_t doom_interlevel_e4 =
 {
-	Interlevel_Static,								// type
 	RuntimeFlowString( "inter" ),					// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
 	nullptr,										// layers

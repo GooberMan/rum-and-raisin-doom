@@ -27,13 +27,39 @@ struct JSONLumpVersion
 {
 	int32_t major;
 	int32_t minor;
-	int64_t revision;
+	int32_t revision;
+	int32_t devversion;
 
 	constexpr bool operator > ( const JSONLumpVersion& rhs ) const
 	{
 		return major > rhs.major
 			|| minor > rhs.minor
-			|| revision > rhs.revision;
+			|| revision > rhs.revision
+			|| devversion > rhs.devversion;
+	}
+
+	constexpr bool operator >= ( const JSONLumpVersion& rhs ) const
+	{
+		return major >= rhs.major
+			|| minor >= rhs.minor
+			|| revision >= rhs.revision
+			|| devversion >= rhs.devversion;
+	}
+
+	constexpr bool operator < ( const JSONLumpVersion& rhs ) const
+	{
+		return major < rhs.major
+			|| minor < rhs.minor
+			|| revision < rhs.revision
+			|| devversion < rhs.devversion;
+	}
+
+	constexpr bool operator <= ( const JSONLumpVersion& rhs ) const
+	{
+		return major <= rhs.major
+			|| minor <= rhs.minor
+			|| revision <= rhs.revision
+			|| devversion <= rhs.devversion;
 	}
 };
 

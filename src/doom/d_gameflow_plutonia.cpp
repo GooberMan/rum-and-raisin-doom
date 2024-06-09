@@ -1020,7 +1020,6 @@ endgame_t plutonia_endgame =
 
 interlevel_t plutonia_interlevel =
 {
-	Interlevel_Static,								// type
 	RuntimeFlowString( "dm2int" ),					// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
 	nullptr,										// layers

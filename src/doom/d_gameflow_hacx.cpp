@@ -717,7 +717,6 @@ endgame_t hacx_endgame =
 
 interlevel_t hacx_interlevel =
 {
-	Interlevel_Static,								// type
 	RuntimeFlowString( "dm2int" ),					// music_lump
 	FlowString( "INTERPIC" ),						// background_lump
 	nullptr,										// layers
