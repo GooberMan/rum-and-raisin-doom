@@ -1630,7 +1630,7 @@ DOOM_C_API void T_MusInfo( musinfo_t* info )
 	}
 }
 
-int32_t	EV_DoMusicSwitchGeneric( line_t* line, mobj_t* activator )
+DOOM_C_API int32_t EV_DoMusicSwitchGeneric( line_t* line, mobj_t* activator )
 {
 	int32_t side = P_PointOnLineSide( activator->x, activator->y, line );
 	if( ( line->action->param1 & mt_walk ) == mt_walk )
@@ -1650,6 +1650,49 @@ int32_t	EV_DoMusicSwitchGeneric( line_t* line, mobj_t* activator )
 	}
 
 	return 1;
+}
+
+// =================
+//    SECTOR TINT
+// =================
+
+DOOM_C_API int32_t EV_DoSectorTintGeneric( line_t* line, mobj_t* activator )
+{
+	int32_t applied = 0;
+
+	if( line->frontside )
+	{
+		int32_t side = P_PointOnLineSide( activator->x, activator->y, line );
+		if( ( line->action->param1 & mt_walk ) == mt_walk )
+		{
+			side = side ? 0 : 1;
+		}
+
+		byte* colormap = nullptr;
+		if( side == 0 ) // Activating from front side
+		{
+			colormap = ( !line->frontside->toptexture && line->frontside->toptextureindex >= 0 )
+						? R_GetColormapForNum( line->frontside->toptextureindex )
+						: nullptr;
+		}
+		else
+		{
+			colormap = ( !line->frontside->bottomtexture && line->frontside->bottomtextureindex >= 0 )
+						? R_GetColormapForNum( line->frontside->bottomtextureindex )
+						: nullptr;
+		}
+
+		for( sector_t& sector : Sectors() )
+		{
+			if( sector.tag == line->tag )
+			{
+				sector.colormap = colormap;
+				++applied;
+			}
+		}
+	}
+
+	return applied;
 }
 
 // =================
@@ -2569,6 +2612,20 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 				break;
 
 			case Tint_SetTo_Always:
+				if( line.frontside )
+				{
+					byte* colormap = ( !line.frontside->toptexture && line.frontside->toptextureindex >= 0 )
+									? R_GetColormapForNum( line.frontside->toptextureindex )
+									: nullptr;
+
+					for( sector_t& sector : Sectors() )
+					{
+						if( sector.tag == line.tag )
+						{
+							sector.colormap = colormap;
+						}
+					}
+				}
 				break;
 			}
 		}

@@ -259,6 +259,8 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.fix.same_sky_texture = true;
 	values.fix.intercepts_overflow = true;
 	values.fix.spechit_overflow = true;
+	values.fix.brainspawn_targets = true;
+	values.fix.really_needed_medikit = true;
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 
@@ -289,6 +291,7 @@ static fixoptions_t GetAllFixed()
 	options.missiles_on_blockmap = true;
 	options.brainspawn_targets = true;
 	options.findheight_ignores_same_sector = true;
+	options.really_needed_medikit = true;
 
 	return options;
 }

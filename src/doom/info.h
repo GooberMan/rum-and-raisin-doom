@@ -1482,6 +1482,8 @@ DOOM_C_API typedef union statearg_u
 } statearg_t;
 
 DOOM_C_API extern doombool fastmonsters;
+DOOM_C_API extern doombool netgame;
+DOOM_C_API extern int deathmatch;
 
 DOOM_C_API typedef struct state_s
 {
@@ -1507,7 +1509,7 @@ DOOM_C_API typedef struct state_s
 	statearg_t	arg8;
 
 	// R&R24 extensions
-	char		tranmaplump[ 12 ]; // Only 8 characters used of course
+	const char*	tranmaplump;
 
 	// Runtime data, any further extentions go above these values
 	byte*		tranmap;
@@ -1573,9 +1575,9 @@ DOOM_C_API typedef struct
 	int32_t		deathstate;
 	int32_t		xdeathstate;
 	int32_t		deathsound;
-	int32_t		speed;
-	int32_t		radius;
-	int32_t		height;
+	fixed_t		speed;
+	fixed_t		radius;
+	fixed_t		height;
 	int32_t		mass;
 	int32_t		damage;
 	int32_t		activesound;
@@ -1583,8 +1585,8 @@ DOOM_C_API typedef struct
 	int32_t		raisestate;
 
 	// MBF21 extensions
-	int32_t		fastspeed;
-	int32_t		meleerange;
+	fixed_t		fastspeed;
+	fixed_t		meleerange;
 	int32_t		infightinggroup;
 	int32_t		projectilegroup;
 	int32_t		splashgroup;
@@ -1595,11 +1597,13 @@ DOOM_C_API typedef struct
 	int32_t		rnr24flags;
 	int32_t		minrespawntics;
 	int32_t		respawndice;
-	int32_t		dropitem;
+	int32_t		dropthing;
 	int32_t		pickupammotype;
 	int32_t		pickupammocategory;
 	int32_t		pickupweapontype;
 	int32_t		pickupitemtype;
+	int32_t		pickupsound;
+	const char* pickupstringmnemonic;
 } mobjinfo_t;
 
 #if defined( __cplusplus )

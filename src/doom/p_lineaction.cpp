@@ -426,6 +426,7 @@ MakeGenericFunc( Exit, EV_DoExitGeneric );
 MakeGenericFunc( LightSet, EV_DoLightSetGeneric );
 MakeGenericFunc( LightStrobe, EV_DoLightStrobeGeneric );
 MakeGenericFunc( Music, EV_DoMusicSwitchGeneric );
+MakeGenericFunc( Tint, EV_DoSectorTintGeneric );
 
 template< typename func >
 static void DoGeneric( line_t* line, mobj_t* activator )
@@ -1130,17 +1131,17 @@ constexpr lineaction_t builtinrnr24lineactions[ Actions_RNR24_Count ] =
 	// Tint_SetTo_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Tint_SetTo_W1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericOnce< Tint >, LT_WalkBoth, LL_None, 0, 0, mt_walk },
 	// Tint_SetTo_WR_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGeneric< Tint >, LT_WalkBoth, LL_None, 0, 0, mt_walk },
 	// Tint_SetTo_S1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Tint >, LT_SwitchFront, LL_None, 0, 0, mt_switch },
 	// Tint_SetTo_SR_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitch< Tint >, LT_SwitchFront, LL_None, 0, 0, mt_switch },
 	// Tint_SetTo_G1_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Tint >, LT_GunFront, LL_None, 0, 0, mt_switch },
 	// Tint_SetTo_GR_Player
-	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	{ &precon::IsPlayer, &DoGenericSwitch< Tint >, LT_GunFront, LL_None, 0, 0, mt_switch },
 };
 
 // Another ugly table

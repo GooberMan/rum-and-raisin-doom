@@ -156,6 +156,7 @@ DOOM_C_API void P_UpdateInstanceData( void )
 	{
 		thissecinst->floortex			= flatlookup[ flattranslation[ thissec->floorpic ] ];
 		thissecinst->ceiltex			= flatlookup[ flattranslation[ thissec->ceilingpic ] ];
+		thissecinst->colormap			= thissec->colormap;
 		thissecinst->floorheight		= thissecinst->midtexfloor = FixedToRendFixed( thissec->floorheight );
 		thissecinst->ceilheight			= thissecinst->midtexceil = FixedToRendFixed( thissec->ceilingheight );
 		thissecinst->lightlevel			= thissec->lightlevel;

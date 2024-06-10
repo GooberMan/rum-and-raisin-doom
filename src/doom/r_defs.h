@@ -161,6 +161,7 @@ typedef struct sectorinstance_s
 	// Need to compare these for BSP rejection
 	texturecomposite_t*		floortex;
 	texturecomposite_t*		ceiltex;
+	byte*					colormap;
 	int32_t					lightlevel;
 	int32_t					floorlightlevel;
 	int32_t					ceillightlevel;
@@ -393,6 +394,7 @@ struct sector_s
 	// R&R24 additions
 	angle_t				floorrotation;
 	angle_t				ceilrotation;
+	byte*				colormap;
 
 #if defined( __cplusplus )
 	INLINE void*& Special()						{ return specialdata; }
@@ -813,7 +815,6 @@ typedef enum spantype_e
 typedef struct rastercache_s
 {
 	lighttable_t*		colormap;
-	size_t				sourceoffset;
 	rend_fixed_t		distance;
 } rastercache_t;
 
@@ -899,8 +900,6 @@ typedef struct spritecontext_s
 
 	int32_t*			spritelightoffsets;
 	
-	doombool*			sectorvisited;
-
 #if RENDER_PERF_GRAPHING
 	uint64_t			maskedtimetaken;
 #endif // RENDER_PERF_GRAPHING

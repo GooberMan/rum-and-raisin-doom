@@ -65,7 +65,7 @@ static void *DEH_AmmoStart(deh_context_t *context, char *line)
 
 	if( ammo_number == -1 )
 	{
-        DEH_Warning(context, "Invalid ammo number: %i", ammo_number);
+        DEH_Error(context, "Invalid ammo number: %i", ammo_number);
         return NULL;
 	}
 

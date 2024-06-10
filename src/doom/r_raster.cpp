@@ -40,31 +40,6 @@ INLINE void Rotate( rend_fixed_t& x, rend_fixed_t& y, uint32_t finerot )
 }
 
 template< int64_t Width, int64_t Height >
-struct PreSizedSample
-{
-	static INLINE void Sample( int32_t& top
-						, rend_fixed_t& xfrac
-						, rend_fixed_t& xstep
-						, rend_fixed_t& yfrac
-						, rend_fixed_t& ystep
-						, pixel_t*& source
-						, pixel_t*& dest
-						, planecontext_t& planecontext )
-	{
-		constexpr int64_t YBitIndex = FirstSetBitIndex( RightmostBit( Height ) );
-		constexpr int64_t XFracMask = IntToRendFixed( Width - 1 );
-		constexpr int64_t YFracMask = IntToRendFixed( Height - 1 );
-		constexpr int64_t XShift = RENDFRACBITS - YBitIndex;
-		constexpr int64_t YShift = RENDFRACBITS;
-
-		int32_t spot = ( ( yfrac & YFracMask ) >> YShift ) | ( ( xfrac & XFracMask ) >> XShift );
-		*dest++ = ( source + planecontext.raster[ top++ ].sourceoffset )[ spot ];
-		xfrac += xstep;
-		yfrac += ystep;
-	}
-};
-
-template< int64_t Width, int64_t Height >
 struct PreSizedSampleUntranslated
 {
 	static INLINE void Sample( int32_t& top
@@ -225,21 +200,22 @@ INLINE void R_RasteriseColumnImpl( rendercontext_t* rendercontext, int32_t x, in
 
 INLINE void PrepareRow( int32_t y, rendercontext_t* rendercontext, size_t size )
 {
+	sectorinstance_t& sec = rendsectors[ rendercontext->bspcontext.sidedef->sector->index ];
+	byte* thiscolormap = sec.colormap ? sec.colormap : rendercontext->viewpoint.colormaps;
+
 	planecontext_t& planecontext = rendercontext->planecontext;
 
 	planecontext.raster[ y ].distance = RendFixedMul( planecontext.planeheight, drs_current->yslope[ y ] );
 
 	if( fixedcolormapindex )
 	{
-		planecontext.raster[ y ].sourceoffset = fixedcolormapindex * size;
-		planecontext.raster[ y ].colormap = rendercontext->viewpoint.colormaps + fixedcolormapindex * 256;
+		planecontext.raster[ y ].colormap = thiscolormap + fixedcolormapindex * 256;
 	}
 	else
 	{
 		int32_t lookup = (int32_t)M_CLAMP( ( planecontext.raster[ y ].distance >> RENDLIGHTZSHIFT ), 0, ( MAXLIGHTZ - 1 ) );
 		int32_t lightindex = drs_current->zlightindex[ planecontext.planezlightindex * MAXLIGHTZ + lookup ];
-		planecontext.raster[ y ].sourceoffset = lightindex * size;
-		planecontext.raster[ y ].colormap = rendercontext->viewpoint.colormaps + lightindex * 256;
+		planecontext.raster[ y ].colormap = thiscolormap + lightindex * 256;
 	}
 }
 

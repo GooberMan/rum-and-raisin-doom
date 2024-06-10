@@ -635,6 +635,8 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	}
 	vis->patch = lump;
 
+	byte*& thiscolormap = sector->colormap ? sector->colormap : rendercontext.viewpoint.colormaps;
+
 	// get light level
 	if (thing->flags & MF_SHADOW)
 	{
@@ -644,12 +646,12 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	else if (fixedcolormap)
 	{
 		// fixed map
-		vis->colormap = fixedcolormap;
+		vis->colormap = thiscolormap + fixedcolormapindex * 256;
 	}
 	else if (thingframe & FF_FULLBRIGHT)
 	{
 		// full bright
-		vis->colormap = rendercontext.viewpoint.colormaps;
+		vis->colormap = thiscolormap;
 	}
 	else
 	{
@@ -663,7 +665,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 		lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
 		int32_t* spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
-		vis->colormap = rendercontext.viewpoint.colormaps + spritelightoffsets[ index ];
+		vis->colormap = thiscolormap + spritelightoffsets[ index ];
 	}
 
 	vis->tranmap = comp.use_translucency ? thing->state && thing->state->tranmap
@@ -672,36 +674,6 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 												? tranmap
 												: nullptr
 										: nullptr;
-}
-
-//
-// R_AddSprites
-// During BSP traversal, this adds sprites by sector.
-//
-void R_AddSprites( rendercontext_t& rendercontext, sector_t* sec )
-{
-	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
-
-	mobj_t*		thing;
-	int			lightnum;
-
-	// BSP is traversed by subsector.
-	// A sector might have been split into several
-	//  subsectors during BSP building.
-	// Thus we check whether its already added.
-	if ( spritecontext.sectorvisited[ sec->index ] )
-	{
-		return;
-	}
-
-	// Well, now it will be done.
-	spritecontext.sectorvisited[ sec->index ] = true;
-	
-	// Handle all things in sector.
-	for (thing = sec->thinglist ; thing ; thing = thing->snext)
-	{
-		R_ProjectSprite( rendercontext, thing, &rendsectors[ thing->subsector->sector->index ] );
-	}
 }
 
 void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_t secindex )
@@ -851,30 +823,33 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 					? psp->state->tranmap
 					: nullptr;
 
+	sectorinstance_t& sector = rendsectors[ viewpoint.player->mo->subsector->sector->index ];
+	byte*& thiscolormap = sector.colormap ? sector.colormap : rendercontext.viewpoint.colormaps;
+
 	if (viewpoint.player->powers[pw_invisibility] > 4*32
 		|| viewpoint.player->powers[pw_invisibility] & 8)
 	{
 		// shadow draw
 		vis->colormap = NULL;
 	}
-	else if (fixedcolormap)
+	else if ( fixedcolormap )
 	{
 		// fixed color
-		vis->colormap = fixedcolormap;
+		vis->colormap = thiscolormap + fixedcolormapindex * 256;
 	}
 	else if (psp->state->frame & FF_FULLBRIGHT)
 	{
 		// full bright
-		vis->colormap = rendercontext.viewpoint.colormaps;
+		vis->colormap = thiscolormap;
 	}
 	else
 	{
 		// local light
-		int32_t lightnum = (viewpoint.player->mo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) + extralight;
+		int32_t lightnum = (sector.lightlevel >> LIGHTSEGSHIFT) + extralight;
 		lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
 		int32_t* spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
-		vis->colormap = rendercontext.viewpoint.colormaps + spritelightoffsets[ MAXLIGHTSCALE - 1 ];
+		vis->colormap = thiscolormap + spritelightoffsets[ MAXLIGHTSCALE - 1 ];
 	}
 	
 	R_DrawVisSprite( rendercontext, vis, vis->x1, vis->x2 );

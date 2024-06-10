@@ -806,6 +806,7 @@ DOOM_C_API int32_t	EV_DoBoomFloorCeilingGeneric( line_t* line, mobj_t* activator
 DOOM_C_API int32_t	EV_DoStairsGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoLightStrobeGeneric( line_t* line, mobj_t* activator );
 DOOM_C_API int32_t	EV_DoMusicSwitchGeneric( line_t* line, mobj_t* activator );
+DOOM_C_API int32_t	EV_DoSectorTintGeneric( line_t* line, mobj_t* activator );
 
 DOOM_C_API int32_t	P_SpawnSectorScroller( line_t* line );
 DOOM_C_API doombool	P_SpawnSectorSpecialsGeneric();

@@ -144,8 +144,6 @@ extern "C"
 	int32_t					numspritelumps;
 	patch_t**				spritepatches;
 
-	lumpindex_t				firstcolormap = -1;
-	lumpindex_t				lastcolormap = -1;
 	int32_t					numcolormaps = 0;
 
 	int32_t					numtextures;
@@ -179,6 +177,8 @@ std::vector< lookup_t >							flatindexlookup;
 
 std::unordered_map< std::string, lookup_t >		spritenamelookup;
 std::vector< lookup_t >							spriteindexlookup;
+
+std::unordered_map< lumpindex_t, lookup_t >		colormapindexlookup;
 
 constexpr size_t DoomStrLen( const char* val )
 {
@@ -1066,9 +1066,22 @@ void R_InitColormaps (void)
 
 	if( comp.use_colormaps )
 	{
-		firstcolormap = W_CheckNumForName( "C_START" ) + 1;
-		lastcolormap = W_CheckNumForName( "C_END" ) - 1;
-		numcolormaps = M_MAX( 0, lastcolormap - firstcolormap + 1 );
+		 FillLookup( "C_START", "C_END", "CC_START", "CC_END", []( int32_t begin, int32_t end )
+		{
+			for( int32_t curr = begin; curr < end; ++curr )
+			{
+				auto found = colormapindexlookup.find( curr );
+				if( found == colormapindexlookup.end() )
+				{
+					colormapindexlookup[ curr ] = { curr, numcolormaps };
+					++numcolormaps;
+				}
+				else
+				{
+					found->second.lumpindex = curr;
+				}
+			}
+		} );
 	}
 
 	if( comp.use_translucency )
@@ -1079,7 +1092,7 @@ void R_InitColormaps (void)
 		for( auto& statepair : statemap )
 		{
 			state_t* state = statepair.second;
-			if( state->tranmaplump[ 0 ] )
+			if( state->tranmaplump )
 			{
 				state->tranmap = (byte*)W_CacheLumpName( state->tranmaplump, PU_STATIC );
 			}
@@ -1234,7 +1247,7 @@ int R_TextureNumForName(const char *name)
 
 DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum )
 {
-	if( colormapnum >= firstcolormap && colormapnum <= lastcolormap )
+	if( colormapindexlookup.find( colormapnum ) != colormapindexlookup.end() )
 	{
 		return (lighttable_t*)W_CacheLumpNum( colormapnum, PU_LEVEL );
 	}

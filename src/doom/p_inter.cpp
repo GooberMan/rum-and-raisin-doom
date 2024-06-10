@@ -192,7 +192,7 @@ bool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
 		player->bonuscount += BONUSADD;
 		player->weaponowned[ weapon ] = true;
 
-		P_GiveAmmo( player, &thisammo, deathmatch ? ac_deathmatchweapon : ac_weapon );
+		P_GiveAmmo( player, &thisammo, deathmatch == 1 ? ac_deathmatchweapon : ac_weapon );
 
 		player->pendingweapon = weapon;
 
@@ -267,13 +267,13 @@ DOOM_C_API doombool P_GiveArmor( player_t* player, int armortype )
 //
 // P_GiveCard
 //
-DOOM_C_API void P_GiveCard( player_t* player, card_t card )
+DOOM_C_API bool P_GiveCard( player_t* player, card_t card )
 {
-    if (player->cards[card])
-	return;
+    if (player->cards[card]) return false;
     
     player->bonuscount = BONUSADD;
     player->cards[card] = 1;
+	return true;
 }
 
 
@@ -322,9 +322,172 @@ DOOM_C_API doombool P_GivePower( player_t* player, int /*powertype_t*/ power )
 }
 
 
-bool P_HandleTouch( const mobjinfo_t* info, player_t* player, int32_t& outsound )
+bool P_HandleTouch( const mobjinfo_t* info, player_t* player, bool dropped, int32_t& outsound )
 {
-	return false;
+	bool handle = info->pickupammotype == am_noammo
+				&& info->pickupweapontype == wp_nochange
+				&& info->pickupitemtype == item_noitem;
+
+	const char* mnemonic = info->pickupstringmnemonic;
+
+	if( info->pickupammotype != am_noammo )
+	{
+		handle |= P_GiveAmmo( player, &ammoinfo[ info->pickupammotype ], (ammocategory_t)info->pickupammocategory );
+	}
+
+	if( info->pickupweapontype != wp_nochange )
+	{
+		handle |= P_GiveWeapon( player, (weapontype_t)info->pickupweapontype, dropped );
+	}
+
+	switch( info->pickupitemtype )
+	{
+	case item_bluecard:
+		handle |= P_GiveCard( player, it_bluecard );
+		break;
+
+	case item_yellowcard:
+		handle |= P_GiveCard( player, it_yellowcard );
+		break;
+
+	case item_redcard:
+		handle |= P_GiveCard( player, it_redcard );
+		break;
+
+	case item_blueskull:
+		handle |= P_GiveCard( player, it_blueskull );
+		break;
+
+	case item_yellowskull:
+		handle |= P_GiveCard( player, it_yellowskull );
+		break;
+
+	case item_redskull:
+		handle |= P_GiveCard( player, it_redskull );
+		break;
+
+	case item_backpack:
+		handle |= true;
+		if( !player->backpack )
+		{
+			for( ammoinfo_t* ammo : ammoinfo.All() )
+			{
+				player->maxammo[ ammo->index ] = ammo->maxupgradedammo;
+			}
+			player->backpack = true;
+		}
+		for( ammoinfo_t* ammo : ammoinfo.All() )
+		{
+			P_GiveAmmo( player, ammo, ac_backpack );
+		}
+		break;
+
+	case item_healthbonus:
+		handle |= true;
+		player->health++;
+		if (player->health > deh_max_health)
+		{
+			player->health = deh_max_health;
+		}
+		player->mo->health = player->health;
+		break;
+
+	case item_stimpack:
+		handle |= P_GiveBody( player, 10 );
+		break;
+
+	case item_medikit:
+		{
+			bool updatemnemonic = fix.really_needed_medikit && player->health < 25;
+			bool gavehealth = P_GiveBody( player, 25 );
+			handle |= gavehealth;
+			if( updatemnemonic )
+			{
+				mnemonic = "GOTMEDINEED";
+			}
+		}
+		break;
+
+	case item_soulsphere:
+		handle |= true;
+		player->health += deh_soulsphere_health;
+		if( player->health > deh_max_soulsphere )
+		{
+			player->health = deh_max_soulsphere;
+		}
+		player->mo->health = player->health;
+		break;
+
+	case item_megasphere:
+		handle |= true;
+		player->health = deh_megasphere_health;
+		player->mo->health = player->health;
+		P_GiveArmor( player, 2 );
+		break;
+
+	case item_armorbonus:
+		handle |= true;
+		player->armorpoints++;
+		if( player->armorpoints > deh_max_armor )
+		{
+			player->armorpoints = deh_max_armor;
+		}
+		if( !player->armortype )
+		{
+			player->armortype = 1;
+		}
+		break;
+
+	case item_greenarmor:
+		handle |= P_GiveArmor( player, deh_green_armor_class );
+		break;
+
+	case item_bluearmor:
+		handle |= P_GiveArmor( player, deh_blue_armor_class );
+		break;
+
+	case item_areamap:
+		handle |= P_GivePower( player, pw_allmap );
+		break;
+
+	case item_lightamp:
+		handle |= P_GivePower( player, pw_infrared );
+		break;
+
+	case item_berserk:
+		{
+			bool gaveberserk = P_GivePower( player, pw_strength );
+			handle |= gaveberserk;
+			if( gaveberserk && player->readyweapon != wp_fist )
+			{
+				player->pendingweapon = wp_fist;
+			}
+		}
+		break;
+
+	case item_invisibility:
+		handle |= P_GivePower( player, pw_invisibility );
+		break;
+
+	case item_radsuit:
+		handle |= P_GivePower( player, pw_ironfeet );
+		break;
+
+	case item_invulnerability:
+		handle |= P_GivePower( player, pw_invulnerability );
+		break;
+
+	case item_noitem:
+		break;
+	}
+
+	if( handle )
+	{
+		player->message = DEH_StringMnemonic( mnemonic );
+		outsound = info->pickupsound;
+	}
+
+	return handle;
 }
 
 bool P_HandleTouchVanilla( int32_t sprite, player_t* player, bool dropped, int32_t& outsound )
@@ -446,15 +609,17 @@ bool P_HandleTouchVanilla( int32_t sprite, player_t* player, bool dropped, int32
 		break;
 	
     case SPR_MEDI:
+	{
+		int32_t originalhealth = player->health;
 		if (!P_GiveBody (player, 25))
 			return false;
 
-		if (player->health < 25)
+		if( ( fix.really_needed_medikit ? originalhealth : player->health ) < 25)
 			player->message = DEH_String(GOTMEDINEED);
 		else
 			player->message = DEH_String(GOTMEDIKIT);
 		break;
-
+	}
 	
 	// power ups
     case SPR_PINV:
@@ -653,35 +818,42 @@ DOOM_C_API void P_TouchSpecialThing( mobj_t* special, mobj_t* toucher )
     }
     
 	
-    sound = sfx_itemup;	
-    player = toucher->player;
+	sound = sfx_itemup;	
+	player = toucher->player;
 
-    // Dead thing touching.
-    // Can happen with a sliding player corpse.
-    if (toucher->health <= 0)
-	return;
+	// Dead thing touching.
+	// Can happen with a sliding player corpse.
+	if( toucher->health <= 0 )
+	{
+		return;
+	}
 
 	bool handled = false;
-	if( false ) //sim.rnr24_code_pointers )
+	if( sim.rnr24_code_pointers )
 	{
-		handled = P_HandleTouch( special->info, player, sound );
+		handled = P_HandleTouch( special->info, player, ( special->flags & MF_DROPPED ) != 0, sound );
 	}
 	else
 	{
-		handled = P_HandleTouchVanilla( special->sprite, player, (special->flags & MF_DROPPED) != 0, sound );
+		handled = P_HandleTouchVanilla( special->sprite, player, ( special->flags & MF_DROPPED ) != 0, sound );
 	}
 
 	if( handled )
 	{
-		if (special->flags & MF_COUNTITEM)
+		if( special->CountItem() )
 		{
 			player->itemcount++;
 			++session.total_found_items_global;
 			++session.total_found_items[ player - players ];
 		}
-		P_RemoveMobj (special);
+
+		if( special->RemoveOnPickup() )
+		{
+			P_RemoveMobj( special );
+		}
+
 		player->bonuscount += BONUSADD;
-		if (player == &players[consoleplayer])
+		if( player == &players[ consoleplayer ] )
 		{
 			S_StartSound (NULL, sound);
 		}
@@ -778,7 +950,7 @@ DOOM_C_API void P_KillMobj( mobj_t* source, mobj_t* target )
     // Drop stuff.
     // This determines the kind of object spawned
     // during the death frame of a thing.
-	item = target->info->dropitem;
+	item = target->info->dropthing;
 
 	if( item >= 0 )
 	{

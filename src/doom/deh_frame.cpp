@@ -44,22 +44,20 @@ DEH_BEGIN_MAPPING(state_mapping, state_t)
   MBF21_MAPPING("Args6",          arg6._int)
   MBF21_MAPPING("Args7",          arg7._int)
   MBF21_MAPPING("Args8",          arg8._int)
-  RNR_MAPPING("Tranmap",          tranmaplump[0])
+  RNR_MAPPING("Tranmap",          tranmaplump)
   DEH_UNSUPPORTED_MAPPING("Codep frame")
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleFrameBitsMBF21( deh_context_t* context, const char* value, state_t* state );
 
-static void *DEH_FrameStart(deh_context_t *context, char *line)
+static state_t* GetState( deh_context_t* context, int32_t frame_number )
 {
-    int frame_number = 0;
-    
-    if (sscanf(line, "Frame %i", &frame_number) != 1)
-    {
-        DEH_Warning(context, "Parse error on section start");
-        return NULL;
-    }
-    
+	if( frame_number == -1 )
+	{
+		DEH_Error(context, "Invalid frame number: -1" );
+		return nullptr;
+	}
+
 	GameVersion_t version = frame_number < ( NUMSTATES_VANILLA - 1 ) ? exe_doom_1_2
 							: frame_number < NUMSTATES_VANILLA ? exe_limit_removing
 							: frame_number < NUMSTATES_BOOM ? exe_boom_2_02
@@ -75,12 +73,12 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
 		state_t* newstate = Z_MallocAs( state_t, PU_STATIC, nullptr );
 		*newstate =
 		{
-			frame_number,
-			SPR_TNT1,
-			0,
-			-1,
-			nullptr,
-			(statenum_t)frame_number,
+			frame_number,				// statenum
+			SPR_TNT1,					// sprite
+			0,							// frame
+			-1,							// tics
+			nullptr,					// action
+			(statenum_t)frame_number,	// nextstate
 		};
 		statemap[ frame_number ] = newstate;
 		return newstate;
@@ -89,6 +87,19 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
 	{
 		return foundstate->second;
 	}
+}
+
+static void *DEH_FrameStart(deh_context_t *context, char *line)
+{
+    int frame_number = 0;
+    
+    if (sscanf(line, "Frame %i", &frame_number) != 1)
+    {
+        DEH_Warning(context, "Parse error on section start");
+        return NULL;
+    }
+    
+	return GetState( context, frame_number );
 }
 
 // Simulate a frame overflow: Doom has 967 frames in the states[] array, but
@@ -152,8 +163,10 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 	if( strcmp( variable_name, "Tranmap" ) == 0 )
 	{
 		DEH_IncreaseGameVersion( context, exe_rnr24 );
-		M_StringCopy( state->tranmaplump, value, 9 );
-		M_ForceUppercase( state->tranmaplump );
+		size_t valuelen = strlen( value );
+		state->tranmaplump = (char*)Z_MallocZero( valuelen + 1, PU_STATIC, nullptr );
+		M_StringCopy( (char*)state->tranmaplump, value, valuelen + 1 );
+		M_ForceUppercase( (char*)state->tranmaplump );
 	}
 	else
 	{
@@ -174,9 +187,13 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 		{
 			DEH_BexHandleFrameBitsMBF21( context, value, state );
 		}
+		else if( strcmp( variable_name, "Next frame" ) == 0 )
+		{
+			[[maybe_unused]] state_t* state = GetState( context, ivalue );
+			DEH_SetMapping(context, &state_mapping, state, variable_name, ivalue);
+		}
 		{
 			// set the appropriate field
-
 			DEH_SetMapping(context, &state_mapping, state, variable_name, ivalue);
 		}
 	}

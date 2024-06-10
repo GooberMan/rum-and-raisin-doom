@@ -83,36 +83,38 @@ static flagsmap_t ThingBitFlags =
 
 static flagsmap_t ThingBitFlags2 =
 {
-	{ "LOGRAV",			{ 0x00000001,	exe_mbf21		} },
-	{ "SHORTMRANGE",	{ 0x00000002,	exe_mbf21		} },
-	{ "DMGIGNORED",		{ 0x00000004,	exe_mbf21		} },
-	{ "NORADIUSDMG",	{ 0x00000008,	exe_mbf21		} },
-	{ "FORCERADIUSDMG",	{ 0x00000010,	exe_mbf21		} },
-	{ "HIGHERMPROB",	{ 0x00000020,	exe_mbf21		} },
-	{ "RANGEHALF",		{ 0x00000040,	exe_mbf21		} },
-	{ "NOTHRESHOLD",	{ 0x00000080,	exe_mbf21		} },
-	{ "LONGMELEE",		{ 0x00000100,	exe_mbf21		} },
-	{ "BOSS",			{ 0x00000200,	exe_mbf21		} },
-	{ "MAP07BOSS1",		{ 0x00000400,	exe_mbf21		} },
-	{ "MAP07BOSS2",		{ 0x00000800,	exe_mbf21		} },
-	{ "E1M8BOSS",		{ 0x00001000,	exe_mbf21		} },
-	{ "E2M8BOSS",		{ 0x00002000,	exe_mbf21		} },
-	{ "E3M8BOSS",		{ 0x00004000,	exe_mbf21		} },
-	{ "E4M6BOSS",		{ 0x00008000,	exe_mbf21		} },
-	{ "E4M8BOSS",		{ 0x00010000,	exe_mbf21		} },
-	{ "RIP",			{ 0x00020000,	exe_mbf21		} },
-	{ "FULLVOLSOUNDS",	{ 0x00040000,	exe_mbf21		} },
+	{ "LOGRAV",				{ 0x00000001,	exe_mbf21	} },
+	{ "SHORTMRANGE",		{ 0x00000002,	exe_mbf21	} },
+	{ "DMGIGNORED",			{ 0x00000004,	exe_mbf21	} },
+	{ "NORADIUSDMG",		{ 0x00000008,	exe_mbf21	} },
+	{ "FORCERADIUSDMG",		{ 0x00000010,	exe_mbf21	} },
+	{ "HIGHERMPROB",		{ 0x00000020,	exe_mbf21	} },
+	{ "RANGEHALF",			{ 0x00000040,	exe_mbf21	} },
+	{ "NOTHRESHOLD",		{ 0x00000080,	exe_mbf21	} },
+	{ "LONGMELEE",			{ 0x00000100,	exe_mbf21	} },
+	{ "BOSS",				{ 0x00000200,	exe_mbf21	} },
+	{ "MAP07BOSS1",			{ 0x00000400,	exe_mbf21	} },
+	{ "MAP07BOSS2",			{ 0x00000800,	exe_mbf21	} },
+	{ "E1M8BOSS",			{ 0x00001000,	exe_mbf21	} },
+	{ "E2M8BOSS",			{ 0x00002000,	exe_mbf21	} },
+	{ "E3M8BOSS",			{ 0x00004000,	exe_mbf21	} },
+	{ "E4M6BOSS",			{ 0x00008000,	exe_mbf21	} },
+	{ "E4M8BOSS",			{ 0x00010000,	exe_mbf21	} },
+	{ "RIP",				{ 0x00020000,	exe_mbf21	} },
+	{ "FULLVOLSOUNDS",		{ 0x00040000,	exe_mbf21	} },
 };
 
 static flagsmap_t ThingBitFlagsRNR24 =
 {
-	{ "NORESPAWN",		{ 0x00000001,	exe_rnr24		} },
-	{ "SPECIALSTAYS",	{ 0x00000002,	exe_rnr24		} },
+	{ "NORESPAWN",			{ 0x00000001,	exe_rnr24	} },
+	{ "SPECIALSTAYSSINGLE",	{ 0x00000002,	exe_rnr24	} },
+	{ "SPECIALSTAYSCOOP",	{ 0x00000004,	exe_rnr24	} },
+	{ "SPECIALSTAYSDM",		{ 0x00000008,	exe_rnr24	} },
 };
 
 static flagsmap_t FrameBitFlagsMBF21 =
 {
-	{ "SKILL5FAST",		{ 0x00000001,	exe_mbf21		} },
+	{ "SKILL5FAST",			{ 0x00000001,	exe_mbf21	} },
 };
 
 static flagsmap_t WeaponBitFlagsMBF21 =

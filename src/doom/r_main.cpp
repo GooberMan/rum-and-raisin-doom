@@ -946,8 +946,6 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 	}
 #endif
 		
-	memset( rendercontext.spritecontext.sectorvisited, 0, sizeof( doombool ) * numsectors );
-
 	rendercontext.planecontext.output = rendercontext.viewbuffer;
 	rendercontext.planecontext.spantype = M_MAX( Span_PolyRaster_Log2_4, M_MIN( (int32_t)( log2f( drs_current->frame_height * 0.02f ) + 0.5f ), Span_PolyRaster_Log2_32 ) );
 
@@ -1022,23 +1020,17 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.planecontext.maxopenings = MAXOPENINGS;
 
 		R_ResetContext( renderdatas[ currcontext ].context, renderdatas[ currcontext ].context.begincolumn, renderdatas[ currcontext ].context.endcolumn );
-
-		if( numsectors > 0 )
-		{
-			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (doombool*)Z_Malloc( sizeof( doombool ) * numsectors, PU_LEVEL, NULL );
-		}
 	}
 }
 
 void R_RefreshContexts( void )
 {
+#if RENDER_PERF_GRAPHING
 	int32_t currcontext;
 	if( renderdatas )
 	{
 		for( currcontext = 0; currcontext < maxrendercontexts; ++currcontext )
 		{
-			renderdatas[ currcontext ].context.spritecontext.sectorvisited = (doombool*)Z_Malloc( sizeof( doombool ) * numsectors, PU_LEVEL, NULL );
-#if RENDER_PERF_GRAPHING
 			memset( renderdatas[ currcontext ].context.frametimes, 0, sizeof( renderdatas[ currcontext ].context.frametimes) );
 			memset( renderdatas[ currcontext ].context.walltimes, 0, sizeof( renderdatas[ currcontext ].context.walltimes) );
 			memset( renderdatas[ currcontext ].context.flattimes, 0, sizeof( renderdatas[ currcontext ].context.flattimes) );
@@ -1047,9 +1039,9 @@ void R_RefreshContexts( void )
 			memset( renderdatas[ currcontext ].context.addspritestimes, 0, sizeof( renderdatas[ currcontext ].context.addspritestimes) );
 			memset( renderdatas[ currcontext ].context.addlinestimes, 0, sizeof( renderdatas[ currcontext ].context.addlinestimes) );
 			memset( renderdatas[ currcontext ].context.everythingelsetimes, 0, sizeof( renderdatas[ currcontext ].context.everythingelsetimes) );
-#endif // RENDER_PERF_GRAPHING
 		}
 	}
+#endif // RENDER_PERF_GRAPHING
 	renderrebalancecontexts = true;
 }
 
@@ -1803,6 +1795,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 					rendsectors[ index ].ceilrotation		= AngleLerp( prevsectors[ index ].ceilrotation, currsectors[ index ].ceilrotation, viewpoint.lerp );
 					rendsectors[ index ].floortex			= selectcurr ? currsectors[ index ].floortex : prevsectors[ index ].floortex;
 					rendsectors[ index ].ceiltex			= selectcurr ? currsectors[ index ].ceiltex : prevsectors[ index ].ceiltex;
+					rendsectors[ index ].colormap			= selectcurr ? currsectors[ index ].colormap : prevsectors[ index ].colormap;
 					rendsectors[ index ].skyline			= currsectors[ index ].skyline;
 				}
 				else

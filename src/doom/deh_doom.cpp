@@ -37,7 +37,7 @@ extern deh_section_t deh_section_thing;
 // deh_weapon.c:
 extern deh_section_t deh_section_weapon;
 // deh_bexstr.c:
-extern deh_section_t deh_section_bexstr;
+extern deh_section_t deh_section_bexstrings;
 // deh_bexptr.cpp:
 extern deh_section_t deh_section_bexptr;
 // deh_bexpars.cpp:
@@ -73,7 +73,7 @@ extern "C"
 		&deh_section_text,
 		&deh_section_thing,
 		&deh_section_weapon,
-		&deh_section_bexstr,
+		&deh_section_bexstrings,
 		&deh_section_bexptr,
 		&deh_section_bexpars,
 		&deh_section_dsdsounds,

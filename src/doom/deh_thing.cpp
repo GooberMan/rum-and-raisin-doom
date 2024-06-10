@@ -27,6 +27,8 @@
 #include "deh_main.h"
 #include "deh_mapping.h"
 
+#include "i_timer.h"
+
 #include "info.h"
 
 DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
@@ -63,29 +65,32 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   RNR_MAPPING("RNR24 Bits",          rnr24flags)
   RNR_MAPPING("Min respawn tics",    minrespawntics)
   RNR_MAPPING("Respawn dice",        respawndice)
+  RNR_MAPPING("Drop thing",          dropthing)
+  RNR_MAPPING("Pickup ammo type",    pickupammotype)
+  RNR_MAPPING("Pickup ammo category", pickupammocategory)
+  RNR_MAPPING("Pickup weapon type",  pickupweapontype)
+  RNR_MAPPING("Pickup item type",    pickupitemtype)
+  RNR_MAPPING("Pickup sound",        pickupitemtype)
+  RNR_MAPPING("Pickup message",      pickupstringmnemonic)
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 DOOM_C_API void DEH_BexHandleThingBitsRNR24( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 
-static void *DEH_ThingStart(deh_context_t *context, char *line)
+static mobjinfo_t* GetThing( deh_context_t* context, int32_t thing_number )
 {
-    int thing_number = 0;
-
-	if (sscanf(line, "Thing %i", &thing_number) != 1)
-    {
-        DEH_Warning(context, "Parse error on section start");
-        return NULL;
-    }
-
-    // dehacked files are indexed from 1
-    --thing_number;
-
+	if( thing_number == -1 )
+	{
+		DEH_Error(context, "Invalid thing number: 0" );
+		return nullptr;
+	}
+	
 	GameVersion_t version = thing_number < MT_NUMVANILLATYPES ? exe_doom_1_9
 							: thing_number < MT_NUMBOOMTYPES ? exe_boom_2_02
 							: thing_number < MT_NUMMBFTYPES ? exe_mbf
 							: thing_number < MT_NUMPRBOOMTYPES ? exe_mbf_dehextra
+							: thing_number < -1 ? exe_rnr24
 							: exe_mbf21_extended;
 
 	DEH_IncreaseGameVersion( context, version );
@@ -97,8 +102,15 @@ static void *DEH_ThingStart(deh_context_t *context, char *line)
 		constexpr auto NewMobj = []() -> mobjinfo_t
 		{
 			mobjinfo_t newmobjinfo = {};
-			newmobjinfo.fastspeed = -1;
-			newmobjinfo.meleerange = IntToFixed( 64 );
+			newmobjinfo.fastspeed			= -1;
+			newmobjinfo.meleerange			= IntToFixed( 64 );
+			newmobjinfo.minrespawntics		= 12 * TICRATE;
+			newmobjinfo.respawndice			= 4;
+			newmobjinfo.dropthing			= -1;
+			newmobjinfo.pickupammotype		= -1;
+			newmobjinfo.pickupammocategory	= -1;
+			newmobjinfo.pickupweapontype	= -1;
+			newmobjinfo.pickupitemtype		= -1;
 			return newmobjinfo;
 		};
 
@@ -112,6 +124,22 @@ static void *DEH_ThingStart(deh_context_t *context, char *line)
 	{
 		return foundmobj->second;
 	}
+}
+
+static void *DEH_ThingStart(deh_context_t *context, char *line)
+{
+    int thing_number = 0;
+
+	if (sscanf(line, "Thing %i", &thing_number) != 1)
+    {
+        DEH_Warning(context, "Parse error on section start");
+        return NULL;
+    }
+
+    // dehacked files are indexed from 1
+    --thing_number;
+	
+	return GetThing( context, thing_number );
 }
 
 static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
@@ -137,7 +165,15 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
     
 //    printf("Set %s to %s for mobj\n", variable_name, value);
 
-	if( strcmp( variable_name, "Bits" ) == 0
+	if( strcmp( variable_name, "Pickup message" ) == 0 )
+	{
+		DEH_IncreaseGameVersion( context, exe_rnr24 );
+		size_t valuelen = strlen( value );
+		mobj->pickupstringmnemonic = (char*)Z_MallocZero( valuelen + 1, PU_STATIC, nullptr );
+		M_StringCopy( (char*)mobj->pickupstringmnemonic, value, valuelen + 1 );
+		M_ForceUppercase( (char*)mobj->pickupstringmnemonic );
+	}
+	else if( strcmp( variable_name, "Bits" ) == 0
 		&& !( isdigit( value[ 0 ] ) 
 			|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
 		)
@@ -181,6 +217,13 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 		ivalue = atoi(value) + splash_user;
 		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
 	}
+	else if( strcmp( variable_name, "Drop thing" ) == 0 )
+	{
+		// Need to account for dehacked things being 1-indexed
+		ivalue = atoi(value) - 1;
+		[[maybe_unused]] mobjinfo_t* foundthing = GetThing( context, ivalue );
+		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
+	}
 	else if( strcmp( variable_name, "ID #" ) == 0 )
 	{
 		extern std::unordered_map< int32_t, mobjinfo_t* > doomednummap;
@@ -205,6 +248,13 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 
 		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
 	}
+}
+
+static void DEH_ThingEnd( deh_context_t* context, void* tag )
+{
+	mobjinfo_t* mobj = (mobjinfo_t*)tag;
+
+	mobj->minimumversion = DEH_GameVersion( context );
 }
 
 static void DEH_ThingSHA1Sum(sha1_context_t *context)

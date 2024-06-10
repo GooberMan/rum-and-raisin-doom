@@ -46,11 +46,6 @@
                  sizeof(deh_mapping_base.fieldname),          \
                  false, exe_rnr24},
 
-#define DEH_MAPPING_STRING(deh_name, fieldname)               \
-             {deh_name, &deh_mapping_base.fieldname,          \
-                 sizeof(deh_mapping_base.fieldname),          \
-                 true, exe_doom_1_2},
-
 #define DEH_UNSUPPORTED_MAPPING(deh_name)                     \
              {deh_name, NULL, -1, false, exe_invalid},
 

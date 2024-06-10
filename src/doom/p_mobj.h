@@ -233,8 +233,10 @@ DOOM_C_API typedef enum mobjflag2_e
 
 DOOM_C_API typedef enum mobjrnr24flag_e
 {
-	MF_RNR24_NORESPAWN			= 0x00000001,	// Disables nightmare respawns
-	MF_RNR24_SPECIALSTAYS		= 0x00000002,	// Collectible items remain in place
+	MF_RNR24_NORESPAWN				= 0x00000001,	// Disables nightmare respawns
+	MF_RNR24_SPECIALSTAYS_SINGLE	= 0x00000002,	// Collectible items remain in place in single-player mode
+	MF_RNR24_SPECIALSTAYS_COOP		= 0x00000004,	// Collectible items remain in place in coop mode
+	MF_RNR24_SPECIALSTAYS_DM		= 0x00000004,	// Collectible items remain in place in deathmatch
 } mobjrnr24flag_t;
 
 DOOM_C_API typedef struct mobjinstance_s
@@ -352,6 +354,8 @@ DOOM_C_API typedef struct mobj_s
 	int32_t				numoverlaps;
 
 #if defined( __cplusplus )
+	INLINE const bool CountItem() const						{ return flags & MF_COUNTITEM; }
+
 	INLINE const bool IsFriendly() const					{ return sim.mbf_mobj_flags && ( flags & MF_MBF_FRIEND ); }
 
 	INLINE const bool ShortMissileRange() const				{ return sim.mbf21_thing_extensions && ( flags2 & MF2_MBF21_SHORTMRANGE ); }
@@ -365,15 +369,15 @@ DOOM_C_API typedef struct mobj_s
 	INLINE const bool NoSplashDamage() const				{ return sim.mbf21_thing_extensions && ( flags2 & ( MF2_MBF21_NORADIUSDMG | MF2_MBF21_BOSS ) ); }
 	INLINE const bool LowGravity() const					{ return sim.mbf21_thing_extensions && ( flags2 & MF2_MBF21_LOGRAV ); }
 
-	INLINE const fixed_t Speed() const						{ return fastmonsters && info->fastspeed ? info->fastspeed : info->speed; }
-	INLINE const fixed_t MeleeRange() const					{ return info->meleerange ? info->meleerange : IntToFixed( 64 ); }
-	INLINE const int32_t MinRespawnTics() const				{ return !sim.rnr24_thing_extensions ? 12 * TICRATE
-																		: info->minrespawntics < 0 ? INT_MAX
-																		: info->minrespawntics > 0 ? info->minrespawntics
-																		: 12 * TICRATE; }
+	INLINE const fixed_t Speed() const						{ return fastmonsters && info->fastspeed != -1 ? info->fastspeed : info->speed; }
+	INLINE const fixed_t MeleeRange() const					{ return info->meleerange; }
+	INLINE const int32_t MinRespawnTics() const				{ return info->minrespawntics; }
 	INLINE const bool NoRespawn() const						{ return sim.rnr24_thing_extensions && ( rnr24flags & MF_RNR24_NORESPAWN ); }
-	INLINE const int32_t RespawnDice() const				{ return sim.rnr24_thing_extensions && info->respawndice ? info->respawndice
-																		: 4; }
+	INLINE const int32_t RespawnDice() const				{ return info->respawndice; }
+
+	INLINE const bool RemoveOnPickup() const				{ return ( !netgame && !( rnr24flags & MF_RNR24_SPECIALSTAYS_SINGLE ) )
+																	|| ( netgame && deathmatch == 0 && !( rnr24flags & MF_RNR24_SPECIALSTAYS_COOP ) )
+																	|| ( netgame && deathmatch == 1 && !( rnr24flags & MF_RNR24_SPECIALSTAYS_DM ) ); }
 #endif
 } mobj_t;
 

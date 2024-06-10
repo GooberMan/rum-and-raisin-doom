@@ -51,6 +51,7 @@ typedef struct segloopcontext_s
 	int32_t			toptexture;
 	int32_t			bottomtexture;
 	int32_t			midtexture;
+	byte*			colormap;
 
 	// False if the back side is the same plane.
 	doombool		markfloor;	
@@ -107,7 +108,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 	bspcontext_t&		bspcontext		= rendercontext.bspcontext;
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
 
-	uint32_t			index;
+	uint32_t			index = fixedcolormapindex;
 	column_t*			col;
 	int32_t				lightnum;
 	int32_t				texnum;
@@ -120,6 +121,9 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 	uint64_t		starttime = I_GetTimeUS();
 	uint64_t		endtime;
 #endif // RENDER_PERF_GRAPHING
+
+	sectorinstance_t& sec = rendsectors[ ds->curline->sidedef->sector->index ];
+	byte*& thiscolormap = sec.colormap ? sec.colormap : viewpoint.colormaps;
 
 	// Calculate light table.
 	// Use different light tables
@@ -183,11 +187,8 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 
 			if( !fixedcolormap )
 			{
-				index = (uint32_t)RendFixedMul( spritecontext.spryscale, drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT;
-
-				if (index >=  MAXLIGHTSCALE )
-					index = MAXLIGHTSCALE-1;
-
+				index = M_MIN( (uint32_t)RendFixedMul( spritecontext.spryscale, drs_current->frame_adjusted_light_mul ) >> RENDLIGHTSCALESHIFT
+							, MAXLIGHTSCALE-1 );
 				spritecolcontext.colormap = rendercontext.viewpoint.colormaps + walllightoffsets[index];
 			}
 
@@ -241,9 +242,11 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 	vbuffer_t& dest					= rendercontext.viewbuffer;
 	planecontext_t& planecontext	= rendercontext.planecontext;
 
+	byte*& thiscolormap				= segcontext->colormap ? segcontext->colormap : rendercontext.viewpoint.colormaps;
+
 	angle_t			angle;
 	uint32_t		index;
-	int32_t			colormapindex;
+	int32_t			colormapindex = fixedcolormapindex;
 	int32_t 		yl;
 	int32_t 		yh;
 	int32_t 		mid;
@@ -336,17 +339,13 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 
 			if (index >=  MAXLIGHTSCALE ) index = MAXLIGHTSCALE-1;
 
-			if( fixedcolormapindex )
-			{
-				colormapindex = fixedcolormapindex;
-			}
-			else
+			if( !fixedcolormapindex )
 			{
 				colormapindex = wallcontext.lightsindex < NUMLIGHTCOLORMAPS ? drs_current->scalelightindex[ wallcontext.lightsindex * MAXLIGHTSCALE + index ] : wallcontext.lightsindex;
 			}
 			wallcolcontext.x = currx;
 			wallcolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), wallcontext.scale );
-			wallcolcontext.colormap = rendercontext.viewpoint.colormaps + colormapindex * 256;
+			wallcolcontext.colormap = thiscolormap + colormapindex * 256;
 		}
 
 		// draw the wall tiers
@@ -512,7 +511,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 	rend_fixed_t		worldhigh;
 	rend_fixed_t		worldlow;
 
-	segloopcontext_t	loopcontext;
+	segloopcontext_t	loopcontext = {};
 
 	uint64_t			walltime;
 #if RENDER_PERF_GRAPHING
@@ -593,6 +592,8 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		worldbottom = bspcontext.frontsectorinst->floorheight - viewpoint.z;
 
 		loopcontext.midtexture = loopcontext.toptexture = loopcontext.bottomtexture = loopcontext.maskedtexture = 0;
+		sectorinstance_t& sec = rendsectors[ bspcontext.sidedef->sector->index ];
+		loopcontext.colormap = sec.colormap;
 		bspcontext.thisdrawseg->maskedtexturecol = NULL;
 	
 		if (!bspcontext.backsectorinst)
@@ -680,7 +681,8 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 				|| bspcontext.backsectorinst->floortex != bspcontext.frontsectorinst->floortex
 				|| bspcontext.backsectorinst->floorlightlevel != bspcontext.frontsectorinst->floorlightlevel
 				|| bspcontext.backsectorinst->flooroffsetx != bspcontext.frontsectorinst->flooroffsetx
-				|| bspcontext.backsectorinst->flooroffsety != bspcontext.frontsectorinst->flooroffsety )
+				|| bspcontext.backsectorinst->flooroffsety != bspcontext.frontsectorinst->flooroffsety
+				|| bspcontext.backsectorinst->colormap != bspcontext.frontsectorinst->colormap )
 			{
 				loopcontext.markfloor = true;
 			}
@@ -696,7 +698,8 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 				|| bspcontext.backsectorinst->ceiltex != bspcontext.frontsectorinst->ceiltex
 				|| bspcontext.backsectorinst->ceillightlevel != bspcontext.frontsectorinst->ceillightlevel
 				|| bspcontext.backsectorinst->ceiloffsetx != bspcontext.frontsectorinst->ceiloffsetx
-				|| bspcontext.backsectorinst->ceiloffsety != bspcontext.frontsectorinst->ceiloffsety )
+				|| bspcontext.backsectorinst->ceiloffsety != bspcontext.frontsectorinst->ceiloffsety
+				|| bspcontext.backsectorinst->colormap != bspcontext.frontsectorinst->colormap )
 			{
 				loopcontext.markceiling = true;
 			}

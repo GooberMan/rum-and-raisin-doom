@@ -17,6 +17,10 @@
 // Parses [STRINGS] sections in BEX files
 //
 
+// A newer implementation exists in deh_bexstrings.cpp
+
+#if 0
+
 #include <stdio.h>
 #include <string.h>
 
@@ -377,3 +381,5 @@ deh_section_t deh_section_bexstr =
     NULL,
     NULL,
 };
+
+#endif // 0

@@ -30,6 +30,9 @@ DOOM_C_API void DEH_fprintf(FILE *fstream, const char *fmt, ...) PRINTF_ATTR(2, 
 DOOM_C_API void DEH_snprintf(char *buffer, size_t len, const char *fmt, ...) PRINTF_ATTR(3, 4);
 DOOM_C_API void DEH_AddStringReplacement(const char *from_text, const char *to_text);
 
+DOOM_C_API const char* DEH_StringLookupMnemonic( const char* key );
+
+#define DEH_StringMnemonic( s ) DEH_String( DEH_StringLookupMnemonic( s ) );
 
 #if 0
 // Static macro versions of the functions above

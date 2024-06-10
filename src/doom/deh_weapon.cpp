@@ -62,7 +62,7 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 
     if (weapon_number == wp_nochange)
     {
-        DEH_Warning(context, "Invalid weapon number: %i", weapon_number);
+        DEH_Error(context, "Invalid weapon number: %i", weapon_number);
         return NULL;
     }
 
