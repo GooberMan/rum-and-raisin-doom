@@ -362,7 +362,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	}
 
 #if RANGECHECK
-	if( false ) //!comp.drawpatch_unbounded )
+	if( !comp.drawpatch_unbounded )
 	{
 		if (x < 0
 			|| x + clippedwidth > V_VIRTUALWIDTH
