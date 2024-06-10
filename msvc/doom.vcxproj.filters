@@ -223,6 +223,9 @@
     <ClCompile Include="..\src\doom\d_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\doom\deh_bexstrings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\doom\am_map.h">

@@ -408,6 +408,7 @@
     <ClCompile Include="..\src\doom\deh_bexpars.cpp" />
     <ClCompile Include="..\src\doom\deh_bexptr.cpp" />
     <ClCompile Include="..\src\doom\deh_bexstr.cpp" />
+    <ClCompile Include="..\src\doom\deh_bexstrings.cpp" />
     <ClCompile Include="..\src\doom\deh_cheat.cpp" />
     <ClCompile Include="..\src\doom\deh_doom.cpp" />
     <ClCompile Include="..\src\doom\deh_dsdsounds.cpp" />
