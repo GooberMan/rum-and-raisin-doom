@@ -338,12 +338,12 @@ enum MBFActions : uint32_t
 
 enum MBF21Actions : uint32_t
 {
-	Texture_ScrollSpeedDiv8Standard_Always = 1024,
-	Texture_ScrollSpeedDiv8Displacement_Always,
-	Texture_ScrollSpeedDiv8Accelerative_Always,
+	Scroll_WallTextureBySectorDiv8_Always = 1024,
+	Scroll_WallTextureBySectorDiv8_Displacement_Always,
+	Scroll_WallTextureBySectorDiv8_Accelerative_Always,
 
 	MBF21Actions_Max,
-	MBF21Actions_Min = Texture_ScrollSpeedDiv8Standard_Always,
+	MBF21Actions_Min = Scroll_WallTextureBySectorDiv8_Always,
 };
 
 enum ZokumBSPActions : uint32_t

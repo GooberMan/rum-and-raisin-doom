@@ -30,7 +30,8 @@
 #include "m_container.h"
 #include "m_conv.h"
 
-extern std::vector< const char* > spritenamemap;
+extern std::unordered_map< int32_t, const char* > spritenamemap;
+
 enum
 {
 	NumDoomSprites = 138,
@@ -41,7 +42,8 @@ enum
 
 GameVersion_t VersionForSpriteNum( int32_t spritenum )
 {
-	return spritenum < NumDoomSprites ? exe_doom_1_2
+	return spritenum < -1 ? exe_rnr24 
+		: spritenum < NumDoomSprites ? exe_doom_1_2
 		: spritenum < NumBoomSprites ? exe_boom_2_02
 		: spritenum < NumMBFSprites ? exe_mbf
 		: spritenum < NumMBFExtraSprites ? exe_mbf_dehextra
@@ -84,29 +86,33 @@ static void DEH_DSDSpritesParseLine( deh_context_t *context, char* line, void* t
 	}
 	else
 	{
-		auto found = std::find_if( spritenamemap.begin(), spritenamemap.end(), [&spritenum]( const char* test )
+		using iterator_t = decltype( *spritenamemap.begin() );
+		auto found = std::find_if( spritenamemap.begin(), spritenamemap.end(), [&spritenum]( iterator_t& test )
 		{
-			return strcasecmp( test, spritenum ) == 0;
+			return strcasecmp( test.second, spritenum ) == 0;
 		} );
 
 		if( found == spritenamemap.end() )
 		{
-			DEH_Warning( context, "Sprite '%s' not a built-in sprite", spritenum );
+			DEH_Warning( context, "Sprite '%s' not previously defined", spritenum );
 			return;
 		}
 
-		spriteindex = found - spritenamemap.begin();
+		spriteindex = found->first;
 	}
+
+	if( spriteindex == -1 )
+	{
+		DEH_Error(context, "Invalid sound number: -1" );
+		return;
+	}
+
 
 	DEH_IncreaseGameVersion( context, VersionForSpriteNum( spriteindex ) );
 
 	char* newstring = (char*)Z_MallocZero( spritelen + 1, PU_STATIC, nullptr );
 	memcpy( newstring, value, spritelen );
 
-	if( spriteindex >= spritenamemap.size() )
-	{
-		spritenamemap.resize( spriteindex + 1 );
-	}
 	spritenamemap[ spriteindex ] = newstring;
 }
 

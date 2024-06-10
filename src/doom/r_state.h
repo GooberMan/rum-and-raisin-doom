@@ -68,9 +68,6 @@ extern patch_t**	spritepatches;
 //
 // Lookup tables for map data.
 //
-extern int32_t		numsprites;
-extern spritedef_t*	sprites;
-
 extern int32_t		numvertexes;
 extern vertex_t*	vertexes;
 

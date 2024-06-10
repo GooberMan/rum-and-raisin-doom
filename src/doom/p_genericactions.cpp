@@ -1867,8 +1867,8 @@ INLINE void T_UpdateDisplacement( scroller_t* scroller )
 	fixed_t height = control->ceilingheight - control->floorheight;
 	fixed_t diff = scroller->controlheight - height;
 
-	scroller->scrollx = FixedMul( scroller->magx, diff );
-	scroller->scrolly = FixedMul( scroller->magy, diff );
+	scroller->scrollx = FixedMul( scroller->magx, diff ) >> scroller->speedshift;
+	scroller->scrolly = FixedMul( scroller->magy, diff ) >> scroller->speedshift;
 
 	scroller->controlheight = height;
 }
@@ -1880,8 +1880,8 @@ INLINE void T_UpdateAccelerative( scroller_t* scroller )
 	fixed_t height = control->ceilingheight - control->floorheight;
 	fixed_t diff = scroller->controlheight - height;
 
-	scroller->scrollx += FixedMul( scroller->magx, diff );
-	scroller->scrolly += FixedMul( scroller->magy, diff );
+	scroller->scrollx += FixedMul( scroller->magx, diff ) >> scroller->speedshift;
+	scroller->scrolly += FixedMul( scroller->magy, diff ) >> scroller->speedshift;
 
 	scroller->controlheight = height;
 }
@@ -1955,6 +1955,9 @@ constexpr scrolltype_t SelectScrollType( int32_t special )
 	case Scroll_WallTextureBySector_Displace_Always:
 	case Scroll_WallTextureBySector_Always:
 	case Scroll_WallTextureByOffset_Always:
+	case Scroll_WallTextureBySectorDiv8_Always:
+	case Scroll_WallTextureBySectorDiv8_Displacement_Always:
+	case Scroll_WallTextureBySectorDiv8_Accelerative_Always:
 		return st_wall;
 
 	default:
@@ -2000,6 +2003,7 @@ constexpr scrolltype_t SelectSpeedType( int32_t special )
 	case Scroll_FloorObjects_Displace_Always:
 	case Scroll_FloorTextureObjects_Displace_Always:
 	case Scroll_WallTextureBySector_Displace_Always:
+	case Scroll_WallTextureBySectorDiv8_Displacement_Always:
 		return st_displacement;
 
 	case Scroll_CeilingTexture_Accelerative_Always:
@@ -2007,6 +2011,7 @@ constexpr scrolltype_t SelectSpeedType( int32_t special )
 	case Scroll_FloorObjects_Accelerative_Always:
 	case Scroll_FloorTextureObjects_Accelerative_Always:
 	case Scroll_WallTextureBySector_Accelerative_Always:
+	case Scroll_WallTextureBySectorDiv8_Accelerative_Always:
 		return st_accelerative;
 
 	default:
@@ -2021,6 +2026,22 @@ constexpr scrolltype_t SelectScroller( int32_t special )
 	return SelectScrollType( special )
 		| SelectCarryType( special )
 		| SelectSpeedType( special );
+}
+
+constexpr int32_t ScrollerSpeedShift( int32_t special )
+{
+	switch( special )
+	{
+	case Scroll_WallTextureBySectorDiv8_Always:
+	case Scroll_WallTextureBySectorDiv8_Displacement_Always:
+	case Scroll_WallTextureBySectorDiv8_Accelerative_Always:
+		return 3;
+
+	default:
+		break;
+	}
+
+	return 0;
 }
 
 DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
@@ -2062,6 +2083,7 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 		scroller->magx				= FixedMul( line->dx, FlatScrollScale );
 		scroller->magy				= FixedMul( line->dy, FlatScrollScale );
 		scroller->controlline		= line;
+		scroller->speedshift		= ScrollerSpeedShift( line->special );
 
 		if( ( scroller->CarryType() & st_point ) != st_none )
 		{
@@ -2107,8 +2129,8 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 			}
 			else
 			{
-				scroller->scrollx			= FixedMul( line->dx, FlatScrollScale );
-				scroller->scrolly			= FixedMul( line->dy, FlatScrollScale );
+				scroller->scrollx			= FixedMul( line->dx, FlatScrollScale ) >> scroller->speedshift;
+				scroller->scrolly			= FixedMul( line->dy, FlatScrollScale ) >> scroller->speedshift;
 			}
 
 			if( type & st_wall )
@@ -2600,6 +2622,17 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 
 		if( sim.mbf21_line_specials )
 		{
+			switch( line.special )
+			{
+			case Scroll_WallTextureBySectorDiv8_Always:
+			case Scroll_WallTextureBySectorDiv8_Displacement_Always:
+			case Scroll_WallTextureBySectorDiv8_Accelerative_Always:
+				P_SpawnSectorScroller( &line );
+				break;
+
+			default:
+				break;
+			}
 		}
 
 		if( sim.rnr24_line_specials )

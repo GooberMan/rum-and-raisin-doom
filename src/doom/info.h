@@ -1290,6 +1290,7 @@ DOOM_C_API typedef enum
 	NUMSTATES = NUMSTATES_PRBOOMPLUS,
 
 	S_MINDEHACKED = 1089,
+	S_MAXDEHACKED = 3999,
 } statenum_t;
 
 DOOM_C_API typedef enum mobjtype_e {
@@ -1463,6 +1464,8 @@ DOOM_C_API typedef enum mobjtype_e {
 
 	MT_MINDEHACKED = 150,
 
+	MT_DEHEXTRA_MIN = 150,
+	MT_DEHEXTRA_MAX = 249
 } mobjtype_t;
 
 DOOM_C_API typedef enum frameflags_e
@@ -1488,7 +1491,7 @@ DOOM_C_API extern int deathmatch;
 DOOM_C_API typedef struct state_s
 {
 	int32_t		statenum;
-	spritenum_t sprite;
+	int32_t		sprite;
 	int32_t		frame;
 	int32_t		tics;
 	actionf_t	action;

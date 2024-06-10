@@ -45,24 +45,14 @@ extern "C"
 
 	#include "i_swap.h"
 
-
 	#define MINZ				( IntToRendFixed( 4 ) )
 	#define BASEYCENTER			(V_VIRTUALHEIGHT/2)
 
 	extern int32_t interpolate_this_frame;
 	extern int32_t view_bobbing_percent;
-
-	// Constant arrays, don't need to live in a context
-
-	// INITIALIZATION FUNCTIONS
-	//
-
-	// variables used to look up
-	//  and range check thing_t sprites patches
-	spritedef_t*	sprites;
-	int32_t			numsprites;
-
 }
+
+std::unordered_map< int32_t, spritedef_t > sprites;
 
 
 int32_t R_InstallSpriteLump( spriteframe_t* sprtemp, const char* spritename, int32_t maxframe, int32_t lump, int32_t frame, int32_t rotation, bool flipped )
@@ -149,30 +139,31 @@ void R_InitSprites()
     int		frame;
     int		rotation;
 
-    numsprites = sprnames.size();
-	
-    if (!numsprites)
-	{
-		return;
-	}
+	sprites.clear();
 
-    spriteframe_t* sprtemp = (spriteframe_t*)Z_Malloc( sizeof(spriteframe_t) * 29, PU_STATIC, NULL );
-    sprites = (spritedef_t*)Z_MallocZero(numsprites * sizeof(spritedef_t), PU_STATIC, NULL);
+	constexpr size_t NumSpriteFrames = 29;
+
+	spriteframe_t sprtemp[ NumSpriteFrames ] = {};
 	
     // scan all the lump names for each of the names,
     //  noting the highest frame letter.
     // Just compare 4 characters as ints
-	int32_t nameindex = 0;
-    for( spritedef_t& currsprite : std::span( sprites, numsprites ) )
+	extern std::unordered_map< int32_t, const char* > spritenamemap;
+
+    for( auto& entry : spritenamemap )
     {
-		const char* currname = sprnames[ nameindex++ ];
+		const char* currname = entry.second;
 		if( currname == nullptr )
 		{
 			continue;
 		}
 
 		const char* spritename = DEH_String( currname );
-		memset( sprtemp,-1, sizeof(spriteframe_t) * 29);
+		memset( sprtemp,-1, sizeof(spriteframe_t) * NumSpriteFrames );
+
+		spritedef_t& currsprite = sprites[ entry.first ];
+		currsprite = {};
+		currsprite.index = entry.first;
 		
 		int32_t maxframe = -1;
 		rend_fixed_t maxradius = 0;
@@ -186,6 +177,11 @@ void R_InitSprites()
 			{
 				frame = lump->name[4] - 'A';
 				rotation = lump->name[5] - '0';
+				if( frame < 0 || frame >= NumSpriteFrames
+					|| rotation < 0 || rotation > 8 )
+				{
+					I_Error( "Invalid sprite '%s'", lump->name );
+				}
 
 				int32_t patch = lookup.compositeindex;
 				maxradius = M_MAX( maxradius, spritewidth[ patch ] );
@@ -246,11 +242,9 @@ void R_InitSprites()
 	
 		// allocate space for the frames present and copy sprtemp to it
 		currsprite.numframes = maxframe;
-		currsprite.spriteframes = (spriteframe_t*)Z_Malloc( maxframe * sizeof(spriteframe_t), PU_STATIC, NULL );
-		memcpy(currsprite.spriteframes, sprtemp, maxframe*sizeof(spriteframe_t));
+		currsprite.spriteframes = (spriteframe_t*)Z_Malloc( maxframe * sizeof( spriteframe_t ), PU_STATIC, NULL );
+		memcpy( currsprite.spriteframes, sprtemp, maxframe * sizeof( spriteframe_t ) );
 	}
-
-	Z_Free( sprtemp );
 }
 
 
@@ -484,7 +478,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	rend_fixed_t	thingz			= thing->curr.z;
 
 	int32_t			thingframe		= thing->curr.frame;
-	spritenum_t		thingsprite		= thing->curr.sprite;
+	int32_t			thingsprite		= thing->curr.sprite;
 	angle_t			thingangle		= thing->curr.angle;
 
 	if( interpolate_this_frame )
@@ -543,15 +537,15 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	}
 
 	// decide which patch to use for sprite relative to player
+	auto found = sprites.find( thingsprite );
 #if RANGECHECK
-	if ((uint32_t) thingsprite >= (uint32_t) numsprites)
+	if (found == sprites.end())
 	{
 		I_Error ("R_ProjectSprite: invalid sprite number %i ",
 				thingsprite);
 	}
 #endif
-
-	sprdef = &sprites[thingsprite];
+	sprdef = &found->second;
 
 #if RANGECHECK
 	if ( (thingframe&FF_FRAMEMASK) >= sprdef->numframes )
@@ -708,14 +702,16 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	vissprite_t		avis;
 
     // decide which patch to use
+	auto found = sprites.find( psp->state->sprite );
 #if RANGECHECK
-    if ( (uint32_t)psp->state->sprite >= (uint32_t) numsprites)
+	if (found == sprites.end())
 	{
 		I_Error ("R_ProjectSprite: invalid sprite number %i ",
-			 psp->state->sprite);
+					psp->state->sprite);
 	}
 #endif
-	sprdef = &sprites[psp->state->sprite];
+	sprdef = &found->second;
+
 #if RANGECHECK
 	if ( (psp->state->frame & FF_FRAMEMASK)  >= sprdef->numframes)
 	{
@@ -868,7 +864,6 @@ void R_DrawPlayerSprites( rendercontext_t& rendercontext )
 	spritecontext_t&	spritecontext	= rendercontext.spritecontext;
 
 	int32_t		i;
-	int32_t		lightnum;
 	pspdef_t*	psp;
 
 	// clip to screen bounds

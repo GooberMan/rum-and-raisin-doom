@@ -609,7 +609,7 @@ static void IncreaseIntercepts()
 	}
 }
 
-static void InterceptsOverrun(int num_intercepts, intercept_t *intercept);
+static void InterceptsOverrun(ptrdiff_t num_intercepts, intercept_t *intercept);
 
 //
 // PIT_AddLineIntercepts.
@@ -748,7 +748,7 @@ DOOM_C_API doombool PIT_AddThingIntercepts( mobj_t* thing )
 // 
 doombool P_TraverseIntercepts( traverser_t func, fixed_t maxfrac )
 {
-    int			count;
+    ptrdiff_t	count;
     fixed_t		dist;
     intercept_t*	scan;
     intercept_t*	in;
@@ -844,10 +844,10 @@ static intercepts_overrun_t intercepts_overrun[] =
 
 // Overwrite a specific memory location with a value.
 
-static void InterceptsMemoryOverrun(int location, int value)
+static void InterceptsMemoryOverrun(ptrdiff_t location, int value)
 {
     int i, offset;
-    int index;
+    ptrdiff_t index;
     void *addr;
 
     i = 0;
@@ -889,9 +889,9 @@ static void InterceptsMemoryOverrun(int location, int value)
 
 // Emulate overruns of the intercepts[] array.
 
-static void InterceptsOverrun(int num_intercepts, intercept_t *intercept)
+static void InterceptsOverrun(ptrdiff_t num_intercepts, intercept_t *intercept)
 {
-    int location;
+    ptrdiff_t location;
 
     if (fix.intercepts_overflow || num_intercepts <= MAXINTERCEPTS)
     {
@@ -911,7 +911,7 @@ static void InterceptsOverrun(int num_intercepts, intercept_t *intercept)
 
     InterceptsMemoryOverrun(location, intercept->frac);
     InterceptsMemoryOverrun(location + 4, intercept->isaline);
-    InterceptsMemoryOverrun(location + 8, (intptr_t) intercept->d.thing);
+    InterceptsMemoryOverrun(location + 8, (int32_t)(intptr_t)intercept->d.thing);
 }
 
 
@@ -1275,6 +1275,8 @@ static void P_AddIfOverlaps( mobj_t* thismobj, sector_t* thissector, fixed_t rad
 		P_AddOverlap( thismobj, thissector );
 	}
 }
+
+extern std::unordered_map< int32_t, spritedef_t > sprites;
 
 DOOM_C_API void P_SortMobj( mobj_t* mobj )
 {

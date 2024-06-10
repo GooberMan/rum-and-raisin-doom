@@ -536,6 +536,7 @@ void F_CastDrawer (void)
 
     F_CastPrint (DEH_String(castorder[castnum].name));
     
+	extern std::unordered_map< int32_t, spritedef_t > sprites;
     // draw the current frame in the middle of the screen
     sprdef = &sprites[caststate->sprite];
     sprframe = &sprdef->spriteframes[ caststate->frame & FF_FRAMEMASK];

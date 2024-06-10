@@ -691,6 +691,7 @@ typedef struct spriteframe_s
 //
 typedef struct spritedef_s
 {
+	int32_t				index;
 	int32_t				numframes;
 	spriteframe_t*		spriteframes;
 	fixed_t				maxradius;
@@ -722,6 +723,8 @@ typedef struct skytex_s
 	rend_fixed_t		mid;
 	rend_fixed_t		scrollx;
 	rend_fixed_t		scrolly;
+	rend_fixed_t		scalex;
+	rend_fixed_t		scaley;
 	rend_fixed_t		currx;
 	rend_fixed_t		curry;
 	int32_t				texnum;

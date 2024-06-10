@@ -20,11 +20,8 @@
 #ifndef __P_INTER__
 #define __P_INTER__
 
-
-
-
-DOOM_C_API doombool	P_GivePower(player_t*, int);
-
-
+#if defined( __cplusplus )
+bool P_GivePower(player_t*, int);
+#endif // defined( __cplusplus )
 
 #endif

@@ -228,7 +228,7 @@ bool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
 // P_GiveBody
 // Returns false if the body isn't needed at all
 //
-DOOM_C_API doombool P_GiveBody( player_t* player, int num )
+bool P_GiveBody( player_t* player, int num )
 {
     if (player->health >= MAXHEALTH)
 	return false;
@@ -248,7 +248,7 @@ DOOM_C_API doombool P_GiveBody( player_t* player, int num )
 // Returns false if the armor is worse
 // than the current armor.
 //
-DOOM_C_API doombool P_GiveArmor( player_t* player, int armortype )
+bool P_GiveArmor( player_t* player, int armortype )
 {
     int		hits;
 	
@@ -267,7 +267,7 @@ DOOM_C_API doombool P_GiveArmor( player_t* player, int armortype )
 //
 // P_GiveCard
 //
-DOOM_C_API bool P_GiveCard( player_t* player, card_t card )
+bool P_GiveCard( player_t* player, card_t card )
 {
     if (player->cards[card]) return false;
     
@@ -280,7 +280,7 @@ DOOM_C_API bool P_GiveCard( player_t* player, card_t card )
 //
 // P_GivePower
 //
-DOOM_C_API doombool P_GivePower( player_t* player, int /*powertype_t*/ power )
+bool P_GivePower( player_t* player, int /*powertype_t*/ power )
 {
     if (power == pw_invulnerability)
     {

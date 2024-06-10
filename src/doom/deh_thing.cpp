@@ -87,11 +87,11 @@ static mobjinfo_t* GetThing( deh_context_t* context, int32_t thing_number )
 		return nullptr;
 	}
 	
-	GameVersion_t version = thing_number < MT_NUMVANILLATYPES ? exe_doom_1_9
+	GameVersion_t version = thing_number < -1 ? exe_rnr24
+							: thing_number < MT_NUMVANILLATYPES ? exe_doom_1_9
 							: thing_number < MT_NUMBOOMTYPES ? exe_boom_2_02
 							: thing_number < MT_NUMMBFTYPES ? exe_mbf
-							: thing_number < MT_NUMPRBOOMTYPES ? exe_mbf_dehextra
-							: thing_number < -1 ? exe_rnr24
+							: thing_number <= MT_DEHEXTRA_MAX ? exe_mbf_dehextra
 							: exe_mbf21_extended;
 
 	DEH_IncreaseGameVersion( context, version );

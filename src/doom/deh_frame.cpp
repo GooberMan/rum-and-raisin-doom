@@ -58,11 +58,13 @@ static state_t* GetState( deh_context_t* context, int32_t frame_number )
 		return nullptr;
 	}
 
-	GameVersion_t version = frame_number < ( NUMSTATES_VANILLA - 1 ) ? exe_doom_1_2
+	GameVersion_t version =  frame_number < -1 ? exe_rnr24
+							: frame_number < ( NUMSTATES_VANILLA - 1 ) ? exe_doom_1_2
 							: frame_number < NUMSTATES_VANILLA ? exe_limit_removing
 							: frame_number < NUMSTATES_BOOM ? exe_boom_2_02
 							: frame_number < NUMSTATES_MBF ? exe_mbf
 							: frame_number < NUMSTATES_PRBOOMPLUS ? exe_mbf_dehextra
+							: frame_number >= S_MINDEHACKED && frame_number < S_MAXDEHACKED ? exe_mbf_dehextra
 							: exe_mbf21_extended;
 	DEH_IncreaseGameVersion( context, version );
 

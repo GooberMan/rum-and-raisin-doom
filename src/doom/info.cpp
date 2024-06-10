@@ -8075,14 +8075,14 @@ static std::unordered_map< int32_t, mobjinfo_t* > BuildMapobjectNumMap( std::spa
 	return mobjmap;
 }
 
-static std::vector< const char* > BuildSpriteNameMap( std::span< const char* > namespan )
+static std::unordered_map< int32_t, const char* > BuildSpriteNameMap( std::span< const char* > namespan )
 {
-	std::vector< const char* > namemap;
-	namemap.reserve( namespan.size() );
+	std::unordered_map< int32_t, const char* > namemap;
 
+	int32_t index = 0;
 	for( const char* name : namespan )
 	{
-		namemap.push_back( name );
+		namemap[ index++ ] = name;
 	}
 
 	return namemap;
@@ -8091,7 +8091,7 @@ static std::vector< const char* > BuildSpriteNameMap( std::span< const char* > n
 std::unordered_map< int32_t, state_t* >		statemap		= BuildStateMap( std::span( builtinstates ) );
 std::unordered_map< int32_t, mobjinfo_t* >	mobjtypemap		= BuildMobjTypeMap( std::span( builtinmobjinfo ) );
 std::unordered_map< int32_t, mobjinfo_t* >	doomednummap	= BuildMapobjectNumMap( std::span( builtinmobjinfo ), std::span( musinfomobjinfo ) );
-std::vector< const char* >					spritenamemap	= BuildSpriteNameMap( std::span( builtinsprites ) );
+std::unordered_map< int32_t, const char* >	spritenamemap	= BuildSpriteNameMap( std::span( builtinsprites ) );
 
 DoomStateLookup								states;
 DoomMobjTypeLookup							mobjinfo;
@@ -8133,12 +8133,13 @@ mobjinfo_t* DoomMapobjectNumLookup::Fetch( int32_t mobjnum )
 
 const char* DoomSpriteNameLookup::Fetch( int32_t spritenum )
 {
-	if( spritenum >= spritenamemap.size() )
+	auto found = spritenamemap.find( spritenum );
+	if( found == spritenamemap.end() )
 	{
 		I_Error( "Attempting to access invalid sprite name '%d'", spritenum );
 	}
 
-	return spritenamemap[ spritenum ];
+	return found->second;
 }
 
 size_t DoomSpriteNameLookup::size()

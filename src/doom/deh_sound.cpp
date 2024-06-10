@@ -49,7 +49,7 @@ enum
 
 static GameVersion_t VersionFromSoundNumber( int32_t num )
 {
-	return num < 0 ? exe_mbf21_extended
+	return num < -1 ? exe_rnr24
 		: num < NumVanillaSounds ? exe_doom_1_2
 		: num < NumMBFSounds ? exe_boom_2_02
 		: num >= MinDehextra && num <= MaxDehextra ? exe_mbf_dehextra
@@ -65,6 +65,12 @@ static void *DEH_SoundStart(deh_context_t *context, char *line)
         DEH_Warning(context, "Parse error on section start");
         return NULL;
     }
+
+	if( sound_number == -1 )
+	{
+		DEH_Error(context, "Invalid sound number: -1" );
+		return nullptr;
+	}
 
 	DEH_IncreaseGameVersion( context, VersionFromSoundNumber( sound_number ) );
 

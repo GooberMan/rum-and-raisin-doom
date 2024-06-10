@@ -661,6 +661,7 @@ DOOM_C_API typedef struct scroller_s
 	fixed_t			magy;
 	fixed_t			scrollx;
 	fixed_t			scrolly;
+	int32_t			speedshift;
 	scrolltype_t	type;
 
 #if defined( __cplusplus )

@@ -241,13 +241,13 @@ DOOM_C_API typedef enum mobjrnr24flag_e
 
 DOOM_C_API typedef struct mobjinstance_s
 {
-	rend_fixed_t			x;
-	rend_fixed_t			y;
-	rend_fixed_t			z;
-	angle_t					angle;
-	spritenum_t				sprite;
-	int32_t					frame;
-	int32_t					teleported;
+	rend_fixed_t	x;
+	rend_fixed_t	y;
+	rend_fixed_t	z;
+	angle_t			angle;
+	int32_t			sprite;
+	int32_t			frame;
+	int32_t			teleported;
 } mobjinstance_t;
 
 #define MAX_SECTOR_OVERLAPS 32
@@ -272,7 +272,7 @@ DOOM_C_API typedef struct mobj_s
 
     //More drawing info: to determine current sprite.
     angle_t			angle;	// orientation
-    spritenum_t		sprite;	// used to find patch_t and flip value
+    int32_t			sprite;	// used to find patch_t and flip value
     int				frame;	// might be ORed with FF_FULLBRIGHT
 
     // Interaction info, by BLOCKMAP.

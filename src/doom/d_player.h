@@ -95,7 +95,7 @@ DOOM_C_API typedef struct owneddata_s
 		return found->amount;
 	}
 
-	INLINE void Reset()
+	INLINE void ResetWeapon()
 	{
 		size_t size = sizeof( owneditem_t ) * weaponinfo.size();
 		if( !data )
@@ -107,6 +107,22 @@ DOOM_C_API typedef struct owneddata_s
 		for( weaponinfo_t* weapon : weaponinfo.All() )
 		{
 			*curr = { weapon->index, 0 };
+			++curr;
+		}
+	}
+
+	INLINE void ResetAmmo()
+	{
+		size_t size = sizeof( owneditem_t ) * ammoinfo.size();
+		if( !data )
+		{
+			data = (owneditem_t*)Z_MallocZero( size, PU_STATIC, nullptr );
+		}
+
+		owneditem_t* curr = data;
+		for( ammoinfo_t* ammo : ammoinfo.All() )
+		{
+			*curr = { ammo->index, 0 };
 			++curr;
 		}
 	}
@@ -156,8 +172,8 @@ DOOM_C_API typedef struct player_s
     int32_t		pendingweapon;
 
     owneddata_t	weaponowned;
-    int32_t		ammo[NUMAMMO];
-    int32_t		maxammo[NUMAMMO];
+    owneddata_t	ammo;
+    owneddata_t	maxammo;
 
     // True if button down last tic.
     int			attackdown;

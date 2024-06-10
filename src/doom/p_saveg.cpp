@@ -777,18 +777,20 @@ static void saveg_read_player_t(player_t *str)
     str->pendingweapon = (weapontype_t)saveg_read_enum();
 
     // doombool weaponowned[NUMWEAPONS];
-	str->weaponowned.Reset();
+	str->weaponowned.ResetWeapon();
     for (i=0; i<NUMWEAPONS; ++i)
     {
         str->weaponowned[i] = saveg_read32();
     }
 
+	str->ammo.ResetAmmo();
     // int ammo[NUMAMMO];
     for (i=0; i<NUMAMMO; ++i)
     {
         str->ammo[i] = saveg_read32();
     }
 
+	str->maxammo.ResetAmmo();
     // int maxammo[NUMAMMO];
     for (i=0; i<NUMAMMO; ++i)
     {

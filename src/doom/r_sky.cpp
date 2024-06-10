@@ -121,6 +121,8 @@ DOOM_C_API void R_InitSkyDefs()
 			const JSONElement& mid			= skyelem[ "mid" ];
 			const JSONElement& scrollx		= skyelem[ "scrollx" ];
 			const JSONElement& scrolly		= skyelem[ "scrolly" ];
+			const JSONElement& scalex		= skyelem[ "scalex" ];
+			const JSONElement& scaley		= skyelem[ "scaley" ];
 
 			const JSONElement& fireelem		= skyelem[ "fire" ];
 			const JSONElement& foreelem		= skyelem[ "foregroundtex" ];
@@ -131,6 +133,15 @@ DOOM_C_API void R_InitSkyDefs()
 			std::string skytexname = to< std::string >( skytex );
 			int32_t tex = R_TextureNumForName( skytexname.c_str() );
 			if( tex < 0 ) return jl_parseerror;
+
+			if( !mid.IsNumber() 
+				|| !scrollx.IsNumber()
+				|| !scrolly.IsNumber()
+				|| !scalex.IsNumber()
+				|| !scaley.IsNumber() )
+			{
+				return jl_parseerror;
+			}
 
 			sky_t* sky = (sky_t*)Z_MallocZero( sizeof( sky_t ), PU_STATIC, nullptr );
 
@@ -143,6 +154,8 @@ DOOM_C_API void R_InitSkyDefs()
 			sky->background.mid = DoubleToRendFixed( to< double_t >( mid ) );
 			sky->background.scrollx = DoubleToRendFixed( to< double_t >( scrollx ) * ticratescale );
 			sky->background.scrolly = DoubleToRendFixed( to< double_t >( scrolly ) * ticratescale );
+			sky->background.scalex = DoubleToRendFixed( to< double_t >( scalex ) );
+			sky->background.scaley = DoubleToRendFixed( 1.0 / to< double_t >( scaley ) );
 
 			if( sky->type == sky_fire )
 			{
@@ -168,16 +181,29 @@ DOOM_C_API void R_InitSkyDefs()
 				const JSONElement& foremid		= foreelem[ "mid" ];
 				const JSONElement& forescrollx	= foreelem[ "scrollx" ];
 				const JSONElement& forescrolly	= foreelem[ "scrolly" ];
+				const JSONElement& forescalex	= foreelem[ "scalex" ];
+				const JSONElement& forescaley	= foreelem[ "scaley" ];
 
 				std::string foreskytexname = to< std::string >( foreskytex );
 				int32_t foretex = R_TextureNumForName( foreskytexname.c_str() );
 				if( foretex < 0 ) return jl_parseerror;
+
+				if( !foremid.IsNumber() 
+					|| !forescrollx.IsNumber()
+					|| !forescrolly.IsNumber()
+					|| !forescalex.IsNumber()
+					|| !forescaley.IsNumber() )
+				{
+					return jl_parseerror;
+				}
 
 				sky->foreground.texture = texturelookup[ foretex ];
 				sky->foreground.texnum = foretex;
 				sky->foreground.mid = DoubleToRendFixed( to< double_t >( foremid ) );
 				sky->foreground.scrollx = DoubleToRendFixed( to< double_t >( forescrollx ) * ticratescale );
 				sky->foreground.scrolly = DoubleToRendFixed( to< double_t >( forescrolly ) * ticratescale );
+				sky->foreground.scalex = DoubleToRendFixed( to< double_t >( forescalex ) );
+				sky->foreground.scaley = DoubleToRendFixed( 1.0 / to< double_t >( forescaley ) );
 			}
 			else
 			{
@@ -245,6 +271,8 @@ DOOM_C_API sky_t* R_GetSky( const char* name, doombool create )
 	sky_t* sky = (sky_t*)Z_MallocZero( sizeof( sky_t ), PU_STATIC, nullptr );
 	sky->background.texture = texturelookup[ texturetranslation[ tex ] ];
 	sky->background.texnum = tex;
+	sky->background.scalex = IntToRendFixed( 1 );
+	sky->background.scaley = IntToRendFixed( 1 );
 	if( comp.tall_skies )
 	{
 		sky->background.mid = sky->background.texture->renderheight - constants::skytexturemidoffset;
@@ -253,6 +281,8 @@ DOOM_C_API sky_t* R_GetSky( const char* name, doombool create )
 	{
 		sky->background.mid = constants::skytexturemid;
 	}
+	sky->foreground.scalex = IntToRendFixed( 1 );
+	sky->foreground.scaley = IntToRendFixed( 1 );
 	sky->type = sky_texture;
 
 	skylookup[ name ] = sky;
@@ -377,7 +407,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sky_
 
 		colcontext_t	skycontext = {};
 
-		skycontext.iscale = drs_current->skyiscaley;
+		skycontext.iscale = RendFixedMul( drs_current->skyiscaley, tex.scaley );
 		skycontext.colfunc = foreground ? texture->transparentwallrender : texture->wallrender;
 		skycontext.transparency = foreground ? (byte*)skymixmap.data() : nullptr;
 		skycontext.colormap = rendercontext.viewpoint.colormaps;
@@ -396,6 +426,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sky_
 				skycontext.x = x;
 
 				int32_t angle = ( viewpoint.angle + skyoffsetangle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
+				angle = RendFixedToInt( RendFixedMul( IntToRendFixed( angle ), tex.scalex ) );
 				// Sky is allways drawn full bright,
 				//  i.e. colormaps[0] is used.
 				// Because of this hack, sky is not affected

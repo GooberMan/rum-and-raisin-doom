@@ -1298,7 +1298,9 @@ void G_PlayerReborn (int player)
     p->playerstate = PST_LIVE;       
     p->health = deh_initial_health;     // Use dehacked value
 
-	p->weaponowned.Reset();
+	p->weaponowned.ResetWeapon();
+	p->ammo.ResetAmmo();
+	p->maxammo.ResetAmmo();
 
 	for( weaponinfo_t* weapon : weaponinfo.All() )
 	{
