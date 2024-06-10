@@ -70,7 +70,8 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   RNR_MAPPING("Pickup ammo category", pickupammocategory)
   RNR_MAPPING("Pickup weapon type",  pickupweapontype)
   RNR_MAPPING("Pickup item type",    pickupitemtype)
-  RNR_MAPPING("Pickup sound",        pickupitemtype)
+  RNR_MAPPING("Pickup bonus count",  pickupbonuscount)
+  RNR_MAPPING("Pickup sound",        pickupsound)
   RNR_MAPPING("Pickup message",      pickupstringmnemonic)
 DEH_END_MAPPING
 

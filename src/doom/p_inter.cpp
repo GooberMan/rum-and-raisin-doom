@@ -852,8 +852,9 @@ DOOM_C_API void P_TouchSpecialThing( mobj_t* special, mobj_t* toucher )
 			P_RemoveMobj( special );
 		}
 
-		player->bonuscount += BONUSADD;
-		if( player == &players[ consoleplayer ] )
+		player->bonuscount += special->info->pickupbonuscount;
+
+		if( sound != 0 && player == &players[ consoleplayer ] )
 		{
 			S_StartSound (NULL, sound);
 		}

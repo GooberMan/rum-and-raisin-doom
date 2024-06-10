@@ -281,6 +281,10 @@ static void DEH_ParseContext(deh_context_t *context)
 					{
 						DEH_IncreaseGameVersion( context, exe_mbf21_extended );
 					}
+					else if( version_number = 2024 )
+					{
+						DEH_IncreaseGameVersion( context, exe_rnr24 );
+					}
 				}
 				//if( strncmp( line, "Patch format", 12 ) == 0 )
 				//{

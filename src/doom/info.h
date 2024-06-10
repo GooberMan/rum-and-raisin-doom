@@ -1602,6 +1602,7 @@ DOOM_C_API typedef struct
 	int32_t		pickupammocategory;
 	int32_t		pickupweapontype;
 	int32_t		pickupitemtype;
+	int32_t		pickupbonuscount;
 	int32_t		pickupsound;
 	const char* pickupstringmnemonic;
 } mobjinfo_t;

@@ -1476,16 +1476,23 @@ DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, tele
 					outtargetx				= targetmobj->x;
 					outtargety				= targetmobj->y;
 					outtargetangle			= targetmobj->angle;
+
+					angle_t diff = targetmobj->angle - line->angle + ( anglebehavior == tt_reverseangle ? ANG180 : 0 );
+					fixed_t momx = activator->momx;
+					fixed_t momy = activator->momy;
+					Rotate( diff, momx, momy, activator->momx, activator->momy );
+
+					diff = activator->angle - line->angle;
 					switch( anglebehavior )
 					{
 					case tt_setangle:
 						outtargetangle = targetmobj->angle;
 						break;
 					case tt_preserveangle:
-						outtargetangle = activator->angle;
+						outtargetangle = targetmobj->angle + diff;
 						break;
 					case tt_reverseangle:
-						outtargetangle = activator->angle + ANG180;
+						outtargetangle = targetmobj->angle + diff + ANG180;
 						break;
 					default:
 						break;
