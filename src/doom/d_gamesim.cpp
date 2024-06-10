@@ -261,6 +261,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.fix.spechit_overflow = true;
 	values.fix.brainspawn_targets = true;
 	values.fix.really_needed_medikit = true;
+	values.fix.revenant_tracer_desync = true;
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 
@@ -292,6 +293,7 @@ static fixoptions_t GetAllFixed()
 	options.brainspawn_targets = true;
 	options.findheight_ignores_same_sector = true;
 	options.really_needed_medikit = true;
+	options.revenant_tracer_desync = true;
 
 	return options;
 }

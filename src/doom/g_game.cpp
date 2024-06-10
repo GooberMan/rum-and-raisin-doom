@@ -136,7 +136,7 @@ extern "C"
  
 	int             consoleplayer;          // player taking events and displaying 
 	int             displayplayer;          // view being displayed 
-	int             levelstarttic;          // gametic at level start 
+	uint64_t        levelstarttic;          // gametic at level start 
 	int             totalkills, totalitems, totalsecret;    // for intermission 
  
 	char           *demoname;
@@ -171,6 +171,7 @@ extern "C"
 	byte*			auditbuffer = NULL;
 	byte*			auditbufferend = NULL;
 	byte*			auditbufferpos = NULL;
+	uint64_t		auditstarttic = 0;
 }
 
 const uint32_t AUDITIDENTIFIER		= 0xA55E55ED;
@@ -243,6 +244,7 @@ void G_InitAuditBufferPlaying( const char* filename )
 		auditplaying = true;
 		auditbuffer = auditbufferpos = buffer;
 		auditbufferend = buffer + size;
+		auditstarttic = gametic;
 
 		CHECKFORAUDIT( uint32_t, AUDITIDENTIFIER, "Invalid audit file %s", auditname );
 	}
@@ -285,7 +287,7 @@ void G_AuditFrame()
 	else if( auditplaying )
 	{
 		CHECKFORAUDIT( uint32_t, FRAMEIDENTIFIER, "Invalid frame identifier, should be %08X", FRAMEIDENTIFIER );
-		CHECKFORAUDIT( uint64_t, gametic, "Invalid gametic, should be %d", gametic );
+		CHECKFORAUDIT( uint64_t, gametic - auditstarttic, "Invalid gametic, should be %d", gametic );
 		CHECKFORAUDIT( uint32_t, SECTORIDENTIFIER, "Invalid sector identifier, should be %08X", SECTORIDENTIFIER );
 		CHECKFORAUDIT( int32_t, numsectors, "Invalid sector count, should be %d", numsectors );
 
@@ -2422,6 +2424,15 @@ void G_DoPlayDemo (void)
 	}
 
 	int32_t auditparam = M_CheckParmWithArgs( "-playaudit", 1 );
+	if( !auditparam )
+	{
+		auditparam = M_CheckParmWithArgs( "-playauditloop", 1 );
+		if( strcasecmp( myargv[ auditparam + 1 ], defdemoname ) != 0 )
+		{
+			auditparam = 0;
+		}
+	}
+
 	if( auditparam )
 	{
 		G_InitAuditBufferPlaying( myargv[ auditparam + 1 ] );

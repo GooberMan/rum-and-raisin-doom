@@ -201,8 +201,8 @@ DOOM_C_API extern	int	totalitems;
 DOOM_C_API extern	int	totalsecret;
 
 // Timer, for scores.
-DOOM_C_API extern  int	levelstarttic;	// gametic at level start
-DOOM_C_API extern  int	leveltime;	// tics in game play for par
+DOOM_C_API extern  uint64_t	levelstarttic;	// gametic at level start
+DOOM_C_API extern  uint64_t	leveltime;	// tics in game play for par
 
 
 

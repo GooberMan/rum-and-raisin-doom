@@ -25,7 +25,7 @@
 #include "doomstat.h"
 
 
-int	leveltime;
+uint64_t	leveltime;
 
 //
 // THINKERS

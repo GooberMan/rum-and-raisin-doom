@@ -43,6 +43,7 @@ DOOM_C_API typedef struct fixoptions_s
 	doombool		brainspawn_targets;						// Vanilla would just merrily spawn from a null pointer; and would stomp over the stack of an array
 	doombool		findheight_ignores_same_sector;			// Find Lowest/Highest/Nearest floors or ceilings never checked if the line's other sector was the same
 	doombool		really_needed_medikit;					// The infamous missing message, implemented correctly
+	doombool		revenant_tracer_desync;					// Demos not playing from gametic 0 will cause revenant tracers to spawn when they shouldn't
 } fixoptions_t;
 
 DOOM_C_API typedef struct simoptions_s

@@ -1074,8 +1074,12 @@ DOOM_C_API void A_Tracer (mobj_t* actor)
     mobj_t*	dest;
     mobj_t*	th;
 		
-    if (gametic & 3)
-	return;
+	uint64_t checktic = fix.revenant_tracer_desync ? leveltime : gametic;
+
+    if (checktic & 3)
+	{
+		return;
+	}
     
     // spawn a puff of smoke behind the rocket		
     P_SpawnPuff (actor->x, actor->y, actor->z);
