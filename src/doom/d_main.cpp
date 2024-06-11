@@ -1487,26 +1487,6 @@ static void InitGameVersion(void)
     }
 }
 
-void PrintGameVersion(void)
-{
-    int i;
-
-    for (i=0; gameversions[i].description != NULL; ++i)
-    {
-        if (gameversions[i].version == gameversion)
-        {
-			I_TerminalPrintf( Log_Startup,	"Emulating the behavior of the "
-											"'%s' executable.\n", gameversions[i].description);
-            break;
-        }
-    }
-
-	if( remove_limits )
-	{
-		I_TerminalPrintf( Log_Startup, "Running in limit-removing mode.\n" );
-	}
-}
-
 // Function called at exit to display the ENDOOM screen
 
 static void D_Endoom(void)
@@ -1531,29 +1511,7 @@ static void D_Endoom(void)
 // Load dehacked patches needed for certain IWADs.
 static void LoadIwadDeh(void)
 {
-	if( remove_limits )
-	{
-		DEH_LoadLumpByName("DEHACKED", false, false);
-	}
-
-    // The Freedoom IWADs have DEHACKED lumps that must be loaded.
-    if (gamevariant == freedoom || gamevariant == freedm)
-    {
-        // Old versions of Freedoom (before 2014-09) did not have technically
-        // valid DEHACKED lumps, so ignore errors and just continue if this
-        // is an old IWAD.
-        DEH_LoadLumpByName("DEHACKED", false, true);
-    }
-
-    // If this is the HACX IWAD, we need to load the DEHACKED lump.
-    if (gameversion == exe_hacx)
-    {
-        if (!DEH_LoadLumpByName("DEHACKED", true, false))
-        {
-            I_Error("DEHACKED lump not found.  Please check that this is the "
-                    "Hacx v1.2 IWAD.");
-        }
-    }
+    DEH_LoadLumpByName("DEHACKED", (gameversion == exe_hacx), (gamevariant == freedoom || gamevariant == freedm));
 
     // Chex Quest needs a separate Dehacked patch which must be downloaded
     // and installed next to the IWAD.
@@ -1943,41 +1901,34 @@ DOOM_C_API void D_DoomMain (void)
     //
     // Disable auto-loading of .wad and .deh files.
     //
-    if (!M_ParmExists("-noautoload") && gamemode != shareware)
-    {
-        char *autoload_dir;
-
-        // common auto-loaded files for all Doom flavors
-
-        if (gamemission < pack_chex)
-        {
-            autoload_dir = M_GetAutoloadDir("doom-all");
-            DEH_AutoLoadPatches(autoload_dir);
-            W_AutoLoadWADs(autoload_dir);
-            free(autoload_dir);
-        }
-
-        // auto-loaded files per IWAD
-
-        autoload_dir = M_GetAutoloadDir( IWADFilename() );
-        DEH_AutoLoadPatches(autoload_dir);
-        W_AutoLoadWADs(autoload_dir);
-        free(autoload_dir);
-    }
+    //if (!M_ParmExists("-noautoload") && gamemode != shareware)
+    //{
+    //    char *autoload_dir;
+	//
+    //    // common auto-loaded files for all Doom flavors
+	//
+    //    if (gamemission < pack_chex)
+    //    {
+    //        autoload_dir = M_GetAutoloadDir("doom-all");
+    //        DEH_AutoLoadPatches(autoload_dir);
+    //        W_AutoLoadWADs(autoload_dir);
+    //        free(autoload_dir);
+    //    }
+	//
+    //    // auto-loaded files per IWAD
+	//
+    //    autoload_dir = M_GetAutoloadDir( IWADFilename() );
+    //    DEH_AutoLoadPatches(autoload_dir);
+    //    W_AutoLoadWADs(autoload_dir);
+    //    free(autoload_dir);
+    //}
 
 	// Load PWAD files.
 	modifiedgame = gameconf->pwadscount != 0;
 	for( const char* pwad : gameconf->PWADs() )
 	{
-		I_TerminalPrintf( Log_Startup, " Adding %s\n", pwad );
+		I_TerminalPrintf( Log_Startup, " Adding %s\n", M_BaseName( pwad ) );
 		W_AddFile( pwad );
-	}
-
-    LoadIwadDeh();
-
-	for( const char* dehfile : gameconf->DEHFiles() )
-	{
-		DEH_LoadFile( dehfile );
 	}
 
     // Debug:
@@ -2057,31 +2008,19 @@ DOOM_C_API void D_DoomMain (void)
     // Generate the WAD hash table.  Speed things up a bit.
     W_GenerateHashTable();
 
-    // Load DEHACKED lumps from WAD files - but only if we give the right
-    // command line parameter.
+	// Load DEHACKED lumps of all kinds.
+	for( lumpindex_t lumpindex = 0; lumpindex < numlumps; ++lumpindex )
+	{
+		if (!strncmp(lumpinfo[ lumpindex ]->name, "DEHACKED", 8))
+		{
+			DEH_LoadLump( lumpindex, true, true );
+		}
+	}
 
-    //!
-    // @category mod
-    //
-    // Load Dehacked patches from DEHACKED lumps contained in one of the
-    // loaded PWAD files.
-    //
-    //if (M_ParmExists("-dehlump"))
-    {
-        uint32_t i, loaded = 0;
-
-        for (i = numiwadlumps; i < numlumps; ++i)
-        {
-            if (!strncmp(lumpinfo[i]->name, "DEHACKED", 8))
-            {
-				doombool allow = remove_limits ? true : false;
-                DEH_LoadLump(i, allow, allow);
-                loaded++;
-            }
-        }
-
-        I_TerminalPrintf( Log_Startup, " Loaded %i DEHACKED lumps from WAD files.\n", loaded);
-    }
+	for( const char* dehfile : gameconf->DEHFiles() )
+	{
+		DEH_LoadFile( dehfile );
+	}
 
 	// With gameflow and dehacked parsed, we can finally set up the gamesim correctly
 	D_RegisterGamesim();
@@ -2322,8 +2261,6 @@ DOOM_C_API void D_DoomMain (void)
 
     DEH_printf("D_CheckNetGame: Checking network game status.\n");
     D_CheckNetGame ();
-
-    PrintGameVersion();
 
     DEH_printf("HU_Init: Setting up heads up display.\n");
     HU_Init ();

@@ -41,6 +41,8 @@ extern int32_t remove_limits;
 
 static doombool deh_initialized = false;
 static GameVersion_t deh_loaded_version = exe_invalid;
+static uint64_t deh_session_hash = 0;
+static uint64_t deh_loaded_count = 0;
 
 // If false, dehacked cheat replacements are ignored.
 
@@ -334,6 +336,8 @@ int DEH_LoadFile(const char *filename)
 	GameVersion_t version = DEH_GameVersion( context );
 	deh_loaded_version = M_MAX( version, deh_loaded_version );
 
+	++deh_loaded_count;
+
     DEH_CloseFile(context);
 
     return 1;
@@ -382,6 +386,8 @@ int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error)
         fprintf(stderr, "DEH_LoadFile: Unable to open lump %i\n", lumpnum);
         return 0;
     }
+
+    I_TerminalPrintf( Log_Startup, " Applying %s:%s\n", M_BaseName( lumpinfo[ lumpnum ]->wad_file->path ), lumpinfo[ lumpnum ]->name );
 
     DEH_ParseContext(context);
 
