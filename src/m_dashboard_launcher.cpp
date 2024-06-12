@@ -429,9 +429,9 @@ typedef struct triangle_s
 	vec2_t		p3;
 } triangle_t;
 
-constexpr vec2_t MakeVec2( float_t x, float_t y )
+constexpr vec2_t MakeVec2( double_t x, double_t y )
 {
-	vec2_t out = { x, y };
+	vec2_t out = { (float_t)x, (float_t)y };
 	return out;
 }
 

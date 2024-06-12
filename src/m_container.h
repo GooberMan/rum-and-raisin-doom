@@ -436,7 +436,7 @@ public:
 	}
 
 	_ty& access()					{ return data[ current.load() % size ]; }
-	_ty pop()						{ return data[ current.fetch_add( 1 ) % size ]; }
+	_ty&& pop()						{ return std::forward< _ty >( data[ current.fetch_add( 1 ) % size ] ); }
 
 	bool trypop( _ty& output )
 	{
@@ -448,7 +448,7 @@ public:
 			bool obtained = current.compare_exchange_weak( front, desired, std::memory_order::release );
 			if( obtained )
 			{
-				output = data[ front % size ];
+				output = std::forward< _ty >( data[ front % size ] );
 				return true;
 			}
 		}
@@ -497,6 +497,19 @@ public:
 
 private:
 	std::vector< _ty >				storage;
+};
+
+template< typename _ty, size_t count >
+class FixedAtomicCircularQueue : public AtomicCircularQueueBase< _ty >
+{
+public:
+	FixedAtomicCircularQueue()
+		: AtomicCircularQueueBase<_ty>( count, storage )
+	{
+	}
+
+private:
+	_ty								storage[ count ];
 };
 
 class AtomicScratchpadBase
