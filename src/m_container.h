@@ -418,49 +418,91 @@ auto Concat( _c1& c1, _c2& c2, _cN&... cN )
 }
 
 template< typename _ty >
-class AtomicCircularQueue
+class AtomicCircularQueueBase
 {
 public:
 	using value_type = _ty;
 
 	// Currently has no protection for buffer overrun
 
-	AtomicCircularQueue() = delete;
-	AtomicCircularQueue( size_t len )
-		: current( 0 )
+	AtomicCircularQueueBase() = delete;
+	AtomicCircularQueueBase( size_t s, _ty* d )
+		: data( d )
+		, size( s )
+		, current( 0 )
 		, end( 0 )
 		, reserved( 0 )
 	{
-		data.resize( len );
 	}
 
-	_ty& access()					{ return data[ current.load() % data.size() ]; }
-	_ty pop()						{ return data[ current.fetch_add( 1 ) % data.size() ]; }
+	_ty& access()					{ return data[ current.load() % size ]; }
+	_ty pop()						{ return data[ current.fetch_add( 1 ) % size ]; }
 
-	_ty& reserve( size_t& token )	{ token = reserved.fetch_add( 1 ); return data[ token % data.size() ]; }
-	void commit( size_t token )		{ while( end.compare_exchange_weak( token, token + 1 ) ) { } }
-	void push( const _ty& data )	{ size_t ind; reserve( ind ) = data; commit( ind ); }
-	void push( _ty&& data )			{ push( data ); }
+	bool trypop( _ty& output )
+	{
+		size_t front = current.load();
+		size_t back = end.load();
+		if( front != back )
+		{
+			size_t desired = front + 1;
+			bool obtained = current.compare_exchange_weak( front, desired, std::memory_order::release );
+			if( obtained )
+			{
+				output = data[ front % size ];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	_ty& reserve( size_t& token )	{ token = reserved.fetch_add( 1, std::memory_order::release ); return data[ token % size ]; }
+	void commit( size_t token )		{ size_t expected = token; while( !end.compare_exchange_weak( token, token + 1, std::memory_order::release ) ) { expected = token; } }
+	void push( const _ty& val )
+	{
+		size_t ind;
+		reserve( ind ) = val;
+		commit( ind );
+	}
+	void push( _ty&& val )			{ push( val ); }
 
 	bool valid()					{ return current.load() != end.load(); }
 	bool empty()					{ return current.load() == end.load(); }
 
-private:
-	std::vector< _ty >				data;
+protected:
+	void Setup( size_t s, _ty* d )
+	{
+		data = d;
+		size = s;
+	}
+
+	_ty*							data;
+	size_t							size;
 	std::atomic< size_t >			current;
 	std::atomic< size_t >			end;
 	std::atomic< size_t >			reserved;
 };
 
-class AtomicScratchpad
+template< typename _ty >
+class AtomicCircularQueue : public AtomicCircularQueueBase< _ty >
 {
 public:
-	AtomicScratchpad( size_t size, int32_t tag )
-		: scratchpos( 0 )
-		, scratchsize( size )
-		, scratch( (byte*)Z_Malloc( size, tag, nullptr ) )
+	AtomicCircularQueue() = delete;
+
+	AtomicCircularQueue( size_t count )
+		: AtomicCircularQueueBase<_ty>( count, nullptr )
 	{
+		storage.resize( count );
+		AtomicCircularQueueBase< _ty >::Setup( count, storage.data() );
 	}
+
+private:
+	std::vector< _ty >				storage;
+};
+
+class AtomicScratchpadBase
+{
+public:
+	AtomicScratchpadBase() = delete;
 
 	template< typename _ty >
 	_ty* Allocate()
@@ -482,10 +524,40 @@ public:
 		scratchpos = 0;
 	}
 
+protected:
+	AtomicScratchpadBase( size_t s, byte* b )
+		: scratchpos( 0 )
+		, scratchsize( s )
+		, scratch( b )
+	{
+	}
+
 private:
 	std::atomic< size_t >	scratchpos;
 	size_t					scratchsize;
 	byte*					scratch;
+};
+
+class AtomicScratchpad : public AtomicScratchpadBase
+{
+public:
+	AtomicScratchpad( size_t size, int32_t tag )
+		: AtomicScratchpadBase( size, (byte*)Z_Malloc( size, tag, nullptr ) )
+	{
+	}
+};
+
+template< size_t size >
+class FixedAtomicScratchpad : public AtomicScratchpadBase
+{
+public:
+	FixedAtomicScratchpad()
+		: AtomicScratchpadBase( size, buffer )
+	{
+	}
+
+private:
+	byte					buffer[ size ];
 };
 
 #endif // __cplusplus

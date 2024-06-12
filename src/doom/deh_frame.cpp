@@ -191,7 +191,7 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 		}
 		else if( strcmp( variable_name, "Next frame" ) == 0 )
 		{
-			[[maybe_unused]] state_t* state = GetState( context, ivalue );
+			[[maybe_unused]] state_t* newstate = GetState( context, ivalue );
 			DEH_SetMapping(context, &state_mapping, state, variable_name, ivalue);
 		}
 		{
