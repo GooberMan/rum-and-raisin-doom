@@ -94,7 +94,7 @@ constexpr std::array< byte, 256*256 > GenerateSkyMixMap()
 
 constexpr std::array< byte, 256*256 > skymixmap = GenerateSkyMixMap();
 
-DOOM_C_API void R_InitSkyDefs()
+void R_InitSkyDefs()
 {
 	skyflatnum = R_FlatNumForName( DEH_String( SKYFLATNAME ) );
 	texturecomposite_t* skyflatcomposite = flatlookup[ skyflatnum ];
@@ -239,7 +239,7 @@ DOOM_C_API void R_InitSkyDefs()
 	M_ParseJSONLump( "SKYDEFS", "skydefs", { 1, 0, 0 }, ParseSkydef );
 }
 
-DOOM_C_API void R_InitSkiesForLevel()
+void R_InitSkiesForLevel()
 {
 	for( auto& skypair : skylookup )
 	{
@@ -251,7 +251,7 @@ DOOM_C_API void R_InitSkiesForLevel()
 	}
 }
 
-DOOM_C_API sky_t* R_GetSky( const char* name, doombool create )
+sky_t* R_GetSky( const char* name, doombool create )
 {
 	std::string skytexname = name;
 	auto found = skylookup.find( name );
@@ -269,7 +269,7 @@ DOOM_C_API sky_t* R_GetSky( const char* name, doombool create )
 	if( tex < 0 ) return nullptr;
 
 	sky_t* sky = (sky_t*)Z_MallocZero( sizeof( sky_t ), PU_STATIC, nullptr );
-	sky->background.texture = texturelookup[ texturetranslation[ tex ] ];
+	sky->background.texture = texturelookup[ tex ];
 	sky->background.texnum = tex;
 	sky->background.scalex = IntToRendFixed( 1 );
 	sky->background.scaley = IntToRendFixed( 1 );
@@ -289,18 +289,18 @@ DOOM_C_API sky_t* R_GetSky( const char* name, doombool create )
 	return sky;
 }
 
-DOOM_C_API void R_SetDefaultSky( const char* sky )
+void R_SetDefaultSky( const char* sky )
 {
 	sky_t* skydef = R_GetSky( sky, true );
 	defaultskyflat->sky = skydef;
 }
 
-DOOM_C_API void R_ActivateSky( sky_t* sky )
+void R_ActivateSky( sky_t* sky )
 {
 	sky->active = true;
 }
 
-DOOM_C_API void R_ActivateSkyAndAnims( int32_t texnum )
+void R_ActivateSkyAndAnims( int32_t texnum )
 {
 	if( sky_t* sky = R_GetSky( texturelookup[ texnum ]->name, false ) )
 	{
@@ -363,7 +363,7 @@ static void R_UpdateSky( sky_t* sky )
 	}
 }
 
-DOOM_C_API void R_UpdateSky()
+void R_UpdateSky()
 {
 	for( auto& skypair : skylookup )
 	{

@@ -618,6 +618,7 @@ DOOM_C_API typedef enum scrolltype_e
 
 	st_displacement	= 0x0100,
 	st_accelerative = 0x0200,
+	st_bothsides	= 0x0400,
 
 	st_scrollmask	= st_ceiling | st_floor | st_wall,
 	st_carrymask	= st_current | st_wind | st_point,
@@ -668,6 +669,7 @@ DOOM_C_API typedef struct scroller_s
 	constexpr scrolltype_t ScrollType()		{ return type & st_scrollmask; }
 	constexpr scrolltype_t CarryType()		{ return type & st_carrymask; }
 	constexpr scrolltype_t SpeedType()		{ return type & st_speedmask; }
+	constexpr bool BothSides()				{ return ( type & st_bothsides ) == st_bothsides; }
 #endif // defined( __cplusplus )
 } scroller_t;
 

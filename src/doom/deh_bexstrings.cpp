@@ -362,13 +362,12 @@ static void DEH_BEXStringsParseLine( deh_context_t* context, char* line, void* t
     if( found == mnemoniclookup.end() )
     {
 		std::string variable_name_str = ToUpper( variable_name );
-		if( !variable_name_str.starts_with( "USER_" ) )
+		if( variable_name_str.starts_with( "USER_" ) )
 		{
-			DEH_Warning( context, "Custom mnemonic '%s' must start with 'USER_'\n", variable_name );
-			return;
+			DEH_IncreaseGameVersion( context, exe_rnr24 );
 		}
+		// TODO: Work out how to handle the gajillion custom mnemonics over the years
 
-		DEH_IncreaseGameVersion( context, exe_rnr24 );
 		mnemoniclookup[ std::string( variable_name_str ) ] = value;
 	}
 	else

@@ -177,7 +177,6 @@ bool P_GiveAmmo( player_t* player, const ammoinfo_t* ammoinfo, ammocategory_t ca
 bool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
 {
 	const weaponinfo_t& thisweapon = weaponinfo[ weapon ];
-	const ammoinfo_t& thisammo = ammoinfo[ thisweapon.ammo ];
 	
 	if (netgame
 		&& deathmatch != 2
@@ -192,7 +191,11 @@ bool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
 		player->bonuscount += BONUSADD;
 		player->weaponowned[ weapon ] = true;
 
-		P_GiveAmmo( player, &thisammo, deathmatch == 1 ? ac_deathmatchweapon : ac_weapon );
+		if( weaponinfo[weapon].ammo != am_noammo )
+		{
+			const ammoinfo_t& thisammo = ammoinfo[ thisweapon.ammo ];
+			P_GiveAmmo( player, &thisammo, deathmatch == 1 ? ac_deathmatchweapon : ac_weapon );
+		}
 
 		player->pendingweapon = weapon;
 
@@ -209,6 +212,7 @@ bool P_GiveWeapon( player_t* player, weapontype_t weapon, doombool dropped )
 
 	if( weaponinfo[weapon].ammo != am_noammo )
 	{
+		const ammoinfo_t& thisammo = ammoinfo[ thisweapon.ammo ];
 		gaveammo = P_GiveAmmo( player, &thisammo, dropped ? ac_droppedweapon : ac_weapon );
 	}
 	

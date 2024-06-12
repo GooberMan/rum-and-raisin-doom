@@ -402,6 +402,12 @@ enum RNR24Actions : uint32_t
 	Tint_SetTo_G1_Player,
 	Tint_SetTo_GR_Player,
 
+	Scroll_WallTextureBothSides_Left_Always,
+	Scroll_WallTextureBothSides_Right_Always,
+	Scroll_WallTextureBothSides_SectorDiv8_Always,
+	Scroll_WallTextureBothSides_SectorDiv8Displacement_Always,
+	Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always,
+
 	RNR24Actions_Max,
 	RNR24Actions_Min = Offset_FloorTexture_Always,
 };

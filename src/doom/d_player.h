@@ -82,11 +82,12 @@ DOOM_C_API typedef struct owneditem_s
 DOOM_C_API typedef struct owneddata_s
 {
 	owneditem_t*	data;
+	size_t			length;
 
 #if defined( __cplusplus )
 	INLINE int32_t& operator[]( int32_t index )
 	{
-		owneditem_t* end = data + weaponinfo.size();
+		owneditem_t* end = data + length;
 		auto found = std::find_if( data, end, [&index]( const owneditem_t& owned ) { return owned.index == index; } );
 		if( found == end )
 		{
@@ -97,10 +98,10 @@ DOOM_C_API typedef struct owneddata_s
 
 	INLINE void ResetWeapon()
 	{
-		size_t size = sizeof( owneditem_t ) * weaponinfo.size();
+		length = sizeof( owneditem_t ) * weaponinfo.size();
 		if( !data )
 		{
-			data = (owneditem_t*)Z_MallocZero( size, PU_STATIC, nullptr );
+			data = (owneditem_t*)Z_MallocZero( length, PU_STATIC, nullptr );
 		}
 
 		owneditem_t* curr = data;
@@ -113,10 +114,10 @@ DOOM_C_API typedef struct owneddata_s
 
 	INLINE void ResetAmmo()
 	{
-		size_t size = sizeof( owneditem_t ) * ammoinfo.size();
+		length = sizeof( owneditem_t ) * ammoinfo.size();
 		if( !data )
 		{
-			data = (owneditem_t*)Z_MallocZero( size, PU_STATIC, nullptr );
+			data = (owneditem_t*)Z_MallocZero( length, PU_STATIC, nullptr );
 		}
 
 		owneditem_t* curr = data;

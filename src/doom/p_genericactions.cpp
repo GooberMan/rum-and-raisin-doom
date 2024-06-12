@@ -1453,7 +1453,7 @@ DOOM_C_API int32_t EV_StopAnyLiftGeneric( line_t* line, mobj_t* activator )
 //     TELEPORTS
 // =================
 
-DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, teleporttype_e anglebehavior, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
+DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, teleporttype_e anglebehavior, fixed_t& outtargetx, fixed_t& outtargety, fixed_t& outtargetz, angle_t& outtargetangle )
 {
 	if( activator->flags & MF_MISSILE )
 	{
@@ -1498,6 +1498,17 @@ DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, tele
 						break;
 					}
 
+					if( gameversion != exe_final
+						&& !comp.finaldoom_teleport_z )
+					{
+						outtargetz = activator->floorz;
+						activator->z = outtargetz;
+					}
+					else
+					{
+						outtargetz = activator->z;
+					}
+
 					return true;
 				}
 
@@ -1509,7 +1520,7 @@ DOOM_C_API bool EV_DoTeleportGenericThing( line_t* line, mobj_t* activator, tele
 	return false;
 }
 
-DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, teleporttype_e anglebehavior, fixed_t& outtargetx, fixed_t& outtargety, angle_t& outtargetangle )
+DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, teleporttype_e anglebehavior, fixed_t& outtargetx, fixed_t& outtargety, fixed_t& outtargetz, angle_t& outtargetangle )
 {
 	for( line_t& targetline : Lines() )
 	{
@@ -1536,11 +1547,16 @@ DOOM_C_API bool EV_DoTeleportGenericLine( line_t* line, mobj_t* activator, telep
 			destx += targetmidx;
 			desty += targetmidy;
 
+			fixed_t sourcez = activator->z - activator->floorz;
+
 			if( P_TeleportMove( activator, destx, desty ) )
 			{
 				outtargetx		= destx;
 				outtargety		= desty;
+				outtargetz		= sourcez + activator->floorz;
 				outtargetangle	= activator->angle + diff;
+
+				activator->z = outtargetz;
 
 				fixed_t momx = activator->momx;
 				fixed_t momy = activator->momy;
@@ -1566,27 +1582,22 @@ DOOM_C_API int32_t EV_DoTeleportGeneric( line_t* line, mobj_t* activator )
 
 	fixed_t targetx = 0;
 	fixed_t targety = 0;
+	fixed_t targetz = 0;
 	angle_t targetangle = 0;
 
 	switch( line->action->param1 & tt_targetmask )
 	{
 	case tt_tothing:
-		teleported = EV_DoTeleportGenericThing( line, activator, (teleporttype_t)( line->action->param1 & tt_anglemask ), targetx, targety, targetangle );
+		teleported = EV_DoTeleportGenericThing( line, activator, (teleporttype_t)( line->action->param1 & tt_anglemask ), targetx, targety, targetz, targetangle );
 		break;
 
 	case tt_toline:
-		teleported = EV_DoTeleportGenericLine( line, activator, (teleporttype_t)( line->action->param1 & tt_anglemask ), targetx, targety, targetangle );
+		teleported = EV_DoTeleportGenericLine( line, activator, (teleporttype_t)( line->action->param1 & tt_anglemask ), targetx, targety, targetz, targetangle );
 		break;
 	}
 
 	if( teleported )
 	{
-		if( gameversion != exe_final
-			&& !comp.finaldoom_teleport_z )
-		{
-			activator->z = activator->floorz;
-		}
-
 		if( activator->player )
 		{
 			activator->player->viewz = activator->z + activator->player->viewheight;
@@ -1780,6 +1791,12 @@ INLINE void T_ScrollWallTexture( scroller_t* scroller )
 
 		line->frontside->textureoffset += scrollx;
 		line->frontside->rowoffset += scrolly;
+
+		if( scroller->BothSides() && line->backside )
+		{
+			line->backside->textureoffset += scrollx;
+			line->backside->rowoffset += scrolly;
+		}
 	}
 }
 
@@ -1958,6 +1975,11 @@ constexpr scrolltype_t SelectScrollType( int32_t special )
 	case Scroll_WallTextureBySectorDiv8_Always:
 	case Scroll_WallTextureBySectorDiv8_Displacement_Always:
 	case Scroll_WallTextureBySectorDiv8_Accelerative_Always:
+	case Scroll_WallTextureBothSides_Left_Always:
+	case Scroll_WallTextureBothSides_Right_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8Displacement_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always:
 		return st_wall;
 
 	default:
@@ -2004,6 +2026,7 @@ constexpr scrolltype_t SelectSpeedType( int32_t special )
 	case Scroll_FloorTextureObjects_Displace_Always:
 	case Scroll_WallTextureBySector_Displace_Always:
 	case Scroll_WallTextureBySectorDiv8_Displacement_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always:
 		return st_displacement;
 
 	case Scroll_CeilingTexture_Accelerative_Always:
@@ -2012,6 +2035,7 @@ constexpr scrolltype_t SelectSpeedType( int32_t special )
 	case Scroll_FloorTextureObjects_Accelerative_Always:
 	case Scroll_WallTextureBySector_Accelerative_Always:
 	case Scroll_WallTextureBySectorDiv8_Accelerative_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8Displacement_Always:
 		return st_accelerative;
 
 	default:
@@ -2035,6 +2059,9 @@ constexpr int32_t ScrollerSpeedShift( int32_t special )
 	case Scroll_WallTextureBySectorDiv8_Always:
 	case Scroll_WallTextureBySectorDiv8_Displacement_Always:
 	case Scroll_WallTextureBySectorDiv8_Accelerative_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8Displacement_Always:
+	case Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always:
 		return 3;
 
 	default:
@@ -2167,10 +2194,12 @@ DOOM_C_API int32_t P_SpawnSectorScroller( line_t* line )
 	return createdcount;
 }
 
-DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t right, int32_t offset )
+DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t leftboth, int32_t right, int32_t rightboth, int32_t offset )
 {
 	scroller_t* leftscroller = nullptr;
+	scroller_t* leftbothscroller = nullptr;
 	scroller_t* rightscroller = nullptr;
+	scroller_t* rightbothscroller = nullptr;
 	
 	if( left > 0 )
 	{
@@ -2181,6 +2210,17 @@ DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t right, int32_t of
 		leftscroller->scrollx = FRACUNIT;
 		leftscroller->linecount = left;
 		leftscroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * left, PU_LEVSPEC, nullptr );
+	}
+
+	if( leftboth > 0 )
+	{
+		leftbothscroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &leftbothscroller->thinker );
+		leftbothscroller->thinker.function = &T_ScrollerGeneric;
+		leftbothscroller->type = st_wall | st_bothsides;
+		leftbothscroller->scrollx = FRACUNIT;
+		leftbothscroller->linecount = leftboth;
+		leftbothscroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * leftboth, PU_LEVSPEC, nullptr );
 	}
 
 	if( right > 0 )
@@ -2195,7 +2235,10 @@ DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t right, int32_t of
 	}
 
 	int32_t leftcount = 0;
+	int32_t leftbothcount = 0;
 	int32_t rightcount = 0;
+	int32_t rightbothcount = 0;
+
 	for( line_t& line : Lines() )
 	{
 		switch( line.special )
@@ -2203,9 +2246,17 @@ DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t right, int32_t of
 		case Scroll_WallTextureLeft_Always:
 			leftscroller->lines[ leftcount++ ] = &line;
 			break;
+			
+		case Scroll_WallTextureBothSides_Left_Always:
+			leftbothscroller->lines[ leftbothcount++ ] = &line;
+			break;
 
 		case Scroll_WallTextureRight_Always:
 			rightscroller->lines[ rightcount++ ] = &line;
+			break;
+
+		case Scroll_WallTextureBothSides_Right_Always:
+			rightbothscroller->lines[ rightbothcount++ ] = &line;
 			break;
 
 		case Scroll_WallTextureByOffset_Always:
@@ -2439,7 +2490,9 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 	}
 
 	int32_t leftcount = 0;
+	int32_t leftbothcount = 0;
 	int32_t rightcount = 0;
+	int32_t rightbothcount = 0;
 	int32_t offsetcount = 0;
 
 	std::vector< sector_t* > transfertargets;
@@ -2667,6 +2720,20 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 					}
 				}
 				break;
+
+			case Scroll_WallTextureBothSides_Left_Always:
+				++leftbothcount;
+				break;
+
+			case Scroll_WallTextureBothSides_Right_Always:
+				++rightbothcount;
+				break;
+
+			case Scroll_WallTextureBothSides_SectorDiv8_Always:
+			case Scroll_WallTextureBothSides_SectorDiv8Displacement_Always:
+			case Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always:
+				P_SpawnSectorScroller( &line );
+				break;
 			}
 		}
 	}
@@ -2679,9 +2746,9 @@ DOOM_C_API doombool P_SpawnSectorSpecialsGeneric()
 		numtransfertargetsectors = (int32_t)transfertargets.size();
 	}
 
-	if( leftcount > 0 || rightcount > 0 || offsetcount > 0 )
+	if( leftcount > 0 || leftbothcount > 0 || rightcount > 0 || rightbothcount > 0 || offsetcount > 0 )
 	{
-		P_SpawnLineScrollers( leftcount, rightcount, offsetcount );
+		P_SpawnLineScrollers( leftcount, leftbothcount, rightcount, rightbothcount, offsetcount );
 	}
 
 	return true;

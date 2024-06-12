@@ -1142,6 +1142,16 @@ constexpr lineaction_t builtinrnr24lineactions[ Actions_RNR24_Count ] =
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Tint >, LT_GunFront, LL_None, 0, 0, mt_switch },
 	// Tint_SetTo_GR_Player
 	{ &precon::IsPlayer, &DoGenericSwitch< Tint >, LT_GunFront, LL_None, 0, 0, mt_switch },
+	// Scroll_WallTextureBothSides_Left_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureBothSides_Right_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureBothSides_SectorDiv8_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureBothSides_SectorDiv8Displacement_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always
+	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 };
 
 // Another ugly table

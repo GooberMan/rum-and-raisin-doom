@@ -1349,13 +1349,10 @@ void R_PrecacheLevel (void)
 
 	auto MarkTexturePresence = [ &MarkTexturePresenceWithAnims ]( int32_t texnum )
 	{
-		if( texnum < numtextures )
+		int32_t opposite = P_GetPicSwitchOpposite( texnum );
+		if( opposite >= 0 )
 		{
-			int32_t opposite = P_GetPicSwitchOpposite( texnum );
-			if( opposite >= 0 )
-			{
-				MarkTexturePresenceWithAnims( opposite );
-			}
+			MarkTexturePresenceWithAnims( opposite );
 		}
 		MarkTexturePresenceWithAnims( texnum );
 	};
