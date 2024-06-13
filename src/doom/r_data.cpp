@@ -635,6 +635,8 @@ void R_InitTextureAndFlatComposites( void )
 		++index;
 	}
 
+	Z_FreeTags( COMPOSITE_ZONE, COMPOSITE_ZONE );
+
 	index = 0;
 	texturedest = texturelookup + numtextures;
 	flatdest = flatlookup;

@@ -270,7 +270,7 @@ void Z_Free (void* ptr)
 //
 #define MINFRAGMENT		64
 
-#define PARANOIA 1
+#define PARANOIA 0
 
 void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void* user, memdestruct_t destructor )
 {
