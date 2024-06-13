@@ -809,6 +809,11 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 									, []( sector_t& sector ) -> bool { return sector.FloorSpecial() == nullptr; }
 									, []( line_t* line, mobj_t* activator, sector_t& sector ) -> int32_t
 	{
+		ACTIONPARAM_FIXED( line, StairSize, 1 );
+		ACTIONPARAM_BOOL( line, IgnoreBackTexture, 2 );
+		ACTIONPARAM_BOOL( line, Crush, 3 );
+		ACTIONPARAM_BOOL( line, IncrementHeightBeforeSpecialCheck, 4 );
+
 		floormove_t* floor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 		P_AddThinker( &floor->thinker );
 		floor->sector = &sector;
@@ -816,16 +821,16 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 		floor->thinker.function = &T_MoveFloorGeneric;
 		floor->type = genericFloor;
 		floor->speed = line->action->speed;
-		floor->crush = line->action->param3;
+		floor->crush = Crush;
 		floor->newspecial = -1;
 		floor->texture = -1;
 
-		fixed_t& stairsize = line->action->param1;
-		fixed_t height = sector.floorheight + stairsize;
+		fixed_t height = sector.floorheight + StairSize;
 		floor->floordestheight = height;
-		floor->direction = stairsize >= 0 ? sd_up : sd_down;
+		floor->direction = StairSize >= 0 ? sd_up : sd_down;
 
 		int32_t createdcount = 1;
+		int16_t texture = sector.floorpic;
 
 		sector_t* currsector = &sector;
 		while( currsector != nullptr )
@@ -837,15 +842,24 @@ DOOM_C_API int32_t EV_DoStairsGeneric( line_t* line, mobj_t* activator )
 			{
 				if( ( searchline->flags & ML_TWOSIDED ) != ML_TWOSIDED
 					|| searchline->frontsector->index != searchsector->index
-					|| ( line->action->param2 == false && searchline->backsector->floorpic != searchsector->floorpic )
-					|| searchline->backsector->FloorSpecial() != nullptr )
+					|| ( !IgnoreBackTexture && searchline->backsector->floorpic != texture )
+					|| ( !IncrementHeightBeforeSpecialCheck && searchline->backsector->FloorSpecial() != nullptr )
+					)
+				{
+					continue;
+				}
+
+				height += StairSize;
+
+				// Redundant if IncrementHeightBeforeSpecialCheck is false, but it's a
+				// compare anyway so no point in doing two compares when you can do one.
+				if( searchline->backsector->FloorSpecial() != nullptr )
 				{
 					continue;
 				}
 
 				++createdcount;
 				currsector = searchline->backsector;
-				height += stairsize;
 
 				floormove_t* nextfloor = (floormove_t*)Z_MallocZero( sizeof(floormove_t), PU_LEVSPEC, 0 );
 				P_AddThinker( &nextfloor->thinker );

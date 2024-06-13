@@ -833,6 +833,11 @@ struct lineaction_s
 #endif // defined(__cplusplus)
 };
 
+#define ACTIONPARAM( line, name, index )			line->action->param ## index
+#define ACTIONPARAM_INT( line, name, index )		const auto& name = *(int32_t*) &ACTIONPARAM( line, name, index )
+#define ACTIONPARAM_FIXED( line, name, index )		const auto& name = *(fixed_t*) &ACTIONPARAM( line, name, index )
+#define ACTIONPARAM_BOOL( line, name, index )		const bool name = !!( ACTIONPARAM( line, name, index ) )
+
 DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line );
 
 #endif // __D_LINEACTION_H__

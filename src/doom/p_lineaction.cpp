@@ -521,9 +521,9 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Crusher_Fast_W1_Player
 	{ &precon::IsPlayer, &DoGenericOnce< Crusher >, LT_WalkBoth, LL_None, constants::ceilingspeeds[ Speed_Normal ], 0, constants::ceilingspeeds[ Speed_Normal ], cs_movement },
 	// Stairs_BuildBy8_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0, 1 },
 	// Stairs_BuildBy8_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0, 1 },
 	// Sector_Donut_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Donut >, LT_SwitchFront, LL_None, constants::vanillaraisespeed, 0 },
 	// Platform_DownWaitUp_W1_All
@@ -709,7 +709,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Door_OpenFastBlue_SR_Player
 	{ &precon::HasAnyKeyOfColour, &DoGenericSwitch< Door >, LT_SwitchFront, LL_Blue, constants::doorspeeds[ Speed_Fast ], 0, sd_open, door_noraise },
 	// Stairs_BuildBy16Fast_W1_Player
-	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 1 },
+	{ &precon::IsPlayer, &DoGenericOnce< Stairs >, LT_WalkBoth, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 1, 1 },
 	// Floor_RaiseLowestCeiling_S1_Player
 	{ &precon::IsPlayer, &DoGenericSwitchOnce< Floor >, LT_SwitchFront, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_lowestneighborceiling, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_LowerHighest_S1_Player
@@ -763,7 +763,7 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Teleport_Thing_WR_Monsters
 	{ &precon::CanTeleportMonster, &DoGeneric< Teleport >, LT_WalkFront, LL_None, 0, 0, tt_tothing },
 	// Stairs_BuildBy16Fast_S1_Player
-	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 1 },
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Stairs >, LT_SwitchFront, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 1, 1 },
 	// Floor_RaiseNearest_WR_Player
 	{ &precon::IsPlayer, &DoGeneric< Floor >, LT_WalkBoth, LL_None, constants::floorspeeds[ Speed_Slow ], 0, stt_nexthighestneighborfloor, sd_up, 0, sct_none, scm_trigger, sc_nocrush },
 	// Floor_RaiseNearestFast_WR_Player
@@ -1024,13 +1024,13 @@ constexpr lineaction_t builtinlineactions[ Actions_BuiltIn_Count ] =
 	// Scroll_WallTextureByOffset_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Stairs_BuildBy8_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0, 0 },
 	// Stairs_BuildBy16Fast_WR_Player
-	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGeneric< Stairs >, LT_WalkBoth, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 0, 0 },
 	// Stairs_BuildBy8_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::slowstairsspeed, 0, IntToFixed( 8 ), 0, 0, 0 },
 	// Stairs_BuildBy16Fast_SR_Player
-	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 0 },
+	{ &precon::IsPlayer, &DoGenericSwitch< Stairs >, LT_SwitchFront, LL_None, constants::stairspeeds[ Speed_Turbo ], 0, IntToFixed( 16 ), 0, 0, 0 },
 	// Texture_Translucent_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Transfer_CeilingLighting_Always
@@ -1259,6 +1259,7 @@ static lineaction_t* CreateBoomGeneralisedStairsAction( line_t* line )
 	action->param1 = targetdistance[ target ];
 	action->param2 = ignoretexture;
 	action->param3 = false; // Crush
+	action->param4 = false; // Increment height before special check
 
 	return action;
 }
