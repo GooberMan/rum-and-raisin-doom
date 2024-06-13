@@ -365,10 +365,9 @@ static void DEH_BEXStringsParseLine( deh_context_t* context, char* line, void* t
 		if( variable_name_str.starts_with( "USER_" ) )
 		{
 			DEH_IncreaseGameVersion( context, exe_rnr24 );
+			mnemoniclookup[ std::string( variable_name_str ) ] = value;
 		}
 		// TODO: Work out how to handle the gajillion custom mnemonics over the years
-
-		mnemoniclookup[ std::string( variable_name_str ) ] = value;
 	}
 	else
 	{
