@@ -270,7 +270,7 @@ void Z_Free (void* ptr)
 //
 #define MINFRAGMENT		64
 
-#define PARANOIA 0
+#define PARANOIA 1
 
 void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void* user, memdestruct_t destructor )
 {
@@ -353,6 +353,7 @@ void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, 
 	
         newblock->tag = PU_FREE;
         newblock->user = NULL;	
+		newblock->magic = MAGICMARKER;
         newblock->prev = base;
         newblock->next = base->next;
         newblock->next->prev = newblock;
@@ -385,6 +386,11 @@ void* Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, 
     mainzone->rover = base->next;	
 	
     base->id = ZONEID;
+
+	if( base->size == 6460272 )
+	{
+		I_Error( "Found it!" );
+	}
    
     return result;
 }
