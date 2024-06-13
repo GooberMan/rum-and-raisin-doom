@@ -226,11 +226,11 @@ void R_InitSkyDefs()
 			sky_t* sky = R_GetSky( skyname.c_str(), true );
 
 			texturecomposite_t* flatcomposite = flatlookup[ flatnum ];
-			skyflat_t* flatentry = (skyflat_t*)Z_MallocZero( sizeof( skyflat_t ), PU_STATIC, nullptr );
-			*flatentry = { flatcomposite, sky };
+			skyflat_t* newflat = (skyflat_t*)Z_MallocZero( sizeof( skyflat_t ), PU_STATIC, nullptr );
+			*newflat = { flatcomposite, sky };
 
-			skyflatlookup[ flatnum ] = flatentry;
-			flatcomposite->skyflat = flatentry;
+			skyflatlookup[ flatnum ] = newflat;
+			flatcomposite->skyflat = newflat;
 		}
 
 		return jl_success;

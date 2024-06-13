@@ -456,7 +456,7 @@ public:
 	}
 
 	_ty& reserve( size_t& token )	{ token = reserved.fetch_add( 1, std::memory_order::release ); return data[ token % size ]; }
-	void commit( size_t token )		{ size_t expected = token; while( !end.compare_exchange_weak( token, token + 1, std::memory_order::release ) ) { expected = token; } }
+	void commit( size_t token )		{ size_t expected = token; while( !end.compare_exchange_weak( token, token + 1, std::memory_order::release ) ) { token = expected; } }
 	void push( const _ty& val )
 	{
 		size_t ind;

@@ -1371,12 +1371,10 @@ void R_PrecacheLevel (void)
 		if( flatpresent[ skyflatpair.second->flatcomposite->index ] )
 		{
 			MarkTexturePresence( skyflatpair.second->sky->background.texnum );
-			R_ActivateSkyAndAnims( skyflatpair.second->sky->background.texnum );
 
 			if( skyflatpair.second->sky->type == sky_backandforeground )
 			{
 				MarkTexturePresence( skyflatpair.second->sky->foreground.texnum );
-				R_ActivateSkyAndAnims( skyflatpair.second->sky->foreground.texnum );
 			}
 		}
 	}
@@ -1407,6 +1405,19 @@ void R_PrecacheLevel (void)
 		}
 
 		R_GenerateCompositeTexture( i );
+	}
+
+	for( auto& skyflatpair : skyflatlookup )
+	{
+		if( flatpresent[ skyflatpair.second->flatcomposite->index ] )
+		{
+			R_ActivateSkyAndAnims( skyflatpair.second->sky->background.texnum );
+
+			if( skyflatpair.second->sky->type == sky_backandforeground )
+			{
+				R_ActivateSkyAndAnims( skyflatpair.second->sky->foreground.texnum );
+			}
+		}
 	}
 
 	Z_Free(flatpresent);

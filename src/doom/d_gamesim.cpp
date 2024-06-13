@@ -890,7 +890,7 @@ static GameVersion_t DetermineFromLinedef( maplinedef_t& line )
 	}
 
 	if( !comp.strict_boom_feature_matching
-		&& line.special == Unknown_085 ) // Scroll_WallTextureRight_Always
+		&& line.special == Scroll_WallTextureRight_Always )
 	{
 		return exe_limit_removing;
 	}
