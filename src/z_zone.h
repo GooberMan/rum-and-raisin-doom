@@ -37,24 +37,21 @@ DOOM_C_API typedef enum zonetag_e
     PU_STATIC = 1,                  // static entire execution time
     PU_SOUND,                       // static while playing
     PU_MUSIC,                       // static while playing
-    PU_FREE,                        // a free block
-    PU_LEVEL,                       // static until level exited
+
+    PU_LEVEL = 50,                  // static until level exited
     PU_LEVSPEC,                     // a special thinker in a level
-    
+
     // Tags >= PU_PURGELEVEL are purgable whenever needed.
 
-    PU_PURGELEVEL,
+    PU_PURGELEVEL = 100,
     PU_CACHE,
 
-    // Total number of different tag types
-
-    PU_NUM_TAGS
 } zonetag_t;
 
 DOOM_C_API typedef void( *memdestruct_t )( void*, size_t );
 
 DOOM_C_API void		Z_Init (void);
-DOOM_C_API void*	Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void *ptr, memdestruct_t destructor );
+DOOM_C_API void*	Z_MallocTracked( const char* file, size_t line, size_t size, int32_t tag, void **ptr, memdestruct_t destructor );
 DOOM_C_API void		Z_Free (void *ptr);
 DOOM_C_API void		Z_FreeTags (int lowtag, int hightag);
 DOOM_C_API void		Z_DumpHeap (int lowtag, int hightag);
@@ -62,11 +59,8 @@ DOOM_C_API void		Z_FileDumpHeap (FILE *f);
 DOOM_C_API void		Z_CheckHeap (void);
 DOOM_C_API doombool	Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
 DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
-DOOM_C_API size_t	Z_FreeMemory (void);
-DOOM_C_API byte*	Z_ZoneBase(void);
-DOOM_C_API size_t	Z_ZoneSize(void);
 
-#define Z_Malloc( size, tag, ptr ) Z_MallocTracked( __FILE__, __LINE__, size, tag, ptr, NULL )
+#define Z_Malloc( size, tag, ptr ) Z_MallocTracked( __FILE__, __LINE__, size, tag, (void**)ptr, NULL )
 
 //
 // This is used to get the local FILE:LINE info from CPP
@@ -80,11 +74,11 @@ DOOM_C_API size_t	Z_ZoneSize(void);
 #include <type_traits>
 #include <new>
 
-#define Z_MallocZero( size, tag, ptr ) Z_MallocTrackedZero( __FILE__, __LINE__, size, tag, ptr )
+#define Z_MallocZero( size, tag, ptr ) Z_MallocTrackedZero( __FILE__, __LINE__, size, tag, (void**)ptr )
 
-#define Z_MallocAs( type, tag, ptr ) Z_MallocTracked< type >( __FILE__, __LINE__, tag, ptr )
-#define Z_MallocAsArgs( type, tag, ptr, ... ) Z_MallocTracked< type >( __FILE__, __LINE__, tag, ptr, __VA_ARGS__ )
-#define Z_MallocArrayAs( type, count, tag, ptr ) Z_MallocArrayTracked< type >( __FILE__, __LINE__, count, tag, ptr )
+#define Z_MallocAs( type, tag, ptr ) Z_MallocTrackedAs< type >( __FILE__, __LINE__, tag, (void**)ptr )
+#define Z_MallocAsArgs( type, tag, ptr, ... ) Z_MallocTrackedAs< type >( __FILE__, __LINE__, tag, (void**)ptr, __VA_ARGS__ )
+#define Z_MallocArrayAs( type, count, tag, ptr ) Z_MallocArrayTrackedAs< type >( __FILE__, __LINE__, count, tag, (void**)ptr )
 
 template< typename _ty, typename... _args >
 INLINE void Z_MallocConstructEntry( _ty*& val, _args&&... args )
@@ -149,7 +143,7 @@ constexpr memdestruct_t Z_DestructorForArray()
 
 
 template< typename _ty, typename... _args >
-INLINE _ty* Z_MallocTracked( const char* file, size_t line, int32_t tag, void* ptr, _args&&... args )
+INLINE _ty* Z_MallocTrackedAs( const char* file, size_t line, int32_t tag, void** ptr, _args&&... args )
 {
 	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ), tag, ptr, Z_DestructorFor< _ty >() );
 	Z_MallocConstructEntry( val, std::forward< _args >( args )... );
@@ -158,7 +152,7 @@ INLINE _ty* Z_MallocTracked( const char* file, size_t line, int32_t tag, void* p
 }
 
 template< typename _ty >
-INLINE _ty* Z_MallocArrayTracked( const char* file, size_t line, size_t count, int32_t tag, void* ptr )
+INLINE _ty* Z_MallocArrayTrackedAs( const char* file, size_t line, size_t count, int32_t tag, void** ptr )
 {
 	_ty* val = (_ty*)Z_MallocTracked( file, line, sizeof( _ty ) * count, tag, ptr, Z_DestructorForArray< _ty >() );
 	for( _ty* curr = val; curr < val + count; ++curr )
@@ -169,7 +163,7 @@ INLINE _ty* Z_MallocArrayTracked( const char* file, size_t line, size_t count, i
 	return val;
 }
 
-INLINE void* Z_MallocTrackedZero( const char* file, size_t line, size_t size, int32_t tag, void* ptr )
+INLINE void* Z_MallocTrackedZero( const char* file, size_t line, size_t size, int32_t tag, void** ptr )
 {
 	void* output = Z_MallocTracked( file, line, size, tag, ptr, nullptr );
 	memset( output, 0, size );

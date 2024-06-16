@@ -1639,9 +1639,6 @@ DOOM_C_API void D_DoomMain (void)
     I_AtExit(D_Endoom, false);
 
 	DEH_printf( "Z_Init: Init zone memory allocation daemon. \n" );
-	I_TerminalPrintf( Log_Startup, "zone memory: %p, %zx allocated for zone\n", 
-									Z_ZoneBase(), Z_ZoneSize());
-
 
     //!
     // @category net

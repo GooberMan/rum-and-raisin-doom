@@ -163,9 +163,6 @@
     <ClCompile Include="..\src\w_merge.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\z_zone.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\win32\win_opendir.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -251,6 +248,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\d_demoloop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\z_zone.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
