@@ -56,16 +56,8 @@ static GameVersion_t VersionFromSoundNumber( int32_t num )
 		: exe_mbf21_extended;
 }
 
-static void *DEH_SoundStart(deh_context_t *context, char *line)
+sfxinfo_t* DEH_GetSound(deh_context_t* context, int32_t sound_number )
 {
-    int sound_number = 0;
-    
-    if (sscanf(line, "Sound %i", &sound_number) != 1)
-    {
-        DEH_Warning(context, "Parse error on section start");
-        return NULL;
-    }
-
 	if( sound_number == -1 )
 	{
 		DEH_Error(context, "Invalid sound number: -1" );
@@ -83,12 +75,25 @@ static void *DEH_SoundStart(deh_context_t *context, char *line)
 			sfx->priority = 127;
 			sfx->pitch = -1;
 			sfx->volume = -1;
-			sfxmap[ sound_number ] = sfx;
+			sfxmap[sound_number] = sfx;
 			return sfx;
 		}
 	}
 
     return found->second;
+}
+
+static void *DEH_SoundStart(deh_context_t *context, char *line)
+{
+    int sound_number = 0;
+    
+    if (sscanf(line, "Sound %i", &sound_number) != 1)
+    {
+        DEH_Warning(context, "Parse error on section start");
+        return NULL;
+    }
+
+	return DEH_GetSound( context, sound_number );
 }
 
 static void DEH_SoundParseLine(deh_context_t *context, char *line, void *tag)

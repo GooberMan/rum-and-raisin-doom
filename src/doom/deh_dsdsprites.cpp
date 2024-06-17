@@ -50,6 +50,19 @@ GameVersion_t VersionForSpriteNum( int32_t spritenum )
 		: exe_mbf21_extended;
 }
 
+void DEH_EnsureSpriteExists( deh_context_t* context, int32_t spritenum )
+{
+	if( spritenum == -1 )
+	{
+		DEH_Error(context, "Attempting to use sprite index -1" );
+	}
+	else
+	{
+		DEH_IncreaseGameVersion( context, VersionForSpriteNum( spritenum ) );
+		spritenamemap[ spritenum ] = "TNT1";
+	}
+}
+
 static void *DEH_DSDSpritesStart( deh_context_t* context, char* line )
 {
 	char section[ 16 ] = {};
@@ -107,8 +120,7 @@ static void DEH_DSDSpritesParseLine( deh_context_t *context, char* line, void* t
 		return;
 	}
 
-
-	DEH_IncreaseGameVersion( context, VersionForSpriteNum( spriteindex ) );
+	DEH_EnsureSpriteExists( context, spriteindex );
 
 	char* newstring = (char*)Z_MallocZero( spritelen + 1, PU_STATIC, nullptr );
 	memcpy( newstring, value, spritelen );
