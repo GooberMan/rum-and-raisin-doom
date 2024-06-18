@@ -554,7 +554,7 @@ void R_InitPointToAngle (void)
 // Defining the original maximum as a function of your
 // new width is the correct way to go about things.
 // 1/5th of the screenwidth is the way to go.
-#define MAXSCALE ( 128 * ( drs_current->frame_width / VANILLA_SCREENWIDTH ) )
+#define MAXSCALE ( 128 * drs_current->frame_width / VANILLA_SCREENWIDTH )
 #define MAXSCALE_FIXED IntToRendFixed( MAXSCALE )
 
 rend_fixed_t R_ScaleFromGlobalAngle( angle_t visangle, rend_fixed_t distance, angle_t view_angle, angle_t normal_angle )
@@ -775,7 +775,7 @@ void R_InitTextureMapping( drsdata_t* current )
 	}
 
 	// Take out the fencepost cases from viewangletox.
-	for (i=0 ; i<FINEANGLES/2 ; i++)
+	for (i=0 ; i<RENDERFINEANGLES/2 ; i++)
 	{
 		if (current->viewangletox[i] == -1)
 		{
