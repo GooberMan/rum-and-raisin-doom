@@ -792,16 +792,11 @@ void R_InitTextureMapping( drsdata_t* current )
 
 void R_InitAspectAdjustedValues( drsdata_t* current )
 {
-	rend_fixed_t		original_perspective = RendFixedDiv( IntToRendFixed( 16 ), IntToRendFixed( 10 ) );
-	rend_fixed_t		current_perspective = RendFixedDiv( IntToRendFixed( current->frame_width ), IntToRendFixed( render_post_scaling ? current->frame_height : (int32_t)( current->frame_height / 1.2 ) ) );
-	rend_fixed_t		perspective_mul = RendFixedDiv( original_perspective, current_perspective );
+	constexpr double_t aspectscale = 4.0 / 3.0;
 
-	rend_fixed_t		intermediate_width = RendFixedMul( IntToRendFixed( current->frame_width ), perspective_mul );
-
-	int32_t				aspect_adjusted_render_width = RendFixedToInt( intermediate_width ) + ( ( intermediate_width & ( RENDFRACUNIT >> 1 ) ) >> ( RENDFRACBITS - 1) );
-
-	rend_fixed_t		aspect_adjusted_scaled_divide = RendFixedDiv( IntToRendFixed( current->frame_height ), IntToRendFixed( VANILLA_SCREENHEIGHT ) );
-	rend_fixed_t		aspect_adjusted_scaled_mul = RendFixedDiv( RENDFRACUNIT, aspect_adjusted_scaled_divide );
+	double_t currheight = (double_t)current->frame_height * ( render_post_scaling ? 1.2 : 1.0 );
+	double_t adjustedwidth = currheight * aspectscale;
+	double_t scaledmul = 1.0 / (currheight / ( render_post_scaling ? 240.0 : 200.0 ));
 
 	constexpr double_t	original_fov_half = 74 * 0.5 * constants::degtorad;
 	double_t curr_fov_half = vertical_fov_degrees * 0.5 * constants::degtorad;
@@ -810,8 +805,8 @@ void R_InitAspectAdjustedValues( drsdata_t* current )
 	double_t curr_fov_tan = tan( curr_fov_half );
 	double_t distadjust = curr_fov_tan / original_fov_tan;
 
-	current->frame_adjusted_width		= aspect_adjusted_render_width;
-	current->frame_adjusted_light_mul	= RendFixedMul( aspect_adjusted_scaled_mul, DoubleToRendFixed( distadjust ) );
+	current->frame_adjusted_width		= (int32_t)adjustedwidth;
+	current->frame_adjusted_light_mul	= DoubleToRendFixed( scaledmul * distadjust );
 }
 
 //

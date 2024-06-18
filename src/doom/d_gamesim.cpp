@@ -128,7 +128,7 @@ GameVersion_t D_UpdateFromOptionsString( compoptions_t& values, const char* opti
 			if( sscanf( options, "%127s %d", param, &value ) == 2 )
 			{
 				auto found = MBFOptions.find( param );
-				if( found != MBFOptions.end() && found->second.gameversion < maxversion )
+				if( found != MBFOptions.end() && found->second.gameversion <= maxversion )
 				{
 					minversion = M_MAX( minversion, found->second.gameversion );
 					found->second.apply( values, value );
@@ -284,7 +284,7 @@ static fixoptions_t GetAllFixed()
 	options.donut_multiple_sector_thinkers = true;
 	options.sky_wall_projectiles = true;
 	options.bad_secret_exit_loop = true;
-	options.w1s1_lines_clearing_on_no_result = true;
+	options.w1_lines_clearing_on_no_result = true;
 	options.shortest_lower_texture_line = true;
 	options.moveplane_escapes_reality = true;
 	options.overzealous_changesector = true;

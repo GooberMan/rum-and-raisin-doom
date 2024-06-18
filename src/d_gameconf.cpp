@@ -21,6 +21,7 @@
 #include "m_argv.h"
 #include "m_container.h"
 #include "m_jsonlump.h"
+#include "m_misc.h"
 
 #include "w_wad.h"
 
@@ -43,6 +44,13 @@ static std::map< std::string, GameVersion_t > executableversions =
 	{ "rnr24",			exe_rnr24					},
 };
 
+static const std::map< std::string, GameMode_t > modeversions =
+{
+	{ "registered",		registered						},
+	{ "retail",			retail							},
+	{ "commercial",		commercial						},
+};
+
 DOOM_C_API gameconf_t* D_BuildGameConf()
 {
 	struct info_t
@@ -56,6 +64,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		std::vector< std::string > dehfiles;
 		std::string options;
 		GameVersion_t executable;
+		GameMode_t mode;
 		GameMission_t mission;
 	} info;
 
@@ -81,29 +90,30 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		const JSONElement& pwadfiles = elem[ "pwads" ];
 		const JSONElement& dehfiles = elem[ "dehfiles" ];
 		const JSONElement& executable = elem[ "executable" ];
+		const JSONElement& mode = elem[ "mode" ];
 		const JSONElement& options = elem[ "options" ];
 
-		if( title.Valid() )
+		if( title.IsString() )
 		{
 			info.title = to< std::string >( title );
 		}
 
-		if( author.Valid() )
+		if( author.IsString() )
 		{
 			info.author = to< std::string >( author );
 		}
 
-		if( description.Valid() )
+		if( description.IsString() )
 		{
 			info.description = to< std::string >( description );
 		}
 
-		if( wadversion.Valid() )
+		if( wadversion.IsString() )
 		{
 			info.version = to< std::string >( wadversion );
 		}
 
-		if( iwadfile.Valid() )
+		if( iwadfile.IsString() )
 		{
 			info.iwadfile = D_FindWADByName( to< std::string >( iwadfile ).c_str() );
 			info.mission = D_IdentifyIWADByName( info.iwadfile.c_str(), IWAD_MASK_DOOM );
@@ -146,7 +156,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 			auto found = executableversions.find( to< std::string >( executable ) );
 			if( found != executableversions.end() )
 			{
-				info.executable = found->second;
+				info.executable = M_MAX( info.executable, found->second );
 			}
 			else
 			{
@@ -156,16 +166,31 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		}
 		else if( executable.IsNull() )
 		{
-			info.executable = exe_invalid;
+			info.executable = M_MAX( info.executable, exe_invalid );
 		}
 		else
 		{
 			I_Error( "D_BuildGameConf: executable field is not valid.", executable );
 		}
 
-		if( options.Valid() )
+		if( mode.IsString() )
 		{
-			info.options = to< std::string >( options );
+			auto found = modeversions.find( to< std::string >( mode ) );
+			if( found != modeversions.end() )
+			{
+				info.mode = M_MAX( info.mode, found->second );
+			}
+			else
+			{
+				I_Error( "D_BuildGameConf: mode '%s' is not valid.", to< std::string >( mode ).c_str() );
+				return jl_parseerror;
+			}
+		}
+
+		if( options.IsString() )
+		{
+			if( !info.options.empty() ) info.options += "\n";
+			info.options += to< std::string >( options );
 		}
 
 

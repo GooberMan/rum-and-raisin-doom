@@ -79,7 +79,7 @@ DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* valu
 DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 DOOM_C_API void DEH_BexHandleThingBitsRNR24( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 
-static mobjinfo_t* GetThing( deh_context_t* context, int32_t thing_number )
+mobjinfo_t* DEH_GetThing( deh_context_t* context, int32_t thing_number )
 {
 	if( thing_number == -1 )
 	{
@@ -140,7 +140,7 @@ static void *DEH_ThingStart(deh_context_t *context, char *line)
     // dehacked files are indexed from 1
     --thing_number;
 	
-	return GetThing( context, thing_number );
+	return DEH_GetThing( context, thing_number );
 }
 
 static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
@@ -222,7 +222,7 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 	{
 		// Need to account for dehacked things being 1-indexed
 		ivalue = atoi(value) - 1;
-		[[maybe_unused]] mobjinfo_t* foundthing = GetThing( context, ivalue );
+		[[maybe_unused]] mobjinfo_t* foundthing = DEH_GetThing( context, ivalue );
 		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
 	}
 	else if( strcmp( variable_name, "ID #" ) == 0 )

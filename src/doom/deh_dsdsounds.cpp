@@ -31,6 +31,7 @@
 #include "m_conv.h"
 
 extern std::unordered_map< int32_t, sfxinfo_t* > sfxmap;
+sfxinfo_t* DEH_GetSound(deh_context_t* context, int32_t sound_number );
 
 enum
 {
@@ -76,22 +77,7 @@ static void DEH_DSDSoundsParseLine( deh_context_t *context, char* line, void* ta
 	{
 		int32_t soundindex = atoi( soundnum );
 
-		DEH_IncreaseGameVersion( context, VersionFromSoundNumber( soundindex ) );
-
-		auto found = sfxmap.find( soundindex );
-		if( found == sfxmap.end() )
-		{
-			sfxinfo_t* sfx = Z_MallocAs( sfxinfo_t, PU_STATIC, nullptr );
-			*sfx = {};
-			sfx->priority = 127;
-			sfx->pitch = -1;
-			sfx->volume = -1;
-			sfxmap[ soundindex ] = sfx;
-		}
-		else
-		{
-			sfx = found->second;
-		}
+		sfx = DEH_GetSound( context, soundindex );
 	}
 	else
 	{

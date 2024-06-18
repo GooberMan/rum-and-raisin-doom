@@ -244,6 +244,11 @@ typedef struct actionf_s
 		type = (actiontype_t)(type & ~at_disabled);
 	}
 
+	inline actionf_v Value()
+	{
+		return _acv;
+	}
+
 private:
 	inline actiontype_t Type() const
 	{

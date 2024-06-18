@@ -28,6 +28,9 @@
 #include "deh_main.h"
 #include "deh_mapping.h"
 
+#include "m_container.h"
+#include <functional>
+
 DEH_BEGIN_MAPPING(state_mapping, state_t)
   DEH_MAPPING("Sprite number",    sprite)
   DEH_MAPPING("Sprite subnumber", frame)
@@ -50,7 +53,73 @@ DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleFrameBitsMBF21( deh_context_t* context, const char* value, state_t* state );
 
-static state_t* GetState( deh_context_t* context, int32_t frame_number )
+// Thing dependencies
+DOOM_C_API void A_Spawn( mobj_t* mobj );
+DOOM_C_API void A_SpawnObject( mobj_t* mobj );
+DOOM_C_API void A_MonsterProjectile( mobj_t* mobj );
+DOOM_C_API void A_WeaponProjectile( player_t* player, pspdef_t* psp );
+
+// State dependencies
+DOOM_C_API void A_RandomJump( mobj_t* mobj );
+DOOM_C_API void A_HealChase( mobj_t* mobj );
+DOOM_C_API void A_JumpIfHealthBelow( mobj_t* mobj );
+DOOM_C_API void A_JumpIfTargetInSight( mobj_t* mobj );
+DOOM_C_API void A_JumpIfTargetCloser( mobj_t* mobj );
+DOOM_C_API void A_JumpIfTracerInSight( mobj_t* mobj );
+DOOM_C_API void A_JumpIfTracerCloser( mobj_t* mobj );
+DOOM_C_API void A_JumpIfFlagsSet( mobj_t* mobj );
+DOOM_C_API void A_WeaponJump( player_t* player, pspdef_t* psp );
+DOOM_C_API void A_CheckAmmo( player_t* player, pspdef_t* psp );
+DOOM_C_API void A_RefireTo( player_t* player, pspdef_t* psp );
+DOOM_C_API void A_GunFlashTo( player_t* player, pspdef_t* psp );
+
+// Sound dependencies
+DOOM_C_API void A_MonsterMeleeAttack( mobj_t* mobj );
+DOOM_C_API void A_HealChase( mobj_t* mobj );
+DOOM_C_API void A_WeaponMeleeAttack( player_t* player, pspdef_t* psp );
+DOOM_C_API void A_WeaponSound( player_t* player, pspdef_t* psp );
+
+using resolvefunc_t = std::function< void( deh_context_t*, state_t* ) >;
+using resolvemap_t = std::map< actionf_v, resolvefunc_t >;
+
+mobjinfo_t* DEH_GetThing( deh_context_t* context, int32_t thing_number );
+state_t* DEH_GetState( deh_context_t* context, int32_t frame_number );
+sfxinfo_t* DEH_GetSound(deh_context_t* context, int32_t sound_number );
+void DEH_EnsureSpriteExists( deh_context_t* context, int32_t spritenum );
+
+static const resolvemap_t thingresolvers =
+{
+	{ (actionf_v)&A_Spawn,					[]( deh_context_t* context, state_t* state ) { DEH_GetThing( context, state->misc1._int - 1 ); }	},
+	{ (actionf_v)&A_SpawnObject,			[]( deh_context_t* context, state_t* state ) { DEH_GetThing( context, state->arg1._int - 1 ); }		},
+	{ (actionf_v)&A_MonsterProjectile,		[]( deh_context_t* context, state_t* state ) { DEH_GetThing( context, state->arg1._int - 1 ); }		},
+	{ (actionf_v)&A_WeaponProjectile,		[]( deh_context_t* context, state_t* state ) { DEH_GetThing( context, state->arg1._int - 1 ); }		},
+};
+
+static const resolvemap_t stateresolvers =
+{
+	{ (actionf_v)&A_RandomJump,				[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_HealChase,				[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_JumpIfHealthBelow,		[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_JumpIfTargetInSight,	[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_JumpIfTargetCloser,		[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_JumpIfTracerInSight,	[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_JumpIfTracerCloser,		[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_JumpIfFlagsSet,			[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_WeaponJump,				[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_CheckAmmo,				[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_RefireTo,				[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+	{ (actionf_v)&A_GunFlashTo,				[]( deh_context_t* context, state_t* state ) { DEH_GetState( context, state->arg1._int ); }			},
+};
+
+static const resolvemap_t soundresolvers =
+{
+	{ (actionf_v)&A_MonsterMeleeAttack,		[]( deh_context_t* context, state_t* state ) { DEH_GetSound( context, state->arg3._int ); }			},
+	{ (actionf_v)&A_HealChase,				[]( deh_context_t* context, state_t* state ) { DEH_GetSound( context, state->arg2._int ); }			},
+	{ (actionf_v)&A_WeaponMeleeAttack,		[]( deh_context_t* context, state_t* state ) { DEH_GetSound( context, state->arg4._int ); }			},
+	{ (actionf_v)&A_WeaponSound,			[]( deh_context_t* context, state_t* state ) { DEH_GetSound( context, state->arg1._int ); }			},
+};
+
+state_t* DEH_GetState( deh_context_t* context, int32_t frame_number )
 {
 	if( frame_number == -1 )
 	{
@@ -101,7 +170,7 @@ static void *DEH_FrameStart(deh_context_t *context, char *line)
         return NULL;
     }
     
-	return GetState( context, frame_number );
+	return DEH_GetState( context, frame_number );
 }
 
 // Simulate a frame overflow: Doom has 967 frames in the states[] array, but
@@ -191,7 +260,7 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 		}
 		else if( strcmp( variable_name, "Next frame" ) == 0 )
 		{
-			[[maybe_unused]] state_t* newstate = GetState( context, ivalue );
+			[[maybe_unused]] state_t* newstate = DEH_GetState( context, ivalue );
 			DEH_SetMapping(context, &state_mapping, state, variable_name, ivalue);
 		}
 		{
@@ -199,6 +268,24 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 			DEH_SetMapping(context, &state_mapping, state, variable_name, ivalue);
 		}
 	}
+}
+
+static void HandleResolver( deh_context_t* context, state_t* state, const resolvemap_t& map )
+{
+	auto found = map.find( state->action.Value() );
+	if( found != map.end() )
+	{
+		found->second( context, state );
+	}
+}
+
+void DEH_ResolveAllForFrame( deh_context_t* context, state_t* state )
+{
+	HandleResolver( context, state, thingresolvers );
+	HandleResolver( context, state, stateresolvers );
+	HandleResolver( context, state, soundresolvers );
+	DEH_EnsureSpriteExists( context, state->sprite );
+
 }
 
 static void DEH_FrameSHA1Sum(sha1_context_t *context)
@@ -217,7 +304,7 @@ deh_section_t deh_section_frame =
     NULL,
     DEH_FrameStart,
     DEH_FrameParseLine,
-    NULL,
+    (deh_section_end_t)DEH_ResolveAllForFrame,
     DEH_FrameSHA1Sum,
 };
 
