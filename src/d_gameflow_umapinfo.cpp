@@ -431,7 +431,7 @@ static void HandleIntertext( DoomString& targetstring, bool& targetclear
 	}
 }
 
-static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
+static void __declspec( noinline ) ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 {
 	umapinfo::map_t& newmap = *umapinfo::maps.insert( umapinfo::maps.end(), umapinfo::map_t() );
 
@@ -585,14 +585,24 @@ static void ParseMap( DoomStringStream& lumpstream, DoomString& currline )
 			}
 			else
 			{
+				while( !currlinestream.eof() )
+				{
+					DoomString working;
+					currlinestream >> working;
+					rhs += working;
+				}
+
+				DoomIStringStream rewritestream( rhs );
+				std::getline( rewritestream, rhs, ',' );
+
 				auto found = umapinfo::type_name_lookup.find( rhs );
 				if( found != umapinfo::type_name_lookup.end() )
 				{
 					DoomString linetype;
 					DoomString tag;
 
-					currlinestream >> std::quoted( linetype );
-					currlinestream >> std::quoted( tag );
+					std::getline( rewritestream, linetype, ',' );
+					std::getline( rewritestream, tag, ',' );
 
 					umapinfo::bossaction_t& action = *newmap.bossactions.insert( newmap.bossactions.end(), umapinfo::bossaction_t() );
 
@@ -640,6 +650,11 @@ static void BuildNewGameInfo()
 	// modify data only if it's defined. This function's gonna get big and messy.
 
 	bool clearepisodes = std::find_if( umapinfo::maps.begin(), umapinfo::maps.end(), []( auto& v ) { return v.episodeclear == setboolean::True; } ) != umapinfo::maps.end();
+	if( gamemode == commercial )
+	{
+		clearepisodes |= std::find_if( umapinfo::maps.begin(), umapinfo::maps.end(), []( auto& v ) { return v.episode == setboolean::True; } ) != umapinfo::maps.end();
+	}
+
 	int32_t newepisodenum = 0;
 	int32_t newmapnum = 0;
 
