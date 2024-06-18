@@ -34,7 +34,7 @@ DOOM_C_API typedef struct fixoptions_s
 	doombool		donut_multiple_sector_thinkers;			// And it didn't check if a thinker existed on the ring sector before creating new ones
 	doombool		sky_wall_projectiles;					// The sky checking code when shooting projectiles would cause them to just disappear in to normal walls
 	doombool		bad_secret_exit_loop;					// Secret exit on any other map than the hardcoded maps causes the current level to loop
-	doombool		w1s1_lines_clearing_on_no_result;		// Vanilla will indiscriminately clear a W1/S1 line even if they do nothing
+	doombool		w1_lines_clearing_on_no_result;		// Vanilla will indiscriminately clear a W1/S1 line even if they do nothing
 	doombool		shortest_lower_texture_line;			// Would assume 0 was a valid texture, so never any shorter than AASHITTY
 	doombool		moveplane_escapes_reality;				// Independent floor and ceiling thinkers (or the donut bug) causes floors and ceilings to clip through each other
 	doombool		overzealous_changesector;				// Sector blockmap overlaps your mobj? That's clearly going to affect that mobj.
