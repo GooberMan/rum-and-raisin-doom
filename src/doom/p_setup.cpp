@@ -1582,8 +1582,6 @@ P_SetupLevel
 	R_RefreshContexts();
 	R_PrecacheLevel();
 
-    //printf ("free memory: 0x%x\n", Z_FreeMemory());
-
 }
 
 

@@ -691,8 +691,8 @@
     <ClCompile Include="..\src\w_merge.c" />
     <ClInclude Include="..\src\w_merge.h" />
     <ClCompile Include="..\src\w_wad.cpp" />
-    <ClCompile Include="..\src\z_zone.c" />
     <ClInclude Include="..\src\z_zone.h" />
+    <ClCompile Include="..\src\z_zone.cpp" />
     <ClCompile Include="..\win32\win_opendir.c" />
     <ClInclude Include="..\win32\win_opendir.h" />
     <ClInclude Include="..\src\deh_defs.h" />
