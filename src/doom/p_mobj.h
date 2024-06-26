@@ -381,7 +381,9 @@ DOOM_C_API typedef struct mobj_s
 
 	INLINE const bool HasCustomPickup() const				{ return info->pickupammotype != -1
 																	|| info->pickupweapontype != -1
-																	|| info->pickupitemtype != -1; }
+																	|| info->pickupitemtype != -1
+																	|| info->pickupsound != 0
+																	|| info->pickupstringmnemonic != nullptr; }
 #endif
 } mobj_t;
 

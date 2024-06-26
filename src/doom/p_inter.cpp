@@ -834,7 +834,7 @@ DOOM_C_API void P_TouchSpecialThing( mobj_t* special, mobj_t* toucher )
 	}
 
 	bool handled = false;
-	if( sim.rnr24_code_pointers && special->HasCustomPickup() )
+	if( sim.rnr24_thing_extensions && special->HasCustomPickup() )
 	{
 		handled = P_HandleTouch( special->info, player, ( special->flags & MF_DROPPED ) != 0, sound );
 	}
