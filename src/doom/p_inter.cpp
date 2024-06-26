@@ -110,7 +110,8 @@ bool P_GiveAmmo( player_t* player, const ammoinfo_t* ammoinfo, ammocategory_t ca
 
 		for( weaponinfo_t* switchtoweapon : weaponinfo.BySwitchPriority() )
 		{
-			if( !switchtoweapon->DontSwitchToOnAmmoPickup()
+			if( player->weaponowned[ switchtoweapon->index ]
+				&& !switchtoweapon->DontSwitchToOnAmmoPickup()
 				&& switchtoweapon->ammo == ammoinfo->index )
 			{
 				player->pendingweapon = switchtoweapon->index;

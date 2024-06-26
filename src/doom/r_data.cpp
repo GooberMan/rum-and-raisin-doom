@@ -848,7 +848,14 @@ void R_InitTextures (void)
 	
 		mtexture = (maptexture_t *) ( (byte *)maptex + offset);
 
-		texture = texturenamelookup[ ClampString( mtexture->name ) ] = textures[i] = (texture_t*)Z_Malloc(sizeof(texture_t) + sizeof(texpatch_t)*(SHORT(mtexture->patchcount)-1), PU_STATIC, 0);
+		texture = textures[i] = (texture_t*)Z_Malloc(sizeof(texture_t) + sizeof(texpatch_t)*(SHORT(mtexture->patchcount)-1), PU_STATIC, 0);
+
+		std::string texname = ClampString( mtexture->name );
+		auto found = texturenamelookup.find( texname );
+		if( found == texturenamelookup.end() )
+		{
+			texturenamelookup[ texname ] = texture;
+		}
 
 		texture->index = i;
 		texture->width = SHORT(mtexture->width);

@@ -46,6 +46,8 @@
 //
 // Move a plane (floor or ceiling) and check for crushing
 //
+#pragma optimize( "", off )
+
 DOOM_C_API result_e T_MovePlane( sector_t* sector, fixed_t speed, fixed_t dest, doombool crush, int floorOrCeiling, int direction )
 {
     doombool	flag;

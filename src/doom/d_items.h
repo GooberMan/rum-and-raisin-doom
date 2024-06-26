@@ -42,6 +42,9 @@ DOOM_C_API typedef struct ammoinfo_s
 	int32_t droppedweaponammo;
 	int32_t deathmatchweaponammo;
 	fixed_t skillmul[ sk_max ];
+
+	// Values used at load time by dehacked
+	doombool recalculateFromOriginalValues;
 } ammoinfo_t;
 
 DOOM_C_API typedef enum weaponflagsmbf21_e

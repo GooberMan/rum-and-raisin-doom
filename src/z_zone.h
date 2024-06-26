@@ -95,7 +95,7 @@ INLINE _ty&& Z_MallocDefaultFor()
 template< typename _ty >
 INLINE void Z_MallocDestructEntry( _ty* val, size_t /*datasize*/ )
 {
-	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	if constexpr( !std::is_destructible_v< _ty > )
 	{
 		val->~_ty();
 	}
@@ -104,7 +104,7 @@ INLINE void Z_MallocDestructEntry( _ty* val, size_t /*datasize*/ )
 template< typename _ty >
 INLINE void Z_MallocDestructEntryArray( _ty* val, size_t datasize )
 {
-	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	if constexpr( !std::is_destructible_v< _ty > )
 	{
 		_ty* curr = (_ty*)( (byte*)val + datasize ) - 1;
 		while( curr >= val )
@@ -118,7 +118,7 @@ INLINE void Z_MallocDestructEntryArray( _ty* val, size_t datasize )
 template< typename _ty >
 constexpr memdestruct_t Z_DestructorFor()
 {
-	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	if constexpr( !std::is_destructible_v< _ty > )
 	{
 		return (memdestruct_t)&Z_MallocDestructEntry< _ty >;
 	}
@@ -131,7 +131,7 @@ constexpr memdestruct_t Z_DestructorFor()
 template< typename _ty >
 constexpr memdestruct_t Z_DestructorForArray()
 {
-	if constexpr( !std::is_trivially_destructible_v< _ty > )
+	if constexpr( !std::is_destructible_v< _ty > )
 	{
 		return (memdestruct_t)&Z_MallocDestructEntryArray< _ty >;
 	}

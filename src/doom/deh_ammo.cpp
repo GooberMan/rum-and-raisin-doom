@@ -91,6 +91,7 @@ static void *DEH_AmmoStart(deh_context_t *context, char *line)
 			0,					// droppedweaponammo
 			0,					// deathmatchweaponammo
 			{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
+			true,				// recalculateFromOriginalValues
 		};
 
 		ammomap[ ammo_number ] = newammo;
@@ -98,6 +99,7 @@ static void *DEH_AmmoStart(deh_context_t *context, char *line)
 		return newammo;
 	}
 
+	found->second->recalculateFromOriginalValues = true;
 	return found->second;
 }
 
@@ -121,9 +123,33 @@ static void DEH_AmmoParseLine(deh_context_t *context, char *line, void *tag)
         return;
     }
 
+	if( !( strcmp( variable_name, "Per ammo" ) == 0
+			|| strcmp( variable_name, "Max ammo" ) == 0 ) )
+	{
+		ammoinfo->recalculateFromOriginalValues = false;
+	}
+
     ivalue = atoi(value);
 
 	DEH_SetMapping(context, &ammo_mapping, ammoinfo, variable_name, ivalue);
+}
+
+static void DEH_AmmoEnd( deh_context_t* context, ammoinfo_t* ammoinfo )
+{
+	if( ammoinfo->recalculateFromOriginalValues )
+	{
+		ammoinfo->maxupgradedammo		= ammoinfo->maxammo * 2;
+		ammoinfo->boxammo				= ammoinfo->clipammo * 5;
+		ammoinfo->backpackammo			= ammoinfo->clipammo;
+		ammoinfo->weaponammo			= ammoinfo->clipammo * 2;
+
+		ammoinfo->droppedclipammo		= M_MAX( 1, ammoinfo->clipammo / 2 );
+		ammoinfo->droppedboxammo		= M_MAX( 1, ammoinfo->boxammo / 2 );
+		ammoinfo->droppedbackpackammo	= M_MAX( 1, ammoinfo->backpackammo / 2 );
+		ammoinfo->droppedweaponammo		= M_MAX( 1, ammoinfo->weaponammo / 2 );
+
+		ammoinfo->deathmatchweaponammo	= ammoinfo->clipammo * 5;
+	}
 }
 
 static void DEH_AmmoSHA1Hash(sha1_context_t *context)
@@ -143,7 +169,7 @@ deh_section_t deh_section_ammo =
     NULL,
     DEH_AmmoStart,
     DEH_AmmoParseLine,
-    NULL,
+    (deh_section_end_t)DEH_AmmoEnd,
     DEH_AmmoSHA1Hash,
 };
 

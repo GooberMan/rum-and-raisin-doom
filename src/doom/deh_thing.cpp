@@ -65,7 +65,7 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   RNR_MAPPING("RNR24 Bits",          rnr24flags)
   RNR_MAPPING("Min respawn tics",    minrespawntics)
   RNR_MAPPING("Respawn dice",        respawndice)
-  RNR_MAPPING("Drop thing",          dropthing)
+  RNR_MAPPING("Dropped item",        dropthing)
   RNR_MAPPING("Pickup ammo type",    pickupammotype)
   RNR_MAPPING("Pickup ammo category", pickupammocategory)
   RNR_MAPPING("Pickup weapon type",  pickupweapontype)
@@ -218,7 +218,7 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 		ivalue = atoi(value) + splash_user;
 		DEH_SetMapping(context, &thing_mapping, mobj, variable_name, ivalue);
 	}
-	else if( strcmp( variable_name, "Drop thing" ) == 0 )
+	else if( strcmp( variable_name, "Dropped item" ) == 0 )
 	{
 		// Need to account for dehacked things being 1-indexed
 		ivalue = atoi(value) - 1;

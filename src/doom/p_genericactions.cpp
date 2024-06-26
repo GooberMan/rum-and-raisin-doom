@@ -40,6 +40,8 @@
 
 #include "w_wad.h"
 
+#pragma optimize( "", off )
+
 extern "C"
 {
 	ceiling_t*	activeceilingshead = nullptr;
@@ -984,10 +986,7 @@ DOOM_C_API int32_t EV_DoFloorGeneric( line_t* line, mobj_t* activator )
 
 		case stt_lowestneighborceiling:
 			floor->floordestheight = P_FindLowestCeilingSurrounding( &sector );
-			if( sim.boom_sector_targets )
-			{
-				floor->floordestheight = M_MIN( floor->floordestheight, sector.ceilingheight );
-			}
+			floor->floordestheight = M_MIN( floor->floordestheight, sector.ceilingheight );
 			break;
 
 		case stt_nexthighestneighborceiling:
