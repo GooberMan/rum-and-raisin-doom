@@ -378,6 +378,10 @@ DOOM_C_API typedef struct mobj_s
 	INLINE const bool RemoveOnPickup() const				{ return ( !netgame && !( rnr24flags & MF_RNR24_SPECIALSTAYS_SINGLE ) )
 																	|| ( netgame && deathmatch == 0 && !( rnr24flags & MF_RNR24_SPECIALSTAYS_COOP ) )
 																	|| ( netgame && deathmatch == 1 && !( rnr24flags & MF_RNR24_SPECIALSTAYS_DM ) ); }
+
+	INLINE const bool HasCustomPickup() const				{ return info->pickupammotype != -1
+																	|| info->pickupweapontype != -1
+																	|| info->pickupitemtype != -1; }
 #endif
 } mobj_t;
 

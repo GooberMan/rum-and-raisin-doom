@@ -112,6 +112,8 @@ mobjinfo_t* DEH_GetThing( deh_context_t* context, int32_t thing_number )
 			newmobjinfo.pickupammocategory	= -1;
 			newmobjinfo.pickupweapontype	= -1;
 			newmobjinfo.pickupitemtype		= -1;
+			newmobjinfo.pickupbonuscount	= 6;
+
 			return newmobjinfo;
 		};
 

@@ -74,8 +74,8 @@
 		-1,						\
 		-1,						\
 		-1,						\
-		0,						\
-		0,						\
+		6,						\
+		sfx_None,				\
 		nullptr,				\
 	}
 
@@ -1373,8 +1373,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1419,8 +1419,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1465,8 +1465,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1511,8 +1511,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1557,8 +1557,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1603,8 +1603,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1649,8 +1649,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1695,8 +1695,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1741,8 +1741,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1787,8 +1787,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1833,8 +1833,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1879,8 +1879,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1925,8 +1925,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -1971,8 +1971,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2017,8 +2017,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2063,8 +2063,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2109,8 +2109,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2155,8 +2155,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2201,8 +2201,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2248,8 +2248,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2294,8 +2294,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2341,8 +2341,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2387,8 +2387,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2433,8 +2433,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2479,8 +2479,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2525,8 +2525,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2571,8 +2571,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2617,8 +2617,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2663,8 +2663,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2709,8 +2709,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2755,8 +2755,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2801,8 +2801,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2847,8 +2847,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2893,8 +2893,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2939,8 +2939,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -2985,8 +2985,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3031,8 +3031,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3077,8 +3077,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3123,8 +3123,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3169,8 +3169,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3215,8 +3215,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3261,8 +3261,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3307,8 +3307,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -3352,10 +3352,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_greenarmor,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		0,						// pickupitemsound
-		"GOTARMOR",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC1
@@ -3398,10 +3398,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_bluearmor,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTMEGA",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC2
@@ -3444,10 +3444,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_healthbonus,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTHTHBONUS",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC3
@@ -3490,10 +3490,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_armorbonus,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTARMBONUS",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC4
@@ -3536,10 +3536,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_bluecard,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTBLUECARD",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC5
@@ -3582,10 +3582,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_redcard,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTREDCARD",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC6
@@ -3628,10 +3628,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_yellowcard,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTYELWCARD",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC7
@@ -3674,10 +3674,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_yellowskull,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTYELWSKUL",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC8
@@ -3720,10 +3720,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_redskull,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTREDSKULL",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC9
@@ -3766,10 +3766,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_blueskull,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTBLUESKUL",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC10
@@ -3812,10 +3812,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_stimpack,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTSTIM",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC11
@@ -3858,10 +3858,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_medikit,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTMEDIKIT",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC12
@@ -3904,10 +3904,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_soulsphere,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTSUPER",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_INV
@@ -3950,10 +3950,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_invulnerability,	// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTINVUL",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC13
@@ -3996,10 +3996,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_berserk,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTBERSERK",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_INS
@@ -4042,10 +4042,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_invisibility,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTINVIS",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC14
@@ -4088,10 +4088,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_radsuit,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTSUIT",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC15
@@ -4134,10 +4134,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_areamap,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTMAP",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC16
@@ -4180,10 +4180,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_lightamp,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTVISOR",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MEGA
@@ -4226,10 +4226,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_megasphere,		// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_getpow,				// pickupitemsound
-		"GOTMSPHERE",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_CLIP
@@ -4269,13 +4269,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_clip,				// pickupammotype
-		ac_clip,				// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTCLIP",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC17
@@ -4315,13 +4315,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_clip,				// pickupammotype
-		ac_box,					// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTCLIPBOX",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC18
@@ -4361,13 +4361,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_misl,				// pickupammotype
-		ac_clip,				// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTROCKET",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC19
@@ -4407,13 +4407,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_misl,				// pickupammotype
-		ac_box,					// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTROCKBOX",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC20
@@ -4453,13 +4453,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_cell,				// pickupammotype
-		ac_clip,				// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTCELL",				// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC21
@@ -4499,13 +4499,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_cell,				// pickupammotype
-		ac_box,					// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTCELLBOX",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC22
@@ -4545,13 +4545,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_shell,				// pickupammotype
-		ac_clip,				// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTSHELLS",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC23
@@ -4591,13 +4591,13 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		12 * TICRATE,			// minrespawntics
 		4,						// respawndice
 		-1,						// dropthing
-		am_shell,				// pickupammotype
-		ac_box,					// pickupammocategory
+		-1,						// pickupammotype
+		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTSHELLBOX",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC24
@@ -4640,10 +4640,10 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
-		item_backpack,			// pickupitemtype
+		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_itemup,				// pickupitemsound
-		"GOTBACKPACK",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC25
@@ -4685,11 +4685,11 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// dropthing
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
-		wp_bfg,					// pickupweapontype
+		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_wpnup,				// pickupitemsound
-		"GOTBFG9000",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_CHAINGUN
@@ -4731,11 +4731,11 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// dropthing
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
-		wp_chaingun,			// pickupweapontype
+		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_wpnup,				// pickupitemsound
-		"GOTCHAINGUN",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC26
@@ -4777,11 +4777,11 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// dropthing
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
-		wp_chainsaw,			// pickupweapontype
+		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_wpnup,				// pickupitemsound
-		"GOTCHAINSAW",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC27
@@ -4823,11 +4823,11 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// dropthing
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
-		wp_missile,				// pickupweapontype
+		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_wpnup,				// pickupitemsound
-		"GOTLAUNCHER",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC28
@@ -4869,11 +4869,11 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// dropthing
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
-		wp_plasma,				// pickupweapontype
+		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_wpnup,				// pickupitemsound
-		"GOTPLASMA",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_SHOTGUN
@@ -4915,11 +4915,11 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// dropthing
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
-		wp_shotgun,				// pickupweapontype
+		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_wpnup,				// pickupitemsound
-		"GOTSHOTGUN",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_SUPERSHOTGUN
@@ -4961,11 +4961,11 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// dropthing
 		-1,						// pickupammotype
 		-1,						// pickupammocategory
-		wp_supershotgun,		// pickupweapontype
+		-1,						// pickupweapontype
 		-1,						// pickupitemtype
 		6,						// pickupbonuscount
-		sfx_wpnup,				// pickupitemsound
-		"GOTSHOTGUN2",			// pickupstringmnemonic
+		sfx_None,				// pickupitemsound
+		nullptr,				// pickupstringmnemonic
 	},
 
 	{		// MT_MISC29
@@ -5009,8 +5009,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5055,8 +5055,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5101,8 +5101,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5147,8 +5147,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5193,8 +5193,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5239,8 +5239,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5285,8 +5285,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5331,8 +5331,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5377,8 +5377,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5423,8 +5423,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5469,8 +5469,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5515,8 +5515,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5561,8 +5561,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5607,8 +5607,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5653,8 +5653,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5699,8 +5699,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5745,8 +5745,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5791,8 +5791,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5837,8 +5837,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5883,8 +5883,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5929,8 +5929,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -5975,8 +5975,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6021,8 +6021,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6067,8 +6067,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6113,8 +6113,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6159,8 +6159,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6205,8 +6205,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6251,8 +6251,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6297,8 +6297,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6343,8 +6343,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6389,8 +6389,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6435,8 +6435,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6481,8 +6481,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6527,8 +6527,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6573,8 +6573,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6619,8 +6619,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6665,8 +6665,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6711,8 +6711,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6757,8 +6757,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6803,8 +6803,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6849,8 +6849,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6895,8 +6895,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6941,8 +6941,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -6987,8 +6987,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7033,8 +7033,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7079,8 +7079,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7125,8 +7125,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7171,8 +7171,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7217,8 +7217,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7263,8 +7263,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7309,8 +7309,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7355,8 +7355,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7401,8 +7401,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7447,8 +7447,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7493,8 +7493,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7539,8 +7539,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7585,8 +7585,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7631,8 +7631,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7678,8 +7678,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7724,8 +7724,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7771,8 +7771,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7817,8 +7817,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7863,8 +7863,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7909,8 +7909,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
@@ -7955,8 +7955,8 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		-1,						// pickupammocategory
 		-1,						// pickupweapontype
 		-1,						// pickupitemtype
-		0,						// pickupbonuscount
-		0,						// pickupitemsound
+		6,						// pickupbonuscount
+		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
 	},
 
