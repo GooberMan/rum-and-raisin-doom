@@ -88,7 +88,6 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		const JSONElement& wadversion = elem[ "version" ];
 		const JSONElement& iwadfile = elem[ "iwad" ];
 		const JSONElement& pwadfiles = elem[ "pwads" ];
-		const JSONElement& dehfiles = elem[ "dehfiles" ];
 		const JSONElement& executable = elem[ "executable" ];
 		const JSONElement& mode = elem[ "mode" ];
 		const JSONElement& options = elem[ "options" ];
@@ -131,22 +130,6 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 			else if( !pwadfiles.IsNull() )
 			{
 				I_Error( "D_BuildGameConf: pwadfiles is not an array." );
-				return jl_parseerror;
-			}
-		}
-
-		if( dehfiles.Valid() )
-		{
-			if( dehfiles.IsArray() )
-			{
-				for( const JSONElement& file : dehfiles.Children() )
-				{
-					info.dehfiles.push_back( ValidateFile( to< std::string >( file ).c_str() ) );
-				}
-			}
-			else if( !dehfiles.IsNull() )
-			{
-				I_Error( "D_BuildGameConf: dehfiles is not an array." );
 				return jl_parseerror;
 			}
 		}
