@@ -902,6 +902,7 @@ void D_StartTitle (void)
 {
     gameaction = ga_nothing;
     demosequence = -1;
+	demoloop->Reset();
     D_AdvanceDemo ();
 }
 
