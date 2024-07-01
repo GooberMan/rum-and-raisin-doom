@@ -219,8 +219,9 @@ demoloop_t* D_CreateDemoLoop()
 		{
 			const JSONElement& primarylump = currentryjson[ "primarylump" ];
 			const JSONElement& secondarylump = currentryjson[ "secondarylump" ];
-			const JSONElement& tics = currentryjson[ "tics" ];
+			const JSONElement& duration = currentryjson[ "duration" ];
 			const JSONElement& type = currentryjson[ "type" ];
+			const JSONElement& outrowipe = currentryjson[ "outrowipe" ];
 
 			size_t finalentry = entrystorage.size();
 			entrystorage.push_back( {} );
@@ -228,8 +229,9 @@ demoloop_t* D_CreateDemoLoop()
 
 			snprintf( thisentry.primarylumpname, 10, "%8s", to< std::string >( primarylump ).c_str() );
 			snprintf( thisentry.secondarylumpname, 10, "%8s", to< std::string >( secondarylump ).c_str() );
-			thisentry.tics = to< uint64_t >( tics );
+			thisentry.tics = (uint64_t)( to< double_t >( duration ) * TICRATE );
 			thisentry.type = to< demolooptype_t >( type );
+			thisentry.outrowipestyle = to< demowipetype_t >( outrowipe );
 		}
 
 		demoloopentry_t* allentries = (demoloopentry_t*)Z_MallocZero( sizeof(demoloopentry_t) * entrystorage.size(), PU_STATIC, nullptr );

@@ -17,6 +17,14 @@
 
 #include "doomtype.h"
 
+DOOM_C_API typedef enum demowipetype_e
+{
+    dwt_none,
+    dwt_melt,
+
+    dwt_max,
+} demowipetype_t;
+
 DOOM_C_API typedef enum demolooptype_e
 {
 	dlt_invalid = -1,
@@ -46,6 +54,12 @@ typedef struct demoloop_s
 	uint64_t				ticsleft;
 
 #if defined( __cplusplus )
+	INLINE void Reset()
+	{
+		current = entries + ( numentries - 1 );
+		ticsleft = 0;
+	}
+
 	INLINE void SetEntries( const demoloopentry_t* e, size_t c )
 	{
 		entries = e;
