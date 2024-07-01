@@ -408,6 +408,19 @@ enum RNR24Actions : uint32_t
 	Scroll_WallTextureBothSides_SectorDiv8Displacement_Always,
 	Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always,
 
+	Music_ChangeLooping_Reset_W1_Player,
+	Music_ChangeLooping_Reset_WR_Player,
+	Music_ChangeLooping_Reset_S1_Player,
+	Music_ChangeLooping_Reset_SR_Player,
+	Music_ChangeLooping_Reset_G1_Player,
+	Music_ChangeLooping_Reset_GR_Player,
+	Music_ChangeOnce_Reset_W1_Player,
+	Music_ChangeOnce_Reset_WR_Player,
+	Music_ChangeOnce_Reset_S1_Player,
+	Music_ChangeOnce_Reset_SR_Player,
+	Music_ChangeOnce_Reset_G1_Player,
+	Music_ChangeOnce_Reset_GR_Player,
+
 	RNR24Actions_Max,
 	RNR24Actions_Min = Offset_FloorTexture_Always,
 };

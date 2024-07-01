@@ -1673,11 +1673,25 @@ DOOM_C_API int32_t EV_DoMusicSwitchGeneric( line_t* line, mobj_t* activator )
 
 	if( side == 0 ) // Activating from front side
 	{
-		S_ChangeMusicLumpIndex( line->frontside->toptextureindex, looping );
+		if( line->frontside->toptextureindex >= 0 )
+		{
+			S_ChangeMusicLumpIndex( line->frontside->toptextureindex, looping );
+		}
+		else if( line->action->param2 != 0 )
+		{
+			S_ChangeMusicLump( &current_map->music_lump[ 0 ], true );
+		}
 	}
 	else
 	{
-		S_ChangeMusicLumpIndex( line->frontside->bottomtextureindex, looping );
+		if( line->frontside->bottomtextureindex >= 0 )
+		{
+			S_ChangeMusicLumpIndex( line->frontside->bottomtextureindex, looping );
+		}
+		else if( line->action->param2 != 0 )
+		{
+			S_ChangeMusicLump( &current_map->music_lump[ 0 ], true );
+		}
 	}
 
 	return 1;
