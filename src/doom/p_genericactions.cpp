@@ -2247,6 +2247,17 @@ DOOM_C_API int32_t P_SpawnLineScrollers( int32_t left, int32_t leftboth, int32_t
 		rightscroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * right, PU_LEVSPEC, nullptr );
 	}
 
+	if( rightboth > 0 )
+	{
+		rightbothscroller = (scroller_t*)Z_MallocZero( sizeof(scroller_t), PU_LEVSPEC, 0 );
+		P_AddThinker( &rightbothscroller->thinker );
+		rightbothscroller->thinker.function = &T_ScrollerGeneric;
+		rightbothscroller->type = st_wall;
+		rightbothscroller->scrollx = -FRACUNIT;
+		rightbothscroller->linecount = rightboth;
+		rightbothscroller->lines = (line_t**)Z_Malloc( sizeof( line_t* ) * rightboth, PU_LEVSPEC, nullptr );
+	}
+
 	int32_t leftcount = 0;
 	int32_t leftbothcount = 0;
 	int32_t rightcount = 0;
