@@ -1146,6 +1146,30 @@ constexpr lineaction_t builtinrnr24lineactions[ Actions_RNR24_Count ] =
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
 	// Scroll_WallTextureBothSides_SectorDiv8Accelerative_Always
 	{ &precon::NeverActivate, nullptr, LT_None, LL_None },
+	// Music_ChangeLooping_Reset_W1_Player
+	{ &precon::IsPlayer, &DoGenericOnce< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk | mt_loop, true },
+	// Music_ChangeLooping_Reset_WR_Player
+	{ &precon::IsPlayer, &DoGeneric< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk | mt_loop, true },
+	// Music_ChangeLooping_Reset_S1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch | mt_loop, true },
+	// Music_ChangeLooping_Reset_SR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch | mt_loop, true },
+	// Music_ChangeLooping_Reset_G1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_GunFront, LL_None, 0, 0, mt_switch | mt_loop, true },
+	// Music_ChangeLooping_Reset_GR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_GunFront, LL_None, 0, 0, mt_switch | mt_loop, true },
+	// Music_ChangeOnce_Reset_W1_Player
+	{ &precon::IsPlayer, &DoGenericOnce< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk, true },
+	// Music_ChangeOnce_Reset_WR_Player
+	{ &precon::IsPlayer, &DoGeneric< Music >, LT_WalkBoth, LL_None, 0, 0, mt_walk, true },
+	// Music_ChangeOnce_Reset_S1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch, true },
+	// Music_ChangeOnce_Reset_SR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_SwitchFront, LL_None, 0, 0, mt_switch, true },
+	// Music_ChangeOnce_Reset_G1_Player
+	{ &precon::IsPlayer, &DoGenericSwitchOnce< Music >, LT_GunFront, LL_None, 0, 0, mt_switch, true },
+	// Music_ChangeOnce_Reset_GR_Player
+	{ &precon::IsPlayer, &DoGenericSwitch< Music >, LT_GunFront, LL_None, 0, 0, mt_switch, true },
 };
 
 // Another ugly table

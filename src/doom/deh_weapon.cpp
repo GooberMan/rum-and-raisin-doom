@@ -164,6 +164,14 @@ static void DEH_WeaponEnd(deh_context_t* context, void* tag)
 		{
 			return lhs->switchpriority > rhs->switchpriority;
 		} );
+
+	for( std::vector< weaponinfo_t* >& slotpriority : weaponslotpriority )
+	{
+		std::sort( slotpriority.begin(), slotpriority.end(), []( const weaponinfo_t* lhs, const weaponinfo_t* rhs ) -> bool
+			{
+				return lhs->slotpriority > rhs->slotpriority;
+			} );
+	}
 }
 
 static void DEH_WeaponSHA1Sum(sha1_context_t *context)

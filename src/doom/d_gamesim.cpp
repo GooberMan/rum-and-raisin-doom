@@ -100,7 +100,7 @@ static std::unordered_map< std::string, optionfunc_t > MBFOptions =
 	{ "comp_stairs",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_stairbuilding_method, val ); } } },
 	{ "comp_infcheat",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.powerup_cheats_infinite, val ); } } },
 	{ "comp_zerotags",			{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.zero_tags, val ); } } },
-	{ "comp_soul",				{ exe_mbf,		[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_bounce, val ); } } },
+	{ "comp_soul",				{ exe_doom_1_9,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.lost_souls_bounce, val ); } } },
 	{ "comp_moveblock",			{ exe_mbf_dehextra,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.doom_movement_clipping_method, val ); } } },
 	{ "comp_respawn",			{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.respawn_non_map_things_at_origin, val ); } } },
 	{ "comp_ledgeblock",		{ exe_mbf21,	[]( compoptions_t& c, int32_t val ) { SetBoolOptionExact( c.monsters_blocked_by_ledges, val ); } } },

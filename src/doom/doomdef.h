@@ -180,6 +180,7 @@ DOOM_C_API typedef enum
 DOOM_C_API typedef enum itemtype_e
 {
 	item_noitem = -1,
+	item_messageonly,
 	item_bluecard,
 	item_yellowcard,
 	item_redcard,
