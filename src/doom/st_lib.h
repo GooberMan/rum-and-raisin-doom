@@ -206,4 +206,83 @@ STlib_updateBinIcon
 ( st_binicon_t*		bi,
   doombool		refresh );
 
+#define ALLOW_SBARDEF 1
+
+#if ALLOW_SBARDEF
+
+enum sbarnumfonttype_t
+{
+	sbf_none = -1,
+	sbf_mono0,
+	sbf_monomax,
+	sbf_proportional,
+};
+
+struct sbarnumfont_t
+{
+	sbarnumfonttype_t	type;
+	int32_t				monowidth;
+	patch_t*			numbers[10];
+	patch_t*			percent;
+	patch_t*			minus;
+};
+
+enum sbarconditiontype_t
+{
+	sbc_none,
+	sbc_weaponowned,
+	sbc_weaponselected,
+	sbc_weaponslotowned,
+	sbc_weaponslotselected,
+	sbc_itemowned,
+	sbc_featurelevelgreaterequal,
+	sbc_gamemodeequal,
+	sbc_gamemodenotequal,
+};
+
+enum sbarnumbertype_t
+{
+	sbn_none = -1,
+	sbn_health,
+	sbn_armor,
+	sbn_frags,
+	sbn_ammo,
+	sbn_maxammo,
+};
+
+enum sbarelementtype_t
+{
+	sbe_none = -1,
+	sbe_canvas,
+	sbe_graphic,
+	sbe_animation,
+	sbe_number,
+	sbe_percentage,
+};
+
+enum sbaralignment_t
+{
+	sbe_h_left		= 0x00,
+	sbe_h_middle	= 0x01,
+	sbe_h_right		= 0x02,
+
+	sbe_h_mask		= 0x03,
+
+	sbe_v_above		= 0x00,
+	sbe_v_middle	= 0x04,
+	sbe_v_below		= 0x08,
+
+	sbe_v_mask		= 0x0C,
+};
+
+struct sbarelement_t
+{
+	sbarelementtype_t	type;
+	int32_t				xpos;
+	int32_t				ypos;
+	sbaralignment_t		alignment;
+};
+
+#endif // ALLOW_SBARDEF
+
 #endif

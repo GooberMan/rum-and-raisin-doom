@@ -24,6 +24,8 @@
 #include "deh_main.h"
 #include "doomdef.h"
 
+#include "p_local.h"
+
 #include "z_zone.h"
 #include "v_video.h"
 

@@ -37,9 +37,6 @@
     <ClCompile Include="..\src\doom\r_things.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\doom\st_lib.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\doom\r_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -221,6 +218,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\doom\deh_bexstrings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\doom\st_lib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
