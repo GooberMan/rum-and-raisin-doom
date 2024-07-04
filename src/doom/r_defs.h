@@ -965,10 +965,10 @@ typedef struct rendercontext_s
 	vbuffer_t			viewbuffer;
 	int32_t				bufferindex;
 
-
 	int32_t				begincolumn;
 	int32_t				endcolumn;
 
+	uint64_t			rendergametic;
 	pixel_t*			fuzzworkingbuffer;
 
 	uint64_t			starttime;

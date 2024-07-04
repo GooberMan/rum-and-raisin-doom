@@ -84,6 +84,7 @@ extern "C"
 	int32_t					num_software_backbuffers = 1;
 	int32_t					renderloadbalancing = 1;
 	doombool				rendersplitvisualise = false;
+	doombool				renderfuzz35Hz = true;
 	doombool				renderrebalancecontexts = false;
 	doombool				renderlightlevels = false;
 	double_t				renderscalecontextsby = 0.0;
@@ -869,7 +870,8 @@ void R_AllocateContextData( rendercontext_t& context )
 {
 	M_PROFILE_FUNC();
 
-	context.fuzzworkingbuffer = R_AllocateScratch< pixel_t >( render_height + 4 );
+	context.fuzzworkingbuffer = R_AllocateScratch< pixel_t >( render_height * 2 );
+
 	R_ClearClipSegs( context.bspcontext, context.begincolumn, context.endcolumn );
 	R_ClearDrawSegs( context.bspcontext );
 	R_ClearPlanes( &context.planecontext, drs_current->viewwidth, drs_current->viewheight );
@@ -896,6 +898,17 @@ void R_RenderViewContext( rendercontext_t& rendercontext )
 
 	rendercontext.spritecontext.maskedtimetaken = 0;
 #endif
+
+	if( gametic != rendercontext.rendergametic )
+	{
+		R_CacheFuzzColumnForFrame();
+	}
+	else if( renderfuzz35Hz )
+	{
+		R_RestoreFuzzColumnForFrame();
+	}
+
+	rendercontext.rendergametic = gametic;
 
 	R_AllocateContextData( rendercontext );
 
@@ -1005,6 +1018,8 @@ void R_InitContexts( void )
 		renderdatas[ currcontext ].context.begincolumn = renderdatas[ currcontext ].context.spritecontext.leftclip = M_MAX( currstart, 0 );
 		currstart += incrementby;
 		renderdatas[ currcontext ].context.endcolumn = renderdatas[ currcontext ].context.spritecontext.rightclip = M_MIN( currstart, drs_current->frame_width );
+
+		renderdatas[ currcontext ].context.rendergametic = 0xFFFFFFFFFFFFFFFFull;
 
 		renderdatas[ currcontext ].context.starttime = 0;
 		renderdatas[ currcontext ].context.endtime = 1;
@@ -1434,6 +1449,7 @@ static void R_RenderThreadingOptionsWindow( const char* name, void* data )
 	igNewLine();
 	igText( "Debug options" );
 	igSeparator();
+	igCheckbox( "35hz Fuzz", (bool*)&renderfuzz35Hz );
 	igCheckbox( "Visualise split", (bool*)&rendersplitvisualise );
 	if( igSliderInt( "Horizontal FOV", &horizontal_fov_degrees, 60, 160, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 	{

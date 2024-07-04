@@ -792,7 +792,7 @@ static const int32_t adjustedfuzzoffset[ ADJUSTEDFUZZTABLE ] =
 
 thread_local int32_t	fuzzpos = 0;
 thread_local int32_t	cachedfuzzpos = 0;
-
+thread_local int32_t	framefuzzpos = 0;
 //
 // Framebuffer postprocessing.
 // Creates a fuzzy image by copying pixels
@@ -804,6 +804,16 @@ thread_local int32_t	cachedfuzzpos = 0;
 void R_CacheFuzzColumn (void)
 {
 	cachedfuzzpos = fuzzpos;
+}
+
+void R_CacheFuzzColumnForFrame()
+{
+	framefuzzpos = cachedfuzzpos = fuzzpos;
+}
+
+void R_RestoreFuzzColumnForFrame()
+{
+	cachedfuzzpos = fuzzpos = framefuzzpos;
 }
 
 void R_DrawFuzzColumn ( colcontext_t* context ) 
@@ -842,6 +852,9 @@ void R_DrawFuzzColumn ( colcontext_t* context )
 	fuzzpos += ( fuzzposadd - fuzzposbase /*+ ( M_Random() % FUZZPRIME )*/ );
 } 
 
+#define OLDFUZZ 1
+
+#if OLDFUZZ
 void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 {
 	rend_fixed_t		originalcolfrac = RendFixedDiv( IntToRendFixed( 200 ), IntToRendFixed( drs_current->viewheight ) );
@@ -849,7 +862,7 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 	rend_fixed_t		newfrac = 0;
 
 	int32_t				fuzzposadd			= fuzzpos = cachedfuzzpos;
-	int32_t				fuzzpossample		= adjustedfuzzoffset[ fuzzposadd % ADJUSTEDFUZZTABLE ];
+	int32_t				fuzzpossample		= adjustedfuzzoffset[ fuzzposadd & ADJUSTEDFUZZTABLEMASK ];
 	pixel_t*			samplecolormap		= fuzzpossample < 0 ? context->fuzzdarkmap : context->fuzzlightmap;
 
 	int32_t count = context->yh - context->yl; 
@@ -888,6 +901,60 @@ void R_DrawAdjustedFuzzColumn( colcontext_t* context )
 
 	fuzzpos = fuzzposadd + ( M_Random() % FUZZPRIME );
 }
+
+#else // !OLDFUZZ
+
+void R_DrawAdjustedFuzzColumn( colcontext_t* context )
+{
+	rend_fixed_t		originalcolfrac		= drs_current->skyiscaley;
+	rend_fixed_t		oldfrac = 0;
+	rend_fixed_t		newfrac = 0;
+
+	constexpr rend_fixed_t offset = DoubleToRendFixed( 0.5 );
+
+	int32_t				fuzzposbase			= RendFixedToInt( drs_current->skyscaley + offset );
+	int32_t				fuzzposadd			= fuzzpos = cachedfuzzpos;
+	int32_t				fuzzpossample		= adjustedfuzzoffset[ fuzzposadd & ADJUSTEDFUZZTABLEMASK ] * fuzzposbase;
+	pixel_t*			samplecolormap		= context->fuzzlightmap;
+
+	int32_t count = context->yh - context->yl; 
+
+	pixel_t* dest = context->output.data + context->x * context->output.pitch + context->yl;
+	pixel_t* src = context->output.data + context->x * context->output.pitch + M_MAX( 0, context->yl + fuzzpossample );
+	pixel_t sampled = samplecolormap[ src[ fuzzpossample ] ]; 
+
+	int32_t srcadd = 0;
+
+    // Looks like an attempt at dithering,
+    //  using the colormap #6 (of 0-31, a bit
+    //  brighter than average).
+    do 
+    {
+		*dest = sampled; 
+
+		++dest;
+		++srcadd;
+
+		oldfrac = newfrac;
+		newfrac += originalcolfrac;
+
+		if( RendFixedToInt( newfrac ) > RendFixedToInt( oldfrac ) )
+		{
+			// Clamp table lookup index.
+			++fuzzposadd;
+			src += srcadd;
+			srcadd = 0;
+			fuzzpossample = adjustedfuzzoffset[ fuzzposadd & ADJUSTEDFUZZTABLEMASK ] * fuzzposbase;
+			samplecolormap = context->fuzzlightmap;
+			sampled = samplecolormap[ src[ fuzzpossample ] ]; 
+		}
+
+	} while (count--);
+
+	fuzzpos = fuzzposadd + ( M_Random() % FUZZPRIME );
+}
+
+#endif // OLDFUZZ
 
 void R_DrawHeatwaveFuzzColumn( colcontext_t* context )
 {

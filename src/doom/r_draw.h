@@ -97,7 +97,9 @@ void R_DrawColumn_OneSample ( colcontext_t* context );
 
 
 // The Spectre/Invisibility effect.
-void R_CacheFuzzColumn (void);
+void R_CacheFuzzColumn();
+void R_CacheFuzzColumnForFrame();
+void R_RestoreFuzzColumnForFrame();
 void R_DrawFuzzColumn ( colcontext_t* context );
 void R_DrawAdjustedFuzzColumn( colcontext_t* context );
 void R_DrawHeatwaveFuzzColumn( colcontext_t* context );
