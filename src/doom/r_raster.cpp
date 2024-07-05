@@ -42,7 +42,7 @@ INLINE void Rotate( rend_fixed_t& x, rend_fixed_t& y, uint32_t finerot )
 template< int64_t Width, int64_t Height >
 struct PreSizedSampleUntranslated
 {
-	INLINE void Sample( int32_t& top
+	constexpr void Sample( int32_t& top
 						, rend_fixed_t& xfrac
 						, rend_fixed_t& xstep
 						, rend_fixed_t& yfrac
@@ -68,16 +68,15 @@ struct PreSizedSampleUntranslated
 
 struct ArbitrarySampleUntranslated
 {
-	ArbitrarySampleUntranslated( int32_t w, int32_t h )
+	constexpr ArbitrarySampleUntranslated( int32_t w, int32_t h )
+		: width( w )
+		, height( h )
+		, invwidth( RendFixedDiv( IntToRendFixed( 1 ), IntToRendFixed( w ) ) )
+		, invheight( RendFixedDiv( IntToRendFixed( 1 ), IntToRendFixed( h ) ) )
 	{
-		width = IntToRendFixed( w );
-		height = IntToRendFixed( h );
-
-		invwidth = RendFixedDiv( IntToRendFixed( 1 ), width );
-		invheight = RendFixedDiv( IntToRendFixed( 1 ), height );
 	}
 
-	INLINE void Sample( int32_t& top
+	constexpr void Sample( int32_t& top
 						, rend_fixed_t& xfrac
 						, rend_fixed_t& xstep
 						, rend_fixed_t& yfrac
@@ -88,20 +87,20 @@ struct ArbitrarySampleUntranslated
 	{
 		// TODO: OPTIMIZE THIS FRACAS
 		rend_fixed_t xfracpos = RendFixedMul( xfrac, invwidth ) & RENDFRACMASK;
-		rend_fixed_t xpos = RendFixedMul( xfracpos, width );
+		rend_fixed_t xpos = xfracpos * width;
 		rend_fixed_t yfracpos = RendFixedMul( yfrac, invheight ) & RENDFRACMASK;
-		rend_fixed_t ypos = RendFixedMul( yfracpos, height );
+		rend_fixed_t ypos = yfracpos * height;
 
 		const rastercache_t& thisraster = planecontext.raster[ top ];
-		int32_t spot = RendFixedToInt( xpos ) * RendFixedToInt( height ) + RendFixedToInt( ypos );
+		int64_t spot = RendFixedToInt( xpos ) * height + RendFixedToInt( ypos );
 		*dest++ = thisraster.colormap[ source [ spot ] ];
 		++top;
 		xfrac += xstep;
 		yfrac += ystep;
 	}
 
-	rend_fixed_t width;
-	rend_fixed_t height;
+	int64_t width;
+	int64_t height;
 	rend_fixed_t invwidth;
 	rend_fixed_t invheight;
 };
