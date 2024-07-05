@@ -331,7 +331,7 @@ bool P_HandleTouch( const mobjinfo_t* info, player_t* player, bool dropped, int3
 {
 	bool handle = info->pickupammotype == am_noammo
 				&& info->pickupweapontype == wp_nochange
-				&& info->pickupitemtype == item_noitem;
+				&& ( info->pickupitemtype == item_noitem || info->pickupitemtype == item_messageonly );
 
 	const char* mnemonic = info->pickupstringmnemonic;
 
