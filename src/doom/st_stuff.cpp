@@ -1464,5 +1464,13 @@ DOOM_C_API void ST_Stop (void)
 
 DOOM_C_API void ST_Init (void)
 {
-    ST_loadData();
+	//lumpindex_t sbarlump = sim.allow_sbardefs ? W_CheckNumForName( "SBARDEF" ) : -1;
+	//if( sbarlump >= 0 )
+	//{
+	//
+	//}
+	//else
+	{
+		ST_loadData();
+	}
 }

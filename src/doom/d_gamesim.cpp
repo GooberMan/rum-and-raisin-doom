@@ -238,6 +238,7 @@ static simvalues_t GetLimitRemovingValues( GameMode_t mode )
 	values.sim.unlimited_platforms = true;
 	values.sim.unlimited_ceilings = true;
 	values.sim.allow_skydefs = true;
+	values.sim.allow_sbardefs = true;
 
 	values.comp.finale_allow_mouse_to_skip = true;
 	values.comp.finale_always_allow_skip_text = true;
@@ -413,6 +414,7 @@ static simvalues_t GetBoomValues( GameMode_t mode )
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
 	values.sim.rnr24_code_pointers = false;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
+	values.sim.allow_sbardefs = true;						// Generic status bars
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 
@@ -537,6 +539,7 @@ static simvalues_t GetMBFValues( GameMode_t mode )
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
 	values.sim.rnr24_code_pointers = false;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
+	values.sim.allow_sbardefs = true;						// Generic status bars
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -653,6 +656,7 @@ static simvalues_t GetMBF21Values( GameMode_t mode )
 	values.sim.rnr24_thing_extensions = false;				// New flags, nightmare respawn times
 	values.sim.rnr24_code_pointers = false;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
+	values.sim.allow_sbardefs = true;						// Generic status bars
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );
@@ -769,6 +773,7 @@ static simvalues_t GetRNR24Values( GameMode_t mode )
 	values.sim.rnr24_thing_extensions = true;				// New flags, nightmare respawn times
 	values.sim.rnr24_code_pointers = true;					// Dehacked extensions (unlimited weapons and ammo types)
 	values.sim.allow_skydefs = true;						// Generic skies
+	values.sim.allow_sbardefs = true;						// Generic status bars
 
 	if( gameconf ) UpdateFromGameconf( values.comp, gameconf );
 	UpdateFromOptionsLump( values.comp );

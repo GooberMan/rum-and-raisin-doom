@@ -82,6 +82,7 @@ DOOM_C_API typedef struct simoptions_s
 	doombool		rnr24_thing_extensions;					// New flags, nightmare respawn times
 	doombool		rnr24_code_pointers;					// Dehacked extensions (unlimited weapons and ammo types)
 	doombool		allow_skydefs;							// Generic skies
+	doombool		allow_sbardefs;							// Generic status bars
 } simoptions_t;
 
 // Descriptions pulled from https://www.doomworld.com/forum/topic/72033-boom-mbf-demo-header-format/?tab=comments#comment-1350909

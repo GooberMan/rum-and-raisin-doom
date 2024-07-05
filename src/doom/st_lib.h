@@ -210,6 +210,10 @@ STlib_updateBinIcon
 
 #if ALLOW_SBARDEF
 
+#if defined( __cplusplus )
+
+#include "m_container.h"
+
 enum sbarnumfonttype_t
 {
 	sbf_none = -1,
@@ -218,8 +222,9 @@ enum sbarnumfonttype_t
 	sbf_proportional,
 };
 
-struct sbarnumfont_t
+class sbarnumfont_t
 {
+public:
 	sbarnumfonttype_t	type;
 	int32_t				monowidth;
 	patch_t*			numbers[10];
@@ -232,9 +237,13 @@ enum sbarconditiontype_t
 	sbc_none,
 	sbc_weaponowned,
 	sbc_weaponselected,
+	sbc_weaponnotselected,
 	sbc_weaponslotowned,
+	sbc_weaponslotnotowned,
 	sbc_weaponslotselected,
+	sbc_weaponslotnotselected,
 	sbc_itemowned,
+	sbc_itemnotowned,
 	sbc_featurelevelgreaterequal,
 	sbc_gamemodeequal,
 	sbc_gamemodenotequal,
@@ -247,6 +256,7 @@ enum sbarnumbertype_t
 	sbn_armor,
 	sbn_frags,
 	sbn_ammo,
+	sbn_ammoselected,
 	sbn_maxammo,
 };
 
@@ -256,6 +266,7 @@ enum sbarelementtype_t
 	sbe_canvas,
 	sbe_graphic,
 	sbe_animation,
+	sbe_face,
 	sbe_number,
 	sbe_percentage,
 };
@@ -275,13 +286,26 @@ enum sbaralignment_t
 	sbe_v_mask		= 0x0C,
 };
 
-struct sbarelement_t
+class sbarelement_t
 {
+public:
 	sbarelementtype_t	type;
 	int32_t				xpos;
 	int32_t				ypos;
 	sbaralignment_t		alignment;
 };
+
+class statusbars_t
+{
+public:
+	constexpr std::span< sbarelement_t* > StatusBars() const	{ return std::span( statusbars, numstatusbars ); }
+
+private:
+	sbarelement_t**		statusbars;
+	size_t				numstatusbars;
+};
+
+#endif // defined( __cplusplus )
 
 #endif // ALLOW_SBARDEF
 
