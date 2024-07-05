@@ -538,15 +538,15 @@ constexpr colfunc_t transcolfuncsforheight[] =
 	&R_DrawColumn_Transparent_512,
 };
 
-constexpr rasterfunc_t floorfuncs[ 7 ][ 4 ] =
+constexpr rasterfunc_t floorfuncs[ 7 ][ 6 ] =
 {
-	{	&R_RasteriseRegion16x16,	&R_RasteriseRegion16x32,	&R_RasteriseRegion16x64,	&R_RasteriseRegion16x128	},
-	{	&R_RasteriseRegion32x16,	&R_RasteriseRegion32x32,	&R_RasteriseRegion32x64,	&R_RasteriseRegion32x128	},
-	{	&R_RasteriseRegion64x16,	&R_RasteriseRegion64x32,	&R_RasteriseRegion64x64,	&R_RasteriseRegion64x128	},
-	{	&R_RasteriseRegion128x16,	&R_RasteriseRegion128x32,	&R_RasteriseRegion128x64,	&R_RasteriseRegion128x128	},
-	{	&R_RasteriseRegion256x16,	&R_RasteriseRegion256x32,	&R_RasteriseRegion256x64,	&R_RasteriseRegion256x128	},
-	{	&R_RasteriseRegion512x16,	&R_RasteriseRegion512x32,	&R_RasteriseRegion512x64,	&R_RasteriseRegion512x128	},
-	{	&R_RasteriseRegion1024x16,	&R_RasteriseRegion1024x32,	&R_RasteriseRegion1024x64,	&R_RasteriseRegion1024x128	},
+	{	&R_RasteriseRegion16x16,	&R_RasteriseRegion16x32,	&R_RasteriseRegion16x64,	&R_RasteriseRegion16x128,	&R_RasteriseRegion16x256,	&R_RasteriseRegion16x512	},
+	{	&R_RasteriseRegion32x16,	&R_RasteriseRegion32x32,	&R_RasteriseRegion32x64,	&R_RasteriseRegion32x128,	&R_RasteriseRegion32x256,	&R_RasteriseRegion32x512	},
+	{	&R_RasteriseRegion64x16,	&R_RasteriseRegion64x32,	&R_RasteriseRegion64x64,	&R_RasteriseRegion64x128,	&R_RasteriseRegion64x256,	&R_RasteriseRegion64x512	},
+	{	&R_RasteriseRegion128x16,	&R_RasteriseRegion128x32,	&R_RasteriseRegion128x64,	&R_RasteriseRegion128x128,	&R_RasteriseRegion128x256,	&R_RasteriseRegion128x512	},
+	{	&R_RasteriseRegion256x16,	&R_RasteriseRegion256x32,	&R_RasteriseRegion256x64,	&R_RasteriseRegion256x128,	&R_RasteriseRegion256x256,	&R_RasteriseRegion256x512	},
+	{	&R_RasteriseRegion512x16,	&R_RasteriseRegion512x32,	&R_RasteriseRegion512x64,	&R_RasteriseRegion512x128,	&R_RasteriseRegion512x256,	&R_RasteriseRegion512x512	},
+	{	&R_RasteriseRegion1024x16,	&R_RasteriseRegion1024x32,	&R_RasteriseRegion1024x64,	&R_RasteriseRegion1024x128,	&R_RasteriseRegion1024x256,	&R_RasteriseRegion1024x512	},
 };
 
 constexpr int32_t maxcolfuncs = 5;
@@ -611,10 +611,11 @@ void R_InitTextureAndFlatComposites( void )
 			double_t logwidthdouble = log2( texture->width ) - 4.0;
 			int32_t logwidth = (int32_t)logwidthdouble;
 
-			if( logwidth < 0 || logwidth > 6
-				|| logheight < 0 || logheight > 3 )
+			if( logwidthdouble != (double_t)logwidth || logheightdouble != (double_t)logheight
+				|| logwidth < 0 || logwidth > 6
+				|| logheight < 0 || logheight > 5 )
 			{
-				composite.floorrender = &R_RasteriseRegion64x64;
+				composite.floorrender = &R_RasteriseRegionArbitrary;
 			}
 			else
 			{
