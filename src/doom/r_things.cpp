@@ -365,7 +365,15 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 	spritecolcontext.output = dest;
 	spritecolcontext.colormap = vis->colormap;
 	spritecolcontext.transparency = vis->tranmap;
-	spritecolcontext.colfunc = vis->tranmap ? &R_SpriteDrawColumn_Transparent : &R_SpriteDrawColumn_Colormap;
+	if( vis->translation )
+	{
+		spritecolcontext.colfunc = vis->tranmap ? &R_SpriteDrawColumn_TranslatedAndTransparent : &R_SpriteDrawColumn_Translated;
+		spritecolcontext.translation = vis->translation;
+	}
+	else
+	{
+		spritecolcontext.colfunc = vis->tranmap ? &R_SpriteDrawColumn_Transparent : &R_SpriteDrawColumn_Colormap;
+	}
 
 	if (!spritecolcontext.colormap)
 	{
@@ -374,12 +382,6 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 		spritecolcontext.fuzzworkingbuffer = rendercontext.fuzzworkingbuffer;
 		spritecolcontext.fuzzlightmap = rendercontext.viewpoint.colormaps + 6 * 256;
 		spritecolcontext.fuzzdarkmap = rendercontext.viewpoint.colormaps + 14 * 256;
-	}
-	else if (vis->mobjflags & MF_TRANSLATION)
-	{
-		spritecolcontext.colfunc = &R_DrawTranslatedColumn;
-		spritecolcontext.translation = translationtables - 256 +
-			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
 	
 	spritecolcontext.iscale = abs( vis->iscale );
@@ -608,7 +610,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	vis->sector = &rendsectors[ thing->subsector->sector->index ]; //sector;
 	vis->texturemid = vis->gzt - viewpoint.z;
 	vis->x1 = x1 < spritecontext.leftclip ? spritecontext.leftclip : x1;
-	vis->x2 = x2 >= spritecontext.rightclip ? spritecontext.rightclip-1 : x2;	
+	vis->x2 = x2 >= spritecontext.rightclip ? spritecontext.rightclip-1 : x2;
 
 	if (flip)
 	{
@@ -668,6 +670,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 												? tranmap
 												: nullptr
 										: nullptr;
+	vis->translation = thing->translation ? thing->translation->table : nullptr;
 }
 
 void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_t secindex )
@@ -847,6 +850,8 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 
 		vis->colormap = thiscolormap + spritelightoffsets[ MAXLIGHTSCALE - 1 ];
 	}
+
+	vis->translation = nullptr;
 	
 	R_DrawVisSprite( rendercontext, vis, vis->x1, vis->x2 );
 }

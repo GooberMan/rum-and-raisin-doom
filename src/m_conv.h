@@ -36,26 +36,37 @@ constexpr bool is_std_string_v = is_std_string< _ty >::value;
 
 template< typename _ty >
 requires std::is_integral_v< _ty >
-INLINE _ty stringto( const char* start, size_t* index = nullptr, int base = 10 )
+INLINE _ty stringto( const char* start )
 {
 	char* end;
 	_ty output;
 	if constexpr( std::is_unsigned_v< _ty > )
 	{
-		output = (_ty)strtoull( start, &end, base );
+		output = (_ty)strtoull( start, &end, 10 );
 	}
 	else
 	{
-		output = (_ty)strtoll( start, &end, base );
-	}
-
-	if( index != nullptr )
-	{
-		*index = (size_t)( end - start );
+		output = (_ty)strtoll( start, &end, 10 );
 	}
 
 	return output;
 }
+
+template<>
+INLINE bool stringto< bool >( const char* start )
+{
+	if( strcasecmp( start, "true" ) == 0 )
+	{
+		return true;
+	}
+	else if( strcasecmp( start, "false" ) == 0 )
+	{
+		return false;
+	}
+
+	return !!stringto< int64_t >( start );
+}
+
 
 // Basic types from string
 template< typename _ty, typename _str >
@@ -78,7 +89,6 @@ INLINE auto to( const char( &val )[ _len ] )
 {
 	return stringto< _ty >( (const char*)val );
 }
-
 
 template< typename _ty, typename _str >
 requires is_std_string_v< _str > && std::is_floating_point_v< _ty >

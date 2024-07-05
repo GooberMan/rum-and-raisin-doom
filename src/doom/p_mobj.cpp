@@ -21,6 +21,7 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
+#include "d_gameconf.h"
 #include "d_gamesim.h"
 
 #include "hu_stuff.h"
@@ -669,6 +670,7 @@ DOOM_C_API mobj_t* P_SpawnMobjEx( const mobjinfo_t* typeinfo, angle_t angle,
 	mobj->thinker.function = P_MobjThinker;
 
 	mobj->tested_sector = (uint8_t*)Z_MallocZero( sizeof( uint8_t ) * numsectors, PU_LEVEL, nullptr );
+	mobj->translation = mobj->info->translation;
 	
 	P_AddThinker( &mobj->thinker );
 
@@ -826,9 +828,17 @@ DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
     mobj	= P_SpawnMobj(x,y,z, MT_PLAYER);
 
     // set color translations for player sprites
-    if (mthing->type > 1)		
-	mobj->flags |= (mthing->type-1)<<MF_TRANSSHIFT;
-		
+    if (mthing->type > 1)
+	{
+		int32_t translationindex = ( mthing->type - 1 );
+		mobj->flags |= translationindex << MF_TRANSSHIFT;
+		mobj->translation = R_GetTranslation( gameconf->playertranslations[ translationindex ] );
+	}
+	else
+	{
+		mobj->translation = R_GetTranslation( gameconf->playertranslations[ 0 ] );
+	}
+
     mobj->prev.angle = mobj->curr.angle = mobj->angle = ANG45 * (mthing->angle/45);
     mobj->player = p;
     mobj->health = p->health;

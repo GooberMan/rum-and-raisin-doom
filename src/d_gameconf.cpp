@@ -62,6 +62,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		std::string iwadfile;
 		std::vector< std::string > pwadfiles;
 		std::vector< std::string > dehfiles;
+		std::vector< std::string > playertranslations;
 		std::string options;
 		GameVersion_t executable;
 		GameMode_t mode;
@@ -88,6 +89,7 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 		const JSONElement& wadversion = elem[ "version" ];
 		const JSONElement& iwadfile = elem[ "iwad" ];
 		const JSONElement& pwadfiles = elem[ "pwads" ];
+		const JSONElement& playertranslations = elem[ "playertranslations" ];
 		const JSONElement& executable = elem[ "executable" ];
 		const JSONElement& mode = elem[ "mode" ];
 		const JSONElement& options = elem[ "options" ];
@@ -130,6 +132,29 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 			else if( !pwadfiles.IsNull() )
 			{
 				I_Error( "D_BuildGameConf: pwadfiles is not an array." );
+				return jl_parseerror;
+			}
+		}
+
+		if( playertranslations.Valid() )
+		{
+			if( playertranslations.IsArray() )
+			{
+				info.playertranslations.clear();
+				if( playertranslations.Children().size() < 4 )
+				{
+					I_Error( "D_BuildGameConf: playertranslations must contain a minimum of four elements." );
+					return jl_parseerror;
+				}
+
+				for( const JSONElement& file : playertranslations.Children() )
+				{
+					info.playertranslations.push_back( ValidateFile( to< std::string >( file ).c_str() ) );
+				}
+			}
+			else if( !playertranslations.IsNull() )
+			{
+				I_Error( "D_BuildGameConf: playertranslations is not an array." );
 				return jl_parseerror;
 			}
 		}
@@ -268,6 +293,15 @@ DOOM_C_API gameconf_t* D_BuildGameConf()
 	{
 		output->dehfiles[ deh ] = CopyString( info.dehfiles[ deh ] );
 	}
+
+	output->playertranslations = !info.playertranslations.empty() ? (const char**)Z_MallocZero( sizeof( const char* ) * info.playertranslations.size(), PU_STATIC, nullptr )
+												: nullptr;
+	output->playertranslationscount = (int32_t)info.playertranslations.size();
+	for( int32_t pwad : iota( 0, info.playertranslations.size() ) )
+	{
+		output->playertranslations[ pwad ] = CopyString( info.playertranslations[ pwad ] );
+	}
+
 	output->executable = info.executable;
 	output->mission = info.mission;
 	output->options = CopyString( ReplaceNewlines( info.options ) );

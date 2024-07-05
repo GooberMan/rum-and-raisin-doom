@@ -47,8 +47,12 @@ void R_DrawColumn_Transparent_512( colcontext_t* context );
 void R_SpriteDrawColumn( colcontext_t* context );
 void R_SpriteDrawColumn_Colormap( colcontext_t* context );
 void R_SpriteDrawColumn_Transparent( colcontext_t* context );
+void R_SpriteDrawColumn_Translated( colcontext_t* context );
+void R_SpriteDrawColumn_TranslatedAndTransparent( colcontext_t* context );
 void R_LimitRemovingSpriteDrawColumn_Colormap( colcontext_t* context );
 void R_LimitRemovingSpriteDrawColumn_Transparent( colcontext_t* context );
+void R_LimitRemovingSpriteDrawColumn_Translated( colcontext_t* context );
+void R_LimitRemovingSpriteDrawColumn_TranslatedAndTransparent( colcontext_t* context );
 
 void R_LimitRemovingDrawColumn( colcontext_t* context );
 void R_LimitRemovingDrawColumn_Colormap( colcontext_t* context );
@@ -104,22 +108,11 @@ void R_DrawFuzzColumn ( colcontext_t* context );
 void R_DrawAdjustedFuzzColumn( colcontext_t* context );
 void R_DrawHeatwaveFuzzColumn( colcontext_t* context );
 
-// Draw with color translation tables,
-//  for player sprite rendering,
-//  Green/Red/Blue/Indigo shirts.
-void R_DrawTranslatedColumn ( colcontext_t* context );
-
 void R_VideoEraseRegion( int x, int y, int width, int height );
 
-extern byte*				translationtables;
 extern texturecomposite_t**	flatlookup;
 
 void R_InitBuffer( drsdata_t* current, int width, int height );
-
-
-// Initialize color translation tables,
-//  for player rendering etc.
-void R_InitTranslationTables( void );
 
 // Rendering function.
 void R_FillBackScreen( void );

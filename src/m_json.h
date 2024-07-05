@@ -32,6 +32,7 @@ enum class JSONElementType : int32_t
 	Null,
 	String,
 	Number,
+	Boolean,
 	Element,
 	ElementArray,
 };
@@ -85,15 +86,11 @@ public:
 		}
 
 		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::String ) );
+		output.value = val;
 		if( type == JSONElementType::Element )
 		{
 			output.key = key;
-			output.value = val;
 			element_indices[ key ] = children.size() - 1;
-		}
-		else if( type == JSONElementType::ElementArray )
-		{
-			output.value = val;
 		}
 
 		return output;
@@ -109,10 +106,28 @@ public:
 		}
 
 		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Number ) );
+		output.value = ::to< std::string >( val );
 		if( type == JSONElementType::Element )
 		{
 			output.key = key;
-			output.value = ::to< std::string >( val );
+			element_indices[ key ] = children.size() - 1;
+		}
+
+		return output;
+	}
+
+	const JSONElement& AddBoolean( const std::string& key, bool val )
+	{
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
+		{
+			return empty;
+		}
+
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Boolean ) );
+		output.value = val ? "true" : "false";
+		if( type == JSONElementType::Element )
+		{
+			output.key = key;
 			element_indices[ key ] = children.size() - 1;
 		}
 
@@ -188,6 +203,7 @@ public:
 	constexpr bool IsElement() const	{ return type == JSONElementType::Element; }
 	constexpr bool IsNull() const		{ return type == JSONElementType::Null; }
 	constexpr bool IsNumber() const		{ return type == JSONElementType::Number; }
+	constexpr bool IsBoolean() const	{ return type == JSONElementType::Boolean; }
 	constexpr bool IsString() const		{ return type == JSONElementType::String; }
 
 	template< typename _ty >
@@ -214,16 +230,33 @@ private:
 		}
 
 		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Number ) );
+		output.value = val;
 		if( type == JSONElementType::Element )
 		{
 			output.key = key;
-			output.value = val;
 			element_indices[ key ] = children.size() - 1;
 		}
 
 		return output;
 	}
 
+	const JSONElement& AddBoolean( const std::string& key, const std::string& val )
+	{
+		if( !( type == JSONElementType::Element || type == JSONElementType::ElementArray ) )
+		{
+			return empty;
+		}
+
+		JSONElement& output = *children.insert( children.end(), JSONElement( JSONElementType::Boolean ) );
+		output.value = val;
+		if( type == JSONElementType::Element )
+		{
+			output.key = key;
+			element_indices[ key ] = children.size() - 1;
+		}
+
+		return output;
+	}
 
 	std::string									key;
 	std::string									value;
@@ -236,7 +269,8 @@ template< typename _ty >
 requires std::is_integral_v< _ty > || std::is_floating_point_v< _ty >
 INLINE _ty to( const JSONElement& source )
 {
-	if( source.type == JSONElementType::Number )
+	if( source.type == JSONElementType::Number
+		|| source.type == JSONElementType::Boolean )
 	{
 		return to< _ty >( source.value );
 	}

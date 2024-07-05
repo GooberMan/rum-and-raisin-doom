@@ -29,6 +29,8 @@ DOOM_C_API typedef struct gameconf_s
 	size_t			pwadscount;
 	const char**	dehfiles;
 	size_t			dehfilescount;
+	const char**	playertranslations;
+	size_t			playertranslationscount;
 	GameVersion_t	executable;
 	GameMission_t	mission;
 	const char*		options;

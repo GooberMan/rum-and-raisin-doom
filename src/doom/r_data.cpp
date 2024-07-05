@@ -25,6 +25,8 @@
 
 #include "deh_main.h"
 
+#include "d_gameconf.h"
+
 #include "m_container.h"
 
 #include "i_system.h"
@@ -34,6 +36,7 @@
 #include "m_conv.h"
 #include "m_fixed.h"
 #include "m_misc.h"
+#include "m_jsonlump.h"
 
 #include "p_local.h"
 #include "p_spec.h"
@@ -179,6 +182,8 @@ std::unordered_map< std::string, lookup_t >		spritenamelookup;
 std::vector< lookup_t >							spriteindexlookup;
 
 std::unordered_map< lumpindex_t, lookup_t >		colormapindexlookup;
+
+std::unordered_map< std::string, translation_t* >	translationlookup;
 
 constexpr size_t DoomStrLen( const char* val )
 {
@@ -1100,13 +1105,215 @@ void R_InitColormaps (void)
 		extern std::unordered_map< int32_t, state_t* > statemap;
 		for( auto& statepair : statemap )
 		{
-			state_t* state = statepair.second;
+			state_t*& state = statepair.second;
 			if( state->tranmaplump )
 			{
 				state->tranmap = (byte*)W_CacheLumpName( state->tranmaplump, PU_STATIC );
 			}
 		}
 	}
+}
+
+static const char* R_CopyString( const char* value, int32_t tag )
+{
+	size_t valuelen = strlen( value );
+	char* output = (char*)Z_MallocZero( valuelen + 1, tag, nullptr );
+	M_StringCopy( output, value, valuelen + 1 );
+	return output;
+}
+
+translation_t* R_LoadTranslation( const char* name )
+{
+	translation_t loaded = {};
+
+	auto ParseTranslation = [&loaded]( const JSONElement& elem, const JSONLumpVersion& version ) -> jsonlumpresult_t
+	{
+		const JSONElement& name				= elem[ "name" ];
+		const JSONElement& sbarback			= elem[ "sbarback" ];
+		const JSONElement& sbartranslate	= elem[ "sbartranslate" ];
+		const JSONElement& interback		= elem[ "interback" ];
+		const JSONElement& intertranslate	= elem[ "intertranslate" ];
+		const JSONElement& table			= elem[ "table" ];
+
+		if( !name.IsString()
+			|| !( sbarback.IsString() || sbarback.IsNull() )
+			|| !sbartranslate.IsBoolean()
+			|| !( interback.IsString() || interback.IsNull() )
+			|| !intertranslate.IsBoolean()
+			|| !( table.IsArray() && table.Children().size() == 256 )
+			)
+		{
+			return jl_parseerror;
+		}
+
+		loaded.name = R_CopyString( to< std::string >( name ).c_str(), PU_STATIC );
+
+		lumpindex_t sbarindex = sbarback.IsString() ? W_CheckNumForName( to< std::string >( sbarback ).c_str() ) : -1;
+		if( sbarindex >= 0 )
+		{
+			loaded.sbarback = (patch_t*)W_CacheLumpNum( sbarindex, PU_STATIC );
+		}
+		loaded.sbartranslate = to< bool >( sbartranslate );
+
+		lumpindex_t interindex = interback.IsString() ? W_CheckNumForName( to< std::string >( interback ).c_str() ) : -1;
+		if( interindex >= 0 )
+		{
+			loaded.interback = (patch_t*)W_CacheLumpNum( interindex, PU_STATIC );
+		}
+		loaded.intertranslate = to< bool >( intertranslate );
+
+		for( int32_t index : iota( 0, 256 ) )
+		{
+			loaded.table[ index ] = to< byte >( table.Children()[ index ] );
+		}
+
+		return jl_success;
+	};
+
+	if( M_ParseJSONLump( name, "translation", { 1, 0, 0 }, ParseTranslation ) == jl_success )
+	{
+		translation_t* output = Z_MallocAs( translation_t, PU_STATIC, nullptr );
+		*output = loaded;
+		return output;
+	}
+
+	return nullptr;
+}
+
+static const char* playertranslationnames[] =
+{
+	"T_GREEN",
+	"T_INDIGO",
+	"T_BROWN",
+	"T_RED",
+};
+constexpr size_t numplayertranslationnames = arrlen( playertranslationnames );
+
+template< byte SourceMin, byte SourceMax, byte TargetMin, byte TargetMax >
+constexpr std::array< byte, 256 > BuildTranslationTable()
+{
+	constexpr rend_fixed_t tstep = RendFixedDiv( IntToRendFixed( TargetMax - TargetMin + 1 ), IntToRendFixed( SourceMax - SourceMin + 1 ) );
+
+	std::array< byte, 256 > output;
+
+	for( int32_t index : iota( 0, 256 ) )
+	{
+		int32_t val = index;
+		if( index >= SourceMin && index <= SourceMax )
+		{
+			rend_fixed_t targetincrement = tstep * ( index - SourceMin );
+			val = TargetMin + (byte)RendFixedToInt( targetincrement );
+		}
+		output[ index ] = val;
+	}
+
+	return output;
+}
+
+constexpr struct translationdata_t
+{
+	const char* mnemonic;
+	const char* sbarback;
+	const char* interback;
+	std::array< byte, 256 > table;
+} playertranslations[] =
+{
+	{ "COLOR_GREEN",	"STFB0",	"STPB0",	BuildTranslationTable< 0xFF, 0x00, 0xFF, 0x00 >() },
+	{ "COLOR_INDIGO",	"STFB1",	"STPB1",	BuildTranslationTable< 0x70, 0x7F, 0x60, 0x6F >() },
+	{ "COLOR_BROWN",	"STFB2",	"STPB2",	BuildTranslationTable< 0x70, 0x7F, 0x40, 0x4F >() },
+	{ "COLOR_RED",		"STFB3",	"STPB3",	BuildTranslationTable< 0x70, 0x7F, 0x20, 0x2F >() },
+};
+
+void R_InitTranslations()
+{
+	if( sim.rnr24_thing_extensions )
+	{
+		extern std::unordered_map< int32_t, mobjinfo_t* > mobjtypemap;
+		for( auto& mobjpair : mobjtypemap )
+		{
+			mobjinfo_t*& mobj = mobjpair.second;
+			if( mobj->translationlump )
+			{
+				std::string lumpname = mobj->translationlump;
+				auto found = translationlookup.find( lumpname );
+				if( found == translationlookup.end() )
+				{
+					mobj->translation = translationlookup[ lumpname ] = R_LoadTranslation( mobj->translationlump );
+				}
+				else
+				{
+					mobj->translation = found->second;
+				}
+			}
+		}
+	}
+
+	if( gameconf->playertranslationscount == 0 )
+	{
+		gameconf->playertranslations = playertranslationnames;
+		gameconf->playertranslationscount = numplayertranslationnames;
+	}
+	else
+	{
+		for( const char* translationlump : std::span( gameconf->playertranslations, gameconf->playertranslationscount ) )
+		{
+			std::string lumpname = translationlump;
+			if( translationlookup.find( lumpname ) == translationlookup.end() )
+			{
+				translationlookup[ lumpname ] = R_LoadTranslation( translationlump );
+			}
+		}
+	}
+
+	for( int32_t builtinindex : iota( 0, (int32_t)numplayertranslationnames ) )
+	{
+		std::string lumpname = playertranslationnames[ builtinindex ];
+		if( translationlookup.find( lumpname ) == translationlookup.end() )
+		{
+			lumpindex_t lumpindex = W_CheckNumForName( lumpname.c_str() );
+			if( lumpindex >= 0 )
+			{
+				translationlookup[ lumpname ] = R_LoadTranslation( lumpname.c_str() );
+			}
+			else
+			{
+				translation_t* output = Z_MallocAs( translation_t, PU_STATIC, nullptr );
+				output->name = playertranslations[ builtinindex ].mnemonic;
+				output->sbarback = (patch_t*)W_CacheLumpName( playertranslations[ builtinindex ].sbarback, PU_STATIC );
+				output->sbartranslate = false;
+				output->interback = (patch_t*)W_CacheLumpName( playertranslations[ builtinindex ].interback, PU_STATIC );
+				output->intertranslate = false;
+				std::copy( playertranslations[ builtinindex ].table.begin()
+						, playertranslations[ builtinindex ].table.end()
+						, std::begin( output->table ) );
+
+				translationlookup[ lumpname ] = output;
+			}
+		}
+	}
+
+	extern std::unordered_map< int32_t, mobjinfo_t* > mobjtypemap;
+	for( auto& mobjpair : mobjtypemap )
+	{
+		mobjinfo_t*& mobj = mobjpair.second;
+		if( !mobj->translationlump
+			&& ( mobj->flags & MF_TRANSLATION ) )
+		{
+			int32_t translationindex = ( mobj->flags & MF_TRANSLATION ) >> MF_TRANSSHIFT;
+			mobj->translation = translationlookup[ gameconf->playertranslations[ translationindex ] ];
+		}
+	}
+}
+
+translation_t* R_GetTranslation( const char* name )
+{
+	auto found = translationlookup.find( name );
+	if( found == translationlookup.end() )
+	{
+		return nullptr;
+	}
+
+	return found->second;
 }
 
 //
@@ -1126,6 +1333,7 @@ void R_InitData (void)
     R_InitSpriteLumps ();
     //I_TerminalPrintf( Log_None, "." );
     R_InitColormaps ();
+	R_InitTranslations();
 	R_InitSkyDefs();
 }
 

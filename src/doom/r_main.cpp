@@ -124,7 +124,6 @@ extern "C"
 	int32_t				extralight;
 
 	colfunc_t			fuzzfuncs[ Fuzz_Count ];
-	colfunc_t			transcolfunc;
 
 	int32_t				fuzz_style = Fuzz_Adjusted;
 
@@ -856,7 +855,6 @@ void R_InitColFuncs( void )
 	fuzzfuncs[ Fuzz_Original ] = &R_DrawFuzzColumn;
 	fuzzfuncs[ Fuzz_Adjusted ] = &R_DrawAdjustedFuzzColumn;
 	fuzzfuncs[ Fuzz_Heatwave ] = &R_DrawHeatwaveFuzzColumn;
-	transcolfunc = &R_DrawTranslatedColumn;
 }
 
 
@@ -1480,8 +1478,6 @@ void R_Init (void)
 	R_AllocDynamicTables();
     R_SetViewSize (screenblocks, detailLevel);
 	R_ExecuteSetViewSize( );
-    I_TerminalPrintf( Log_None, "." );
-    R_InitTranslationTables ();
     I_TerminalPrintf( Log_None, "." );
 
 	renderscratchsize = 32 * 1024 * 1024;

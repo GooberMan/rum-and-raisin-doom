@@ -493,6 +493,7 @@ namespace DrawColumn
 		static INLINE void SpriteColormapDraw( colcontext_t* context )						{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup, WriterDirect >( context ); }
 		static INLINE void SpriteColormapPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportSpriteLookup, WriterDirect >( context ); }
 		static INLINE void SpriteTransparentDraw( colcontext_t* context )					{ DrawWith< SamplerOriginal< 128 >::Colormap, ViewportSpriteLookup, WriterTransparent >( context ); }
+		static INLINE void SpriteColormapPaletteSwapTransparentDraw( colcontext_t* context )	{ DrawWith< SamplerOriginal< 128 >::ColormapPaletteSwap, ViewportSpriteLookup, WriterTransparent >( context ); }
 
 		static INLINE void LimitRemovingDraw( colcontext_t* context )						{ DrawWith< SamplerLimitRemoving::Direct, ViewportLookup, WriterDirect >( context ); }
 		static INLINE void LimitRemovingPaletteSwapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::PaletteSwap, ViewportLookup, WriterDirect >( context ); }
@@ -501,7 +502,9 @@ namespace DrawColumn
 		static INLINE void LimitRemovingTransparentDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::Colormap, ViewportLookup, WriterTransparent >( context ); }
 
 		static INLINE void LimitRemovingSpriteColormapDraw( colcontext_t* context )			{ DrawWith< SamplerLimitRemoving::Colormap, ViewportSpriteLookup, WriterDirect >( context ); }
+		static INLINE void LimitRemovingSpriteColormapPaletteSwapDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, ViewportSpriteLookup, WriterDirect >( context ); }
 		static INLINE void LimitRemovingSpriteTransparentDraw( colcontext_t* context )		{ DrawWith< SamplerLimitRemoving::Colormap, ViewportSpriteLookup, WriterTransparent >( context ); }
+		static INLINE void LimitRemovingSpriteColormapPaletteSwapTransparentDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, ViewportSpriteLookup, WriterTransparent >( context ); }
 
 		static INLINE void BackbufferDraw( colcontext_t* context )							{ DrawWith< SamplerLimitRemoving::Direct, BackbufferLookup, WriterDirect >( context ); }
 		static INLINE void BackbufferPaletteSwapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::PaletteSwap, BackbufferLookup, WriterDirect >( context ); }
@@ -617,6 +620,18 @@ void R_SpriteDrawColumn_Transparent( colcontext_t* context )
 	DrawColumn::Bytewise::SpriteTransparentDraw( context );
 }
 
+void R_SpriteDrawColumn_Translated( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SpriteColormapPaletteSwapDraw( context );
+}
+
+void R_SpriteDrawColumn_TranslatedAndTransparent( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::SpriteColormapPaletteSwapTransparentDraw( context );
+}
+
 void R_LimitRemovingSpriteDrawColumn_Colormap( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
@@ -627,6 +642,18 @@ void R_LimitRemovingSpriteDrawColumn_Transparent( colcontext_t* context )
 {
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::LimitRemovingSpriteTransparentDraw( context );
+}
+
+void R_LimitRemovingSpriteDrawColumn_Translated( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::LimitRemovingSpriteColormapPaletteSwapDraw( context );
+}
+
+void R_LimitRemovingSpriteDrawColumn_TranslatedAndTransparent( colcontext_t* context )
+{
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::LimitRemovingSpriteColormapPaletteSwapTransparentDraw( context );
 }
 
 void R_LimitRemovingDrawColumn( colcontext_t* context ) 
@@ -960,55 +987,6 @@ void R_DrawHeatwaveFuzzColumn( colcontext_t* context )
 {
 	R_DrawAdjustedFuzzColumn( context );
 }
-
-//
-// R_DrawTranslatedColumn
-// Used to draw player sprites
-//  with the green colorramp mapped to others.
-// Could be used with different translation
-//  tables, e.g. the lighter colored version
-//  of the BaronOfHell, the HellKnight, uses
-//  identical sprites, kinda brightened up.
-//
-byte*	translationtables;
-
-void R_DrawTranslatedColumn ( colcontext_t* context ) 
-{ 
-   DrawColumn::Bytewise::ColormapPaletteSwapDraw( context );
-} 
-
-//
-// R_InitTranslationTables
-// Creates the translation tables to map
-//  the green color ramp to gray, brown, red.
-// Assumes a given structure of the PLAYPAL.
-// Could be read from a lump instead.
-//
-void R_InitTranslationTables (void)
-{
-	int		i;
-	
-	translationtables = (byte*)Z_Malloc( 256*3, PU_STATIC, 0 );
-
-	// translate just the 16 green colors
-	for (i=0 ; i<256 ; i++)
-	{
-		if (i >= 0x70 && i<= 0x7f)
-		{
-			// map green ramp to gray, brown, red
-			translationtables[i] = 0x60 + (i&0xf);
-			translationtables [i+256] = 0x40 + (i&0xf);
-			translationtables [i+512] = 0x20 + (i&0xf);
-		}
-		else
-		{
-			// Keep all other colors as is.
-			translationtables[i] = translationtables[i+256] 
-			= translationtables[i+512] = i;
-		}
-	}
-}
-
 
 //
 // R_InitBuffer 

@@ -73,6 +73,7 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   RNR_MAPPING("Pickup bonus count",  pickupbonuscount)
   RNR_MAPPING("Pickup sound",        pickupsound)
   RNR_MAPPING("Pickup message",      pickupstringmnemonic)
+  RNR_MAPPING("Translation",         translationlump)
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* value, mobjinfo_t* mobj );
@@ -145,6 +146,15 @@ static void *DEH_ThingStart(deh_context_t *context, char *line)
 	return DEH_GetThing( context, thing_number );
 }
 
+static const char* DEH_CopyString( const char* value )
+{
+	size_t valuelen = strlen( value );
+	char* output = (char*)Z_MallocZero( valuelen + 1, PU_STATIC, nullptr );
+	M_StringCopy( output, value, valuelen + 1 );
+	M_ForceUppercase( output );
+	return output;
+}
+
 static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 {
     mobjinfo_t *mobj;
@@ -171,10 +181,12 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 	if( strcmp( variable_name, "Pickup message" ) == 0 )
 	{
 		DEH_IncreaseGameVersion( context, exe_rnr24 );
-		size_t valuelen = strlen( value );
-		mobj->pickupstringmnemonic = (char*)Z_MallocZero( valuelen + 1, PU_STATIC, nullptr );
-		M_StringCopy( (char*)mobj->pickupstringmnemonic, value, valuelen + 1 );
-		M_ForceUppercase( (char*)mobj->pickupstringmnemonic );
+		mobj->pickupstringmnemonic = DEH_CopyString( value );
+	}
+	else if( strcmp( variable_name, "Translation" ) == 0 )
+	{
+		DEH_IncreaseGameVersion( context, exe_rnr24 );
+		mobj->translationlump = DEH_CopyString( value );
 	}
 	else if( strcmp( variable_name, "Bits" ) == 0
 		&& !( isdigit( value[ 0 ] ) 

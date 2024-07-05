@@ -1608,6 +1608,10 @@ DOOM_C_API typedef struct
 	int32_t		pickupbonuscount;
 	int32_t		pickupsound;
 	const char* pickupstringmnemonic;
+	const char* translationlump;
+
+	// Instanced data created after load
+	struct translation_s* translation;
 } mobjinfo_t;
 
 #if defined( __cplusplus )

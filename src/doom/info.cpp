@@ -77,6 +77,7 @@
 		6,						\
 		sfx_None,				\
 		nullptr,				\
+		nullptr,				\
 	}
 
 // You can use std::enable_if in earlier C++ versions if required...
@@ -1376,6 +1377,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_POSSESSED
@@ -1422,6 +1424,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SHOTGUY
@@ -1468,6 +1471,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_VILE
@@ -1514,6 +1518,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_FIRE
@@ -1560,6 +1565,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_UNDEAD
@@ -1606,6 +1612,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_TRACER
@@ -1652,6 +1659,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SMOKE
@@ -1698,6 +1706,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_FATSO
@@ -1744,6 +1753,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_FATSHOT
@@ -1790,6 +1800,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_CHAINGUY
@@ -1836,6 +1847,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_TROOP
@@ -1882,6 +1894,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SERGEANT
@@ -1928,6 +1941,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SHADOWS
@@ -1974,6 +1988,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_HEAD
@@ -2020,6 +2035,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_BRUISER
@@ -2066,6 +2082,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_BRUISERSHOT
@@ -2112,6 +2129,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_KNIGHT
@@ -2158,6 +2176,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_SKULL
@@ -2204,6 +2223,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_SPIDER
@@ -2251,6 +2271,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_BABY
@@ -2297,6 +2318,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{							// MT_CYBORG
@@ -2344,6 +2366,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_PAIN
@@ -2390,6 +2413,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_WOLFSS
@@ -2436,6 +2460,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_KEEN
@@ -2482,6 +2507,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_BOSSBRAIN
@@ -2528,6 +2554,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_BOSSSPIT
@@ -2574,6 +2601,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_BOSSTARGET
@@ -2620,6 +2648,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SPAWNSHOT
@@ -2666,6 +2695,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SPAWNFIRE
@@ -2712,6 +2742,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_BARREL
@@ -2758,6 +2789,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_TROOPSHOT
@@ -2804,6 +2836,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_HEADSHOT
@@ -2850,6 +2883,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_ROCKET
@@ -2896,6 +2930,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_PLASMA
@@ -2942,6 +2977,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_BFG
@@ -2988,6 +3024,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_ARACHPLAZ
@@ -3034,6 +3071,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_PUFF
@@ -3080,6 +3118,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_BLOOD
@@ -3126,6 +3165,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_TFOG
@@ -3172,6 +3212,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_IFOG
@@ -3218,6 +3259,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_TELEPORTMAN
@@ -3264,6 +3306,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_EXTRABFG
@@ -3310,6 +3353,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC0
@@ -3356,6 +3400,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC1
@@ -3402,6 +3447,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC2
@@ -3448,6 +3494,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC3
@@ -3494,6 +3541,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC4
@@ -3540,6 +3588,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC5
@@ -3586,6 +3635,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC6
@@ -3632,6 +3682,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC7
@@ -3678,6 +3729,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC8
@@ -3724,6 +3776,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC9
@@ -3770,6 +3823,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC10
@@ -3816,6 +3870,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC11
@@ -3862,6 +3917,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC12
@@ -3908,6 +3964,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_INV
@@ -3954,6 +4011,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC13
@@ -4000,6 +4058,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_INS
@@ -4046,6 +4105,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC14
@@ -4092,6 +4152,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC15
@@ -4138,6 +4199,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC16
@@ -4184,6 +4246,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MEGA
@@ -4230,6 +4293,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_CLIP
@@ -4276,6 +4340,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC17
@@ -4322,6 +4387,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC18
@@ -4368,6 +4434,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC19
@@ -4414,6 +4481,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC20
@@ -4460,6 +4528,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC21
@@ -4506,6 +4575,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC22
@@ -4552,6 +4622,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC23
@@ -4598,6 +4669,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC24
@@ -4644,6 +4716,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC25
@@ -4690,6 +4763,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_CHAINGUN
@@ -4736,6 +4810,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC26
@@ -4782,6 +4857,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC27
@@ -4828,6 +4904,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC28
@@ -4874,6 +4951,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SHOTGUN
@@ -4920,6 +4998,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_SUPERSHOTGUN
@@ -4966,6 +5045,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC29
@@ -5012,6 +5092,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC30
@@ -5058,6 +5139,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC31
@@ -5104,6 +5186,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC32
@@ -5150,6 +5233,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC33
@@ -5196,6 +5280,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC34
@@ -5242,6 +5327,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC35
@@ -5288,6 +5374,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC36
@@ -5334,6 +5421,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC37
@@ -5380,6 +5468,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC38
@@ -5426,6 +5515,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC39
@@ -5472,6 +5562,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC40
@@ -5518,6 +5609,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC41
@@ -5564,6 +5656,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC42
@@ -5610,6 +5703,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC43
@@ -5656,6 +5750,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC44
@@ -5702,6 +5797,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC45
@@ -5748,6 +5844,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC46
@@ -5794,6 +5891,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC47
@@ -5840,6 +5938,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC48
@@ -5886,6 +5985,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC49
@@ -5932,6 +6032,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC50
@@ -5978,6 +6079,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC51
@@ -6024,6 +6126,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC52
@@ -6070,6 +6173,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC53
@@ -6116,6 +6220,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC54
@@ -6162,6 +6267,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC55
@@ -6208,6 +6314,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC56
@@ -6254,6 +6361,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC57
@@ -6300,6 +6408,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC58
@@ -6346,6 +6455,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC59
@@ -6392,6 +6502,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC60
@@ -6438,6 +6549,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC61
@@ -6484,6 +6596,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC62
@@ -6530,6 +6643,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC63
@@ -6576,6 +6690,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC64
@@ -6622,6 +6737,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC65
@@ -6668,6 +6784,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC66
@@ -6714,6 +6831,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC67
@@ -6760,6 +6878,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC68
@@ -6806,6 +6925,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC69
@@ -6852,6 +6972,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC70
@@ -6898,6 +7019,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC71
@@ -6944,6 +7066,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC72
@@ -6990,6 +7113,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC73
@@ -7036,6 +7160,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC74
@@ -7082,6 +7207,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC75
@@ -7128,6 +7254,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC76
@@ -7174,6 +7301,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC77
@@ -7220,6 +7348,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC78
@@ -7266,6 +7395,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC79
@@ -7312,6 +7442,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC80
@@ -7358,6 +7489,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC81
@@ -7404,6 +7536,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC82
@@ -7450,6 +7583,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC83
@@ -7496,6 +7630,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC84
@@ -7542,6 +7677,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC85
@@ -7588,6 +7724,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{		// MT_MISC86
@@ -7634,6 +7771,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	// Boom things
@@ -7681,6 +7819,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{					// MT_PULL
@@ -7727,6 +7866,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	// MBF things
@@ -7774,6 +7914,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{					// MT_PLASMA1
@@ -7820,6 +7961,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{					// MT_PLASMA2
@@ -7866,6 +8008,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{					// MT_SCEPTRE
@@ -7912,6 +8055,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	{					// MT_BIBLE
@@ -7958,6 +8102,7 @@ mobjinfo_t builtinmobjinfo[NUMMOBJTYPES] =
 		6,						// pickupbonuscount
 		sfx_None,				// pickupitemsound
 		nullptr,				// pickupstringmnemonic
+		nullptr,				// translation
 	},
 
 	MUSINFO( 14100 ),

@@ -352,6 +352,7 @@ DOOM_C_API typedef struct mobj_s
 	uint8_t				rendered[ JOBSYSTEM_MAXJOBS ];
 	struct sector_s*	overlaps[ MAX_SECTOR_OVERLAPS ];
 	int32_t				numoverlaps;
+	struct translation_s*	translation;
 
 #if defined( __cplusplus )
 	INLINE const bool CountItem() const						{ return flags & MF_COUNTITEM; }

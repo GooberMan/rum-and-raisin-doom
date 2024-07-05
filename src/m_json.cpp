@@ -145,6 +145,10 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 			{
 				AddNull( "" );
 			}
+			else if( value == "false" || value == "true" )
+			{
+				AddBoolean( "", value );
+			}
 			else if( IsAnyNumber( value ) )
 			{
 				AddNumber( "", value );
@@ -187,6 +191,10 @@ std::string JSONElement::DeserialiseElement( std::istringstream& jsonstream )
 		else if( value == "null" )
 		{
 			AddNull( key );
+		}
+		else if( value == "false" || value == "true" )
+		{
+			AddBoolean( key, value );
 		}
 		else if( IsAnyNumber( value ) )
 		{

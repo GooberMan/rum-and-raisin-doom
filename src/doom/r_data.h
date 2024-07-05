@@ -59,6 +59,8 @@ DOOM_C_API int32_t R_GetNumTextures();
 
 DOOM_C_API lighttable_t* R_GetColormapForNum( lumpindex_t colormapnum );
 
+DOOM_C_API translation_t* R_GetTranslation( const char* name );
+
 #if defined( __cplusplus )
 #include "m_container.h"
 

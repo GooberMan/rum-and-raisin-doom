@@ -65,7 +65,6 @@ DOOM_C_API extern int32_t	fuzz_style;
 // Function pointers to switch refresh/drawing functions.
 // Used to select shadow mode etc.
 //
-DOOM_C_API extern colfunc_t transcolfunc;
 DOOM_C_API extern colfunc_t fuzzfuncs[ Fuzz_Count ];
 
 typedef enum lineside_e

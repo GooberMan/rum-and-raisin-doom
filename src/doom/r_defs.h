@@ -647,6 +647,7 @@ typedef struct vissprite_s
 	//  maxbright frames as well
 	lighttable_t*		colormap;
 	byte*				tranmap;
+	byte*				translation;
 
 	int32_t				mobjflags;
 	int32_t				mobjflags2;
@@ -746,6 +747,16 @@ struct sky_s
 	// With foreground
 	skytex_t			foreground;
 };
+
+typedef struct translation_s
+{
+	const char*			name;
+	patch_t*			sbarback;
+	patch_t*			interback;
+	doombool			sbartranslate;
+	doombool			intertranslate;
+	byte				table[ 256 ];
+} translation_t;
 
 typedef struct wallcontext_s
 {
@@ -995,8 +1006,6 @@ typedef struct rendercontext_s
 	// Functions
 	colfunc_t			colfunc;
 	colfunc_t			fuzzcolfunc;
-	colfunc_t			transcolfunc;
-
 } rendercontext_t;
 
 typedef struct drsdata_s
