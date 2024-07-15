@@ -79,6 +79,8 @@ DOOM_C_API extern int key_weapon5;
 DOOM_C_API extern int key_weapon6;
 DOOM_C_API extern int key_weapon7;
 DOOM_C_API extern int key_weapon8;
+DOOM_C_API extern int key_weapon9;
+DOOM_C_API extern int key_weapon0;
 
 DOOM_C_API extern int key_arti_quartz;
 DOOM_C_API extern int key_arti_urn;

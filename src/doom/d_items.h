@@ -69,6 +69,10 @@ DOOM_C_API typedef struct weaponinfo_s
 	GameMode_t		mingamemode;
 	doombool		initialowned;
 	doombool		initialraised;
+	int32_t			allowswitchifownedweapon;
+	int32_t			noswitchifownedweapon;
+	int32_t			allowswitchifowneditem;
+	int32_t			noswitchifowneditem;
 
 	// Vanilla values
 	int32_t			ammo;

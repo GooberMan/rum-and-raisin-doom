@@ -306,40 +306,100 @@ DOOM_C_API void P_PlayerThink (player_t* player)
 		
     if (cmd->buttons & BT_CHANGE)
     {
-	// The actual changing of the weapon is done
-	//  when the weapon psprite can do it
-	//  (read: not in the middle of an attack).
-	newweapon = (weapontype_t)( (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT );
+		if( sim.rnr24_code_pointers )
+		{
+			int32_t newslot = ( (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT ) + 1;
+			if( newslot == 10 )
+			{
+				newslot = 0;
+			}
+
+			const weaponinfo_t* firstinslot = player->Weapon().slot == newslot ? weaponinfo.NextInSlot( &player->Weapon() )
+																				: weaponinfo.NextInSlot( newslot );
+			if( firstinslot != nullptr )
+			{
+				const weaponinfo_t* nextinslot = firstinslot;
+				do
+				{
+					// Basic requirements to be a valid weapon and not the current weapon
+					if( gamemode >= nextinslot->mingamemode
+						&& player->weaponowned[ nextinslot->index ]
+						&& player->readyweapon != nextinslot->index )
+					{
+						bool allowswitch = nextinslot->allowswitchifowneditem == -1
+										&& nextinslot->noswitchifowneditem == -1
+										&& nextinslot->allowswitchifownedweapon == -1
+										&& nextinslot->noswitchifownedweapon == -1;
+						bool disallowswitch = false;
+
+						if( !allowswitch )
+						{
+							if( nextinslot->allowswitchifowneditem != -1 && P_EvaluateItemOwned( (itemtype_t)nextinslot->allowswitchifowneditem, player ) )
+							{
+								allowswitch = true;
+							}
+							if( !allowswitch && nextinslot->noswitchifowneditem != -1 && P_EvaluateItemOwned( (itemtype_t)nextinslot->noswitchifowneditem, player ) )
+							{
+								disallowswitch = true;
+							}
+
+							if( !allowswitch && !disallowswitch && nextinslot->allowswitchifownedweapon != -1 && player->weaponowned[ nextinslot->allowswitchifownedweapon ] )
+							{
+								allowswitch = true;
+							}
+							if( !allowswitch && !disallowswitch && nextinslot->noswitchifownedweapon != -1 && player->weaponowned[ nextinslot->noswitchifownedweapon ] )
+							{
+								disallowswitch = true;
+							}
+						}
+
+						if( allowswitch && !disallowswitch )
+						{
+							player->pendingweapon = nextinslot->index;
+						}
+						break;
+					}
+					nextinslot = weaponinfo.NextInSlot( nextinslot );
+				} while( nextinslot != firstinslot );
+			}
+		}
+		else
+		{
+			// The actual changing of the weapon is done
+			//  when the weapon psprite can do it
+			//  (read: not in the middle of an attack).
+			newweapon = (weapontype_t)( (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT );
 	
-	if (newweapon == wp_fist
-	    && player->weaponowned[wp_chainsaw]
-	    && !(player->readyweapon == wp_chainsaw
-		 && player->powers[pw_strength]))
-	{
-	    newweapon = wp_chainsaw;
-	}
+			if (newweapon == wp_fist
+				&& player->weaponowned[wp_chainsaw]
+				&& !(player->readyweapon == wp_chainsaw
+				 && player->powers[pw_strength]))
+			{
+				newweapon = wp_chainsaw;
+			}
 	
-	if ( (gamemode == commercial)
-	    && newweapon == wp_shotgun 
-	    && player->weaponowned[wp_supershotgun]
-	    && player->readyweapon != wp_supershotgun)
-	{
-	    newweapon = wp_supershotgun;
-	}
+			if ( (gamemode == commercial)
+				&& newweapon == wp_shotgun 
+				&& player->weaponowned[wp_supershotgun]
+				&& player->readyweapon != wp_supershotgun)
+			{
+				newweapon = wp_supershotgun;
+			}
 	
 
-	if (player->weaponowned[newweapon]
-	    && newweapon != player->readyweapon)
-	{
-	    // Do not go to plasma or BFG in shareware,
-	    //  even if cheated.
-	    if ((newweapon != wp_plasma
-		 && newweapon != wp_bfg)
-		|| (gamemode != shareware) )
-	    {
-		player->pendingweapon = newweapon;
-	    }
-	}
+			if (player->weaponowned[newweapon]
+				&& newweapon != player->readyweapon)
+			{
+				// Do not go to plasma or BFG in shareware,
+				//  even if cheated.
+				if ((newweapon != wp_plasma
+				 && newweapon != wp_bfg)
+				|| (gamemode != shareware) )
+				{
+				player->pendingweapon = newweapon;
+				}
+			}
+		}
     }
     
     // check for use
@@ -408,3 +468,54 @@ DOOM_C_API void P_PlayerThink (player_t* player)
 }
 
 
+DOOM_C_API doombool P_EvaluateItemOwned( itemtype_t item, player_t* player )
+{
+	switch( item )
+	{
+	case item_bluecard:
+	case item_yellowcard:
+	case item_redcard:
+	case item_blueskull:
+	case item_yellowskull:
+	case item_redskull:
+		return player->cards[ item - item_bluecard ] != 0;
+
+	case item_backpack:
+		return player->maxammo[ player->readyweapon ] == weaponinfo[ player->readyweapon ].AmmoInfo().maxupgradedammo;
+
+	case item_greenarmor:
+	case item_bluearmor:
+		return player->armortype == ( item - item_greenarmor + 1 );
+
+	case item_areamap:
+		return player->powers[ pw_allmap ] != 0;
+
+	case item_lightamp:
+		return player->powers[ pw_infrared ] != 0;
+
+	case item_berserk:
+		return player->powers[ pw_strength ] != 0;
+
+	case item_invisibility:
+		return player->powers[ pw_invisibility ] != 0;
+
+	case item_radsuit:
+		return player->powers[ pw_ironfeet ] != 0;
+
+	case item_invulnerability:
+		return player->powers[ pw_invulnerability ] != 0;
+
+	case item_healthbonus:
+	case item_stimpack:
+	case item_medikit:
+	case item_soulsphere:
+	case item_megasphere:
+	case item_armorbonus:
+	case item_noitem:
+	case item_messageonly:
+	default:
+		break;
+	}
+
+	return false;
+}

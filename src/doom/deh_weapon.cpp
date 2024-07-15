@@ -46,6 +46,10 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   RNR_MAPPING("Switch Priority",  switchpriority)
   RNR_MAPPING("Initial Owned",    initialowned)
   RNR_MAPPING("Initial Raised",   initialraised)
+  RNR_MAPPING("Allow switch with owned weapon", allowswitchifownedweapon)
+  RNR_MAPPING("No switch with owned weapon", noswitchifownedweapon)
+  RNR_MAPPING("Allow switch with owned item", allowswitchifowneditem)
+  RNR_MAPPING("No switch with owned item", noswitchifowneditem)
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleWeaponBitsMBF21( deh_context_t* context, const char* value, weaponinfo_t* weapon );
@@ -84,6 +88,10 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 			registered,		// mingamemode
 			false,			// initialowned
 			false,			// initialraised
+			-1,				// allowswitchifownedweapon
+			-1,				// noswitchifownedweapon
+			-1,				// allowswitchifowneditem
+			-1,				// noswitchifowneditem
 			am_noammo,		// ammo
 			S_NULL,			// upstate
 			S_NULL,			// downstate

@@ -450,58 +450,6 @@ static std::map< int32_t, int32_t > featureslookup =
 	{ exe_rnr24,					features_rnr24					},
 };
 
-bool EvaluateItemOwned( int32_t item, player_t* player )
-{
-	switch( item )
-	{
-	case item_bluecard:
-	case item_yellowcard:
-	case item_redcard:
-	case item_blueskull:
-	case item_yellowskull:
-	case item_redskull:
-		return player->cards[ item - item_bluecard ] != 0;
-
-	case item_backpack:
-		return player->maxammo[ player->readyweapon ] == weaponinfo[ player->readyweapon ].AmmoInfo().maxupgradedammo;
-
-	case item_greenarmor:
-	case item_bluearmor:
-		return player->armortype == ( item - item_greenarmor + 1 );
-
-	case item_areamap:
-		return player->powers[ pw_allmap ] != 0;
-
-	case item_lightamp:
-		return player->powers[ pw_infrared ] != 0;
-
-	case item_berserk:
-		return player->powers[ pw_strength ] != 0;
-
-	case item_invisibility:
-		return player->powers[ pw_invisibility ] != 0;
-
-	case item_radsuit:
-		return player->powers[ pw_ironfeet ] != 0;
-
-	case item_invulnerability:
-		return player->powers[ pw_invulnerability ] != 0;
-
-	case item_healthbonus:
-	case item_stimpack:
-	case item_medikit:
-	case item_soulsphere:
-	case item_megasphere:
-	case item_armorbonus:
-	case item_noitem:
-	case item_messageonly:
-	default:
-		break;
-	}
-
-	return false;
-}
-
 bool EvaluateConditions( const std::span< sbarcondition_t > conditions, player_t* player )
 {
 	bool result = true;
@@ -553,12 +501,12 @@ bool EvaluateConditions( const std::span< sbarcondition_t > conditions, player_t
 
 		case sbc_weaponslotnotowned:
 			{
-				bool notowned = false;
+				bool notowned = true;
 				for( const weaponinfo_t* weapon : weaponinfo.All() )
 				{
-					if( weapon->slot == condition.param && !player->weaponowned[ weapon->index ] )
+					if( weapon->slot == condition.param && player->weaponowned[ weapon->index ] )
 					{
-						notowned = true;
+						notowned = false;
 						break;
 					}
 				}
@@ -575,11 +523,11 @@ bool EvaluateConditions( const std::span< sbarcondition_t > conditions, player_t
 			break;
 
 		case sbc_itemowned:
-			result &= EvaluateItemOwned( condition.param, player );
+			result &= !!P_EvaluateItemOwned( (itemtype_t)condition.param, player );
 			break;
 
 		case sbc_itemnotowned:
-			result &= !EvaluateItemOwned( condition.param, player );
+			result &= !P_EvaluateItemOwned( (itemtype_t)condition.param, player );
 			break;
 
 		case sbc_featurelevelgreaterequal:
@@ -766,7 +714,11 @@ public:
 	{
 		if( element->patch )
 		{
-			patch = (patch_t*)W_CacheLumpName( element->patch, PU_STATIC );
+			lumpindex_t patchindex = W_CheckNumForName( element->patch );
+			if( patchindex >= 0 )
+			{
+				patch = (patch_t*)W_CacheLumpNum( patchindex, PU_STATIC );
+			}
 		}
 
 		if( element->tranmap )
@@ -784,16 +736,23 @@ public:
 	{
 		if( element->patch )
 		{
-			W_ReleaseLumpName( element->patch );
+			lumpindex_t patchindex = W_CheckNumForName( element->patch );
+			if( patchindex )
+			{
+				W_ReleaseLumpNum( patchindex );
+			}
 		}
 	}
 
 	virtual void RefreshElement( int32_t thisx, int32_t thisy ) override
 	{
-		int32_t currx = AdjustX( thisx, patch->width );
-		int32_t curry = AdjustY( thisy, patch->height );
+		if( patch != nullptr )
+		{
+			int32_t currx = AdjustX( thisx, patch->width );
+			int32_t curry = AdjustY( thisy, patch->height );
 
-		V_DrawPatch( currx, curry, patch, tranmap, translation ? translation->table : nullptr );
+			V_DrawPatch( currx, curry, patch, tranmap, translation ? translation->table : nullptr );
+		}
 	}
 
 protected:
@@ -813,7 +772,8 @@ public:
 		patches.reserve( element->numframes );
 		for( sbaranimframe_t& frame : std::span( element->frames, element->numframes ) )
 		{
-			patches.push_back( (patch_t*)W_CacheLumpName( frame.lump, PU_STATIC ) );
+			lumpindex_t patchindex = W_CheckNumForName( frame.lump );
+			patches.push_back( patchindex >= 0 ? (patch_t*)W_CacheLumpName( frame.lump, PU_STATIC ) : nullptr );
 		}
 	}
 
@@ -821,7 +781,11 @@ public:
 	{
 		for( sbaranimframe_t& frame : std::span( element->frames, element->numframes ) )
 		{
-			W_ReleaseLumpName( frame.lump );
+			lumpindex_t patchindex = W_CheckNumForName( frame.lump );
+			if( patchindex )
+			{
+				W_ReleaseLumpNum( patchindex );
+			}
 		}
 	}
 
@@ -1216,7 +1180,10 @@ public:
 				totalwidth = font->numbers[ workingnum ]->width;
 				tempnum /= 10;
 			}
-			if( element->type == sbe_percentage && font->percent != nullptr ) totalwidth += font->percent->width;
+			if( element->type == sbe_percentage && font->percent != nullptr )
+			{
+				totalwidth += font->percent->width;
+			}
 		}
 
 		int32_t xoffset = 0;

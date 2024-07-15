@@ -96,6 +96,7 @@ DOOM_C_API void P_DropWeapon (player_t* player);
 // P_USER
 //
 DOOM_C_API void	P_PlayerThink (player_t* player);
+DOOM_C_API doombool P_EvaluateItemOwned( itemtype_t item, player_t* player );
 
 
 //

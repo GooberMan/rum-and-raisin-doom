@@ -115,6 +115,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		shareware,			// mingamemode
 		true,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		wp_chainsaw,		// noswitchifownedweapon
+		item_berserk,		// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_noammo,
 		S_PUNCHUP,
 		S_PUNCHDOWN,
@@ -133,6 +137,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		shareware,			// mingamemode
 		true,				// initialowned
 		true,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_clip,
 		S_PISTOLUP,
 		S_PISTOLDOWN,
@@ -151,6 +159,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_shell,
 		S_SGUNUP,
 		S_SGUNDOWN,
@@ -169,6 +181,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_clip,
 		S_CHAINUP,
 		S_CHAINDOWN,
@@ -187,6 +203,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_misl,
 		S_MISSILEUP,
 		S_MISSILEDOWN,
@@ -205,6 +225,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		registered,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_cell,
 		S_PLASMAUP,
 		S_PLASMADOWN,
@@ -223,6 +247,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		registered,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_cell,
 		S_BFGUP,
 		S_BFGDOWN,
@@ -241,6 +269,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_noammo,
 		S_SAWUP,
 		S_SAWDOWN,
@@ -259,6 +291,10 @@ static weaponinfo_t	builtinweaponinfo[] =
 		commercial,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		-1,					// allowswitchifownedweapon
+		-1,					// noswitchifownedweapon
+		-1,					// allowswitchifowneditem
+		-1,					// noswitchifowneditem
 		am_shell,
 		S_DSGUNUP,
 		S_DSGUNDOWN,

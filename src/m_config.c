@@ -1651,6 +1651,18 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_KEY(key_weapon8),
 
     //!
+    // Key to select weapon 9.
+    //
+
+    CONFIG_VARIABLE_KEY(key_weapon9),
+
+    //!
+    // Key to select weapon 0.
+    //
+
+    CONFIG_VARIABLE_KEY(key_weapon0),
+
+    //!
     // Key to cycle to the previous weapon.
     //
 

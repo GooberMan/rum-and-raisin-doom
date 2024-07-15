@@ -349,7 +349,9 @@ extern "C"
 		&key_weapon5,
 		&key_weapon6,
 		&key_weapon7,
-		&key_weapon8
+		&key_weapon8,
+		&key_weapon9,
+		&key_weapon0,
 	};
 
 	// Set to -1 or +1 to switch to the previous or next weapon.

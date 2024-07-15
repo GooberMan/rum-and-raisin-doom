@@ -142,6 +142,8 @@ int key_weapon5 = '5';
 int key_weapon6 = '6';
 int key_weapon7 = '7';
 int key_weapon8 = '8';
+int key_weapon9 = '9';
+int key_weapon0 = '0';
 int key_prevweapon = 0;
 int key_nextweapon = 0;
 
@@ -348,6 +350,8 @@ void M_BindWeaponControls(void)
     M_BindIntVariable("key_weapon6",        &key_weapon6);
     M_BindIntVariable("key_weapon7",        &key_weapon7);
     M_BindIntVariable("key_weapon8",        &key_weapon8);
+    M_BindIntVariable("key_weapon9",        &key_weapon9);
+    M_BindIntVariable("key_weapon0",        &key_weapon0);
 
     M_BindIntVariable("key_prevweapon",     &key_prevweapon);
     M_BindIntVariable("key_nextweapon",     &key_nextweapon);

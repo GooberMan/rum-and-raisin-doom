@@ -2592,6 +2592,8 @@ static controlsection_t keymappings[] =
 							{	"Weapon 6",				&key_weapon6 },
 							{	"Weapon 7",				&key_weapon7 },
 							{	"Weapon 8",				&key_weapon8 },
+							{	"Weapon 9",				&key_weapon9 },
+							{	"Weapon 0",				&key_weapon0 },
 							{	"Previous Weapon",		&key_prevweapon },
 							{	"Next Weapon",			&key_nextweapon },
 							{	NULL,					NULL }, },
