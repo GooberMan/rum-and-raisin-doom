@@ -82,20 +82,12 @@ constexpr auto PlainFlowString( const char* name )
 
 INLINE auto CopyToPlainFlowString( const char* name )
 {
-	size_t len = strlen( name ) + 1;
-	char* copy = (char*)Z_MallocZero( len, PU_STATIC, nullptr );
-	M_StringCopy( copy, name, len );
-
-	return PlainFlowString( copy );
+	return PlainFlowString( M_DuplicateStringToZone( name, PU_STATIC, nullptr ) );
 }
 
 INLINE auto CopyToPlainFlowString( const std::string& name )
 {
-	size_t len = name.size() + 1;
-	char* copy = (char*)Z_MallocZero( len, PU_STATIC, nullptr );
-	M_StringCopy( copy, name.c_str(), len );
-
-	return PlainFlowString( copy );
+	return PlainFlowString( M_DuplicateStringToZone( name.c_str(), PU_STATIC, nullptr ) );
 }
 
 static void Sanitize( std::string& currline )

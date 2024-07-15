@@ -181,12 +181,12 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 	if( strcmp( variable_name, "Pickup message" ) == 0 )
 	{
 		DEH_IncreaseGameVersion( context, exe_rnr24 );
-		mobj->pickupstringmnemonic = DEH_CopyString( value );
+		mobj->pickupstringmnemonic = M_DuplicateStringToZone( value, PU_STATIC, nullptr );
 	}
 	else if( strcmp( variable_name, "Translation" ) == 0 )
 	{
 		DEH_IncreaseGameVersion( context, exe_rnr24 );
-		mobj->translationlump = DEH_CopyString( value );
+		mobj->translationlump = M_DuplicateStringToZone( value, PU_STATIC, nullptr );
 	}
 	else if( strcmp( variable_name, "Bits" ) == 0
 		&& !( isdigit( value[ 0 ] ) 

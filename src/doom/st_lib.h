@@ -222,9 +222,9 @@ enum sbarnumfonttype_t
 	sbf_proportional,
 };
 
-class sbarnumfont_t
+struct sbarnumfont_t
 {
-public:
+	const char*			name;
 	sbarnumfonttype_t	type;
 	int32_t				monowidth;
 	patch_t*			numbers[10];
@@ -234,10 +234,13 @@ public:
 
 enum sbarconditiontype_t
 {
-	sbc_none,
+	sbc_none = -1,
 	sbc_weaponowned,
 	sbc_weaponselected,
 	sbc_weaponnotselected,
+	sbc_weaponhasammo,
+	sbc_selectedweaponhasammo,
+	sbc_selectedweaponammotype,
 	sbc_weaponslotowned,
 	sbc_weaponslotnotowned,
 	sbc_weaponslotselected,
@@ -245,8 +248,35 @@ enum sbarconditiontype_t
 	sbc_itemowned,
 	sbc_itemnotowned,
 	sbc_featurelevelgreaterequal,
-	sbc_gamemodeequal,
-	sbc_gamemodenotequal,
+	sbc_featurelevelless,
+	sbc_sessiontypeeequal,
+	sbc_sessiontypenotequal,
+	sbc_modeeequal,
+	sbc_modenotequal,
+	sbc_hudmodeequal,
+
+	sbc_max,
+};
+
+enum sbargamefeatures_t
+{
+	featuers_none = -1,
+	features_vanilla,
+	features_limit_removing,
+	features_limit_removing_fixed,
+	features_boom_2_02,
+	features_complevel9,
+	features_mbf,
+	features_mbf_dehextra,
+	features_mbf21,
+	features_mbf21_extended,
+	features_rnr24,
+};
+
+struct sbarcondition_t
+{
+	int32_t condition;
+	int32_t param;
 };
 
 enum sbarnumbertype_t
@@ -258,6 +288,10 @@ enum sbarnumbertype_t
 	sbn_ammo,
 	sbn_ammoselected,
 	sbn_maxammo,
+	sbn_weaponammo,
+	sbn_weaponmaxammo,
+
+	sbn_max,
 };
 
 enum sbarelementtype_t
@@ -267,8 +301,11 @@ enum sbarelementtype_t
 	sbe_graphic,
 	sbe_animation,
 	sbe_face,
+	sbe_facebackground,
 	sbe_number,
 	sbe_percentage,
+
+	sbe_max,
 };
 
 enum sbaralignment_t
@@ -279,31 +316,68 @@ enum sbaralignment_t
 
 	sbe_h_mask		= 0x03,
 
-	sbe_v_above		= 0x00,
+	sbe_v_top		= 0x00,
 	sbe_v_middle	= 0x04,
-	sbe_v_below		= 0x08,
+	sbe_v_bottom	= 0x08,
 
 	sbe_v_mask		= 0x0C,
 };
 
-class sbarelement_t
+typedef struct sbarelement_s sbarelement_t;
+
+struct sbaranimframe_t
 {
-public:
+	const char*			lump;
+	int32_t				tics;
+};
+
+struct sbarelement_s
+{
 	sbarelementtype_t	type;
 	int32_t				xpos;
 	int32_t				ypos;
 	sbaralignment_t		alignment;
+	sbarcondition_t*	conditions;
+	size_t				numconditions;
+	sbarelement_t*		children;
+	size_t				numchildren;
+
+	const char*			translation;
+	const char*			tranmap;
+
+	// sbe_graphic
+	const char*			patch;
+
+	// sbe_animation
+	sbaranimframe_t*	frames;
+	size_t				numframes;
+
+	// sbe_number, sbe_percentage
+	const char*			numfont;
+	sbarnumbertype_t	numtype;
+	int32_t				numparam;
+	int32_t				numlength;
 };
 
-class statusbars_t
+struct statusbarbase_t
 {
-public:
-	constexpr std::span< sbarelement_t* > StatusBars() const	{ return std::span( statusbars, numstatusbars ); }
+	const char*			fillflat;
+	int32_t				height;
+	doombool			fullscreen;
+	sbarelement_t*		children;
+	size_t				numchildren;
+};
 
-private:
-	sbarelement_t**		statusbars;
+struct statusbars_t
+{
+	sbarnumfont_t*		fonts;
+	size_t				numfonts;
+
+	statusbarbase_t*	statusbars;
 	size_t				numstatusbars;
 };
+
+statusbars_t* STlib_LoadSBARDEF();
 
 #endif // defined( __cplusplus )
 

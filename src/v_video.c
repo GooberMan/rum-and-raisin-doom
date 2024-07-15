@@ -198,12 +198,14 @@ void V_TransposeFlat( const char* flat_name, vbuffer_t* output, int outputmemzon
 {
 	vbuffer_t src;
 
-	src.data = W_CacheLumpName ( flat_name , PU_CACHE );
+	src.data = W_CacheLumpName ( flat_name , PU_STATIC );
 	src.width = src.height = src.pitch = 64;
 	src.pixel_size_bytes = 1;
 	src.magic_value = vbuffer_magic;
 
 	V_TransposeBuffer( &src, output, outputmemzone );
+
+	W_ReleaseLumpName( flat_name );
 }
 
 void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width, int32_t height )
@@ -231,7 +233,7 @@ void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width
 	rend_fixed_t xsource	= 0;
 
 	column.x = widthdiff + FixedToInt( x * V_WIDTHMULTIPLIER );
-	int32_t xstop = widthdiff + FixedToInt( M_MIN( x + width, V_VIRTUALWIDTH ) * V_WIDTHMULTIPLIER );
+	int32_t xstop = widthdiff + M_MIN( FixedToInt( ( x + width ) * V_WIDTHMULTIPLIER ), dest_buffer->width );
 
 	for( ; column.x < xstop; ++column.x )
 	{
@@ -330,16 +332,16 @@ void V_SetPatchClipCallback(vpatchclipfunc_t func)
 // V_DrawPatch
 // Masks a column based masked pic to the screen. 
 //
-void V_DrawPatch(int x, int y, patch_t *patch)
+void V_DrawPatch(int x, int y, patch_t *patch, byte* tranmap, byte* translation )
 { 
-	V_DrawPatchClipped(x, y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height));
+	V_DrawPatchClipped(x, y, patch, 0, 0, SHORT(patch->width), SHORT(patch->height), tranmap, translation);
 }
 
 //
 // V_DrawPatchClipped
 // Only want part of a patch? This is your function. As you'll notice, V_DrawPatch wraps in to this.
 //
-void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight)
+void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight, byte* tranmap, byte* translation)
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -378,10 +380,15 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	column.output			= *dest_buffer;
 	column.sourceheight		= IntToRendFixed( clippedheight );
 	column.colormap			= NULL;
-	column.translation		= NULL;
-	column.transparency		= NULL;
+	column.translation		= translation;
+	column.transparency		= tranmap;
 	column.texturemid		= 0;
 	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale ) + 1;
+
+	column.colfunc			= ( translation && tranmap ) ? R_BackbufferDrawColumn_TranslatedAndTransparent
+							: ( translation ) ? R_BackbufferDrawColumn_Translated
+							: ( tranmap ) ? R_BackbufferDrawColumn_Transparent
+							: R_BackbufferDrawColumn;
 
 	rend_fixed_t xwidth		= IntToRendFixed( patch->width );
 	rend_fixed_t xsource	= IntToRendFixed( clippedx );
@@ -413,11 +420,11 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 				{
 					column.source += -thisy;
 				}
-				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height );
+				column.yl		= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height );
 				if( column.yl < frame_height )
 				{
-					column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
-					R_BackbufferDrawColumn( &column );
+					column.yh	= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
+					column.colfunc( &column );
 				}
 			}
 
@@ -435,7 +442,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 //
 
 // Used in Doom 2 finale. Nowhere else
-void V_DrawPatchFlipped(int x, int y, patch_t *patch)
+void V_DrawPatchFlipped(int x, int y, patch_t *patch, byte* tranmap, byte* translation)
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
@@ -475,10 +482,15 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 	column.output			= *dest_buffer;
 	column.sourceheight		= IntToRendFixed( SHORT(patch->height) );
 	column.colormap			= NULL;
-	column.translation		= NULL;
-	column.transparency		= NULL;
+	column.translation		= translation;
+	column.transparency		= tranmap;
 	column.texturemid		= 0;
 	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale ) + 1;
+
+	column.colfunc			= ( translation && tranmap ) ? R_BackbufferDrawColumn_TranslatedAndTransparent
+							: ( translation ) ? R_BackbufferDrawColumn_Translated
+							: ( tranmap ) ? R_BackbufferDrawColumn_Transparent
+							: R_BackbufferDrawColumn;
 
 	rend_fixed_t xwidth		= IntToRendFixed( patch->width );
 	rend_fixed_t xsource	= IntToRendFixed( patch->width ) - 1;
@@ -510,11 +522,11 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 				{
 					column.source += -thisy;
 				}
-				column.yl			= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height );
+				column.yl		= M_CLAMP( FixedToInt( FixedRound( thisy * V_HEIGHTMULTIPLIER ) ), 0, frame_height );
 				if( column.yl < frame_height )
 				{
-					column.yh			= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
-					R_BackbufferDrawColumn( &column );
+					column.yh	= M_CLAMP( FixedToInt( FixedRound( M_MIN( thisy + patchcol->length, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1 ), 0, frame_height - 1 );
+					column.colfunc( &column );
 				}
 			}
 
@@ -534,7 +546,7 @@ void V_DrawPatchFlipped(int x, int y, patch_t *patch)
 
 void V_DrawPatchDirect(int x, int y, patch_t *patch)
 {
-    V_DrawPatch(x, y, patch); 
+    V_DrawPatch(x, y, patch, NULL, NULL); 
 } 
 
 //

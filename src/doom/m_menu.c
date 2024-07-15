@@ -832,7 +832,7 @@ void M_DrawFullScreenPage( const char* pagename )
 	// WIDESCREEN HACK
 	int32_t xpos = -( ( patch->width - V_VIRTUALWIDTH ) / 2 );
 
-	V_DrawPatch ( xpos, 0, patch );
+	V_DrawPatch ( xpos, 0, patch, NULL, NULL );
 }
 
 

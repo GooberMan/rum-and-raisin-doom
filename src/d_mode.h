@@ -45,11 +45,11 @@ DOOM_C_API typedef enum
 
 DOOM_C_API typedef enum
 {
-    shareware,       // Doom/Heretic shareware
-    registered,      // Doom/Heretic registered
-    retail,          // Ultimate Doom
-    commercial,      // Doom II/Hexen
-    indetermined     // Unknown.
+	indetermined = -1,	// Unknown.
+	shareware,			// Doom/Heretic shareware
+	registered,			// Doom/Heretic registered
+	retail,				// Ultimate Doom
+	commercial,			// Doom II/Hexen
 } GameMode_t;
 
 // What version are we emulating?

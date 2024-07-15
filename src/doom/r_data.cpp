@@ -440,7 +440,10 @@ texturecomposite_t* R_CacheAndGetCompositeFlat( const char* flat )
 	}
 	else
 	{
-		R_CacheCompositeFlat( index );
+		if( flatlookup[ index ]->data == nullptr )
+		{
+			R_CacheCompositeFlat( index );
+		}
 	}
 
 	return flatlookup[ index ];
@@ -1115,14 +1118,6 @@ void R_InitColormaps (void)
 	}
 }
 
-static const char* R_CopyString( const char* value, int32_t tag )
-{
-	size_t valuelen = strlen( value );
-	char* output = (char*)Z_MallocZero( valuelen + 1, tag, nullptr );
-	M_StringCopy( output, value, valuelen + 1 );
-	return output;
-}
-
 translation_t* R_LoadTranslation( const char* name )
 {
 	translation_t loaded = {};
@@ -1147,7 +1142,7 @@ translation_t* R_LoadTranslation( const char* name )
 			return jl_parseerror;
 		}
 
-		loaded.name = R_CopyString( to< std::string >( name ).c_str(), PU_STATIC );
+		loaded.name = M_DuplicateStringToZone( to< std::string >( name ).c_str(), PU_STATIC, nullptr );
 
 		lumpindex_t sbarindex = sbarback.IsString() ? W_CheckNumForName( to< std::string >( sbarback ).c_str() ) : -1;
 		if( sbarindex >= 0 )

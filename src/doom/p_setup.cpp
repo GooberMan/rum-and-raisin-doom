@@ -390,7 +390,9 @@ struct DoomMapLoader
 			if( _blockmapend - _blockmap >= MaxEntries16bit )
 			{
 				I_LogAddEntry( Log_System, "Detected blockmap overflow, attempting correction" );
+				forcerebuild = true;
 
+#if 0
 				int32_t numindices = _blockmapwidth * _blockmapheight;
 				int32_t baseoffset = ( numindices + 4 );
 				int32_t firstentry = baseoffset % MaxEntries16bit;
@@ -418,30 +420,31 @@ struct DoomMapLoader
 						currindex += offsetaddition;
 					}
 				}
+#endif
 			}
 
 			if( forcerebuild )
 			{
-				fixed_t minx = INT_MAX;
-				fixed_t miny = INT_MAX;
-				fixed_t maxx = -INT_MAX;
-				fixed_t maxy = -INT_MAX;
+				rend_fixed_t minx = LLONG_MAX;
+				rend_fixed_t miny = LLONG_MAX;
+				rend_fixed_t maxx = -LLONG_MAX;
+				rend_fixed_t maxy = -LLONG_MAX;
 
 				for( vertex_t& vert : Vertices() )
 				{
-					minx = M_MIN( minx, vert.x );
-					miny = M_MIN( miny, vert.y );
-					maxx = M_MAX( maxx, vert.x );
-					maxy = M_MAX( maxy, vert.y );
+					minx = M_MIN( minx, FixedToRendFixed( vert.x ) );
+					miny = M_MIN( miny, FixedToRendFixed( vert.y ) );
+					maxx = M_MAX( maxx, FixedToRendFixed( vert.x ) );
+					maxy = M_MAX( maxy, FixedToRendFixed( vert.y ) );
 				}
 
-				minx -= IntToFixed( 8 );
-				miny -= IntToFixed( 8 );
-				maxx += IntToFixed( 8 );
-				maxy += IntToFixed( 8 );
+				minx -= IntToRendFixed( 8 );
+				miny -= IntToRendFixed( 8 );
+				maxx += IntToRendFixed( 8 );
+				maxy += IntToRendFixed( 8 );
 
-				blockmap_t width	= FixedToInt( ( maxx - minx ) / 128 ) + 1;
-				blockmap_t height	= FixedToInt( ( maxy - miny ) / 128 ) + 1;
+				blockmap_t width	= RendFixedToInt( ( maxx - minx ) / 128 ) + 1;
+				blockmap_t height	= RendFixedToInt( ( maxy - miny ) / 128 ) + 1;
 				blockmap_t count	= width * height;
 
 				// Want vanilla style blockmaps? Use this
@@ -456,10 +459,10 @@ struct DoomMapLoader
 						continue;
 					}
 
-					blockmap_t v1x = FixedToInt( ( line.v1->x - minx ) / 128 );
-					blockmap_t v1y = FixedToInt( ( line.v1->y - miny ) / 128 );
-					blockmap_t v2x = FixedToInt( ( line.v2->x - minx ) / 128 );
-					blockmap_t v2y = FixedToInt( ( line.v2->y - miny ) / 128 );
+					blockmap_t v1x = RendFixedToInt( ( FixedToRendFixed( line.v1->x ) - minx ) / 128 );
+					blockmap_t v1y = RendFixedToInt( ( FixedToRendFixed( line.v1->y ) - miny ) / 128 );
+					blockmap_t v2x = RendFixedToInt( ( FixedToRendFixed( line.v2->x ) - minx ) / 128 );
+					blockmap_t v2y = RendFixedToInt( ( FixedToRendFixed( line.v2->y ) - miny ) / 128 );
 					if( v1x > v2x ) std::swap( v1x, v2x );
 					if( v1y > v2y ) std::swap( v1y, v2y );
 
@@ -495,8 +498,8 @@ struct DoomMapLoader
 				_blockmapwidth = width;
 				_blockmapheight = height;
 
-				*_blockmap++ = FixedToInt( minx );
-				*_blockmap++ = FixedToInt( miny );
+				*_blockmap++ = RendFixedToInt( minx );
+				*_blockmap++ = RendFixedToInt( miny );
 				*_blockmap++ = width;
 				*_blockmap++ = height;
 

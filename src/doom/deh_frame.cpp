@@ -234,9 +234,7 @@ static void DEH_FrameParseLine(deh_context_t *context, char *line, void *tag)
 	if( strcmp( variable_name, "Tranmap" ) == 0 )
 	{
 		DEH_IncreaseGameVersion( context, exe_rnr24 );
-		size_t valuelen = strlen( value );
-		state->tranmaplump = (char*)Z_MallocZero( valuelen + 1, PU_STATIC, nullptr );
-		M_StringCopy( (char*)state->tranmaplump, value, valuelen + 1 );
+		state->tranmaplump = M_DuplicateStringToZone( value, PU_STATIC, nullptr );
 		M_ForceUppercase( (char*)state->tranmaplump );
 	}
 	else

@@ -507,9 +507,9 @@ namespace DrawColumn
 		static INLINE void LimitRemovingSpriteColormapPaletteSwapTransparentDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, ViewportSpriteLookup, WriterTransparent >( context ); }
 
 		static INLINE void BackbufferDraw( colcontext_t* context )							{ DrawWith< SamplerLimitRemoving::Direct, BackbufferLookup, WriterDirect >( context ); }
+		static INLINE void BackbufferTransparentDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::Direct, BackbufferLookup, WriterTransparent >( context ); }
 		static INLINE void BackbufferPaletteSwapDraw( colcontext_t* context )				{ DrawWith< SamplerLimitRemoving::PaletteSwap, BackbufferLookup, WriterDirect >( context ); }
-		static INLINE void BackbufferColormapDraw( colcontext_t* context )					{ DrawWith< SamplerLimitRemoving::Colormap, BackbufferLookup, WriterDirect >( context ); }
-		static INLINE void BackbufferColormapPaletteSwapDraw( colcontext_t* context )		{ DrawWith< SamplerLimitRemoving::ColormapPaletteSwap, BackbufferLookup, WriterDirect >( context ); }
+		static INLINE void BackbufferPaletteSwapTransparentDraw( colcontext_t* context )	{ DrawWith< SamplerLimitRemoving::PaletteSwap, BackbufferLookup, WriterTransparent >( context ); }
 	};
 
 #if R_DRAWCOLUMN_SIMDOPTIMISED
@@ -678,13 +678,26 @@ void R_BackbufferDrawColumn( colcontext_t* context )
 { 
 	M_PROFILE_FUNC();
 	DrawColumn::Bytewise::BackbufferDraw( context );
-} 
-
-void R_BackbufferDrawColumn_Colormap( colcontext_t* context )
-{
-	M_PROFILE_FUNC();
-	DrawColumn::Bytewise::BackbufferColormapDraw( context );
 }
+
+void R_BackbufferDrawColumn_Transparent( colcontext_t* context )
+{ 
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::BackbufferTransparentDraw( context );
+}
+
+void R_BackbufferDrawColumn_Translated( colcontext_t* context )
+{ 
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::BackbufferPaletteSwapDraw( context );
+}
+
+void R_BackbufferDrawColumn_TranslatedAndTransparent( colcontext_t* context )
+{ 
+	M_PROFILE_FUNC();
+	DrawColumn::Bytewise::BackbufferPaletteSwapTransparentDraw( context );
+}
+
 
 //
 // Spectre/Invisibility.

@@ -60,5 +60,7 @@ DOOM_C_API int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list arg
 DOOM_C_API int M_snprintf(char *buf, size_t buf_len, const char *s, ...) PRINTF_ATTR(3, 4);
 DOOM_C_API char *M_OEMToUTF8(const char *ansi);
 
+DOOM_C_API const char* M_DuplicateStringToZone( const char* value, int32_t tag, void** user );
+
 #endif
 

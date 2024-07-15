@@ -29,6 +29,8 @@
 #include "i_system.h"
 #include "i_video.h"
 #include "z_zone.h"
+
+#include "m_conv.h"
 #include "m_misc.h"
 #include "m_random.h"
 #include "m_container.h"
@@ -421,6 +423,1064 @@ extern "C"
 	cheatseq_t cheat_choppers = CHEAT("idchoppers", 0);
 	cheatseq_t cheat_clev = CHEAT("idclev", 2);
 	cheatseq_t cheat_mypos = CHEAT("idmypos", 0);
+}
+
+static statusbars_t* bars = nullptr;
+
+static std::map< int32_t, int32_t > featureslookup =
+{
+	{ exe_doom_1_2,					features_vanilla				},
+	{ exe_doom_1_666,				features_vanilla				},
+	{ exe_doom_1_7,					features_vanilla				},
+	{ exe_doom_1_8,					features_vanilla				},
+	{ exe_doom_1_9,					features_vanilla				},
+	{ exe_hacx,						features_vanilla				},
+	{ exe_ultimate,					features_vanilla				},
+	{ exe_final,					features_vanilla				},
+	{ exe_final2,					features_vanilla				},
+	{ exe_chex,						features_vanilla				},
+	{ exe_limit_removing,			features_limit_removing			},
+	{ exe_limit_removing_fixed,		features_limit_removing_fixed	},
+	{ exe_boom_2_02,				features_boom_2_02				},
+	{ exe_complevel9,				features_complevel9				},
+	{ exe_mbf,						features_mbf					},
+	{ exe_mbf_dehextra,				features_mbf_dehextra			},
+	{ exe_mbf21,					features_mbf21					},
+	{ exe_mbf21_extended,			features_mbf21_extended			},
+	{ exe_rnr24,					features_rnr24					},
+};
+
+bool EvaluateItemOwned( int32_t item, player_t* player )
+{
+	switch( item )
+	{
+	case item_bluecard:
+	case item_yellowcard:
+	case item_redcard:
+	case item_blueskull:
+	case item_yellowskull:
+	case item_redskull:
+		return player->cards[ item - item_bluecard ] != 0;
+
+	case item_backpack:
+		return player->maxammo[ player->readyweapon ] == weaponinfo[ player->readyweapon ].AmmoInfo().maxupgradedammo;
+
+	case item_greenarmor:
+	case item_bluearmor:
+		return player->armortype == ( item - item_greenarmor + 1 );
+
+	case item_areamap:
+		return player->powers[ pw_allmap ] != 0;
+
+	case item_lightamp:
+		return player->powers[ pw_infrared ] != 0;
+
+	case item_berserk:
+		return player->powers[ pw_strength ] != 0;
+
+	case item_invisibility:
+		return player->powers[ pw_invisibility ] != 0;
+
+	case item_radsuit:
+		return player->powers[ pw_ironfeet ] != 0;
+
+	case item_invulnerability:
+		return player->powers[ pw_invulnerability ] != 0;
+
+	case item_healthbonus:
+	case item_stimpack:
+	case item_medikit:
+	case item_soulsphere:
+	case item_megasphere:
+	case item_armorbonus:
+	case item_noitem:
+	case item_messageonly:
+	default:
+		break;
+	}
+
+	return false;
+}
+
+bool EvaluateConditions( const std::span< sbarcondition_t > conditions, player_t* player )
+{
+	bool result = true;
+	int32_t currsessiontype = netgame ? M_MIN( deathmatch + 1, 2 ) : 0;
+	bool compacthud = frame_width < frame_adjusted_width;
+
+	for( sbarcondition_t& condition : conditions )
+	{
+		switch( condition.condition )
+		{
+		case sbc_weaponowned:
+			result &= !!player->weaponowned[ condition.param ];
+			break;
+
+		case sbc_weaponselected:
+			result &= player->readyweapon == condition.param;
+			break;
+
+		case sbc_weaponnotselected:
+			result &= player->readyweapon != condition.param;
+			break;
+
+		case sbc_weaponhasammo:
+			result &= weaponinfo[ condition.param ].ammo != am_noammo;
+			break;
+
+		case sbc_selectedweaponhasammo:
+			result &= player->Weapon().ammo != am_noammo;
+			break;
+
+		case sbc_selectedweaponammotype:
+			result &= player->Weapon().ammo == condition.param;
+			break;
+
+		case sbc_weaponslotowned:
+			{
+				bool owned = false;
+				for( const weaponinfo_t* weapon : weaponinfo.All() )
+				{
+					if( weapon->slot == condition.param && player->weaponowned[ weapon->index ] )
+					{
+						owned = true;
+						break;
+					}
+				}
+				result &= owned;
+			}
+			break;
+
+		case sbc_weaponslotnotowned:
+			{
+				bool notowned = false;
+				for( const weaponinfo_t* weapon : weaponinfo.All() )
+				{
+					if( weapon->slot == condition.param && !player->weaponowned[ weapon->index ] )
+					{
+						notowned = true;
+						break;
+					}
+				}
+				result &= notowned;
+			}
+			break;
+
+		case sbc_weaponslotselected:
+			result &= weaponinfo[ player->readyweapon ].slot == condition.param;
+			break;
+
+		case sbc_weaponslotnotselected:
+			result &= weaponinfo[ player->readyweapon ].slot != condition.param;
+			break;
+
+		case sbc_itemowned:
+			result &= EvaluateItemOwned( condition.param, player );
+			break;
+
+		case sbc_itemnotowned:
+			result &= !EvaluateItemOwned( condition.param, player );
+			break;
+
+		case sbc_featurelevelgreaterequal:
+			result &= featureslookup[ (int32_t)gameversion ] >= condition.param;
+			break;
+
+		case sbc_featurelevelless:
+			result &= featureslookup[ (int32_t)gameversion ] < condition.param ;
+			break;
+
+		case sbc_sessiontypeeequal:
+			result &= currsessiontype == condition.param;
+			break;
+
+		case sbc_sessiontypenotequal:
+			result &= currsessiontype != condition.param;
+			break;
+
+		case sbc_modeeequal:
+			result &= gamemode == ( condition.param + 1 );
+			break;
+
+		case sbc_modenotequal:
+			result &= gamemode != ( condition.param + 1 );
+			break;
+
+		case sbc_hudmodeequal:
+			result &= ( !!condition.param == compacthud );
+			break;
+
+		case sbc_none:
+		default:
+			result = false;
+			break;
+		}
+	}
+
+	return result;
+}
+
+int32_t ResolveNumber( sbarnumbertype_t number, int32_t param, player_t* player )
+{
+	int32_t result = 0;
+	switch( number )
+	{
+	case sbn_health:
+		result = player->health;
+		break;
+
+	case sbn_armor:
+		result = player->armorpoints;
+		break;
+
+	case sbn_frags:
+		for( int32_t p : iota( 0, MAXPLAYERS ) )
+		{
+			result += player->frags[ p ];
+		}
+		break;
+
+	case sbn_ammo:
+		result = player->ammo[ param ];
+		break;
+
+	case sbn_ammoselected:
+		result = player->ammo[ player->Weapon().ammo ];
+		break;
+
+	case sbn_maxammo:
+		result = player->maxammo[ param ];
+		break;
+
+	case sbn_weaponammo:
+		result = player->ammo[ weaponinfo[ param ].ammo ];
+		break;
+
+	case sbn_weaponmaxammo:
+		result = player->maxammo[ weaponinfo[ param ].ammo ];
+		break;
+
+	case sbn_none:
+	default:
+		break;
+	}
+
+	return result;
+}
+
+class SBCanvas
+{
+public:
+	SBCanvas( statusbars_t* bars, sbarelement_t* e )
+		: element( e ) { }
+
+	virtual ~SBCanvas()
+	{
+		for( SBCanvas* child : children )
+		{
+			Z_Free( child );
+		}
+	}
+
+	void ResetHierarchy()
+	{
+		ResetElement();
+		for( SBCanvas* child : children )
+		{
+			child->ResetHierarchy();
+		}
+	}
+
+	void TickHierarchy()
+	{
+		TickElement();
+		for( SBCanvas* child : children )
+		{
+			child->TickHierarchy();
+		}
+	}
+
+	void RefreshHierarchy( int32_t x, int32_t y )
+	{
+		int32_t thisx = x + element->xpos;
+		int32_t thisy = y + element->ypos;
+
+		if( EvaluateConditions( std::span( element->conditions, element->numconditions ), &players[ displayplayer ] ) )
+		{
+			RefreshElement( thisx, thisy );
+			for( SBCanvas* child : children )
+			{
+				child->RefreshHierarchy( thisx, thisy );
+			}
+		}
+	}
+
+	virtual void ResetElement() { };
+	virtual void TickElement() { };
+	virtual void RefreshElement( int32_t thisx, int32_t thisy ) { };
+
+protected:
+	inline int32_t AdjustX( int32_t x, int32_t width )
+	{
+		if( element->alignment & sbe_h_middle )
+		{
+			x -= ( width >> 1 );
+		}
+		else if( element->alignment & sbe_h_right )
+		{
+			x -= width;
+		}
+
+		return x;
+	}
+
+	inline int32_t AdjustY( int32_t y, int32_t height )
+	{
+		if( element->alignment & sbe_v_middle )
+		{
+			y -= ( height >> 1 );
+		}
+		else if( element->alignment & sbe_v_bottom )
+		{
+			y -= height;
+		}
+
+		return y;
+	}
+
+	sbarelement_t*					element;
+
+private:
+	friend class SBContainer;
+	std::vector< SBCanvas* >		children;
+};
+
+class SBGraphic : public SBCanvas
+{
+public:
+	SBGraphic( statusbars_t* bars, sbarelement_t* e )
+		: SBCanvas( bars, e )
+		, patch( nullptr )
+		, tranmap( nullptr )
+		, translation( nullptr )
+	{
+		if( element->patch )
+		{
+			patch = (patch_t*)W_CacheLumpName( element->patch, PU_STATIC );
+		}
+
+		if( element->tranmap )
+		{
+			tranmap = (byte*)W_CacheLumpName( element->tranmap, PU_STATIC );
+		}
+
+		if( element->translation )
+		{
+			translation = R_GetTranslation( element->translation );
+		}
+	}
+
+	virtual ~SBGraphic()
+	{
+		if( element->patch )
+		{
+			W_ReleaseLumpName( element->patch );
+		}
+	}
+
+	virtual void RefreshElement( int32_t thisx, int32_t thisy ) override
+	{
+		int32_t currx = AdjustX( thisx, patch->width );
+		int32_t curry = AdjustY( thisy, patch->height );
+
+		V_DrawPatch( currx, curry, patch, tranmap, translation ? translation->table : nullptr );
+	}
+
+protected:
+	patch_t*			patch;
+	byte*				tranmap;
+	translation_t*		translation;
+};
+
+class SBAnimation : public SBGraphic
+{
+public:
+	SBAnimation( statusbars_t* bars, sbarelement_t* e )
+		: SBGraphic( bars, e )
+		, currframe( 0 )
+		, ticsleft( 0 )
+	{
+		patches.reserve( element->numframes );
+		for( sbaranimframe_t& frame : std::span( element->frames, element->numframes ) )
+		{
+			patches.push_back( (patch_t*)W_CacheLumpName( frame.lump, PU_STATIC ) );
+		}
+	}
+
+	virtual ~SBAnimation()
+	{
+		for( sbaranimframe_t& frame : std::span( element->frames, element->numframes ) )
+		{
+			W_ReleaseLumpName( frame.lump );
+		}
+	}
+
+	virtual void ResetElement() override
+	{
+		currframe = 0;
+		ticsleft = element->frames[ currframe ].tics;
+		patch = patches[ currframe ];
+	}
+
+	virtual void TickElement() override
+	{
+		if( --ticsleft <= 0 )
+		{
+			if( ++currframe >= element->numframes )
+			{
+				currframe = 0;
+			}
+
+			patch = patches[ currframe ];
+			ticsleft = element->frames[ currframe ].tics;
+		}
+	}
+
+	virtual void RefreshElement( int32_t thisx, int32_t thisy ) override
+	{
+		patch = patches[ currframe ];
+		SBGraphic::RefreshElement( thisx, thisy );
+	}
+
+private:
+	int32_t currframe;
+	int32_t ticsleft;
+	std::vector< patch_t* > patches;
+};
+
+class SBFace : public SBGraphic
+{
+public:
+	SBFace( statusbars_t* bars, sbarelement_t* e )
+		: SBGraphic( bars, e )
+		, facepatches {}
+		, priority( 0 )
+		, lastattackdown( -1 )
+		, oldhealth( -1 )
+		, lasthealthcalc( 0 )
+		, faceindex( 0 )
+		, facecount( 0 )
+		, oldweaponowned {}
+	{
+		oldweaponowned.ResetWeapon();
+
+		int32_t currface = 0;
+		char lumpnamebuffer[ 16 ] = {};
+
+		auto LoadFace = [&currface, &lumpnamebuffer, this ]()
+		{
+			facenames[ currface ] = lumpnamebuffer;
+			facepatches[ currface++ ] = (patch_t*)W_CacheLumpName( lumpnamebuffer, PU_STATIC );
+		};
+
+		for( int32_t painface : iota( 0, ST_NUMPAINFACES ) )
+		{
+			for( int32_t straightface : iota( 0, ST_NUMSTRAIGHTFACES ) )
+			{
+				DEH_snprintf( lumpnamebuffer, 9, "STFST%d%d", painface, straightface );
+				LoadFace();
+			}
+
+			DEH_snprintf( lumpnamebuffer, 9, "STFTR%d0", painface );	// turn right
+			LoadFace();
+
+			DEH_snprintf( lumpnamebuffer, 9, "STFTL%d0", painface );	// turn left
+			LoadFace();
+
+			DEH_snprintf( lumpnamebuffer, 9, "STFOUCH%d", painface );	// ouch!
+			LoadFace();
+
+			DEH_snprintf( lumpnamebuffer, 9, "STFEVL%d", painface );	// evil grin ;)
+			LoadFace();
+
+			DEH_snprintf( lumpnamebuffer, 9, "STFKILL%d", painface );	// pissed off
+			LoadFace();
+		}
+
+		DEH_snprintf( lumpnamebuffer, 9, "STFGOD0" );
+		LoadFace();
+
+		DEH_snprintf( lumpnamebuffer, 9, "STFDEAD0" );
+		LoadFace();
+	}
+
+	virtual ~SBFace()
+	{
+		for( std::string& lump : std::span( facenames ) )
+		{
+			W_ReleaseLumpName( lump.c_str() );
+		}
+	}
+
+	virtual void ResetElement() override
+	{
+		player_t* player = &players[ displayplayer ];
+
+		oldweaponowned.ResetWeapon();
+		for( weaponinfo_t* weapon : weaponinfo.All() )
+		{
+			oldweaponowned[ weapon->index ] = player->weaponowned[ weapon->index ];
+		}
+
+		oldhealth = player->health;
+		faceindex = 0;
+		facecount = ST_STRAIGHTFACECOUNT;
+		priority = 0;
+	}
+
+	virtual void TickElement() override
+	{
+		player_t* player = &players[ displayplayer ];
+
+		if (priority < 10)
+		{
+			// dead
+			if (!player->health)
+			{
+				priority = 9;
+				faceindex = ST_DEADFACE;
+				facecount = 1;
+			}
+		}
+
+		if (priority < 9)
+		{
+			if (player->bonuscount)
+			{
+				// picking up bonus
+				bool doevilgrin = false;
+
+				for( weaponinfo_t* weapon : weaponinfo.All() )
+				{
+					if( oldweaponowned[ weapon->index ] != player->weaponowned[ weapon->index ] )
+					{
+						doevilgrin = true;
+						oldweaponowned[ weapon->index ] = player->weaponowned[ weapon->index ];
+					}
+				}
+
+				if( doevilgrin )
+				{
+					// evil grin if just picked up weapon
+					priority = 8;
+					facecount = ST_EVILGRINCOUNT;
+					faceindex = CalcPainOffset() + ST_EVILGRINOFFSET;
+				}
+			}
+		}
+  
+		if (priority < 8)
+		{
+			if (player->damagecount
+				&& player->attacker
+				&& player->attacker != player->mo)
+			{
+				// being attacked
+				priority = 7;
+
+				angle_t diffangle = 0;
+				bool right = false;
+
+				if( player->health - oldhealth > ST_MUCHPAIN )
+				{
+					facecount = ST_TURNCOUNT;
+					faceindex = CalcPainOffset() + ST_OUCHOFFSET;
+				}
+				else
+				{
+					angle_t badguyangle = BSP_PointToAngle(player->mo->x,
+															player->mo->y,
+															player->attacker->x,
+															player->attacker->y);
+		
+					if (badguyangle > player->mo->angle)
+					{
+						// whether right or left
+						diffangle = badguyangle - player->mo->angle;
+						right = diffangle > ANG180; 
+					}
+					else
+					{
+						// whether left or right
+						diffangle = player->mo->angle - badguyangle;
+						right = diffangle <= ANG180; 
+					} // confusing, aint it?
+
+					facecount = ST_TURNCOUNT;
+					faceindex = CalcPainOffset();
+		
+					if( diffangle < ANG45 )
+					{
+						// head-on    
+						faceindex += ST_RAMPAGEOFFSET;
+					}
+					else if( right )
+					{
+						// turn face right
+						faceindex += ST_TURNOFFSET;
+					}
+					else
+					{
+						// turn face left
+						faceindex += ST_TURNOFFSET+1;
+					}
+				}
+			}
+		}
+  
+		if( priority < 7 )
+		{
+			// getting hurt because of your own damn stupidity
+			if (player->damagecount)
+			{
+				if( player->health - oldhealth > ST_MUCHPAIN )
+				{
+					priority = 7;
+					facecount = ST_TURNCOUNT;
+					faceindex = CalcPainOffset() + ST_OUCHOFFSET;
+				}
+				else
+				{
+					priority = 6;
+					facecount = ST_TURNCOUNT;
+					faceindex = CalcPainOffset() + ST_RAMPAGEOFFSET;
+				}
+			}
+		}
+  
+		if( priority < 6 )
+		{
+			// rapid firing
+			if( player->attackdown )
+			{
+				if( lastattackdown == -1 )
+				{
+					lastattackdown = ST_RAMPAGEDELAY;
+				}
+				else if( !--lastattackdown )
+				{
+					priority = 5;
+					faceindex = CalcPainOffset() + ST_RAMPAGEOFFSET;
+					facecount = 1;
+					lastattackdown = 1;
+				}
+			}
+			else
+			{
+				lastattackdown = -1;
+			}
+
+		}
+  
+		if( priority < 5 )
+		{
+			// invulnerability
+			if( ( player->cheats & CF_GODMODE )
+				|| player->powers[ pw_invulnerability ] )
+			{
+				priority = 4;
+				faceindex = ST_GODFACE;
+				facecount = 1;
+			}
+
+		}
+
+		// look left or look right if the facecount has timed out
+		if( !facecount )
+		{
+			faceindex = CalcPainOffset() + ( M_Random() % 3 );
+			facecount = ST_STRAIGHTFACECOUNT;
+			priority = 0;
+		}
+
+		--facecount;
+	}
+
+	virtual void RefreshElement( int32_t thisx, int32_t thisy ) override
+	{
+		patch = facepatches[ faceindex ];
+		SBGraphic::RefreshElement( thisx, thisy );
+	}
+
+private:
+	int CalcPainOffset(void)
+	{
+		int32_t health = plyr->health > 100 ? 100 : plyr->health;
+
+		if( health != oldhealth )
+		{
+			lasthealthcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
+			oldhealth = health;
+		}
+
+		return lasthealthcalc;
+	}
+
+	std::string		facenames[ ST_NUMFACES ];
+	patch_t*		facepatches[ ST_NUMFACES ];
+
+	int32_t			priority;
+	int32_t			lastattackdown;
+	int32_t			oldhealth;
+	int32_t			lasthealthcalc;
+	int32_t			faceindex;
+	int32_t			facecount;
+	owneddata_t		oldweaponowned;
+
+};
+
+class SBFaceBackground : public SBGraphic
+{
+public:
+	SBFaceBackground( statusbars_t* bars, sbarelement_t* e )
+		: SBGraphic( bars, e )
+	{
+	}
+
+	virtual ~SBFaceBackground()
+	{
+	}
+
+	virtual void RefreshElement( int32_t thisx, int32_t thisy ) override
+	{
+		player_t* player = &players[ displayplayer ];
+
+		patch = player->mo->translation->sbarback;
+		translation = player->mo->translation->sbartranslate ? player->mo->translation : nullptr;
+		SBGraphic::RefreshElement( thisx, thisy );
+	}
+
+};
+
+class SBNumber : public SBGraphic
+{
+public:
+	SBNumber( statusbars_t* bars, sbarelement_t* e )
+		: SBGraphic( bars, e )
+		, font( nullptr )
+	{
+		std::string numfont = ToUpper( e->numfont );
+		font = std::find_if( bars->fonts, bars->fonts + bars->numfonts, [&numfont]( sbarnumfont_t& font )
+							{
+								return ToUpper( font.name ) == ToUpper( numfont );
+							} );
+	}
+
+	virtual ~SBNumber() { }
+
+	virtual void RefreshElement( int32_t thisx, int32_t thisy ) override
+	{
+		player_t* player = &players[ displayplayer ];
+		int32_t number = ResolveNumber( element->numtype, element->numparam, player );
+		int32_t power = ( number < 0 ? element->numlength - 1 : element->numlength );
+		int32_t max = (int32_t)pow( 10.0, power ) - 1;
+		int32_t numglyphs = 0;
+		int32_t numnumbers = 0;
+
+		if( number < 0 && font->minus != nullptr )
+		{
+			number = M_MAX( -max, number );
+			numnumbers = (int32_t)log10( -number ) + 1;
+			numglyphs = numnumbers + 1;
+		}
+		else
+		{
+			number = M_CLAMP( number, 0, max );
+			numnumbers = numglyphs = number != 0 ? ( (int32_t)log10( number ) + 1 ) : 1;
+		}
+
+		if( element->type == sbe_percentage && font->percent != nullptr )
+		{
+			++numglyphs;
+		}
+
+		int32_t totalwidth = font->monowidth * numglyphs;
+		if( font->type == sbf_proportional )
+		{
+			totalwidth = 0;
+			if( number < 0 && font->minus != nullptr ) totalwidth += font->minus->width;
+			int32_t tempnum = number;
+			while( tempnum > 0 )
+			{
+				int32_t workingnum = tempnum % 10;
+				totalwidth = font->numbers[ workingnum ]->width;
+				tempnum /= 10;
+			}
+			if( element->type == sbe_percentage && font->percent != nullptr ) totalwidth += font->percent->width;
+		}
+
+		int32_t xoffset = 0;
+		if( element->alignment & sbe_h_middle )
+		{
+			xoffset -= ( totalwidth >> 1 );
+		}
+		else if( element->alignment & sbe_h_right )
+		{
+			xoffset -= totalwidth;
+		}
+
+		auto RenderGlyph = [ this, &xoffset, &thisx, &thisy ]( patch_t* glyph )
+		{
+			int32_t width = font->type == sbf_proportional ? glyph->width : font->monowidth;
+			int32_t widthdiff = font->type != sbf_proportional ? ( glyph->width - width ) : 0;
+
+			if( element->alignment & sbe_h_middle )
+			{
+				xoffset += ( ( width + widthdiff ) >> 1 );
+			}
+			else if( element->alignment & sbe_h_right )
+			{
+				xoffset += ( width + widthdiff );
+			}
+
+			patch = glyph;
+			SBGraphic::RefreshElement( thisx + xoffset, thisy );
+
+			if( element->alignment & sbe_h_middle )
+			{
+				xoffset += ( width - ( ( width - widthdiff ) >> 1 ) );
+			}
+			else if( element->alignment & sbe_h_right )
+			{
+				xoffset += -widthdiff;
+			}
+			else
+			{
+				xoffset += width;
+			}
+		};
+
+		if( number < 0 && font->minus != nullptr )
+		{
+			RenderGlyph( font->minus );
+			number = -number;
+		}
+
+		int32_t glyphindex = numnumbers;
+		while( glyphindex > 0 )
+		{
+			int32_t glyphbase = (int32_t)pow( 10.0, --glyphindex );
+			int32_t workingnum = number / glyphbase;
+			RenderGlyph( font->numbers[ workingnum ] );
+			number -= ( workingnum * glyphbase );
+		}
+
+		if( element->type == sbe_percentage && font->percent != nullptr )
+		{
+			RenderGlyph( font->percent );
+		}
+	}
+
+private:
+	sbarnumfont_t* font;
+};
+
+using SBPercentage = SBNumber;
+
+using SBAlloc = SBCanvas*(*)( statusbars_t* bars, sbarelement_t* e, int32_t zone );
+
+template< typename _ty >
+struct SBNew
+{
+	static SBCanvas* Alloc( statusbars_t* bars, sbarelement_t* e, int32_t zone )
+	{
+		return Z_MallocAsArgs( _ty, zone, nullptr, bars, e );
+	}
+};
+
+constexpr SBAlloc SBAllocFor[ sbe_max ] =
+{
+	&SBNew< SBCanvas >::Alloc, // sbe_canvas
+	&SBNew< SBGraphic >::Alloc, // sbe_graphic
+	&SBNew< SBAnimation >::Alloc, // sbe_animation
+	&SBNew< SBFace >::Alloc, // sbe_face
+	&SBNew< SBFaceBackground >::Alloc, // sbe_facebackground
+	&SBNew< SBNumber >::Alloc, // sbe_number
+	&SBNew< SBPercentage >::Alloc, // sbe_percentage
+};
+
+class SBContainer
+{
+public:
+	SBContainer( statusbars_t* b, int32_t i )
+		: offscreenbuffer {}
+		, bars( b )
+		, thisbar( &b->statusbars[ i ] )
+		, fillflatbuffer {}
+		, index( i )
+		, cachedwidth( 0 )
+		, cachedheight( 0 )
+		, framewidth( 0 )
+		, frameadjustedwidth( 0 )
+		, frameheight( 0 )
+	{
+		const char* fillflatname = thisbar->fillflat;
+		if( fillflatname == nullptr )
+		{
+			switch( st_border_tile_style )
+			{
+			case STB_WADDefined:
+				fillflatname = gamemode == commercial ? DEH_String("GRNROCK") : DEH_String("FLOOR7_2");
+				break;
+
+			case STB_Flat5_4:
+				fillflatname = "FLAT5_4";
+				break;
+
+			case STB_Custom:
+				fillflatname = st_border_tile_custom;
+				break;
+			}
+		}
+
+		V_TransposeFlat( fillflatname, &fillflatbuffer, PU_STATIC );
+
+		RefreshOffscreenBuffer();
+
+		children.reserve( thisbar->numchildren );
+		for( sbarelement_t& elem : std::span( thisbar->children, thisbar->numchildren ) )
+		{
+			SBCanvas* thiselem = SBAllocFor[ elem.type ]( bars, &elem, PU_STATIC );
+			AllocChildren( thiselem );
+			children.push_back( thiselem );
+		}
+	}
+
+	~SBContainer()
+	{
+		for( SBCanvas* child : children )
+		{
+			Z_Free( child );
+		}
+	}
+
+	void ResetHierarchy()
+	{
+		for( SBCanvas* child : children )
+		{
+			child->ResetHierarchy();
+		}
+	}
+
+	void TickHierarchy()
+	{
+		for( SBCanvas* child : children )
+		{
+			child->TickHierarchy();
+		}
+	}
+
+	void RefreshHierarchy()
+	{
+		int32_t oldframewidth = frame_width;
+		int32_t oldframeadjustedwidth = frame_adjusted_width;
+		int32_t oldframeheight = frame_height;
+		if( !thisbar->fullscreen )
+		{
+			frame_width = framewidth;
+			frame_adjusted_width = frameadjustedwidth;
+			frame_height = 200;
+			V_UseBuffer( &offscreenbuffer );
+
+			int32_t xpos = -( ( offscreenbuffer.width - 320 ) >> 1 );
+			int32_t ypos = 0;
+			V_TileBuffer( &fillflatbuffer, xpos, ypos, offscreenbuffer.width, offscreenbuffer.height );
+		}
+
+		for( SBCanvas* child : children )
+		{
+			child->RefreshHierarchy( 0, 0 );
+		}
+
+		if( !thisbar->fullscreen )
+		{
+			frame_width = oldframewidth;
+			frame_adjusted_width = oldframeadjustedwidth;
+			frame_height = oldframeheight;
+			V_RestoreBuffer();
+
+			int32_t xpos = -( ( offscreenbuffer.width - 320 ) >> 1 );
+			int32_t ypos = 200 - thisbar->height;
+			V_TileBuffer( &offscreenbuffer, xpos, ypos, offscreenbuffer.width, offscreenbuffer.height );
+		}
+	}
+
+private:
+	void AllocChildren( SBCanvas* canvas )
+	{
+		for( sbarelement_t& elem : std::span( canvas->element->children, canvas->element->numchildren ) )
+		{
+			SBCanvas* thiselem = SBAllocFor[ elem.type ]( bars, &elem, PU_STATIC );
+			AllocChildren( thiselem );
+			canvas->children.push_back( thiselem );
+		}
+	}
+
+	void RefreshOffscreenBuffer()
+	{
+		if( thisbar->fullscreen
+			|| ( cachedwidth == render_width && cachedheight == render_height ) )
+		{
+			return;
+		}
+
+		if( offscreenbuffer.data != nullptr )
+		{
+			Z_Free( offscreenbuffer.data );
+		}
+
+		cachedwidth = render_width;
+		cachedheight = render_height;
+
+		double_t aspectratio = ( (double_t)render_width / ( (double_t)render_height * ( render_post_scaling ? 1.2 : 1.0 ) ) );
+		framewidth = (int32_t)( 240.0 * aspectratio );
+		frameadjustedwidth = 320;
+		frameheight = thisbar->height;
+
+		offscreenbuffer.data = (pixel_t*)Z_MallocZero( framewidth * frameheight * sizeof( pixel_t ), PU_STATIC, &offscreenbuffer.data );
+		offscreenbuffer.width = framewidth;
+		offscreenbuffer.height = frameheight;
+		offscreenbuffer.pitch = frameheight;
+		offscreenbuffer.mode = VB_Transposed;
+		offscreenbuffer.pixel_size_bytes = sizeof( pixel_t );
+		offscreenbuffer.verticalscale = 1.2f;
+		offscreenbuffer.magic_value = vbuffer_magic;
+	}
+
+	std::vector< SBCanvas* >	children;
+	vbuffer_t					offscreenbuffer;
+	statusbars_t*				bars;
+	statusbarbase_t*			thisbar;
+	vbuffer_t					fillflatbuffer;
+	int32_t						index;
+	int32_t						cachedwidth;
+	int32_t						cachedheight;
+	int32_t						framewidth;
+	int32_t						frameadjustedwidth;
+	int32_t						frameheight;
+};
+
+std::vector< SBContainer* > statusbars;
+int32_t currstatusbar;
+
+void ST_InitSBars()
+{
+	statusbars.reserve( bars->numstatusbars );
+	for( int32_t index : iota( 0, (int32_t)bars->numstatusbars ) )
+	{
+		SBContainer* container = Z_MallocAsArgs( SBContainer, PU_STATIC, nullptr, bars, index );
+		statusbars.push_back( container );
+	}
 }
 
 //
@@ -919,12 +1979,20 @@ DOOM_C_API void ST_updateWidgets(void)
 
 DOOM_C_API void ST_Ticker (void)
 {
-
-    st_clock++;
-    st_randomnumber = M_Random();
-    ST_updateWidgets();
-    st_oldhealth = plyr->health;
-
+	if( bars )
+	{
+		for( SBContainer* sbar : statusbars )
+		{
+			sbar->TickHierarchy();
+		}
+	}
+	else
+	{
+		st_clock++;
+		st_randomnumber = M_Random();
+		ST_updateWidgets();
+		st_oldhealth = plyr->health;
+	}
 }
 
 static int st_palette = 0;
@@ -1033,17 +2101,25 @@ DOOM_C_API void ST_drawWidgets(doombool refresh)
 
 }
 
+DOOM_C_API extern int screenblocks;
+
 DOOM_C_API void ST_doRefresh(void)
 {
-
     st_firsttime = false;
 
-    // draw status bar background to off-screen buff
-    ST_refreshBackground();
+	if( bars != nullptr )
+	{
+		int32_t barindex = automapactive ? 0 : M_MAX( 0, screenblocks - 10 );
+		statusbars[ barindex ]->RefreshHierarchy();
+	}
+	else
+	{
+		// draw status bar background to off-screen buff
+		ST_refreshBackground();
 
-    // and refresh all widgets
-    ST_drawWidgets(true);
-
+		// and refresh all widgets
+		ST_drawWidgets(true);
+	}
 }
 
 DOOM_C_API void ST_diffDraw(void)
@@ -1056,7 +2132,14 @@ DOOM_C_API void ST_Drawer (doombool fullscreen, doombool refresh)
 {
 	M_PROFILE_PUSH( __FUNCTION__, __FILE__, __LINE__ );
 
-    st_statusbaron = (!fullscreen) || automapactive;
+	if( bars )
+	{
+		st_statusbaron = true;
+	}
+	else
+	{
+		st_statusbaron = (!fullscreen) || automapactive;
+	}
     st_firsttime = st_firsttime || refresh;
 
     // Do red-/gold-shifts from damage/items
@@ -1446,8 +2529,19 @@ DOOM_C_API void ST_Start (void)
     if (!st_stopped)
 	ST_Stop();
 
-    ST_initData();
-    ST_createWidgets();
+	if( bars )
+	{
+		plyr = &players[ displayplayer ];
+		for( SBContainer* sbar : statusbars )
+		{
+			sbar->ResetHierarchy();
+		}
+	}
+	else
+	{
+		ST_initData();
+		ST_createWidgets();
+	}
     st_stopped = false;
 
 }
@@ -1464,13 +2558,18 @@ DOOM_C_API void ST_Stop (void)
 
 DOOM_C_API void ST_Init (void)
 {
-	//lumpindex_t sbarlump = sim.allow_sbardefs ? W_CheckNumForName( "SBARDEF" ) : -1;
-	//if( sbarlump >= 0 )
-	//{
-	//
-	//}
-	//else
+	lumpindex_t sbarlump = sim.allow_sbardefs ? W_CheckNumForName( "SBARDEF" ) : -1;
+	if( bars == nullptr && sbarlump >= 0 )
+	{
+		bars = STlib_LoadSBARDEF();
+	}
+
+	if( bars == nullptr )
 	{
 		ST_loadData();
+	}
+	else
+	{
+		ST_InitSBars();
 	}
 }

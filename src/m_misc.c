@@ -658,3 +658,11 @@ char *M_OEMToUTF8(const char *oem)
 
 #endif
 
+const char* M_DuplicateStringToZone( const char* value, int32_t tag, void** user )
+{
+	size_t valuelen = strlen( value );
+	char* output = (char*)Z_Malloc( valuelen + 1, tag, user );
+	M_StringCopy( output, value, valuelen + 1 );
+	return output;
+}
+

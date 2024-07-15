@@ -59,7 +59,9 @@ void R_LimitRemovingDrawColumn_Colormap( colcontext_t* context );
 void R_LimitRemovingDrawColumn_Transparent( colcontext_t* context );
 
 void R_BackbufferDrawColumn( colcontext_t* context );
-void R_BackbufferDrawColumn_Colormap( colcontext_t* context );
+void R_BackbufferDrawColumn_Transparent( colcontext_t* context );
+void R_BackbufferDrawColumn_Translated( colcontext_t* context );
+void R_BackbufferDrawColumn_TranslatedAndTransparent( colcontext_t* context );
 
 // Rum and raisin extensions.
 // Needs a whole overhaul of how we define output buffers.

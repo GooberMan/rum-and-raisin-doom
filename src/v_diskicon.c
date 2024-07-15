@@ -71,7 +71,7 @@ void V_DrawDiskIcon(void)
 {
 	if (disk_icon_patch != NULL && recent_bytes_read > diskicon_threshold)
 	{
-		V_DrawPatch( loading_disk_xoffs, loading_disk_yoffs, disk_icon_patch );
+		V_DrawPatch( loading_disk_xoffs, loading_disk_yoffs, disk_icon_patch, NULL, NULL );
 	}
 
 	recent_bytes_read = 0;

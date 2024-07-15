@@ -35,6 +35,12 @@
 
 #define CENTERY			(SCREENHEIGHT/2)
 
+#if defined( __cplusplus )
+#define DEFAULT(x) = x
+#else
+#define DEFAULT(x)
+#endif
+
 
 DOOM_C_API extern int dirtybox[4];
 
@@ -61,9 +67,9 @@ DOOM_C_API void V_TransposeFlat( const char* flat_name, vbuffer_t* output, int o
 DOOM_C_API void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width, int32_t height );
 DOOM_C_API void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy );
 
-DOOM_C_API void V_DrawPatch(int x, int y, patch_t *patch);
-DOOM_C_API void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight);
-DOOM_C_API void V_DrawPatchFlipped(int x, int y, patch_t *patch);
+DOOM_C_API void V_DrawPatch(int x, int y, patch_t *patch, byte* tranmap DEFAULT(NULL), byte* translation DEFAULT(NULL) );
+DOOM_C_API void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy, int clippedwidth, int clippedheight, byte* tranmap DEFAULT(NULL), byte* translation DEFAULT(NULL));
+DOOM_C_API void V_DrawPatchFlipped(int x, int y, patch_t *patch, byte* tranmap DEFAULT(NULL), byte* translation DEFAULT(NULL) );
 DOOM_C_API void V_DrawTLPatch(int x, int y, patch_t *patch);
 DOOM_C_API void V_DrawAltTLPatch(int x, int y, patch_t * patch);
 DOOM_C_API void V_DrawShadowedPatch(int x, int y, patch_t *patch);
