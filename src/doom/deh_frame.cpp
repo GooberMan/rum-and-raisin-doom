@@ -331,7 +331,7 @@ static uint32_t DEH_FrameFNV1aHash( int32_t version, uint32_t base )
 
 			if( version >= exe_rnr24 )
 			{
-				base = fnv1a32( base, state->tranmaplump );
+				base = fnv1a32( base, state->tranmaplump ? state->tranmaplump : "null" );
 			}
 		}
 	}

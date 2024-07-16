@@ -231,7 +231,7 @@ static uint32_t DEH_WeaponFNV1aHash( int32_t version, uint32_t base )
 				base = fnv1a32( base, weapon->switchpriority );
 				base = fnv1a32( base, weapon->initialowned );
 				base = fnv1a32( base, weapon->initialraised );
-				base = fnv1a32( base, weapon->carouselicon );
+				base = fnv1a32( base, weapon->carouselicon ? weapon->carouselicon : "null" );
 				base = fnv1a32( base, weapon->allowswitchifownedweapon );
 				base = fnv1a32( base, weapon->noswitchifownedweapon );
 				base = fnv1a32( base, weapon->allowswitchifowneditem );

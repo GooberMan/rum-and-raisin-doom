@@ -341,7 +341,7 @@ static uint32_t DEH_ThingFNV1aHash( int32_t version, uint32_t base )
 				base = fnv1a32( base, mobj->pickupbonuscount );
 				base = fnv1a32( base, mobj->pickupsound );
 				base = fnv1a32( base, mobj->pickupstringmnemonic );
-				base = fnv1a32( base, mobj->translationlump );
+				base = fnv1a32( base, mobj->translationlump ? mobj->translationlump : "null" );
 			}
 		}
 	}
