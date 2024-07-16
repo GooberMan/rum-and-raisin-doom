@@ -83,6 +83,8 @@ DOOM_C_API void ST_Init (void);
 DOOM_C_API st_bordertile_t ST_GetBorderTileStyle();
 DOOM_C_API void ST_SetBorderTileStyle( st_bordertile_t mode, const char* flatname );
 
+DOOM_C_API int32_t ST_GetMaxBlocksSize();
+
 DOOM_C_API extern cheatseq_t cheat_mus;
 DOOM_C_API extern cheatseq_t cheat_god;
 DOOM_C_API extern cheatseq_t cheat_ammo;

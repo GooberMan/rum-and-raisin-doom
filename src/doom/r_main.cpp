@@ -1072,7 +1072,7 @@ R_SetViewSize
   int		detail )
 {
     setsizeneeded = true;
-    setblocks = M_MAX( 10, blocks );
+    setblocks = M_CLAMP( blocks, 10, ST_GetMaxBlocksSize() );
 	R_RebalanceContexts();
 }
 
@@ -1113,7 +1113,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 
 	setsizeneeded = false;
 
-	if (setblocks == 11)
+	if (setblocks >= 11)
 	{
 		current->scaledviewwidth = current->frame_width;
 		current->viewheight = current->frame_height;
@@ -1123,7 +1123,7 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 		current->scaledviewwidth = setblocks * 10 * current->frame_width / 100;
 		current->viewheight = (setblocks * ( current->frame_height - SBARHEIGHT( current ) ) / 10 ); // & ~7;
 	}
-	current->frame_blocks = setblocks;
+	current->frame_blocks = M_MIN( setblocks, 11 );
 
 	R_InitAspectAdjustedValues( current );
 

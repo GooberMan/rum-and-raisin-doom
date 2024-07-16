@@ -2541,3 +2541,15 @@ DOOM_C_API void ST_Init (void)
 		ST_InitSBars();
 	}
 }
+
+DOOM_C_API int32_t ST_GetMaxBlocksSize()
+{
+	if( bars != nullptr )
+	{
+		return 9 + (int32_t)statusbars.size();
+	}
+	else
+	{
+		return 11;
+	}
+}

@@ -1277,20 +1277,20 @@ void M_SizeDisplay(int choice)
 
     switch(choice)
     {
-      case 0:
-	if (screenSize > 0)
-	{
-	    screenblocks--;
-	    screenSize--;
-	}
-	break;
-      case 1:
-	if (screenSize < 8)
-	{
-	    screenblocks++;
-	    screenSize++;
-	}
-	break;
+    case 0:
+		if (screenSize > 7)
+		{
+			screenblocks--;
+			screenSize--;
+		}
+		break;
+    case 1:
+		if (screenblocks < ST_GetMaxBlocksSize())
+		{
+			screenblocks++;
+			screenSize++;
+		}
+		break;
     }
 	
 
@@ -3540,7 +3540,7 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igNextColumn();
 			igPushID_Ptr( &screenblocks );
 			igPushItemWidth( 200.f );
-			if( igSliderInt( "", &screenblocks, 10, 11, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+			if( igSliderInt( "", &screenblocks, 10, ST_GetMaxBlocksSize(), NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 			{
 				screenSize = screenblocks - 3;
 				R_SetViewSize (screenblocks, 0);
