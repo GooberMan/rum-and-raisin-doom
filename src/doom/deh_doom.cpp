@@ -64,20 +64,20 @@ extern "C"
 
 	deh_section_t *deh_section_types[] =
 	{
-		&deh_section_ammo,
-		&deh_section_cheat,
-		&deh_section_frame,
 		&deh_section_misc,
-		&deh_section_pointer,
-		&deh_section_sound,
-		&deh_section_text,
 		&deh_section_thing,
+		&deh_section_frame,
+		&deh_section_dsdsprites,
+		&deh_section_sound,
 		&deh_section_weapon,
+		&deh_section_ammo,
+		&deh_section_dsdsounds,
+		&deh_section_cheat,
+		&deh_section_pointer,
+		&deh_section_text,
 		&deh_section_bexstrings,
 		&deh_section_bexptr,
 		&deh_section_bexpars,
-		&deh_section_dsdsounds,
-		&deh_section_dsdsprites,
 		NULL
 	};
 }

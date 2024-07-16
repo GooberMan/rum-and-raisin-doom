@@ -169,9 +169,6 @@
     <ClCompile Include="..\src\deh_io.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\deh_main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\deh_mapping.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -251,6 +248,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\z_zone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\deh_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

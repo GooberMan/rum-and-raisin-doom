@@ -541,6 +541,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\deh_main.cpp" />
     <ClCompile Include="..\src\d_demoloop.cpp" />
     <ClCompile Include="..\src\d_gameconf.cpp" />
     <ClCompile Include="..\src\d_gameflow.cpp" />
@@ -698,7 +699,6 @@
     <ClInclude Include="..\src\deh_defs.h" />
     <ClCompile Include="..\src\deh_io.c" />
     <ClInclude Include="..\src\deh_io.h" />
-    <ClCompile Include="..\src\deh_main.c" />
     <ClInclude Include="..\src\deh_main.h" />
     <ClCompile Include="..\src\deh_mapping.c" />
     <ClInclude Include="..\src\deh_mapping.h" />

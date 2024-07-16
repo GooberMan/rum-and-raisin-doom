@@ -898,7 +898,7 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 		return nullptr;
     }
 
-    if (mthing->type <= 0)
+    if (mthing->type == -1 || mthing->type == 0)
     {
         // Thing type 0 is actually "player -1 start".  
         // For some reason, Vanilla Doom accepts/ignores this.
@@ -907,7 +907,7 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
     }
 	
     // check for players specially
-    if (mthing->type <= 4)
+    if (mthing->type >= 1 && mthing->type <= 4)
     {
 		// save spots for respawning in network games
 		playerstarts[mthing->type-1] = *mthing;

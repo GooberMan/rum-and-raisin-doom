@@ -35,18 +35,39 @@
 #include "deh_io.h"
 #include "deh_main.h"
 
-extern deh_section_t *deh_section_types[];
-extern const char *deh_signatures[];
-extern int32_t remove_limits;
+extern "C"
+{
+	extern deh_section_t *deh_section_types[];
+	extern const char *deh_signatures[];
+	extern int32_t remove_limits;
+
+	doombool deh_apply_cheats = true;
+}
 
 static doombool deh_initialized = false;
 static GameVersion_t deh_loaded_version = exe_invalid;
-static uint64_t deh_session_hash = 0;
+static uint32_t deh_session_hash = 0;
 static uint64_t deh_loaded_count = 0;
 
 // If false, dehacked cheat replacements are ignored.
 
-doombool deh_apply_cheats = true;
+static void DEH_RecalculateSessionHash()
+{
+	uint32_t hash = FNV1aBasis32;
+
+	deh_section_t** sectionptr = deh_section_types;
+	while( *sectionptr != nullptr )
+	{
+		auto& func = (*sectionptr)->fnv1_hash;
+		if( func != nullptr )
+		{
+			hash = func( deh_loaded_version, hash );
+		}
+		++sectionptr;
+	}
+
+	deh_session_hash = hash;
+}
 
 void DEH_Checksum(sha1_digest_t digest)
 {
@@ -335,6 +356,7 @@ int DEH_LoadFile(const char *filename)
 
 	GameVersion_t version = DEH_GameVersion( context );
 	deh_loaded_version = M_MAX( version, deh_loaded_version );
+	DEH_RecalculateSessionHash();
 
 	++deh_loaded_count;
 
@@ -400,6 +422,9 @@ int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error)
 
 	GameVersion_t version = DEH_GameVersion( context );
 	deh_loaded_version = M_MAX( version, deh_loaded_version );
+	DEH_RecalculateSessionHash();
+
+    I_TerminalPrintf( Log_Startup, " DEH hash: %u\n", deh_session_hash );
 
     DEH_CloseFile(context);
 

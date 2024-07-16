@@ -37,6 +37,7 @@ DEH_BEGIN_MAPPING(sound_mapping, sfxinfo_t)
     DEH_MAPPING("Neg. One 2", lumpnum)
 DEH_END_MAPPING
 
+extern std::vector< sfxinfo_t* > allsfx;
 extern std::unordered_map< int32_t, sfxinfo_t* > sfxmap;
 
 enum
@@ -51,7 +52,7 @@ static GameVersion_t VersionFromSoundNumber( int32_t num )
 {
 	return num < -1 ? exe_rnr24
 		: num < NumVanillaSounds ? exe_doom_1_2
-		: num < NumMBFSounds ? exe_boom_2_02
+		: num < NumMBFSounds ? exe_mbf
 		: num >= MinDehextra && num <= MaxDehextra ? exe_mbf_dehextra
 		: exe_mbf21_extended;
 }
@@ -64,20 +65,22 @@ sfxinfo_t* DEH_GetSound(deh_context_t* context, int32_t sound_number )
 		return nullptr;
 	}
 
-	DEH_IncreaseGameVersion( context, VersionFromSoundNumber( sound_number ) );
+	GameVersion_t version = VersionFromSoundNumber( sound_number );
+	DEH_IncreaseGameVersion( context, version );
 
 	auto found = sfxmap.find( sound_number );
+	if( found == sfxmap.end() )
 	{
-		if( found == sfxmap.end() )
-		{
-			sfxinfo_t* sfx = Z_MallocAs( sfxinfo_t, PU_STATIC, nullptr );
-			*sfx = {};
-			sfx->priority = 127;
-			sfx->pitch = -1;
-			sfx->volume = -1;
-			sfxmap[sound_number] = sfx;
-			return sfx;
-		}
+		sfxinfo_t* sfx = Z_MallocAs( sfxinfo_t, PU_STATIC, nullptr );
+		*sfx = {};
+		sfx->soundnum = sound_number;
+		sfx->minimumversion = version;
+		sfx->priority = 127;
+		sfx->pitch = -1;
+		sfx->volume = -1;
+		allsfx.push_back( sfx );
+		sfxmap[sound_number] = sfx;
+		return sfx;
 	}
 
     return found->second;
@@ -125,6 +128,20 @@ static void DEH_SoundParseLine(deh_context_t *context, char *line, void *tag)
     DEH_SetMapping(context, &sound_mapping, sfx, variable_name, ivalue);
 }
 
+static uint32_t DEH_SoundFNV1aHash( int32_t version, uint32_t base )
+{
+	for( sfxinfo_t* sound : allsfx )
+	{
+		if( version >= sound->minimumversion )
+		{
+			base = fnv1a32( base, sound->soundnum );
+			base = fnv1a32( base, sound->name );
+		}
+	}
+
+	return base;
+}
+
 deh_section_t deh_section_sound =
 {
     "Sound",
@@ -133,5 +150,6 @@ deh_section_t deh_section_sound =
     DEH_SoundParseLine,
     NULL,
     NULL,
+	DEH_SoundFNV1aHash,
 };
 

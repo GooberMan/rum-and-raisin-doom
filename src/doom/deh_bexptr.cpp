@@ -119,6 +119,8 @@ extern "C"
 	void A_RandomJump( mobj_t* mobj );
 	void A_LineEffect( mobj_t* mobj );
 	void A_Die( mobj_t* mobj );
+	void A_BetaSoulAttack( mobj_t* mobj );
+	void A_FireOldBFG( player_t* player, pspdef_t* psp );
 
 	// MBF21 Actions
 	void A_SpawnObject( mobj_t* mobj );
@@ -252,6 +254,8 @@ static std::map< std::string, funcmapping_t > PointerLookup =
 	MBFFuncType( RandomJump ),
 	MBFFuncType( LineEffect ),
 	MBFFuncType( Die ),
+	MBFFuncType( BetaSoulAttack ),
+	MBFFuncType( FireOldBFG ),
 
 	// MBF21 actions
 	MBF21FuncType( SpawnObject ),
@@ -286,6 +290,16 @@ static std::map< std::string, funcmapping_t > PointerLookup =
 
 void DEH_ResolveAllForFrame( deh_context_t* context, state_t* state );
 state_t* DEH_GetState( deh_context_t* context, int32_t frame_number );
+
+const char* DEH_ResolveNameForAction( actionf_v func )
+{
+	using value_type = decltype( PointerLookup )::value_type;
+
+	return std::find_if( PointerLookup.begin(), PointerLookup.end(), [func]( value_type& pair )
+		{
+			return pair.second.action.Value() == func;
+		} )->first.c_str();
+}
 
 static void *DEH_BEXPtrStart( deh_context_t* context, char* line )
 {

@@ -2006,18 +2006,27 @@ DOOM_C_API void D_DoomMain (void)
     // Generate the WAD hash table.  Speed things up a bit.
     W_GenerateHashTable();
 
-	// Load DEHACKED lumps of all kinds.
+	D_InitStateTables();
+	D_InitItemTables();
+	D_InitSoundTables();
+
+	// Load DEHACKED lumps of all kinds in WAD order
 	for( lumpindex_t lumpindex = 0; lumpindex < numlumps; ++lumpindex )
 	{
 		if (!strncmp(lumpinfo[ lumpindex ]->name, "DEHACKED", 8))
 		{
 			DEH_LoadLump( lumpindex, true, true );
+			D_InitStateLookupTables();
+			D_InitItemLookupTables();
 		}
 	}
 
+	// And command line after for thrills
 	for( const char* dehfile : gameconf->DEHFiles() )
 	{
 		DEH_LoadFile( dehfile );
+		D_InitStateLookupTables();
+		D_InitItemLookupTables();
 	}
 
 	// With gameflow and dehacked parsed, we can finally set up the gamesim correctly

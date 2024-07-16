@@ -32,6 +32,9 @@ DOOM_C_API typedef struct sfxinfo_struct	sfxinfo_t;
 
 DOOM_C_API struct sfxinfo_struct
 {
+	int32_t soundnum;
+	int32_t minimumversion;
+
     // tag name, used for hexen.
     const char *tagname;
 

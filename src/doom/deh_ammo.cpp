@@ -51,7 +51,7 @@ DEH_BEGIN_MAPPING( ammo_mapping, ammoinfo_t )
 DEH_END_MAPPING
 
 extern std::unordered_map< int32_t, ammoinfo_t* > ammomap;
-extern std::vector< ammoinfo_t* > ammomapstorage;
+extern std::vector< ammoinfo_t* > allammo;
 
 static void *DEH_AmmoStart(deh_context_t *context, char *line)
 {
@@ -78,6 +78,7 @@ static void *DEH_AmmoStart(deh_context_t *context, char *line)
 		*newammo =
 		{
 			ammo_number,		// index
+			exe_rnr24,			// minimumversion
 			0,					// clipammo
 			0,					// maxammo
 			0,					// initialammo
@@ -94,8 +95,8 @@ static void *DEH_AmmoStart(deh_context_t *context, char *line)
 			true,				// recalculateFromOriginalValues
 		};
 
+		allammo.push_back( newammo );
 		ammomap[ ammo_number ] = newammo;
-		ammomapstorage.push_back( newammo );
 		return newammo;
 	}
 
@@ -149,6 +150,8 @@ static void DEH_AmmoEnd( deh_context_t* context, ammoinfo_t* ammoinfo )
 		ammoinfo->droppedweaponammo		= M_MAX( 1, ammoinfo->weaponammo / 2 );
 
 		ammoinfo->deathmatchweaponammo	= ammoinfo->clipammo * 5;
+
+		ammoinfo->recalculateFromOriginalValues = false;
 	}
 }
 
@@ -163,6 +166,38 @@ static void DEH_AmmoSHA1Hash(sha1_context_t *context)
     //}
 }
 
+static uint32_t DEH_AmmoFNV1aHash( int32_t version, uint32_t base )
+{
+	for( ammoinfo_t* ammo : allammo )
+	{
+		if( version >= ammo->minimumversion )
+		{
+			base = fnv1a32( base, ammo->clipammo );
+			base = fnv1a32( base, ammo->maxammo );
+			if( version >= exe_rnr24 )
+			{
+				base = fnv1a32( base, ammo->initialammo );
+				base = fnv1a32( base, ammo->maxupgradedammo );
+				base = fnv1a32( base, ammo->boxammo );
+				base = fnv1a32( base, ammo->backpackammo );
+				base = fnv1a32( base, ammo->weaponammo );
+				base = fnv1a32( base, ammo->droppedclipammo );
+				base = fnv1a32( base, ammo->droppedboxammo );
+				base = fnv1a32( base, ammo->droppedbackpackammo );
+				base = fnv1a32( base, ammo->droppedweaponammo );
+				base = fnv1a32( base, ammo->deathmatchweaponammo );
+				base = fnv1a32( base, ammo->skillmul[ 0 ] );
+				base = fnv1a32( base, ammo->skillmul[ 1 ] );
+				base = fnv1a32( base, ammo->skillmul[ 2 ] );
+				base = fnv1a32( base, ammo->skillmul[ 3 ] );
+				base = fnv1a32( base, ammo->skillmul[ 4 ] );
+			}
+		}
+	}
+
+	return base;
+}
+
 deh_section_t deh_section_ammo =
 {
     "Ammo",
@@ -171,5 +206,6 @@ deh_section_t deh_section_ammo =
     DEH_AmmoParseLine,
     (deh_section_end_t)DEH_AmmoEnd,
     DEH_AmmoSHA1Hash,
+	DEH_AmmoFNV1aHash,
 };
 

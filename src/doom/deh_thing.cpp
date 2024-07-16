@@ -80,6 +80,9 @@ DOOM_C_API void DEH_BexHandleThingBits( deh_context_t* context, const char* valu
 DOOM_C_API void DEH_BexHandleThingBits2( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 DOOM_C_API void DEH_BexHandleThingBitsRNR24( deh_context_t* context, const char* value, mobjinfo_t* mobj );
 
+extern std::unordered_map< int32_t, mobjinfo_t* > mobjtypemap;
+extern std::vector< mobjinfo_t* > allmobjs;
+
 mobjinfo_t* DEH_GetThing( deh_context_t* context, int32_t thing_number )
 {
 	if( thing_number == -1 )
@@ -97,7 +100,6 @@ mobjinfo_t* DEH_GetThing( deh_context_t* context, int32_t thing_number )
 
 	DEH_IncreaseGameVersion( context, version );
 
-	extern std::unordered_map< int32_t, mobjinfo_t* > mobjtypemap;
 	auto foundmobj = mobjtypemap.find( thing_number );
 	if( foundmobj == mobjtypemap.end() )
 	{
@@ -121,6 +123,7 @@ mobjinfo_t* DEH_GetThing( deh_context_t* context, int32_t thing_number )
 		mobjinfo_t* mobj = Z_MallocAs( mobjinfo_t, PU_STATIC, nullptr );
 		*mobj = NewMobj();
 		mobj->type = thing_number;
+		allmobjs.push_back( mobj );
 		mobjtypemap[ thing_number ] = mobj;
 		return mobj;
 	}
@@ -187,6 +190,7 @@ static void DEH_ThingParseLine(deh_context_t *context, char *line, void *tag)
 	{
 		DEH_IncreaseGameVersion( context, exe_rnr24 );
 		mobj->translationlump = M_DuplicateStringToZone( value, PU_STATIC, nullptr );
+		M_ForceUppercase( (char*)mobj->translationlump );
 	}
 	else if( strcmp( variable_name, "Bits" ) == 0
 		&& !( isdigit( value[ 0 ] ) 
@@ -282,6 +286,69 @@ static void DEH_ThingSHA1Sum(sha1_context_t *context)
     }
 }
 
+static uint32_t DEH_ThingFNV1aHash( int32_t version, uint32_t base )
+{
+	for( mobjinfo_t* mobj : allmobjs )
+	{
+		if( version >= mobj->minimumversion )
+		{
+			base = fnv1a32( base, mobj->type );
+			base = fnv1a32( base, mobj->doomednum );
+			base = fnv1a32( base, mobj->spawnstate );
+			base = fnv1a32( base, mobj->spawnhealth );
+			base = fnv1a32( base, mobj->seestate );
+			base = fnv1a32( base, mobj->seesound );
+			base = fnv1a32( base, mobj->reactiontime );
+			base = fnv1a32( base, mobj->attacksound );
+			base = fnv1a32( base, mobj->painstate );
+			base = fnv1a32( base, mobj->painchance );
+			base = fnv1a32( base, mobj->painsound );
+			base = fnv1a32( base, mobj->meleestate );
+			base = fnv1a32( base, mobj->missilestate );
+			base = fnv1a32( base, mobj->deathstate );
+			base = fnv1a32( base, mobj->xdeathstate );
+			base = fnv1a32( base, mobj->deathsound );
+			base = fnv1a32( base, mobj->speed );
+			base = fnv1a32( base, mobj->radius );
+			base = fnv1a32( base, mobj->height );
+			base = fnv1a32( base, mobj->mass );
+			base = fnv1a32( base, mobj->damage );
+			base = fnv1a32( base, mobj->activesound );
+			base = fnv1a32( base, mobj->flags );
+			base = fnv1a32( base, mobj->raisestate );
+
+			if( version >= exe_mbf21 )
+			{
+				base = fnv1a32( base, mobj->flags2 );
+				base = fnv1a32( base, mobj->infightinggroup );
+				base = fnv1a32( base, mobj->projectilegroup );
+				base = fnv1a32( base, mobj->splashgroup );
+				base = fnv1a32( base, mobj->fastspeed );
+				base = fnv1a32( base, mobj->meleerange );
+				base = fnv1a32( base, mobj->ripsound );
+			}
+
+			if( version >= exe_rnr24 )
+			{
+				base = fnv1a32( base, mobj->rnr24flags );
+				base = fnv1a32( base, mobj->minrespawntics );
+				base = fnv1a32( base, mobj->respawndice );
+				base = fnv1a32( base, mobj->dropthing );
+				base = fnv1a32( base, mobj->pickupammotype );
+				base = fnv1a32( base, mobj->pickupammocategory );
+				base = fnv1a32( base, mobj->pickupweapontype );
+				base = fnv1a32( base, mobj->pickupitemtype );
+				base = fnv1a32( base, mobj->pickupbonuscount );
+				base = fnv1a32( base, mobj->pickupsound );
+				base = fnv1a32( base, mobj->pickupstringmnemonic );
+				base = fnv1a32( base, mobj->translationlump );
+			}
+		}
+	}
+	
+	return base;
+}
+
 deh_section_t deh_section_thing =
 {
     "Thing",
@@ -290,5 +357,6 @@ deh_section_t deh_section_thing =
     DEH_ThingParseLine,
     NULL,
     DEH_ThingSHA1Sum,
+	DEH_ThingFNV1aHash,
 };
 

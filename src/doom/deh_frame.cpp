@@ -86,6 +86,7 @@ mobjinfo_t* DEH_GetThing( deh_context_t* context, int32_t thing_number );
 state_t* DEH_GetState( deh_context_t* context, int32_t frame_number );
 sfxinfo_t* DEH_GetSound(deh_context_t* context, int32_t sound_number );
 void DEH_EnsureSpriteExists( deh_context_t* context, int32_t spritenum );
+const char* DEH_ResolveNameForAction( actionf_v func );
 
 static const resolvemap_t thingresolvers =
 {
@@ -119,6 +120,9 @@ static const resolvemap_t soundresolvers =
 	{ (actionf_v)&A_WeaponSound,			[]( deh_context_t* context, state_t* state ) { DEH_GetSound( context, state->arg1._int ); }			},
 };
 
+extern std::unordered_map< int32_t, state_t* > statemap;
+extern std::vector< state_t* > allstates;
+
 state_t* DEH_GetState( deh_context_t* context, int32_t frame_number )
 {
 	if( frame_number == -1 )
@@ -137,7 +141,6 @@ state_t* DEH_GetState( deh_context_t* context, int32_t frame_number )
 							: exe_mbf21_extended;
 	DEH_IncreaseGameVersion( context, version );
 
-	extern std::unordered_map< int32_t, state_t* > statemap;
 	auto foundstate = statemap.find( frame_number );
 	if( foundstate == statemap.end() )
 	{
@@ -145,12 +148,14 @@ state_t* DEH_GetState( deh_context_t* context, int32_t frame_number )
 		*newstate =
 		{
 			frame_number,				// statenum
+			version,					// minimumersion
 			SPR_TNT1,					// sprite
 			0,							// frame
 			-1,							// tics
 			nullptr,					// action
 			(statenum_t)frame_number,	// nextstate
 		};
+		allstates.push_back( newstate );
 		statemap[ frame_number ] = newstate;
 		return newstate;
 	}
@@ -296,6 +301,44 @@ static void DEH_FrameSHA1Sum(sha1_context_t *context)
     }
 }
 
+static uint32_t DEH_FrameFNV1aHash( int32_t version, uint32_t base )
+{
+	for( state_t* state : allstates )
+	{
+		if( version >= state->minimumversion )
+		{
+			base = fnv1a32( base, state->statenum );
+			base = fnv1a32( base, DEH_ResolveNameForAction( state->action.Value() ) );
+			base = fnv1a32( base, state->sprite );
+			base = fnv1a32( base, state->frame );
+			base = fnv1a32( base, state->tics );
+			base = fnv1a32( base, state->nextstate );
+			base = fnv1a32( base, state->misc1._int );
+			base = fnv1a32( base, state->misc2._int );
+
+			if( version >= exe_mbf21 )
+			{
+				base = fnv1a32( base, state->mbf21flags );
+				base = fnv1a32( base, state->arg1._int );
+				base = fnv1a32( base, state->arg2._int );
+				base = fnv1a32( base, state->arg3._int );
+				base = fnv1a32( base, state->arg4._int );
+				base = fnv1a32( base, state->arg5._int );
+				base = fnv1a32( base, state->arg6._int );
+				base = fnv1a32( base, state->arg7._int );
+				base = fnv1a32( base, state->arg8._int );
+			}
+
+			if( version >= exe_rnr24 )
+			{
+				base = fnv1a32( base, state->tranmaplump );
+			}
+		}
+	}
+
+	return base;
+}
+
 deh_section_t deh_section_frame =
 {
     "Frame",
@@ -304,5 +347,6 @@ deh_section_t deh_section_frame =
     DEH_FrameParseLine,
     (deh_section_end_t)DEH_ResolveAllForFrame,
     DEH_FrameSHA1Sum,
+	DEH_FrameFNV1aHash,
 };
 

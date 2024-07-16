@@ -24,9 +24,13 @@
 #include "doomtype.h"
 #include "sounds.h"
 
+#include "d_mode.h"
+
 #include "i_error.h"
 
 #include "m_container.h"
+
+#include "z_zone.h"
 
 //
 // Information about all the music
@@ -112,162 +116,171 @@ DOOM_C_API musicinfo_t S_music[] =
 // Information about all the sfx
 //
 
-#define SOUND(name, priority) \
-  { NULL, name, priority, NULL, -1, -1, 0, 0, -1, NULL }
-#define SOUND_LINK(name, priority, link_id, pitch, volume) \
-  { NULL, name, priority, &builtinsfx[link_id], pitch, volume, 0, 0, -1, NULL }
+#define SOUND(index, name, priority) \
+  { index, exe_doom_1_2, NULL, name, priority, NULL, -1, -1, 0, 0, -1, NULL }
+#define SOUNDMBF(index, name, priority) \
+  { index, exe_mbf, NULL, name, priority, NULL, -1, -1, 0, 0, -1, NULL }
+#define SOUND_LINK(index, name, priority, link_id, pitch, volume) \
+  { index, exe_doom_1_2, NULL, name, priority, &builtinsfx[link_id], pitch, volume, 0, 0, -1, NULL }
 
 sfxinfo_t builtinsfx[] =
 {
-  // S_sfx[0] needs to be a dummy for odd reasons.
-  SOUND("none",   0),
-  SOUND("pistol", 64),
-  SOUND("shotgn", 64),
-  SOUND("sgcock", 64),
-  SOUND("dshtgn", 64),
-  SOUND("dbopn",  64),
-  SOUND("dbcls",  64),
-  SOUND("dbload", 64),
-  SOUND("plasma", 64),
-  SOUND("bfg",    64),
-  SOUND("sawup",  64),
-  SOUND("sawidl", 118),
-  SOUND("sawful", 64),
-  SOUND("sawhit", 64),
-  SOUND("rlaunc", 64),
-  SOUND("rxplod", 70),
-  SOUND("firsht", 70),
-  SOUND("firxpl", 70),
-  SOUND("pstart", 100),
-  SOUND("pstop",  100),
-  SOUND("doropn", 100),
-  SOUND("dorcls", 100),
-  SOUND("stnmov", 119),
-  SOUND("swtchn", 78),
-  SOUND("swtchx", 78),
-  SOUND("plpain", 96),
-  SOUND("dmpain", 96),
-  SOUND("popain", 96),
-  SOUND("vipain", 96),
-  SOUND("mnpain", 96),
-  SOUND("pepain", 96),
-  SOUND("slop",   78),
-  SOUND("itemup", 78),
-  SOUND("wpnup",  78),
-  SOUND("oof",    96),
-  SOUND("telept", 32),
-  SOUND("posit1", 98),
-  SOUND("posit2", 98),
-  SOUND("posit3", 98),
-  SOUND("bgsit1", 98),
-  SOUND("bgsit2", 98),
-  SOUND("sgtsit", 98),
-  SOUND("cacsit", 98),
-  SOUND("brssit", 94),
-  SOUND("cybsit", 92),
-  SOUND("spisit", 90),
-  SOUND("bspsit", 90),
-  SOUND("kntsit", 90),
-  SOUND("vilsit", 90),
-  SOUND("mansit", 90),
-  SOUND("pesit",  90),
-  SOUND("sklatk", 70),
-  SOUND("sgtatk", 70),
-  SOUND("skepch", 70),
-  SOUND("vilatk", 70),
-  SOUND("claw",   70),
-  SOUND("skeswg", 70),
-  SOUND("pldeth", 32),
-  SOUND("pdiehi", 32),
-  SOUND("podth1", 70),
-  SOUND("podth2", 70),
-  SOUND("podth3", 70),
-  SOUND("bgdth1", 70),
-  SOUND("bgdth2", 70),
-  SOUND("sgtdth", 70),
-  SOUND("cacdth", 70),
-  SOUND("skldth", 70),
-  SOUND("brsdth", 32),
-  SOUND("cybdth", 32),
-  SOUND("spidth", 32),
-  SOUND("bspdth", 32),
-  SOUND("vildth", 32),
-  SOUND("kntdth", 32),
-  SOUND("pedth",  32),
-  SOUND("skedth", 32),
-  SOUND("posact", 120),
-  SOUND("bgact",  120),
-  SOUND("dmact",  120),
-  SOUND("bspact", 100),
-  SOUND("bspwlk", 100),
-  SOUND("vilact", 100),
-  SOUND("noway",  78),
-  SOUND("barexp", 60),
-  SOUND("punch",  64),
-  SOUND("hoof",   70),
-  SOUND("metal",  70),
-  SOUND_LINK("chgun", 64, sfx_pistol, 150, 0),
-  SOUND("tink",   60),
-  SOUND("bdopn",  100),
-  SOUND("bdcls",  100),
-  SOUND("itmbk",  100),
-  SOUND("flame",  32),
-  SOUND("flamst", 32),
-  SOUND("getpow", 60),
-  SOUND("bospit", 70),
-  SOUND("boscub", 70),
-  SOUND("bossit", 70),
-  SOUND("bospn",  70),
-  SOUND("bosdth", 70),
-  SOUND("manatk", 70),
-  SOUND("mandth", 70),
-  SOUND("sssit",  70),
-  SOUND("ssdth",  70),
-  SOUND("keenpn", 70),
-  SOUND("keendt", 70),
-  SOUND("skeact", 70),
-  SOUND("skesit", 70),
-  SOUND("skeatk", 70),
-  SOUND("radio",  60),
-  SOUND("dgsit",  98),
-  SOUND("dgatk",  70),
-  SOUND("dgact",  120),
-  SOUND("dgdth",  70),
-  SOUND("dgpain", 96),
-  SOUND("secret",  100),
+	// S_sfx[0] needs to be a dummy for odd reasons.
+	SOUND(0,"none",   0),
+	SOUND(1,"pistol", 64),
+	SOUND(2,"shotgn", 64),
+	SOUND(3,"sgcock", 64),
+	SOUND(4,"dshtgn", 64),
+	SOUND(5,"dbopn",  64),
+	SOUND(6,"dbcls",  64),
+	SOUND(7,"dbload", 64),
+	SOUND(8,"plasma", 64),
+	SOUND(9,"bfg",    64),
+	SOUND(10,"sawup",  64),
+	SOUND(11,"sawidl", 118),
+	SOUND(12,"sawful", 64),
+	SOUND(13,"sawhit", 64),
+	SOUND(14,"rlaunc", 64),
+	SOUND(15,"rxplod", 70),
+	SOUND(16,"firsht", 70),
+	SOUND(17,"firxpl", 70),
+	SOUND(18,"pstart", 100),
+	SOUND(19,"pstop",  100),
+	SOUND(20,"doropn", 100),
+	SOUND(21,"dorcls", 100),
+	SOUND(22,"stnmov", 119),
+	SOUND(23,"swtchn", 78),
+	SOUND(24,"swtchx", 78),
+	SOUND(25,"plpain", 96),
+	SOUND(26,"dmpain", 96),
+	SOUND(27,"popain", 96),
+	SOUND(28,"vipain", 96),
+	SOUND(29,"mnpain", 96),
+	SOUND(30,"pepain", 96),
+	SOUND(31,"slop",   78),
+	SOUND(32,"itemup", 78),
+	SOUND(33,"wpnup",  78),
+	SOUND(34,"oof",    96),
+	SOUND(35,"telept", 32),
+	SOUND(36,"posit1", 98),
+	SOUND(37,"posit2", 98),
+	SOUND(38,"posit3", 98),
+	SOUND(39,"bgsit1", 98),
+	SOUND(40,"bgsit2", 98),
+	SOUND(41,"sgtsit", 98),
+	SOUND(42,"cacsit", 98),
+	SOUND(43,"brssit", 94),
+	SOUND(44,"cybsit", 92),
+	SOUND(45,"spisit", 90),
+	SOUND(46,"bspsit", 90),
+	SOUND(47,"kntsit", 90),
+	SOUND(48,"vilsit", 90),
+	SOUND(49,"mansit", 90),
+	SOUND(50,"pesit",  90),
+	SOUND(51,"sklatk", 70),
+	SOUND(52,"sgtatk", 70),
+	SOUND(53,"skepch", 70),
+	SOUND(54,"vilatk", 70),
+	SOUND(55,"claw",   70),
+	SOUND(56,"skeswg", 70),
+	SOUND(57,"pldeth", 32),
+	SOUND(58,"pdiehi", 32),
+	SOUND(59,"podth1", 70),
+	SOUND(60,"podth2", 70),
+	SOUND(61,"podth3", 70),
+	SOUND(62,"bgdth1", 70),
+	SOUND(63,"bgdth2", 70),
+	SOUND(64,"sgtdth", 70),
+	SOUND(65,"cacdth", 70),
+	SOUND(66,"skldth", 70),
+	SOUND(67,"brsdth", 32),
+	SOUND(68,"cybdth", 32),
+	SOUND(69,"spidth", 32),
+	SOUND(70,"bspdth", 32),
+	SOUND(71,"vildth", 32),
+	SOUND(72,"kntdth", 32),
+	SOUND(73,"pedth",  32),
+	SOUND(74,"skedth", 32),
+	SOUND(75,"posact", 120),
+	SOUND(76,"bgact",  120),
+	SOUND(77,"dmact",  120),
+	SOUND(78,"bspact", 100),
+	SOUND(79,"bspwlk", 100),
+	SOUND(80,"vilact", 100),
+	SOUND(81,"noway",  78),
+	SOUND(82,"barexp", 60),
+	SOUND(83,"punch",  64),
+	SOUND(84,"hoof",   70),
+	SOUND(85,"metal",  70),
+	SOUND_LINK(86,"chgun", 64, sfx_pistol, 150, 0),
+	SOUND(87,"tink",   60),
+	SOUND(88,"bdopn",  100),
+	SOUND(89,"bdcls",  100),
+	SOUND(90,"itmbk",  100),
+	SOUND(91,"flame",  32),
+	SOUND(92,"flamst", 32),
+	SOUND(93,"getpow", 60),
+	SOUND(94,"bospit", 70),
+	SOUND(95,"boscub", 70),
+	SOUND(96,"bossit", 70),
+	SOUND(97,"bospn",  70),
+	SOUND(98,"bosdth", 70),
+	SOUND(99,"manatk", 70),
+	SOUND(100,"mandth", 70),
+	SOUND(101,"sssit",  70),
+	SOUND(102,"ssdth",  70),
+	SOUND(103,"keenpn", 70),
+	SOUND(104,"keendt", 70),
+	SOUND(105,"skeact", 70),
+	SOUND(106,"skesit", 70),
+	SOUND(107,"skeatk", 70),
+	SOUND(108,"radio",  60),
+	SOUNDMBF(109,"dgsit",  98),
+	SOUNDMBF(110,"dgatk",  70),
+	SOUNDMBF(111,"dgact",  120),
+	SOUNDMBF(112,"dgdth",  70),
+	SOUNDMBF(113,"dgpain", 96),
+	SOUNDMBF(114,"secret",  100),
 };
 
-static sfxinfo_t dehextrasounds[ 200 ] = {};
+std::vector< sfxinfo_t* > allsfx;
+std::unordered_map< int32_t, sfxinfo_t* > sfxmap;
+DoomSoundLookup sfxinfos;
 
-static std::unordered_map< int32_t, sfxinfo_t* > BuildMapobjectNumMap( std::span< sfxinfo_t > soundspan )
+DOOM_C_API void D_InitSoundTables()
 {
-	std::unordered_map< int32_t, sfxinfo_t* > soundmap;
-	int32_t soundindex = 0;
-	for( sfxinfo_t& soundinfo : soundspan )
+	allsfx.reserve( arrlen( builtinsfx ) + 200 );
+
+	for( sfxinfo_t& soundinfo : std::span( builtinsfx ) )
 	{
-		soundmap[ soundindex++ ] = &soundinfo;
+		sfxinfo_t* thissound = Z_MallocAs( sfxinfo_t, PU_STATIC, nullptr );
+		*thissound = soundinfo;
+		allsfx.push_back( thissound );
+		sfxmap[ thissound->soundnum ] = thissound;
 	}
 
 	char name[16] = "fre000";
 
 	for( int32_t dehextrasound : iota( 500, 700 ) )
 	{
-		soundindex = dehextrasound - 500;
+		int32_t soundindex = dehextrasound - 500;
 		name[3] = '0' + ( soundindex / 100 );
 		name[4] = '0' + ( ( soundindex / 10 ) % 10 );
 		name[5] = '0' + ( soundindex % 10 );
-		strncpy( dehextrasounds[ soundindex ].name, name, 6 );
-		dehextrasounds[ soundindex ].priority = 127;
-		dehextrasounds[ soundindex ].pitch = -1;
-		dehextrasounds[ soundindex ].volume = -1;
-		soundmap[ dehextrasound ] = &dehextrasounds[ soundindex ];
+
+		sfxinfo_t* thissound = Z_MallocAs( sfxinfo_t, PU_STATIC, nullptr );
+		*thissound = {};
+
+		thissound->soundnum = dehextrasound;
+		thissound->minimumversion = exe_mbf_dehextra;
+		strncpy( thissound->name, name, 6 );
+		thissound->priority = 127;
+		thissound->pitch = -1;
+		thissound->volume = -1;
+		allsfx.push_back( thissound );
+		sfxmap[ thissound->soundnum ] = thissound;
 	}
-
-	return soundmap;
 }
-
-std::unordered_map< int32_t, sfxinfo_t* > sfxmap = BuildMapobjectNumMap( std::span( builtinsfx ) );
-DoomSoundLookup sfxinfos;
 
 sfxinfo_t& DoomSoundLookup::Fetch( int32_t soundnum )
 {

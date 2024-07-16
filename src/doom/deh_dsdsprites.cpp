@@ -31,7 +31,7 @@
 #include "m_conv.h"
 
 extern std::unordered_map< int32_t, const char* > spritenamemap;
-
+extern std::vector< spriteinfo_t* > allsprites;
 enum
 {
 	NumDoomSprites = 138,
@@ -58,8 +58,15 @@ void DEH_EnsureSpriteExists( deh_context_t* context, int32_t spritenum )
 	}
 	else
 	{
-		DEH_IncreaseGameVersion( context, VersionForSpriteNum( spritenum ) );
-		spritenamemap[ spritenum ] = "TNT1";
+		GameVersion_t version = VersionForSpriteNum( spritenum );
+		DEH_IncreaseGameVersion( context, version );
+		if( spritenamemap.find( spritenum ) == spritenamemap.end() )
+		{
+			spriteinfo_t* newsprite = Z_MallocAs( spriteinfo_t, PU_STATIC, nullptr );
+			*newsprite = { spritenum, version, M_DuplicateStringToZone( "TNT1", PU_STATIC, nullptr ) };
+			allsprites.push_back( newsprite );
+			spritenamemap[ spritenum ] = newsprite->sprite;
+		}
 	}
 }
 
@@ -116,16 +123,35 @@ static void DEH_DSDSpritesParseLine( deh_context_t *context, char* line, void* t
 
 	if( spriteindex == -1 )
 	{
-		DEH_Error(context, "Invalid sound number: -1" );
+		DEH_Error(context, "Invalid sprite number: -1" );
 		return;
 	}
 
 	DEH_EnsureSpriteExists( context, spriteindex );
 
-	char* newstring = (char*)Z_MallocZero( spritelen + 1, PU_STATIC, nullptr );
-	memcpy( newstring, value, spritelen );
+	spriteinfo_t* found = *std::find_if( allsprites.begin(), allsprites.end(), [spriteindex]( spriteinfo_t* val )
+								{
+									return val->spritenum == spriteindex;
+								} );
 
-	spritenamemap[ spriteindex ] = newstring;
+	Z_Free( (void*)found->sprite );
+
+	found->sprite = M_DuplicateStringToZone( value, PU_STATIC, nullptr );
+	spritenamemap[ spriteindex ] = found->sprite;
+}
+
+static uint32_t DEH_SpritesFNV1aHash( int32_t version, uint32_t base )
+{
+	for( spriteinfo_t* sprite : allsprites )
+	{
+		if( version >= sprite->minimumversion )
+		{
+			base = fnv1a32( base, sprite->spritenum );
+			base = fnv1a32( base, sprite->sprite );
+		}
+	}
+
+	return base;
 }
 
 deh_section_t deh_section_dsdsprites =
@@ -135,6 +161,7 @@ deh_section_t deh_section_dsdsprites =
 	DEH_DSDSpritesStart,
 	DEH_DSDSpritesParseLine,
 	NULL,
-	NULL
+	NULL,
+	DEH_SpritesFNV1aHash,
 };
 

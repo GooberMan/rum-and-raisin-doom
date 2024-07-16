@@ -1491,6 +1491,7 @@ DOOM_C_API extern int deathmatch;
 DOOM_C_API typedef struct state_s
 {
 	int32_t		statenum;
+	int32_t		minimumversion;
 	int32_t		sprite;
 	int32_t		frame;
 	int32_t		tics;
@@ -1614,6 +1615,13 @@ DOOM_C_API typedef struct
 	struct translation_s* translation;
 } mobjinfo_t;
 
+DOOM_C_API typedef struct
+{
+	int32_t		spritenum;
+	int32_t		minimumversion;
+	const char*	sprite;
+} spriteinfo_t;
+
 #if defined( __cplusplus )
 
 constexpr int32_t MusInfoDoomedNum = 14100;
@@ -1663,6 +1671,9 @@ extern DoomStateLookup			states;
 extern DoomMobjTypeLookup		mobjinfo;
 extern DoomMapobjectNumLookup	mapobjects;
 extern DoomSpriteNameLookup		sprnames;
+
+void D_InitStateLookupTables();
+void D_InitStateTables();
 
 #endif // defined( __cplusplus )
 

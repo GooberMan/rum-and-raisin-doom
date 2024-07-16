@@ -45,7 +45,7 @@ static GameVersion_t VersionFromSoundNumber( int32_t num )
 {
 	return num < 0 ? exe_mbf21_extended
 		: num < NumVanillaSounds ? exe_doom_1_2
-		: num < NumMBFSounds ? exe_boom_2_02
+		: num < NumMBFSounds ? exe_mbf
 		: num >= MinDehextra && num <= MaxDehextra ? exe_mbf_dehextra
 		: exe_mbf21_extended;
 }

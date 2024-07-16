@@ -34,17 +34,17 @@
 #define DEH_MAPPING(deh_name, fieldname)                      \
              {deh_name, &deh_mapping_base.fieldname,          \
                  sizeof(deh_mapping_base.fieldname),          \
-                 false, exe_doom_1_2},
+                 is_some_string_v< decltype( deh_mapping_base.fieldname ) >, exe_doom_1_2},
 
 #define MBF21_MAPPING(deh_name, fieldname)                    \
              {deh_name, &deh_mapping_base.fieldname,          \
                  sizeof(deh_mapping_base.fieldname),          \
-                 false, exe_mbf21},
+                 is_some_string_v< decltype( deh_mapping_base.fieldname ) >, exe_mbf21},
 
-#define RNR_MAPPING(deh_name, fieldname)                    \
+#define RNR_MAPPING(deh_name, fieldname)                      \
              {deh_name, &deh_mapping_base.fieldname,          \
                  sizeof(deh_mapping_base.fieldname),          \
-                 false, exe_rnr24},
+                 is_some_string_v< decltype( deh_mapping_base.fieldname ) >, exe_rnr24},
 
 #define DEH_UNSUPPORTED_MAPPING(deh_name)                     \
              {deh_name, NULL, -1, false, exe_invalid},

@@ -26,6 +26,7 @@
 DOOM_C_API typedef struct ammoinfo_s
 {
 	int32_t	index;
+	int32_t minimumversion;
 
 	int32_t clipammo;
 	int32_t maxammo;
@@ -63,12 +64,14 @@ DOOM_C_API typedef struct weaponinfo_s
 {
 	// RNR extensions
 	int32_t			index;
+	int32_t			minimumversion;
 	int32_t			slot;
 	int32_t			slotpriority;
 	int32_t			switchpriority;
 	GameMode_t		mingamemode;
 	doombool		initialowned;
 	doombool		initialraised;
+	const char*		carouselicon;
 	int32_t			allowswitchifownedweapon;
 	int32_t			noswitchifownedweapon;
 	int32_t			allowswitchifowneditem;
@@ -152,6 +155,9 @@ const ammoinfo_t& weaponinfo_t::AmmoInfo() const
 {
 	return ammoinfo[ ammo ];
 }
+
+void D_InitItemLookupTables();
+void D_InitItemTables();
 
 #endif // defined( __cplusplus )
 

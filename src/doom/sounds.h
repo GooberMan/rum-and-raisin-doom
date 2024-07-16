@@ -229,6 +229,7 @@ DOOM_C_API typedef enum
 	SFX_MINDEHACKED = 500,
 } sfxenum_t;
 
+DOOM_C_API void D_InitSoundTables();
 
 #if defined( __cplusplus )
 

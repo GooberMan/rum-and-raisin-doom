@@ -46,6 +46,7 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   RNR_MAPPING("Switch Priority",  switchpriority)
   RNR_MAPPING("Initial Owned",    initialowned)
   RNR_MAPPING("Initial Raised",   initialraised)
+  RNR_MAPPING("Carousel Icon",    carouselicon)
   RNR_MAPPING("Allow switch with owned weapon", allowswitchifownedweapon)
   RNR_MAPPING("No switch with owned weapon", noswitchifownedweapon)
   RNR_MAPPING("Allow switch with owned item", allowswitchifowneditem)
@@ -53,6 +54,10 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
 DEH_END_MAPPING
 
 DOOM_C_API void DEH_BexHandleWeaponBitsMBF21( deh_context_t* context, const char* value, weaponinfo_t* weapon );
+
+extern std::vector< weaponinfo_t* >					allweapons;
+extern std::unordered_map< int32_t, weaponinfo_t* >	weaponmap;
+extern std::vector< weaponinfo_t* >					weaponswitchpriority;
 
 static void *DEH_WeaponStart(deh_context_t *context, char *line)
 {
@@ -70,9 +75,6 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
         return NULL;
     }
 
-	extern std::unordered_map< int32_t, weaponinfo_t* >	weaponmap;
-	extern std::vector< weaponinfo_t* >					weaponswitchpriority;
-
 	auto foundweapon = weaponmap.find( weapon_number );
 	if( foundweapon == weaponmap.end() )
 	{
@@ -82,12 +84,14 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 		*newweapon =
 		{
 			weapon_number,	// index
+			exe_rnr24,		// minimumversion
 			-1,				// slot
 			-1,				// slotpriority
 			-1,				// switchpriority
 			registered,		// mingamemode
 			false,			// initialowned
 			false,			// initialraised
+			nullptr,		// carouselicon
 			-1,				// allowswitchifownedweapon
 			-1,				// noswitchifownedweapon
 			-1,				// allowswitchifowneditem
@@ -102,6 +106,7 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 			1,				// ammopershot
 		};
 
+		allweapons.push_back( newweapon );
 		weaponmap[ weapon_number ] = newweapon;
 		weaponswitchpriority.push_back( newweapon );
 		return newweapon;
@@ -131,6 +136,12 @@ static void DEH_WeaponParseLine(deh_context_t *context, char *line, void *tag)
         return;
     }
 
+	if( strcmp( variable_name, "Carousel Icon" ) == 0 )
+	{
+		DEH_IncreaseGameVersion( context, exe_rnr24 );
+		weapon->carouselicon = M_DuplicateStringToZone( value, PU_STATIC, nullptr );
+		M_ForceUppercase( (char*)weapon->carouselicon );
+	}
 	if( strcmp( variable_name, "MBF21 Bits" ) == 0
 		&& !( isdigit( value[ 0 ] ) 
 			|| ( value[ 0 ] == '-' && isdigit( value[ 1 ] ) ) )
@@ -192,6 +203,46 @@ static void DEH_WeaponSHA1Sum(sha1_context_t *context)
     }
 }
 
+static uint32_t DEH_WeaponFNV1aHash( int32_t version, uint32_t base )
+{
+	for( weaponinfo_t* weapon : allweapons )
+	{
+		if( version >= weapon->minimumversion )
+		{
+			base = fnv1a32( base, weapon->index );
+
+			base = fnv1a32( base, weapon->ammo );
+			base = fnv1a32( base, weapon->upstate );
+			base = fnv1a32( base, weapon->downstate );
+			base = fnv1a32( base, weapon->readystate );
+			base = fnv1a32( base, weapon->atkstate );
+			base = fnv1a32( base, weapon->flashstate );
+
+			if( version >= exe_mbf21 )
+			{
+				base = fnv1a32( base, weapon->ammopershot );
+				base = fnv1a32( base, weapon->mbf21flags );
+			}
+
+			if( version >= exe_rnr24 )
+			{
+				base = fnv1a32( base, weapon->slot );
+				base = fnv1a32( base, weapon->slotpriority );
+				base = fnv1a32( base, weapon->switchpriority );
+				base = fnv1a32( base, weapon->initialowned );
+				base = fnv1a32( base, weapon->initialraised );
+				base = fnv1a32( base, weapon->carouselicon );
+				base = fnv1a32( base, weapon->allowswitchifownedweapon );
+				base = fnv1a32( base, weapon->noswitchifownedweapon );
+				base = fnv1a32( base, weapon->allowswitchifowneditem );
+				base = fnv1a32( base, weapon->noswitchifowneditem );
+			}
+		}
+	}
+
+	return base;
+}
+
 deh_section_t deh_section_weapon =
 {
     "Weapon",
@@ -200,5 +251,6 @@ deh_section_t deh_section_weapon =
     DEH_WeaponParseLine,
     DEH_WeaponEnd,
     DEH_WeaponSHA1Sum,
+	DEH_WeaponFNV1aHash,
 };
 

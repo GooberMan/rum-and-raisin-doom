@@ -42,7 +42,7 @@ static deh_mapping_entry_t *GetMappingEntryByName(deh_context_t *context,
         {
             if (entry->location == NULL)
             {
-                DEH_Warning(context, "Field '%s' is unsupported", name);
+                //DEH_Warning(context, "Field '%s' is unsupported", name);
                 return NULL;
             }
 
@@ -65,9 +65,7 @@ static void *GetStructField(void *structptr,
                             deh_mapping_t *mapping,
                             deh_mapping_entry_t *entry)
 {
-    unsigned int offset;
-
-    offset = (uint8_t *)entry->location - (uint8_t *)mapping->base;
+    ptrdiff_t offset = (uint8_t *)entry->location - (uint8_t *)mapping->base;
 
     return (uint8_t *)structptr + offset;
 }

@@ -23,70 +23,76 @@
 
 #include "m_container.h"
 
+#include "z_zone.h"
+
 static ammoinfo_t builtinammoinfo[] =
 {
 	{
-		am_clip,	// index
-		10,			// clipammo
-		200,		// maxammo
-		50,			// initialammo
-		400,		// maxupgradedammo
-		50,			// boxammo
-		10,			// backpackammo
-		20,			// weaponammo
-		5,			// droppedclipammo
-		25,			// droppedboxammo
-		5,			// droppedbackpackammo
-		10,			// droppedweaponammo
-		50,			// deathmatchweaponammo
+		am_clip,		// index
+		exe_doom_1_2,	// minimumversion
+		10,				// clipammo
+		200,			// maxammo
+		50,				// initialammo
+		400,			// maxupgradedammo
+		50,				// boxammo
+		10,				// backpackammo
+		20,				// weaponammo
+		5,				// droppedclipammo
+		25,				// droppedboxammo
+		5,				// droppedbackpackammo
+		10,				// droppedweaponammo
+		50,				// deathmatchweaponammo
 		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
 	},
 	{
-		am_shell,	// index
-		4,			// clipammo
-		50,			// maxammo
-		0,			// initialammo
-		100,		// maxupgradedammo
-		20,			// boxammo
-		4,			// backpackammo
-		8,			// weaponammo
-		2,			// droppedclipammo
-		10,			// droppedboxammo
-		2,			// droppedbackpackammo
-		4,			// droppedweaponammo
-		20,			// deathmatchweaponammo
+		am_shell,		// index
+		exe_doom_1_2,	// minimumversion
+		4,				// clipammo
+		50,				// maxammo
+		0,				// initialammo
+		100,			// maxupgradedammo
+		20,				// boxammo
+		4,				// backpackammo
+		8,				// weaponammo
+		2,				// droppedclipammo
+		10,				// droppedboxammo
+		2,				// droppedbackpackammo
+		4,				// droppedweaponammo
+		20,				// deathmatchweaponammo
 		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
 	},
 	{
-		am_cell,	// index
-		20,			// clipammo
-		300,		// maxammo
-		0,			// initialammo
-		600,		// maxupgradedammo
-		100,		// boxammo
-		20,			// backpackammo
-		40,			// weaponammo
-		10,			// droppedclipammo
-		50,			// droppedboxammo
-		10,			// droppedbackpackammo
-		20,			// droppedweaponammo
-		100,		// deathmatchweaponammo
+		am_cell,		// index
+		exe_doom_1_2,	// minimumversion
+		20,				// clipammo
+		300,			// maxammo
+		0,				// initialammo
+		600,			// maxupgradedammo
+		100,			// boxammo
+		20,				// backpackammo
+		40,				// weaponammo
+		10,				// droppedclipammo
+		50,				// droppedboxammo
+		10,				// droppedbackpackammo
+		20,				// droppedweaponammo
+		100,			// deathmatchweaponammo
 		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
 	},
 	{
-		am_misl,	// index
-		1,			// clipammo
-		50,			// maxammo
-		0,			// initialammo
-		100,		// maxupgradedammo
-		5,			// boxammo
-		1,			// backpackammo
-		2,			// weaponammo
-		1,			// droppedclipammo
-		1,			// droppedweaponammo
-		1,			// droppedbackpackammo
-		2,			// droppedboxammo
-		5,			// deathmatchweaponammo
+		am_misl,		// index
+		exe_doom_1_2,	// minimumversion
+		1,				// clipammo
+		50,				// maxammo
+		0,				// initialammo
+		100,			// maxupgradedammo
+		5,				// boxammo
+		1,				// backpackammo
+		2,				// weaponammo
+		1,				// droppedclipammo
+		1,				// droppedweaponammo
+		1,				// droppedbackpackammo
+		2,				// droppedboxammo
+		5,				// deathmatchweaponammo
 		{ IntToFixed( 2 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 1 ), IntToFixed( 2 ) },	// skillmul
 	},
 };
@@ -109,12 +115,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// fist
 		wp_fist,			// index
+		exe_doom_1_2,		// minimumversion
 		1,					// slot
 		0,					// slotpriority
 		0,					// switchpriority
 		shareware,			// mingamemode
 		true,				// initialowned
 		false,				// initialraised
+		"SMFIST",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		wp_chainsaw,		// noswitchifownedweapon
 		item_berserk,		// allowswitchifowneditem
@@ -131,12 +139,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// pistol
 		wp_pistol,			// index
+		exe_doom_1_2,		// minimumversion
 		2,					// slot
 		0,					// slotpriority
 		4,					// switchpriority
 		shareware,			// mingamemode
 		true,				// initialowned
 		true,				// initialraised
+		"SMPISG",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -153,12 +163,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// shotgun
 		wp_shotgun,			// index
+		exe_doom_1_2,		// minimumversion
 		3,					// slot
 		0,					// slotpriority
 		5,					// switchpriority
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		"SMSHOT",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -175,12 +187,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// chaingun
 		wp_chaingun,		// index
+		exe_doom_1_2,		// minimumversion
 		4,					// slot
 		0,					// slotpriority
 		6,					// switchpriority
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		"SMMGUN",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -197,12 +211,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// missile launcher
 		wp_missile,			// index
+		exe_doom_1_2,		// minimumversion
 		5,					// slot
 		0,					// slotpriority
 		2,					// switchpriority
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		"SMLAUN",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -219,12 +235,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// plasma rifle
 		wp_plasma,			// index
+		exe_doom_1_2,		// minimumversion
 		6,					// slot
 		0,					// slotpriority
 		8,					// switchpriority
 		registered,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		"SMPLAS",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -241,12 +259,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// bfg 9000
 		wp_bfg,				// index
+		exe_doom_1_2,		// minimumversion
 		7,					// slot
 		0,					// slotpriority
 		1,					// switchpriority
 		registered,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		"SMBFGG",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -263,12 +283,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// chainsaw
 		wp_chainsaw,		// index
+		exe_doom_1_2,		// minimumversion
 		1,					// slot
 		1,					// slotpriority
 		3,					// switchpriority
 		shareware,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		"SMCSAW",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -285,12 +307,14 @@ static weaponinfo_t	builtinweaponinfo[] =
 	{
 		// super shotgun
 		wp_supershotgun,	// index
+		exe_doom_1_2,		// minimumversion
 		3,					// slot
 		1,					// slotpriority
 		7,					// switchpriority
 		commercial,			// mingamemode
 		false,				// initialowned
 		false,				// initialraised
+		"SMSGN2",			// carouselicon
 		-1,					// allowswitchifownedweapon
 		-1,					// noswitchifownedweapon
 		-1,					// allowswitchifowneditem
@@ -306,24 +330,24 @@ static weaponinfo_t	builtinweaponinfo[] =
 	},
 };
 
-static std::unordered_map< int32_t, weaponinfo_t* > BuildWeaponMap( std::span< weaponinfo_t > weaponspan )
+static std::unordered_map< int32_t, weaponinfo_t* > BuildWeaponMap( std::vector< weaponinfo_t* >& weaponspan )
 {
 	std::unordered_map< int32_t, weaponinfo_t* > weaponmap;
-	for( weaponinfo_t& weapon : weaponspan )
+	for( weaponinfo_t* weapon : weaponspan )
 	{
-		weaponmap[ weapon.index ] = &weapon;
+		weaponmap[ weapon->index ] = weapon;
 	}
 
 	return weaponmap;
 }
 
-static std::vector< weaponinfo_t* > BuildWeaponSwitchPrioritys( std::span< weaponinfo_t > weaponspan )
+static std::vector< weaponinfo_t* > BuildWeaponSwitchPrioritys( std::vector< weaponinfo_t* >& weaponspan )
 {
 	std::vector< weaponinfo_t* > weaponswitchpriority;
 	weaponswitchpriority.reserve( weaponspan.size() );
-	for( weaponinfo_t& weapon : weaponspan )
+	for( weaponinfo_t* weapon : weaponspan )
 	{
-		weaponswitchpriority.push_back( &weapon );
+		weaponswitchpriority.push_back( weapon );
 	}
 
 	std::sort( weaponswitchpriority.begin(), weaponswitchpriority.end(), []( const weaponinfo_t* lhs, const weaponinfo_t* rhs ) -> bool
@@ -333,7 +357,7 @@ static std::vector< weaponinfo_t* > BuildWeaponSwitchPrioritys( std::span< weapo
 	return weaponswitchpriority;
 }
 
-static std::vector< std::vector< weaponinfo_t* > > BuildWeaponSlotPrioritys( std::span< weaponinfo_t > weaponspan )
+static std::vector< std::vector< weaponinfo_t* > > BuildWeaponSlotPrioritys( std::vector< weaponinfo_t* >& weaponspan )
 {
 	std::vector< std::vector< weaponinfo_t* > > weaponslotpriority;
 	weaponslotpriority.resize( 10 );
@@ -344,9 +368,9 @@ static std::vector< std::vector< weaponinfo_t* > > BuildWeaponSlotPrioritys( std
 	}
 
 	weaponslotpriority.reserve( weaponspan.size() );
-	for( weaponinfo_t& weapon : weaponspan )
+	for( weaponinfo_t* weapon : weaponspan )
 	{
-		weaponslotpriority[ weapon.slot ].push_back( &weapon );
+		weaponslotpriority[ weapon->slot ].push_back( weapon );
 	}
 
 	for( auto& slot : weaponslotpriority )
@@ -360,9 +384,25 @@ static std::vector< std::vector< weaponinfo_t* > > BuildWeaponSlotPrioritys( std
 	return weaponslotpriority;
 }
 
-std::unordered_map< int32_t, weaponinfo_t* >	weaponmap = BuildWeaponMap( std::span( builtinweaponinfo ) );
-std::vector< weaponinfo_t* >					weaponswitchpriority = BuildWeaponSwitchPrioritys( std::span( builtinweaponinfo ) );
-std::vector< std::vector< weaponinfo_t* > >		weaponslotpriority = BuildWeaponSlotPrioritys( std::span( builtinweaponinfo ) );
+std::vector< weaponinfo_t* > MakeAllWeapons()
+{
+	std::vector< weaponinfo_t* > output;
+	output.reserve( arrlen( builtinweaponinfo ) );
+
+	for( weaponinfo_t& weapon : std::span( builtinweaponinfo ) )
+	{
+		weaponinfo_t* newweapon = Z_MallocAs( weaponinfo_t, PU_STATIC, nullptr );
+		*newweapon = weapon;
+		output.push_back( newweapon );
+	}
+
+	return output;
+}
+
+std::vector< weaponinfo_t* >					allweapons;
+std::unordered_map< int32_t, weaponinfo_t* >	weaponmap;
+std::vector< weaponinfo_t* >					weaponswitchpriority;
+std::vector< std::vector< weaponinfo_t* > >		weaponslotpriority;
 DoomWeaponLookup								weaponinfo;
 
 int32_t DoomWeaponLookup::size()
@@ -434,30 +474,32 @@ weaponinfo_t& DoomWeaponLookup::Fetch( int32_t weapon )
 	
 }
 
-std::unordered_map< int32_t, ammoinfo_t* > BuildAmmoMap( std::span< ammoinfo_t > ammospan )
+std::unordered_map< int32_t, ammoinfo_t* > BuildAmmoMap( std::vector< ammoinfo_t* >& ammospan )
 {
 	std::unordered_map< int32_t, ammoinfo_t* > map;
-	for( ammoinfo_t& ammo : ammospan )
+	for( ammoinfo_t* ammo : ammospan )
 	{
-		map[ ammo.index ] = &ammo;
+		map[ ammo->index ] = ammo;
 	}
 
 	return map;
 }
 
-std::vector< ammoinfo_t* > BuildAmmoStorage( std::span< ammoinfo_t > ammospan )
+std::vector< ammoinfo_t* > MakeAllAmmo()
 {
-	std::vector< ammoinfo_t* > vector;
-	vector.reserve( ammospan.size() );
-	for( ammoinfo_t& ammo : ammospan )
+	std::vector< ammoinfo_t* > output;
+	output.reserve( arrlen( builtinammoinfo ) );
+	for( ammoinfo_t& ammo : std::span( builtinammoinfo ) )
 	{
-		vector.push_back( &ammo );
+		ammoinfo_t* newammo = Z_MallocAs( ammoinfo_t, PU_STATIC, nullptr );
+		*newammo = ammo;
+		output.push_back( newammo );
 	}
-	return vector;
+	return output;
 }
 
-std::unordered_map< int32_t, ammoinfo_t* >	ammomap = BuildAmmoMap( std::span( builtinammoinfo ) );
-std::vector< ammoinfo_t* > ammomapstorage = BuildAmmoStorage( std::span( builtinammoinfo ) );
+std::vector< ammoinfo_t* > allammo;
+std::unordered_map< int32_t, ammoinfo_t* > ammomap;
 DoomAmmoLookup ammoinfo;
 
 int32_t DoomAmmoLookup::size()
@@ -467,10 +509,27 @@ int32_t DoomAmmoLookup::size()
 
 DoomAmmos DoomAmmoLookup::All()
 {
-	return { ammomapstorage.data(), ammomapstorage.data() + ammomapstorage.size() };
+	return { allammo.data(), allammo.data() + allammo.size() };
 }
 
 ammoinfo_t&	DoomAmmoLookup::Fetch( int32_t weapon )
 {
 	return *ammomap[ weapon ];
+}
+
+void D_InitItemLookupTables()
+{
+	weaponmap = BuildWeaponMap( allweapons );
+	weaponswitchpriority = BuildWeaponSwitchPrioritys( allweapons );
+	weaponslotpriority = BuildWeaponSlotPrioritys( allweapons );
+
+	ammomap = BuildAmmoMap( allammo );
+}
+
+void D_InitItemTables()
+{
+	allweapons = MakeAllWeapons();
+	allammo = MakeAllAmmo();
+
+	D_InitItemLookupTables();
 }
