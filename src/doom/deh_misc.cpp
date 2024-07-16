@@ -215,30 +215,31 @@ static void DEH_MiscSHA1Sum(sha1_context_t *context)
     }
 }
 
-static uint32_t DEH_MiscFNV1aHash( int32_t version, uint32_t base )
+template< typename fnv >
+static typename fnv::value_type DEH_MiscFNV1aHash( int32_t version, typename fnv::value_type base )
 {
-	base = fnv1a32( base, deh_initial_health );
-	base = fnv1a32( base, deh_max_health );
-	base = fnv1a32( base, deh_max_armor );
-	base = fnv1a32( base, deh_green_armor_class );
-	base = fnv1a32( base, deh_blue_armor_class );
-	base = fnv1a32( base, deh_max_soulsphere );
-	base = fnv1a32( base, deh_soulsphere_health );
-	base = fnv1a32( base, deh_megasphere_health );
-	base = fnv1a32( base, deh_god_mode_health );
-	base = fnv1a32( base, deh_idfa_armor );
-	base = fnv1a32( base, deh_idfa_armor_class );
-	base = fnv1a32( base, deh_idkfa_armor );
-	base = fnv1a32( base, deh_idkfa_armor_class );
+	base = fnv::calc( base, deh_initial_health );
+	base = fnv::calc( base, deh_max_health );
+	base = fnv::calc( base, deh_max_armor );
+	base = fnv::calc( base, deh_green_armor_class );
+	base = fnv::calc( base, deh_blue_armor_class );
+	base = fnv::calc( base, deh_max_soulsphere );
+	base = fnv::calc( base, deh_soulsphere_health );
+	base = fnv::calc( base, deh_megasphere_health );
+	base = fnv::calc( base, deh_god_mode_health );
+	base = fnv::calc( base, deh_idfa_armor );
+	base = fnv::calc( base, deh_idfa_armor_class );
+	base = fnv::calc( base, deh_idkfa_armor );
+	base = fnv::calc( base, deh_idkfa_armor_class );
 
 	if( version < exe_mbf21 )
 	{
-		base = fnv1a32( base, weaponinfo[ wp_bfg ].ammopershot );
+		base = fnv::calc( base, weaponinfo[ wp_bfg ].ammopershot );
 	}
 
 	if( version < exe_rnr24 )
 	{
-		base = fnv1a32( base, ammoinfo[ am_clip ].initialammo );
+		base = fnv::calc( base, ammoinfo[ am_clip ].initialammo );
 	}
 
 	return base;
@@ -252,6 +253,7 @@ deh_section_t deh_section_misc =
     DEH_MiscParseLine,
     NULL,
     DEH_MiscSHA1Sum,
-	DEH_MiscFNV1aHash
+	DEH_MiscFNV1aHash< fnv1a< uint32_t > >,
+	DEH_MiscFNV1aHash< fnv1a< uint64_t > >,
 };
 

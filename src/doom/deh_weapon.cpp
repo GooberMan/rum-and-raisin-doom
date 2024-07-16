@@ -203,39 +203,40 @@ static void DEH_WeaponSHA1Sum(sha1_context_t *context)
     }
 }
 
-static uint32_t DEH_WeaponFNV1aHash( int32_t version, uint32_t base )
+template< typename fnv >
+static typename fnv::value_type DEH_WeaponFNV1aHash( int32_t version, typename fnv::value_type base )
 {
 	for( weaponinfo_t* weapon : allweapons )
 	{
 		if( version >= weapon->minimumversion )
 		{
-			base = fnv1a32( base, weapon->index );
+			base = fnv::calc( base, weapon->index );
 
-			base = fnv1a32( base, weapon->ammo );
-			base = fnv1a32( base, weapon->upstate );
-			base = fnv1a32( base, weapon->downstate );
-			base = fnv1a32( base, weapon->readystate );
-			base = fnv1a32( base, weapon->atkstate );
-			base = fnv1a32( base, weapon->flashstate );
+			base = fnv::calc( base, weapon->ammo );
+			base = fnv::calc( base, weapon->upstate );
+			base = fnv::calc( base, weapon->downstate );
+			base = fnv::calc( base, weapon->readystate );
+			base = fnv::calc( base, weapon->atkstate );
+			base = fnv::calc( base, weapon->flashstate );
 
 			if( version >= exe_mbf21 )
 			{
-				base = fnv1a32( base, weapon->ammopershot );
-				base = fnv1a32( base, weapon->mbf21flags );
+				base = fnv::calc( base, weapon->ammopershot );
+				base = fnv::calc( base, weapon->mbf21flags );
 			}
 
 			if( version >= exe_rnr24 )
 			{
-				base = fnv1a32( base, weapon->slot );
-				base = fnv1a32( base, weapon->slotpriority );
-				base = fnv1a32( base, weapon->switchpriority );
-				base = fnv1a32( base, weapon->initialowned );
-				base = fnv1a32( base, weapon->initialraised );
-				base = fnv1a32( base, weapon->carouselicon ? weapon->carouselicon : "null" );
-				base = fnv1a32( base, weapon->allowswitchifownedweapon );
-				base = fnv1a32( base, weapon->noswitchifownedweapon );
-				base = fnv1a32( base, weapon->allowswitchifowneditem );
-				base = fnv1a32( base, weapon->noswitchifowneditem );
+				base = fnv::calc( base, weapon->slot );
+				base = fnv::calc( base, weapon->slotpriority );
+				base = fnv::calc( base, weapon->switchpriority );
+				base = fnv::calc( base, weapon->initialowned );
+				base = fnv::calc( base, weapon->initialraised );
+				base = fnv::calc( base, weapon->carouselicon ? weapon->carouselicon : "null" );
+				base = fnv::calc( base, weapon->allowswitchifownedweapon );
+				base = fnv::calc( base, weapon->noswitchifownedweapon );
+				base = fnv::calc( base, weapon->allowswitchifowneditem );
+				base = fnv::calc( base, weapon->noswitchifowneditem );
 			}
 		}
 	}
@@ -251,6 +252,7 @@ deh_section_t deh_section_weapon =
     DEH_WeaponParseLine,
     DEH_WeaponEnd,
     DEH_WeaponSHA1Sum,
-	DEH_WeaponFNV1aHash,
+	DEH_WeaponFNV1aHash< fnv1a< uint32_t > >,
+	DEH_WeaponFNV1aHash< fnv1a< uint64_t > >,
 };
 

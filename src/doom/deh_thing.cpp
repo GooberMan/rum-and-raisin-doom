@@ -286,62 +286,63 @@ static void DEH_ThingSHA1Sum(sha1_context_t *context)
     }
 }
 
-static uint32_t DEH_ThingFNV1aHash( int32_t version, uint32_t base )
+template< typename fnv >
+static typename fnv::value_type DEH_ThingFNV1aHash( int32_t version, typename fnv::value_type base )
 {
 	for( mobjinfo_t* mobj : allmobjs )
 	{
 		if( version >= mobj->minimumversion )
 		{
-			base = fnv1a32( base, mobj->type );
-			base = fnv1a32( base, mobj->doomednum );
-			base = fnv1a32( base, mobj->spawnstate );
-			base = fnv1a32( base, mobj->spawnhealth );
-			base = fnv1a32( base, mobj->seestate );
-			base = fnv1a32( base, mobj->seesound );
-			base = fnv1a32( base, mobj->reactiontime );
-			base = fnv1a32( base, mobj->attacksound );
-			base = fnv1a32( base, mobj->painstate );
-			base = fnv1a32( base, mobj->painchance );
-			base = fnv1a32( base, mobj->painsound );
-			base = fnv1a32( base, mobj->meleestate );
-			base = fnv1a32( base, mobj->missilestate );
-			base = fnv1a32( base, mobj->deathstate );
-			base = fnv1a32( base, mobj->xdeathstate );
-			base = fnv1a32( base, mobj->deathsound );
-			base = fnv1a32( base, mobj->speed );
-			base = fnv1a32( base, mobj->radius );
-			base = fnv1a32( base, mobj->height );
-			base = fnv1a32( base, mobj->mass );
-			base = fnv1a32( base, mobj->damage );
-			base = fnv1a32( base, mobj->activesound );
-			base = fnv1a32( base, mobj->flags );
-			base = fnv1a32( base, mobj->raisestate );
+			base = fnv::calc( base, mobj->type );
+			base = fnv::calc( base, mobj->doomednum );
+			base = fnv::calc( base, mobj->spawnstate );
+			base = fnv::calc( base, mobj->spawnhealth );
+			base = fnv::calc( base, mobj->seestate );
+			base = fnv::calc( base, mobj->seesound );
+			base = fnv::calc( base, mobj->reactiontime );
+			base = fnv::calc( base, mobj->attacksound );
+			base = fnv::calc( base, mobj->painstate );
+			base = fnv::calc( base, mobj->painchance );
+			base = fnv::calc( base, mobj->painsound );
+			base = fnv::calc( base, mobj->meleestate );
+			base = fnv::calc( base, mobj->missilestate );
+			base = fnv::calc( base, mobj->deathstate );
+			base = fnv::calc( base, mobj->xdeathstate );
+			base = fnv::calc( base, mobj->deathsound );
+			base = fnv::calc( base, mobj->speed );
+			base = fnv::calc( base, mobj->radius );
+			base = fnv::calc( base, mobj->height );
+			base = fnv::calc( base, mobj->mass );
+			base = fnv::calc( base, mobj->damage );
+			base = fnv::calc( base, mobj->activesound );
+			base = fnv::calc( base, mobj->flags );
+			base = fnv::calc( base, mobj->raisestate );
 
 			if( version >= exe_mbf21 )
 			{
-				base = fnv1a32( base, mobj->flags2 );
-				base = fnv1a32( base, mobj->infightinggroup );
-				base = fnv1a32( base, mobj->projectilegroup );
-				base = fnv1a32( base, mobj->splashgroup );
-				base = fnv1a32( base, mobj->fastspeed );
-				base = fnv1a32( base, mobj->meleerange );
-				base = fnv1a32( base, mobj->ripsound );
+				base = fnv::calc( base, mobj->flags2 );
+				base = fnv::calc( base, mobj->infightinggroup );
+				base = fnv::calc( base, mobj->projectilegroup );
+				base = fnv::calc( base, mobj->splashgroup );
+				base = fnv::calc( base, mobj->fastspeed );
+				base = fnv::calc( base, mobj->meleerange );
+				base = fnv::calc( base, mobj->ripsound );
 			}
 
 			if( version >= exe_rnr24 )
 			{
-				base = fnv1a32( base, mobj->rnr24flags );
-				base = fnv1a32( base, mobj->minrespawntics );
-				base = fnv1a32( base, mobj->respawndice );
-				base = fnv1a32( base, mobj->dropthing );
-				base = fnv1a32( base, mobj->pickupammotype );
-				base = fnv1a32( base, mobj->pickupammocategory );
-				base = fnv1a32( base, mobj->pickupweapontype );
-				base = fnv1a32( base, mobj->pickupitemtype );
-				base = fnv1a32( base, mobj->pickupbonuscount );
-				base = fnv1a32( base, mobj->pickupsound );
-				base = fnv1a32( base, mobj->pickupstringmnemonic );
-				base = fnv1a32( base, mobj->translationlump ? mobj->translationlump : "null" );
+				base = fnv::calc( base, mobj->rnr24flags );
+				base = fnv::calc( base, mobj->minrespawntics );
+				base = fnv::calc( base, mobj->respawndice );
+				base = fnv::calc( base, mobj->dropthing );
+				base = fnv::calc( base, mobj->pickupammotype );
+				base = fnv::calc( base, mobj->pickupammocategory );
+				base = fnv::calc( base, mobj->pickupweapontype );
+				base = fnv::calc( base, mobj->pickupitemtype );
+				base = fnv::calc( base, mobj->pickupbonuscount );
+				base = fnv::calc( base, mobj->pickupsound );
+				base = fnv::calc( base, mobj->pickupstringmnemonic );
+				base = fnv::calc( base, mobj->translationlump ? mobj->translationlump : "null" );
 			}
 		}
 	}
@@ -357,6 +358,7 @@ deh_section_t deh_section_thing =
     DEH_ThingParseLine,
     NULL,
     DEH_ThingSHA1Sum,
-	DEH_ThingFNV1aHash,
+	DEH_ThingFNV1aHash< fnv1a< uint32_t > >,
+	DEH_ThingFNV1aHash< fnv1a< uint64_t > >,
 };
 

@@ -140,14 +140,15 @@ static void DEH_DSDSpritesParseLine( deh_context_t *context, char* line, void* t
 	spritenamemap[ spriteindex ] = found->sprite;
 }
 
-static uint32_t DEH_SpritesFNV1aHash( int32_t version, uint32_t base )
+template< typename fnv >
+static typename fnv::value_type DEH_SpritesFNV1aHash( int32_t version, typename fnv::value_type base )
 {
 	for( spriteinfo_t* sprite : allsprites )
 	{
 		if( version >= sprite->minimumversion )
 		{
-			base = fnv1a32( base, sprite->spritenum );
-			base = fnv1a32( base, sprite->sprite );
+			base = fnv::calc( base, sprite->spritenum );
+			base = fnv::calc( base, sprite->sprite );
 		}
 	}
 
@@ -162,6 +163,7 @@ deh_section_t deh_section_dsdsprites =
 	DEH_DSDSpritesParseLine,
 	NULL,
 	NULL,
-	DEH_SpritesFNV1aHash,
+	DEH_SpritesFNV1aHash< fnv1a< uint32_t > >,
+	DEH_SpritesFNV1aHash< fnv1a< uint64_t > >,
 };
 

@@ -128,14 +128,15 @@ static void DEH_SoundParseLine(deh_context_t *context, char *line, void *tag)
     DEH_SetMapping(context, &sound_mapping, sfx, variable_name, ivalue);
 }
 
-static uint32_t DEH_SoundFNV1aHash( int32_t version, uint32_t base )
+template< typename fnv >
+static typename fnv::value_type DEH_SoundFNV1aHash( int32_t version, typename fnv::value_type base )
 {
 	for( sfxinfo_t* sound : allsfx )
 	{
 		if( version >= sound->minimumversion )
 		{
-			base = fnv1a32( base, sound->soundnum );
-			base = fnv1a32( base, sound->name );
+			base = fnv::calc( base, sound->soundnum );
+			base = fnv::calc( base, sound->name );
 		}
 	}
 
@@ -150,6 +151,7 @@ deh_section_t deh_section_sound =
     DEH_SoundParseLine,
     NULL,
     NULL,
-	DEH_SoundFNV1aHash,
+	DEH_SoundFNV1aHash< fnv1a< uint32_t > >,
+	DEH_SoundFNV1aHash< fnv1a< uint64_t > >,
 };
 

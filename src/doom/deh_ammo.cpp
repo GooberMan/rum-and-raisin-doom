@@ -166,31 +166,32 @@ static void DEH_AmmoSHA1Hash(sha1_context_t *context)
     //}
 }
 
-static uint32_t DEH_AmmoFNV1aHash( int32_t version, uint32_t base )
+template< typename fnv >
+static typename fnv::value_type DEH_AmmoFNV1aHash( int32_t version, typename fnv::value_type base )
 {
 	for( ammoinfo_t* ammo : allammo )
 	{
 		if( version >= ammo->minimumversion )
 		{
-			base = fnv1a32( base, ammo->clipammo );
-			base = fnv1a32( base, ammo->maxammo );
+			base = fnv::calc( base, ammo->clipammo );
+			base = fnv::calc( base, ammo->maxammo );
 			if( version >= exe_rnr24 )
 			{
-				base = fnv1a32( base, ammo->initialammo );
-				base = fnv1a32( base, ammo->maxupgradedammo );
-				base = fnv1a32( base, ammo->boxammo );
-				base = fnv1a32( base, ammo->backpackammo );
-				base = fnv1a32( base, ammo->weaponammo );
-				base = fnv1a32( base, ammo->droppedclipammo );
-				base = fnv1a32( base, ammo->droppedboxammo );
-				base = fnv1a32( base, ammo->droppedbackpackammo );
-				base = fnv1a32( base, ammo->droppedweaponammo );
-				base = fnv1a32( base, ammo->deathmatchweaponammo );
-				base = fnv1a32( base, ammo->skillmul[ 0 ] );
-				base = fnv1a32( base, ammo->skillmul[ 1 ] );
-				base = fnv1a32( base, ammo->skillmul[ 2 ] );
-				base = fnv1a32( base, ammo->skillmul[ 3 ] );
-				base = fnv1a32( base, ammo->skillmul[ 4 ] );
+				base = fnv::calc( base, ammo->initialammo );
+				base = fnv::calc( base, ammo->maxupgradedammo );
+				base = fnv::calc( base, ammo->boxammo );
+				base = fnv::calc( base, ammo->backpackammo );
+				base = fnv::calc( base, ammo->weaponammo );
+				base = fnv::calc( base, ammo->droppedclipammo );
+				base = fnv::calc( base, ammo->droppedboxammo );
+				base = fnv::calc( base, ammo->droppedbackpackammo );
+				base = fnv::calc( base, ammo->droppedweaponammo );
+				base = fnv::calc( base, ammo->deathmatchweaponammo );
+				base = fnv::calc( base, ammo->skillmul[ 0 ] );
+				base = fnv::calc( base, ammo->skillmul[ 1 ] );
+				base = fnv::calc( base, ammo->skillmul[ 2 ] );
+				base = fnv::calc( base, ammo->skillmul[ 3 ] );
+				base = fnv::calc( base, ammo->skillmul[ 4 ] );
 			}
 		}
 	}
@@ -206,6 +207,7 @@ deh_section_t deh_section_ammo =
     DEH_AmmoParseLine,
     (deh_section_end_t)DEH_AmmoEnd,
     DEH_AmmoSHA1Hash,
-	DEH_AmmoFNV1aHash,
+	DEH_AmmoFNV1aHash< fnv1a< uint32_t > >,
+	DEH_AmmoFNV1aHash< fnv1a< uint64_t > >,
 };
 

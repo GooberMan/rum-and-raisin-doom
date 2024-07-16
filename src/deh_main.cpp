@@ -46,19 +46,19 @@ extern "C"
 
 static doombool deh_initialized = false;
 static GameVersion_t deh_loaded_version = exe_invalid;
-static uint32_t deh_session_hash = 0;
+static uint64_t deh_session_hash = 0;
 static uint64_t deh_loaded_count = 0;
 
 // If false, dehacked cheat replacements are ignored.
 
 static void DEH_RecalculateSessionHash()
 {
-	uint32_t hash = FNV1aBasis32;
+	uint64_t hash = FNV1aBasis64;
 
 	deh_section_t** sectionptr = deh_section_types;
 	while( *sectionptr != nullptr )
 	{
-		auto& func = (*sectionptr)->fnv1_hash;
+		auto& func = (*sectionptr)->fnv1a64_hash;
 		if( func != nullptr )
 		{
 			hash = func( deh_loaded_version, hash );
@@ -358,6 +358,8 @@ int DEH_LoadFile(const char *filename)
 	deh_loaded_version = M_MAX( version, deh_loaded_version );
 	DEH_RecalculateSessionHash();
 
+    I_TerminalPrintf( Log_Startup, " DEH hash: %llX\n", deh_session_hash );
+
 	++deh_loaded_count;
 
     DEH_CloseFile(context);
@@ -424,7 +426,7 @@ int DEH_LoadLump(int lumpnum, doombool allow_long, doombool allow_error)
 	deh_loaded_version = M_MAX( version, deh_loaded_version );
 	DEH_RecalculateSessionHash();
 
-    I_TerminalPrintf( Log_Startup, " DEH hash: %u\n", deh_session_hash );
+    I_TerminalPrintf( Log_Startup, " DEH hash: %llX\n", deh_session_hash );
 
     DEH_CloseFile(context);
 

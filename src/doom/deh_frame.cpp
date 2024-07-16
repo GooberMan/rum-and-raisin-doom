@@ -301,37 +301,38 @@ static void DEH_FrameSHA1Sum(sha1_context_t *context)
     }
 }
 
-static uint32_t DEH_FrameFNV1aHash( int32_t version, uint32_t base )
+template< typename fnv >
+static typename fnv::value_type DEH_FrameFNV1aHash( int32_t version, typename fnv::value_type base )
 {
 	for( state_t* state : allstates )
 	{
 		if( version >= state->minimumversion )
 		{
-			base = fnv1a32( base, state->statenum );
-			base = fnv1a32( base, DEH_ResolveNameForAction( state->action.Value() ) );
-			base = fnv1a32( base, state->sprite );
-			base = fnv1a32( base, state->frame );
-			base = fnv1a32( base, state->tics );
-			base = fnv1a32( base, state->nextstate );
-			base = fnv1a32( base, state->misc1._int );
-			base = fnv1a32( base, state->misc2._int );
+			base = fnv::calc( base, state->statenum );
+			base = fnv::calc( base, DEH_ResolveNameForAction( state->action.Value() ) );
+			base = fnv::calc( base, state->sprite );
+			base = fnv::calc( base, state->frame );
+			base = fnv::calc( base, state->tics );
+			base = fnv::calc( base, state->nextstate );
+			base = fnv::calc( base, state->misc1._int );
+			base = fnv::calc( base, state->misc2._int );
 
 			if( version >= exe_mbf21 )
 			{
-				base = fnv1a32( base, state->mbf21flags );
-				base = fnv1a32( base, state->arg1._int );
-				base = fnv1a32( base, state->arg2._int );
-				base = fnv1a32( base, state->arg3._int );
-				base = fnv1a32( base, state->arg4._int );
-				base = fnv1a32( base, state->arg5._int );
-				base = fnv1a32( base, state->arg6._int );
-				base = fnv1a32( base, state->arg7._int );
-				base = fnv1a32( base, state->arg8._int );
+				base = fnv::calc( base, state->mbf21flags );
+				base = fnv::calc( base, state->arg1._int );
+				base = fnv::calc( base, state->arg2._int );
+				base = fnv::calc( base, state->arg3._int );
+				base = fnv::calc( base, state->arg4._int );
+				base = fnv::calc( base, state->arg5._int );
+				base = fnv::calc( base, state->arg6._int );
+				base = fnv::calc( base, state->arg7._int );
+				base = fnv::calc( base, state->arg8._int );
 			}
 
 			if( version >= exe_rnr24 )
 			{
-				base = fnv1a32( base, state->tranmaplump ? state->tranmaplump : "null" );
+				base = fnv::calc( base, state->tranmaplump ? state->tranmaplump : "null" );
 			}
 		}
 	}
@@ -347,6 +348,7 @@ deh_section_t deh_section_frame =
     DEH_FrameParseLine,
     (deh_section_end_t)DEH_ResolveAllForFrame,
     DEH_FrameSHA1Sum,
-	DEH_FrameFNV1aHash,
+	DEH_FrameFNV1aHash< fnv1a< uint32_t > >,
+	DEH_FrameFNV1aHash< fnv1a< uint64_t > >,
 };
 
