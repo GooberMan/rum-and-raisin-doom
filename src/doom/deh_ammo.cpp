@@ -144,10 +144,10 @@ static void DEH_AmmoEnd( deh_context_t* context, ammoinfo_t* ammoinfo )
 		ammoinfo->backpackammo			= ammoinfo->clipammo;
 		ammoinfo->weaponammo			= ammoinfo->clipammo * 2;
 
-		ammoinfo->droppedclipammo		= M_MAX( 1, ammoinfo->clipammo / 2 );
-		ammoinfo->droppedboxammo		= M_MAX( 1, ammoinfo->boxammo / 2 );
-		ammoinfo->droppedbackpackammo	= M_MAX( 1, ammoinfo->backpackammo / 2 );
-		ammoinfo->droppedweaponammo		= M_MAX( 1, ammoinfo->weaponammo / 2 );
+		ammoinfo->droppedclipammo		= ammoinfo->clipammo / 2;
+		ammoinfo->droppedboxammo		= ammoinfo->boxammo / 2;
+		ammoinfo->droppedbackpackammo	= ammoinfo->backpackammo / 2;
+		ammoinfo->droppedweaponammo		= ammoinfo->weaponammo / 2;
 
 		ammoinfo->deathmatchweaponammo	= ammoinfo->clipammo * 5;
 
