@@ -1382,17 +1382,6 @@ public:
 		}
 	}
 
-private:
-	void AllocChildren( SBCanvas* canvas )
-	{
-		for( sbarelement_t& elem : std::span( canvas->element->children, canvas->element->numchildren ) )
-		{
-			SBCanvas* thiselem = SBAllocFor[ elem.type ]( bars, &elem, PU_STATIC );
-			AllocChildren( thiselem );
-			canvas->children.push_back( thiselem );
-		}
-	}
-
 	void RefreshOffscreenBuffer()
 	{
 		if( thisbar->fullscreen
@@ -1422,6 +1411,17 @@ private:
 		offscreenbuffer.pixel_size_bytes = sizeof( pixel_t );
 		offscreenbuffer.verticalscale = 1.2f;
 		offscreenbuffer.magic_value = vbuffer_magic;
+	}
+
+private:
+	void AllocChildren( SBCanvas* canvas )
+	{
+		for( sbarelement_t& elem : std::span( canvas->element->children, canvas->element->numchildren ) )
+		{
+			SBCanvas* thiselem = SBAllocFor[ elem.type ]( bars, &elem, PU_STATIC );
+			AllocChildren( thiselem );
+			canvas->children.push_back( thiselem );
+		}
 	}
 
 	std::vector< SBCanvas* >	children;
@@ -2077,6 +2077,7 @@ DOOM_C_API void ST_doRefresh(void)
 	if( bars != nullptr )
 	{
 		int32_t barindex = automapactive ? 0 : M_MAX( 0, screenblocks - 10 );
+		statusbars[ barindex ]->RefreshOffscreenBuffer();
 		statusbars[ barindex ]->RefreshHierarchy();
 	}
 	else
