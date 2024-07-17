@@ -91,7 +91,7 @@ static void *DEH_WeaponStart(deh_context_t *context, char *line)
 			registered,		// mingamemode
 			false,			// initialowned
 			false,			// initialraised
-			nullptr,		// carouselicon
+			"SMUNKN",		// carouselicon
 			-1,				// allowswitchifownedweapon
 			-1,				// noswitchifownedweapon
 			-1,				// allowswitchifowneditem

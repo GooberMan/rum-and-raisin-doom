@@ -493,8 +493,8 @@ struct DoomMapLoader
 				_blockmapend = _blockmap + offset;
 				_blockmapbase = _blockmap;
 				_blockmaplength = offset;
-				_blockmaporgx = minx;
-				_blockmaporgy = miny;
+				_blockmaporgx = RendFixedToFixed( minx );
+				_blockmaporgy = RendFixedToFixed( miny );
 				_blockmapwidth = width;
 				_blockmapheight = height;
 

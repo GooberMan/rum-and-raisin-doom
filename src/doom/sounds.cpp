@@ -240,7 +240,7 @@ sfxinfo_t builtinsfx[] =
 	SOUNDMBF(111,"dgact",  120),
 	SOUNDMBF(112,"dgdth",  70),
 	SOUNDMBF(113,"dgpain", 96),
-	SOUNDMBF(114,"secret",  100),
+	SOUND(114,"secret",  100),
 };
 
 std::vector< sfxinfo_t* > allsfx;

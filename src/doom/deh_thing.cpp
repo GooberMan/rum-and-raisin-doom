@@ -356,7 +356,7 @@ deh_section_t deh_section_thing =
     NULL,
     DEH_ThingStart,
     DEH_ThingParseLine,
-    NULL,
+    DEH_ThingEnd,
     DEH_ThingSHA1Sum,
 	DEH_ThingFNV1aHash< fnv1a< uint32_t > >,
 	DEH_ThingFNV1aHash< fnv1a< uint64_t > >,
