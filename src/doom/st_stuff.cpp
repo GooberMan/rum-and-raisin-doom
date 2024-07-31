@@ -2497,6 +2497,7 @@ DOOM_C_API void ST_Start (void)
     if (!st_stopped)
 	ST_Stop();
 
+	ST_initData();
 	if( bars )
 	{
 		plyr = &players[ displayplayer ];
@@ -2507,7 +2508,6 @@ DOOM_C_API void ST_Start (void)
 	}
 	else
 	{
-		ST_initData();
 		ST_createWidgets();
 	}
     st_stopped = false;

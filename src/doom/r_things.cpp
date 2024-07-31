@@ -657,7 +657,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 		if (index >= MAXLIGHTSCALE)
 			index = MAXLIGHTSCALE-1;
 
-		int32_t lightnum = ( vis->sector->lightlevel >> LIGHTSEGSHIFT ) + extralight;
+		int32_t lightnum = ( vis->sector->floorlightlevel >> LIGHTSEGSHIFT ) + extralight;
 		lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
 		int32_t* spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
@@ -844,7 +844,7 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	else
 	{
 		// local light
-		int32_t lightnum = (sector.lightlevel >> LIGHTSEGSHIFT) + extralight;
+		int32_t lightnum = (sector.floorlightlevel >> LIGHTSEGSHIFT) + extralight;
 		lightnum = M_CLAMP( lightnum, 0, LIGHTLEVELS - 1 );
 		int32_t* spritelightoffsets = &drs_current->scalelightoffset[ MAXLIGHTSCALE * lightnum ];
 
