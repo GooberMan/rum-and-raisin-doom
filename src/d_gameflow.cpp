@@ -27,8 +27,9 @@ gameflow_t*		current_game		= nullptr;
 episodeinfo_t*	current_episode		= nullptr;
 mapinfo_t*		current_map			= nullptr;
 
-static std::unordered_map< std::string, mapinfo_t* > allmaps;
-static std::unordered_map< std::string, interlevel_t* > interlevelstorage;
+static std::unordered_map< std::string, mapinfo_t* >		allmaps;
+static std::unordered_map< std::string, interlevel_t* >		interlevelstorage;
+static std::unordered_map< std::string, endgame_t* >		endgamestorage;
 
 void D_GameflowParseUMAPINFO( int32_t lumpnum );
 void D_GameflowParseDMAPINFO( int32_t lumpnum );
@@ -100,6 +101,146 @@ static void Sanitize( std::string& currline )
 		currline = currline.substr( startpos );
 	}
 }
+
+enum endgameloadedtype_t : int32_t
+{
+	eg_invalid = -1,
+	eg_art,
+	eg_bunny,
+	eg_castrollcall
+};
+
+constexpr endgametype_t GetEndgameType( endgameloadedtype_t type )
+{
+	switch( type )
+	{
+	case eg_art:
+		return (endgametype_t)( EndGame_Pic | EndGame_LoopingMusic );
+	case eg_bunny:
+		return EndGame_Bunny;
+	case eg_castrollcall:
+		return (endgametype_t)( EndGame_Cast | EndGame_LoopingMusic );
+
+	default:
+		break;
+	}
+
+	return EndGame_None;
+}
+
+// We have to assume that anyone getting this finale can and might
+// set an intermission on it. So we always return a copy.
+endgame_t* D_GameflowGetFinaleCopy( const char* lumpname )
+{
+	auto found = endgamestorage.find( lumpname );
+	if( found == endgamestorage.end() )
+	{
+		endgame_t output = {};
+		auto ParseFinale = [ &output ]( const JSONElement& elem, const JSONLumpVersion& version ) -> jsonlumpresult_t
+		{
+			const JSONElement& type			= elem[ "type" ];
+			const JSONElement& music		= elem[ "music" ];
+			const JSONElement& background	= elem[ "background" ];
+			const JSONElement& donextmap	= elem[ "donextmap" ];
+			const JSONElement& bunny		= elem[ "bunny" ];
+			const JSONElement& castrollcall	= elem[ "castrollcall" ];
+
+			if( !type.IsNumber()
+				|| !music.IsString()
+				|| !background.IsString()
+				|| !donextmap.IsBoolean()
+				)
+			{
+				return jl_parseerror;
+			}
+
+			endgametype_t endgametype = GetEndgameType( to< endgameloadedtype_t >( type ) );
+
+			if( endgametype == EndGame_None
+				|| ( ( endgametype & EndGame_Pic ) == EndGame_Pic		&& !( bunny.IsNull() && castrollcall.IsNull() ) )
+				|| ( ( endgametype & EndGame_Bunny ) == EndGame_Bunny	&& !( bunny.IsElement() && castrollcall.IsNull() ) )
+				|| ( ( endgametype & EndGame_Cast ) == EndGame_Cast		&& !( bunny.IsNull() && castrollcall.IsElement() ) )
+				)
+			{
+				return jl_parseerror;
+			}
+
+			output.type = endgametype;
+			output.intermission = nullptr;
+			output.music_lump = CopyToPlainFlowString( to< std::string >( music ) );
+			output.primary_image_lump = CopyToPlainFlowString( to< std::string >( background ) );
+			output.do_next_map = to< bool >( donextmap );
+			output.cast_members = nullptr;
+			output.num_cast_members = 0;
+
+			if( ( endgametype & EndGame_Bunny ) == EndGame_Bunny )
+			{
+				const JSONElement& stitchimage = bunny[ "stitchimage" ];
+				if( !stitchimage.IsString() )
+				{
+					return jl_parseerror;
+				}
+				output.secondary_image_lump = CopyToPlainFlowString( to< std::string >( stitchimage ) );
+			}
+			else if( ( endgametype & EndGame_Cast ) == EndGame_Cast )
+			{
+				const JSONElement& castmembers = castrollcall[ "castmembers" ];
+				if( !castmembers.IsArray() )
+				{
+					return jl_parseerror;
+				}
+
+				output.cast_members = (endgame_castmember_t*)Z_MallocZero( sizeof( endgame_castmember_t ) * castmembers.Children().size(), PU_STATIC, nullptr );
+				output.num_cast_members = (int32_t)castmembers.Children().size();
+
+				endgame_castmember_t* currmember = output.cast_members;
+				for( const JSONElement& member : castmembers.Children() )
+				{
+					const JSONElement& name			= member[ "name" ];
+					const JSONElement& thing		= member[ "thing" ];
+					const JSONElement& allowranged	= member[ "allowranged" ];
+					const JSONElement& allowmelee	= member[ "allowmelee" ];
+
+					if( !name.IsString()
+						|| !thing.IsNumber()
+						|| !allowranged.IsBoolean()
+						|| !allowmelee.IsBoolean() )
+					{
+						return jl_parseerror;
+					}
+
+					currmember->name_mnemonic = CopyToPlainFlowString( to< std::string >( name ) );
+					currmember->thing_number = to< int32_t >( thing );
+					currmember->allow_ranged = to< bool >( allowranged );
+					currmember->allow_melee = to< bool >( allowmelee );
+
+					++currmember;
+				}
+			}
+
+			return jl_parseerror;
+		};
+
+		jsonlumpresult_t result = M_ParseJSONLump( lumpname, "finale", { 1, 0, 0 }, ParseFinale );
+		if( result == jl_success )
+		{
+			endgame_t* newendgame = (endgame_t*)Z_Malloc( sizeof( endgame_t ), PU_STATIC, nullptr );
+			*newendgame = output;
+			endgamestorage[ lumpname ] = newendgame;
+			found = endgamestorage.find( lumpname );
+		}
+	}
+
+	if( found != endgamestorage.end() )
+	{
+		endgame_t* output = (endgame_t*)Z_Malloc( sizeof( endgame_t ), PU_STATIC, nullptr );
+		*output = *found->second;
+		return output;
+	}
+
+	return nullptr;
+}
+
 
 template< typename _ty >
 jsonlumpresult_t D_GameflowParseInterlevelArray( const JSONElement& array, _ty*& output, int32_t& outputcount

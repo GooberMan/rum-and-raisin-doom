@@ -42,6 +42,7 @@ DOOM_C_API typedef enum endgametype_e
 	EndGame_StraightToVictory	= 0x0200,
 
 	EndGame_Ultimate			= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
+	EndGame_BuiltInCast			= 0x2000,
 
 	EndGame_AnyArtScreen		= EndGame_Pic | EndGame_Bunny
 } endgametype_t;
@@ -193,6 +194,14 @@ DOOM_C_API typedef struct interlevel_s
 	int32_t					num_anim_layers;
 } interlevel_t;
 
+DOOM_C_API typedef struct endgame_castmember_s
+{
+	flowstring_t			name_mnemonic;
+	int32_t					thing_number;
+	doombool				allow_ranged;
+	doombool				allow_melee;
+} endgame_castmember_t;
+
 DOOM_C_API typedef struct endgame_s
 {
 	endgametype_t			type;
@@ -200,6 +209,10 @@ DOOM_C_API typedef struct endgame_s
 	flowstring_t			primary_image_lump;
 	flowstring_t			secondary_image_lump;
 	flowstring_t			music_lump;
+	doombool				do_next_map;
+	endgame_castmember_t*	cast_members;
+	int32_t					num_cast_members;
+
 } endgame_t;
 
 DOOM_C_API typedef struct mapinfo_s

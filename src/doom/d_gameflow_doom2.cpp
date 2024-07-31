@@ -1091,13 +1091,37 @@ intermission_t doom2_intermission_s2 =
 	FlowString( "RROCK19" ),						// background_lump
 };
 
+endgame_castmember_t doom2_cast_members[] =
+{
+	{ PlainFlowString( "CC_ZOMBIE" ),	MT_POSSESSED,	true,	true },
+	{ PlainFlowString( "CC_SHOTGUN" ),	MT_SHOTGUY,		true,	true },
+	{ PlainFlowString( "CC_HEAVY" ),	MT_CHAINGUY,	true,	true },
+	{ PlainFlowString( "CC_IMP" ),		MT_TROOP,		true,	true },
+	{ PlainFlowString( "CC_DEMON" ),	MT_SERGEANT,	true,	true },
+	{ PlainFlowString( "CC_LOST" ),		MT_SKULL,		true,	true },
+	{ PlainFlowString( "CC_CACO" ),		MT_HEAD,		true,	true },
+	{ PlainFlowString( "CC_HELL" ),		MT_KNIGHT,		true,	true },
+	{ PlainFlowString( "CC_BARON" ),	MT_BRUISER,		true,	true },
+	{ PlainFlowString( "CC_ARACH" ),	MT_BABY,		true,	true },
+	{ PlainFlowString( "CC_PAIN" ),		MT_PAIN,		true,	true },
+	{ PlainFlowString( "CC_REVEN" ),	MT_UNDEAD,		true,	true },
+	{ PlainFlowString( "CC_MANCU" ),	MT_FATSO,		true,	true },
+	{ PlainFlowString( "CC_ARCH" ),		MT_VILE,		true,	true },
+	{ PlainFlowString( "CC_SPIDER" ),	MT_SPIDER,		true,	true },
+	{ PlainFlowString( "CC_CYBER" ),	MT_CYBORG,		true,	true },
+	{ PlainFlowString( "CC_HERO" ),		MT_PLAYER,		true,	true },
+};
+
 endgame_t doom2_endgame =
 {
-	EndGame_Cast | EndGame_LoopingMusic,			// type
+	EndGame_Cast | EndGame_LoopingMusic | EndGame_BuiltInCast,	// type
 	&doom2_intermission_e4,							// intermission
-	EmptyFlowString(),								// primary_image_lump
+	PlainFlowString( "BOSSBACK" ),					// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
 	RuntimeFlowString( "evil" ),					// music_lump
+	false,											// do_next_map
+	doom2_cast_members,								// cast_members
+	arrlen( doom2_cast_members ),					// num_cast_members
 };
 
 interlevel_t doom2_interlevel =
