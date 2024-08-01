@@ -38,11 +38,12 @@ DOOM_C_API typedef enum endgametype_e
 	EndGame_Cast				= 0x0004,
 
 	EndGame_LoopingMusic		= 0x0100,
-
 	EndGame_StraightToVictory	= 0x0200,
+	EndGame_DoNextMap			= 0x0400,
 
 	EndGame_Ultimate			= 0x1000,		// Combined with EndGame_Pic, chooses between primary or secondary if it's Ultimate Doom
-	EndGame_BuiltInCast			= 0x2000,
+	EndGame_BuiltInCast			= 0x2000,		// Original DooM II cast roll call
+	EndGame_NoEndOnBunny		= 0x4000,
 
 	EndGame_AnyArtScreen		= EndGame_Pic | EndGame_Bunny
 } endgametype_t;
@@ -194,12 +195,23 @@ DOOM_C_API typedef struct interlevel_s
 	int32_t					num_anim_layers;
 } interlevel_t;
 
+DOOM_C_API typedef struct endgame_castframe_s
+{
+	flowstring_t			lump;
+	flowstring_t			tranmap;
+	flowstring_t			translation;
+	doombool				flipped;
+	int32_t					duration;
+	int32_t					sound;
+} endgame_castframe_t;
+
 DOOM_C_API typedef struct endgame_castmember_s
 {
 	flowstring_t			name_mnemonic;
-	int32_t					thing_number;
-	doombool				allow_ranged;
-	doombool				allow_melee;
+	endgame_castframe_t*	alive_frames;
+	endgame_castframe_t*	death_frames;
+	int32_t					num_alive_frames;
+	int32_t					num_death_frames;
 } endgame_castmember_t;
 
 DOOM_C_API typedef struct endgame_s
@@ -209,10 +221,13 @@ DOOM_C_API typedef struct endgame_s
 	flowstring_t			primary_image_lump;
 	flowstring_t			secondary_image_lump;
 	flowstring_t			music_lump;
-	doombool				do_next_map;
 	endgame_castmember_t*	cast_members;
 	int32_t					num_cast_members;
-
+	flowstring_t			bunny_end_overlay;
+	int32_t					bunny_end_count;
+	int32_t					bunny_end_x;
+	int32_t					bunny_end_y;
+	int32_t					bunny_end_sound;
 } endgame_t;
 
 DOOM_C_API typedef struct mapinfo_s
@@ -276,6 +291,7 @@ DOOM_C_API mapinfo_t* D_GameflowGetMap( episodeinfo_t* episode, int32_t mapnum )
 DOOM_C_API void D_GameflowSetCurrentEpisode( episodeinfo_t* episode );
 DOOM_C_API void D_GameflowSetCurrentMap( mapinfo_t* map );
 
+DOOM_C_API endgame_t* D_GameflowGetFinaleCopy( const char* lumpname );
 DOOM_C_API interlevel_t* D_GameflowGetInterlevel( const char* lumpname );
 
 DOOM_C_API void D_GameflowCheckAndParseMapinfos( void );

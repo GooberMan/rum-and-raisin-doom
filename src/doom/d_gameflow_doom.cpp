@@ -1550,6 +1550,13 @@ endgame_t doom_endgame_e1 =
 	FlowString( "HELP2" ),							// primary_image_lump
 	FlowString( "CREDIT" ),							// secondary_image_lump
 	RuntimeFlowString( "victor" ),					// music_lump
+	nullptr,										// cast_members
+	0,												// num_cast_members
+	EmptyFlowString(),								// bunny_end_overlay
+	0,												// bunny_end_count
+	0,												// bunny_end_x
+	0,												// bunny_end_y
+	0,												// bunny_end_sound
 };
 
 static interlevelanim_t doom_anim_e1_back[] =
@@ -1622,6 +1629,13 @@ endgame_t doom_endgame_e2 =
 	FlowString( "VICTORY2" ),						// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
 	RuntimeFlowString( "victor" ),					// music_lump
+	nullptr,										// cast_members
+	0,												// num_cast_members
+	EmptyFlowString(),								// bunny_end_overlay
+	0,												// bunny_end_count
+	0,												// bunny_end_x
+	0,												// bunny_end_y
+	0,												// bunny_end_sound
 };
 
 static interlevelanim_t doom_anim_e2_finished[] =
@@ -1703,6 +1717,13 @@ endgame_t doom_endgame_e3 =
 	FlowString( "PFUB2" ),							// primary_image_lump
 	FlowString( "PFUB1" ),							// secondary_image_lump
 	RuntimeFlowString( "bunny" ),					// music_lump
+	nullptr,										// cast_members
+	0,												// num_cast_members
+	RuntimeFlowString( "END%i" ),					// bunny_end_overlay
+	7,												// bunny_end_count
+	(320 - 13 * 8) / 2,								// bunny_end_x
+	(200 - 8 * 8) / 2,								// bunny_end_y
+	sfx_pistol,										// bunny_end_sound
 };
 
 static interlevelanim_t doom_anim_e3_back[] =
@@ -1771,6 +1792,13 @@ endgame_t doom_endgame_e4 =
 	FlowString( "ENDPIC" ),							// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
 	RuntimeFlowString( "victor" ),					// music_lump
+	nullptr,										// cast_members
+	0,												// num_cast_members
+	EmptyFlowString(),								// bunny_end_overlay
+	0,												// bunny_end_count
+	0,												// bunny_end_x
+	0,												// bunny_end_y
+	0,												// bunny_end_sound
 };
 
 interlevel_t doom_interlevel_e4 =

@@ -318,6 +318,7 @@ namespace umapinfo
 		DoomString			endpic;
 		setboolean_t		endbunny;
 		setboolean_t		endcast;
+		DoomString			endfinale;
 		setboolean_t		nointermission;
 		DoomString			intertext;
 		bool				intertextclear;
@@ -534,6 +535,10 @@ static void __declspec( noinline ) ParseMap( DoomStringStream& lumpstream, DoomS
 		{
 			newmap.endcast = SetBoolean( rhs );
 		}
+		else if( lhs == "endfinale" )
+		{
+			newmap.endfinale = rhs;
+		}
 		else if( lhs == "nointermission" )
 		{
 			newmap.nointermission = SetBoolean( rhs );
@@ -748,9 +753,9 @@ static void BuildNewGameInfo()
 		}
 
 		newmap.data_lump = FlowString( map.mapname );
-		newmap.name = FlowString( map.full_name );
-		newmap.name_patch_lump = FlowString( map.levelpic );
-		newmap.authors = FlowString( map.author );
+		if( !map.full_name.empty() ) newmap.name = FlowString( map.full_name );
+		if( !map.levelpic.empty() ) newmap.name_patch_lump = FlowString( map.levelpic );
+		if( !map.author.empty() ) newmap.authors = FlowString( map.author );
 		newmap.episode = &mapepisode;
 		newmap.map_num = map.map_num;
 		// newmap.map_flags
@@ -800,34 +805,52 @@ static void BuildNewGameInfo()
 			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
 		}
 
-		if( !map.endpic.empty() )
+		if( !map.endfinale.empty() )
 		{
-			newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+			newmap.endgame = D_GameflowGetFinaleCopy( map.endfinale.c_str() );
 			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
-			newmap.endgame->type = EndGame_Pic;
-			newmap.endgame->primary_image_lump = FlowString( map.endpic );
-			newmap.endgame->secondary_image_lump = EmptyFlowString();
-			newmap.endgame->music_lump = FlowString( gamemode == commercial ? "read_m" : "victor" );
-		}
 
-		if( map.endbunny == setboolean::True )
-		{
-			newmap.endgame = &umapinfogame.endgames[ map.mapname ];
-			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
-			newmap.endgame->type = EndGame_Bunny;
-			newmap.endgame->primary_image_lump = FlowString( "PFUB2" );
-			newmap.endgame->secondary_image_lump = FlowString( "PFUB1" );
-			newmap.endgame->music_lump = RuntimeFlowString( "bunny" );
+			auto found = umapinfogame.intermissions.find( map.mapname );
+			if( found != umapinfogame.intermissions.end() )
+			{
+				newmap.endgame->intermission = &found->second;
+			}
+			else
+			{
+				newmap.endgame->intermission = newmap.next_map_intermission;
+			}
 		}
-
-		if( map.endcast == setboolean::True )
+		else
 		{
-			newmap.endgame = &umapinfogame.endgames[ map.mapname ];
-			newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
-			newmap.endgame->type = EndGame_Cast;
-			newmap.endgame->primary_image_lump = EmptyFlowString( );
-			newmap.endgame->secondary_image_lump = EmptyFlowString( );
-			newmap.endgame->music_lump = RuntimeFlowString( "evil" );
+			if( !map.endpic.empty() )
+			{
+				newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+				newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
+				newmap.endgame->type = EndGame_Pic | EndGame_LoopingMusic;
+				newmap.endgame->primary_image_lump = FlowString( map.endpic );
+				newmap.endgame->secondary_image_lump = EmptyFlowString();
+				newmap.endgame->music_lump = FlowString( gamemode == commercial ? "read_m" : "victor" );
+			}
+
+			if( map.endbunny == setboolean::True )
+			{
+				newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+				newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
+				newmap.endgame->type = EndGame_Bunny;
+				newmap.endgame->primary_image_lump = FlowString( "PFUB2" );
+				newmap.endgame->secondary_image_lump = FlowString( "PFUB1" );
+				newmap.endgame->music_lump = RuntimeFlowString( "bunny" );
+			}
+
+			if( map.endcast == setboolean::True )
+			{
+				newmap.endgame = &umapinfogame.endgames[ map.mapname ];
+				newmap.map_flags = newmap.map_flags | Map_GenericEndOfGame;
+				newmap.endgame->type = EndGame_Cast | EndGame_LoopingMusic;
+				newmap.endgame->primary_image_lump = EmptyFlowString( );
+				newmap.endgame->secondary_image_lump = EmptyFlowString( );
+				newmap.endgame->music_lump = RuntimeFlowString( "evil" );
+			}
 		}
 
 		if( map.nointermission == setboolean::True && newmap.endgame != nullptr )

@@ -1008,37 +1008,20 @@ intermission_t tnt_intermission_s2 =
 	FlowString( "RROCK19" ),						// background_lump
 };
 
-endgame_castmember_t tnt_cast_members[] =
-{
-	{ PlainFlowString( "CC_ZOMBIE" ),	MT_POSSESSED,	true,	true },
-	{ PlainFlowString( "CC_SHOTGUN" ),	MT_SHOTGUY,		true,	true },
-	{ PlainFlowString( "CC_HEAVY" ),	MT_CHAINGUY,	true,	true },
-	{ PlainFlowString( "CC_IMP" ),		MT_TROOP,		true,	true },
-	{ PlainFlowString( "CC_DEMON" ),	MT_SERGEANT,	true,	true },
-	{ PlainFlowString( "CC_LOST" ),		MT_SKULL,		true,	true },
-	{ PlainFlowString( "CC_CACO" ),		MT_HEAD,		true,	true },
-	{ PlainFlowString( "CC_HELL" ),		MT_KNIGHT,		true,	true },
-	{ PlainFlowString( "CC_BARON" ),	MT_BRUISER,		true,	true },
-	{ PlainFlowString( "CC_ARACH" ),	MT_BABY,		true,	true },
-	{ PlainFlowString( "CC_PAIN" ),		MT_PAIN,		true,	true },
-	{ PlainFlowString( "CC_REVEN" ),	MT_UNDEAD,		true,	true },
-	{ PlainFlowString( "CC_MANCU" ),	MT_FATSO,		true,	true },
-	{ PlainFlowString( "CC_ARCH" ),		MT_VILE,		true,	true },
-	{ PlainFlowString( "CC_SPIDER" ),	MT_SPIDER,		true,	true },
-	{ PlainFlowString( "CC_CYBER" ),	MT_CYBORG,		true,	true },
-	{ PlainFlowString( "CC_HERO" ),		MT_PLAYER,		true,	true },
-};
-
 endgame_t tnt_endgame =
 {
 	EndGame_Cast | EndGame_LoopingMusic | EndGame_BuiltInCast,	// type
 	&tnt_intermission_e4,							// intermission
-	PlainFlowString( "BOSSBACK" ),					// primary_image_lump
+	FlowString( "BOSSBACK" ),						// primary_image_lump
 	EmptyFlowString(),								// secondary_image_lump
 	RuntimeFlowString( "evil" ),					// music_lump
-	false,											// do_next_map
-	tnt_cast_members,								// cast_members
-	arrlen( tnt_cast_members ),						// num_cast_members
+	nullptr,										// cast_members
+	0,												// num_cast_members
+	EmptyFlowString(),								// bunny_end_overlay
+	0,												// bunny_end_count
+	0,												// bunny_end_x
+	0,												// bunny_end_y
+	0,												// bunny_end_sound
 };
 
 interlevel_t tnt_interlevel =

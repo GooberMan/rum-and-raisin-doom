@@ -78,7 +78,7 @@ static intermission_t* finaleintermission = NULL;
 static endgame_t* finaleendgame = NULL;
 
 void	F_StartCast (void);
-void	F_CastTicker (void);
+bool	F_CastTicker (void);
 doombool F_CastResponder (event_t *ev);
 void	F_CastDrawer (void);
 
@@ -135,8 +135,14 @@ DOOM_C_API void F_StartFinale( endgame_t* endgame )
 		finaleendgame = endgame;
 		return;
 	}
-	finaleintermission = NULL;
+
+	finaleintermission = nullptr;
 	finaleendgame = endgame;
+
+	gameaction = ga_nothing;
+	gamestate = GS_FINALE;
+	viewactive = false;
+	automapactive = false;
 
 	F_SwitchFinale();
 }
@@ -180,17 +186,36 @@ DOOM_C_API void F_Ticker (void)
 	// advance animation
 	finalecount++;
 	
+	bool canprogress = finaleendgame != nullptr
+						&& ( finaleendgame->type & EndGame_DoNextMap ) == EndGame_DoNextMap
+						&& current_map->next_map != nullptr;
+
+	bool shouldprogress = false;
 	if( finalestage == F_STAGE_CAST )
 	{
-		F_CastTicker ();
+		shouldprogress = F_CastTicker();
+	}
+	else if( finalestage == F_STAGE_ARTSCREEN
+		&& finalecount > 50 )
+	{
+		// go on to the next level
+		for (i=0 ; i<MAXPLAYERS ; i++)
+		{
+			if (players[i].cmd.buttons)
+			{
+				shouldprogress = true;
+			}
+		}
 	}
 
-	doombool advance = didskip
-		|| ( finalestage == F_STAGE_TEXT && finalecount > strlen( finaletext ) * TEXTSPEED + TEXTWAIT );
+	doombool advance = ( canprogress && shouldprogress )
+					|| didskip
+					|| ( finalestage == F_STAGE_TEXT && finalecount > strlen( finaletext ) * TEXTSPEED + TEXTWAIT );
 	
 	if( advance )
 	{
-		if( !finaleendgame )
+		if( !finaleendgame
+			|| ( canprogress && shouldprogress ) )
 		{
 			gameaction = ga_worlddone;
 		}
@@ -303,6 +328,146 @@ int		castframes;
 int		castonmelee;
 doombool		castattacking;
 
+bool					newcast_active = false;
+endgame_castmember_t*	newcast_currmember = nullptr;
+endgame_castframe_t*	newcast_currframe = nullptr;
+bool					newcast_alive = false;
+int32_t					newcast_ticsremaining = 0;
+
+void F_NewCastSetFrame( endgame_castframe_t* frame )
+{
+	newcast_currframe = frame;
+	newcast_ticsremaining = newcast_currframe->duration;
+
+	if( frame->sound )
+	{
+		S_StartSound( nullptr, frame->sound );
+	}
+}
+
+void F_NewCastSetMember( endgame_castmember_t* member )
+{
+	newcast_currmember = member;
+	newcast_alive = true;
+	F_NewCastSetFrame( newcast_currmember->alive_frames );
+}
+
+void F_NewCastKillCurrentMember()
+{
+	newcast_alive = false;
+	F_NewCastSetFrame( newcast_currmember->death_frames );
+}
+
+void F_StartNewCast()
+{
+	lumpindex_t bossbacknum = W_GetNumForNameExcluding( finaleendgame->primary_image_lump.Resolve(), comp.widescreen_assets ? wt_none : wt_widepix );
+	W_CacheLumpNum( bossbacknum, PU_LEVEL );
+
+	for( endgame_castmember_t& member : std::span( finaleendgame->cast_members, finaleendgame->num_cast_members ) )
+	{
+		for( endgame_castframe_t& frame : std::span( member.alive_frames, member.num_alive_frames ) )
+		{
+			W_CacheLumpName( frame.lump.Resolve(), PU_LEVEL );
+			const char* tranmap = frame.tranmap.Resolve();
+			if( tranmap ) W_CacheLumpName( tranmap, PU_LEVEL );
+		}
+
+		for( endgame_castframe_t& frame : std::span( member.death_frames, member.num_death_frames ) )
+		{
+			W_CacheLumpName( frame.lump.Resolve(), PU_LEVEL );
+			const char* tranmap = frame.tranmap.Resolve();
+			if( tranmap ) W_CacheLumpName( tranmap, PU_LEVEL );
+		}
+	}
+
+	F_NewCastSetMember( finaleendgame->cast_members );
+}
+
+bool F_NewCastTicker()
+{
+	bool looped = false;
+
+	if( --newcast_ticsremaining <= 0 )
+	{
+		endgame_castframe_t* currbegin = newcast_alive ? newcast_currmember->alive_frames
+														: newcast_currmember->death_frames;
+		endgame_castframe_t* currend = currbegin + ( newcast_alive ? newcast_currmember->num_alive_frames
+																	: newcast_currmember->num_death_frames );
+
+		endgame_castframe_t* nextframe = newcast_currframe + 1;
+		if( newcast_alive
+			|| nextframe != currend )
+		{
+			F_NewCastSetFrame( nextframe != currend ? nextframe : currbegin );
+		}
+		else
+		{
+			endgame_castmember_t* nextmember = newcast_currmember + 1;
+			if( nextmember == finaleendgame->cast_members + finaleendgame->num_cast_members )
+			{
+				looped = true;
+				nextmember = ( finaleendgame->type & EndGame_DoNextMap ) != EndGame_DoNextMap || current_map->next_map == nullptr
+								? finaleendgame->cast_members
+								: nullptr;
+			}
+
+			if( nextmember )
+			{
+				F_NewCastSetMember( nextmember );
+			}
+		}
+	}
+
+	return looped;
+}
+
+doombool F_NewCastResponder( event_t* ev )
+{
+	bool canrespond = ev->type == ev_keydown;
+
+	if( comp.finale_allow_mouse_to_skip )
+	{
+		canrespond |= ( ev->type == ev_mouse && ev->data5 != 0 );
+	}
+
+	if ( !canrespond )
+	{
+		return false;
+	}
+
+	if( newcast_alive )
+	{
+		newcast_alive = false;
+		F_NewCastSetFrame( newcast_currmember->death_frames );
+	}
+	return true;
+}
+
+void F_CastPrint( const char *text );
+
+void F_NewCastDrawer()
+{
+	lumpindex_t bossbacknum = W_GetNumForNameExcluding( finaleendgame->primary_image_lump.Resolve(), comp.widescreen_assets ? wt_none : wt_widepix );
+	patch_t* bossback = (patch_t*)W_CacheLumpNum( bossbacknum, PU_LEVEL );
+	int32_t xpos = -( ( bossback->width - V_VIRTUALWIDTH ) / 2 );
+	V_DrawPatch( xpos, 0, bossback );
+
+	F_CastPrint( DEH_StringLookupMnemonic( newcast_currmember->name_mnemonic.Resolve() ) );
+			
+	patch_t* framepatch = (patch_t*)W_CacheLumpName( newcast_currframe->lump.Resolve(), PU_LEVEL );
+	translation_t* translation = R_GetTranslation( newcast_currframe->translation.Resolve() );
+	const char* tranmapname = newcast_currframe->tranmap.Resolve();
+	byte* tranmap = tranmapname ? (byte*)W_CacheLumpName( tranmapname, PU_LEVEL ) : nullptr;
+
+	if( newcast_currframe->flipped )
+	{
+		V_DrawPatchFlipped( V_VIRTUALWIDTH >> 1, 170, framepatch, tranmap, translation ? translation->table : nullptr );
+	}
+	else
+	{
+		V_DrawPatch( V_VIRTUALWIDTH >> 1, 170, framepatch, tranmap, translation ? translation->table : nullptr );
+	}
+}
 
 //
 // F_StartCast
@@ -310,122 +475,144 @@ doombool		castattacking;
 void F_StartCast (void)
 {
     wipegamestate = GS_INVALID;		// force a screen wipe
-    castnum = 0;
-    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
-    casttics = caststate->tics;
-    castdeath = false;
     finalestage = F_STAGE_CAST;
-    castframes = 0;
-    castonmelee = 0;
-    castattacking = false;
     S_ChangeMusicLump( &finaleendgame->music_lump, !!( finaleendgame->type & EndGame_LoopingMusic ) );
 
-}
+	newcast_active = ( finaleendgame->type & EndGame_BuiltInCast ) != EndGame_BuiltInCast;
 
+	if( newcast_active )
+	{
+		F_StartNewCast();
+		return;
+	}
+
+	castnum = 0;
+	caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+	casttics = caststate->tics;
+	castdeath = false;
+	castframes = 0;
+	castonmelee = 0;
+	castattacking = false;
+}
 
 //
 // F_CastTicker
 //
-void F_CastTicker (void)
+bool F_CastTicker (void)
 {
+	if( newcast_active )
+	{
+		return F_NewCastTicker();
+	}
+
     int		st;
     int		sfx;
 	
     if (--casttics > 0)
-	return;			// not time to change state yet
+	{
+		return false;			// not time to change state yet
+	}
 		
+	bool looped = false;
     if (caststate->tics == -1 || caststate->nextstate == S_NULL)
     {
-	// switch from deathstate to next monster
-	castnum++;
-	castdeath = false;
-	if (castorder[castnum].name == NULL)
-	    castnum = 0;
-	if (mobjinfo[castorder[castnum].type].seesound)
-	    S_StartSound (NULL, mobjinfo[castorder[castnum].type].seesound);
-	caststate = &states[mobjinfo[castorder[castnum].type].seestate];
-	castframes = 0;
+		// switch from deathstate to next monster
+		castnum++;
+		castdeath = false;
+		if (castorder[castnum].name == NULL)
+		{
+			castnum = 0;
+			looped = true;
+		}
+		if (mobjinfo[castorder[castnum].type].seesound)
+			S_StartSound (NULL, mobjinfo[castorder[castnum].type].seesound);
+		caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+		castframes = 0;
     }
     else
     {
-	// just advance to next state in animation
-	if (caststate == &states[S_PLAY_ATK1])
-	    goto stopattack;	// Oh, gross hack!
-	st = caststate->nextstate;
-	caststate = &states[st];
-	castframes++;
+		// just advance to next state in animation
+		if (caststate == &states[S_PLAY_ATK1])
+			goto stopattack;	// Oh, gross hack!
+		st = caststate->nextstate;
+		caststate = &states[st];
+		castframes++;
 	
-	// sound hacks....
-	switch (st)
-	{
-	  case S_PLAY_ATK1:	sfx = sfx_dshtgn; break;
-	  case S_POSS_ATK2:	sfx = sfx_pistol; break;
-	  case S_SPOS_ATK2:	sfx = sfx_shotgn; break;
-	  case S_VILE_ATK2:	sfx = sfx_vilatk; break;
-	  case S_SKEL_FIST2:	sfx = sfx_skeswg; break;
-	  case S_SKEL_FIST4:	sfx = sfx_skepch; break;
-	  case S_SKEL_MISS2:	sfx = sfx_skeatk; break;
-	  case S_FATT_ATK8:
-	  case S_FATT_ATK5:
-	  case S_FATT_ATK2:	sfx = sfx_firsht; break;
-	  case S_CPOS_ATK2:
-	  case S_CPOS_ATK3:
-	  case S_CPOS_ATK4:	sfx = sfx_shotgn; break;
-	  case S_TROO_ATK3:	sfx = sfx_claw; break;
-	  case S_SARG_ATK2:	sfx = sfx_sgtatk; break;
-	  case S_BOSS_ATK2:
-	  case S_BOS2_ATK2:
-	  case S_HEAD_ATK2:	sfx = sfx_firsht; break;
-	  case S_SKULL_ATK2:	sfx = sfx_sklatk; break;
-	  case S_SPID_ATK2:
-	  case S_SPID_ATK3:	sfx = sfx_shotgn; break;
-	  case S_BSPI_ATK2:	sfx = sfx_plasma; break;
-	  case S_CYBER_ATK2:
-	  case S_CYBER_ATK4:
-	  case S_CYBER_ATK6:	sfx = sfx_rlaunc; break;
-	  case S_PAIN_ATK3:	sfx = sfx_sklatk; break;
-	  default: sfx = 0; break;
-	}
+		// sound hacks....
+		switch (st)
+		{
+		  case S_PLAY_ATK1:	sfx = sfx_dshtgn; break;
+		  case S_POSS_ATK2:	sfx = sfx_pistol; break;
+		  case S_SPOS_ATK2:	sfx = sfx_shotgn; break;
+		  case S_VILE_ATK2:	sfx = sfx_vilatk; break;
+		  case S_SKEL_FIST2:	sfx = sfx_skeswg; break;
+		  case S_SKEL_FIST4:	sfx = sfx_skepch; break;
+		  case S_SKEL_MISS2:	sfx = sfx_skeatk; break;
+		  case S_FATT_ATK8:
+		  case S_FATT_ATK5:
+		  case S_FATT_ATK2:	sfx = sfx_firsht; break;
+		  case S_CPOS_ATK2:
+		  case S_CPOS_ATK3:
+		  case S_CPOS_ATK4:	sfx = sfx_shotgn; break;
+		  case S_TROO_ATK3:	sfx = sfx_claw; break;
+		  case S_SARG_ATK2:	sfx = sfx_sgtatk; break;
+		  case S_BOSS_ATK2:
+		  case S_BOS2_ATK2:
+		  case S_HEAD_ATK2:	sfx = sfx_firsht; break;
+		  case S_SKULL_ATK2:	sfx = sfx_sklatk; break;
+		  case S_SPID_ATK2:
+		  case S_SPID_ATK3:	sfx = sfx_shotgn; break;
+		  case S_BSPI_ATK2:	sfx = sfx_plasma; break;
+		  case S_CYBER_ATK2:
+		  case S_CYBER_ATK4:
+		  case S_CYBER_ATK6:	sfx = sfx_rlaunc; break;
+		  case S_PAIN_ATK3:	sfx = sfx_sklatk; break;
+		  default: sfx = 0; break;
+		}
 		
-	if (sfx)
-	    S_StartSound (NULL, sfx);
+		if (sfx)
+			S_StartSound (NULL, sfx);
     }
 	
     if (castframes == 12)
     {
-	// go into attack frame
-	castattacking = true;
-	if (castonmelee)
-	    caststate=&states[mobjinfo[castorder[castnum].type].meleestate];
-	else
-	    caststate=&states[mobjinfo[castorder[castnum].type].missilestate];
-	castonmelee ^= 1;
-	if (caststate == &states[S_NULL])
-	{
-	    if (castonmelee)
-		caststate=
-		    &states[mobjinfo[castorder[castnum].type].meleestate];
-	    else
-		caststate=
-		    &states[mobjinfo[castorder[castnum].type].missilestate];
+		// go into attack frame
+		castattacking = true;
+		if (castonmelee)
+			caststate=&states[mobjinfo[castorder[castnum].type].meleestate];
+		else
+			caststate=&states[mobjinfo[castorder[castnum].type].missilestate];
+		castonmelee ^= 1;
+		if (caststate == &states[S_NULL])
+		{
+			if (castonmelee)
+			caststate=
+				&states[mobjinfo[castorder[castnum].type].meleestate];
+			else
+			caststate=
+				&states[mobjinfo[castorder[castnum].type].missilestate];
+		}
 	}
-    }
 	
-    if (castattacking)
-    {
-	if (castframes == 24
-	    ||	caststate == &states[mobjinfo[castorder[castnum].type].seestate] )
+	if (castattacking)
 	{
-	  stopattack:
-	    castattacking = false;
-	    castframes = 0;
-	    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
-	}
+		if (castframes == 24
+			||	caststate == &states[mobjinfo[castorder[castnum].type].seestate] )
+		{
+			stopattack:
+			castattacking = false;
+			castframes = 0;
+			caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+		}
     }
 	
     casttics = caststate->tics;
     if (casttics == -1)
-	casttics = 15;
+	{
+		casttics = 15;
+	}
+
+	return looped;
 }
 
 
@@ -435,6 +622,11 @@ void F_CastTicker (void)
 
 doombool F_CastResponder (event_t* ev)
 {
+	if( newcast_active )
+	{
+		return F_NewCastResponder( ev );
+	}
+		
 	doombool canrespond = ev->type == ev_keydown;
 
 	if( comp.finale_allow_mouse_to_skip )
@@ -446,7 +638,7 @@ doombool F_CastResponder (event_t* ev)
 	{
 		return false;
 	}
-		
+
     if (castdeath)
 	return true;			// already in dying frames
 		
@@ -520,6 +712,11 @@ void F_CastPrint (const char *text)
 
 void F_CastDrawer (void)
 {
+	if( newcast_active )
+	{
+		return F_NewCastDrawer();
+	}
+		
     spritedef_t*	sprdef;
     spriteframe_t*	sprframe;
     int			lump;
@@ -527,7 +724,7 @@ void F_CastDrawer (void)
     patch_t*		patch;
     
 	// WIDESCREEN HACK
-	lumpindex_t bossbacknum = W_GetNumForNameExcluding( DEH_String("BOSSBACK"), comp.widescreen_assets ? wt_none : wt_widepix );
+	lumpindex_t bossbacknum = W_GetNumForNameExcluding( finaleendgame->primary_image_lump.Resolve(), comp.widescreen_assets ? wt_none : wt_widepix );
 	patch_t* bossback = (patch_t*)W_CacheLumpNum(bossbacknum, PU_LEVEL);
 	int32_t xpos = -( ( bossback->width - V_VIRTUALWIDTH ) / 2 );
 
@@ -589,29 +786,39 @@ void F_BunnyScroll (void)
 	V_DrawPatchClipped( overlap + p2->width - scrolled, 0, p2, 0, 0, p2->width - ( p2->width - scrolled ), V_VIRTUALHEIGHT );
 	
     if (finalecount < 1130)
-	return;
-    if (finalecount < 1180)
-    {
-        V_DrawPatch((V_VIRTUALWIDTH - 13 * 8) / 2,
-                    (V_VIRTUALHEIGHT - 8 * 8) / 2, 
-                    (patch_t*)W_CacheLumpName(DEH_String("END0"), PU_CACHE));
-	laststage = 0;
-	return;
-    }
+	{
+		return;
+	}
+
+	const char* endpatchstring = finaleendgame->bunny_end_overlay.Resolve();
+	if( endpatchstring != nullptr )
+	{
+		if (finalecount < 1180)
+		{
+			DEH_snprintf(name, 10, endpatchstring, 0);
+			V_DrawPatch(finaleendgame->bunny_end_x,
+						finaleendgame->bunny_end_y, 
+						(patch_t*)W_CacheLumpName(name, PU_CACHE));
+			laststage = 0;
+			return;
+		}
 	
-    stage = (finalecount-1180) / 5;
-    if (stage > 6)
-	stage = 6;
-    if (stage > laststage)
-    {
-	S_StartSound (NULL, sfx_pistol);
-	laststage = stage;
-    }
+		stage = M_MIN( (finalecount-1180) / 5, M_MAX( finaleendgame->bunny_end_count - 1, 0 ) );
+
+		if (stage > laststage)
+		{
+			if( finaleendgame->bunny_end_sound != 0 && finaleendgame->bunny_end_sound != -1 )
+			{
+				S_StartSound( nullptr, finaleendgame->bunny_end_sound );
+			}
+			laststage = stage;
+		}
 	
-    DEH_snprintf(name, 10, "END%i", stage);
-    V_DrawPatch((V_VIRTUALWIDTH - 13 * 8) / 2, 
-                (V_VIRTUALHEIGHT - 8 * 8) / 2, 
-                (patch_t*)W_CacheLumpName (name,PU_CACHE));
+		DEH_snprintf(name, 10, endpatchstring, stage);
+		V_DrawPatch(finaleendgame->bunny_end_x,
+					finaleendgame->bunny_end_y,
+					(patch_t*)W_CacheLumpName( name, PU_CACHE ));
+	}
 }
 
 static void F_ArtScreenDrawer(void)

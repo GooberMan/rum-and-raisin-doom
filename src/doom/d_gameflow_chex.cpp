@@ -387,6 +387,13 @@ endgame_t chex_endgame_e1 =
 	FlowString( "CREDIT" ),							// primary_image_lump
 	EmptyFlowString( ),								// secondary_image_lump
 	RuntimeFlowString( "victor" ),					// music_lump
+	nullptr,										// cast_members
+	0,												// num_cast_members
+	EmptyFlowString(),								// bunny_end_overlay
+	0,												// bunny_end_count
+	0,												// bunny_end_x
+	0,												// bunny_end_y
+	0,												// bunny_end_sound
 };
 
 static interlevelanim_t chex_anim_e1_back[] =

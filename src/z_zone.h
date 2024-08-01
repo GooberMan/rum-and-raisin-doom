@@ -58,6 +58,7 @@ DOOM_C_API void		Z_DumpHeap (int lowtag, int hightag);
 DOOM_C_API void		Z_FileDumpHeap (FILE *f);
 DOOM_C_API void		Z_CheckHeap (void);
 DOOM_C_API doombool	Z_ChangeTag2 (void *ptr, int tag, const char *file, int line);
+DOOM_C_API doombool Z_LowerTagTracked( void* ptr, int32_t tag, const char* file, size_t line );
 DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
 
 #define Z_Malloc( size, tag, ptr ) Z_MallocTracked( __FILE__, __LINE__, size, tag, (void**)ptr, NULL )
@@ -68,6 +69,8 @@ DOOM_C_API void		Z_ChangeUser(void *ptr, void **user);
 //
 #define Z_ChangeTag(p,t)                                       \
     Z_ChangeTag2((p), (t), __FILE__, __LINE__)
+
+#define Z_LowerTag( ptr, tag ) Z_LowerTagTracked( ptr, tag, __FILE__, __LINE__ )
 
 #if defined( __cplusplus )
 

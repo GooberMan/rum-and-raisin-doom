@@ -128,6 +128,52 @@ constexpr endgametype_t GetEndgameType( endgameloadedtype_t type )
 	return EndGame_None;
 }
 
+jsonlumpresult_t D_GameflowParseCastFrames( const JSONElement& elem, endgame_castframe_t*& frames, int32_t& numframes )
+{
+	frames = (endgame_castframe_t*)Z_MallocZero( sizeof( endgame_castframe_t ) * elem.Children().size(), PU_STATIC, nullptr );
+	numframes = (int32_t)elem.Children().size();
+
+	endgame_castframe_t* outframe = frames;
+	for( const JSONElement& inframe : elem.Children() )
+	{
+		if( !inframe.IsElement() )
+		{
+			return jl_parseerror;
+		}
+
+		const JSONElement& lump			= inframe[ "lump" ];
+		const JSONElement& tranmap		= inframe[ "tranmap" ];
+		const JSONElement& translation	= inframe[ "translation" ];
+		const JSONElement& flipped		= inframe[ "flipped" ];
+		const JSONElement& duration		= inframe[ "duration" ];
+		const JSONElement& sound		= inframe[ "sound" ];
+
+		if( !lump.IsString()
+			|| !( tranmap.IsNull() || tranmap.IsString() )
+			|| !( translation.IsNull() || translation.IsString() )
+			|| !flipped.IsBoolean()
+			|| !duration.IsNumber()
+			|| !sound.IsNumber()
+			)
+		{
+			return jl_parseerror;
+		}
+
+		constexpr flowstring_t emptystring = {};
+
+		outframe->lump = CopyToPlainFlowString( to< std::string >( lump ) );
+		outframe->tranmap = tranmap.IsNull() ? emptystring : CopyToPlainFlowString( to< std::string >( tranmap ) );
+		outframe->translation = translation.IsNull() ? emptystring : CopyToPlainFlowString( to< std::string >( translation ) );
+		outframe->flipped = to< bool >( flipped );
+		outframe->duration = M_MAX( 1, (int32_t)( to< double_t >( duration ) * TICRATE ) );
+		outframe->sound = to< int32_t >( sound );
+
+		++outframe;
+	}
+
+	return jl_success;
+}
+
 // We have to assume that anyone getting this finale can and might
 // set an intermission on it. So we always return a copy.
 endgame_t* D_GameflowGetFinaleCopy( const char* lumpname )
@@ -140,6 +186,7 @@ endgame_t* D_GameflowGetFinaleCopy( const char* lumpname )
 		{
 			const JSONElement& type			= elem[ "type" ];
 			const JSONElement& music		= elem[ "music" ];
+			const JSONElement& musicloops	= elem[ "musicloops" ];
 			const JSONElement& background	= elem[ "background" ];
 			const JSONElement& donextmap	= elem[ "donextmap" ];
 			const JSONElement& bunny		= elem[ "bunny" ];
@@ -147,6 +194,7 @@ endgame_t* D_GameflowGetFinaleCopy( const char* lumpname )
 
 			if( !type.IsNumber()
 				|| !music.IsString()
+				|| !musicloops.IsBoolean()
 				|| !background.IsString()
 				|| !donextmap.IsBoolean()
 				)
@@ -165,26 +213,44 @@ endgame_t* D_GameflowGetFinaleCopy( const char* lumpname )
 				return jl_parseerror;
 			}
 
+			if( to< bool >( musicloops ) ) endgametype = (endgametype_t)( endgametype | EndGame_LoopingMusic );
+			if( to< bool >( donextmap ) ) endgametype = (endgametype_t)( endgametype | EndGame_DoNextMap );
+
 			output.type = endgametype;
 			output.intermission = nullptr;
 			output.music_lump = CopyToPlainFlowString( to< std::string >( music ) );
 			output.primary_image_lump = CopyToPlainFlowString( to< std::string >( background ) );
-			output.do_next_map = to< bool >( donextmap );
 			output.cast_members = nullptr;
 			output.num_cast_members = 0;
 
 			if( ( endgametype & EndGame_Bunny ) == EndGame_Bunny )
 			{
-				const JSONElement& stitchimage = bunny[ "stitchimage" ];
-				if( !stitchimage.IsString() )
+				const JSONElement& stitchimage		= bunny[ "stitchimage" ];
+				const JSONElement& overlay			= bunny[ "overlay" ];
+				const JSONElement& overlaycount		= bunny[ "overlaycount" ];
+				const JSONElement& overlaysound		= bunny[ "overlaysound" ];
+				const JSONElement& overlayx			= bunny[ "overlayx" ];
+				const JSONElement& overlayy			= bunny[ "overlayy" ];
+				if( !stitchimage.IsString()
+					|| !( overlay.IsNull() || overlay.IsString() )
+					|| !overlaycount.IsNumber()
+					|| !overlaysound.IsNumber()
+					|| !overlayx.IsNumber()
+					|| !overlayy.IsNumber() )
 				{
 					return jl_parseerror;
 				}
+
 				output.secondary_image_lump = CopyToPlainFlowString( to< std::string >( stitchimage ) );
+				if( !overlay.IsNull() ) output.bunny_end_overlay = CopyToPlainFlowString( to< std::string >( overlay ) );
+				output.bunny_end_count = to< int32_t >( overlaycount );
+				output.bunny_end_sound = to< int32_t >( overlaysound );
+				output.bunny_end_x = to< int32_t >( overlayx );
+				output.bunny_end_y = to< int32_t >( overlayy );
 			}
-			else if( ( endgametype & EndGame_Cast ) == EndGame_Cast )
+			else if(  ( endgametype & EndGame_Cast ) == EndGame_Cast )
 			{
-				const JSONElement& castmembers = castrollcall[ "castmembers" ];
+				const JSONElement& castmembers = castrollcall[ "castanims" ];
 				if( !castmembers.IsArray() )
 				{
 					return jl_parseerror;
@@ -196,29 +262,36 @@ endgame_t* D_GameflowGetFinaleCopy( const char* lumpname )
 				endgame_castmember_t* currmember = output.cast_members;
 				for( const JSONElement& member : castmembers.Children() )
 				{
+					if( !member.IsElement() )
+					{
+						return jl_parseerror;
+					}
+
 					const JSONElement& name			= member[ "name" ];
-					const JSONElement& thing		= member[ "thing" ];
-					const JSONElement& allowranged	= member[ "allowranged" ];
-					const JSONElement& allowmelee	= member[ "allowmelee" ];
+					const JSONElement& aliveframes	= member[ "aliveframes" ];
+					const JSONElement& deathframes	= member[ "deathframes" ];
 
 					if( !name.IsString()
-						|| !thing.IsNumber()
-						|| !allowranged.IsBoolean()
-						|| !allowmelee.IsBoolean() )
+						|| !aliveframes.IsArray()
+						|| aliveframes.Children().size() == 0
+						|| !deathframes.IsArray()
+						|| deathframes.Children().size() == 0 )
 					{
 						return jl_parseerror;
 					}
 
 					currmember->name_mnemonic = CopyToPlainFlowString( to< std::string >( name ) );
-					currmember->thing_number = to< int32_t >( thing );
-					currmember->allow_ranged = to< bool >( allowranged );
-					currmember->allow_melee = to< bool >( allowmelee );
+
+					jsonlumpresult_t result = D_GameflowParseCastFrames( aliveframes, currmember->alive_frames, currmember->num_alive_frames );
+					if( result != jl_success ) return result;
+					result = D_GameflowParseCastFrames( deathframes, currmember->death_frames, currmember->num_death_frames );
+					if( result != jl_success ) return result;
 
 					++currmember;
 				}
 			}
 
-			return jl_parseerror;
+			return jl_success;
 		};
 
 		jsonlumpresult_t result = M_ParseJSONLump( lumpname, "finale", { 1, 0, 0 }, ParseFinale );

@@ -22,6 +22,7 @@
 #include "doomtype.h"
 #include "i_system.h"
 #include "m_argv.h"
+#include "m_misc.h"
 
 #include "z_zone.h"
 
@@ -325,6 +326,30 @@ doombool Z_ChangeTag2(void *ptr, int tag, const char *file, int line)
     block->tag = tag;
 
 	return changed;
+}
+
+doombool Z_LowerTagTracked( void* ptr, int32_t tag, const char* file, size_t line )
+{
+	memblock_t*	block = (memblock_t *) ((byte *)ptr - sizeof(memblock_t));
+
+	if (block->id != ZONEID)
+	{
+		I_Error( "%s:%i: Z_LowerTag: block without a ZONEID!", file, line);
+	}
+
+	int32_t oldtag = block->tag;
+	block->tag = M_MIN( block->tag, tag );
+
+	if( oldtag != block->tag )
+	{
+		if( tag >= PU_PURGELEVEL && block->user == nullptr )
+		{
+			I_Error( "%s:%i: Z_LowerTag: an owner is required for purgable blocks", file, line );
+		}
+		return true;
+	}
+
+	return false;
 }
 
 void Z_ChangeUser(void *ptr, void **user)

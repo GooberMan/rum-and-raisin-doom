@@ -460,7 +460,7 @@ void *W_CacheLumpNumTracked(const char* file, size_t line, lumpindex_t lumpnum, 
         // Already cached, so just switch the zone tag.
 
         result = (byte*)lump->cache;
-        changed = Z_ChangeTag(lump->cache, tag);
+        changed = Z_LowerTag(lump->cache, tag);
 
 		if( changed && wadrenderlock )
 		{
