@@ -1080,12 +1080,7 @@ private:
 	int CalcPainOffset(void)
 	{
 		int32_t health = plyr->health > 100 ? 100 : plyr->health;
-
-		if( health != oldhealth )
-		{
-			lasthealthcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
-			oldhealth = health;
-		}
+		lasthealthcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
 
 		return lasthealthcalc;
 	}

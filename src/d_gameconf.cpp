@@ -42,7 +42,6 @@ static std::map< std::string, GameVersion_t > executableversions =
 	{ "mbf21",			exe_mbf21					},
 	{ "mbf21ex",		exe_mbf21_extended			},
 	{ "rnr24",			exe_rnr24					},
-	{ "id24",			exe_rnr24					},
 };
 
 static const std::map< std::string, GameMode_t > modeversions =
