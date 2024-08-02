@@ -1081,6 +1081,7 @@ private:
 	{
 		int32_t health = plyr->health > 100 ? 100 : plyr->health;
 		lasthealthcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
+		oldhealth = health;
 
 		return lasthealthcalc;
 	}
