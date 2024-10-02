@@ -411,6 +411,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sky_
 		skycontext.colfunc = foreground ? texture->transparentwallrender : texture->wallrender;
 		skycontext.transparency = foreground ? (byte*)skymixmap.data() : nullptr;
 		skycontext.colormap = rendercontext.viewpoint.colormaps;
+		skycontext.centery = drs_current->centery;
 		skycontext.texturemid = tex.mid + line->rowoffset + tex.curry;
 		skycontext.output = dest;
 		skycontext.sourceheight = texture->renderheight;
@@ -425,7 +426,7 @@ void R_DrawSky( rendercontext_t& rendercontext, rasterregion_t* thisregion, sky_
 				skycontext.yh = line.bottom;
 				skycontext.x = x;
 
-				int32_t angle = ( viewpoint.angle + skyoffsetangle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
+				int32_t angle = ( viewpoint.yaw + skyoffsetangle + drs_current->xtoviewangle[ x ] ) >> ANGLETOSKYSHIFT;
 				angle = RendFixedToInt( RendFixedMul( IntToRendFixed( angle ), tex.scalex ) );
 				// Sky is allways drawn full bright,
 				//  i.e. colormaps[0] is used.

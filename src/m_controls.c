@@ -234,6 +234,9 @@ void M_BindBaseControls(void)
     M_BindIntVariable("key_strafe",         &key_strafe);
     M_BindIntVariable("key_speed",          &key_speed);
 	M_BindIntVariable("key_toggle_autorun", &key_toggle_autorun);
+    M_BindIntVariable("key_lookup",         &key_lookup);
+    M_BindIntVariable("key_lookdown",       &key_lookdown);
+    M_BindIntVariable("key_lookcenter",     &key_lookcenter);
 
     M_BindIntVariable("mouseb_fire",        &mousebfire);
     M_BindIntVariable("mouseb_strafe",      &mousebstrafe);

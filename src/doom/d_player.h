@@ -41,7 +41,9 @@
 
 #include "z_zone.h"
 
-
+#if defined( __cplusplus )
+constexpr angle_t MaxViewPitchAngle = ANG60;
+#endif //defined( __cplusplus )
 
 
 //
@@ -148,7 +150,9 @@ DOOM_C_API typedef struct player_s
     // Bob/squat speed.
     fixed_t         	deltaviewheight;
     // bounded/scaled total momentum.
-    fixed_t         	bob;	
+    fixed_t         	bob;
+
+	angle_t				viewpitch;
 
 	rend_fixed_t prevviewz;
 	rend_fixed_t currviewz;

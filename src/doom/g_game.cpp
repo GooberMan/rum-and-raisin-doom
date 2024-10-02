@@ -617,6 +617,19 @@ void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic)
 		dclicks = 0;
 	}
 
+	if( GameKeyDown( key_lookup ) )
+	{
+		cmd->pitchturn += ( ( ANG1 * 3 ) >> FRACBITS );
+	}
+	if( GameKeyDown( key_lookdown ) )
+	{
+		cmd->pitchturn -= ( ( ANG1 * 3 ) >> FRACBITS );
+	}
+	if( GameKeyDown( key_lookcenter ) )
+	{
+		cmd->pitchturn = 0x7FFF;
+	}
+
 	// If the previous or next weapon button is pressed, the
 	// next_weapon variable is set to change weapons when
 	// we generate a ticcmd.  Choose a new weapon.
@@ -710,7 +723,14 @@ void G_BuildTiccmd (ticcmd_t* cmd, uint64_t maketic)
 		}
 	}
 
-	forward += mousey;
+	if( mouse_vert_type == mvt_movement )
+	{
+		forward += mousey;
+	}
+	else if( mouse_vert_type == mvt_freelook && cmd->pitchturn != 0x7FFF )
+	{
+		cmd->pitchturn -= mousey * 0x8;
+	}
 
 	if (strafe)
 	{

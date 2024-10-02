@@ -24,8 +24,16 @@
 
 #define MAX_MOUSE_BUTTONS 8
 
+DOOM_C_API typedef enum mouseverttype_e
+{
+	mvt_none,
+	mvt_movement,
+	mvt_freelook,
+} mouseverttype_t;
+
 DOOM_C_API extern float mouse_acceleration;
 DOOM_C_API extern int mouse_threshold;
+DOOM_C_API extern int32_t mouse_vert_type;
 
 DOOM_C_API void I_BindInputVariables(void);
 DOOM_C_API void I_ReadMouse(void);

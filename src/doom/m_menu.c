@@ -2583,6 +2583,13 @@ static controlsection_t keymappings[] =
 							{	NULL,					NULL }, },
 	},
 	{
+		"Viewpoint",
+		(controldesc_t[]){	{	"Look up",				&key_lookup },
+							{	"Look down",			&key_lookdown },
+							{	"Look center",			&key_lookcenter },
+							{	NULL,					NULL }, },
+	},
+	{
 		"Weapons",
 		(controldesc_t[]){	{	"Weapon 1",				&key_weapon1 },
 							{	"Weapon 2",				&key_weapon2 },
@@ -3070,7 +3077,6 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 	extern int32_t show_diskicon;
 	extern int32_t enable_frame_interpolation;
 	extern int32_t grabmouse;
-	extern int32_t novert;
 	extern int32_t snd_pitchshift;
 	extern int32_t num_software_backbuffers;
 	extern int32_t num_render_contexts;
@@ -3191,19 +3197,70 @@ void M_DashboardOptionsWindow( const char* itemname, void* data )
 			igPushID_Str( "Mouse settings" );
 			if( igCollapsingHeader_TreeNodeFlags( "Settings", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
-				igCheckbox( "Grab in windowed mode", (bool*)&grabmouse );
-				igCheckbox( "Disallow vertical movement", (bool*)&novert );
-				igNewLine();
+				igColumns( 2, "", false );
+				igSetColumnWidth( 0, columwidth );
 
-				igSliderInt( "Sensitivity", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+				igText( "Grab in windowed mode" );
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushID_Ptr( &grabmouse );
+				igCheckbox( "", (bool*)&grabmouse );
+				igPopID();
+				igNextColumn();
 
+				igText( "Vertical behavior" );
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushID_Ptr( &mouse_vert_type );
+				mouse_vert_type = M_CLAMP( mouse_vert_type, 0, 2 );
+
+				static const char* vertbehavior[] =
+				{
+					"None",
+					"Movement",
+					"Look"
+				};
+
+				if( igBeginCombo( "", vertbehavior[ mouse_vert_type ], ImGuiComboFlags_None ) )
+				{
+					WorkingInt = mouse_vert_type;
+					if( igSelectable_Bool( vertbehavior[ 0 ], mouse_vert_type == 0, ImGuiSelectableFlags_None, zerosize ) ) WorkingInt = 0;
+					if( igSelectable_Bool( vertbehavior[ 1 ], mouse_vert_type == 1, ImGuiSelectableFlags_None, zerosize ) ) WorkingInt = 1;
+					if( igSelectable_Bool( vertbehavior[ 2 ], mouse_vert_type == 2, ImGuiSelectableFlags_None, zerosize ) ) WorkingInt = 2;
+					mouse_vert_type = WorkingInt;
+					igEndCombo();
+				}
+				igPopID();
+				igNextColumn();
+
+				igText( "Sensitivity" );
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushID_Ptr( &mouseSensitivity );
+				igSliderInt( "", &mouseSensitivity, 0, 30, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+				igPopID();
+				igNextColumn();
+
+				igText( "Acceleration" );
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushID_Ptr( &mouse_acceleration );
 				WorkingInt = (int32_t)( mouse_acceleration * 10.f );
-				if( igSliderInt( "Acceleration", &WorkingInt, 10, 50, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
+				if( igSliderInt( "", &WorkingInt, 10, 50, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput ) )
 				{
 					mouse_acceleration = (float_t)WorkingInt * 0.1f;
 				}
-				igSliderInt( "Threshold", &mouse_threshold, 0, 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
-				igNewLine();
+				igPopID();
+				igNextColumn();
+
+				igText( "Threshold" );
+				igNextColumn();
+				igPushItemWidth( 180.f );
+				igPushID_Ptr( &mouse_threshold );
+				igSliderInt( "", &mouse_threshold, 0, 32, NULL, ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoInput );
+				igPopID();
+				igNextColumn();
+				igColumns( 1, "", false );
 			}
 			igPopID();
 

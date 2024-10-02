@@ -205,7 +205,7 @@ void R_DrawColumn_OneSample( colcontext_t* context )
 	simddest	= ( simd_int8x16_t* )( basedest - overlap );
 
 	fracstep	= context->iscale << 4;
-	frac		= context->texturemid + ( context->yl - drs_current->centery ) * context->iscale;
+	frac		= context->texturemid + ( context->yl - context->centery ) * context->iscale;
 
 	fracbase	= frac - context->iscale * overlap;
 
@@ -295,7 +295,7 @@ namespace DrawColumn
 
 		static INLINE size_t StartPos( colcontext_t*& context )
 		{
-			return context->texturemid + ( context->yl - drs_current->centery ) * context->iscale;
+			return context->texturemid + ( context->yl - context->centery ) * context->iscale;
 		}
 	};
 
@@ -313,7 +313,7 @@ namespace DrawColumn
 
 		static INLINE size_t StartPos( colcontext_t*& context )
 		{
-			return M_MAX( 0, context->texturemid + ( context->yl - drs_current->centery ) * context->iscale );
+			return M_MAX( 0, context->texturemid + ( context->yl - context->centery ) * context->iscale );
 		}
 	};
 

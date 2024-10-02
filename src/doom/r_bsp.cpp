@@ -283,8 +283,8 @@ void R_AddLine( rendercontext_t& rendercontext, seg_t* line )
 	// Global angle needed by segcalc.
 	wallcontext.angle1 = angle1;
 	wallcontext.angle2 = angle2;
-	angle1 -= viewpoint.angle;
-	angle2 -= viewpoint.angle;
+	angle1 -= viewpoint.yaw;
+	angle2 -= viewpoint.yaw;
 	
 	angle_t tspan = angle1 + drs_current->clipangle;
 	if (tspan > 2*drs_current->clipangle)
@@ -443,8 +443,8 @@ doombool R_CheckBBox( const viewpoint_t& viewpoint, const bspcontext_t& context,
 	y2 = bspcoord[ checkcoord[ boxpos ][ 3 ] ];
 
 	// check clip list for an open space
-	angle1 = R_PointToAngle( &viewpoint, x1, y1 ) - viewpoint.angle;
-	angle2 = R_PointToAngle( &viewpoint, x2, y2 ) - viewpoint.angle;
+	angle1 = R_PointToAngle( &viewpoint, x1, y1 ) - viewpoint.yaw;
+	angle2 = R_PointToAngle( &viewpoint, x2, y2 ) - viewpoint.yaw;
 	
 	span = angle1 - angle2;
 

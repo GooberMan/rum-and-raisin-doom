@@ -359,6 +359,7 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 	int32_t				fuzzcolumn;
 
 	colcontext_t		spritecolcontext = {};
+	spritecolcontext.centery = vis->centery;
 
 	patch = spritepatches[ vis->patch ];
 
@@ -388,7 +389,7 @@ void R_DrawVisSprite( rendercontext_t& rendercontext, vissprite_t* vis, int32_t 
 	spritecolcontext.texturemid = vis->texturemid;
 	spritecontext.spryscale = vis->scale;
 	spritecontext.spryiscale = vis->iscale;
-	spritecontext.sprtopscreen = drs_current->centeryfrac - RendFixedMul( spritecolcontext.texturemid, spritecontext.spryscale );
+	spritecontext.sprtopscreen = vis->centeryfrac - RendFixedMul( spritecolcontext.texturemid, spritecontext.spryscale );
 	
 #ifdef NEWFUZZ
 	constexpr rend_fixed_t screenscale = RendFixedDiv( IntToRendFixed( 1 ), IntToRendFixed( 320 ) );
@@ -513,8 +514,8 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	rend_fixed_t tr_x = thingx - viewpoint.x;
 	rend_fixed_t tr_y = thingy - viewpoint.y;
 	
-	rend_fixed_t gxt = RendFixedMul( tr_x, viewpoint.cos ); 
-	rend_fixed_t gyt = -RendFixedMul( tr_y, viewpoint.sin );
+	rend_fixed_t gxt = RendFixedMul( tr_x, viewpoint.yawcos ); 
+	rend_fixed_t gyt = -RendFixedMul( tr_y, viewpoint.yawsin );
 
 	rend_fixed_t tz = gxt - gyt;
 
@@ -528,8 +529,8 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	rend_fixed_t xiscale = RendFixedDiv( RENDFRACUNIT, xscale );
 	rend_fixed_t yscale = RendFixedDiv( drs_current->yprojection, tz );
 	
-	gxt = -RendFixedMul( tr_x, viewpoint.sin );
-	gyt = RendFixedMul( tr_y, viewpoint.cos );
+	gxt = -RendFixedMul( tr_x, viewpoint.yawsin );
+	gyt = RendFixedMul( tr_y, viewpoint.yawcos );
 	rend_fixed_t tx = -( gyt + gxt );
 
 	// too far off the side?
@@ -611,6 +612,8 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 	vis->texturemid = vis->gzt - viewpoint.z;
 	vis->x1 = x1 < spritecontext.leftclip ? spritecontext.leftclip : x1;
 	vis->x2 = x2 >= spritecontext.rightclip ? spritecontext.rightclip-1 : x2;
+	vis->centery = viewpoint.centery;
+	vis->centeryfrac = viewpoint.centeryfrac;
 
 	if (flip)
 	{
@@ -671,6 +674,7 @@ void R_ProjectSprite( rendercontext_t& rendercontext, mobj_t* thing, sectorinsta
 												: nullptr
 										: nullptr;
 	vis->translation = thing->translation ? thing->translation->table : nullptr;
+
 }
 
 void R_AddSprites( rendercontext_t& rendercontext, sectorinstance_t* sec, int32_t secindex )
@@ -798,6 +802,8 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	vis->x2 = x2 >= spritecontext.rightclip ? spritecontext.rightclip-1 : x2;	
 	vis->scale = drs_current->pspritescaley;
 	vis->iscale = drs_current->pspriteiscaley;
+	vis->centery = drs_current->centery;
+	vis->centeryfrac = drs_current->centeryfrac;
 
 	if (flip)
 	{
@@ -852,7 +858,7 @@ void R_DrawPSprite( rendercontext_t& rendercontext, pspdef_t* psp )
 	}
 
 	vis->translation = nullptr;
-	
+
 	R_DrawVisSprite( rendercontext, vis, vis->x1, vis->x2 );
 }
 
@@ -1072,7 +1078,7 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 
 	if( spr->sector->clipceiling )
 	{
-		int32_t seccliptop = RendFixedToInt( drs_current->centeryfrac - RendFixedMul( spr->sector->ceilheight - viewpoint.z, spr->scale ) + RENDFRACUNIT - 1 );
+		int32_t seccliptop = RendFixedToInt( rendercontext.viewpoint.centeryfrac - RendFixedMul( spr->sector->ceilheight - viewpoint.z, spr->scale ) + RENDFRACUNIT - 1 );
 		seccliptop = M_MAX( -1, seccliptop );
 		for (x=spr->x1 ; x<=spr->x2 ; x++)
 		{
@@ -1082,7 +1088,7 @@ void R_DrawSprite( rendercontext_t& rendercontext, vissprite_t* spr )
 		
 	if( spr->sector->clipfloor )
 	{
-		int32_t secclipbot = RendFixedToInt( drs_current->centeryfrac - RendFixedMul( spr->sector->floorheight - viewpoint.z, spr->scale ) + RENDFRACUNIT - 1 );
+		int32_t secclipbot = RendFixedToInt( rendercontext.viewpoint.centeryfrac - RendFixedMul( spr->sector->floorheight - viewpoint.z, spr->scale ) + RENDFRACUNIT - 1 );
 		secclipbot = M_MIN( drs_current->viewheight, secclipbot );
 		for (x=spr->x1 ; x<=spr->x2 ; x++)
 		{

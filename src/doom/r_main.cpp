@@ -30,6 +30,7 @@
 #include "m_config.h"
 #include "m_container.h"
 #include "m_controls.h"
+#include "m_conv.h"
 #include "m_fixed.h"
 #include "m_misc.h"
 
@@ -48,6 +49,8 @@
 #include <stddef.h>
 
 #include "d_loop.h"
+
+#pragma optimize( "", off )
 
 extern "C"
 {
@@ -1160,13 +1163,13 @@ void R_ExecuteSetViewSizeFor( drsdata_t* current )
 	}
 
 	rend_fixed_t pixel_height = DoubleToRendFixed( render_post_scaling ? 1.0 : ( 1.0 / 1.2 ) );
-	rend_fixed_t horizon = IntToRendFixed( current->viewheight / 2 );
+	rend_fixed_t horizon = current->centeryfrac;
 	rend_fixed_t half_width = IntToRendFixed( current->viewwidth / 2 );
 
 	for ( int32_t row = 0; row < current->viewheight; ++row )
 	{
-		rend_fixed_t dy = RendFixedMul( IntToRendFixed( row ) - horizon, pixel_height ) + ( RENDFRACUNIT / 2 );
-		dy = llabs( dy );
+		rend_fixed_t dy = RendFixedMul( IntToRendFixed( row ) - horizon, pixel_height ) + DoubleToRendFixed( 0.5 );
+		dy = RendFixedAbs( dy );
 		current->yslope[ row ] = RendFixedMul( RendFixedDiv( half_width, dy ), perspective_mul );
 	}
 	
@@ -1545,29 +1548,48 @@ extern "C"
 
 bool isstrafing = false;
 
-int32_t R_Responder( event_t* ev ) //__attribute__ ((optnone))
+constexpr int32_t R_LookXResponder( event_t* ev ) //__attribute__ ((optnone))
 {
 	if( !isstrafing && ev->type == ev_mouse )
 	{
-		return ev->data2 * ( mouseSensitivity + 5 ) / 10; 
+		return ev->data2 * ( mouseSensitivity + 5 ) / 10;
 	}
 	return 0;
 }
 
-int32_t R_PeekEvents() //__attribute__ ((optnone))
+constexpr int32_t R_LookYResponder( event_t* ev ) //__attribute__ ((optnone))
 {
-	int32_t mouselookx = 0;
-
-	isstrafing = GameKeyDown( key_strafe ) || MouseButtonDown( mousebstrafe ) || JoyButtonDown( joybstrafe );
-
-	event_t* curr = D_PeekEvent( NULL );
-	while( curr != NULL )
+	if( !isstrafing && ev->type == ev_mouse )
 	{
-		mouselookx += R_Responder( curr );
-		curr = D_PeekEvent( curr );
+		return -ev->data3 * ( mouseSensitivity + 5 ) / 10;
+	}
+	return 0;
+}
+
+struct mouseevents_t
+{
+	int32_t lookx;
+	int32_t looky;
+};
+
+mouseevents_t R_PeekEvents( bool fetch ) //__attribute__ ((optnone))
+{
+	mouseevents_t events = {};
+
+	if( fetch )
+	{
+		isstrafing = GameKeyDown( key_strafe ) || MouseButtonDown( mousebstrafe ) || JoyButtonDown( joybstrafe );
+
+		event_t* curr = D_PeekEvent( NULL );
+		while( curr != NULL )
+		{
+			events.lookx += R_LookXResponder( curr );
+			events.looky += R_LookYResponder( curr );
+			curr = D_PeekEvent( curr );
+		}
 	}
 
-	return mouselookx;
+	return events;
 }
 
 auto RenderDatas( )
@@ -1687,11 +1709,21 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 		R_RebalanceContexts();
 	}
 
+	interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
+
+	mouseevents_t mouseevents = R_PeekEvents( !!interpolate_this_frame );
+
 	viewpoint_t viewpoint = {};
 
 	renderscratchpos = 0;
 	viewpoint.player = player;
 	viewpoint.weaponbob = FixedToRendFixed( player->bob );
+	viewpoint.yslope = drs_current->yslope;
+	viewpoint.centery = drs_current->centery;
+	viewpoint.centeryfrac = drs_current->centeryfrac;
+	viewpoint.yaw = player->mo->curr.angle + viewangleoffset;
+	viewpoint.pitch = player->viewpitch;
+
 	extralight = player->extralight + additional_light_boost;
 
 	jobs->AddJob( []()
@@ -1706,9 +1738,46 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 		}
 	} );
 
+	if( true )
+	{
+		jobs->AddJob( [ &viewpoint, &mouseevents ]()
+		{
+			int64_t mouseamount = mouseevents.looky;
+			int64_t newangle = viewpoint.pitch;
+			newangle += ( ( mouseamount * 0x8 ) << FRACBITS );
+
+			viewpoint.pitch = (angle_t)( newangle & ANG_MAX );
+			if( viewpoint.pitch > ANG180 ) viewpoint.pitch = M_CLAMP( viewpoint.pitch, Negate( MaxViewPitchAngle ), 0xFFFFFFFFu );
+			else viewpoint.pitch = M_CLAMP( viewpoint.pitch, 0, MaxViewPitchAngle );
+
+			angle_t viewangle = RENDFINEANGLE( ANG90 + viewpoint.pitch );
+			angle_t halffov = RENDFINEANGLE( ANG90 + ( ( ANG1 * vertical_fov_degrees ) >> 1 ) );
+
+			rend_fixed_t viewangletan = renderfinetangent[ viewangle ];
+			rend_fixed_t halffovtan = renderfinetangent[ halffov ];
+			rend_fixed_t horizonscale = RendFixedDiv( viewangletan, halffovtan );
+
+			rend_fixed_t* yslope = viewpoint.yslope = R_AllocateScratch< rend_fixed_t >( drs_current->viewheight );
+			rend_fixed_t horizon = viewpoint.centeryfrac = drs_current->centeryfrac + RendFixedMul( horizonscale, drs_current->centeryfrac );
+			int32_t centery = viewpoint.centery = RendFixedToInt( horizon );
+
+			pmul_t pmul = R_PerspectiveMulFor( drs_current, vertical_fov_degrees, render_post_scaling );
+			rend_fixed_t& perspective_mul = pmul.pmul;
+
+			rend_fixed_t pixel_height = DoubleToRendFixed( render_post_scaling ? 1.0 : ( 1.0 / 1.2 ) );
+			rend_fixed_t half_width = IntToRendFixed( drs_current->viewwidth / 2 );
+
+			for ( int32_t row = 0; row < drs_current->viewheight; ++row )
+			{
+				rend_fixed_t dy = RendFixedMul( IntToRendFixed( row ) - horizon, pixel_height ) + DoubleToRendFixed( 0.5 );
+				dy = RendFixedAbs( dy );
+				yslope[ row ] = RendFixedMul( RendFixedDiv( half_width, dy ), perspective_mul );
+			}
+		} );
+	}
+
 	{
 		M_PROFILE_NAMED( "Interpolation" );
-		interpolate_this_frame = enable_frame_interpolation != 0 && !renderpaused;
 
 		if( interpolate_this_frame )
 		{
@@ -1736,16 +1805,15 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 				viewpoint.x = adjustedviewx;
 				viewpoint.y = adjustedviewy;
 				viewpoint.z = adjustedviewz;
-				viewpoint.angle = player->mo->curr.angle + viewangleoffset;
 			}
 
 			if( !demoplayback && isconsoleplayer && player->playerstate != PST_DEAD && !player->mo->reactiontime )
 			{
-				int64_t mouseamount = R_PeekEvents();
-				int64_t newangle = viewpoint.angle;
+				int64_t mouseamount = mouseevents.lookx;
+				int64_t newangle = viewpoint.yaw;
 				newangle -= ( ( mouseamount * 0x8 ) << FRACBITS );
 
-				viewpoint.angle = (angle_t)( newangle & ANG_MAX );
+				viewpoint.yaw = (angle_t)( newangle & ANG_MAX );
 			}
 			else
 			{
@@ -1773,7 +1841,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 					}
 					result = RendFixedLerp( start, end, viewpoint.lerp );
 				}
-				viewpoint.angle = (angle_t)( result & ANG_MAX );
+				viewpoint.yaw = (angle_t)( result & ANG_MAX );
 			}
 
 			constexpr auto DoSectorHeights = []( const rend_fixed_t& prev, const rend_fixed_t& curr, const rend_fixed_t& percent, const int32_t& snap, const bool& select )
@@ -1827,7 +1895,7 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 			viewpoint.x = player->mo->curr.x;
 			viewpoint.y = player->mo->curr.y;
 			viewpoint.z = player->currviewz;
-			viewpoint.angle = player->mo->curr.angle + viewangleoffset;
+			viewpoint.yaw = player->mo->curr.angle + viewangleoffset;
 			viewpoint.lerp = 0;
 
 			memcpy( rendsectors, currsectors, sizeof( sectorinstance_t ) * numsectors );
@@ -1835,8 +1903,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 		}
 	}
 
-	viewpoint.sin = renderfinesine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
-	viewpoint.cos = renderfinecosine[ viewpoint.angle >> RENDERANGLETOFINESHIFT ];
+	viewpoint.yawsin = renderfinesine[ RENDFINEANGLE( viewpoint.yaw ) ];
+	viewpoint.yawcos = renderfinecosine[ RENDFINEANGLE( viewpoint.yaw )];
 	
 	{
 		M_PROFILE_NAMED( "Transfer properties" );
@@ -1932,6 +2000,8 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 		fixedcolormap = 0;
 	}
 
+	jobs->Flush();
+
 	for( currcontext = 0; currcontext < num_render_contexts; ++currcontext )
 	{
 		vbuffer_t buffer = *I_GetCurrentRenderBuffer( );
@@ -1978,8 +2048,6 @@ void R_SetupFrame( player_t* player, double_t framepercent, doombool isconsolepl
 	}
 
 	framecount++;
-
-	jobs->Flush();
 }
 
 //

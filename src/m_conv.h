@@ -225,4 +225,11 @@ constexpr bool IsNumber( const char* val )
 		|| ( val[ 0 ] == '-' && IsDigit( val[ 1 ] ) );
 }
 
+template< typename _ty >
+requires std::is_integral_v< _ty >
+constexpr auto Negate( _ty val )
+{
+	return ~val + 1;
+}
+
 #endif // __M_CONV_H__

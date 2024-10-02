@@ -1114,12 +1114,10 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(grabmouse),
 
     //!
-    // If non-zero, all vertical mouse movement is ignored.  This
-    // emulates the behavior of the "novert" tool available under DOS
-    // that performs the same function.
+    // 0 = none, 1 = movement, 2 = freelook
     //
 
-    CONFIG_VARIABLE_INT(novert),
+    CONFIG_VARIABLE_INT(mouse_vert_type),
 
     //!
     // Mouse acceleration factor.  When the speed of mouse movement

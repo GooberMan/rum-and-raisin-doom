@@ -228,6 +228,7 @@ void V_TileBuffer( vbuffer_t* source_buffer, int32_t x, int32_t y, int32_t width
 	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale );
 	column.yl				= FixedToInt( y * V_HEIGHTMULTIPLIER );
 	column.yh				= FixedToInt( M_MIN( y + height, V_VIRTUALHEIGHT ) * V_HEIGHTMULTIPLIER ) - 1;
+	column.centery			= dest_buffer->height >> 1;
 
 	rend_fixed_t xwidth		= IntToRendFixed( source_buffer->width );
 	rend_fixed_t xsource	= 0;
@@ -274,6 +275,7 @@ void V_FillBorder( vbuffer_t* source_buffer, int32_t miny, int32_t maxy )
 	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale );
 	column.yl				= FixedToInt( miny * V_HEIGHTMULTIPLIER );
 	column.yh				= FixedToInt( maxy * V_HEIGHTMULTIPLIER ) - 1;
+	column.centery			= dest_buffer->height >> 1;
 
 	rend_fixed_t width		= IntToRendFixed( source_buffer->width );
 	rend_fixed_t diff		= RendFixedDiv( IntToRendFixed( widthdiff ), FixedToRendFixed( V_HEIGHTMULTIPLIER ) );
@@ -384,6 +386,7 @@ void V_DrawPatchClipped(int x, int y, patch_t *patch, int clippedx, int clippedy
 	column.transparency		= tranmap;
 	column.texturemid		= 0;
 	column.iscale			= RendFixedDiv( IntToRendFixed( 1 ), yscale ) + 1;
+	column.centery			= dest_buffer->height >> 1;
 
 	column.colfunc			= ( translation && tranmap ) ? R_BackbufferDrawColumn_TranslatedAndTransparent
 							: ( translation ) ? R_BackbufferDrawColumn_Translated

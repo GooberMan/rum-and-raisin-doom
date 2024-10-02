@@ -244,7 +244,7 @@ INLINE void PrepareRow( int32_t y, rendercontext_t* rendercontext )
 
 	planecontext_t& planecontext = rendercontext->planecontext;
 
-	planecontext.raster[ y ].distance = RendFixedMul( planecontext.planeheight, drs_current->yslope[ y ] );
+	planecontext.raster[ y ].distance = RendFixedMul( planecontext.planeheight, rendercontext->viewpoint.yslope[ y ] );
 
 	if( fixedcolormapindex )
 	{
@@ -286,7 +286,7 @@ INLINE void PrepareRender( rendercontext_t* rendercontext, rasterregion_t* thisr
 {
 	rendercontext->planecontext.viewx		= rendercontext->viewpoint.x - thisregion->xoffset;
 	rendercontext->planecontext.viewy		= rendercontext->viewpoint.y - thisregion->yoffset;
-	rendercontext->planecontext.viewangle	= rendercontext->viewpoint.angle;
+	rendercontext->planecontext.viewangle	= rendercontext->viewpoint.yaw;
 
 	rendercontext->planecontext.planeheight = abs( thisregion->height - rendercontext->viewpoint.z );
 	int32_t light = M_CLAMP( ( ( thisregion->lightlevel >> LIGHTSEGSHIFT ) + extralight ), 0, LIGHTLEVELS - 1 );

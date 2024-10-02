@@ -652,6 +652,8 @@ typedef struct vissprite_s
 	int32_t				mobjflags;
 	int32_t				mobjflags2;
 
+	rend_fixed_t		centeryfrac;
+	int32_t				centery;
 } vissprite_t;
 
 //	
@@ -938,6 +940,7 @@ typedef struct colcontext_s
 	int32_t				x;
 	int32_t				yl;
 	int32_t				yh;
+	int32_t				centery;
 	rend_fixed_t		iscale;
 	rend_fixed_t		texturemid;
 } colcontext_t;
@@ -958,12 +961,16 @@ typedef struct viewpoint_s
 	rend_fixed_t		y;
 	rend_fixed_t		z;
 	rend_fixed_t		lerp;
-	rend_fixed_t		sin;
-	rend_fixed_t		cos;
-	lighttable_t*		colormaps;
-	transferzone_t		transferzone;
-	angle_t				angle;
+	rend_fixed_t		yawsin;
+	rend_fixed_t		yawcos;
 	rend_fixed_t		weaponbob;
+	lighttable_t*		colormaps;
+	rend_fixed_t*		yslope;
+	rend_fixed_t		centeryfrac;
+	int32_t				centery;
+	transferzone_t		transferzone;
+	angle_t				yaw;
+	angle_t				pitch;
 } viewpoint_t;
 
 typedef struct rendercontext_s

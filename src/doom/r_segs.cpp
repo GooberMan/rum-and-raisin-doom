@@ -116,6 +116,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 	vertclip_t*			maskedtexturecol;
 
 	colcontext_t		spritecolcontext = {};
+	spritecolcontext.centery = viewpoint.centery;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		starttime = I_GetTimeUS();
@@ -182,7 +183,7 @@ void R_RenderMaskedSegRange( rendercontext_t& rendercontext, drawseg_t* ds, int 
 		// calculate lighting
 		if (maskedtexturecol[spritecolcontext.x] != MASKEDTEXCOL_INVALID)
 		{
-			spritecontext.sprtopscreen = drs_current->centeryfrac - RendFixedMul( spritecolcontext.texturemid, spritecontext.spryscale );
+			spritecontext.sprtopscreen = viewpoint.centeryfrac - RendFixedMul( spritecolcontext.texturemid, spritecontext.spryscale );
 			spritecolcontext.iscale = RendFixedDiv( IntToRendFixed( 1 ), spritecontext.spryscale );
 
 			if( !fixedcolormap )
@@ -259,6 +260,7 @@ uint64_t R_RenderSegLoop( rendercontext_t& rendercontext, wallcontext_t& wallcon
 	rend_fixed_t	bottomfrac = segcontext->bottomfrac;
 
 	colcontext_t	wallcolcontext = {};
+	wallcolcontext.centery = rendercontext.viewpoint.centery;
 
 #if RENDER_PERF_GRAPHING
 	uint64_t		starttime = I_GetTimeUS();
@@ -569,14 +571,14 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		loopcontext.stopx = stop+1;
 
 		// calculate scale at both ends and step
-		bspcontext.thisdrawseg->scale1 = wallcontext.scale = R_ScaleFromGlobalAngle( viewpoint.angle + drs_current->xtoviewangle[start], wallcontext.distance, viewpoint.angle, wallcontext.normalangle );
+		bspcontext.thisdrawseg->scale1 = wallcontext.scale = R_ScaleFromGlobalAngle( viewpoint.yaw + drs_current->xtoviewangle[start], wallcontext.distance, viewpoint.yaw, wallcontext.normalangle );
 
 		if( stop > start )
 		{
 			// TODO: calculate second distance? Maybe?
 			//wallcontext.distance = FixedMul( R_PointToDist( curline->v2->rend.x, curline->v2->rend.y ), sineval );
 
-			bspcontext.thisdrawseg->scale2 = R_ScaleFromGlobalAngle( viewpoint.angle + drs_current->xtoviewangle[stop], wallcontext.distance, viewpoint.angle, wallcontext.normalangle );
+			bspcontext.thisdrawseg->scale2 = R_ScaleFromGlobalAngle( viewpoint.yaw + drs_current->xtoviewangle[stop], wallcontext.distance, viewpoint.yaw, wallcontext.normalangle );
 			bspcontext.thisdrawseg->scalestep = wallcontext.scalestep = 
 				( bspcontext.thisdrawseg->scale2 - wallcontext.scale ) / ( stop - start );
 		}
@@ -788,7 +790,7 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 				wallcontext.offset = -wallcontext.offset;
 
 			wallcontext.offset += bspcontext.sideinst->coloffset + bspcontext.curline->rend.offset;
-			wallcontext.centerangle = ANG90 + viewpoint.angle - wallcontext.normalangle;
+			wallcontext.centerangle = ANG90 + viewpoint.yaw - wallcontext.normalangle;
 	
 			// calculate light table
 			//  use different light tables
@@ -843,10 +845,10 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 		worldbottom >>= 4;
 	
 		loopcontext.topstep = -RendFixedMul( wallcontext.scalestep, worldtop );
-		loopcontext.topfrac = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldtop, wallcontext.scale );
+		loopcontext.topfrac = ( viewpoint.centeryfrac >> 4 ) - RendFixedMul( worldtop, wallcontext.scale );
 
 		loopcontext.bottomstep = -RendFixedMul( wallcontext.scalestep, worldbottom );
-		loopcontext.bottomfrac = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext.scale );
+		loopcontext.bottomfrac = ( viewpoint.centeryfrac >> 4 ) - RendFixedMul( worldbottom, wallcontext.scale );
 	
 		if (bspcontext.backsectorinst)
 		{	
@@ -855,13 +857,13 @@ void R_StoreWallRange( rendercontext_t& rendercontext, wallcontext_t& wallcontex
 
 			if (worldhigh < worldtop)
 			{
-				loopcontext.pixhigh = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldhigh, wallcontext.scale );
+				loopcontext.pixhigh = ( viewpoint.centeryfrac >> 4 ) - RendFixedMul( worldhigh, wallcontext.scale );
 				loopcontext.pixhighstep = -RendFixedMul( wallcontext.scalestep, worldhigh );
 			}
 	
 			if (worldlow > worldbottom)
 			{
-				loopcontext.pixlow = ( drs_current->centeryfrac >> 4 ) - RendFixedMul( worldlow, wallcontext.scale );
+				loopcontext.pixlow = ( viewpoint.centeryfrac >> 4 ) - RendFixedMul( worldlow, wallcontext.scale );
 				loopcontext.pixlowstep = -RendFixedMul( wallcontext.scalestep, worldlow );
 			}
 		}

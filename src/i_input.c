@@ -81,7 +81,7 @@ static unsigned int mouse_button_state = 0;
 // Disallow mouse and joystick movement to cause forward/backward
 // motion.  Specified with the '-novert' command line parameter.
 // This is an int to allow saving to config file
-int32_t novert = 0;
+int32_t mouse_vert_type = 0;
 
 // If true, keyboard mapping is ignored, like in Vanilla Doom.
 // The sensible thing to do is to disable this if you have a non-US
@@ -452,15 +452,7 @@ void I_ReadMouse(void)
         ev.type = ev_mouse;
         ev.data1 = mouse_button_state;
         ev.data2 = AccelerateMouse(x);
-
-        if (!novert)
-        {
-            ev.data3 = -AccelerateMouse(y);
-        }
-        else
-        {
-            ev.data3 = 0;
-        }
+        ev.data3 = -AccelerateMouse(y);
 
 		ev.data4 = 0;
 		ev.data5 = 0;
@@ -477,5 +469,5 @@ void I_BindInputVariables(void)
     M_BindFloatVariable("mouse_acceleration",      &mouse_acceleration);
     M_BindIntVariable("mouse_threshold",           &mouse_threshold);
     M_BindIntVariable("vanilla_keyboard_mapping",  &vanilla_keyboard_mapping);
-    M_BindIntVariable("novert",                    &novert);
+    M_BindIntVariable("mouse_vert_type",           &mouse_vert_type);
 }

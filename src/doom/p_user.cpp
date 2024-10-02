@@ -30,7 +30,7 @@
 
 #include "doomstat.h"
 
-
+#include "m_conv.h"
 
 // Index of the special effects (INVUL inverse) map.
 #define INVERSECOLORMAP		32
@@ -149,6 +149,16 @@ DOOM_C_API void P_MovePlayer (player_t* player)
 	cmd = &player->cmd;
 	
 	player->mo->angle += (cmd->angleturn<<FRACBITS);
+	if( cmd->pitchturn == 0x7FFF )
+	{
+		player->viewpitch = 0;
+	}
+	else
+	{
+		player->viewpitch += (cmd->pitchturn << FRACBITS);
+		if( player->viewpitch > ANG180 ) player->viewpitch = M_CLAMP( player->viewpitch, Negate( MaxViewPitchAngle ), 0xFFFFFFFFu );
+		else player->viewpitch = M_CLAMP( player->viewpitch, 0, MaxViewPitchAngle );
+	}
 
 	// Do not let the player control movement
 	//  if not onground.
