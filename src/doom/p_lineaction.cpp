@@ -1562,7 +1562,7 @@ static lineaction_t* CreateBoomGeneralisedLineAction( line_t* line )
 	return nullptr;
 }
 
-DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
+DOOM_C_API lineaction_t* P_GetDoomLineActionFor( line_t* line )
 {
 	if( !sim.generic_specials_handling )
 	{
@@ -1610,4 +1610,14 @@ DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line )
 	}
 
 	return GetBuiltInAction( 0 );
+}
+
+DOOM_C_API lineaction_t* P_GetHereticLineActionFor( line_t* line )
+{
+	return nullptr;
+}
+
+DOOM_C_API lineaction_t* P_GetHexenLineActionFor( line_t* line )
+{
+	return nullptr;
 }

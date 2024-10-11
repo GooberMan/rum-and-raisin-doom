@@ -1762,7 +1762,7 @@ DOOM_C_API void A_BossDeath (mobj_t* mo)
 		{
 			junk.special = action->line_special;
 			junk.tag = action->tag;
-			junk.action = P_GetLineActionFor( &junk );
+			junk.action = P_GetDoomLineActionFor( &junk );
 
 			// Cheating and giving the first player to allow most linedefs to trigger
 			P_CrossSpecialLine( &junk, 0, players[ 0 ].mo );

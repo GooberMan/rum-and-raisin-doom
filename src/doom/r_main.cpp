@@ -23,6 +23,7 @@
 #include "doomdef.h"
 #include "doomtype.h"
 
+#include "i_input.h"
 #include "i_thread.h"
 #include "i_terminal.h"
 
@@ -49,8 +50,6 @@
 #include <stddef.h>
 
 #include "d_loop.h"
-
-#pragma optimize( "", off )
 
 extern "C"
 {
@@ -1559,7 +1558,7 @@ constexpr int32_t R_LookXResponder( event_t* ev ) //__attribute__ ((optnone))
 
 constexpr int32_t R_LookYResponder( event_t* ev ) //__attribute__ ((optnone))
 {
-	if( !isstrafing && ev->type == ev_mouse )
+	if( mouse_vert_type == mvt_freelook && ev->type == ev_mouse )
 	{
 		return -ev->data3 * ( mouseSensitivity + 5 ) / 10;
 	}

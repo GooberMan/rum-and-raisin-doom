@@ -40,8 +40,6 @@
 
 #include "w_wad.h"
 
-#pragma optimize( "", off )
-
 extern "C"
 {
 	ceiling_t*	activeceilingshead = nullptr;

@@ -249,9 +249,13 @@ struct line_s
 	angle_t				angle;
 
 	// Animation related.
-	int16_t				flags;
-	int16_t				special;
-	int16_t				tag;
+	int32_t				flags;
+	int32_t				special;
+	union
+	{
+		int32_t			tag;
+		int32_t			args[ 5 ];
+	};
 
 	lineaction_t*		action;
 

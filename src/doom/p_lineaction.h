@@ -851,6 +851,8 @@ struct lineaction_s
 #define ACTIONPARAM_FIXED( line, name, index )		const auto& name = *(fixed_t*) &ACTIONPARAM( line, name, index )
 #define ACTIONPARAM_BOOL( line, name, index )		const bool name = !!( ACTIONPARAM( line, name, index ) )
 
-DOOM_C_API lineaction_t* P_GetLineActionFor( line_t* line );
+DOOM_C_API lineaction_t* P_GetDoomLineActionFor( line_t* line );
+DOOM_C_API lineaction_t* P_GetHereticLineActionFor( line_t* line );
+DOOM_C_API lineaction_t* P_GetHexenLineActionFor( line_t* line );
 
 #endif // __D_LINEACTION_H__

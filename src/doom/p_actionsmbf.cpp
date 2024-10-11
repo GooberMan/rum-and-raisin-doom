@@ -140,7 +140,7 @@ DOOM_C_API void A_LineEffect( mobj_t* mobj )
 		line_t dummyline = {};
 		dummyline.special = special;
 		dummyline.tag = tag;
-		lineaction_t* action = dummyline.action = P_GetLineActionFor( &dummyline );
+		lineaction_t* action = dummyline.action = P_GetDoomLineActionFor( &dummyline );
 
 		player_t dummyplayer = {};
 		player_t* oldplayer = mobj->player;

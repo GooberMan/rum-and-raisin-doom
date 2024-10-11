@@ -252,12 +252,12 @@ DOOM_C_API extern  doombool		playeringame[MAXPLAYERS];
 
 // Player spawn spots for deathmatch.
 #define MAX_DM_STARTS   10
-DOOM_C_API extern  mapthing_t      deathmatchstarts[MAX_DM_STARTS];
-DOOM_C_API extern  mapthing_t*	deathmatch_p;
+DOOM_C_API extern  mapthing_hexen_t		deathmatchstarts[MAX_DM_STARTS];
+DOOM_C_API extern  mapthing_hexen_t*	deathmatch_p;
 
 // Player spawn spots.
-DOOM_C_API extern  mapthing_t      playerstarts[MAXPLAYERS];
-DOOM_C_API extern  doombool         playerstartsingame[MAXPLAYERS];
+DOOM_C_API extern  mapthing_hexen_t		playerstarts[MAXPLAYERS];
+DOOM_C_API extern  doombool				playerstartsingame[MAXPLAYERS];
 // Intermission stats.
 // Parameters for world map / intermission.
 DOOM_C_API extern  wbstartstruct_t		wminfo;	

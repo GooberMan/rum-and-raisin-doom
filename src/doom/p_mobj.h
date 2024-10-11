@@ -330,7 +330,7 @@ DOOM_C_API typedef struct mobj_s
     int				lastlook;
 
     // For nightmare respawn.
-    mapthing_t		spawnpoint;
+    mapthing_hexen_t spawnpoint;
 	int32_t			lumpindex;
 	doombool		hasspawnpoint;
 
@@ -387,6 +387,9 @@ DOOM_C_API typedef struct mobj_s
 																	|| info->pickupstringmnemonic != nullptr; }
 #endif
 } mobj_t;
+
+DOOM_C_API mobj_t* P_SpawnMapThing( mapthing_hexen_t* mthing );
+DOOM_C_API mobj_t* P_SpawnPlayer( mapthing_hexen_t* mthing );
 
 #if defined( __cplusplus )
 

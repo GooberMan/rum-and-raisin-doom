@@ -1,7 +1,7 @@
 //
 // Copyright(C) 1993-1996 Id Software, Inc.
 // Copyright(C) 2005-2014 Simon Howard
-// Copyright(C) 2020 Ethan Watson
+// Copyright(C) 2020-2024 Ethan Watson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <zlib.h>
 
 #include "doomdata.h"
 #include "doomdef.h"
@@ -40,6 +41,7 @@
 
 #include "m_argv.h"
 #include "m_bbox.h"
+#include "m_conv.h"
 #include "m_dashboard.h"
 #include "m_fixed.h"
 #include "m_misc.h"
@@ -320,7 +322,6 @@ struct DoomMapLoader
 		{
 			_nodeformat = NodeFormat::ZNodeCompressed;
 			I_LogAddEntry( Log_System, "Detected compressed ZDoom nodes" );
-			I_Error( "Compressed ZDoom nodes currently unsupported" );
 		}
 		else if( !IsVanilla )
 		{
@@ -668,7 +669,18 @@ struct DoomMapLoader
 				out.flags &= ML_VANILLAMASK;
 			}
 			out.special			= Read::AsIs( in.special );
-			out.tag				= Read::AsIs( in.tag );
+			if constexpr( std::is_same_v< _maptype, maplinedef_hexen_t > )
+			{
+				out.args[ 0 ]	= Read::AsIs( in.arg1 );
+				out.args[ 1 ]	= Read::AsIs( in.arg2 );
+				out.args[ 2 ]	= Read::AsIs( in.arg3 );
+				out.args[ 3 ]	= Read::AsIs( in.arg4 );
+				out.args[ 4 ]	= Read::AsIs( in.arg5 );
+			}
+			else
+			{
+				out.tag				= Read::AsIs( in.tag );
+			}
 			out.v1				= &Vertices()[ Read::AsIs( in.v1 ) ];
 			out.v2				= &Vertices()[ Read::AsIs( in.v2 ) ];
 			out.dx				= out.v2->x - out.v1->x;
@@ -745,7 +757,18 @@ struct DoomMapLoader
 				out.backsector = nullptr;
 			}
 
-			out.action			= P_GetLineActionFor( &out );
+			if( gameversion == exe_hexen_1_1 )
+			{
+				out.action			= P_GetHexenLineActionFor( &out );
+			}
+			else if( gameversion == exe_heretic_1_3 )
+			{
+				out.action			= P_GetHereticLineActionFor( &out );
+			}
+			else
+			{
+				out.action			= P_GetDoomLineActionFor( &out );
+			}
 		} );
 
 		_numlines = data.count;
@@ -755,6 +778,11 @@ struct DoomMapLoader
 	void INLINE LoadExtendedLinedefs( int32_t lumpnum )
 	{
 		LoadLinedefs< maplinedef_limitremoving_t >( lumpnum );
+	}
+
+	void INLINE LoadHexenLinedefs( int32_t lumpnum )
+	{
+		LoadLinedefs< maplinedef_hexen_t >( lumpnum );
 	}
 
 	template< typename _maptype = mapsubsector_t >
@@ -777,12 +805,9 @@ struct DoomMapLoader
 		{
 			LoadSubsectors< mapsubsector_deepbsp_t >( lumpnum );
 		}
-		else if( _nodeformat == NodeFormat::ZNodeNormal )
+		else if( _nodeformat == NodeFormat::ZNodeNormal
+				|| _nodeformat == NodeFormat::ZNodeCompressed )
 		{
-		}
-		else if( _nodeformat == NodeFormat::ZNodeCompressed )
-		{
-			I_Error( "Compressed ZDoom nodes currently unsupported" );
 		}
 		else
 		{
@@ -976,9 +1001,6 @@ struct DoomMapLoader
 		else if( _nodeformat == NodeFormat::ZNodeCompressed )
 		{
 			// Need to get zlib and libpng in here
-			I_Error( "Compressed ZDoom nodes currently unsupported" );
-
-#if 0
 			byte* rawlump = (byte*)W_CacheLumpNum( lumpnum, PU_STATIC );
 			size_t rawlength = W_LumpLength( lumpnum );
 
@@ -986,9 +1008,38 @@ struct DoomMapLoader
 			Read::Consume< int32_t >( rawlump );
 			rawlength -= sizeof( int32_t );
 
+			constexpr size_t workingbuffersize = 1048576;
+			byte* workingbuffer = (byte*)Z_Malloc( sizeof( byte ) * workingbuffersize, PU_STATIC, nullptr );
+
+			std::vector< byte > inflated;
+			inflated.reserve( rawlength * 2 );
+
+			z_stream inflatestream = {};
+			inflatestream.next_in = rawlump;
+			inflatestream.avail_in = rawlength;
+			inflatestream.next_out = workingbuffer;
+			inflatestream.avail_out = workingbuffersize;
+
+			inflateInit( &inflatestream );
+			while( inflatestream.avail_in )
+			{
+				int32_t result = inflate( &inflatestream, Z_NO_FLUSH );
+				if( !inflatestream.avail_out )
+				{
+					inflated.insert( inflated.end(), workingbuffer, workingbuffer + workingbuffersize );
+					inflatestream.next_out = workingbuffer;
+					inflatestream.avail_out = workingbuffersize;
+				}
+				else
+				{
+					inflated.insert( inflated.end(), workingbuffer, inflatestream.next_out );
+					break;
+				}
+			}
+			inflateEnd( &inflatestream );
+
 			// Decompress data here
-			//LoadZDoomNodes( rawlump, rawlength );
-#endif
+			LoadZDoomNodes( inflated.data(), inflated.size() );
 
 			W_ReleaseLumpNum( lumpnum );
 		}
@@ -1060,12 +1111,9 @@ struct DoomMapLoader
 		{
 			LoadSegs< mapseg_deepbsp_t >( lumpnum );
 		}
-		else if( _nodeformat == NodeFormat::ZNodeNormal )
+		else if( _nodeformat == NodeFormat::ZNodeNormal
+				|| _nodeformat == NodeFormat::ZNodeCompressed )
 		{
-		}
-		else if( _nodeformat == NodeFormat::ZNodeCompressed )
-		{
-			I_Error( "Compressed ZDoom nodes currently unsupported" );
 		}
 		else
 		{
@@ -1229,8 +1277,6 @@ struct DoomMapLoader
 
 extern "C"
 {
-	mobj_t* P_SpawnMapThing (mapthing_t*	mthing);
-
 	//
 	// MAP related Lookup tables.
 	// Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
@@ -1303,10 +1349,10 @@ extern "C"
 
 	// Maintain single and multi player starting spots.
 
-	mapthing_t	deathmatchstarts[MAX_DEATHMATCH_STARTS];
-	mapthing_t*	deathmatch_p;
-	mapthing_t	playerstarts[MAXPLAYERS];
-	doombool		playerstartsingame[MAXPLAYERS];
+	mapthing_hexen_t	deathmatchstarts[MAX_DEATHMATCH_STARTS];
+	mapthing_hexen_t*	deathmatch_p;
+	mapthing_hexen_t	playerstarts[MAXPLAYERS];
+	doombool			playerstartsingame[MAXPLAYERS];
 
 	// pointer to the current map lump info struct
 	lumpinfo_t *maplumpinfo;
@@ -1320,17 +1366,11 @@ AtomicScratchpad*	currsecthings = nullptr;
 //
 // P_LoadThings
 //
-static void P_LoadThings (int lump)
+template< typename _mapthing >
+void P_LoadThings (int lump)
 {
-    byte               *data;
-    int			i;
-    mapthing_t         *mt;
-    mapthing_t          spawnthing;
-    int			numthings;
-    doombool		spawn;
-
-    data = (byte*)W_CacheLumpNum (lump,PU_STATIC);
-    numthings = W_LumpLength (lump) / sizeof(mapthing_t);
+	byte* data = (byte*)W_CacheLumpNum( lump, PU_STATIC );
+	int32_t numthings = W_LumpLength( lump ) / sizeof( _mapthing );
 
 	// If you get enough mobjs in your level to overflow these scratchpads, well, you must be NUTS!
 	constexpr size_t scratchpadsize	= sizeof( sectormobj_t ) * 524288;
@@ -1338,44 +1378,60 @@ static void P_LoadThings (int lump)
 	prevsecthings			= Z_MallocAsArgs( AtomicScratchpad, PU_LEVEL, nullptr, scratchpadsize, PU_LEVEL );
 	currsecthings			= Z_MallocAsArgs( AtomicScratchpad, PU_LEVEL, nullptr, scratchpadsize, PU_LEVEL );
 	
-    mt = (mapthing_t *)data;
-    for (i=0 ; i<numthings ; i++, mt++)
-    {
-		spawn = true;
+	_mapthing* mt = (_mapthing *)data;
+	int32_t index = -1;
+	for( _mapthing& mt : std::span( (_mapthing *)data, numthings ) )
+	{
+		++index;
+		bool spawn = true;
 
 		// Do not spawn cool, new monsters if !commercial
 		if (gamemode != commercial)
 		{
-			switch (SHORT(mt->type))
+			switch (SHORT(mt.type))
 			{
-			  case 68:	// Arachnotron
-			  case 64:	// Archvile
-			  case 88:	// Boss Brain
-			  case 89:	// Boss Shooter
-			  case 69:	// Hell Knight
-			  case 67:	// Mancubus
-			  case 71:	// Pain Elemental
-			  case 65:	// Former Human Commando
-			  case 66:	// Revenant
-			  case 84:	// Wolf SS
-			spawn = false;
-			break;
+			case 68:	// Arachnotron
+			case 64:	// Archvile
+			case 88:	// Boss Brain
+			case 89:	// Boss Shooter
+			case 69:	// Hell Knight
+			case 67:	// Mancubus
+			case 71:	// Pain Elemental
+			case 65:	// Former Human Commando
+			case 66:	// Revenant
+			case 84:	// Wolf SS
+				spawn = false;
+				break;
 			}
 		}
 		if (spawn == false)
 			break;
 
-		// Do spawn all other stuff. 
-		spawnthing.x = SHORT(mt->x);
-		spawnthing.y = SHORT(mt->y);
-		spawnthing.angle = SHORT(mt->angle);
-		spawnthing.type = SHORT(mt->type);
-		spawnthing.options = SHORT(mt->options);
+		// Do spawn all other stuff.
+		mapthing_hexen_t spawnthing = {};
+
+		spawnthing.x = SHORT(mt.x);
+		spawnthing.y = SHORT(mt.y);
+		spawnthing.angle = USHORT(mt.angle);
+		spawnthing.type = SHORT(mt.type);
+		spawnthing.options = USHORT(mt.options);
+
+		if constexpr( std::is_same_v< _mapthing, mapthing_hexen_t > )
+		{
+			spawnthing.tid = SHORT(mt.tid);
+			spawnthing.height = SHORT(mt.height);
+			spawnthing.special = mt.special;
+			spawnthing.arg1 = mt.arg1;
+			spawnthing.arg2 = mt.arg2;
+			spawnthing.arg3 = mt.arg3;
+			spawnthing.arg4 = mt.arg4;
+			spawnthing.arg5 = mt.arg5;
+		}
 	
-		mobj_t* spawned = P_SpawnMapThing(&spawnthing);
+		mobj_t* spawned = P_SpawnMapThing( &spawnthing );
 		if( spawned )
 		{
-			spawned->lumpindex = i;
+			spawned->lumpindex = index;
 			if( !( spawned->flags & MF_NOSECTOR ) )
 			{
 				P_SortMobj( spawned );
@@ -1389,7 +1445,7 @@ static void P_LoadThings (int lump)
 
     if (!deathmatch)
     {
-        for (i = 0; i < MAXPLAYERS; i++)
+        for (int32_t i = 0; i < MAXPLAYERS; i++)
         {
             if (playeringame[i] && !playerstartsingame[i])
             {
@@ -1407,6 +1463,23 @@ const char* P_GetMapTitle()
 	const char* s = current_map->name.val;
 
 	return DEH_String(s);
+}
+
+mapformat_t P_DetermineMapType( lumpindex_t lumpnum )
+{
+	const char* textlumpname = W_GetNameForNum( lumpnum + ML_EX_TEXTMAP );
+	const char* textbehaviorname = W_GetNameForNum( lumpnum + ML_EX_BEHAVIOR );
+
+	if( textlumpname && ToUpper( textlumpname ) == "TEXTMAP" )
+	{
+		return mf_udmf;
+	}
+	else if( textbehaviorname && ToUpper( textbehaviorname ) == "BEHAVIOR" )
+	{
+		return mf_hexen;
+	}
+	
+	return mf_doom;
 }
 
 //
@@ -1458,35 +1531,52 @@ P_SetupLevel
     lumpnum = W_GetNumForName( lumpname.c_str() );
 	
     maplumpinfo = lumpinfo[lumpnum];
+	mapformat_t mapformat = P_DetermineMapType( lumpnum );
 
     leveltime = 0;
 	
 	DoomMapLoader loader = DoomMapLoader();
 
-	switch( loading_code )
-	{
-	case LoadingCode::RnRVanilla:
-		{
-			loader.LoadBlockmap( lumpnum + ML_BLOCKMAP );
-			loader.LoadVertices( lumpnum + ML_VERTEXES );
-			loader.LoadSectors( lumpnum + ML_SECTORS );
-			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
-			loader.LoadLinedefs( lumpnum + ML_LINEDEFS );
-			loader.LoadSubsectors( lumpnum + ML_SSECTORS );
-			loader.LoadNodes( lumpnum + ML_NODES );
-			loader.LoadSegs( lumpnum + ML_SEGS );
-			loader.GroupLines();
-			loader.LoadReject( lumpnum + ML_REJECT );
-		}
-		break;
+	// The original loading order:
+	// loader.LoadBlockmap( lumpnum + ML_BLOCKMAP );
+	// loader.LoadVertices( lumpnum + ML_VERTEXES );
+	// loader.LoadSectors( lumpnum + ML_SECTORS );
+	// loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
+	// loader.LoadLinedefs( lumpnum + ML_LINEDEFS );
+	// loader.LoadSubsectors( lumpnum + ML_SSECTORS );
+	// loader.LoadNodes( lumpnum + ML_NODES );
+	// loader.LoadSegs( lumpnum + ML_SEGS );
+	// loader.GroupLines();
+	// loader.LoadReject( lumpnum + ML_REJECT );
 
-	case LoadingCode::RnRLimitRemoving:
+	switch( mapformat )
+	{
+	case mf_doom:
 		{
 			loader.DetermineExtendedFormat( lumpnum );
 			loader.LoadVertices( lumpnum + ML_VERTEXES );
 			loader.LoadSectors( lumpnum + ML_SECTORS );
 			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
 			loader.LoadExtendedLinedefs( lumpnum + ML_LINEDEFS );
+			// This would load first in pure vanilla. Should be harmless here
+			loader.LoadExtendedBlockmap( lumpnum + ML_BLOCKMAP );
+			// We're going to switch the order of nodes and subsectors
+			// loading for limit removing maps.
+			loader.LoadExtendedNodes( lumpnum + ML_NODES );
+			loader.LoadExtendedSubsectors( lumpnum + ML_SSECTORS );
+			loader.LoadExtendedSegs( lumpnum + ML_SEGS );
+			loader.GroupLines();
+			loader.LoadReject( lumpnum + ML_REJECT );
+		}
+		break;
+
+	case mf_hexen:
+		{
+			loader.DetermineExtendedFormat( lumpnum );
+			loader.LoadVertices( lumpnum + ML_VERTEXES );
+			loader.LoadSectors( lumpnum + ML_SECTORS );
+			loader.LoadSidedefs( lumpnum + ML_SIDEDEFS );
+			loader.LoadHexenLinedefs( lumpnum + ML_LINEDEFS );
 			// This would load first in pure vanilla. Should be harmless here
 			loader.LoadExtendedBlockmap( lumpnum + ML_BLOCKMAP );
 			// We're going to switch the order of nodes and subsectors
@@ -1559,7 +1649,17 @@ P_SetupLevel
 
     bodyqueslot = 0;
     deathmatch_p = deathmatchstarts;
-    P_LoadThings (lumpnum+ML_THINGS);
+
+	switch( mapformat )
+	{
+	case mf_doom:
+		P_LoadThings< mapthing_t >( lumpnum + ML_THINGS );
+		break;
+	case mf_hexen:
+		P_LoadThings< mapthing_hexen_t >( lumpnum + ML_THINGS );
+		break;
+	}
+
     
     // if deathmatch, randomly spawn the active players
     if (deathmatch)

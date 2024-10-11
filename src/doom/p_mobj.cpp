@@ -44,8 +44,6 @@
 DOOM_C_API extern musinfo_t*		musinfo;
 
 DOOM_C_API void G_PlayerReborn (int player);
-DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t*	mthing);
-
 
 //
 // P_SetMobjState
@@ -458,7 +456,7 @@ DOOM_C_API void P_NightmareRespawn( mobj_t* mobj )
     fixed_t		z; 
     subsector_t*	ss; 
     mobj_t*		mo;
-    mapthing_t*		mthing;
+    mapthing_hexen_t*		mthing;
 
 	if( !comp.respawn_non_map_things_at_origin && !mobj->hasspawnpoint )
 	{
@@ -691,7 +689,7 @@ DOOM_C_API mobj_t* P_SpawnMobj( fixed_t x, fixed_t y, fixed_t z, int32_t type )
 //
 extern "C"
 {
-	mapthing_t	itemrespawnque[ITEMQUESIZE];
+	mapthing_hexen_t	itemrespawnque[ITEMQUESIZE];
 	int		itemrespawntime[ITEMQUESIZE];
 	int		iquehead;
 	int		iquetail;
@@ -737,7 +735,7 @@ DOOM_C_API void P_RespawnSpecials (void)
     
     subsector_t*	ss; 
     mobj_t*		mo;
-    mapthing_t*		mthing;
+    mapthing_hexen_t*		mthing;
 
     // only respawn items in deathmatch
     if (deathmatch != 2)
@@ -797,7 +795,7 @@ DOOM_C_API void P_RespawnSpecials (void)
 // Most of the player structure stays unchanged
 //  between levels.
 //
-DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
+DOOM_C_API mobj_t* P_SpawnPlayer( mapthing_hexen_t* mthing )
 {
     player_t*		p;
     fixed_t		x;
@@ -810,13 +808,15 @@ DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
 
     if (mthing->type == 0)
     {
-        return;
+        return nullptr;
     }
 
     // not playing?
     if (!playeringame[mthing->type-1])
-	return;					
-		
+	{
+		return nullptr;
+	}
+
     p = &players[mthing->type-1];
 
     if (p->playerstate == PST_REBORN)
@@ -871,6 +871,8 @@ DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
 	// wake up the heads up text
 	HU_Start ();		
     }
+
+	return mobj;
 }
 
 
@@ -879,7 +881,7 @@ DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing)
 // The fields of the mapthing should
 // already be in host byte order.
 //
-DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
+DOOM_C_API mobj_t* P_SpawnMapThing( mapthing_hexen_t* mthing )
 {
     int			bit;
     mobj_t*		mobj;
@@ -913,7 +915,9 @@ DOOM_C_API mobj_t* P_SpawnMapThing (mapthing_t* mthing)
 		playerstarts[mthing->type-1] = *mthing;
 		playerstartsingame[mthing->type-1] = true;
 		if (!deathmatch)
-			P_SpawnPlayer (mthing);
+		{
+			return P_SpawnPlayer( mthing );
+		}
 
 		return nullptr;
     }

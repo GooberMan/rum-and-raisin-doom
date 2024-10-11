@@ -108,7 +108,7 @@ DOOM_C_API doombool P_EvaluateItemOwned( itemtype_t item, player_t* player );
 // Time interval for item respawning.
 #define ITEMQUESIZE		128
 
-DOOM_C_API extern mapthing_t	itemrespawnque[ITEMQUESIZE];
+DOOM_C_API extern mapthing_hexen_t	itemrespawnque[ITEMQUESIZE];
 DOOM_C_API extern int		itemrespawntime[ITEMQUESIZE];
 DOOM_C_API extern int		iquehead;
 DOOM_C_API extern int		iquetail;

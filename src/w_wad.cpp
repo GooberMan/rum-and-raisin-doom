@@ -369,7 +369,7 @@ lumpindex_t W_GetNumForName(const char *name)
 
 const char* W_GetNameForNum( lumpindex_t num )
 {
-	return lumpinfo[ num ]->name;
+	return num < numlumps ? lumpinfo[ num ]->name : nullptr;
 }
 
 //
@@ -378,12 +378,12 @@ const char* W_GetNameForNum( lumpindex_t num )
 //
 int W_LumpLength(lumpindex_t lump)
 {
-    if (lump >= numlumps)
-    {
-	I_Error ("W_LumpLength: %i >= numlumps", lump);
-    }
+	if (lump >= numlumps)
+	{
+		I_Error ("W_LumpLength: %i >= numlumps", lump);
+	}
 
-    return lumpinfo[lump]->size;
+	return lumpinfo[lump]->size;
 }
 
 

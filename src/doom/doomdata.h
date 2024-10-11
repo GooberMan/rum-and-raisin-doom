@@ -40,21 +40,32 @@ extern "C" {
 
 // Lump order in a map WAD: each map needs a couple of lumps
 // to provide a complete scene geometry description.
-enum
+typedef enum maplumpindex_e
 {
-  ML_LABEL,		// A separator, name, ExMx or MAPxx
-  ML_THINGS,		// Monsters, items..
-  ML_LINEDEFS,		// LineDefs, from editing
-  ML_SIDEDEFS,		// SideDefs, from editing
-  ML_VERTEXES,		// Vertices, edited and BSP splits generated
-  ML_SEGS,		// LineSegs, from LineDefs split by BSP
-  ML_SSECTORS,		// SubSectors, list of LineSegs
-  ML_NODES,		// BSP nodes
-  ML_SECTORS,		// Sectors, from editing
-  ML_REJECT,		// LUT, sector-sector visibility	
-  ML_BLOCKMAP		// LUT, motion clipping, walls/grid element
-};
+	ML_LABEL,									// A separator, name, ExMx or MAPxx
+	ML_THINGS,									// Monsters, items..
+	ML_LINEDEFS,								// LineDefs, from editing
+	ML_SIDEDEFS,								// SideDefs, from editing
+	ML_VERTEXES,								// Vertices, edited and BSP splits generated
+	ML_SEGS,									// LineSegs, from LineDefs split by BSP
+	ML_SSECTORS,								// SubSectors, list of LineSegs
+	ML_NODES,									// BSP nodes
+	ML_SECTORS,									// Sectors, from editing
+	ML_REJECT,									// LUT, sector-sector visibility	
+	ML_BLOCKMAP,								// LUT, motion clipping, walls/grid element
+	ML_EX_BEHAVIOR		= ML_BLOCKMAP + 1,		// ACS behavior lump
+	ML_EX_TEXTMAP		= ML_LABEL + 1,			// UDMF map
+} maplumpindex_t;
 
+enum mapformat_t
+{
+	mf_none,
+	mf_doom,
+	mf_hexen,
+	mf_udmf,
+
+	mf_max
+};
 
 // A single Vertex.
 typedef PACKED_STRUCT (
@@ -97,6 +108,21 @@ typedef PACKED_STRUCT (
 	// sidenum[1] will be -1 if one sided
 	int16_t		sidenum[2];
 }) maplinedef_t;
+
+typedef PACKED_STRUCT (
+{
+	int16_t		v1;
+	int16_t		v2;
+	int16_t		flags;
+	uint8_t		special;
+	uint8_t		arg1;
+	uint8_t		arg2;
+	uint8_t		arg3;
+	uint8_t		arg4;
+	uint8_t		arg5;
+	// sidenum[1] will be -1 if one sided
+	int16_t		sidenum[2];
+}) maplinedef_hexen_t;
 
 typedef PACKED_STRUCT (
 {
@@ -287,12 +313,29 @@ typedef mapnode_deepbsp_t mapnode_zdoom_t;
 // plus skill/visibility flags and attributes.
 typedef PACKED_STRUCT (
 {
-	uint16_t	x;
-	uint16_t	y;
+	int16_t		x;
+	int16_t		y;
 	uint16_t	angle;
-	uint16_t	type;
+	int16_t		type;
 	uint16_t	options;
 }) mapthing_t;
+
+typedef PACKED_STRUCT (
+{
+	int16_t		tid;
+	int16_t		x;
+	int16_t		y;
+	int16_t		height;
+	uint16_t	angle;
+	int16_t		type;
+	uint16_t	options;
+	uint8_t		special;
+	uint8_t		arg1;
+	uint8_t		arg2;
+	uint8_t		arg3;
+	uint8_t		arg4;
+	uint8_t		arg5;
+}) mapthing_hexen_t;
 
 #if defined( __cplusplus )
 }

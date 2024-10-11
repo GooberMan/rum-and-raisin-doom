@@ -1362,12 +1362,11 @@ void G_PlayerReborn (int player)
 // at the given mapthing_t spot  
 // because something is occupying it 
 //
-DOOM_C_API void P_SpawnPlayer (mapthing_t* mthing); 
- 
+
 doombool
 G_CheckSpot
 ( int		playernum,
-  mapthing_t*	mthing ) 
+  mapthing_hexen_t*	mthing ) 
 { 
     fixed_t		x;
     fixed_t		y; 

@@ -274,7 +274,7 @@ static void saveg_writep(const void *p)
 // mapthing_t
 //
 
-static void saveg_read_mapthing_t(mapthing_t *str)
+static void saveg_read_mapthing_t(mapthing_hexen_t *str)
 {
     // short x;
     str->x = saveg_read16();
@@ -292,7 +292,7 @@ static void saveg_read_mapthing_t(mapthing_t *str)
     str->options = saveg_read16();
 }
 
-static void saveg_write_mapthing_t(mapthing_t *str)
+static void saveg_write_mapthing_t(mapthing_hexen_t *str)
 {
     // short x;
     saveg_write16(str->x);
