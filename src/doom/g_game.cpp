@@ -2448,7 +2448,7 @@ void G_DoPlayDemo (void)
 	if( !auditparam )
 	{
 		auditparam = M_CheckParmWithArgs( "-playauditloop", 1 );
-		if( strcasecmp( myargv[ auditparam + 1 ], defdemoname ) != 0 )
+		if( auditparam && strcasecmp( myargv[ auditparam + 1 ], defdemoname ) != 0 )
 		{
 			auditparam = 0;
 		}
