@@ -58,8 +58,6 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-#define MATCH_WINDOW_TO_BACKBUFFER 0
-
 // These are (1) the window (or the full screen) that our game is rendered to
 // and (2) the renderer that scales the texture (see below) into this window.
 // Breaking from Chocolate Doom, we only support the GL backend.
@@ -1391,10 +1389,6 @@ static void SetVideoMode(void)
 
         pixel_format = SDL_GetWindowPixelFormat(screen);
 
-#if MATCH_WINDOW_TO_BACKBUFFER
-        SDL_SetWindowMinimumSize(screen, render_width, actualheight);
-#endif // MATCH_WINDOW_TO_BACKBUFFER
-
         I_InitWindowTitle();
         I_InitWindowIcon();
     }
@@ -1653,6 +1647,8 @@ void I_InitGraphics( void )
         putenv(winenv);
     }
 
+	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
+	SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
     if (SDL_Init(SDL_INIT_VIDEO) < 0) 
     {
         I_Error("Failed to initialize video: %s", SDL_GetError());

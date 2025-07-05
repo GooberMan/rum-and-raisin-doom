@@ -20,6 +20,7 @@
 #include "i_video.h"
 #include "m_container.h"
 
+
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 	#define WIN32_LEAN_AND_MEAN
@@ -59,6 +60,8 @@ extern "C"
 	extern int32_t video_display;
 	extern int32_t vsync_mode;
 }
+
+#pragma optimize( "", off )
 
 typedef struct vsyncsupport_s
 {
@@ -692,8 +695,15 @@ DOOM_C_API void I_VideoRenderGLBackbuffer( void )
 	GLint sdl_prog;
 	glGetIntegerv( GL_CURRENT_PROGRAM, &sdl_prog );
 
-	const int32_t& this_width	= fullscreen ? display_width : window_width;
-	const int32_t& this_height	= fullscreen ? display_height : window_height;
+	float DPIScale = 1;
+#ifdef _WIN32
+	float diag = 0;
+	SDL_GetDisplayDPI(0, &diag, nullptr, nullptr);
+	DPIScale = diag / 96.0;
+#endif
+
+	const int32_t this_width	= fullscreen ? display_width : (int32_t)(window_width * DPIScale);
+	const int32_t this_height	= fullscreen ? display_height : (int32_t)(window_height * DPIScale);
 
 	int32_t actual_height = render_post_scaling ? render_height * 1.2 : render_height;
 
